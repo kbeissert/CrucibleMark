@@ -35,6 +35,10 @@ def mock_dependencies():
         patch(
             "scripts.core.unified_runner.calculate_score_contributions"
         ) as mock_calc,
+        # save_audit_log schreibt nach outputs/audit_logs/<model>/<asset_id>.md.
+        # Im Test mit model="test" würde das real outputs/audit_logs/test/asset_1.md
+        # erzeugen — wir patchen es, damit der Test das Repo nicht verschmutzt.
+        patch("utils.scoring.judge_evaluator.save_audit_log") as mock_audit,
         patch("requests.post") as mock_req,
         patch("time.sleep") as mock_sleep,
     ):
@@ -77,6 +81,7 @@ def mock_dependencies():
             "exec": mock_exec,
             "base": mock_base,
             "calc": mock_calc,
+            "audit": mock_audit,
             "req": mock_req,
             "sleep": mock_sleep,
         }

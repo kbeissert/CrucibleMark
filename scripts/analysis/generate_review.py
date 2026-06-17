@@ -150,6 +150,11 @@ def _load_card_module(script_name: str) -> object:
     if spec is None or spec.loader is None:
         raise ImportError(f"Modul {script_name}.py nicht unter {path} gefunden.")
     module = importlib.util.module_from_spec(spec)
+    # Modul in sys.modules registrieren, BEVOR exec_module läuft.
+    # Hintergrund: @dataclass (Python 3.14) ruft sys.modules[cls.__module__].__dict__
+    # auf, um KW_ONLY-Detection zu machen. Ohne Registrierung gibt es ein NoneType
+    # statt des Modul-Dicts → AttributeError → Crash beim ersten @dataclass.
+    sys.modules[module_name] = module
     spec.loader.exec_module(module)  # type: ignore[union-attr]
     return module
 
@@ -748,6 +753,46 @@ def _run_tooluse_reviews(
         print(f"✅ Tool-Use-Review gespeichert unter: {out_file.relative_to(ROOT_DIR)}")
 
 
+def _is_valid_audit_dir(path: Path) -> bool:
+    """Prüft, ob ein Verzeichnis ein gültiges Audit-Log-Verzeichnis ist.
+
+    Ein Verzeichnis zählt als Audit-Dir wenn EINES erfüllt ist:
+      A) Es enthält mindestens eine Datei mit bekanntem Audit-Slug-Pattern:
+         00_bias_report.md, cli\\d+\\.md, code_quality_\\d+\\.md,
+         tooluse\\d+\\.md, documentation_quality_\\d+\\.md
+      B) Der Ordnername sieht aus wie ein Modellname (slug-konform):
+         länger als 4 Zeichen, enthält Bindestrich ODER Underscore,
+         keine Punkte (Punkte werden in safe_name zu Underscores konvertiert).
+         Schließt Stub-/Test-Ordner wie z.B. outputs/audit_logs/test/ aus.
+
+    Pfad (B) ist nötig, damit Test-Fixtures mit leeren Audit-Dirs
+    (z.B. model-a, model-b, gpt-5_4) durchlaufen ohne pro Modell eine
+    dummy-Audit-Datei anlegen zu müssen.
+    """
+    if not path.is_dir():
+        return False
+    name = path.name
+    # Heuristik B: Modellname-Pattern
+    if (
+        len(name) > 4
+        and ("-" in name or "_" in name)
+        and "." not in name
+        and not name.startswith(".")
+    ):
+        return True
+    # Heuristik A: bekannte Audit-Slug-Files
+    audit_pattern = re.compile(
+        r"^(00_bias_report|cli\d+|code_quality_\d+|tooluse\d+|documentation_quality_\d+)\.md$"
+    )
+    try:
+        for f in path.iterdir():
+            if f.is_file() and audit_pattern.match(f.name):
+                return True
+    except OSError:
+        return False
+    return False
+
+
 def _run_per_model_all_reviews(
     args: argparse.Namespace,
     client: LLMClient,
@@ -773,7 +818,7 @@ def _run_per_model_all_reviews(
     # als model_id (fuer audit_dir und Sub-Calls).
     slugs = sorted(
         d.name for d in audit_base_dir.iterdir()
-        if d.is_dir() and d.name != ".DS_Store"
+        if _is_valid_audit_dir(d)
     )
     if not slugs:
         print("⚠️ Keine Modell-Verzeichnisse in outputs/audit_logs/ gefunden.")
@@ -865,7 +910,7 @@ def _run_audit_reviews(
         pass
 
     for subdir in audit_base_dir.iterdir():
-        if not subdir.is_dir() or subdir.name == ".DS_Store":
+        if not _is_valid_audit_dir(subdir):
             continue
         # Defense in depth: vergleiche safe_name-normalisiert, damit auch
         # Audit-Dirs mit roher Schreibweise (z.B. "gpt-5.4" statt "gpt-5_4")
