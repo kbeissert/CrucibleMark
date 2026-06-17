@@ -152,6 +152,18 @@ informational_tags:
     consumers: [web_export_filter, risk_assessment]
     since: v4.7.0
 
+  - slug: MTP
+    label: "Multi-Token Prediction"
+    description: "Modell ist nativ mit Multi-Token Prediction trainiert (z. B. Qwen 3.6, Qwen3-Next) und für Speculative Decoding mit Draft-Modell optimiert."
+    consumers: [web_export_filter]
+    since: v4.10.0
+
+  - slug: Speculative-Decoding
+    label: "Speculative Decoding"
+    description: "Modell wird mit Speculative Decoding betrieben (z. B. draft-mtp bei llama.cpp, Medusa, EAGLE). Erhöht Decode-Throughput bei gleichbleibender Output-Qualität."
+    consumers: [web_export_filter]
+    since: v4.10.0
+
   - slug: Uncensored-Finetuned
     label: "Uncensored Fine-Tuned"
     description: "Community-Fine-Tune mit reduzierten Restriktionen (vs. herstellerseitiges Uncensored)."

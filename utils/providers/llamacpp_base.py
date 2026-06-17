@@ -384,6 +384,19 @@ class LlamaCppBaseClient(BaseProviderClient):
             # bei SSH-Remote-Commands (Quotes gehen verloren).
             cmd += f" --reasoning {'on' if enable_thinking else 'off'}"
 
+        # Zusätzliche Server-Flags aus der Modell-Config (extra_server_args).
+        # Ermöglicht die Übergabe beliebiger llama.cpp-Flags wie --spec-type,
+        # --spec-draft-n-max, --flash-attn, --jinja, --cache-type-k/v etc.
+        # Beispiel in provider_config.yaml:
+        #   extra_server_args:
+        #     - "--spec-type draft-mtp"
+        #     - "--spec-draft-n-max 2"
+        extra_args = model_cfg.get("extra_server_args", [])
+        if isinstance(extra_args, list):
+            for arg in extra_args:
+                if isinstance(arg, str) and arg.strip():
+                    cmd += f" {arg.strip()}"
+
         return f"{cmd} >> {log_file} 2>&1"
 
     # ------------------------------------------------------------------

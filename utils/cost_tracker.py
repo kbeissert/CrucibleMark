@@ -113,11 +113,20 @@ class CostTracker:
                         + (output_tokens / 1_000_000) * float(out_per_m),
                         6,
                     )
+                # Card vorhanden, aber keine Preise (z.B. lokales Modell)
+                logging.getLogger(__name__).debug(
+                    "Keine Preise für Modell '%s' (%s): Model Card vorhanden "
+                    "aber input_price_per_1m/output_price_per_1m=null (lokales Modell). "
+                    "Kosten werden mit 0.0 geloggt.",
+                    model,
+                    provider,
+                )
+                return 0.0
         except Exception:
             pass
 
         logging.getLogger(__name__).warning(
-            "Kein Preis für Modell '%s' (%s): keine Model Card. Kosten werden mit 0.0 geloggt.",
+            "Keine Model Card für '%s' (%s): Kosten werden mit 0.0 geloggt.",
             model,
             provider,
         )
