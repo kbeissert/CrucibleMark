@@ -1237,7 +1237,7 @@
   },
   {
     "model_id": "gemma-3-12b-it-q8-spark",
-    "display_name": "Gemma 3 12B IT (Q8_0 GGUF)",
+    "display_name": "Gemma 3 12B IT (Q8_0)",
     "developer": "Google DeepMind",
     "origin_country": "USA",
     "developer_jurisdiction": "US",
@@ -1254,7 +1254,7 @@
     "params_active_b": null,
     "context_window_k": 128,
     "knowledge_cutoff": "2024-12",
-    "summary": "Gemma 3 12B IT ist hier als Q8_0 GGUF für Spark verpackt und über llama.cpp lokal betrieben. Die Instruktvariante ist auf präzise Textantworten ausgelegt, Q8_0 bleibt dabei sehr nah an der Originalqualität und ist für effiziente lokale Inferenz mit hoher Genauigkeit geeignet.",
+    "summary": "Gemma 3 12B IT ist hier als Q8_0 für Spark verpackt und über llama.cpp lokal betrieben. Die Instruktvariante ist auf präzise Textantworten ausgelegt, Q8_0 bleibt dabei sehr nah an der Originalqualität und ist für effiziente lokale Inferenz mit hoher Genauigkeit geeignet.",
     "strengths": [
       "Instruct-optimiert für klare, direkt nutzbare Antworten",
       "Q8_0-Quantisierung mit sehr geringem Qualitätsverlust",
@@ -1262,11 +1262,11 @@
       "Solide Mehrsprachigkeit und Textverständnis"
     ],
     "known_limitations": [
-      "Kein offizielles Cloud-Produkt, sondern lokal verpackte GGUF-Variante",
+      "Kein offizielles Cloud-Produkt, sondern lokal verpackte Variante",
       "Reasoning-Tiefe bleibt hinter größeren Frontier-Modellen zurück",
       "Bildfähigkeit hängt von der verwendeten Gemma-3-Variante und der lokalen Pipeline ab"
     ],
-    "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, ~115 GB Unified Memory, Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). Lokale GGUF-Variante von Gemma 3 12B IT. Antworten sollten als kompakte Instruct-Ausgaben bewertet werden; die Q8_0-Quantisierung ist hochwertig, aber nicht identisch zur Originalpräzision.",
+    "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, 128 GB Unified Memory, davon ~120 GB für Modell + Kontext nutzbar; Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). Lokale Variante von Gemma 3 12B IT. Antworten sollten als kompakte Instruct-Ausgaben bewertet werden; die Q8_0-Quantisierung ist hochwertig, aber nicht identisch zur Originalpräzision.",
     "architecture_tags": [
       "General",
       "Instruct"
@@ -1315,14 +1315,14 @@
     "deployment_type": "open-weights-cloud-available",
     "developer": "Google DeepMind",
     "developer_jurisdiction": "US",
-    "display_name": "Gemma 3 12B IT (llama.cpp, Q8_0)",
+    "display_name": "Gemma 3 12B IT (Q8_0)",
     "generated_at": "2026-05-30T00:00:00.000000+00:00",
     "input_price_per_1m": 0.0,
     "judge_context_hint": "Plattform: Apple M4 Mac (~18 GB Unified Memory, Metal-GPU, lokal — kein Cloud-Provider, kein externer Datentransfer). Lokale Gemma-3-Variante mit hoher Quantisierungsqualität. Antworten sollten als präzise, kompakte Instruct-Ausgaben bewertet werden.",
     "knowledge_cutoff": "2024-12",
     "known_limitations": [
       "Unterhalb größerer Frontier-Modelle bei komplexem Reasoning",
-      "Keine offizielle Cloud-API der GGUF-Variante",
+      "Keine offizielle Cloud-API der Variante",
       "Restriktive Gemma-Lizenz bleibt bestehen"
     ],
     "license": "Google Gemma Terms of Use",
@@ -1343,7 +1343,7 @@
       "Q8_0 mit sehr geringer Qualitätsminderung",
       "Lokal effizient auf Consumer-Hardware nutzbar"
     ],
-    "summary": "Gemma 3 12B ist ein Instruct-Modell von Google DeepMind, hier als Q8_0 GGUF für lokale Ausführung verpackt. Die Variante ist auf präzise Textantworten ausgelegt und bietet durch die hohe Quantisierungsstufe eine sehr gute Annäherung an die Vollpräzision. Sie eignet sich für effiziente lokale Inferenz auf Consumer-Hardware.",
+    "summary": "Gemma 3 12B ist ein Instruct-Modell von Google DeepMind, hier als Q8_0 für lokale Ausführung verpackt. Die Variante ist auf präzise Textantworten ausgelegt und bietet durch die hohe Quantisierungsstufe eine sehr gute Annäherung an die Vollpräzision. Sie eignet sich für effiziente lokale Inferenz auf Consumer-Hardware.",
     "supports_tool_use": true,
     "thinking_probe_at": "2026-05-30T00:00:00.000000+00:00",
     "thinking_probe_confidence": "low",
@@ -1374,7 +1374,7 @@
   },
   {
     "model_id": "gemma-3-12b-it-spark",
-    "display_name": "Gemma 3 12B IT (Q4_K_M GGUF)",
+    "display_name": "Gemma 3 12B IT (Q4_K_M)",
     "developer": "Google DeepMind",
     "origin_country": "USA",
     "developer_jurisdiction": "US",
@@ -1391,7 +1391,7 @@
     "params_active_b": null,
     "context_window_k": 128,
     "knowledge_cutoff": "2024-12",
-    "summary": "Gemma 3 12B IT ist hier als Q4_K_M GGUF für Spark verpackt und über llama.cpp lokal betrieben. Die Instruktvariante liefert kompakte, direkte Antworten; Q4_K_M senkt den Speicherbedarf deutlich und macht den Einsatz auf Consumer tauglicher Hardware möglich.",
+    "summary": "Gemma 3 12B IT ist hier als Q4_K_M für Spark verpackt und über llama.cpp lokal betrieben. Die Instruktvariante liefert kompakte, direkte Antworten; Q4_K_M senkt den Speicherbedarf deutlich und macht den Einsatz auf Consumer tauglicher Hardware möglich.",
     "strengths": [
       "Instruct-optimiert für direkte Aufgabenbearbeitung",
       "Deutlich geringerer Speicherbedarf durch Q4_K_M-Quantisierung",
@@ -1400,10 +1400,10 @@
     ],
     "known_limitations": [
       "Q4_K_M bringt sichtbar mehr Qualitätsverlust als Q8-Varianten",
-      "Kein offizielles Cloud-Produkt, sondern lokal verpackte GGUF-Variante",
+      "Kein offizielles Cloud-Produkt, sondern lokal verpackte Variante",
       "Bei komplexen Aufgaben geringere Tiefe als größere Frontier-Modelle"
     ],
-    "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, ~115 GB Unified Memory, Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). Lokale GGUF-Variante von Gemma 3 12B IT. Die Q4_K_M-Quantisierung priorisiert Laufzeit und Speicherbedarf vor Präzision; Antworten können daher etwas knapper und weniger stabil ausfallen als bei Q8.",
+    "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, 128 GB Unified Memory, davon ~120 GB für Modell + Kontext nutzbar; Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). Lokale Variante von Gemma 3 12B IT. Die Q4_K_M-Quantisierung priorisiert Laufzeit und Speicherbedarf vor Präzision; Antworten können daher etwas knapper und weniger stabil ausfallen als bei Q8.",
     "architecture_tags": [
       "General",
       "Instruct"
@@ -1452,10 +1452,10 @@
     "deployment_type": "open-weights-cloud-available",
     "developer": "Google DeepMind",
     "developer_jurisdiction": "US",
-    "display_name": "Gemma 3 12B IT (llama.cpp, Q4_K_M)",
+    "display_name": "Gemma 3 12B IT (Q4_K_M)",
     "generated_at": "2026-05-30T15:30:22.206663+00:00",
     "input_price_per_1m": 0.0,
-    "judge_context_hint": "Plattform: Apple M4 Mac (~18 GB Unified Memory, Metal-GPU, lokal — kein Cloud-Provider, kein externer Datentransfer). Gemma 3 12B IT ist ein Instruct-optimiertes Modell mittlerer Größe, hier als Q4_K_M-GGUF via llama.cpp betrieben – Antworten sind tendenziell präzise und kompakt, können aber bei sehr komplexen Reasoning-Ketten an Tiefe verlieren. Die Q4_K_M-Quantisierung kann minimale Qualitätsunterschiede gegenüber der Vollpräzision zeigen.",
+    "judge_context_hint": "Plattform: Apple M4 Mac (~18 GB Unified Memory, Metal-GPU, lokal — kein Cloud-Provider, kein externer Datentransfer). Gemma 3 12B IT ist ein Instruct-optimiertes Modell mittlerer Größe, hier als Q4_K_M via llama.cpp betrieben – Antworten sind tendenziell präzise und kompakt, können aber bei sehr komplexen Reasoning-Ketten an Tiefe verlieren. Die Q4_K_M-Quantisierung kann minimale Qualitätsunterschiede gegenüber der Vollpräzision zeigen.",
     "knowledge_cutoff": "2024-12",
     "known_limitations": [
       "Kontextfenster und Reasoning-Tiefe hinter größeren Frontier-Modellen (z.B. Gemini 1.5 Pro) zurück",
@@ -1479,7 +1479,7 @@
       "Effizient lokal betreibbar – läuft auf Consumer-Hardware mit ausreichend VRAM",
       "Solide Mehrsprachigkeit und gutes Textverstehen über diverse Domänen hinweg"
     ],
-    "summary": "Gemma 3 12B ist ein Modell von Google DeepMind mit öffentlich verfügbaren Gewichten (Google Gemma Terms of Use). Dieses Modell läuft als GGUF-Quantisierung (Q4_K_M), direkt von Hugging Face bezogen und via llama.cpp betrieben. Mit 12 Milliarden Parametern deckt es ein breites Spektrum von Instruction-Following, Textverstehen und mehrsprachigen Aufgaben ab.",
+    "summary": "Gemma 3 12B ist ein Modell von Google DeepMind mit öffentlich verfügbaren Gewichten (Google Gemma Terms of Use). Dieses Modell läuft mit dieser Quantisierung (Q4_K_M), direkt von Hugging Face bezogen und via llama.cpp betrieben. Mit 12 Milliarden Parametern deckt es ein breites Spektrum von Instruction-Following, Textverstehen und mehrsprachigen Aufgaben ab.",
     "supports_tool_use": true,
     "thinking_probe_at": "2026-05-30T15:30:22.206384+00:00",
     "thinking_probe_confidence": "low",
@@ -1510,7 +1510,7 @@
   },
   {
     "model_id": "gemma-4-12b-it-ud-q4_k_xl",
-    "display_name": "Gemma 4 12B Instruct Q4_K_XL (GGUF, UndiX-Derivative)",
+    "display_name": "Gemma 4 12B Instruct Q4_K_XL (UndiX-Derivative)",
     "developer": "Google DeepMind (Base) / UndiX (Community-Distribution)",
     "origin_country": "USA",
     "developer_jurisdiction": "US",
@@ -1527,7 +1527,7 @@
     "params_active_b": null,
     "context_window_k": 128,
     "knowledge_cutoff": "2025-06",
-    "summary": "Gemma 4 12B Instruct liegt hier als Q4_K_XL GGUF in einer Community Distribution vor. Die Variante ist auf niedrigen Speicherbedarf und lokale Ausführung ausgelegt und behält die multimodale Gemma-4-Basis mit Instruct-Ausrichtung bei. Aufgrund der starken Kompression ist mit spürbarem Qualitätsverlust gegenüber höher präzisen Varianten zu rechnen.",
+    "summary": "Gemma 4 12B Instruct liegt hier als Q4_K_XL in einer Community Distribution vor. Die Variante ist auf niedrigen Speicherbedarf und lokale Ausführung ausgelegt und behält die multimodale Gemma-4-Basis mit Instruct-Ausrichtung bei. Aufgrund der starken Kompression ist mit spürbarem Qualitätsverlust gegenüber höher präzisen Varianten zu rechnen.",
     "strengths": [
       "Lokal auf kleinerer Hardware betreibbar",
       "Instruct-optimiert für praktische Aufgaben",
@@ -1581,7 +1581,7 @@
   },
   {
     "model_id": "gemma-4-12b-it-ud-q6_k_xl",
-    "display_name": "Gemma 4 12B Instruct Q6_K_XL (GGUF, UndiX-Derivative)",
+    "display_name": "Gemma 4 12B Instruct Q6_K_XL (UndiX-Derivative)",
     "developer": "Google DeepMind (Base) / UndiX (Community-Distribution)",
     "origin_country": "USA",
     "developer_jurisdiction": "US",
@@ -1598,7 +1598,7 @@
     "params_active_b": null,
     "context_window_k": 128,
     "knowledge_cutoff": "2025-06",
-    "summary": "Gemma 4 12B Instruct (Q6_K_XL-GGUF, UndiX-Distribution) ist ein Mid-Size-Modell (12B) von Google DeepMind mit restriktiver Gemma-Lizenz als 6-Bit-GGUF-Quantisierung via llama.cpp. 12B Parameter, 128K Token Kontextfenster, multimodale Unterstützung (Text + Bild + Video), 140+ Sprachen, konfigurierbarer Thinking-Modus. Q6-Quantisierung: bessere Qualität als Q4 bei ~50% mehr Speicherbedarf. Lizenz: Google Gemma Terms of Use (restriktiv).",
+    "summary": "Gemma 4 12B Instruct (Q6_K_XL, UndiX-Distribution) ist ein Mid-Size-Modell (12B) von Google DeepMind mit restriktiver Gemma-Lizenz als 6-Bit-Quantisierung via llama.cpp. 12B Parameter, 128K Token Kontextfenster, multimodale Unterstützung (Text + Bild + Video), 140+ Sprachen, konfigurierbarer Thinking-Modus. Q6-Quantisierung: bessere Qualität als Q4 bei ~50% mehr Speicherbedarf. Lizenz: Google Gemma Terms of Use (restriktiv).",
     "strengths": [
       "Q6_K-Quantisierung: nahe FP16-Qualität bei deutlich reduziertem Speicherbedarf",
       "Solides Instruction-Following durch gezieltes IT-Fine-Tuning",
@@ -1612,7 +1612,7 @@
       "Im Vergleich zu größeren Gemma-4-Varianten (26B, 31B) reduzierte Kapazität für komplexe Reasoning-Ketten",
       "Datenschutz: Google-Origin mit CLOUD-Act-Exposition (bei API-Nutzung)"
     ],
-    "judge_context_hint": "Plattform: Apple M4 Mac (~18 GB Unified Memory, Metal-GPU, lokal — kein Cloud-Provider, kein externer Datentransfer). Gemma 4 12B Instruct Q6_K_XL (GGUF, UndiX-Distribution) ist ein kompaktes 12B-Modell mit Multimodalität (Text/Bild/Video) und 128K Kontext. Google Gemma License (restricted-weights). Q6-Quantisierung: guter Qualitäts-Größen-Kompromiss.",
+    "judge_context_hint": "Plattform: Apple M4 Mac (~18 GB Unified Memory, Metal-GPU, lokal — kein Cloud-Provider, kein externer Datentransfer). Gemma 4 12B Instruct Q6_K_XL (UndiX-Distribution) ist ein kompaktes 12B-Modell mit Multimodalität (Text/Bild/Video) und 128K Kontext. Google Gemma License (restricted-weights). Q6-Quantisierung: guter Qualitäts-Größen-Kompromiss.",
     "architecture_tags": [
       "Thinking",
       "Instruct",
@@ -1653,7 +1653,7 @@
   },
   {
     "model_id": "gemma-4-12b-it-ud-q8_k_xl",
-    "display_name": "Gemma 4 12B Instruct Q8_K_XL (GGUF, UndiX-Derivative)",
+    "display_name": "Gemma 4 12B Instruct Q8_K_XL (UndiX-Derivative)",
     "developer": "Google DeepMind (Base) / UndiX (Community-Distribution)",
     "origin_country": "USA",
     "developer_jurisdiction": "US",
@@ -1670,7 +1670,7 @@
     "params_active_b": null,
     "context_window_k": 128,
     "knowledge_cutoff": "2025-06",
-    "summary": "Gemma 4 12B Instruct (Q8_K_XL-GGUF, UndiX-Distribution) ist ein Mid-Size-Modell (12B) von Google DeepMind mit restriktiver Gemma-Lizenz, hier als 8-Bit-GGUF-Quantisierung via llama.cpp. 12B Parameter, 128K Token Kontextfenster, multimodale Unterstützung (Text + Bild + Video), 140+ Sprachen, konfigurierbarer Thinking-Modus. Q8-Quantisierung: nahe FP16-Qualität bei moderatem Speichermehrbedarf gegenüber Q4/Q6.",
+    "summary": "Gemma 4 12B Instruct (Q8_K_XL, UndiX-Distribution) ist ein Mid-Size-Modell (12B) von Google DeepMind mit restriktiver Gemma-Lizenz, hier als 8-Bit-Quantisierung via llama.cpp. 12B Parameter, 128K Token Kontextfenster, multimodale Unterstützung (Text + Bild + Video), 140+ Sprachen, konfigurierbarer Thinking-Modus. Q8-Quantisierung: nahe FP16-Qualität bei moderatem Speichermehrbedarf gegenüber Q4/Q6.",
     "strengths": [
       "Q8_K_XL-Quantisierung: nahe FP16-Qualität bei reduziertem Speicherbedarf",
       "Solides Instruction-Following durch gezieltes IT-Fine-Tuning",
@@ -1684,7 +1684,7 @@
       "Im Vergleich zu größeren Gemma-4-Varianten (26B, 31B) reduzierte Kapazität für komplexe Reasoning-Ketten",
       "Datenschutz: Google-Origin mit CLOUD-Act-Exposition (bei API-Nutzung)"
     ],
-    "judge_context_hint": "Plattform: Apple M4 Mac (~18 GB Unified Memory, Metal-GPU, lokal — kein Cloud-Provider, kein externer Datentransfer). Gemma 4 12B Instruct Q8_K_XL (GGUF, UndiX-Distribution) ist ein kompaktes 12B-Modell mit Multimodalität (Text/Bild/Video) und 128K Kontext. Google Gemma License (restricted-weights). Q8-Quantisierung: nahe FP16-Qualität.",
+    "judge_context_hint": "Plattform: Apple M4 Mac (~18 GB Unified Memory, Metal-GPU, lokal — kein Cloud-Provider, kein externer Datentransfer). Gemma 4 12B Instruct Q8_K_XL (UndiX-Distribution) ist ein kompaktes 12B-Modell mit Multimodalität (Text/Bild/Video) und 128K Kontext. Google Gemma License (restricted-weights). Q8-Quantisierung: nahe FP16-Qualität.",
     "architecture_tags": [
       "Thinking",
       "Instruct",
@@ -1744,7 +1744,7 @@
     "params_active_b": 4.0,
     "context_window_k": 256,
     "knowledge_cutoff": "2025-06",
-    "summary": "Gemma 4 26B-A4B Instruct als QAT UD-Q4 GGUF via llama.cpp auf DGX Spark betrieben. QAT (Quantization-Aware Training) produziert eine präzisere Q4-Variante als nachträgliche Quantisierung. MoE-Architektur: 25,2B Gesamtparameter, ~4B aktiv pro Token. UD-Q4 (Unsloth Dynamic Q4) ist ein optimiertes Mixed-Precision-Format das Qualität bei geringem VRAM-Bedarf maximiert.",
+    "summary": "Gemma 4 26B-A4B Instruct als QAT UD-Q4 via llama.cpp auf DGX Spark betrieben. QAT (Quantization-Aware Training) produziert eine präzisere Q4-Variante als nachträgliche Quantisierung. MoE-Architektur: 25,2B Gesamtparameter, ~4B aktiv pro Token. UD-Q4 (Unsloth Dynamic Q4) ist ein optimiertes Mixed-Precision-Format das Qualität bei geringem VRAM-Bedarf maximiert.",
     "strengths": [
       "MoE-Design: Hohe Intelligenz bei geringer Rechenlast (~4B aktive Parameter)",
       "QAT-Quantisierung: Signifikant bessere Qualität als Post-Training-Q4 – Gewichte wurden quantisierungsbewusst trainiert",
@@ -1758,7 +1758,7 @@
       "Vision-Eingaben setzen korrektes mmproj-Loading in llama.cpp voraus",
       "Thinking-Probe: 2/3 Probes lieferten 0 chars Output bei reasoning_tokens=512 — wahrscheinlich Cold-Start beim ersten Modell-Load auf dem DGX Spark. Probe sollte bei warmem Server wiederholt werden (Option B). Thinking-Nachweis basiert primär auf math-Probe (627 chars Inline-CoT)."
     ],
-    "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, ~115 GB Unified Memory, Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). MoE-Modell (25,2B total / 4B active) von Google DeepMind, QAT UD-Q4 GGUF auf DGX Spark. Integriertes Reasoning (thinking_probe_detected=true, reasoning_tokens im Hintergrund). Antworten können kompakter sein als bei Q8-Variante. Kein sichtbares Chain-of-Thought trotz internem Reasoning – keine Abzüge für fehlende Begründungsschritte.",
+    "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, 128 GB Unified Memory, davon ~120 GB für Modell + Kontext nutzbar; Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). MoE-Modell (25,2B total / 4B active) von Google DeepMind, QAT UD-Q4 auf DGX Spark. Integriertes Reasoning (thinking_probe_detected=true, reasoning_tokens im Hintergrund). Antworten können kompakter sein als bei Q8-Variante. Kein sichtbares Chain-of-Thought trotz internem Reasoning – keine Abzüge für fehlende Begründungsschritte.",
     "architecture_tags": [
       "Vision-Capable",
       "Thinking"
@@ -1803,7 +1803,7 @@
   },
   {
     "model_id": "gemma-4-26b-a4b-q8",
-    "display_name": "Gemma 4 26B-A4B Instruct Q8_K_XL (GGUF)",
+    "display_name": "Gemma 4 26B-A4B Instruct Q8_K_XL",
     "developer": "Google DeepMind",
     "origin_country": "USA",
     "developer_jurisdiction": "USA",
@@ -1831,7 +1831,7 @@
       "Lokale Ausführung bleibt hardwareintensiv",
       "Community- oder ARA-spezifische Modifikationen hier nicht beschrieben"
     ],
-    "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, ~115 GB Unified Memory, Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). Multimodales Gemma-4-Modell mit hoher Präzision durch Q8-Quantisierung. Antworten sollten als lokal betriebene, präzise Ausgaben einer restriktiv lizenzierten Google-Variante eingeordnet werden.",
+    "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, 128 GB Unified Memory, davon ~120 GB für Modell + Kontext nutzbar; Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). Multimodales Gemma-4-Modell mit hoher Präzision durch Q8-Quantisierung. Antworten sollten als lokal betriebene, präzise Ausgaben einer restriktiv lizenzierten Google-Variante eingeordnet werden.",
     "architecture_tags": [
       "Multimodal",
       "Thinking"
@@ -1888,7 +1888,7 @@
     "params_active_b": null,
     "context_window_k": 128,
     "knowledge_cutoff": "2025-06",
-    "summary": "Gemma 4 31B Instruct als QAT UD-Q4 GGUF via llama.cpp auf DGX Spark betrieben. QAT (Quantization-Aware Training) produziert eine präzisere Q4-Variante als nachträgliche Post-Training-Quantisierung. Dense-Architektur mit 31B Parametern. UD-Q4 (Unsloth Dynamic Q4) ist ein optimiertes Mixed-Precision-Format das Qualität bei geringem VRAM-Bedarf maximiert.",
+    "summary": "Gemma 4 31B Instruct als QAT UD-Q4 via llama.cpp auf DGX Spark betrieben. QAT (Quantization-Aware Training) produziert eine präzisere Q4-Variante als nachträgliche Post-Training-Quantisierung. Dense-Architektur mit 31B Parametern. UD-Q4 (Unsloth Dynamic Q4) ist ein optimiertes Mixed-Precision-Format das Qualität bei geringem VRAM-Bedarf maximiert.",
     "strengths": [
       "QAT-Quantisierung: Signifikant bessere Qualität als Post-Training-Q4 – Gewichte wurden quantisierungsbewusst trainiert",
       "UD-Q4 (Unsloth Dynamic): Optimiertes Mixed-Precision-Format mit per-Layer-Entscheidung",
@@ -1902,7 +1902,7 @@
       "Sehr niedrige Tokens/s (~7,67) auf DGX Spark – Speed Profile ❌ Unusable für interaktive Anwendungsfälle",
       "Audio-Input nicht unterstützt"
     ],
-    "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, ~115 GB Unified Memory, Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). Dense 31B-Modell von Google DeepMind, QAT UD-Q4 GGUF auf DGX Spark. Kein internes Reasoning-Budget (thinking_probe_detected=false). Antworten sind strukturiert und detailliert, aber ohne verstecktes Chain-of-Thought. Langsame Token-Generierung (~8 t/s) kann Antwortqualität bei zeitlimitierten Tasks beeinflussen.",
+    "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, 128 GB Unified Memory, davon ~120 GB für Modell + Kontext nutzbar; Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). Dense 31B-Modell von Google DeepMind, QAT UD-Q4 auf DGX Spark. Kein internes Reasoning-Budget (thinking_probe_detected=false). Antworten sind strukturiert und detailliert, aber ohne verstecktes Chain-of-Thought. Langsame Token-Generierung (~8 t/s) kann Antwortqualität bei zeitlimitierten Tasks beeinflussen.",
     "architecture_tags": [
       "Vision-Capable",
       "General"
@@ -1947,7 +1947,7 @@
   },
   {
     "model_id": "gemma-4-ara-26b-a4b-q5",
-    "display_name": "Gemma 4 ARA 26B-A4B Q5_K_M (GGUF)",
+    "display_name": "Gemma 4 ARA 26B-A4B Q5_K_M",
     "developer": "Google DeepMind",
     "origin_country": "USA",
     "developer_jurisdiction": "US",
@@ -1964,7 +1964,7 @@
     "params_active_b": 4.0,
     "context_window_k": 256,
     "knowledge_cutoff": "2025-06",
-    "summary": "Gemma 4 ARA 26B-A4B liegt hier als Community GGUF in Q5_K_M vor. Das Modell basiert auf Googles multimodaler Gemma 4 Architektur mit MoE und 256K Kontext und ist für lokale Nutzung mit reduziertem Speicherbedarf vorbereitet; die ARA-Verarbeitungskette deutet auf eine modifizierte Community Distribution hin.",
+    "summary": "Gemma 4 ARA 26B-A4B liegt hier als Community-Variante in Q5_K_M vor. Das Modell basiert auf Googles multimodaler Gemma 4 Architektur mit MoE und 256K Kontext und ist für lokale Nutzung mit reduziertem Speicherbedarf vorbereitet; die ARA-Verarbeitungskette deutet auf eine modifizierte Community Distribution hin.",
     "strengths": [
       "Multimodale Gemma-4-Basis mit 256K Kontext",
       "MoE-Architektur mit nur einem Teil aktiver Parameter pro Token",
@@ -1976,7 +1976,7 @@
       "Modifikationen der ARA/APEX-Verarbeitung sind öffentlich nur begrenzt dokumentiert",
       "Video- und Bildfähigkeiten hängen von der lokalen Implementierung ab"
     ],
-    "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, ~115 GB Unified Memory, Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). Community-GGUF auf Basis von Gemma 4 ARA 26B-A4B. Das Modell ist multimodal und effizient, die quantisierte Distribution kann jedoch vom offiziellen Verhalten abweichen und sollte bei sicherheitsrelevanten Antworten vorsichtig bewertet werden.",
+    "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, 128 GB Unified Memory, davon ~120 GB für Modell + Kontext nutzbar; Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). Community-Variante auf Basis von Gemma 4 ARA 26B-A4B. Das Modell ist multimodal und effizient, die quantisierte Distribution kann jedoch vom offiziellen Verhalten abweichen und sollte bei sicherheitsrelevanten Antworten vorsichtig bewertet werden.",
     "architecture_tags": [
       "Multimodal",
       "Community-Quant"
@@ -2026,7 +2026,7 @@
     "deployment_type": "open-weights",
     "developer": "Google DeepMind",
     "developer_jurisdiction": "US",
-    "display_name": "Gemma 4 E4B (llama.cpp, GGUF)",
+    "display_name": "Gemma 4 E4B",
     "generated_at": "2026-05-30T15:54:49.249742+00:00",
     "input_price_per_1m": null,
     "judge_context_hint": "Plattform: Apple M4 Mac (~18 GB Unified Memory, Metal-GPU, lokal — kein Cloud-Provider, kein externer Datentransfer). Kompakte Gemma-4-Variante für lokale Alltagsaufgaben. Die Bewertung sollte Effizienz und brauchbares Instruction-Following betonen.",
@@ -2054,7 +2054,7 @@
       "Instruct-optimiert für alltägliche Aufgaben",
       "Nutzbar auf Desktop-Hardware"
     ],
-    "summary": "Gemma 4 E4B ist eine kompakte Gemma-4-Variante von Google, hier als GGUF für lokale Ausführung verpackt. Die Card beschreibt eine effiziente PLE-basierte Architektur mit nur einem Teil aktiver Parameter pro Forward Pass. Sie eignet sich für alltägliche Instruct-Aufgaben auf Desktop-Hardware und bleibt durch die Gemma-Lizenz restriktiv.",
+    "summary": "Gemma 4 E4B ist eine kompakte Gemma-4-Variante von Google, hier für lokale Ausführung verpackt. Die Card beschreibt eine effiziente PLE-basierte Architektur mit nur einem Teil aktiver Parameter pro Forward Pass. Sie eignet sich für alltägliche Instruct-Aufgaben auf Desktop-Hardware und bleibt durch die Gemma-Lizenz restriktiv.",
     "supports_tool_use": true,
     "thinking_probe_at": "2026-05-30T16:33:18.488908+00:00",
     "thinking_probe_confidence": "high",
@@ -3322,7 +3322,7 @@
     "deployment_type": "open-weights",
     "developer": "NousResearch",
     "developer_jurisdiction": "US",
-    "display_name": "Hermes 3 8B (llama.cpp, Q6_K_L)",
+    "display_name": "Hermes 3 8B (Q6_K_L)",
     "generated_at": "2026-06-03T12:00:00.000000+00:00",
     "input_price_per_1m": null,
     "judge_context_hint": "Plattform: Apple M4 Mac (~18 GB Unified Memory, Metal-GPU, lokal — kein Cloud-Provider, kein externer Datentransfer). Lokales Uncensored-Finetuning. Antworten sollten auf Hilfsbereitschaft und Struktur geprüft werden, nicht auf restriktive Sicherheitsantworten.",
@@ -3348,9 +3348,9 @@
     "strengths": [
       "Starkes Instruction-Following",
       "Gute Eignung für strukturierte Ausgaben und Tool Use",
-      "Kompakte lokale Ausführung als Q6_K_L-GGUF"
+      "Kompakte lokale Ausführung als Q6_K_L"
     ],
-    "summary": "Hermes 3 8B ist ein lokales GGUF-Finetuning von Nous Research auf Basis von Llama 3.1 8B. Die Variante ist auf Instruction-Following, Tool Use und kreative oder ambivalente Anfragen ausgelegt und läuft hier als Q6_K_L-GGUF über llama.cpp. Die bewusst reduzierte Ablehnungsrate ist ein zentrales Merkmal der Distribution.",
+    "summary": "Hermes 3 8B ist ein lokales-Finetuning von Nous Research auf Basis von Llama 3.1 8B. Die Variante ist auf Instruction-Following, Tool Use und kreative oder ambivalente Anfragen ausgelegt und läuft hier als Q6_K_L über llama.cpp. Die bewusst reduzierte Ablehnungsrate ist ein zentrales Merkmal der Distribution.",
     "supports_tool_use": true,
     "thinking_probe_at": "2026-06-03T12:00:00.000000+00:00",
     "thinking_probe_confidence": "high",
@@ -3390,7 +3390,7 @@
     "deployment_type": "open-weights",
     "developer": "NousResearch",
     "developer_jurisdiction": "US",
-    "display_name": "Hermes 4 14B (llama.cpp, Q6_K, Abliterated)",
+    "display_name": "Hermes 4 14B (Q6_K, Abliterated)",
     "generated_at": "2026-06-03T12:00:00.000000+00:00",
     "input_price_per_1m": null,
     "judge_context_hint": "Plattform: Apple M4 Mac (~18 GB Unified Memory, Metal-GPU, lokal — kein Cloud-Provider, kein externer Datentransfer). Abliterierte Variante mit entfernten Schutzmechanismen. Die Bewertung sollte die offene, ungebremste Antwortweise explizit berücksichtigen.",
@@ -3457,7 +3457,7 @@
     "deployment_type": "open-weights",
     "developer": "NousResearch",
     "developer_jurisdiction": "US",
-    "display_name": "Hermes 4 14B (llama.cpp, Q4_K_M)",
+    "display_name": "Hermes 4 14B (Q4_K_M)",
     "generated_at": "2026-06-03T12:00:00.000000+00:00",
     "input_price_per_1m": null,
     "judge_context_hint": "Plattform: Apple M4 Mac (~18 GB Unified Memory, Metal-GPU, lokal — kein Cloud-Provider, kein externer Datentransfer). Kleine Q4-Variante für lokale Assistenz. Der Fokus sollte auf Effizienz und brauchbarer Struktur liegen, nicht auf maximaler Tiefenleistung.",
@@ -3515,7 +3515,7 @@
   },
   {
     "model_id": "hermes-4.3-36b-q6",
-    "display_name": "Hermes 4.3 36B Q6_K (GGUF)",
+    "display_name": "Hermes 4.3 36B Q6_K",
     "developer": "NousResearch",
     "origin_country": "USA",
     "developer_jurisdiction": "US",
@@ -3532,11 +3532,11 @@
     "params_active_b": null,
     "context_window_k": 128,
     "knowledge_cutoff": "2025-01",
-    "summary": "Hermes 4.3 36B ist ein offenes, hybrides Reasoning-Modell von NousResearch auf Basis von Seed 36B. Es kombiniert Instruct-Verhalten mit optionalem Thinking, unterstützt Tool Use und strukturierte Ausgaben und liegt hier als Q6_K-GGUF mit moderatem Speicherbedarf vor.",
+    "summary": "Hermes 4.3 36B ist ein offenes, hybrides Reasoning-Modell von NousResearch auf Basis von Seed 36B. Es kombiniert Instruct-Verhalten mit optionalem Thinking, unterstützt Tool Use und strukturierte Ausgaben und liegt hier als Q6_K mit moderatem Speicherbedarf vor.",
     "strengths": [
       "Starkes Instruction-Following mit optionalem Thinking",
       "Gute Tool-Use- und JSON-Adhärenz",
-      "Effiziente lokale Ausführung als Q6_K-GGUF"
+      "Effiziente lokale Ausführung als Q6_K"
     ],
     "known_limitations": [
       "Hybrides Verhalten kann zwischen Thinking und Non-Thinking variieren",
@@ -3548,7 +3548,7 @@
       "Instruct",
       "Agentic"
     ],
-    "supports_tool_use": false,
+    "supports_tool_use": true,
     "license": "Apache 2.0",
     "license_url": "https://huggingface.co/NousResearch/Hermes-4.3-36B/blob/main/LICENSE",
     "commercial_use_allowed": true,
@@ -3578,7 +3578,10 @@
       "text"
     ],
     "profile_verified": true,
-    "profile_verified_at": "2026-06-12"
+    "profile_verified_at": "2026-06-12",
+    "tooluse_tested_at": "2026-06-11T17:49:32Z",
+    "tooluse_score_p1": 90.0,
+    "tooluse_score_p2": 36.67
   },
   {
     "architecture_tags": [
@@ -4913,7 +4916,7 @@
     "output_modalities": [
       "text"
     ],
-    "supports_tool_use": null,
+    "supports_tool_use": true,
     "license": "NVIDIA Open Model License v1",
     "license_url": "https://huggingface.co/nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
     "commercial_use_allowed": true,
@@ -5219,7 +5222,7 @@
     "deployment_type": "open-weights-cloud-available",
     "developer": "Alibaba Cloud",
     "developer_jurisdiction": "CN",
-    "display_name": "Qwen 2.5 Coder 7B (llama.cpp, Q6_K)",
+    "display_name": "Qwen 2.5 Coder 7B (Q6_K)",
     "generated_at": "2026-06-03T12:00:00.000000+00:00",
     "input_price_per_1m": 0.0,
     "judge_context_hint": "Plattform: Apple M4 Mac (~18 GB Unified Memory, Metal-GPU, lokal — kein Cloud-Provider, kein externer Datentransfer). Kleines Coding-Modell mit klarem Fokus auf praktische Entwickleraufgaben. Antworten sollten nach Korrektheit, Klarheit und Verwendbarkeit im Codekontext bewertet werden.",
@@ -5247,7 +5250,7 @@
       "Stark in Code-Generierung und -Reparatur",
       "128K Kontext für längere Coding-Aufgaben"
     ],
-    "summary": "Qwen 2.5 Coder 7B ist ein kompaktes Open-Weights-Coding-Modell von Alibaba für lokale Ausführung. Die Serie ist auf Code-Generierung, Code-Reparatur und Code-Reasoning ausgelegt und unterstützt lange Kontexte für reale Entwickleraufgaben. In dieser Card läuft es als Q6_K GGUF mit geringerem Speicherbedarf.",
+    "summary": "Qwen 2.5 Coder 7B ist ein kompaktes Open-Weights-Coding-Modell von Alibaba für lokale Ausführung. Die Serie ist auf Code-Generierung, Code-Reparatur und Code-Reasoning ausgelegt und unterstützt lange Kontexte für reale Entwickleraufgaben. In dieser Card läuft es als Q6_K mit geringerem Speicherbedarf.",
     "supports_tool_use": false,
     "thinking_probe_at": "2026-06-03T12:00:00.000000+00:00",
     "thinking_probe_confidence": "high",
@@ -5286,7 +5289,7 @@
     "deployment_type": "open-weights-cloud-available",
     "developer": "Alibaba Cloud",
     "developer_jurisdiction": "CN",
-    "display_name": "Qwen 3 14B (llama.cpp, Q6_K)",
+    "display_name": "Qwen 3 14B (Q6_K)",
     "generated_at": "2026-06-03T12:00:00.000000+00:00",
     "input_price_per_1m": 0.0,
     "judge_context_hint": "Plattform: Apple M4 Mac (~18 GB Unified Memory, Metal-GPU, lokal — kein Cloud-Provider, kein externer Datentransfer). Generalist mit optionalem Denken. Die Bewertung sollte zwischen Thinking- und Non-Thinking-Antworten unterscheiden und die lokalen Quantisierungseffekte mitdenken.",
@@ -5314,7 +5317,7 @@
       "Gute Balance zwischen Größe und Leistung",
       "Lokal mit Q6_K-Quantisierung nutzbar"
     ],
-    "summary": "Qwen 3 14B ist ein Open-Weights-Modell von Alibaba mit optionalem Thinking-Modus für allgemeine Sprach- und Reasoning-Aufgaben. Die Offizielle Qwen-Dokumentation beschreibt den Wechsel zwischen Thinking und Non-Thinking sowie Tool-Nutzung in beiden Modi. Die hier verpackte Q6_K-GGUF-Version zielt auf lokale Nutzung mit guter Qualität.",
+    "summary": "Qwen 3 14B ist ein Open-Weights-Modell von Alibaba mit optionalem Thinking-Modus für allgemeine Sprach- und Reasoning-Aufgaben. Die Offizielle Qwen-Dokumentation beschreibt den Wechsel zwischen Thinking und Non-Thinking sowie Tool-Nutzung in beiden Modi. Die hier verpackte Q6_K-Version zielt auf lokale Nutzung mit guter Qualität.",
     "supports_tool_use": false,
     "thinking_probe_at": "2026-06-03T12:00:00.000000+00:00",
     "thinking_probe_confidence": "low",
@@ -5353,7 +5356,7 @@
     "deployment_type": "open-weights-cloud-available",
     "developer": "Alibaba Cloud",
     "developer_jurisdiction": "CN",
-    "display_name": "Qwen 3 4B (llama.cpp, Q6_K)",
+    "display_name": "Qwen 3 4B (Q6_K)",
     "generated_at": "2026-06-03T12:00:00.000000+00:00",
     "input_price_per_1m": 0.0,
     "judge_context_hint": "Plattform: Apple M4 Mac (~18 GB Unified Memory, Metal-GPU, lokal — kein Cloud-Provider, kein externer Datentransfer). Optionaler Thinking-Modus: bei aktiviertem Thinking sind sichtbare Reasoning-Blöcke zu erwarten; Antwortqualität kann je nach Modus stark variieren.",
@@ -5380,7 +5383,7 @@
       "Sehr ressourceneffizient – läuft auf Consumer-Hardware mit minimalem VRAM-Bedarf",
       "Q6_K: nahezu verlustfreie Qualität gegenüber FP16 – besonders bei einem 4B-Modell spürbar"
     ],
-    "summary": "Qwen 3 4B ist ein kompaktes Open-Weights-Modell von Alibaba (China) mit optionalem Thinking-Modus (Chain-of-Thought an-/abschaltbar). Läuft hier als Q6_K-GGUF via llama.cpp. Q6_K (6-Bit-K-Quant) gilt als nahezu verlustfrei und wird von der Community als sehr gute Wahl für maximale Qualität im kompakten Format bewertet.",
+    "summary": "Qwen 3 4B ist ein kompaktes Open-Weights-Modell von Alibaba (China) mit optionalem Thinking-Modus (Chain-of-Thought an-/abschaltbar). Läuft hier als Q6_K via llama.cpp. Q6_K (6-Bit-K-Quant) gilt als nahezu verlustfrei und wird von der Community als sehr gute Wahl für maximale Qualität im kompakten Format bewertet.",
     "supports_tool_use": false,
     "thinking_probe_at": "2026-06-03T12:00:00.000000+00:00",
     "thinking_probe_confidence": "low",
@@ -5410,7 +5413,7 @@
   },
   {
     "model_id": "qwen3-coder-30b-a3b-q8",
-    "display_name": "Qwen 3 Coder 30B-A3B Instruct Q8_K_XL (GGUF)",
+    "display_name": "Qwen 3 Coder 30B-A3B Instruct Q8_K_XL",
     "developer": "Alibaba Group (Qwen Team)",
     "origin_country": "China",
     "developer_jurisdiction": "China",
@@ -5427,7 +5430,7 @@
     "params_active_b": 3.3,
     "context_window_k": 256,
     "knowledge_cutoff": "2025-05",
-    "summary": "Qwen 3 Coder 30B-A3B Instruct ist ein auf Code spezialisiertes MoE-Modell von Alibaba (China) mit Apache-2.0-Lizenz. 30.5B total / 3.3B aktiv, 256K Kontext. Q8_K_XL-GGUF: präziseste Quantisierung mit minimalem Qualitätsverlust. Native Multimodalität: Text, Bild, Audio.",
+    "summary": "Qwen 3 Coder 30B-A3B Instruct ist ein auf Code spezialisiertes MoE-Modell von Alibaba (China) mit Apache-2.0-Lizenz. 30.5B total / 3.3B aktiv, 256K Kontext. Q8_K_XL: präziseste Quantisierung mit minimalem Qualitätsverlust. Native Multimodalität: Text, Bild, Audio.",
     "strengths": [
       "UD-Q8_K_XL-Quantisierung: nahezu verlustfrei gegenüber FP16-Baseline",
       "Spezialisiert auf Code-Generierung, -Verständnis und -Debugging",
@@ -5443,7 +5446,7 @@
       "Code-spezifisch – weniger optimiert für allgemeine Dialogaufgaben",
       "Wissensstand auf Mai 2025"
     ],
-    "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, ~115 GB Unified Memory, Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). Code-spezialisiertes MoE-Modell mit nur 3,3B aktiven Parametern. Q8_K_XL-Quantisierung minimiert Qualitätsverluste. Funktionales Calling unterstützt Tool-Integration.",
+    "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, 128 GB Unified Memory, davon ~120 GB für Modell + Kontext nutzbar; Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). Code-spezialisiertes MoE-Modell mit nur 3,3B aktiven Parametern. Q8_K_XL-Quantisierung minimiert Qualitätsverluste. Funktionales Calling unterstützt Tool-Integration.",
     "architecture_tags": [
       "Coder"
     ],
@@ -5483,7 +5486,7 @@
   },
   {
     "model_id": "qwen3-coder-next-q4",
-    "display_name": "Qwen 3 Coder Next Q4_K_XL (GGUF)",
+    "display_name": "Qwen 3 Coder Next Q4_K_XL",
     "developer": "Alibaba Group (Qwen Team)",
     "origin_country": "China",
     "developer_jurisdiction": "China",
@@ -5500,7 +5503,7 @@
     "params_active_b": 3,
     "context_window_k": 256,
     "knowledge_cutoff": "2025-05",
-    "summary": "Qwen 3 Coder Next ist hier als Q4_K_XL GGUF für lokale Ausführung verpackt. Das Modell ist auf Coding-Agents, Tool Use und große Codebasen optimiert und nutzt ein 256K-Kontextfenster. Die Q4-Quantisierung senkt den Speicherbedarf stark, bringt aber mehr Qualitätsverlust als die höherpräzisen Varianten.",
+    "summary": "Qwen 3 Coder Next ist hier als Q4_K_XL für lokale Ausführung verpackt. Das Modell ist auf Coding-Agents, Tool Use und große Codebasen optimiert und nutzt ein 256K-Kontextfenster. Die Q4-Quantisierung senkt den Speicherbedarf stark, bringt aber mehr Qualitätsverlust als die höherpräzisen Varianten.",
     "strengths": [
       "Stark auf Coding-Agents und IDE-Workflows ausgerichtet",
       "256K Kontext für lange Code- und Tool-Sitzungen",
@@ -5508,10 +5511,10 @@
     ],
     "known_limitations": [
       "Mehr Qualitätsverlust als Q8-Varianten",
-      "Lokale GGUF-Distribution statt offizieller Cloud-API",
+      "-Distribution statt offizieller Cloud-API",
       "Für allgemeine Dialogaufgaben weniger spezialisiert"
     ],
-    "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, ~115 GB Unified Memory, Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). Lokale Q4-GGUF-Variante für Coding-Workloads. Die Bewertung sollte den Speichergewinn gegen die erwartbaren Qualitätsverluste der stärkeren Kompression abwägen.",
+    "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, 128 GB Unified Memory, davon ~120 GB für Modell + Kontext nutzbar; Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). Lokale Q4-Variante für Coding-Workloads. Die Bewertung sollte den Speichergewinn gegen die erwartbaren Qualitätsverluste der stärkeren Kompression abwägen.",
     "architecture_tags": [
       "Coder",
       "Agentic"
@@ -5550,7 +5553,7 @@
   },
   {
     "model_id": "qwen3-coder-next-q8",
-    "display_name": "Qwen 3 Coder Next Q8_K_XL (GGUF)",
+    "display_name": "Qwen 3 Coder Next Q8_K_XL",
     "developer": "Alibaba Group (Qwen Team)",
     "origin_country": "China",
     "developer_jurisdiction": "CN",
@@ -5567,7 +5570,7 @@
     "params_active_b": 3,
     "context_window_k": 256,
     "knowledge_cutoff": "2025-05",
-    "summary": "Qwen 3 Coder Next ist hier als Q8_K_XL GGUF für lokale Ausführung verpackt. Das Modell ist auf Coding-Agents und lange Entwicklungsaufgaben optimiert, unterstützt 256K Kontext und Tool Use und verzichtet bewusst auf einen Thinking-Modus; die Q8-Quantisierung erhält dabei eine sehr hohe Textqualität.",
+    "summary": "Qwen 3 Coder Next ist hier als Q8_K_XL für lokale Ausführung verpackt. Das Modell ist auf Coding-Agents und lange Entwicklungsaufgaben optimiert, unterstützt 256K Kontext und Tool Use und verzichtet bewusst auf einen Thinking-Modus; die Q8-Quantisierung erhält dabei eine sehr hohe Textqualität.",
     "strengths": [
       "Stark auf Coding-Agents, Tool Use und IDE-Workflows ausgerichtet",
       "256K Kontext für große Codebasen und lange Sitzungen",
@@ -5575,11 +5578,11 @@
       "Kein Thinking-Modus, dadurch klare und direkte Ausgaben"
     ],
     "known_limitations": [
-      "Lokale GGUF-Distribution statt offizieller Cloud-API",
+      "-Distribution statt offizieller Cloud-API",
       "Chinesische Herkunft erfordert sorgfältige Compliance-Bewertung",
       "Für allgemeine Dialogaufgaben weniger spezialisiert als Generalist-Modelle"
     ],
-    "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, ~115 GB Unified Memory, Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). Lokale Q8-GGUF von Qwen 3 Coder Next. Das Modell ist für Coding-Agents und Tool Use gebaut, nicht für Thinking-Ausgaben; Antworten sollten deshalb auf direkte, praktikable Codeunterstützung geprüft werden.",
+    "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, 128 GB Unified Memory, davon ~120 GB für Modell + Kontext nutzbar; Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). Lokale Q8 von Qwen 3 Coder Next. Das Modell ist für Coding-Agents und Tool Use gebaut, nicht für Thinking-Ausgaben; Antworten sollten deshalb auf direkte, praktikable Codeunterstützung geprüft werden.",
     "architecture_tags": [
       "Thinking",
       "Coder",
@@ -5619,7 +5622,7 @@
   },
   {
     "model_id": "qwen3_5-35b-a3b-q4",
-    "display_name": "Qwen 3.5 35B-A3B Q4_K_XL (GGUF)",
+    "display_name": "Qwen 3.5 35B-A3B Q4_K_XL",
     "developer": "Alibaba Group (Qwen Team)",
     "origin_country": "China",
     "developer_jurisdiction": "CN",
@@ -5636,7 +5639,7 @@
     "params_active_b": 3,
     "context_window_k": 262,
     "knowledge_cutoff": "2025-06",
-    "summary": "Qwen 3.5 35B-A3B ist ein offenes multimodales Qwen-Modell mit 35B Gesamtparametern, von denen 3B aktiv sind, nativen Text-/Bildeingaben und bis zu 262K Kontext. Diese Karte beschreibt die Q4_K_XL-GGUF-Variante: eine lokal deploybare Quantisierung mit geringerem Speicherbedarf und etwas mehr Qualitätsverlust als höhere Präzisionen. Damit eignet sie sich besonders für Workstation-Setups, die offene Weights, Tool-Use und lange Kontexte kombinieren möchten.",
+    "summary": "Qwen 3.5 35B-A3B ist ein offenes multimodales Qwen-Modell mit 35B Gesamtparametern, von denen 3B aktiv sind, nativen Text-/Bildeingaben und bis zu 262K Kontext. Diese Karte beschreibt die Q4_K_XL-Variante: eine lokal deploybare Quantisierung mit geringerem Speicherbedarf und etwas mehr Qualitätsverlust als höhere Präzisionen. Damit eignet sie sich besonders für Workstation-Setups, die offene Weights, Tool-Use und lange Kontexte kombinieren möchten.",
     "strengths": [
       "Q4_K_XL-Quantisierung reduziert Speicherbedarf deutlich und erleichtert lokales Deployment auf Workstations",
       "35B Gesamt- bei nur 3B aktiven Parametern durch effiziente MoE-Architektur",
@@ -5648,7 +5651,7 @@
       "Offizielle Dokumentation verweist primär auf Bild- statt Audio-Eingabe; Audio wird daher nicht als belastbar bestätigt übernommen",
       "Chinesischer Herkunftskontext kann für bestimmte Compliance-Szenarien relevant sein"
     ],
-    "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, ~115 GB Unified Memory, Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). Diese Karte beschreibt eine quantisierte lokale GGUF-Variante von Qwen 3.5 35B-A3B. Erwartbar sind gute multimodale Generalistenfähigkeiten mit langer Kontextlänge, aber etwas Qualitätsverlust durch Q4_K_XL im Austausch für praktikableres Self-Hosting.",
+    "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, 128 GB Unified Memory, davon ~120 GB für Modell + Kontext nutzbar; Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). Diese Karte beschreibt eine quantisierte lokale Variante von Qwen 3.5 35B-A3B. Erwartbar sind gute multimodale Generalistenfähigkeiten mit langer Kontextlänge, aber etwas Qualitätsverlust durch Q4_K_XL im Austausch für praktikableres Self-Hosting.",
     "architecture_tags": [
       "Thinking-Optional",
       "Multimodal",
@@ -5689,7 +5692,7 @@
   },
   {
     "model_id": "qwen3_5-35b-a3b-q8",
-    "display_name": "Qwen 3.5 35B-A3B Q8_K_XL (GGUF)",
+    "display_name": "Qwen 3.5 35B-A3B Q8_K_XL",
     "developer": "Alibaba Group (Qwen Team)",
     "origin_country": "China",
     "developer_jurisdiction": "CN",
@@ -5706,7 +5709,7 @@
     "params_active_b": 3,
     "context_window_k": 262,
     "knowledge_cutoff": "2025-06",
-    "summary": "Qwen 3.5 35B-A3B ist hier als Q8_K_XL GGUF für lokale Ausführung verpackt. Die Qwen3.5-Basis kombiniert eine effiziente MoE-Architektur mit großem Kontextfenster und multimodaler Eingabe; die Q8-Quantisierung hält die Qualität hoch und reduziert zugleich den Hardwarebedarf deutlich.",
+    "summary": "Qwen 3.5 35B-A3B ist hier als Q8_K_XL für lokale Ausführung verpackt. Die Qwen3.5-Basis kombiniert eine effiziente MoE-Architektur mit großem Kontextfenster und multimodaler Eingabe; die Q8-Quantisierung hält die Qualität hoch und reduziert zugleich den Hardwarebedarf deutlich.",
     "strengths": [
       "Effiziente MoE-Architektur mit 35B Gesamt- und 3B Aktivparametern",
       "Großes Kontextfenster für lange Dokumente und komplexe Prompts",
@@ -5714,11 +5717,11 @@
       "Q8_K_XL-Quantisierung mit sehr geringer Qualitätsminderung"
     ],
     "known_limitations": [
-      "Lokale GGUF-Distribution statt offizieller Cloud-API",
+      "-Distribution statt offizieller Cloud-API",
       "Chinesische Herkunft erfordert sorgfältige Compliance-Bewertung",
       "MoE-Modelle profitieren stark von schneller Speicherbandbreite"
     ],
-    "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, ~115 GB Unified Memory, Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). Lokale Q8-GGUF von Qwen 3.5 35B-A3B. Das Modell ist multimodal und auf effiziente Inferenz ausgelegt; Antworten sollten als hochwertige, aber hardwareabhängige Ausgabe einer Community-Distribution bewertet werden.",
+    "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, 128 GB Unified Memory, davon ~120 GB für Modell + Kontext nutzbar; Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). Lokale Q8 von Qwen 3.5 35B-A3B. Das Modell ist multimodal und auf effiziente Inferenz ausgelegt; Antworten sollten als hochwertige, aber hardwareabhängige Ausgabe einer Community-Distribution bewertet werden.",
     "architecture_tags": [
       "Thinking",
       "Thinking-Optional",
@@ -5769,7 +5772,7 @@
     "deployment_type": "open-weights-cloud-available",
     "developer": "Alibaba Cloud",
     "developer_jurisdiction": "CN",
-    "display_name": "Qwen 3.5 4B (llama.cpp, UD-Q4_K_XL)",
+    "display_name": "Qwen 3.5 4B (UD-Q4_K_XL)",
     "generated_at": "2026-06-03T12:00:00.000000+00:00",
     "input_price_per_1m": 0.0,
     "judge_context_hint": "Plattform: Apple M4 Mac (~18 GB Unified Memory, Metal-GPU, lokal — kein Cloud-Provider, kein externer Datentransfer). Optionaler Thinking-Modus: bei aktiviertem Thinking sind sichtbare Reasoning-Blöcke zu erwarten; Antwortqualität kann je nach Modus stark variieren.",
@@ -5796,7 +5799,7 @@
       "UD-Q4_K_XL: Unsloth-Dynamic-Quantisierung – wichtigkeitsbasierte, gemischte Bittiefenverteilung pro Schicht",
       "Kleinste Variante der drei Qwen3.5-4B-Quants – minimal VRAM-Bedarf"
     ],
-    "summary": "Qwen 3.5 4B ist ein kompaktes Open-Weights-Modell von Alibaba (China) mit Thinking-Optional-Architektur. Läuft hier als UD-Q4_K_XL-GGUF via llama.cpp. UD (Unsloth Dynamic) nutzt eine XL-Wichtigkeitsmatrix für wichtigkeitsbasierte, gemischte Bittiefenverteilung pro Schicht.",
+    "summary": "Qwen 3.5 4B ist ein kompaktes Open-Weights-Modell von Alibaba (China) mit Thinking-Optional-Architektur. Läuft hier als UD-Q4_K_XL via llama.cpp. UD (Unsloth Dynamic) nutzt eine XL-Wichtigkeitsmatrix für wichtigkeitsbasierte, gemischte Bittiefenverteilung pro Schicht.",
     "supports_tool_use": false,
     "thinking_probe_at": "2026-06-03T12:00:00.000000+00:00",
     "thinking_probe_confidence": "low",
@@ -5836,7 +5839,7 @@
     "deployment_type": "open-weights-cloud-available",
     "developer": "Alibaba Cloud",
     "developer_jurisdiction": "CN",
-    "display_name": "Qwen 3.5 4B (llama.cpp, UD-Q6_K_XL)",
+    "display_name": "Qwen 3.5 4B (UD-Q6_K_XL)",
     "generated_at": "2026-06-03T12:00:00.000000+00:00",
     "input_price_per_1m": 0.0,
     "judge_context_hint": "Plattform: Apple M4 Mac (~18 GB Unified Memory, Metal-GPU, lokal — kein Cloud-Provider, kein externer Datentransfer). Kompakte Qwen-Variante für lokale Nutzung. Die Bewertung sollte Qualität gegen geringe Modellgröße und starke Kompression abwägen.",
@@ -5864,7 +5867,7 @@
       "Moderater Speicherbedarf bei guter Qualität",
       "Geeignet für lokale Alltagsaufgaben"
     ],
-    "summary": "Qwen 3.5 4B ist ein kompaktes Open-Weights-Modell von Alibaba mit optionalem Thinking-Modus. Die UD-Q6_K_XL-GGUF-Version ist für lokale Ausführung mit guter Qualität und moderatem Speicherbedarf gedacht. Sie ist als kleine, flexible Variante für allgemeine Aufgaben positioniert.",
+    "summary": "Qwen 3.5 4B ist ein kompaktes Open-Weights-Modell von Alibaba mit optionalem Thinking-Modus. Die UD-Q6_K_XL-Version ist für lokale Ausführung mit guter Qualität und moderatem Speicherbedarf gedacht. Sie ist als kleine, flexible Variante für allgemeine Aufgaben positioniert.",
     "supports_tool_use": false,
     "thinking_probe_at": "2026-06-03T12:00:00.000000+00:00",
     "thinking_probe_confidence": "low",
@@ -5903,7 +5906,7 @@
     "deployment_type": "open-weights-cloud-available",
     "developer": "Alibaba Cloud",
     "developer_jurisdiction": "CN",
-    "display_name": "Qwen 3.5 4B (llama.cpp, UD-Q8_K_XL)",
+    "display_name": "Qwen 3.5 4B (UD-Q8_K_XL)",
     "generated_at": "2026-06-03T12:00:00.000000+00:00",
     "input_price_per_1m": 0.0,
     "judge_context_hint": "Plattform: Apple M4 Mac (~18 GB Unified Memory, Metal-GPU, lokal — kein Cloud-Provider, kein externer Datentransfer). Optionaler Thinking-Modus: bei aktiviertem Thinking sind sichtbare Reasoning-Blöcke zu erwarten; Antwortqualität kann je nach Modus stark variieren.",
@@ -5930,7 +5933,7 @@
       "UD-Q8_K_XL: praktisch identisch mit BF16-Vollpräzision – kein messbarer Qualitätsverlust durch Quantisierung",
       "Referenz-Variante der 4B-Quant-Reihe für direkte Qualitätsvergleiche"
     ],
-    "summary": "Qwen 3.5 4B ist ein kompaktes Open-Weights-Modell von Alibaba (China) mit Thinking-Optional-Architektur. Läuft hier als UD-Q8_K_XL-GGUF via llama.cpp. UD-Q8_K_XL (Unsloth Dynamic, 8-Bit, XL-Wichtigkeitsmatrix) entspricht praktisch der Vollpräzision – höchste Qualitätsstufe der drei 4B-Varianten, für Vergleichsläufe als Referenz geeignet.",
+    "summary": "Qwen 3.5 4B ist ein kompaktes Open-Weights-Modell von Alibaba (China) mit Thinking-Optional-Architektur. Läuft hier als UD-Q8_K_XL via llama.cpp. UD-Q8_K_XL (Unsloth Dynamic, 8-Bit, XL-Wichtigkeitsmatrix) entspricht praktisch der Vollpräzision – höchste Qualitätsstufe der drei 4B-Varianten, für Vergleichsläufe als Referenz geeignet.",
     "supports_tool_use": false,
     "thinking_probe_at": "2026-06-03T12:00:00.000000+00:00",
     "thinking_probe_confidence": "low",
@@ -5970,7 +5973,7 @@
     "deployment_type": "open-weights-cloud-available",
     "developer": "Alibaba Cloud",
     "developer_jurisdiction": "CN",
-    "display_name": "Qwen 3.5 9B (llama.cpp, UD-Q6_K_XL)",
+    "display_name": "Qwen 3.5 9B (UD-Q6_K_XL)",
     "generated_at": "2026-06-03T12:00:00.000000+00:00",
     "input_price_per_1m": 0.0,
     "judge_context_hint": "Plattform: Apple M4 Mac (~18 GB Unified Memory, Metal-GPU, lokal — kein Cloud-Provider, kein externer Datentransfer). Optionaler Thinking-Modus: bei aktiviertem Thinking sind sichtbare Reasoning-Blöcke zu erwarten; Antwortqualität kann je nach Modus stark variieren.",
@@ -5997,7 +6000,7 @@
       "Gutes Verhältnis von Modellgröße zu Leistung im 9B-Segment",
       "UD-Q6_K_XL: nahezu verlustfreie Unsloth-Dynamic-Quant – Community empfiehlt diese Stufe für beste Qualität"
     ],
-    "summary": "Qwen 3.5 9B ist ein Open-Weights-Modell von Alibaba (China) für allgemeine Sprach- und Reasoning-Aufgaben mit optionalem Thinking-Modus. Läuft hier als UD-Q6_K_XL-GGUF via llama.cpp. UD-Q6_K_XL (Unsloth Dynamic, 6-Bit, XL-Wichtigkeitsmatrix) gilt als nahezu verlustfrei – Community-Bewertung: sehr hochwertige Quantisierung, die Standard-Q6 meist übertrifft.",
+    "summary": "Qwen 3.5 9B ist ein Open-Weights-Modell von Alibaba (China) für allgemeine Sprach- und Reasoning-Aufgaben mit optionalem Thinking-Modus. Läuft hier als UD-Q6_K_XL via llama.cpp. UD-Q6_K_XL (Unsloth Dynamic, 6-Bit, XL-Wichtigkeitsmatrix) gilt als nahezu verlustfrei – Community-Bewertung: sehr hochwertige Quantisierung, die Standard-Q6 meist übertrifft.",
     "supports_tool_use": false,
     "thinking_probe_at": "2026-06-03T12:00:00.000000+00:00",
     "thinking_probe_confidence": "low",
@@ -6093,8 +6096,82 @@
     "profile_verified_at": "2026-06-12"
   },
   {
+    "model_id": "qwen3_6-35b-a3b-mtp-ud-q4",
+    "display_name": "Qwen 3.6 35B-A3B MTP UD-Q4_K_XL",
+    "developer": "Alibaba Group (Qwen Team)",
+    "origin_country": "China",
+    "developer_jurisdiction": "China",
+    "deployment_type": "open-weights",
+    "local_deployment_possible": true,
+    "weights_provenance_risk": "medium",
+    "weights_provenance_risk_rationale": "Open-Weights-Modell aus China; Weights sind öffentlich auf Hugging Face verfügbar (Unsloth). Chinesische Herkunft und das nationale Sicherheitsgesetz (NSL) sind bei der Einschätzung des Datenrisikos zu berücksichtigen.",
+    "model_family": "Qwen 3.6",
+    "vendor": "Alibaba",
+    "primary_focus": "general",
+    "use_case_primary": "vision-language",
+    "parameter_architecture": "moe",
+    "params_total_b": 35,
+    "params_active_b": 3,
+    "context_window_k": 262,
+    "knowledge_cutoff": "2025-06",
+    "summary": "Qwen 3.6 35B-A3B MTP ist Alibabas multimodale MoE-Variante mit Multi-Token-Prediction (Speculative Decoding). Hier als Unsloth UD-Q4_K_XL mit Dynamic 2.0-Quantisierung für lokale Nutzung via llama.cpp. MTP ermöglicht 1.4–2.2× schnellere Inferenz ohne Qualitätsverlust. MoE: 35B Gesamtparameter, 3B aktiv. Unterstützt Text, Bild und Audio.",
+    "strengths": [
+      "MTP (Multi-Token-Prediction) für 1.4–2.2× schnellere Generierung",
+      "UD-Q4_K_XL mit Unsloth Dynamic 2.0 — kalibriert auf reale Use-Case-Datasets",
+      "Effiziente MoE-Architektur mit 3B aktiven Parametern",
+      "Multimodal mit Text, Bild und Audio",
+      "256K Kontextfenster (erweiterbar auf 1M via YaRN)"
+    ],
+    "known_limitations": [
+      "Chinesischer Anbieter mit erhöhtem Sovereign-Risk",
+      "MTP benötigt aktuelle llama.cpp-Version mit MTP-Support",
+      "MTP verbraucht ~1 GB zusätzlichen VRAM gegenüber Standard-Variante",
+      "MoE benötigt schnelle Speicherbandbreite",
+      "Text-only-Deployments nutzen die Multimodalität nicht aus"
+    ],
+    "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, 128 GB Unified Memory, davon ~120 GB für Modell + Kontext nutzbar; Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). Multimodales MoE-Modell mit MTP-Speculative-Decoding für beschleunigte Inferenz. UD-Q4_K_XL-Quantisierung via Unsloth Dynamic 2.0. Die Bewertung sollte Effizienz, die MTP-Geschwindigkeitsvorteile und die Modalitätsspanne gewichten.",
+    "architecture_tags": [
+      "Thinking-Optional",
+      "Multimodal"
+    ],
+    "supports_tool_use": true,
+    "license": "Apache 2.0",
+    "license_url": "https://huggingface.co/Qwen/Qwen3.6-35B-A3B/blob/main/LICENSE.txt",
+    "commercial_use_allowed": true,
+    "weights_license_tier": "open-weights",
+    "model_version": "3.6 MTP",
+    "input_price_per_1m": null,
+    "output_price_per_1m": null,
+    "unknown": false,
+    "card_status": "minimal",
+    "size_class": "Desktop",
+    "generated_at": "2026-06-16T08:17:00+00:00",
+    "thinking_probe_detected": true,
+    "thinking_probe_evidence": "reasoning_tokens detected in Qwen 3.6 35B-A3B family (same architecture as qwen3_6-35b-a3b-q8)",
+    "thinking_probe_confidence": "medium",
+    "thinking_probe_at": "2026-06-16T08:17:00+00:00",
+    "top_p": null,
+    "top_k": 20,
+    "repetition_penalty": null,
+    "frequency_penalty": null,
+    "presence_penalty": null,
+    "seed": null,
+    "stop_sequences": null,
+    "input_modalities": [
+      "text",
+      "image",
+      "audio"
+    ],
+    "output_modalities": [
+      "text"
+    ],
+    "profile_verified": false,
+    "profile_verified_at": null,
+    "community": "Unsloth"
+  },
+  {
     "model_id": "qwen3_6-35b-a3b-q8",
-    "display_name": "Qwen 3.6 35B-A3B Q8_K_XL (GGUF)",
+    "display_name": "Qwen 3.6 35B-A3B Q8_K_XL",
     "developer": "Alibaba Group (Qwen Team)",
     "origin_country": "China",
     "developer_jurisdiction": "China",
@@ -6111,7 +6188,7 @@
     "params_active_b": 3,
     "context_window_k": 262,
     "knowledge_cutoff": "2025-06",
-    "summary": "Qwen 3.6 35B-A3B ist eine multimodale MoE-Variante von Alibaba, hier als Q8_K_XL GGUF für lokale Nutzung. Das Modell kombiniert 35B Gesamt- mit 3B Aktivparametern, unterstützt langen Kontext und ist auf Text, Bild und Audio ausgerichtet. Die hohe Quantisierung erhält die Qualität weitgehend.",
+    "summary": "Qwen 3.6 35B-A3B ist eine multimodale MoE-Variante von Alibaba, hier als Q8_K_XL für lokale Nutzung. Das Modell kombiniert 35B Gesamt- mit 3B Aktivparametern, unterstützt langen Kontext und ist auf Text, Bild und Audio ausgerichtet. Die hohe Quantisierung erhält die Qualität weitgehend.",
     "strengths": [
       "Effiziente MoE-Architektur mit 3B aktiven Parametern",
       "Multimodal mit Text, Bild und Audio",
@@ -6122,7 +6199,7 @@
       "MoE benötigt schnelle Speicherbandbreite",
       "Text-only-Deployments nutzen die Multimodalität nicht aus"
     ],
-    "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, ~115 GB Unified Memory, Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). Multimodales MoE-Modell für lokale Nutzung. Die Bewertung sollte Effizienz, Modalitätsspanne und die hohe Qualität der Q8-Quantisierung gewichten.",
+    "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, 128 GB Unified Memory, davon ~120 GB für Modell + Kontext nutzbar; Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). Multimodales MoE-Modell für lokale Nutzung. Die Bewertung sollte Effizienz, Modalitätsspanne und die hohe Qualität der Q8-Quantisierung gewichten.",
     "architecture_tags": [
       "Thinking-Optional",
       "Multimodal"
@@ -6163,7 +6240,7 @@
   },
   {
     "model_id": "qwen3_6-35b-a3b-uncensored",
-    "display_name": "Qwen 3.6 35B-A3B Uncensored HauhauCS Aggressive Q8_K_P (GGUF)",
+    "display_name": "Qwen 3.6 35B-A3B Uncensored HauhauCS Aggressive Q8_K_P",
     "developer": "Alibaba Group (Qwen Team) / HauhauCS (Community Fine-Tune)",
     "origin_country": "China",
     "developer_jurisdiction": "China",
@@ -6180,7 +6257,7 @@
     "params_active_b": 3,
     "context_window_k": 262,
     "knowledge_cutoff": "2025-06",
-    "summary": "Qwen 3.6 35B-A3B Uncensored HauhauCS Aggressive ist eine Community-Fine-Tune-Variante des Qwen 3.6 35B-A3B. Es läuft hier als Q8_K_XL-GGUF via llama.cpp. Q8_K_XL (8-Bit-K-Quant, XL) ist die präziseste GGUF-Quantisierung mit minimalem Qualitätsverlust. MoE-Architektur: 35B Gesamtparameter, nur 3,8B aktiv – hoher Durchsatz bei geringem Inferenz-Overhead. Native Multimodalität: Text, Bild, Audio.",
+    "summary": "Qwen 3.6 35B-A3B Uncensored HauhauCS Aggressive ist eine Community-Fine-Tune-Variante des Qwen 3.6 35B-A3B. Es läuft hier als Q8_K_XL via llama.cpp. Q8_K_XL (8-Bit-K-Quant, XL) ist die präziseste-Quantisierung mit minimalem Qualitätsverlust. MoE-Architektur: 35B Gesamtparameter, nur 3,8B aktiv – hoher Durchsatz bei geringem Inferenz-Overhead. Native Multimodalität: Text, Bild, Audio.",
     "strengths": [
       "Q8_K_P-Quantisierung: per-layer Quantisierung nahe FP16-Vollpräzision",
       "Vollständig ungefiltert – keine Safety-Refusals oder Inhaltsblockaden",
@@ -6196,7 +6273,7 @@
       "MoE-Architektur erfordert schnelle GPU-Bandbreite für optimale Performance",
       "Kein offizielles Support- oder Update-Garantie von HauhauCS"
     ],
-    "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, ~115 GB Unified Memory, Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). Uncensored-Variante mit entferntem Safety-Filter und Aggressivitäts-Training. Antworten können direkter und ungefilterter sein als bei Standardmodellen. Q8_K_P-Quantisierung minimiert Qualitätsverluste.",
+    "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, 128 GB Unified Memory, davon ~120 GB für Modell + Kontext nutzbar; Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). Uncensored-Variante mit entferntem Safety-Filter und Aggressivitäts-Training. Antworten können direkter und ungefilterter sein als bei Standardmodellen. Q8_K_P-Quantisierung minimiert Qualitätsverluste.",
     "architecture_tags": [
       "Thinking-Optional",
       "Multimodal",

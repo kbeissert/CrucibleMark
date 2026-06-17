@@ -1,6 +1,6 @@
 {
   "model_id": "hermes-4.3-36b-q6",
-  "display_name": "Hermes 4.3 36B Q6_K (GGUF)",
+  "display_name": "Hermes 4.3 36B Q6_K",
   "developer": "NousResearch",
   "origin_country": "USA",
   "developer_jurisdiction": "US",
@@ -17,11 +17,11 @@
   "params_active_b": null,
   "context_window_k": 128,
   "knowledge_cutoff": "2025-01",
-  "summary": "Hermes 4.3 36B ist ein offenes, hybrides Reasoning-Modell von NousResearch auf Basis von Seed 36B. Es kombiniert Instruct-Verhalten mit optionalem Thinking, unterstützt Tool Use und strukturierte Ausgaben und liegt hier als Q6_K-GGUF mit moderatem Speicherbedarf vor.",
+  "summary": "Hermes 4.3 36B ist ein offenes, hybrides Reasoning-Modell von NousResearch auf Basis von Seed 36B. Es kombiniert Instruct-Verhalten mit optionalem Thinking, unterstützt Tool Use und strukturierte Ausgaben und liegt hier als Q6_K mit moderatem Speicherbedarf vor.",
   "strengths": [
     "Starkes Instruction-Following mit optionalem Thinking",
     "Gute Tool-Use- und JSON-Adhärenz",
-    "Effiziente lokale Ausführung als Q6_K-GGUF"
+    "Effiziente lokale Ausführung als Q6_K"
   ],
   "known_limitations": [
     "Hybrides Verhalten kann zwischen Thinking und Non-Thinking variieren",
