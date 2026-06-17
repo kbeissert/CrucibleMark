@@ -17,7 +17,7 @@
   "params_active_b": 3,
   "context_window_k": 262,
   "knowledge_cutoff": "2025-06",
-  "summary": "Qwen 3.6 35B-A3B MTP — die offiziell mit Multi-Token Prediction (MTP) trainierte Variante des Qwen3.6 MoE-Modells, hier als UD-Q8_K_XL für den lokalen Einsatz auf dem NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, 128 GB Unified Memory, davon ~120 GB für Modell + Kontext nutzbar) optimiert. Das Modell ist nativ mit multi-step MTP trainiert (40 Layers: 10× [3× Gated DeltaNet-MoE → 1× Gated Attention-MoE], 256 Experts, 8 Routed + 1 Shared), unterstützt 262K native Kontextlänge (extensible bis ~1M mit YaRN) und wird mit llama.cpp Speculative Decoding (--spec-type draft-mtp, --spec-draft-n-max 2) ausgeführt. Instruct-Modus ohne Thinking-Block, temperaturangepasst für produktiven Benchmark-Betrieb.",
+  "summary": "Qwen 3.6 35B-A3B MTP ist die offiziell mit Multi-Token Prediction trainierte Variante des Qwen3.6 MoE-Modells, hier als UD-Q8_K_XL für den lokalen Einsatz auf dem DGX Spark (GB10 Grace Blackwell, 128 GB Unified Memory) optimiert. 40 Layers, 256 Experten, 3B aktive Parameter bei 35B Gesamt, 262K nativer Kontext (extensibel bis ~1M via YaRN). Ausgeführt mit llama.cpp Speculative Decoding (--spec-type draft-mtp) für höheren Throughput. Instruct-Modus ohne Thinking-Block.",
   "strengths": [
     "Nativ mit Multi-Token Prediction (MTP) trainiert — optimiert für Speculative Decoding",
     "Effiziente MoE-Architektur mit 3B aktiven Parametern (256 Experts, 8 Routed + 1 Shared)",
@@ -33,7 +33,7 @@
     "Thinking-Modus deaktiviert (enable_thinking: false) — keine Chain-of-Thought-Generierung",
     "Distribution statt offizieller Cloud-API",
     "MTP-Speculative-Decoding erfordert llama.cpp-Unterstützung (--spec-type draft-mtp)",
-    "Multimodales Modell (Text/Bild/Audio), aber Text-only-Deployment"
+    "Multimodales Modell mit Bild- und Video-Input (laut HF), aber Text-only-Deployment via llama.cpp"
   ],
   "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, 128 GB Unified Memory, davon ~120 GB für Modell + Kontext nutzbar; Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). Qwen 3.6 35B-A3B MTP als UD-Q8_K_XL, nativ mit multi-step MTP trainiert. Speculative Decoding via llama.cpp: --spec-type draft-mtp --spec-draft-n-max 2. Custom-Params (Instruct-Modus): temperature=0.7, top_p=0.8, top_k=20, presence_penalty=1.5, repeat_penalty=1.0. Thinking-Modus deaktiviert. Die Bewertung sollte die MTP-beschleunigte Decoding-Geschwindigkeit, die MoE-Effizienz (3B aktive Parameter) und die Q8-Quantisierungsqualität gewichten. Offizielle MTP-Konfigurationen: vLLM (--speculative-config qwen3_next_mtp), SGLang (--speculative-algo NEXTN).",
   "architecture_tags": [
@@ -42,7 +42,8 @@
     "MoE"
   ],
   "input_modalities": [
-    "text"
+    "text",
+    "image"
   ],
   "output_modalities": [
     "text"
@@ -60,7 +61,8 @@
   "size_class": "Workstation",
   "generated_at": "2026-06-17T07:19:51.000000+00:00",
   "thinking_probe_detected": false,
-  "thinking_probe_confidence": null,
+  "thinking_probe_evidence": "Instruct mode (enable_thinking: false) aktiviert per provider_config; sampling-Werte (temp=0.7, top_p=0.8) entsprechen dem Instruct-Parameter-Set der offiziellen HF Model Card",
+  "thinking_probe_confidence": "high",
   "thinking_probe_at": null,
   "temperature": 0.7,
   "top_p": 0.8,
@@ -71,5 +73,6 @@
   "seed": null,
   "stop_sequences": null,
   "repeat_penalty": 1.0,
-  "profile_verified": false
+  "profile_verified": true,
+  "profile_verified_at": "2026-06-17"
 }

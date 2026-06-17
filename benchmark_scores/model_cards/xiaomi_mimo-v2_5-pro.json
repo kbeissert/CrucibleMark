@@ -1,1 +1,77 @@
-{"model_id": "xiaomi/mimo-v2.5-pro", "display_name": "Xiaomi MiMo V2.5 Pro", "developer": "Xiaomi", "origin_country": "CN", "developer_jurisdiction": "CN", "deployment_type": "open-weights-cloud-available", "local_deployment_possible": true, "weights_provenance_risk": "high", "weights_provenance_risk_rationale": "Xiaomi ist ein chinesisches Unternehmen und unterliegt dem chinesischen Datensicherheitsgesetz (DSG) und dem Nachrichtendienstgesetz. Die Gewichte sind öffentlich verfügbar (MIT-Lizenz), jedoch bleibt das Trainingsregime intransparent. Bei Cloud-Nutzung über OpenRouter besteht erhöhtes Datenschutzrisiko.", "model_family": "MiMo", "vendor": "Xiaomi", "primary_focus": "reasoning", "use_case_primary": "reasoning", "parameter_architecture": "moe", "params_total_b": 1020, "params_active_b": 42, "context_window_k": 1024, "knowledge_cutoff": null, "summary": "Xiaomi MiMo V2.5 Pro ist Xiaomis leistungsstärkstes Reasoning-Modell mit 1,02 Billionen Gesamtparametern und 42 Milliarden aktiven Parametern (MoE). Es kombiniert hybride Aufmerksamkeit (SWA + GA) mit einem Kontextfenster von 1 Million Token und ist auf komplexe agentische Aufgaben, Software-Engineering und Langzeit-Horizon-Aufgaben spezialisiert.", "strengths": ["Open Weights (MIT) mit 1M-Token-Kontextfenster – lokal hostbar", "Frontier-Reasoning-Kapazität bei 42B aktiven Parametern – effiziente MoE-Architektur", "Speziell für agentische und Software-Engineering-Aufgaben optimiert", "Günstiger als vergleichbare Frontier-Modelle ($0.435/$0.87 pro 1M Tokens)", "Hybride SWA+GA-Attention für effiziente Long-Context-Verarbeitung"], "known_limitations": ["Chinesischer Anbieter – erhöhtes Datenschutz- und Jurisdiktionsrisiko (DSG, NSG)", "Trainingsdetails und -daten nicht öffentlich dokumentiert (Transparenzrisiko)", "Hoher Hardware-Aufwand für Vollpräzision trotz MoE-Architektur", "Knowledge Cutoff unbekannt – möglicherweise veraltetes Weltwissen"], "judge_context_hint": "Xiaomi MiMo V2.5 Pro ist ein 1020B MoE-Reasoning-Modell (42B aktiv) aus China. MIT-Lizenz. 1M-Token-Kontext, hybride SWA+GA-Attention. Spezialisiert auf Reasoning, Agentic Tasks und Code. OpenRouter: $0.435/$0.87 pro 1M Tokens.", "architecture_tags": ["Thinking", "Long-Context", "Agentic", "Coder", "MoE"], "input_modalities": ["text"], "output_modalities": ["text"], "supports_tool_use": true, "license": "MIT", "license_url": "https://huggingface.co/XiaomiMiMo/MiMo-V2.5-Pro", "commercial_use_allowed": true, "weights_license_tier": "open-weights", "model_version": "V2.5-Pro", "input_price_per_1m": 0.435, "output_price_per_1m": 0.87, "unknown": false, "card_status": "minimal", "size_class": "Frontier", "generated_at": "2026-06-14T10:56:00+00:00", "thinking_probe_detected": null, "thinking_probe_evidence": null, "thinking_probe_confidence": null, "thinking_probe_at": null, "top_p": null, "top_k": null, "repetition_penalty": null, "frequency_penalty": null, "presence_penalty": null, "seed": null, "stop_sequences": null, "profile_verified": false, "profile_verified_at": null}
+{
+  "model_id": "xiaomi/mimo-v2.5-pro",
+  "display_name": "Xiaomi MiMo V2.5 Pro",
+  "developer": "Xiaomi",
+  "origin_country": "CN",
+  "developer_jurisdiction": "CN",
+  "deployment_type": "open-weights-cloud-available",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "high",
+  "weights_provenance_risk_rationale": "Xiaomi ist ein chinesisches Unternehmen und unterliegt dem chinesischen Datensicherheitsgesetz (DSG) und dem Nachrichtendienstgesetz. Die Gewichte sind unter MIT-Lizenz öffentlich verfügbar (HF: XiaomiMiMo/MiMo-V2.5-Pro), jedoch bleibt das Trainingsregime weitgehend intransparent. Bei Cloud-Nutzung über OpenRouter besteht erhöhtes Datenschutzrisiko; lokales Deployment umgeht die chinesische Jurisdiktion.",
+  "model_family": "MiMo",
+  "vendor": "Xiaomi",
+  "primary_focus": "reasoning",
+  "use_case_primary": "agentic",
+  "parameter_architecture": "moe",
+  "params_total_b": 1020.0,
+  "params_active_b": 42.0,
+  "context_window_k": 1024,
+  "knowledge_cutoff": null,
+  "summary": "Xiaomi MiMo V2.5 Pro ist Xiaomis Flaggschiff-Reasoning- und Agent-Modell (veröffentlicht 22. April 2026) mit 1,02 Billionen Gesamt- und 42 Milliarden aktiven Parametern. Hybride Attention (SWA+GA im 6:1-Verhältnis) reduziert den KV-Cache-Speicher um Faktor 7; drei native MTP-Module verdreifachen den Inferenz-Throughput. Trainiert auf 27 Billionen Tokens in FP8, stabiles 1M-Token-Kontextfenster für langlaufende Agent-Workflows mit Tausenden von Tool-Calls. Lizenz: MIT.",
+  "strengths": [
+    "Frontier-Reasoning und Agent-Fähigkeit: 42B aktive Parameter, 1,02T Gesamt, optimiert auf agentische Aufgaben und komplexe Software-Engineering-Workflows",
+    "Solides 1M-Token-Kontextfenster für langlaufende Agent-Workflows mit Tausenden von Tool-Calls",
+    "Hybride Attention (SWA + GA, 6:1) reduziert KV-Cache-Speicher um Faktor 7 bei erhaltener Long-Context-Performance",
+    "Nativ integrierte Multi-Token-Prediction (3 MTP-Module mit dichten FFNs) verdreifacht den Inferenz-Throughput",
+    "Open Weights unter MIT-Lizenz für lokales Deployment und kommerzielle Nutzung",
+    "Günstige Listenpreise über OpenRouter: $0.435 Input / $0.87 Output pro 1M Tokens",
+    "Frontier-Benchmarks: SWE-bench Pro 49.5, Terminal-Bench 51.5, MMLU-Pro 85.2, GPQA 86.0"
+  ],
+  "known_limitations": [
+    "Chinesischer Anbieter mit erhöhtem Datenschutz- und Jurisdiktionsrisiko (DSG, NSG); Cloud-Nutzung über OpenRouter erfordert Vertrauen in Xiaomi-Server",
+    "Trainingsdaten und Trainingsregime nur teilweise öffentlich dokumentiert (Transparenzrisiko)",
+    "Knowledge Cutoff nicht offiziell kommuniziert (möglicherweise veraltetes Weltwissen)",
+    "Hoher Hardware-Aufwand für lokales Deployment: 1,02T Parameter in FP8-Präzision, verteilt über mindestens 16 GPUs in der empfohlenen SGLang-Konfiguration",
+    "FP8-Gewichte nicht direkt mit allen Inferenz-Engines kompatibel (Quantisierungs-Konversion erforderlich)"
+  ],
+  "judge_context_hint": "Xiaomi MiMo V2.5 Pro ist ein Frontier-Reasoning- und Agent-Modell (veröffentlicht 22. April 2026). 1020B MoE mit 42B aktiven Parametern, 1M-Token-Kontext, hybride SWA+GA-Attention (6:1) und 3 native MTP-Module. Lizenz: MIT (kommerziell offen). Listenpreis: 0,435 USD Input / 0,87 USD Output pro 1M Tokens über OpenRouter. Frontier-Benchmarks: SWE-bench Pro 49.5, Terminal-Bench 51.5, MMLU-Pro 85.2, GPQA 86.0. Bei der Bewertung sollten Reasoning-Tiefe, Agentic-Workflow-Performance und Long-Context-Kohärenz höher gewichtet werden als Single-Turn-Antwortqualität. Sovereign-Risk: hoch (chinesischer Anbieter, DSG/NSG).",
+  "architecture_tags": [
+    "MoE",
+    "Thinking",
+    "Long-Context",
+    "Agentic-Orchestrator",
+    "Coder"
+  ],
+  "input_modalities": [
+    "text"
+  ],
+  "output_modalities": [
+    "text"
+  ],
+  "supports_tool_use": true,
+  "license": "MIT",
+  "license_url": "https://huggingface.co/XiaomiMiMo/MiMo-V2.5-Pro",
+  "commercial_use_allowed": true,
+  "weights_license_tier": "open-weights",
+  "model_version": "V2.5-Pro",
+  "input_price_per_1m": 0.435,
+  "output_price_per_1m": 0.87,
+  "unknown": false,
+  "card_status": "complete",
+  "size_class": "Frontier",
+  "generated_at": "2026-06-14T15:00:00+00:00",
+  "thinking_probe_detected": null,
+  "thinking_probe_evidence": "Thinking-Mode per HF-Doku als reasoning-parser mimo unterstützt; Probe wurde noch nicht im CrucibleMark-Run gemessen",
+  "thinking_probe_confidence": null,
+  "thinking_probe_at": null,
+  "top_p": null,
+  "top_k": null,
+  "repetition_penalty": null,
+  "frequency_penalty": null,
+  "presence_penalty": null,
+  "seed": null,
+  "stop_sequences": null,
+  "temperature": null,
+  "profile_verified": true,
+  "profile_verified_at": "2026-06-17"
+}

@@ -351,6 +351,35 @@
     "description": "Google DeepMind entstand 2023 aus der Fusion von Google Brain und DeepMind Technologies. Die Gemini Modellfamilie wird über die Google AI API bereitgestellt. Da Google ein US-Konzern ist, unterliegen API-Anfragen dem CLOUD Act. Für europäische Nutzer sind vor allem die verfügbaren Standard Contractual Clauses und der Data Processing Addendum relevant."
   },
   {
+    "vendor_id": "google_deepmind_base_llmfan46_fine_tune_mradermacher_gguf_quant",
+    "display_name": "Google DeepMind / llmfan46 / mradermacher",
+    "company": "Google LLC / unknown / unknown",
+    "headquarters": "Mountain View, CA, USA / unknown / unknown",
+    "founding_year": 2010,
+    "pricing_model": "open-source-self-hosted",
+    "api_base_url": null,
+    "api_documentation_url": null,
+    "deployment": {
+      "cloud_act_exposure": false,
+      "applicable_law": "N/A (lokal only)",
+      "data_residency": "N/A (lokal only)",
+      "gdpr_dpa_available": "unknown",
+      "eu_adequacy_decision": "unknown",
+      "data_retention_days": 0,
+      "chinese_nsl_risk": "none"
+    },
+    "privacy_note": "Bei selbst gehosteter Nutzung besteht primär kein providerseitiges API-Datenschutzrisiko, da Verarbeitung lokal erfolgt. Risiken hängen stattdessen von der eigenen Hosting- und Logging-Konfiguration ab; für llmfan46 und mradermacher ist kein offizieller Cloud-API-Betrieb verifizierbar.",
+    "notable_models": [
+      "Gemma",
+      "Gemma 2"
+    ],
+    "stats": {},
+    "unknown": false,
+    "generated_at": "2026-06-17T13:43:16.322852+00:00",
+    "last_verified_at": null,
+    "verification_source": "https://ai.google.dev/gemma"
+  },
+  {
     "vendor_id": "google_deepmind_base_undix_community_distribution",
     "display_name": "Google DeepMind",
     "company": "Google LLC",
@@ -757,6 +786,32 @@
     "profile_verified": true,
     "profile_verified_at": "2026-06-12",
     "description": "OpenAI betreibt mit GPT und den o-Series-Modellen eine der bekanntesten kommerziellen KI-Plattformen. Das Unternehmen sitzt in San Francisco und verarbeitet API-Daten in den USA. Für europäische Product Engineers sind vor allem der CLOUD-Act-Bezug, die kommerzielle Datenverarbeitung und die verfügbaren Vertragsoptionen relevant."
+  },
+  {
+    "vendor_id": "todo",
+    "display_name": "TODO",
+    "company": "unknown",
+    "headquarters": "unknown",
+    "founding_year": 0,
+    "pricing_model": "free",
+    "api_base_url": null,
+    "api_documentation_url": null,
+    "deployment": {
+      "cloud_act_exposure": false,
+      "applicable_law": "Unknown",
+      "data_residency": "Unknown",
+      "gdpr_dpa_available": "unknown",
+      "eu_adequacy_decision": "unknown",
+      "data_retention_days": -1,
+      "chinese_nsl_risk": "none"
+    },
+    "privacy_note": "Der angegebene Provider ist nicht spezifiziert, daher lassen sich Rechtsraum, Speicherort und behördliche Zugriffsmöglichkeiten nicht verlässlich bewerten. Für EU-Nutzer besteht ohne verifizierte Angaben ein unbekanntes Datenschutz- und Transfer-Risiko.",
+    "notable_models": [],
+    "stats": {},
+    "unknown": true,
+    "generated_at": "2026-06-17T18:03:55.617624+00:00",
+    "last_verified_at": null,
+    "verification_source": null
   },
   {
     "vendor_id": "unknown",
