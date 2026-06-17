@@ -180,9 +180,9 @@ providers:
         model_type: open_weights_cloud  # MoE 55B/550B
 
        # Z.ai (GLM) — neueste zuerst
-      - id: z-ai/glm-5.2
-        name: GLM 5.2 (Z.ai) via OpenRouter
-        model_type: proprietary_api  # Proprietäres Modell, Gewichte nicht öffentlich
+      # - id: z-ai/glm-5.2
+      #   name: GLM 5.2 (Z.ai) via OpenRouter
+      #   model_type: proprietary_api  # Proprietäres Modell, Gewichte nicht öffentlich
       - id: z-ai/glm-5.1-20260406
         name: GLM 5.1-20260406 (Z.ai) via OpenRouter
         model_type: proprietary_api  # Proprietäres Modell, Gewichte nicht öffentlich
@@ -198,8 +198,8 @@ providers:
         name: GLM 4.6 (Z.ai) via OpenRouter
 
       # Moonshot AI (Kimi) — neueste zuerst
-      - id: moonshotai/kimi-k2.7-code
-        name: Kimi K2.7 Code via OpenRouter
+      # - id: moonshotai/kimi-k2.7-code
+      #   name: Kimi K2.7 Code via OpenRouter
       - id: moonshotai/kimi-k2.6
         name: Kimi K2.6 via OpenRouter
       - id: moonshotai/kimi-k2.5-0127
@@ -580,23 +580,23 @@ providers:
       #   n_gpu_layers: 99
 
       # server-models (nur Modelle aus der aktuellen Spark-Liste)
-      # 1) Gemma4-31b/gemma-4-31B-it-Q8_0-MTP [0.5 GB]
-      - id: gemma-4-31B-it-Q8_0-MTP
-        name: Gemma 4 31B IT Q8_0 MTP (GGUF)
-        model_file: Gemma4-31b/gemma-4-31B-it-Q8_0-MTP.gguf
-        n_gpu_layers: 99
-
-      # 2) Gemma4-26B/gemma-4-26B-A4B-it-UD-Q8_K_XL [25.7 GB]
+      # 1) Gemma4-26B/gemma-4-26B-A4B-it-UD-Q8_K_XL [25.7 GB]
       - id: gemma-4-26B-A4B-it-UD-Q8_K_XL
         name: Gemma 4 26B A4B Instruct UD-Q8_K_XL (GGUF)
         model_file: Gemma4-26B/gemma-4-26B-A4B-it-UD-Q8_K_XL.gguf
         n_gpu_layers: 99
+        enable_thinking: false
+        temperature: 1.0
+        top_k: 64
 
-      # 3) Hermes4-3/NousResearch_Hermes-4.3-36B-Q6_K [27.6 GB]
+      # 2) Hermes4-3/NousResearch_Hermes-4.3-36B-Q6_K [27.6 GB]
       - id: hermes-4.3-36b-q6
         name: Hermes 4.3 36B Q6_K (GGUF)
         model_file: Hermes4-3/NousResearch_Hermes-4.3-36B-Q6_K.gguf
         n_gpu_layers: 99
+        enable_thinking: false
+        temperature: 0.8
+        min_p: 0.05
 
         # Hermes 4.3 36B ist ein Hybrid-Mode Reasoning Modell (basierend auf
         # ByteDance Seed-OSS 36B) mit SWA/Hybrid-Attention. Beobachtung aus
@@ -615,23 +615,29 @@ providers:
         # damit llama.cpp den 4-Slot-Betrieb für dieses eine Modell aufgibt.
         # Per-Modell-Override lässt die anderen Spark-Modelle (Qwen 3.6, Gemma 4)
         # unverändert auf 4 parallel.
-        
+
         context_length: 16384     # --ctx-size; Provider-Default context_window=65536
         parallel: 1                # Provider-Default parallel=4; siehe _build_server_cmd()
         # num_predict bleibt global bei 65536 (Token-Output-Cap reicht für längste Hermes-Outputs: 2145 T)
 
-      # 4) Gemma4-31b/gemma-4-31B-it-UD-Q8_K_XL [32.6 GB]
-      - id: gemma-4-31B-it-UD-Q8_K_XL
-        name: Gemma 4 31B IT UD-Q8_K_XL (GGUF)
+      # 3) Gemma4-31b/gemma-4-31B-it-UD-Q8_K_XL [+MTP ⚡] [32.6 GB + 0.5 GB Draft]
+      - id: gemma-4-31B-it-UD-Q8_K_XL-mtp
+        name: Gemma 4 31B IT UD-Q8_K_XL [+MTP ⚡] (GGUF)
         model_file: Gemma4-31b/gemma-4-31B-it-UD-Q8_K_XL.gguf
+        model_draft_file: Gemma4-31b/gemma-4-31B-it-Q8_0-MTP.gguf
         n_gpu_layers: 99
+        enable_thinking: false
+        context_length: 131072
+        extra_server_args:
+          - "--spec-type draft-mtp"
+          - "--spec-draft-n-max 4"
 
-      # 5) Qwen3.6/Qwen3.6-35B-A3B-MTP-UD-Q8_K_XL [36.4 GB]
+      # 4) Qwen3.6/Qwen3.6-35B-A3B-MTP-UD-Q8_K_XL [36.4 GB]
       - id: qwen3_6-35b-a3b-mtp-ud-q8
         name: Qwen 3.6 35B-A3B MTP UD-Q8_K_XL (GGUF)
         model_file: Qwen3.6/Qwen3.6-35B-A3B-MTP-UD-Q8_K_XL.gguf
         n_gpu_layers: 99
-        enable_thinking: false
+        enable_thinking: true
         temperature: 0.7
         top_p: 0.8
         top_k: 20
@@ -640,20 +646,31 @@ providers:
         extra_server_args:
           - "--spec-type draft-mtp"
           - "--spec-draft-n-max 2"
+          - '--chat-template-kwargs {"preserve_thinking":true}'
 
-      # 6) Qwen3.5/Qwen3.5-35B-A3B-UD-Q8_K_XL [45.3 GB]
+      # 5) Qwen3.5/Qwen3.5-35B-A3B-UD-Q8_K_XL [45.3 GB]
       - id: qwen3_5-35b-a3b-q8
         name: Qwen 3.5 35B-A3B UD-Q8_K_XL (GGUF)
         model_file: Qwen3.5/Qwen3.5-35B-A3B-UD-Q8_K_XL.gguf
         n_gpu_layers: 99
         enable_thinking: false
+        temperature: 0.7
+        top_p: 0.8
+        top_k: 20
 
-      # 7) Qwen3-Coder-Next/Qwen3-Coder-Next-UD-Q4_K_XL [46.2 GB]
+      # 6) Qwen3-Coder-Next/Qwen3-Coder-Next-UD-Q4_K_XL [46.2 GB]
       - id: qwen3-coder-next-q4
         name: Qwen 3 Coder Next UD-Q4_K_XL (GGUF)
         model_file: Qwen3-Coder-Next/Qwen3-Coder-Next-UD-Q4_K_XL.gguf
         n_gpu_layers: 99
         enable_thinking: false
+
+       # 7) Gemma4-Creative-Wordsmith/gemma-4-Creative-Wordsmith-31B-it-uncensored-heretic-Q8_0 [~32.6 GB]
+      # - id: gemma-4-31b-it-creative-wordsmith-q8
+      #   name: Gemma 4 31B Creative Wordsmith Uncensored Q8_0 (GGUF)
+      #   model_file: Gemma4-Creative-Wordsmith/gemma-4-Creative-Wordsmith-31B-it-uncensored-heretic-Q8_0.gguf
+      #   n_gpu_layers: 99
+      #   enable_thinking: false
 
       # Auskommentiert — nicht auf Spark:
       # - id: qwen3.6-35b-a3b-q8 (Qwen3.6-35B-A3B-UD-Q8_K_XL.gguf — nicht vorhanden)

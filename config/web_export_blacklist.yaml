@@ -28,15 +28,19 @@ blacklist:
   # === gemma-4-26b (2 Varianten) ===
   # - "gemma-4-26B-A4B-it-qat-ud-q4"  # Gemma 4 26B-A4B Instruct (QAT, UD-Q4) [Spark]
   - "gemma-4-26b-a4b-q8"            # Gemma 4 26B-A4B Instruct Q8_K_XL (GGUF)
+  - "gemma-4-26B-A4B-it-qat-ud-q4"  # Gemma 4 26B-A4B Instruct (QAT, UD-Q4) [Spark]
 
   # === gemma-4-31b (2 Varianten) ===
   - "gemma-4-31B-it-qat-ud-q4"      # Gemma 4 31B Instruct (QAT, UD-Q4) [Spark]
+  # - "gemma-4-31B-it-UD-Q8_K_XL-mtp" # Gemma 4 31B Instruct (UD-Q8_K_XL, MTP)
   # - "google/gemma-4-31b-it"         # Gemma 4 31B
+  - "gemma-4-31b-it-creative-wordsmith-q8"  # Gemma 4 31B Creative Wordsmith Uncensored Q8_0 (GGUF)
 
   # QWEN
   # === qwen3_5-35b (2 Varianten) ===
   # - "qwen3_5-35b-a3b-q4"            # Qwen 3.5 35B-A3B Q4_K_XL (GGUF)
   - "qwen3_5-35b-a3b-q8"            # Qwen 3.5 35B-A3B Q8_K_XL (GGUF)
+
 
   # === qwen3.5-397b (2 Varianten) ===
   # - "qwen/qwen3.5-397b-a17b"    # Qwen 3.5 397B-A17B (Open Router, Q4_K_XL)
