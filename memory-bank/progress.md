@@ -2,6 +2,130 @@
 
 Letzte Releases + aktueller Stand. Vollständige Historie: `reference/decisions-log.md`.
 
+### 2026-06-19 (Session 24) — Card-Research MCP Tool-Use
+
+**Ziel:** `manage_model_cards.py --mode research` soll über MCP `web_search` + `fetch` im Internet recherchieren können — ohne Änderungen am tooluse-MCP-Server oder Benchmark-Code. **Alle Änderungen ausschließlich in `manage_model_cards.py` + Makefile.**
+
+**Architektur:**
+```
+Card-Research (manage_model_cards.py)
+    │
+    │  HTTP POST (JSON-RPC 2.0)
+    ▼
+MCP Server :8765  (unverändert!)
+    ├── web_search  (Tavily / DuckDuckGo)
+    └── fetch       (HTTP + HTML-to-text)
+```
+
+Der bestehende MCP-Server bleibt unberührt. `manage_model_cards.py` ruft ihn via HTTP POST auf — exakt wie der tooluse-Benchmark es auch tut.
+
+**Implementierung (`scripts/manage_model_cards.py`):**
+
+1. **Neue Imports:** `urllib.error`, `urllib.request` (für HTTP POST)
+2. **Tool-Schemas (neue Konstanten):**
+   - `TOOL_SCHEMA_WEB_SEARCH` — `web_search(query, max_results)`
+   - `TOOL_SCHEMA_HTTP_FETCH` — `fetch(url, max_chars)`
+   - `TOOL_SCHEMAS` — List beider Schemas
+3. **MCP-Helferfunktionen:**
+   - `_parse_tool_call(text)` — extrahiert `{"tool_call": {"name": ..., "parameters": {...}}}` aus LLM-Output (stript Markdown-Fences, sucht JSON-Objekte, Fallback: outermost-Object-Search)
+   - `_call_mcp_tool(base_url, tool_name, params)` — POST JSON-RPC 2.0 `tools/call` an MCP-Server, Timeout 15s, gibt Transcript-Dict zurück, nie Exception
+   - `_extract_tool_content(transcript)` — extrahiert lesbaren Text (content[].text → results[] → content_excerpt → Error-Summary)
+4. **Research-Loop (`Researcher._research_tooluse_one()`):**
+   - Card laden + Pre-Check-Heuristik (Murks/CJK)
+   - Lock setzen (`profile_verified=false`)
+   - Loop (max. 3 Tool-Call-Runden):
+     - Prompt bauen: Card-JSON + Tool-Schemas + Tool-Ergebnisse bisher
+     - LLM-Call mit Tool-Use System-Prompt
+     - Antwort parsen: `tool_call` → MCP-Tool ausführen → Ergebnis sammeln → nächste Runde; `findings` → finale Findings → Loop beenden
+   - Findings auf Card anwenden, Un-Lock (`profile_verified=true`)
+5. **CLI-Flags:**
+   - `--tooluse` — Tool-Use-Modus (nur mit `--mode research`)
+   - `--mcp-url` — MCP-Server URL (Default: `http://localhost:8765`)
+
+**Makefile:**
+- `TOOLUSE=1` in Help-Ausgabe
+- `$(if $(TOOLUSE),--tooluse,)` an `card-research` Target angehängt
+
+**Usage:**
+```bash
+# Single-call research (bestehendes Verhalten)
+make card-research MODEL=claude-sonnet-4-6
+
+# Multi-step MCP tool-use research
+make card-research MODEL=claude-sonnet-4-6 TOOLUSE=1
+
+# Vorschau
+make card-research MODEL=claude-sonnet-4-6 TOOLUSE=1 DRY=1
+```
+
+**Verifikation:** Syntax-Check (`py_compile`) grün, `--help` zeigt neue Flags, `--tooluse` + `--mode check` → `SystemExit` (Validierung), `_parse_tool_call()` + `_extract_tool_content()` Unit-Tests grün.
+
+---
+
+### 2026-06-17 (Session 23) — Review-Auto-Fixes + MTP-Modell + 128 GB + (GGUF)-Cleanup
+
+**Commits:** ausstehend
+
+**Kontext:** `make reviews-auto` lief nicht durch — Crash beim Laden des `@dataclass`-Moduls + persistenter `outputs/audit_logs/test/`-Stub-Ordner. Nach erster Sichtung: umfangreicher Cleanup-Sweep mit 3 Themenblöcken.
+
+**Block 1 — Review-Auto-Bugfixes:**
+
+**Fix 1: `@dataclass`-Crash (Python 3.14) in `scripts/analysis/generate_review.py:144-160` (`_load_card_module`):**
+- Symptom: `AttributeError: 'NoneType' object has no attribute '__dict__'` in `dataclasses._is_type` (Zeile 814).
+- Root Cause: `importlib.util.module_from_spec()` registriert das Modul NICHT automatisch in `sys.modules`. Python 3.14 `@dataclass` braucht `sys.modules[cls.__module__].__dict__` für KW_ONLY-Detection.
+- Fix: `sys.modules[module_name] = module` VOR `spec.loader.exec_module(module)`. Standard-Praxis für dynamisch geladene Module.
+
+**Fix 2: `outputs/audit_logs/test/`-Stub-Ordner:**
+- Symptom: `outputs/audit_logs/test/asset_1.md` wurde bei jedem Test-Run neu angelegt (15.06.2026 20:13, MagicMock-Content sichtbar).
+- Root Cause: `utils/scoring/llm_judge/tests/test_pipeline_integration.py` instanziiert `UnifiedBenchmarkRunner("test")` und ruft `_process_single_test()`. Der Test patcht externe Calls (LLM, HTTP, sleep), aber NICHT `save_audit_log`. `evaluate_judge()` ruft `save_audit_log(model=result["model"], ...)` mit `result["model"] = "test"` → realer File-Write nach `outputs/audit_logs/test/asset_1.md`.
+- Fix A (Test): `save_audit_log` zur `mock_dependencies`-Fixture hinzugefügt: `patch("utils.scoring.judge_evaluator.save_audit_log") as mock_audit`. Test verschmutzt das Repo nicht mehr.
+- Fix B (Defense in Depth): Neue Helper `_is_valid_audit_dir()` in `generate_review.py` mit Zwei-Pfad-Heuristik:
+  - Pfad A: Ordnername sieht aus wie Modellname (>4 Zeichen, Bindestrich/Underscore, keine Punkte)
+  - Pfad B: Verzeichnis enthält Audit-Slug-File (`00_bias_report.md`, `cli\d+\.md`, `code_quality_\d+\.md`, `tooluse\d+\.md`, `documentation_quality_\d+\.md`)
+  - Schließt `test/`, `foo/`, `.DS_Store` aus, behält `gpt-5_4/`, `qwen3_5-9b/` etc.
+- Verifikation: 103 gültige Audit-Ordner erkannt (vorher 104 inkl. Stub), Tests grün, `test/`-Ordner taucht nicht mehr auf.
+
+**Block 2 — DGX-Spark-Modell-Liste + MTP-Support:**
+
+**`config/provider_config.yaml` `llamacpp_spark`-Bereich konsolidiert:**
+- 7 aktive Modelle (von 12 unsortierten): gemma-4-31B-it-Q8_0-MTP (neu, 0.5 GB), gemma-4-26B-A4B-it-UD-Q8_K_XL, hermes-4.3-36b-q6, gemma-4-31B-it-UD-Q8_K_XL, **qwen3_6-35b-a3b-mtp-ud-q8** (NEU), qwen3_5-35b-a3b-q8, qwen3-coder-next-q4
+- 6 nicht-vorhandene Modelle auskommentiert mit Begründung ("nicht auf Spark")
+- 2 neue OpenRouter-Modelle: `z-ai/glm-5.2` (proprietär), `moonshotai/kimi-k2.7-code`
+
+**MTP-Support (Qwen 3.6 Multi-Token Prediction):**
+- `utils/providers/llamacpp_base.py:387-397`: Neue `extra_server_args`-Verarbeitung in `_build_server_cmd()` — übergibt beliebige llama.cpp-Flags aus Modell-Config. Ermöglicht `--spec-type draft-mtp`, `--spec-draft-n-max 2`, `--flash-attn`, `--jinja`, `--cache-type-k/v` etc.
+- 2 neue Model Cards: `qwen3_6-35b-a3b-mtp-ud-q4.json` + `qwen3_6-35b-a3b-mtp-ud-q8.json` mit Custom-Params (temperature=0.7, top_p=0.8, top_k=20, presence_penalty=1.5, repeat_penalty=1.0, `enable_thinking: false`)
+- `qwen3_6-35b-a3b-mtp-ud-q8.json` `extra_server_args: ["--spec-type draft-mtp", "--spec-draft-n-max 2"]`
+- 2 neue Whitelist-Tags in `config/card_vocabulary.yaml`: `MTP` (Multi-Token Prediction) + `Speculative-Decoding` (v4.10.0)
+- `config/web_export_blacklist.yaml`: `qwen3_6-35b-a3b-mtp-ud-q4` blacklisted (q8 nicht — ist Test-Backlog)
+- 3 neue Reviews auto-generiert: `docs/reviews/qwen3_6-35b-a3b-mtp-ud-{q4,q8}/bias_review_*.md` + `review_*.md`
+
+**`utils/cost_tracker.py:113-127` Log-Message präzisiert:**
+- Vorher: Eine WARNING für "kein Preis gefunden" — vermischte "Card fehlt" und "Card vorhanden, aber keine Preise (lokales Modell)".
+- Nachher: Card-vorhanden-Pfad gibt DEBUG-Message aus + `return 0.0`. WARNING nur bei tatsächlich fehlender Card.
+
+**Block 3 — Content-Korrekturen (28 Model Cards):**
+
+**128 GB Unified Memory für DGX Spark:**
+- 28 Referenzen "115 GB" / "120 GB" in 15 Model Cards + `_index.json` auf 128 GB korrigiert
+- "DGX10 Spark" → "DGX Spark" (10 = Hostname gx10-b20a.local, kein Modellteil)
+- "Desktop" → "Workstation" für 36B+ Klassen (Größen-Klassifikation)
+
+**"(GGUF)"-Cleanup aus User-UI-Feldern:**
+- Recherche-Ergebnis: "GGUF" = technisches Inferenz-Format (Container für Quantisierung). Redundant in Display-Namen — Quantisierungssuffix (Q4_K_M, Q8_K_XL etc.) impliziert GGUF.
+- Entfernt aus: `display_name`, `summary`, `judge_context_hint`, `strengths`, `known_limitations`, `weights_provenance_risk_rationale`
+- Behalten in technischen Feldern: `model_id`, `model_version`, `name` in provider_config, `model_file`, `license_url`
+- 181 Updates in 31/5/16 Dateien, 106/106 JSON valide
+- 4 Konsolidierungswellen: 134 + 9 + 38 = 181 Ersetzungen
+
+**Verifikation:** 814/814 Tests grün (vorher 6 Failures → 0 Failures). Reviews-Discovery: 103 gültige Audit-Ordner, `test/`-Stub nicht mehr da.
+
+**Pitfall dokumentiert:** Dynamisch geladene Module müssen in `sys.modules` registriert werden, BEVOR `@dataclass`-Klassen ausgeführt werden (Python 3.14+ KW_ONLY-Detection).
+
+**Pitfall dokumentiert:** Test-Fixtures dürfen `save_audit_log` (oder andere File-Write-Funktionen) nicht ungepatcht lassen, sonst verschmutzen sie das Repo unter scheinbar harmlosen Test-Namen.
+
+---
+
 ### 2026-06-14 (Session 22) — PC Re-Run nvidia/nemotron-3-ultra + Bias-Review
 
 **Commits:** ausstehend

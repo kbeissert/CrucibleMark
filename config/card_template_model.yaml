@@ -599,6 +599,24 @@ optional_fields:
     since: "v4.9.0"
     example: "2026-06-12"
 
+  - name: profile_verified_by
+    type: str
+    required: false
+    default: null
+    description: "Wer hat zuletzt verifiziert ('human' | 'llm:<model>' | null). SSoT fuer Audit-Trail."
+    consumers: [verify, web_export]
+    since: "v4.10.0"
+    example: "llm:gpt-5.4"
+
+  - name: last_modified_at
+    type: str
+    required: false
+    default: null
+    description: "ISO-8601-Datum der letzten inhaltlichen Aenderung (YYYY-MM-DD). Wird von manage_model_cards.py (Researcher + make --write) aktualisiert."
+    consumers: [verify, web_export]
+    since: "v4.10.0"
+    example: "2026-06-18"
+
   # --- Heritage-IDs (web_export + review, ab v4.8.0) ---
   # Wird gesetzt, wenn ein Modell unter einer neuen kanonischen ID neu angelegt
   # wird (z.B. nach Breaking-Change im API-Namespace). Ermöglicht es

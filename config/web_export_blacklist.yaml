@@ -58,3 +58,9 @@ blacklist:
   # === qwen3-coder-next (2 Variante) ===
   # - qwen3-coder-next-q4        # Qwen3-Coder-Next (llama.cpp, Q4_K_XL)
   - "qwen3-coder-next-q8"      # Qwen3-Coder-Next (llama.cpp, Q8_K_XL)
+
+  # GLM
+  - "z-ai/glm-5.2"
+
+  # Moonshot AI
+  - "moonshotai/kimi-k2.7-code"

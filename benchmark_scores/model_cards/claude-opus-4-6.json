@@ -1,1 +1,72 @@
-{"architecture_tags":["General","Agentic-Orchestrator","Long-Context"],"card_status":"complete","commercial_use_allowed":true,"context_window_k":1000,"deployment_type":"cloud-only","developer":"Anthropic","developer_jurisdiction":"US","display_name":"Claude Opus 4.6","generated_at":"2026-04-23T21:59:06.526308+00:00","input_price_per_1m":5.0,"judge_context_hint":"Claude Opus 4.6 ist Anthropics Premium-Modell für tiefe agentische Arbeit, lange Kontexte und anspruchsvolle Coding-/Recherche-Workflows. Erwartbar sind sehr starke strukturierte Antworten, aber auch potenziell höhere Ausführlichkeit, Kosten und Latenz.","knowledge_cutoff":"2025-01","known_limitations":["Proprietäres Cloud-Modell ohne lokale Gewichte oder Self-Hosting-Möglichkeit","Premium-Kosten und potenziell höhere Latenz als kleinere Sonnet- oder Haiku-Modelle","Das 1M-Kontextfenster wird von Anthropic ausdrücklich als Beta ausgewiesen"],"license":"Proprietary (Anthropic Commercial Terms)","license_url":"https://www.anthropic.com/legal/commercial-terms","local_deployment_possible":false,"model_family":"Claude","model_id":"claude-opus-4-6","model_version":"4.6","origin_country":"USA","output_price_per_1m":25.0,"parameter_architecture":"dense","params_active_b":null,"params_total_b":null,"primary_focus":"generalist","size_class":"Frontier","strengths":["Sehr stark für agentisches Coding, langfristige Aufgabenplanung und komplexe Wissensarbeit","1M-Kontextfenster in Beta mit deutlich verbesserter Long-Context-Nutzung laut Anthropic","Verbesserte Code-Review-, Debugging- und Large-Codebase-Fähigkeiten gegenüber Opus 4.5","Verfügbar über Claude, API und große Cloud-Plattformen bei unverändertem Premium-Pricing"],"summary":"Claude Opus 4.6 ist Anthropics stärkstes Opus-Modell für komplexe agentische Wissensarbeit, Coding und tiefes Reasoning. Offiziell angekündigt wurden ein 1M-Kontextfenster in Beta, verbesserte Code-Review-, Debugging- und Langhorizont-Fähigkeiten sowie unverändertes Pricing von $5 Input und $25 Output pro 1M Tokens. Das Modell ist proprietär und über Claude, API und große Cloud-Plattformen verfügbar.","supports_tool_use":true,"thinking_probe_at":"2026-04-23T13:49:49.092501+00:00","thinking_probe_confidence":"low","thinking_probe_detected":false,"thinking_probe_evidence":"No CoT signals found. Response length: 379 chars","unknown":false,"use_case_primary":"agentic","vendor":"Anthropic","weights_license_tier":"proprietary","weights_provenance_risk":"medium","weights_provenance_risk_rationale":"Anthropic ist ein US-Anbieter; die Gewichte sind nicht öffentlich und die wesentlichen Risiken betreffen Cloud-Verarbeitung unter US-Recht.","top_p":null,"top_k":null,"repetition_penalty":null,"frequency_penalty":null,"presence_penalty":null,"seed":null,"stop_sequences":null,"input_modalities":["text","image"],"output_modalities":["text"],"profile_verified":true,"profile_verified_at":"2026-06-12"}
+{
+  "architecture_tags": [
+    "General",
+    "Agentic-Orchestrator",
+    "Long-Context"
+  ],
+  "card_status": "complete",
+  "commercial_use_allowed": true,
+  "context_window_k": 1000,
+  "deployment_type": "cloud-only",
+  "developer": "Anthropic",
+  "developer_jurisdiction": "US",
+  "display_name": "null",
+  "generated_at": "2026-04-23T21:59:06.526308+00:00",
+  "input_price_per_1m": 5.0,
+  "judge_context_hint": "Claude Opus 4.6 ist Anthropics Premium-Modell für tiefe agentische Arbeit, lange Kontexte und anspruchsvolle Coding-/Recherche-Workflows. Erwartbar sind sehr starke strukturierte Antworten, aber auch potenziell höhere Ausführlichkeit, Kosten und Latenz.",
+  "knowledge_cutoff": "2025-01",
+  "known_limitations": [
+    "Proprietäres Cloud-Modell ohne lokale Gewichte oder Self-Hosting-Möglichkeit",
+    "Premium-Kosten und potenziell höhere Latenz als kleinere Sonnet- oder Haiku-Modelle",
+    "Das 1M-Kontextfenster wird von Anthropic ausdrücklich als Beta ausgewiesen"
+  ],
+  "license": "Proprietary (Anthropic Commercial Terms)",
+  "license_url": "https://www.anthropic.com/legal/commercial-terms",
+  "local_deployment_possible": false,
+  "model_family": "Claude",
+  "model_id": "claude-opus-4-6",
+  "model_version": "4.6",
+  "origin_country": "USA",
+  "output_price_per_1m": 25.0,
+  "parameter_architecture": "dense",
+  "params_active_b": null,
+  "params_total_b": null,
+  "primary_focus": "generalist",
+  "size_class": "Frontier",
+  "strengths": [
+    "Sehr stark für agentisches Coding, langfristige Aufgabenplanung und komplexe Wissensarbeit",
+    "1M-Kontextfenster in Beta mit deutlich verbesserter Long-Context-Nutzung laut Anthropic",
+    "Verbesserte Code-Review-, Debugging- und Large-Codebase-Fähigkeiten gegenüber Opus 4.5",
+    "Verfügbar über Claude, API und große Cloud-Plattformen bei unverändertem Premium-Pricing"
+  ],
+  "summary": "null",
+  "supports_tool_use": true,
+  "thinking_probe_at": "2026-04-23T13:49:49.092501+00:00",
+  "thinking_probe_confidence": "low",
+  "thinking_probe_detected": false,
+  "thinking_probe_evidence": "No CoT signals found. Response length: 379 chars",
+  "unknown": false,
+  "use_case_primary": "agentic",
+  "vendor": "Anthropic",
+  "weights_license_tier": "proprietary",
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "Anthropic ist ein US-Anbieter; die Gewichte sind nicht öffentlich und die wesentlichen Risiken betreffen Cloud-Verarbeitung unter US-Recht.",
+  "top_p": null,
+  "top_k": null,
+  "repetition_penalty": null,
+  "frequency_penalty": null,
+  "presence_penalty": null,
+  "seed": null,
+  "stop_sequences": null,
+  "input_modalities": [
+    "text",
+    "image"
+  ],
+  "output_modalities": [
+    "text"
+  ],
+  "profile_verified": false,
+  "profile_verified_at": null,
+  "profile_verified_by": null,
+  "last_modified_at": "2026-06-18"
+}

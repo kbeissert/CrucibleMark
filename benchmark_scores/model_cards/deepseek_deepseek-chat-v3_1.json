@@ -1,1 +1,70 @@
-{"model_id":"deepseek/deepseek-chat-v3.1","display_name":"DeepSeek V3.1-671B","developer":"DeepSeek","origin_country":"China","developer_jurisdiction":"CN","deployment_type":"open-weights-cloud-available","local_deployment_possible":true,"weights_provenance_risk":"high","weights_provenance_risk_rationale":"DeepSeek ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann. Das BSI hat am 04.02.2025 vor dem Einsatz des DeepSeek-Cloud-Dienstes gewarnt; bei ausschließlich lokalem Betrieb der Open-Weights-Variante ohne Datenübertragung nach China ist das cloud-spezifische Risikoszenario reduziert.","model_family":"DeepSeek","primary_focus":"general","summary":"DeepSeek V3.1 (Mai 2025) ist ein 671B-Parameter-MoE-Modell (37B aktiv) von DeepSeek (China) unter DeepSeek License. Starker Code-Generator mit Engram-Memory-Architektur, 128K-Token-Kontextfenster. Chinesische Herkunft und NSL sind bei der Datenrisikoeinschätzung zu berücksichtigen.","strengths":["Starke Coding-Leistung für ein MoE-Modell mit hoher Präzision","MoE-Architektur: 671B Gesamtparameter, nur 37B aktiv – hoher Durchsatz bei geringem Inferenz-Overhead","Training-Kosten: nur $5.6M – deutlich günstiger als typische Frontier-Modelle, Kosteneffizienz-Record","Engram-Memory-Architektur für verbesserte Langzeit-Code-Konsistenz, 128K-Token-Kontextfenster"],"known_limitations":["Chinesisches Nationales Sicherheitsgesetz (NSL): bei Cloud-Nutzung kann staatlicher Zugriff auf Daten bestehen; BSI-Warnung vom 04.02.2025","Lokaler Betrieb der vollen 671B-Variante erfordert erhebliche GPU-Infrastruktur (mehrere High-End-GPUs, z. B. A100/H100)","Kann bei politisch sensiblen Themen mit China-Bezug zensierte oder ausweichende Antworten liefern"],"judge_context_hint":"DeepSeek V3.1 (veröffentlicht 28. Mai 2025) ist ein 671B-Parameter MoE-Modell (37B aktiv) mit 74.7% auf HumanEval und 51.5% auf SWE-bench Verified. Training-Kosten: $5.6M (95% günstiger als Frontier-Standard). Chinesisches NSL: Cloud-Nutzung birgt Datenrisiko, lokaler Betrieb reduziert dieses. Engram-Memory-Architektur für Code-Konsistenz.","architecture_tags":["General","Instruct"],"unknown":false,"generated_at":"2026-04-23T22:05:48.261371+00:00","card_status":"complete","size_class":"Frontier","thinking_probe_detected":false,"thinking_probe_evidence":"No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 556 chars","thinking_probe_confidence":"low","thinking_probe_at":"2026-05-01T10:46:34.460236+00:00","supports_tool_use":true,"license":"DeepSeek License","license_url":"https://github.com/deepseek-ai/DeepSeek-V3/blob/main/LICENSE","commercial_use_allowed":true,"vendor":"DeepSeek","weights_license_tier":"open-weights","model_version":"v3.1","input_price_per_1m":0.21,"output_price_per_1m":0.79,"use_case_primary":"generalist","parameter_architecture":"moe","params_total_b":671.0,"params_active_b":37.0,"context_window_k":128,"knowledge_cutoff":"2025-01","top_p":null,"top_k":null,"repetition_penalty":null,"frequency_penalty":null,"presence_penalty":null,"seed":null,"stop_sequences":null,"input_modalities":["text"],"output_modalities":["text"],"profile_verified":true,"profile_verified_at":"2026-06-12"}
+{
+  "model_id": "deepseek/deepseek-chat-v3.1",
+  "display_name": "DeepSeek-V3",
+  "developer": "DeepSeek",
+  "origin_country": "China",
+  "developer_jurisdiction": "CN",
+  "deployment_type": "open-weights-cloud-available",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "high",
+  "weights_provenance_risk_rationale": "DeepSeek ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann. Das BSI hat am 04.02.2025 vor dem Einsatz des DeepSeek-Cloud-Dienstes gewarnt; bei ausschließlich lokalem Betrieb der Open-Weights-Variante ohne Datenübertragung nach China ist das cloud-spezifische Risikoszenario reduziert.",
+  "model_family": "DeepSeek",
+  "primary_focus": "general",
+  "summary": "DeepSeek-V3 ist ein leistungsstarkes 671B-Parameter-MoE-Modell (37B aktiv) von DeepSeek. Es nutzt eine spezialisierte MoE-Architektur für hohe Effizienz und unterstützt ein Kontextfenster von 128K Token. Aufgrund der Herkunft aus China und der damit verbundenen regulatorischen Rahmenbedingungen ist bei der Nutzung des Cloud-Dienstes Vorsicht geboten.",
+  "strengths": [
+    "Starke Coding-Leistung für ein MoE-Modell mit hoher Präzision",
+    "MoE-Architektur: 671B Gesamtparameter, nur 37B aktiv – hoher Durchsatz bei geringem Inferenz-Overhead",
+    "Hohe Kosteneffizienz im Training",
+    "Unterstützung eines 128K-Token-Kontextfensters"
+  ],
+  "known_limitations": [
+    "Chinesisches Nationales Sicherheitsgesetz (NSL): bei Cloud-Nutzung kann staatlicher Zugriff auf Daten bestehen; BSI-Warnung vom 04.02.2025",
+    "Lokaler Betrieb der vollen 671B-Variante erfordert erhebliche GPU-Infrastruktur (mehrere High-End-GPUs, z. B. A100/H100)",
+    "Kann bei politisch sensiblen Themen mit China-Bezug zensierte oder ausweichende Antworten liefern"
+  ],
+  "judge_context_hint": "DeepSeek-V3 ist ein 671B-Parameter MoE-Modell (37B aktiv). Chinesisches NSL: Cloud-Nutzung birgt Datenrisiko, lokaler Betrieb reduziert dieses.",
+  "architecture_tags": [
+    "General",
+    "Instruct"
+  ],
+  "unknown": false,
+  "generated_at": "2026-04-23T22:05:48.261371+00:00",
+  "card_status": "complete",
+  "size_class": "Frontier",
+  "thinking_probe_detected": false,
+  "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 556 chars",
+  "thinking_probe_confidence": "low",
+  "thinking_probe_at": "2026-05-01T10:46:34.460236+00:00",
+  "supports_tool_use": true,
+  "license": "DeepSeek License",
+  "license_url": "https://github.com/deepseek-ai/DeepSeek-V3/blob/main/LICENSE",
+  "commercial_use_allowed": true,
+  "vendor": "DeepSeek",
+  "weights_license_tier": "open-weights",
+  "model_version": "v3",
+  "input_price_per_1m": 0.14,
+  "output_price_per_1m": 0.28,
+  "use_case_primary": "generalist",
+  "parameter_architecture": "moe",
+  "params_total_b": 671.0,
+  "params_active_b": 37.0,
+  "context_window_k": 128,
+  "knowledge_cutoff": "2025-01",
+  "top_p": null,
+  "top_k": null,
+  "repetition_penalty": null,
+  "frequency_penalty": null,
+  "presence_penalty": null,
+  "seed": null,
+  "stop_sequences": null,
+  "input_modalities": [
+    "text"
+  ],
+  "output_modalities": [
+    "text"
+  ],
+  "profile_verified": true,
+  "profile_verified_at": "2026-06-18",
+  "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
+  "last_modified_at": "2026-06-18"
+}

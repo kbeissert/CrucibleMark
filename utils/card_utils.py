@@ -19,6 +19,8 @@ from __future__ import annotations
 
 import json
 import logging
+import yaml  # type: ignore[import-untyped]
+
 from copy import deepcopy
 from datetime import datetime, timezone
 from pathlib import Path
@@ -57,6 +59,7 @@ def load_taxonomy() -> dict[str, dict[str, Any]]:
             )
         with _TAXONOMY_PATH.open(encoding="utf-8") as f:
             _TAXONOMY_CACHE = json.load(f)
+    assert _TAXONOMY_CACHE is not None
     return _TAXONOMY_CACHE
 
 
@@ -96,8 +99,6 @@ def clear_taxonomy_cache() -> None:
 # Struktur: controlled_fields, reserved_tags, informational_tags,
 #           deprecated_tags, reasoning_triggers.
 
-import yaml  # type: ignore[import-untyped]
-
 _VOCABULARY_PATH = Path(__file__).resolve().parent.parent / "config" / "card_vocabulary.yaml"
 _VOCABULARY_CACHE: dict[str, Any] | None = None
 
@@ -121,6 +122,7 @@ def load_vocabulary() -> dict[str, Any]:
             )
         with _VOCABULARY_PATH.open(encoding="utf-8") as f:
             _VOCABULARY_CACHE = yaml.safe_load(f)
+    assert _VOCABULARY_CACHE is not None
     return _VOCABULARY_CACHE
 
 
@@ -142,6 +144,17 @@ def get_informational_tags() -> frozenset[str]:
     except (FileNotFoundError, KeyError) as exc:
         logger.warning("Vokabular-Registry für informational_tags nicht ladbar: %s", exc)
         return frozenset()
+
+
+# Mapping from card field names to their taxonomy sections (SSoT).
+# Controlled values must be present in classification_taxonomy.json.
+_CONTROLLED_FIELDS: dict[str, str] = {
+    "weights_license_tier": "weights_license_tier",
+    "use_case_primary": "use_case",
+    "parameter_architecture": "parameter_architecture",
+    "input_modalities": "input_modalities",
+    "output_modalities": "output_modalities",
+}
 
 
 def get_all_known_tags() -> frozenset[str]:
@@ -268,6 +281,22 @@ _CARD_TEMPLATE: dict[str, Any] = {
 
     # ---- Tool-Use ------------------------------------------------------
     "supports_tool_use": None,
+    "tooluse_tested_at": None,
+    "tooluse_score_p1": None,
+    "tooluse_score_p2": None,
+    "tooluse_recommendation": None,
+    # ---- Sampling-Parameter --------------------------------------------
+    "temperature": None,
+    "system_prompt_override": None,
+    "cot_marker_family": None,
+    "cot_tags_detected": None,
+    "top_p": None,
+    "top_k": None,
+    "repetition_penalty": None,
+    "frequency_penalty": None,
+    "presence_penalty": None,
+    "seed": None,
+    "stop_sequences": None,
     # ---- Lizenz & Kategorisierung --------------------------------------
     "license": "TODO",
     "license_url": None,
@@ -287,6 +316,15 @@ _CARD_TEMPLATE: dict[str, Any] = {
     "thinking_probe_evidence": None,
     "thinking_probe_confidence": None,
     "thinking_probe_at": None,
+    "thinking_probe_manual_override": None,
+    # ---- Profile-Verifikation (Audit-Trail) ----------------------------
+    "profile_verified": False,
+    "profile_verified_at": None,
+    "profile_verified_by": None,
+    "last_modified_at": None,
+    # ---- Heritage & Community ------------------------------------------
+    "heritage_ids": [],
+    "community": None,
 }
 
 # Vollständige Feldliste (für externe Validierung)
@@ -379,7 +417,7 @@ def ensure_card(
             elif key == "size_class":
                 try:
                     result[key] = get_model_size_class(model_id)
-                except Exception:  # noqa: BLE001
+                except (FileNotFoundError, json.JSONDecodeError):
                     result[key] = None
             elif key == "generated_at":
                 result[key] = datetime.now(timezone.utc).isoformat()
@@ -403,14 +441,7 @@ def ensure_card(
     # "TODO" ist explizit als "noch zu befüllen"-Platzhalter erlaubt — keine Warnung.
     # Andere Werte, die nicht in der Taxonomie stehen, lösen eine WARN aus.
     # Das ist ein Hinweis, kein Hard-Error: der Autor kann bewusst abweichen.
-    _controlled_fields = {
-        "weights_license_tier": "weights_license_tier",
-        "use_case_primary": "use_case",
-        "parameter_architecture": "parameter_architecture",
-        "input_modalities": "input_modalities",
-        "output_modalities": "output_modalities",
-    }
-    for card_field, taxonomy_section in _controlled_fields.items():
+    for card_field, taxonomy_section in _CONTROLLED_FIELDS.items():
         value = result.get(card_field)
         if value is None or value == "TODO" or value == "":
             continue

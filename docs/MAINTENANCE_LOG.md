@@ -6,6 +6,239 @@
 ---
 
 
+## v4.10.0 — Card-Lifecycle v2: `card-create` / `card-validate` / `card-research` (2026-06-18)
+
+Drei neue Make-Targets kapseln den kompletten Lebenszyklus einer Model Card
+in jeweils einem Befehl: Erstellung aus `provider_config.yaml`, deterministische
+Struktur-Sync mit dem Template, und inhaltliche LLM-Recherche mit
+`profile_verified`-Lock-Mechanismus.
+
+### 1. `scripts/dev/create_model_card.py` — neue Card anlegen (155 Zeilen, neu)
+
+CLI für die Card-Erstellung, analog zu `ensure_card_structure.py` aufgebaut:
+
+- **ID-Validierung** — `SystemExit` bei Punkten in der Model-ID (Schutz
+  vor Slug-Mismatch-Bug: `z-ai/glm-5.2` und `z-ai.glm-5.2` würden auf
+  verschiedene Dateinamen normalisiert, aber derselbe API-Endpoint
+  angesprochen). Colon-only IDs (Ollama-Tag-Schema) bleiben erlaubt.
+- **Provider-Lookup** via `ConfigValidator().config` (SSoT für
+  `benchmark_config.yaml` + `config/provider_config.yaml`). Übernommen
+  werden `name` → `display_name` und `<provider.name>` → `developer`
+  (überschreibt nur, wenn aktueller Wert `"TODO"`).
+- **Vendor-Taxonomy-Check** (informational) — falls `developer` nicht in
+  `config/classification_taxonomy.json#manufacturers.values` steht, wird
+  ein `INFO`-Log ausgegeben, der Wert aber beibehalten (kein Mapping-Fuzzy).
+- **Skeleton via `utils.card_utils.ensure_card(model_id, provider=…)`** —
+  SSoT-`ensure_card` mit `provider`-Parameter (übernimmt Konflikt-Resolver
+  und `{base}--{shortcode}`-ID-Schema).
+- **`rebuild_card_index("model")`** am Ende.
+
+CLI:
+
+```bash
+# Vorschau
+.venv/bin/python scripts/dev/create_model_card.py --model claude-sonnet-4-6 --dry-run
+
+# Card anlegen (Skeleton + display_name/developer aus provider_config)
+.venv/bin/python scripts/dev/create_model_card.py --model claude-sonnet-4-6
+
+# Card existiert bereits → SystemExit (Empfehlung: card-validate / card-research)
+.venv/bin/python scripts/dev/create_model_card.py --model claude-sonnet-4-6
+
+# Override (YES=1 ueberschreibt die bestehende Card)
+.venv/bin/python scripts/dev/create_model_card.py --model claude-sonnet-4-6 --yes
+```
+
+### 2. `scripts/analysis/sync_cards.py` — `--model <id>` Flag (Single-Card-Sync)
+
+Erweiterung um einen Single-Card-Dispatch-Pfad:
+
+```bash
+# Einzelkarte syncen (sonst --card-type model fuer alle)
+.venv/bin/python scripts/analysis/sync_cards.py --model claude-sonnet-4-6
+.venv/bin/python scripts/analysis/sync_cards.py --model claude-sonnet-4-6 --dry-run
+.venv/bin/python scripts/analysis/sync_cards.py --model claude-sonnet-4-6 --yes --json
+```
+
+`_resolve_single_card_path(model_id, card_type)` ermittelt den Pfad via
+`_find_card()` (Model) bzw. `_safe_id()` (Vendor). Nicht-existente Cards
+führen zu `SystemExit` mit klarer Meldung. `--model` ohne `--card-type`
+impliziert `--card-type=model` (analog zu `manage_model_cards.py`).
+
+### 3. `scripts/manage_model_cards.py` — `--mode research` mit `Researcher`-Klasse
+
+Neuer Modus für inhaltliche Recherche (zusätzlich zu `check` und `make`):
+
+- **`Researcher`-Klasse** — kapselt die Lock-/Backup-Mechanik um den
+  vorhandenen LLM-Stack (`LLMSession`, `LLMSpec`, Override-Hierarchie,
+  `OPERATOR_PROTECTED_FIELDS`, JSON-Parser, Editor-Prompt-Loader).
+- **`_discover_research_targets(args)`** — `profile_verified`-aware Target-
+  Discovery (gleicher Skip-Pfad wie Phase-1-`_discover_targets`).
+- **`_check_murks(card)`** — Pre-Check-Heuristik für CJK-Zeichen
+  (`U+4E00–U+9FFF`, `U+3040–U+30FF`, `U+AC00–U+D7AF` + Erweiterungen) und
+  Em-Dash im `summary`. Severity `error`, wird vor dem LLM-Call gescannt.
+- **`_RESEARCH_SYSTEM_INSTRUCTION`** — System-Prompt spezialisiert auf
+  Recherche (Preise, Kontext-Fenster, Sonderzeichen, Quellen).
+- **`_apply_research_diff(original, response)`** — übernimmt nur
+  `suggested`-Werte für Felder, die bereits in der Card existieren
+  (kein Wildwuchs). `OPERATOR_PROTECTED_FIELDS` werden preserviert
+  (`model_id`, `generated_at`, `thinking_probe_*`, `tooluse_*`,
+  Sampling-Parameter, `heritage_ids`, …).
+- **`_render_research_markdown_report(reports, today)`** — Markdown-Report
+  mit Lock-Status pro Card (offen/geschlossen).
+
+**Lock-Logik (exception-sicher):**
+
+```python
+try:
+    # 1. Lock: profile_verified=false, at=null, by=null, last_modified_at=heute
+    write_card(locked)
+
+    # 2. Backup: <card>.pre-research.bak
+    backup = path.with_name(path.name + ".pre-research.bak")
+    backup.write_text(...)
+
+    # 3. Pre-Check-Heuristik (CJK / Em-Dash)
+    findings = _check_murks(original)
+
+    # 4. LLM-Call (editor_prompt + system_instruction + pre_findings)
+    response = session.query(...)
+
+    # 5. Apply Diff (suggested-Werte uebernehmen, Protected-Fields preserven)
+    merged = _apply_research_diff(original, response)
+    cleaned, warnings = _validate_against_template(merged, template)
+
+    # 6. Un-Lock: profile_verified=true, at/by/last_modified_at=heute
+    write_card(final)
+
+    # 7. Backup loeschen
+    backup.unlink()
+except Exception:
+    # Lock bleibt offen (profile_verified=false), Backup bleibt liegen
+    # Naechster card-research-Lauf greift die Card automatisch auf
+    raise
+```
+
+**Dry-Run-Semantik:** Bei `--dry-run` wird **kein Lock gesetzt, kein Backup
+angelegt, kein Write durchgeführt** — nur der Markdown-Report mit LLM-Plan
+wird ausgegeben. Das schützt den Resumption-Marker vor versehentlicher
+Fehlinterpretation.
+
+### 4. Template-Felder ergänzt (YAML + Python-Dict)
+
+**`config/card_template_model.yaml`** und **`utils/card_utils.py::_CARD_TEMPLATE`**:
+
+- `profile_verified_by` (string, default `null`) — `"human"` \| `"llm:<model>"` \| `null`
+- `last_modified_at` (string, default `null`) — ISO-8601-Datum der letzten
+  inhaltlichen Änderung (YYYY-MM-DD)
+
+Beide Felder sind in `OPERATOR_PROTECTED_FIELDS`-äquivalenter Logik
+**automatisch gesetzt** (vom `Researcher` und von `manage_model_cards.py
+--mode make --write`). Bestehende Cards bekommen die Felder via
+`make card-validate YES=1` einmalig hinzugefügt (kein Drift, da Default
+`null`).
+
+**Pre-existing Drift behoben:** Beim Hinzufügen der neuen Felder sind
+gleichzeitig die bereits in Verwendung befindlichen Felder
+(`top_p`, `top_k`, `repetition_penalty`, `frequency_penalty`,
+`presence_penalty`, `seed`, `stop_sequences`, `temperature`,
+`system_prompt_override`, `cot_marker_family`, `cot_tags_detected`,
+`tooluse_*`, `profile_verified`, `profile_verified_at`,
+`thinking_probe_manual_override`, `heritage_ids`, `community`) in
+`_CARD_TEMPLATE` aufgenommen worden, sodass `make card-validate YES=1`
+sie nicht mehr fälschlich als "zu löschende Drift-Felder" markiert.
+YAML-Template und Python-Dict sind wieder synchron.
+
+### 5. `Makefile` — drei neue Targets + Help-Block
+
+Im `Card-Lifecycle`-Block des Help-Texts:
+
+```
+  card-create               Neue Card aus provider_config.yaml anlegen
+  card-validate             Cards mit Template synchronisieren (alle oder MODEL=)
+  card-research             LLM-Inhalts-Recherche (Murks/Chinesisch/Preise)
+```
+
+Targets selbst (konsistent mit bestehender `DRY=1`/`YES=1`-Convention):
+
+```makefile
+card-create:
+    @$(PYTHON) scripts/dev/create_model_card.py \
+        --model "$(MODEL)" \
+        $(if $(PROVIDER),--provider "$(PROVIDER)",) \
+        $(if $(DRY),--dry-run,) \
+        $(if $(YES),--yes,)
+
+card-validate:
+    @$(PYTHON) scripts/analysis/sync_cards.py \
+        $(if $(MODEL),--model "$(MODEL)",--card-type model) \
+        $(if $(YES),--yes,) \
+        $(if $(DRY),--dry-run,) \
+        $(if $(JSON),--json,)
+
+card-research:
+    @$(PYTHON) scripts/manage_model_cards.py --mode research \
+        $(if $(MODEL),--card "$(MODEL)",) \
+        $(if $(FORCE),--force,) \
+        $(if $(DRY),--dry-run,)
+```
+
+### 6. Dokumentation
+
+- **`docs/CARD_MANAGEMENT.md`** — neuer Top-Level-Abschnitt
+  "Card-Lifecycle v2 (ab v4.10.0)" mit Pipeline-Diagrammen, Beispielen,
+  Fehler-Verhalten, Lock-Mechanismus, Pre-Check-Heuristik, Workflows 5/6/7
+  (One-Time-Seed, Resumption).
+- **`docs/USER_GUIDE.md`** — Verweis auf die drei neuen Targets im
+  Model-Cards-Abschnitt.
+- **`docs/DEVELOPER_GUIDE.md`** — neuer Abschnitt "Card-Lifecycle v2
+  (ab v4.10.0)" mit Implementation-Map (`card-create` / `card-validate` /
+  `card-research` → Scripts) und Begründung für die Architektur-Entscheidung
+  (Wrapper statt neue Top-Level-Skripte). Schema-Tabelle um
+  `profile_verified_by` / `last_modified_at` erweitert.
+
+### Tests / Smoke-Tests
+
+Manuelle Smoke-Tests (alle bestanden):
+
+| # | Test | Ergebnis |
+|---|---|---|
+| 1 | `make card-create MODEL=claude-sonnet-4-6 DRY=1` | ✅ Vorschau ohne Schreiben |
+| 2 | `make card-create MODEL=claude-sonnet-4-6` (existiert) | ✅ SystemExit mit Empfehlung |
+| 3 | `make card-create MODEL=test.illegal-id` | ✅ SystemExit "Slug-Mismatch" |
+| 4 | `make card-create MODEL=nonexistent` | ✅ SystemExit mit Top-10 Beispielen |
+| 5 | `make card-validate DRY=1` | ✅ Sync-Plan ohne Deletes |
+| 6 | `make card-validate MODEL=claude-sonnet-4-6 YES=1` | ✅ preserviert profile_verified, sampling, ergänzt neue Felder |
+| 7 | `make card-research DRY=1` (Anzahl) | ✅ 6 Cards (unverified only) |
+| 8 | `make card-research DRY=1` (Card-Inhalt unverändert) | ✅ kein Lock, kein Backup, kein Write |
+| 9 | `make card-research` mit Fake-LLM-Session (Erfolg) | ✅ profile_verified=true, by="llm:fake", Backup gelöscht |
+| 10 | `make card-research` mit Fake-LLM-Session (Fehler) | ✅ Lock bleibt offen, Backup bleibt liegen |
+| 11 | `pytest` | ✅ 227/227 grün |
+| 12 | `ruff check scripts/dev/create_model_card.py scripts/analysis/sync_cards.py scripts/manage_model_cards.py` | ✅ clean |
+
+### SSoT-Vertrag
+
+- `card-create` und `card-validate` nutzen **keine eigene Logik** — sie
+  wrappen den bestehenden `ensure_card()` bzw. `utils.card_sync`-Stack.
+- `card-research` ist ein **Modus** in `manage_model_cards.py` (nicht ein
+  zweites Skript) — teilt LLMSession, Override-Hierarchie, Protected-Fields,
+  JSON-Parser, Editor-Prompt-Loader mit `check` und `make`.
+- `last_modified_at` und `profile_verified_by` werden **nur** vom
+  `Researcher` (Erfolg) und von `manage_model_cards.py --mode make --write`
+  gesetzt — nicht von externen Tools. Damit ist der Audit-Trail
+  deterministisch reproduzierbar.
+
+### Resumption-Garantie
+
+Wenn der LLM-Call mitten in der Recherche abstürzt (Netzwerk-Fehler,
+Ctrl+C, OOM), bleibt die Card im `profile_verified=false`-Zustand mit
+`<card>.pre-research.bak` als Sicherheitsnetz. Der nächste
+`make card-research` (ohne `--card` für die Wildcard-Variante) findet
+die Karte via `_discover_research_targets()` automatisch und setzt
+die Recherche fort. Mit `FORCE=1` kann auch eine bereits
+`profile_verified=true`-Karte neu durchsucht werden.
+
+
 ## v4.8.6 — Robustness-Fixes: Judge-Coverage, Draft-Card-Warning, ToolUse P1/P2 SSoT (2026-06-12)
 
 Drei Fixes zur strukturellen Absicherung von Problemen, die in Session 12–14 manuell

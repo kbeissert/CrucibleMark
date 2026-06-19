@@ -1,1 +1,70 @@
-{"architecture_tags": ["General", "Thinking-Optional"], "card_status": "complete", "commercial_use_allowed": true, "context_window_k": 200, "deployment_type": "cloud-only", "developer": "Anthropic", "developer_jurisdiction": "US", "display_name": "Claude Sonnet 4.5", "generated_at": "2026-04-23T21:59:15.096468+00:00", "input_price_per_1m": 3.0, "judge_context_hint": "Allround-Modell mit Schwerpunkt auf Coding, Agenten und Computer Use. Antworten sollten auf Präzision und Aufgabenfortschritt geprüft werden, nicht auf Kürze.", "knowledge_cutoff": "2025-01", "known_limitations": ["Nur über die Anthropic-API verfügbar", "Proprietäre Gewichte nicht öffentlich zugänglich", "Bei sehr knappen Antworten kann das Modell ausführlicher sein als nötig"], "license": "Proprietary", "license_url": null, "local_deployment_possible": false, "model_family": "Claude", "model_id": "claude-sonnet-4-5-20250929", "model_version": "4.5", "origin_country": "USA", "output_price_per_1m": 15.0, "parameter_architecture": "dense", "params_active_b": null, "params_total_b": null, "primary_focus": "general", "size_class": "Server", "strengths": ["Sehr stark bei Coding und komplexen Agenten-Workflows", "Gute Kombination aus Reasoning, Tool Use und Latenz", "Besonders geeignet für Computer Use und lange Aufgabenketten"], "summary": "Claude Sonnet 4.5 ist Anthropics stärkeres Allround-Modell mit klarer Ausrichtung auf Coding, komplexe Agenten und Computer Use. Anthropic bewirbt das Modell als besonders gut für mehrstufige Aufgaben und bietet es ausschließlich über die API an; die Preise liegen bei 3 Dollar Input und 15 Dollar Output pro Million Tokens.", "supports_tool_use": true, "thinking_probe_at": "2026-04-23T13:55:19.126410+00:00", "thinking_probe_confidence": "low", "thinking_probe_detected": false, "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 700 chars", "unknown": false, "use_case_primary": "generalist", "vendor": "Anthropic", "weights_license_tier": "proprietary", "weights_provenance_risk": "medium", "weights_provenance_risk_rationale": "Anthropic ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act; die Modellgewichte sind nicht öffentlich zugänglich.", "top_p": null, "top_k": null, "repetition_penalty": null, "frequency_penalty": null, "presence_penalty": null, "seed": null, "stop_sequences": null, "input_modalities": ["text", "image"], "output_modalities": ["text"], "profile_verified": true, "profile_verified_at": "2026-06-12"}
+{
+  "architecture_tags": [
+    "General",
+    "Thinking-Optional"
+  ],
+  "card_status": "complete",
+  "commercial_use_allowed": true,
+  "context_window_k": 200,
+  "deployment_type": "cloud-only",
+  "developer": "Anthropic",
+  "developer_jurisdiction": "US",
+  "display_name": "Claude Sonnet 4.5",
+  "generated_at": "2026-04-23T21:59:15.096468+00:00",
+  "input_price_per_1m": 3.0,
+  "judge_context_hint": "Allround-Modell mit Schwerpunkt auf Coding, Agenten und Computer Use. Antworten sollten auf Präzision und Aufgabenfortschritt geprüft werden, nicht auf Kürze.",
+  "knowledge_cutoff": "2025-01",
+  "known_limitations": [
+    "Nur über die Anthropic-API verfügbar",
+    "Proprietäre Gewichte nicht öffentlich zugänglich",
+    "Bei sehr knappen Antworten kann das Modell ausführlicher sein als nötig"
+  ],
+  "license": "Proprietary",
+  "license_url": null,
+  "local_deployment_possible": false,
+  "model_family": "Claude",
+  "model_id": "claude-sonnet-4-5-20250929",
+  "model_version": "4.5",
+  "origin_country": "USA",
+  "output_price_per_1m": 15.0,
+  "parameter_architecture": "dense",
+  "params_active_b": null,
+  "params_total_b": null,
+  "primary_focus": "general",
+  "size_class": "Server",
+  "strengths": [
+    "Sehr stark bei Coding und komplexen Agenten-Workflows",
+    "Gute Kombination aus Reasoning, Tool Use und Latenz",
+    "Besonders geeignet für Computer Use und lange Aufgabenketten"
+  ],
+  "summary": "Claude Sonnet 4.5 ist Anthropics stärkeres Allround-Modell mit klarer Ausrichtung auf Coding, komplexe Agenten und Computer Use. Anthropic bewirbt das Modell als besonders gut für mehrstufige Aufgaben und bietet es ausschließlich über die API an; die Preise liegen bei 3 Dollar Input und 15 Dollar Output pro Million Tokens.",
+  "supports_tool_use": true,
+  "thinking_probe_at": "2026-04-23T13:55:19.126410+00:00",
+  "thinking_probe_confidence": "low",
+  "thinking_probe_detected": false,
+  "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 700 chars",
+  "unknown": false,
+  "use_case_primary": "generalist",
+  "vendor": "Anthropic",
+  "weights_license_tier": "proprietary",
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "Anthropic ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act; die Modellgewichte sind nicht öffentlich zugänglich.",
+  "top_p": null,
+  "top_k": null,
+  "repetition_penalty": null,
+  "frequency_penalty": null,
+  "presence_penalty": null,
+  "seed": null,
+  "stop_sequences": null,
+  "input_modalities": [
+    "text",
+    "image"
+  ],
+  "output_modalities": [
+    "text"
+  ],
+  "profile_verified": true,
+  "profile_verified_at": "2026-06-18",
+  "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
+  "last_modified_at": "2026-06-18"
+}

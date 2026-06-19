@@ -187,6 +187,17 @@ make model-cards MODEL=<id>  # Neues Model Card Template anlegen (dann manuell b
 make vendor-cards   # Vendor Cards generieren (CLOUD Act, GDPR DPA, Datenstandort, Retention)
 ```
 
+Seit v4.10.0 gibt es drei dedizierte Lifecycle-Targets, die Erstellung,
+Struktur-Sync und inhaltliche LLM-Recherche kapseln:
+
+```bash
+make card-create MODEL=<id>     # Neue Model Card aus provider_config.yaml anlegen
+make card-validate [MODEL=<id>] # Cards mit Template synchronisieren (deterministisch)
+make card-research [MODEL=<id>] # LLM-Recherche mit profile_verified-Lock
+```
+
+Details: [docs/CARD_MANAGEMENT.md](CARD_MANAGEMENT.md#card-lifecycle-v2-ab-v4100).
+
 Jeder generierten Review enthält einen **Datenschutz-Abschnitt** mit einer Sovereign-Risk-Einschätzung (`low` / `medium` / `high`), die aus Weights-Herkunft und Deployment-Jurisdiktion des Providers kombiniert wird. Das ermöglicht eine direkte Compliance-Einordnung ohne externen Rechercheaufwand.
 
 > Weitere Details: [AUDIT_AND_METAREVIEW.md](AUDIT_AND_METAREVIEW.md).

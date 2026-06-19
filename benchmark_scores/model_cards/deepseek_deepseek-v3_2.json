@@ -1,1 +1,66 @@
-{"model_id":"deepseek/deepseek-v3.2","display_name":"DeepSeek V3-2","developer":"DeepSeek","origin_country":"China","developer_jurisdiction":"CN","deployment_type":"open-weights-cloud-available","local_deployment_possible":true,"weights_provenance_risk":"high","weights_provenance_risk_rationale":"DeepSeek ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann. Das BSI hat am 04.02.2025 vor dem Einsatz des DeepSeek-Cloud-Dienstes gewarnt; bei ausschließlich lokalem Betrieb der Open-Weights-Variante ohne Datenübertragung nach China ist das cloud-spezifische Risikoszenario reduziert.","model_family":"DeepSeek","primary_focus":"general","summary":"DeepSeek V3.2 ist ein chinesisches Frontier-Modell von DeepSeek mit Open-Weights-Lizenz, ausgelegt auf Sprach-, Code- und Reasoning-Aufgaben. Es lässt sich lokal betreiben und ist über verschiedene Cloud-Provider kostengünstig nutzbar. Chinesische Herkunft und das nationale Sicherheitsgesetz (NSL) sind bei der Einschätzung des Datenrisikos zu berücksichtigen.","strengths":["Starke Leistung bei Coding- und Mathematikaufgaben","Sehr gutes Preis-Leistungs-Verhältnis im Vergleich zu Konkurrenzmodellen","Breites Allgemeinwissen mit guter mehrsprachiger Kompetenz"],"known_limitations":["Unterliegt chinesischer Zensur bei politisch sensiblen Themen (z.B. Tiananmen, Taiwan)","Als V3.2 möglicherweise noch nicht vollständig dokumentiert – Architekturdetails gegenüber V3 unklar"],"judge_context_hint":"Das Modell kann bei politisch sensiblen Themen mit China-Bezug ausweichen oder verweigern; bei sachlichen und technischen Aufgaben ist die Leistung jedoch mit westlichen Top-Modellen vergleichbar.","architecture_tags":["General","Coder"],"unknown":false,"generated_at":"2026-04-23T22:05:58.641837+00:00","card_status":"complete","size_class":"Frontier","thinking_probe_detected":false,"thinking_probe_evidence":"No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 420 chars","thinking_probe_confidence":"low","thinking_probe_at":"2026-05-01T10:47:03.853585+00:00","supports_tool_use":true,"license":"DeepSeek License","license_url":"https://github.com/deepseek-ai/DeepSeek-V3/blob/main/LICENSE","commercial_use_allowed":true,"vendor":"DeepSeek","weights_license_tier":"open-weights","model_version":"v3.2","input_price_per_1m":0.2288,"output_price_per_1m":0.3432,"use_case_primary":"generalist","parameter_architecture":"moe","params_total_b":671.0,"params_active_b":37.0,"context_window_k":128,"knowledge_cutoff":"2025-01","top_p":null,"top_k":null,"repetition_penalty":null,"frequency_penalty":null,"presence_penalty":null,"seed":null,"stop_sequences":null,"input_modalities":["text","image"],"output_modalities":["text"],"profile_verified":true,"profile_verified_at":"2026-06-12"}
+{
+  "model_id": "deepseek/deepseek-v3.2",
+  "display_name": "DeepSeek V3",
+  "developer": "DeepSeek",
+  "origin_country": "China",
+  "developer_jurisdiction": "CN",
+  "deployment_type": "open-weights-cloud-available",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "high",
+  "weights_provenance_risk_rationale": "DeepSeek ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann. Das BSI hat am 04.02.2025 vor dem Einsatz des DeepSeek-Cloud-Dienstes gewarnt; bei ausschließlich lokalem Betrieb der Open-Weights-Variante ohne Datenübertragung nach China ist das cloud-spezifische Risikoszenario reduziert.",
+  "model_family": "DeepSeek",
+  "primary_focus": "general",
+  "summary": "DeepSeek V3 ist ein chinesisches Frontier-Modell von DeepSeek mit Open-Weights-Lizenz, ausgelegt auf Sprach-, Code- und Reasoning-Aufgaben. Es lässt sich lokal betreiben und ist über verschiedene Cloud-Provider kostengünstig nutzbar. Chinesische Herkunft und das nationale Sicherheitsgesetz (NSL) sind bei der Einschätzung des Datenrisikos zu berücksichtigen.",
+  "strengths": [
+    "Starke Leistung bei Coding- und Mathematikaufgaben",
+    "Sehr gutes Preis-Leistungs-Verhältnis im Vergleich zu Konkurrenzmodellen",
+    "Breites Allgemeinwissen mit guter mehrsprachiger Kompetenz"
+  ],
+  "known_limitations": [
+    "Unterliegt chinesischer Zensur bei politisch sensiblen Themen (z.B. Tiananmen, Taiwan)",
+    "Als V3.2 möglicherweise noch nicht vollständig dokumentiert – Architekturdetails gegenüber V3 unklar"
+  ],
+  "judge_context_hint": "Das Modell kann bei politisch sensiblen Themen mit China-Bezug ausweichen oder verweigern; bei sachlichen und technischen Aufgaben ist die Leistung jedoch mit westlichen Top-Modellen vergleichbar.",
+  "architecture_tags": [
+    "General",
+    "Coder"
+  ],
+  "unknown": false,
+  "generated_at": "2026-04-23T22:05:58.641837+00:00",
+  "card_status": "complete",
+  "size_class": "Frontier",
+  "thinking_probe_detected": false,
+  "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 420 chars",
+  "thinking_probe_confidence": "low",
+  "thinking_probe_at": "2026-05-01T10:47:03.853585+00:00",
+  "supports_tool_use": true,
+  "license": "DeepSeek License",
+  "license_url": "https://github.com/deepseek-ai/DeepSeek-V3/blob/main/LICENSE",
+  "commercial_use_allowed": true,
+  "vendor": "DeepSeek",
+  "weights_license_tier": "open-weights",
+  "model_version": "v3.2",
+  "input_price_per_1m": 0.14,
+  "output_price_per_1m": 0.28,
+  "use_case_primary": "generalist",
+  "parameter_architecture": "moe",
+  "params_total_b": 671.0,
+  "params_active_b": 37.0,
+  "context_window_k": 128,
+  "knowledge_cutoff": "2025-01",
+  "top_p": null,
+  "top_k": null,
+  "repetition_penalty": null,
+  "frequency_penalty": null,
+  "presence_penalty": null,
+  "seed": null,
+  "stop_sequences": null,
+  "input_modalities": "[\"text\"]",
+  "output_modalities": [
+    "text"
+  ],
+  "profile_verified": true,
+  "profile_verified_at": "2026-06-18",
+  "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
+  "last_modified_at": "2026-06-18"
+}

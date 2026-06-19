@@ -620,6 +620,18 @@ providers:
         parallel: 1                # Provider-Default parallel=4; siehe _build_server_cmd()
         # num_predict bleibt global bei 65536 (Token-Output-Cap reicht für längste Hermes-Outputs: 2145 T)
 
+      # 2) Gemma4-26B/gemma-4-26B-A4B-it-UD-Q5_K_XL [+MTP ⚡] [25.7 GB + 0.5 GB Draft]
+      - id: gemma-4-26B-A4B-it-UD-Q5_K_XL-mtp
+        name: Gemma 4 26B A4B IT UD-Q5_K_XL [+MTP ⚡] (GGUF)
+        model_file: Gemma4-26B/gemma-4-26B-A4B-it-UD-Q5_K_XL.gguf
+        model_draft_file: Gemma4-26B/gemma-4-26B-A4B-it-Q8_0-MTP.gguf
+        n_gpu_layers: 99
+        enable_thinking: false
+        context_length: 65536
+        extra_server_args:
+          - "--spec-type draft-mtp"
+          - "--spec-draft-n-max 4"
+
       # 3) Gemma4-31b/gemma-4-31B-it-UD-Q8_K_XL [+MTP ⚡] [32.6 GB + 0.5 GB Draft]
       - id: gemma-4-31B-it-UD-Q8_K_XL-mtp
         name: Gemma 4 31B IT UD-Q8_K_XL [+MTP ⚡] (GGUF)

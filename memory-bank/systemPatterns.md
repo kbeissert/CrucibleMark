@@ -31,6 +31,7 @@ Architektur-Regeln + aktuelle SSoT-Brücken (One-Liner). Details: `reference/dat
 | **Sampling-Defaults** | `providers.local.config.llama_cpp_defaults` | 7 Parameter, Pro-Modell-Override schlägt Default |
 | **1-Klasse-pro-Hardware** | `LlamaCppBaseClient` + Subklassen | Auto-Registry via `__init_subclass__` mit `PROVIDER_NAMES` |
 | **Tri-State Tool-Use** | Card `supports_tool_use`: `true`/`false`/`"untested"` | `normalize_supports_tool_use()` Helper |
+| **Card-Research MCP Tool-Use** | `manage_model_cards.py` → MCP Server `:8765` (JSON-RPC 2.0 HTTP POST) | `--tooluse` + `--mcp-url`; `_call_mcp_tool()` POST `tools/call`; `_parse_tool_call()` extrahiert `{"tool_call": {...}}`; `_extract_tool_content()` liest Transcript |
 
 **Code-Beispiele und Felder:** `reference/data-schema.md`. Pitfalls: `reference/pitfall-diagnoses.md`.
 
@@ -78,6 +79,7 @@ Aktivierung: `value` bool, `reason` nicht whitespace-only, `active_until` in der
 - **Hardware-Profil-Lookup:** `provider_config.yaml → <provider>.hardware_profile` ist der SSoT-Key. Nie aus `active_profile` oder Environment ableiten — das ist das Test-System, nicht das Hardware-Profil des getesteten Modells.
 - **PC-Ghost-Model durch Datum-Normalisierung (2026-06-13):** `base_runner.py` normalisiert Modell-IDs via `re.sub(r'-\d{8}$', '', model_id)` für den Leaderboard-Skip-Check. Wenn ein alter undatierter PC-Leaderboard-Eintrag (`z-ai/glm-5`) existiert, trifft `z-ai/glm-5-20260211` darauf → false-positive Skip, kein neuer PC-Run. Fix: `--force`-Flag beim PC-Benchmark-Re-Run. Danach alten `k.A.`-Entry aus `political_compass_results.csv` manuell löschen.
 - **Vendor-Card-Generator erzeugt Duplikate (2026-06-13):** `generate_vendor_cards.py` prüft nicht auf bestehende Karten mit ähnlichem Namen. Auto-generierte Karten (`alibaba_cloud.json`, `alibaba_group_qwen_team.json`) kollidierten mit dem kanonischen `alibaba.json` — alle 3 mit identischer `api_base_url`. Symptom: mehrfache Vendor-Einträge im Web-Export. Fix: Orphan-Dateien löschen + `card_subtype: "community"` für Community-Cards setzen + Community-Filter in `web_export.py`.
+- **Card-Research Tool-Use: max. 3 Runden (2026-06-19):** `Researcher._research_tooluse_one()` hat einen Hard-Cap von 3 Tool-Call-Runden. Verhindert Endlosschleifen bei kaputtem Modell (das nie mit `{"findings": ...}` antwortet). Wenn 3 Runden ohne finale Answer erreicht → Fehler, Lock bleibt offen, nächster Lauf nimmt Card im Resumption-Pfad.
 
 Whenever a task involves refactoring, unexpected behavior, or
 architecture changes: automatically load reference/pitfall-diagnosis.md before proposing any solution.

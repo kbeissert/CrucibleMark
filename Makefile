@@ -2,7 +2,7 @@
 	help install install-dev \
 	benchmark political-compass political-compass-safe benchmark-cross-model benchmark-auto benchmark-human \
 	review reviews-auto reviews-auto-legacy reviews-bias-auto reviews-tooluse-auto reviews-all reviews-check review-new model-cards model-card vendor-cards leaderboard vendor-stats \
-	validate validate-single validate-assets validate-structure validate-cards validate-cards-template cards-sync vendor-cards-update model-cards-update test diff-results analyze-costs update-prices sync-cost-limits \
+	validate validate-single validate-assets validate-structure validate-cards validate-cards-template cards-sync card-create card-validate card-research vendor-cards-update model-cards-update test diff-results analyze-costs update-prices sync-cost-limits \
 	list-models judge-health list-modules \
 	probe-thinking probe-all-thinking \
 	ensure-card ensure-cards \
@@ -32,6 +32,8 @@ help:
 	@printf "%-25s %s\n" "SILENT=1"    "Nur Scores, keine Audit-Logs"
 	@printf "%-25s %s\n" "DRY=1|YES=1" "Vorschau-Modus|Auto-Bestätigung"
 	@printf "%-25s %s\n" "JSON=1"      "Strukturierte CLI-Ausgabe"
+	@printf "%-25s %s\n" "PAUSE=sek"   "Pause zwischen Cards (Default: 1.0s)"
+	@printf "%-25s %s\n" "TOOLUSE=1"   "Tool-Use-Modus (MCP web_search/fetch)"
 	@printf "\n"
 	@printf "\033[1;32mBenchmarking (Standard, Auto, Cross, Human)\033[0m\n"
 	@printf "  %-25s %s\n" "benchmark"       "Standard-Benchmark"
@@ -59,6 +61,9 @@ help:
 	@printf "  %-25s %s\n" "model-cards"     "Erstelle/Update-Vorlagen"
 	@printf "  %-25s %s\n" "validate-cards"  "Schema-Prüfung"
 	@printf "  %-25s %s\n" "cards-sync"      "SSoT-Synchronisierung"
+	@printf "  %-25s %s\n" "card-create"     "Neue Card aus provider_config.yaml anlegen"
+	@printf "  %-25s %s\n" "card-validate"   "Cards mit Template synchronisieren (alle oder MODEL=)"
+	@printf "  %-25s %s\n" "card-research"   "LLM-Inhalts-Recherche (Murks/Chinesisch/Preise)"
 	@printf "\n"
 	@printf "\033[1;32mCleanup & Maintenance\033[0m\n"
 	@printf "  %-25s %s\n" "backup"          "Snapshot-Pipeline (Tar + Clean)"
@@ -140,6 +145,42 @@ cards-sync:
 		$(if $(DRY_RUN),--dry-run,) \
 		$(if $(YES),--yes,) \
 		$(if $(JSON),--json,)
+
+card-create:
+	@if [ -z "$(MODEL)" ]; then \
+		echo "Fehler: MODEL=<model-id> ist erforderlich."; \
+		echo "Beispiel: make card-create MODEL=claude-sonnet-4-6"; \
+		exit 1; \
+	fi
+	@$(PYTHON) scripts/dev/create_model_card.py \
+		--model "$(MODEL)" \
+		$(if $(PROVIDER),--provider "$(PROVIDER)",) \
+		$(if $(DRY),--dry-run,) \
+		$(if $(YES),--yes,)
+
+card-validate:
+	@echo "=== Card-Sync (Template -> Cards, Model only) ==="
+	@echo "Fuegt fehlende Template-Felder hinzu (kein LLM-Aufruf)."
+	@echo "Loeschungen erfordern Bestaetigung oder YES=1."
+	@echo ""
+	@$(PYTHON) scripts/analysis/sync_cards.py \
+		$(if $(MODEL),--model "$(MODEL)",--card-type model) \
+		$(if $(YES),--yes,) \
+		$(if $(DRY),--dry-run,) \
+		$(if $(JSON),--json,)
+
+card-research:
+	@echo "=== Card-Inhalts-Recherche (LLM) ==="
+	@echo "Lock-Mechanismus: profile_verified wird auf false gesetzt,"
+	@echo "am Ende wieder auf true. Bei Abbruch bleibt false stehen."
+	@echo ""
+	@$(PYTHON) scripts/manage_model_cards.py --mode research \
+		$(if $(MODEL),--card "$(MODEL)",) \
+		$(if $(FORCE),--force,) \
+		$(if $(DRY),--dry-run,) \
+		$(if $(PAUSE),--pause "$(PAUSE)",) \
+		$(if $(TOOLUSE),--tooluse,) \
+		$(if $(TIMEOUT),--timeout-s $(TIMEOUT),)
 
 vendor-cards-update:
 	@echo "=== Provider Card Update (--update in generate_vendor_cards.py) ==="

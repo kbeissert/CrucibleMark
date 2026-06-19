@@ -1,7 +1,7 @@
 server:
   host: localhost
   port: 8765
-  mode: mock               # mock | live — default ist mock
+  mode: live               # mock | live — default ist live (card-research braucht echte Suche)
   idle_timeout_seconds: 0    # 0 = deaktiviert — Lebenszyklus liegt bei run_tooluse_benchmark.py
                                # (Modelle wie qwen3-coder-next-q8 Q8 brauchen 420s zum Laden;
                                #  ein Idle-Timeout < Modell-Startzeit würde den MCP-Server

@@ -1,1 +1,70 @@
-{"architecture_tags":["General","Agentic-Orchestrator"],"card_status":"complete","commercial_use_allowed":true,"context_window_k":200,"deployment_type":"cloud-only","developer":"Anthropic","developer_jurisdiction":"US","display_name":"Claude Opus 4.5","generated_at":"2026-04-23T21:59:26.788830+00:00","input_price_per_1m":5.0,"judge_context_hint":"Frontier-Modell für tiefe Analyse und lange Arbeitsketten. Die Bewertung sollte Stabilität, Mehrschrittfähigkeit und inhaltliche Dichte priorisieren.","knowledge_cutoff":"2025-01","known_limitations":["Nur über die Anthropic-API verfügbar","Höhere Kosten und Latenz als kleinere Claude-Modelle","Kann in Kürzebenchmarks ausführlicher wirken als nötig"],"license":"Proprietary","license_url":null,"local_deployment_possible":false,"model_family":"Claude","model_id":"claude-opus-4-5-20251101","model_version":"4.5","origin_country":"USA","output_price_per_1m":25.0,"parameter_architecture":"dense","params_active_b":null,"params_total_b":null,"primary_focus":"general","size_class":"Frontier","strengths":["Sehr stark bei komplexem Reasoning und Coding","Geeignet für langlaufende Agenten-Workflows","Hohe Zuverlässigkeit in tiefen Analyseaufgaben"],"summary":"Claude Opus 4.5 ist Anthropics starkes Frontier-Modell für komplexes Reasoning, lange Agenten-Workflows und tiefes Software-Engineering. Die Veröffentlichung hebt hohe Zuverlässigkeit, gute Multimodalität und starke Leistung bei mehrstufigen Aufgaben hervor. Es ist ausschließlich über die Anthropic-API nutzbar.","supports_tool_use":true,"thinking_probe_at":"2026-04-23T13:55:10.011508+00:00","thinking_probe_confidence":"low","thinking_probe_detected":false,"thinking_probe_evidence":"No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 603 chars","unknown":false,"use_case_primary":"agentic","vendor":"Anthropic","weights_license_tier":"proprietary","weights_provenance_risk":"medium","weights_provenance_risk_rationale":"Anthropic ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act; die Modellgewichte sind nicht öffentlich zugänglich, aber bei API-Nutzung potenziell US-behördlichem Zugriff ausgesetzt.","top_p":null,"top_k":null,"repetition_penalty":null,"frequency_penalty":null,"presence_penalty":null,"seed":null,"stop_sequences":null,"input_modalities":["text","image"],"output_modalities":["text"],"profile_verified":true,"profile_verified_at":"2026-06-12"}
+{
+  "architecture_tags": [
+    "General",
+    "Agentic-Orchestrator"
+  ],
+  "card_status": "complete",
+  "commercial_use_allowed": true,
+  "context_window_k": 200,
+  "deployment_type": "cloud-only",
+  "developer": "Anthropic",
+  "developer_jurisdiction": "US",
+  "display_name": "null",
+  "generated_at": "2026-04-23T21:59:26.788830+00:00",
+  "input_price_per_1m": 5.0,
+  "judge_context_hint": "Frontier-Modell für tiefe Analyse und lange Arbeitsketten. Die Bewertung sollte Stabilität, Mehrschrittfähigkeit und inhaltliche Dichte priorisieren.",
+  "knowledge_cutoff": "2025-01",
+  "known_limitations": [
+    "Nur über die Anthropic-API verfügbar",
+    "Höhere Kosten und Latenz als kleinere Claude-Modelle",
+    "Kann in Kürzebenchmarks ausführlicher wirken als nötig"
+  ],
+  "license": "Proprietary",
+  "license_url": "https://www.anthropic.com/legal/terms",
+  "local_deployment_possible": false,
+  "model_family": "Claude",
+  "model_id": "claude-opus-4-5-20251101",
+  "model_version": "4.5",
+  "origin_country": "USA",
+  "output_price_per_1m": 25.0,
+  "parameter_architecture": "dense",
+  "params_active_b": null,
+  "params_total_b": null,
+  "primary_focus": "general",
+  "size_class": "Frontier",
+  "strengths": [
+    "Sehr stark bei komplexem Reasoning und Coding",
+    "Geeignet für langlaufende Agenten-Workflows",
+    "Hohe Zuverlässigkeit in tiefen Analyseaufgaben"
+  ],
+  "summary": "Claude Opus 4.5 ist Anthropics starkes Frontier-Modell für komplexes Reasoning, lange Agenten-Workflows und tiefes Software-Engineering. Die Veröffentlichung hebt hohe Zuverlässigkeit, gute Multimodalität und starke Leistung bei mehrstufigen Aufgaben hervor. Es ist ausschließlich über die Anthropic-API nutzbar.",
+  "supports_tool_use": true,
+  "thinking_probe_at": "2026-04-23T13:55:10.011508+00:00",
+  "thinking_probe_confidence": "low",
+  "thinking_probe_detected": false,
+  "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 603 chars",
+  "unknown": false,
+  "use_case_primary": "agentic",
+  "vendor": "Anthropic",
+  "weights_license_tier": "proprietary",
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "Anthropic ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act; die Modellgewichte sind nicht öffentlich zugänglich, aber bei API-Nutzung potenziell US-behördlichem Zugriff ausgesetzt.",
+  "top_p": null,
+  "top_k": null,
+  "repetition_penalty": null,
+  "frequency_penalty": null,
+  "presence_penalty": null,
+  "seed": null,
+  "stop_sequences": null,
+  "input_modalities": [
+    "text",
+    "image"
+  ],
+  "output_modalities": [
+    "text"
+  ],
+  "profile_verified": false,
+  "profile_verified_at": null,
+  "profile_verified_by": null,
+  "last_modified_at": "2026-06-18"
+}

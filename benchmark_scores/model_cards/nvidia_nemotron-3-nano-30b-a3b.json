@@ -66,5 +66,7 @@
   "seed": null,
   "stop_sequences": null,
   "profile_verified": false,
-  "profile_verified_at": null
+  "profile_verified_at": null,
+  "profile_verified_by": null,
+  "last_modified_at": "2026-06-18"
 }

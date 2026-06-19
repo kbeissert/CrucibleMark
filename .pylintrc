@@ -46,7 +46,8 @@ disable=
     useless-import-alias,
     inconsistent-return-statements,
     consider-using-in,
-    import-error
+    import-error,
+    global-statement
 
 [DESIGN]
 max-args=8

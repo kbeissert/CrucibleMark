@@ -13,7 +13,29 @@ to know what reference files exist.
 
 # Active Context
 
-## Aktueller Status (2026-06-14)
+## Aktueller Status (2026-06-19)
+
+- **Session 24 abgeschlossen (2026-06-19) — Card-Research MCP Tool-Use:**
+  - `manage_model_cards.py --mode research` kann jetzt über MCP `web_search` + `fetch` im Internet recherchieren.
+  - Architektur: JSON-RPC 2.0 HTTP POST zum bestehenden MCP-Server (`:8765`), keine Änderungen am MCP-Server nötig.
+  - Neue Funktionen: `_parse_tool_call()`, `_call_mcp_tool()`, `_extract_tool_content()`
+  - Neue Methode: `Researcher._research_tooluse_one()` — Multi-Step-Loop (max. 3 Runden)
+  - Neue CLI-Flags: `--tooluse` (nur mit `--mode research`), `--mcp-url` (Default: `http://localhost:8765`)
+  - Makefile: `TOOLUSE=1` Flag an `card-research` Target
+  - Usage: `make card-research MODEL=claude-sonnet-4-6 TOOLUSE=1`
+
+- **Session 23 abgeschlossen (2026-06-17) — Review-Auto-Fixes + MTP-Modell + 128 GB-Korrektur + (GGUF)-Cleanup:**
+  - **Bug 1 (Python 3.14 @dataclass-Crash):** `scripts/analysis/generate_review.py` `_load_card_module()` lud Modul via `module_from_spec` ohne `sys.modules`-Registrierung. Fix: `sys.modules[module_name] = module` VOR `exec_module`. Hintergrund: Python 3.14 `@dataclass` ruft `sys.modules[cls.__module__].__dict__` für KW_ONLY-Detection → NoneType-AttributeError ohne Registrierung.
+  - **Bug 2 (`outputs/audit_logs/test/`-Stub):** `test_pipeline_integration.py` instanziiert `UnifiedBenchmarkRunner("test")` und ruft `_process_single_test()` auf. `save_audit_log(model="test", ...)` schreibt real nach `outputs/audit_logs/test/asset_1.md` (mit MagicMock-Content). Fix 1: Test patched jetzt `utils.scoring.judge_evaluator.save_audit_log` in `mock_dependencies`-Fixture. Fix 2 (Defense in Depth): Neue Helper `_is_valid_audit_dir()` in `generate_review.py` mit Zwei-Pfad-Heuristik — entweder (a) Slug-File vorhanden ODER (b) Ordnername sieht aus wie Modellname (>4 Zeichen, Bindestrich/Underscore, keine Punkte). Schließt `test/`, `foo/`, `.DS_Store` aus, behält `gpt-5_4/`, `qwen3_5-9b/` etc. 103 gültige Audit-Ordner erkannt (104 total - 1 test stub).
+  - **DGX-Spark-Modell-Liste konsolidiert:** `provider_config.yaml` `llamacpp_spark` auf 7 aktive Modelle reduziert (gemma-4-31B-it-Q8_0-MTP, gemma-4-26B-A4B-it-UD-Q8_K_XL, hermes-4.3-36b-q6, gemma-4-31B-it-UD-Q8_K_XL, **qwen3_6-35b-a3b-mtp-ud-q8** (NEU), qwen3_5-35b-a3b-q8, qwen3-coder-next-q4). Nicht-vorhandene Quantisierungen/Modelle auskommentiert mit Begründung.
+  - **MTP-Support (Qwen 3.6 Multi-Token Prediction):** Neue `extra_server_args`-Verarbeitung in `utils/providers/llamacpp_base.py` `_build_server_cmd()` — übergibt beliebige llama.cpp-Flags (`--spec-type draft-mtp`, `--spec-draft-n-max 2`). 2 neue Model Cards: `qwen3_6-35b-a3b-mtp-ud-q4.json` + `qwen3_6-35b-a3b-mtp-ud-q8.json` mit Custom-Params (temperature=0.7, top_p=0.8, top_k=20, presence_penalty=1.5, repeat_penalty=1.0, **enable_thinking: false**). 2 neue Whitelist-Tags in `card_vocabulary.yaml`: `MTP` + `Speculative-Decoding` (v4.10.0).
+  - **128 GB Unified Memory für DGX Spark:** 28 Referenzen "115 GB" / "120 GB" in 15 Model Cards + `_index.json` auf 128 GB korrigiert. "DGX10 Spark" → "DGX Spark" (10 ist Hostname gx10-b20a.local, kein Modellteil). "Desktop" → "Workstation" für 36B+ Klassen.
+  - **"(GGUF)"-Cleanup:** Aus User-UI-Feldern (`display_name`, `summary`, `judge_context_hint`, `strengths`, `known_limitations`, `weights_provenance_risk_rationale`) entfernt. Quantisierungssuffix (Q4_K_M, Q8_K_XL etc.) impliziert GGUF → redundante Container-Info raus. Technische Felder (`model_id`, `model_version`, `name` in provider_config, `model_file`, `license_url`) behalten GGUF. 181 Updates in 31/5/16 Dateien, 106/106 JSON valide.
+  - **2 neue OpenRouter-Modelle provider_config:** `z-ai/glm-5.2` + `moonshotai/kimi-k2.7-code`.
+  - **`cost_tracker.py` Log-Message präzisiert:** Trennt jetzt klar "Card vorhanden, aber keine Preise (lokales Modell)" (DEBUG) von "Keine Model Card" (WARNING).
+  - **Tests:** 814/814 grün.
+
+- **Session 22 abgeschlossen (2026-06-14) — PC Re-Run + Bias-Review nemotron-3-ultra:**
 
 - **Session 22 abgeschlossen (2026-06-14) — PC Re-Run + Bias-Review nemotron-3-ultra:**
   - **PC-Re-Run abgeschlossen:** `nvidia/nemotron-3-ultra-550b-a55b` mit `--force` re-gerunnt (3 Runs × 79 Fragen via OpenRouter). Neues Results-File: `outputs/runs/results_nvidia_nemotron_3_ultra_550b_a55b_20260614_124002.json`.
@@ -143,6 +165,7 @@ Mögliche Anlässe für User-Aktivität (alle aus dem Backlog):
 
 ## Letzte Änderungen
 
+- **2026-06-19 (Session 24):** Card-Research MCP Tool-Use. `manage_model_cards.py`: neue Imports (urllib), Tool-Schemas, MCP-Helfer (`_parse_tool_call`, `_call_mcp_tool`, `_extract_tool_content`), `Researcher._research_tooluse_one()` (Multi-Step-Loop, max. 3 Runden), CLI-Flags `--tooluse` + `--mcp-url`. Makefile: `TOOLUSE=1` Flag.
 - **2026-06-13 (Session 20 — Commits 994d447 + 8e02609 + 9c38063):** PC-Coverage vollständig. `web_export.py`: `card_id`-Feld + Datum-Fallback-Lookup. 28 Bias-Reviews generiert. Ghost-Model `z-ai/glm-5` (April-2026) via `--force`-Re-Run überschrieben. 2 Orphan-Vendor-Cards gelöscht (`alibaba_cloud.json`, `alibaba_group_qwen_team.json`), hauhaucs `card_subtype: "community"` gesetzt, Community-Filter in `web_export.py`. Web-Export: 24 → 18 Vendor-Einträge.
 - **2026-06-13 (Session 18):** Deployment-Badge-Refactoring. `provider_config.yaml`: `hardware_profiles`-Block + `deployment_category` pro Provider + LCL-Shortcodes (M4APL→LCL, SPRK→LCL). `model_utils.py`: `_PROVIDER_DEPLOYMENT_CATEGORY`, `_PROVIDER_HARDWARE_PROFILES`, `get_deployment_category()`, `get_hardware_profile()`. Leaderboard: 2 neue Spalten. Web-Export: 3 neue Felder. `MODEL_CLASSIFICATION.md` neu geschrieben.
 - **2026-06-12 (Session 17):** 4 SSoT-Robustness-Fixes. `generate_review.py`: Tooluse-Schritt nach Loop mit `model=None` (3225a78), Blacklist-Check via `model_id` (411e5e3). `web_export.py`: PC-Lookup via `raw_model_id` statt Display-Name (4aaf450). `system_context.py` + `generate_review.py`: Hardware-Profil aus `provider_config.yaml` SSoT (e5799bb). Architektur-Prinzip: `model_id` = einziger Kommunikations-Anker. Memory Bank aktualisiert.

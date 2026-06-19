@@ -1,0 +1,16 @@
+{
+  "$schema": "https://app.kilo.ai/config.json",
+  "commit_message": {
+    "prompt": ""
+  },
+  "indexing": {
+    "provider": "openai-compatible",
+    "model": "bge-m3-q8_0",
+    "openai-compatible": {
+      "baseUrl": "http://100.89.110.0:1230/v1",
+      "apiKey": "sk-local"
+    },
+    "enabled": true,
+    "dimension": 1024
+  }
+}

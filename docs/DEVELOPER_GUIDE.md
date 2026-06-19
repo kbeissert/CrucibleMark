@@ -683,6 +683,62 @@ make model-cards                                    # interaktive Eingabe
 
 **Nach der Template-Erstellung:** Alle `"TODO"`-Felder manuell befüllen, dann `card_status` auf `"complete"` setzen. Der Thinking-Probe-Workflow (`make probe-thinking MODEL=...`) ergänzt die `thinking_probe_*`-Felder automatisch vor dem ersten Benchmark-Run.
 
+### Card-Lifecycle v2 (ab v4.10.0)
+
+Seit v4.10.0 gibt es drei dedizierte Targets, die Erstellung, Struktur-Sync
+und LLM-Recherche kapseln. Sie nutzen den vorhandenen Phase-1-Stack
+(`manage_model_cards.py`, `sync_cards.py`, `ensure_card()`) und sind als
+**dünne Wrapper** konzipiert — keine Duplikation der Sync- oder
+LLM-Logik.
+
+```bash
+# 1. Neue Card anlegen (Skeleton + Pre-Fill aus provider_config.yaml)
+make card-create MODEL=claude-sonnet-4-6
+
+# 2. Struktur mit Template synchronisieren (deterministisch, kein LLM)
+make card-validate                              # alle Cards
+make card-validate MODEL=claude-sonnet-4-6      # einzelne Card
+make card-validate YES=1                        # auto-ja fuer Loesch-Bestaetigung
+
+# 3. Inhaltliche LLM-Recherche (mit profile_verified-Lock)
+make card-research                              # alle unveraifizierten
+make card-research MODEL=claude-sonnet-4-6      # einzelne Card
+make card-research FORCE=1                      # auch verifizierte
+make card-research DRY=1                        # Vorschau (kein Lock, kein Write)
+```
+
+**Implementation Map:**
+
+| Target | Script | Mode | LLM? |
+|---|---|---|---|
+| `card-create` | `scripts/dev/create_model_card.py` | (eigenes) | nein |
+| `card-validate` | `scripts/analysis/sync_cards.py` | `--card-type model` / `--model <id>` | nein |
+| `card-research` | `scripts/manage_model_cards.py` | `--mode research` | ja |
+
+**Warum `card-validate` und nicht nur `cards-sync`?**
+
+`cards-sync` bleibt für Vendor-Cards und Cross-Type-Sync (`--card-type all`).
+`card-validate` ist der **Model-Card-spezifische Wrapper** mit komfortablem
+`MODEL=<id>`-Flag — der häufigste Use-Case in der redaktionellen Pflege.
+
+**Warum eigener `card-research`-Modus statt eigenes Skript?**
+
+`manage_model_cards.py` hat bereits die gesamte LLM-Infrastruktur
+(`LLMSession`, `LLMSpec`, Override-Hierarchie, `OPERATOR_PROTECTED_FIELDS`,
+JSON-Parser, Editor-Prompt-Loader). Der `--mode research`-Zweig fügt
+nur die Lock-/Backup-Mechanik und Recherche-spezifische Findings
+hinzu — keine Duplikation.
+
+**Lock-Mechanismus:** `profile_verified` wird zu Beginn auf `false`
+gesetzt (Resumption-Marker bei Abbruch), am Ende auf `true` zurück
+mit `profile_verified_at` und `profile_verified_by="llm:<model>"`.
+Kein File-Lock, keine `flock`-Dateien. Bei LLM-Fehler bleibt der
+Lock offen — der nächste `make card-research` greift die Karte
+automatisch wieder auf.
+
+Vollständige Dokumentation (Workflows, Fehler-Verhalten, Pre-Check-Heuristik):
+[docs/CARD_MANAGEMENT.md → Card-Lifecycle v2](CARD_MANAGEMENT.md#card-lifecycle-v2-ab-v4100).
+
 ---
 
 ### Historische Daten: Migration
@@ -710,6 +766,15 @@ Jede Model Card JSON muss folgende Felder enthalten. Cards mit `card_status: "dr
 | `vendor` | string | API-Anbieter (z. B. `"Mistral AI"`, `"OpenAI"`) |
 | `card_status` | string | `"draft"` / `"minimal"` / `"complete"` — steuert Vollständigkeits-Guards |
 | `heritage_ids` | list[string] | Frühere Model-IDs / Alias-Namen, unter denen Review-Dirs abgelegt wurden. Web-Exporter fällt bei fehlender primärer Dir auf diese zurück. |
+
+#### Profile-Verifikation (ab v4.9.0, erweitert v4.10.0)
+
+| Feld | Typ | Default | Bedeutung |
+|---|---|---|---|
+| `profile_verified` | bool | `false` | Inhaltliche Felder wurden recherchiert und verifiziert (Editor-Prompt `model_card_verification`) |
+| `profile_verified_at` | str | `null` | ISO-8601-Datum der letzten Verifikation (YYYY-MM-DD) |
+| `profile_verified_by` | str | `null` | Wer hat verifiziert: `"human"` \| `"llm:<model>"` \| `null` (v4.10.0) |
+| `last_modified_at` | str | `null` | ISO-8601-Datum der letzten inhaltlichen Änderung (v4.10.0) |
 
 #### Architektur & Deployment
 

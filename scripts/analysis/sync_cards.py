@@ -16,21 +16,67 @@ Verwendung:
     python scripts/analysis/sync_cards.py --card-type provider --dry-run
     python scripts/analysis/sync_cards.py --card-type model --yes
     python scripts/analysis/sync_cards.py --card-type all
-"""
+    """
+
+from __future__ import annotations
 
 import argparse
 import logging
 import sys
 from pathlib import Path
+from typing import cast
 
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-from utils.card_sync import format_summary, sync_all  # noqa: E402
+from utils.card_sync import CardType, format_summary, sync_all, apply_sync  # noqa: E402
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
+
+
+def _resolve_single_card_path(model_id: str, card_type: str) -> Path:
+    """Bestimmt den kanonischen Pfad einer einzelnen Card anhand der ID.
+
+    Args:
+        model_id: Model-ID (z.B. ``claude-sonnet-4-6``) oder Vendor-ID.
+        card_type: ``"model"`` oder ``"vendor"``.
+
+    Returns:
+        Pfad zur Card-Datei. Existenz wird vom Aufrufer geprüft.
+
+    Raises:
+        SystemExit: Wenn die Card nicht gefunden wird.
+    """
+    if card_type == "model":
+        from utils.model_utils import _find_card  # noqa: PLC0415
+        path = _find_card(model_id)
+        if not path.exists():
+            raise SystemExit(f"❌ Model-Card nicht gefunden: {model_id}")
+        return path
+    from utils.vendor_card_template import CARDS_DIR, _safe_id  # noqa: PLC0415
+    path = CARDS_DIR / f"{_safe_id(model_id)}.json"
+    if not path.exists():
+        raise SystemExit(f"❌ Vendor-Card nicht gefunden: {model_id}")
+    return path
+
+
+def _collect_sync_plans(args: argparse.Namespace):
+    """Sammelt alle Sync-Pläne fuer die gewaehlt Card-Typen."""
+    if args.model:
+        card_type = args.card_type if args.card_type != "all" else "model"
+        path = _resolve_single_card_path(args.model, card_type)
+        plan = apply_sync(
+            path, card_type, dry_run=args.dry_run, yes=args.yes,
+        )
+        return [plan]
+    else:
+        card_types = ["model", "vendor"] if args.card_type == "all" else [args.card_type]
+        plans = []
+        for ct in card_types:
+            plans.extend(sync_all(cast("CardType", ct), dry_run=args.dry_run, yes=args.yes))
+        return plans
 
 
 def main() -> None:
@@ -62,20 +108,28 @@ def main() -> None:
         action="store_true",
         help="Output als JSON-Report (für CI-Parsing)",
     )
+    parser.add_argument(
+        "--model",
+        type=str,
+        help=(
+            "Nur diese eine Card synchronisieren (Modell-ID oder Vendor-ID). "
+            "Impliziert --card-type=model, falls --card-type=all oder weggelassen."
+        ),
+    )
     args = parser.parse_args()
 
-    card_types = ["model", "vendor"] if args.card_type == "all" else [args.card_type]
-    all_plans = []
-    for ct in card_types:
-        plans = sync_all(ct, dry_run=args.dry_run, yes=args.yes)
-        all_plans.extend(plans)
+    all_plans = _collect_sync_plans(args)
 
     if args.json:
         import json as _json  # noqa: PLC0415
         report = {
             "dry_run": args.dry_run,
             "yes": args.yes,
-            "card_types": card_types,
+            "card_types": (
+                [args.card_type if args.card_type != "all" else "model"]
+                if args.model
+                else (["model", "vendor"] if args.card_type == "all" else [args.card_type])
+            ),
             "plans": [
                 {
                     "card": str(p.card_path),

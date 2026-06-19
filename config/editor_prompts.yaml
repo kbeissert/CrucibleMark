@@ -1,38 +1,33 @@
 # Editor Prompts — Kuratierte Aufgaben-Prompts für manuelle LLM-Aufgaben
 # =======================================================================
-
-# Zweck: Wiederverwendbare Prompts für redaktionelle Aufgaben, die
-# ein menschlicher Operator an ein leistungsfähiges LLM delegiert.
-# Diese Prompts verändern NICHT die Benchmark-Logik oder Reviewer-Prompts
-# (config/card_template_*.yaml), sondern dienen der Datenpflege.
-
+# Zweck: Wiederverwendbare Prompts für redaktionelle Aufgaben (Datenpflege).
+# Diese Prompts verändern NICHT die Benchmark-Logik oder Reviewer-Prompts.
+#
 # Workflow:
-# 1. Operator setzt betroffene Cards auf den Zielstatus (z.B. profile_verified: false)
-# 2. Operator schickt den Prompt an ein fähiges LLM (Claude Opus 4+, GPT-5+, etc.)
-# 3. LLM arbeitet den Prompt ab, aktualisiert Dateien, setzt Verifikations-Flags
+# 1. Operator setzt betroffene Cards auf Zielstatus (z.B. profile_verified: false)
+# 2. Operator schickt Prompt an fähiges LLM (Claude Opus 4+, GPT-5+, etc.)
+# 3. LLM arbeitet Prompt ab, aktualisiert Dateien, setzt Verifikations-Flags
 # 4. Operator prüft diff, commitet
-
+#
 # Verfügbare Prompts:
-# - provider_card_verification → Statische Hersteller-Informationen verifizieren/aktualisieren
-# - model_card_verification    → Inhaltliche Modell-Metadaten verifizieren/ergänzen
-# - community_card_verification → Community-Distributor-Cards verifizieren/ergänzen
+# - provider_card_verification  → Hersteller-Informationen verifizieren
+# - model_card_verification     → Modell-Metadaten verifizieren/ergänzen
+# - community_card_verification → Community-Distributor-Cards verifizieren
+# - model_onboarding            → Neue Modelle onboarden
 
-version: "1.2.0"
-last_updated: "2026-06-12"
+version: "1.3.0"
+last_updated: "2026-06-18"
 
 # ----------------------------------------------------------------------------
 # PROMPT: provider_card_verification
 # ----------------------------------------------------------------------------
-# Aufgabe: Alle Provider Cards mit profile_verified: false recherchieren,
-# statische Felder aktualisieren, Verifikations-Flag setzen.
-
 # Empfohlene Modelle: Claude Opus 4+, GPT-5+, Gemini 2.5 Pro
-# Benötigte Fähigkeiten: Web-Recherche (Search/Browse), Datei-Schreibzugriff
-# Geschätzte Dauer: 3–8 Minuten pro Hersteller
+# Benötigte Fähigkeiten: Web-Recherche, Datei-Schreibzugriff
+# Geschätzte Dauer: 3–8 Min. pro Hersteller
 # ----------------------------------------------------------------------------
 provider_card_verification:
   name: "Provider Card Verification"
-  version: "1.1.0"
+  version: "1.2.0"
   description: >
     Verifiziert und aktualisiert die statischen Hersteller-Informationen in
     Provider Cards. Wird auf Cards mit profile_verified: false angewendet.
@@ -44,469 +39,579 @@ provider_card_verification:
     # Aufgabe: Provider Card Verification
 
     Du bist ein erfahrener Tech-Redakteur mit Fokus auf KI-Unternehmen und
-    europäisches Datenschutzrecht. Deine Aufgabe ist es, die statischen
-    Hersteller-Informationen in CrucibleMark Provider Cards zu verifizieren,
-    zu aktualisieren und einen prägnanten Beschreibungstext zu verfassen.
+    europäisches Datenschutzrecht. Antworte ausschließlich auf Deutsch —
+    keine nicht-lateinischen Schriftzeichen in Ausgaben oder Zwischenschritten.
 
-    **Recherchepflicht:** Alle inhaltlichen Angaben — insbesondere `description`
-    und `privacy_note` — müssen auf aktuellen, öffentlich verifizierbaren Quellen
-    basieren. Verwende ausschließlich offizielle Unternehmensquellen, Datenschutz-
-    erklärungen und API-Dokumentationen. Kein Training-Wissen, keine Annahmen.
+    **Recherchepflicht (strikt):** Kein Training-Wissen verwenden. Alle Angaben
+    müssen auf aktuellen, öffentlich verifizierbaren Quellen basieren: offizielle
+    Unternehmenswebsite, Datenschutzerklärung, API-Dokumentation, Crunchbase/LinkedIn.
 
     ## Kontext
 
     CrucibleMark ist ein LLM-Benchmark-Framework. Provider Cards dokumentieren
-    die Hersteller und Anbieter von KI-Modellen — insbesondere Compliance-relevante
-    Informationen (DSGVO, Jurisdiktion, Datenschutz), die für eine europäische
-    Nutzerperspektive wichtig sind.
+    Hersteller/Anbieter von KI-Modellen — insbesondere Compliance-relevante
+    Informationen (DSGVO, Jurisdiktion, Datenschutz) für europäische Nutzer.
 
     ## Auftrag
 
-    Bearbeite alle Provider Cards in `benchmark_scores/vendor_cards/` bei
-    denen das Feld `"profile_verified": false` gesetzt ist.
-
-    Überspringe folgende Dateien:
-    - `_index.json`
-    - `todo.json`
-    - `unknown.json`
+    Bearbeite alle Provider Cards in `benchmark_scores/vendor_cards/` mit
+    `"profile_verified": false`. Überspringe: `_index.json`, `todo.json`,
+    `unknown.json`.
 
     ## Vorgehen pro Card
 
     ### Schritt 1 — Datei lesen
-    Lese die JSON-Datei vollständig. Notiere dir `vendor_id`, `display_name`
-    und `company`.
+    Vollständig lesen. `vendor_id`, `display_name`, `company` notieren.
 
-    ### Schritt 2 — Recherche
-    Recherchiere folgende Informationen über den Hersteller (nutze offizielle
-    Quellen: Website, Datenschutzerklärung, API-Dokumentation, LinkedIn/Crunchbase
-    für Firmendaten):
+    ### Schritt 2 — Recherche (alles aktiv recherchieren, nicht aus Training)
 
     **Firmen-Stammdaten:**
-    - Vollständiger Firmenname (Rechtsform, z.B. "OpenAI, L.L.C." oder "Anthropic PBC")
-    - Aktueller Firmensitz (Stadt, Bundesstaat/Region, Land)
+    - Vollständiger Firmenname (Rechtsform, z.B. "OpenAI, L.L.C.")
+    - Aktueller Firmensitz (Stadt, Region, Land)
     - Gründungsjahr
 
     **API & Produkt:**
     - Aktuelle API-Basis-URL
     - Aktuelle API-Dokumentations-URL
 
-    **Compliance & Datenschutz (besonders wichtig):**
-    - Gilt der US CLOUD Act? (Firmensitz USA → ja, alle anderen → prüfen)
-    - Anwendbares Recht (z.B. "US (CLOUD Act)", "EU (DSGVO)", "China (PIPL/CSL/DSL)")
-    - Wo werden Daten verarbeitet/gespeichert?
-    - Ist ein DSGVO Data Processing Agreement (DPA) verfügbar?
-    - Gibt es einen EU-Angemessenheitsbeschluss (adequacy decision)?
-    - Wie lange werden API-Anfrage-Daten aufbewahrt? (-1 = unklar/keine Angabe)
-    - Chinesisches NSL-Risiko: "none" (kein China-Bezug), "low", "medium", "high"
-      (Chinese NSL = National Security Law gilt für chinesische Firmen und ihre
-      Tochtergesellschaften weltweit)
+    **Compliance & Datenschutz:**
+    - `cloud_act_exposure`: true wenn Firmensitz USA, sonst aktiv prüfen
+    - `applicable_law`: z.B. "US (CLOUD Act)", "EU (DSGVO)", "China (PIPL/CSL/DSL)"
+    - `data_residency`: Wo werden Daten verarbeitet/gespeichert?
+    - `gdpr_dpa_available`: Ist ein DSGVO-DPA öffentlich verfügbar?
+    - `eu_adequacy_decision`: Gilt ein EU-Angemessenheitsbeschluss?
+    - `data_retention_days`: Aufbewahrung von API-Anfragen in Tagen (-1 = unklar)
+    - `chinese_nsl_risk`: "none" / "low" / "medium" / "high"
+      (NSL gilt für chinesische Firmen und ihre globalen Töchter)
 
     **Hersteller-Beschreibung (`description`):**
-    Schreibe einen sachlichen, redaktionell formulierten Kurztext über das
-    Unternehmen. Dieser Text erscheint auf der CrucibleMark-Website im
-    Hersteller-Profil und richtet sich an Product Engineers.
-
-    Vorgaben:
-    - Ziel: 360 Zeichen (optimal). Minimum: 240 Zeichen. Maximum: 480 Zeichen.
-    - Ton: sachlich mit leichter Prosa. Nicht zu technisch, nicht werblich.
-      Kein Marketingsprech ("führend", "revolutionär", "bahnbrechend").
-    - Sprache: Deutsch.
-    - Keine Bindestriche zur Aufzählung (nicht "–", nicht "•").
-      Fließtext, keine Listen.
-    - Keine Wortwitzversuche, keine Metaphern.
-    - Inhalt: Was ist das Unternehmen? Welche Modelle oder Produkte sind bekannt?
-      In welchem rechtlichen oder geopolitischen Kontext operiert es?
-      Besondere Merkmale (Open-Source-Ausrichtung, Forschungsfokus, etc.)
-      können erwähnt werden, wenn belegt.
-    - Alle genannten Fakten müssen recherchiert und belegbar sein.
+    Sachlicher Kurztext für Product Engineers. 240–480 Zeichen (Ziel: 360).
+    Ton: prosaisch, nicht werblich ("führend", "revolutionär" → verboten).
+    Fließtext, keine Aufzählungszeichen. Nur belegte Fakten.
 
     **Privacy Note (`privacy_note`):**
-    Schreibe einen präzisen, sachlichen Datenschutz-Hinweis (2–4 Sätze) auf
-    Deutsch, der die wesentlichen Risiken und Hinweise für europäische Nutzer
-    zusammenfasst. Ton: neutral-informativ, kein Marketing.
+    2–4 Sätze, Deutsch, neutral-informativ. Wesentliche Risiken und Hinweise
+    für europäische Nutzer.
 
-    ### Schritt 3 — Card aktualisieren
-    Aktualisiere **ausschließlich** folgende Felder in der JSON-Datei:
-
+    ### Schritt 3 — Felder aktualisieren (nur diese)
     ```
-    company                        ← vollständiger Firmenname
-    headquarters                   ← aktueller Firmensitz
-    founding_year                  ← Gründungsjahr (int oder null)
-    description                    ← redaktioneller Kurztext (Deutsch, 240–480 Zeichen, Ziel 360)
-    api_base_url                   ← aktuelle API-URL
-    api_documentation_url          ← aktuelle Doku-URL
-    deployment.cloud_act_exposure  ← true/false
-    deployment.applicable_law      ← string
-    deployment.data_residency      ← string
-    deployment.gdpr_dpa_available  ← true/false
-    deployment.eu_adequacy_decision ← true/false
-    deployment.data_retention_days ← int (-1 = unbekannt)
-    deployment.chinese_nsl_risk    ← "none"|"low"|"medium"|"high"
-    privacy_note                   ← aktualisierter Datenschutzhinweis (Deutsch)
-    last_verified_at               ← heutiges Datum (ISO 8601: YYYY-MM-DD)
-    verification_source            ← URL der primären Quelle (Datenschutzerklärung oder Policy-URL)
-    profile_verified               ← true (nach erfolgreicher Verifikation setzen)
-    profile_verified_at            ← heutiges Datum (ISO 8601: YYYY-MM-DD)
+    company, headquarters, founding_year, description, api_base_url,
+    api_documentation_url, deployment.cloud_act_exposure,
+    deployment.applicable_law, deployment.data_residency,
+    deployment.gdpr_dpa_available, deployment.eu_adequacy_decision,
+    deployment.data_retention_days, deployment.chinese_nsl_risk,
+    privacy_note, last_verified_at (heute, YYYY-MM-DD),
+    verification_source (echte URL), profile_verified (true),
+    profile_verified_at (heute, YYYY-MM-DD)
     ```
 
-    ### Schritt 4 — Was du NICHT verändern darfst
-    Folgende Felder NICHT anfassen:
+    ### Schritt 4 — Nicht anfassen
     ```
-    vendor_id      ← ID darf sich nie ändern
-    display_name   ← nur manuell durch Operator änderbar
-    notable_models ← wird automatisch gepflegt
-    stats          ← Laufzeitdaten, nicht redaktionell
-    pricing_model  ← nur manuell änderbar
-    unknown        ← nur durch Operator
-    generated_at   ← Timestamp der letzten automatischen Generierung
+    vendor_id, display_name, notable_models, stats, pricing_model,
+    unknown, generated_at
     ```
 
     ### Schritt 5 — Abschlussprüfung
-    Stelle sicher:
-    - JSON ist valide (kein Syntaxfehler)
-    - `description` liegt zwischen 240 und 480 Zeichen (Zielwert: 360)
-    - `description` enthält keine Bindestriche als Aufzählungszeichen
-    - `profile_verified: true` und `profile_verified_at` sind korrekt gesetzt
-    - `last_verified_at` ist auf das heutige Datum gesetzt
-    - `verification_source` enthält eine echte, erreichbare URL
+    - JSON valide
+    - `description` 240–480 Zeichen, keine Aufzählungszeichen
+    - `profile_verified: true` und `profile_verified_at` gesetzt
+    - `verification_source` ist eine echte, erreichbare URL
+    - Kein nicht-lateinisches Zeichen in irgendeinem Textfeld
 
     ## Ausgabe-Format
-
-    Nach Abschluss aller Cards: Gib eine kurze Zusammenfassung aus:
-    - Welche Cards wurden aktualisiert
-    - Welche Felder sich wesentlich geändert haben
-    - Eventuelle Unsicherheiten oder fehlende Informationen (dann `profile_verified: false`
-      lassen und eine Notiz in `privacy_note` ergänzen, was unklar ist)
+    Kurze Zusammenfassung: welche Cards aktualisiert, wesentliche Änderungen,
+    Unsicherheiten (→ `profile_verified: false` lassen + Notiz in `privacy_note`).
 
     ## Qualitätskriterien
-
-    - Bevorzuge offizielle Quellen (datenschutz.company.com, legal.company.com, privacy-policy)
-    - Bei Unsicherheit: konservativer Wert (z.B. `cloud_act_exposure: true` wenn Sitz USA)
-    - Chinesisches NSL-Risiko: "high" für chinesische Firmen und ihre globalen Töchter,
-      "none" für Firmen ohne China-Bezug
-    - `description` auf Deutsch: sachlich, leicht prosaisch, ohne Werbeton,
-      ohne Bindestriche, zwischen 240 und 480 Zeichen
-    - `privacy_note` auf Deutsch: sachlich, 2–4 Sätze, europäische Nutzerperspektive
-
+    - Offizielle Quellen bevorzugen (privacy-policy, legal-Seiten)
+    - Bei Unsicherheit konservativ: US-Sitz → `cloud_act_exposure: true`
+    - Chinesische Firmen/Töchter → `chinese_nsl_risk: "high"`
 
 # ----------------------------------------------------------------------------
 # PROMPT: model_card_verification
 # ----------------------------------------------------------------------------
-# Aufgabe: Alle Model Cards mit profile_verified: false recherchieren,
-# inhaltliche Felder prüfen/ergänzen, Verifikations-Flag setzen.
-
-# Empfohlene Modelle: Claude Opus 4+, GPT-5+, Gemini 2.5 Pro (mit Web-Recherche)
-# Benötigte Fähigkeiten: Web-Recherche (Search/Browse), Datei-Schreibzugriff
-# Geschätzte Dauer: 2–5 Minuten pro Modell (viele Cards lassen sich batchen)
+# Empfohlene Modelle: Claude Opus 4+, GPT-5+, Gemini 2.5 Pro
+# Benötigte Fähigkeiten: Web-Recherche, Datei-Schreibzugriff
+# Geschätzte Dauer: 2–5 Min. pro Modell
 # ----------------------------------------------------------------------------
 model_card_verification:
   name: "Model Card Verification"
-  version: "1.1.0"
+  version: "1.3.0"
   description: >
-    Verifiziert und ergänzt die inhaltlichen Metadaten in Model Cards.
-    Wird auf Cards mit profile_verified: false angewendet. Füllt fehlende
-    Werte ("TODO" / null) aus öffentlichen Quellen und korrigiert veraltete
-    Informationen (Preise, Context-Window, Knowledge-Cutoff etc.).
+    Verifiziert und ergänzt Metadaten in Model Cards anhand des aktuellen
+    card_template_model.yaml als Single Source of Truth. Füllt fehlende
+    Template-Felder, entfernt veraltete Nicht-Template-Felder und korrigiert
+    verifizierbare Inhalte wie Lizenz, Preise, Context-Window und Knowledge-Cutoff.
   targets:
     directory: "benchmark_scores/model_cards/"
-    filter: "profile_verified == false"
+    filter: "all cards or operator-selected subset"
     exclude: ["_index.json"]
   prompt: |
     # Aufgabe: Model Card Verification
 
-    Du bist ein erfahrener Tech-Redakteur mit Spezialisierung auf KI-Modelle
-    und maschinelles Lernen. Deine Aufgabe ist es, die Metadaten in CrucibleMark
-    Model Cards zu verifizieren, fehlende Werte zu ergänzen, veraltete
-    Informationen zu korrigieren und einen prägnanten Beschreibungstext
-    (`summary`) zu verfassen.
+        Du bist ein erfahrener Tech-Redakteur mit Spezialisierung auf KI-Modelle.
+    Antworte ausschließlich auf Deutsch. Verwende keine nicht-lateinischen
+    Schriftzeichen in Ausgaben, Zwischenschritten oder Textfeldern.
 
-    **Recherchepflicht:** Alle inhaltlichen Angaben — insbesondere `summary`,
-    `strengths` und `known_limitations` — müssen auf aktuellen, öffentlich
-    verifizierbaren Quellen basieren. Nutze ausschließlich offizielle Quellen:
-    Hersteller-Website, offizielle HuggingFace Model Card, Ankündigungs-
-    Blogposts, API-Preisseiten. Kein Training-Wissen verwenden, keine
-    Annahmen treffen.
+    **ABSOLUTES VERBOT: Training-Wissen als Quelle nutzen.**
+    Dein internes Wissen über Modelle, Lizenzen, Parameter und Preise
+    ist veraltet und unzuverlässig. Es darf unter keinen Umständen als
+    Grundlage für Feldwerte dienen — auch nicht zur Plausibilitätsprüfung,
+    auch nicht als Fallback, auch nicht zur Bestätigung eines Wertes.
+
+    Jedes inhaltliche Feld muss entweder:
+    a) aus der bestehenden Card übernommen werden (wenn bereits korrekt belegt), oder
+    b) durch aktiven Abruf einer externen Quelle neu belegt werden.
+
+    Wenn du eine externe Quelle nicht abrufen kannst:
+    → Bestehenden Wert beibehalten und als unverifizierten Warning markieren
+    → NICHT durch einen aus dem Training abgeleiteten Wert ersetzen
+    → NICHT auf true verifizieren
+
+    **Lizenzen wechseln zwischen Modellgenerationen — immer konkret prüfen.**
+    Gemma 1/2/3 ≠ Gemma 4. Llama 2 ≠ Llama 3. Qwen 2 ≠ Qwen 3.
+    Der Modellname allein bestimmt nie die Lizenz.
+
+    **Recherchepflicht gilt besonders für Lizenzfelder.** Lizenzen
+    wechseln zwischen Modellgenerationen. Was für Gemma 1/2/3 galt,
+    gilt nicht automatisch für Gemma 4. Was für Llama 2 galt, gilt
+    nicht für Llama 3. Immer die aktuelle Lizenzseite der konkreten
+    Modellversion abrufen.
+
+    Alle inhaltlichen Angaben aktiv recherchieren und nur aus aktuellen,
+    öffentlich verifizierbaren Quellen übernehmen. Offizielle Quellen haben
+    Vorrang: Hersteller-Website, offizielle HuggingFace Model Card,
+    Ankündigungs-Blogposts, API-Preisseiten, offizielle Lizenzseiten.
+
+    **WICHTIG: Das Datei-Template ist die Single Source of Truth.**
+    Verwende `config/card_template_model.yaml` bzw. das bereitgestellte
+    `card_template_model.yaml` als verbindliche Felddefinition.
+
+    ## Ziel
+
+    Überarbeite jede Model Card so, dass sie:
+    1. alle im Template definierten Felder enthält,
+    2. keine veralteten Felder außerhalb des Templates mehr enthält,
+    3. inhaltlich korrekt recherchiert ist,
+    4. formal zum Template und zu den kontrollierten Vokabularen passt.
+
+    ## Zentrale Regeln
+
+    ### Regel 1 — Template-Sync ist Pflicht
+    Für jede Card gilt:
+
+    - Wenn ein Feld im aktuellen `card_template_model.yaml` definiert ist, muss es
+      in der Card vorhanden sein.
+    - Wenn ein Feld in der Card existiert, aber nicht mehr im Template definiert ist,
+      muss es aus der Card entfernt werden.
+    - Fehlende Template-Felder müssen ergänzt werden.
+    - Optionalfelder aus dem Template dürfen vorhanden sein; wenn sie schon in der
+      Card existieren, müssen sie formal erhalten bleiben.
+    - Felder, die automatisch von anderen Pipelines gepflegt werden, dürfen nicht
+      redaktionell überschrieben werden, außer diese Anweisung erlaubt es explizit.
+
+    ### Regel 2 — Preise immer aktualisieren
+    `input_price_per_1m` und `output_price_per_1m` müssen immer geprüft und bei
+    Bedarf aktualisiert werden — auch wenn `profile_verified: true` gesetzt ist.
+    Preise gelten als zeitvariable Felder und sind nie durch einen alten
+    Verifikationsstatus dauerhaft eingefroren. [file:57]
+
+    ### Regel 3 — Verifikation bezieht sich auf inhaltliche Felder
+    Laut Template umfasst die Verifikation insbesondere Felder wie `summary`,
+    `strengths`, `known_limitations`, `judge_context_hint`, Parameter, Pricing,
+    Modalitäten, Lizenz und ähnliche Inhaltsfelder. Automatische Felder wie
+    `thinking_probe_*`, `tooluse_*`, `generated_at`, `size_class`, `unknown`
+    und `model_id` fallen nicht unter die redaktionelle Verifikation. [file:57]
+
+    ### Regel 4 — Bei Unsicherheit konservativ
+    Wenn ein Wert nicht offiziell belegbar ist:
+    - nicht raten,
+    - `null` setzen, wenn das Template dies semantisch erlaubt,
+    - oder den bestehenden Wert nur dann beibehalten, wenn er verifiziert werden kann.
+    Nicht belegbare Fantasiewerte sind schlimmer als `null`.
 
     ## Kontext
 
     CrucibleMark ist ein LLM-Benchmark-Framework. Model Cards enthalten
     strukturierte Metadaten zu KI-Modellen: Architektur, Lizenz, Pricing,
-    Stärken und Schwächen sowie Kontext-Hinweise für den internen LLM-Judge.
-    Korrekte Metadaten sind Voraussetzung für valide Benchmark-Ergebnisse
-    und aussagekräftige Leaderboard-Darstellungen.
+    Stärken, Schwächen und Kontext-Hinweise für Judge, Review, Web-Export
+    und Leaderboard.
 
-    ## Glossar (wichtige Feldwerte)
+    ## Verbindliche Feldlogik
 
-    **deployment_type:**
-    - `cloud-only` — nur über API zugänglich, keine Gewichte verfügbar
-    - `open-weights-cloud-available` — Gewichte öffentlich, auch Cloud-API
-    - `open-weights` — nur Gewichte, keine offizielle Cloud-API
-    - `localweights` — nur lokal betreibbar (z.B. GGUF-Quants ohne offizielle API)
+    Nutze das Template als Wahrheit für:
+    - Pflichtfelder
+    - Optionalfelder
+    - erlaubte `null`-Semantik
+    - Standardwerte
+    - technische Feldnamen
 
-    **weights_provenance_risk:** (Sovereign-Risk-Bewertung)
-    - `low` — EU-Entwickler oder vertrauenswürdiger westlicher Partner ohne
-      bekannte staatliche Einflussnahme
-    - `medium` — US-Entwickler (CLOUD Act möglich), aber keine bekannte direkte
-      staatliche Kontrolle
-    - `high` — chinesischer Entwickler (NSL/PIPL), staatlich kontrolliert,
-      oder undurchsichtige Eigentümerstruktur
+    Wenn Template und bestehende Card widersprüchlich sind, gewinnt immer das Template. [file:57]
 
-    **use_case_primary:** generalist | coding | reasoning | vision-language | agentic
+    ## Glossar für inhaltliche Klassifikation
 
-    **parameter_architecture:** dense | moe | hybrid
+    **`deployment_type`:**
+    - `cloud-only` — nur API, keine öffentlichen Gewichte
+    - `open-weights-cloud-available` — Gewichte öffentlich + offizielle Cloud-API
+    - `open-weights` — öffentliche Gewichte, keine offizielle Cloud-API
+    - `localweights` — lokale Gewichte oder Community-Quantisierung ohne offizielle API
 
-    **weights_license_tier:** proprietary | open-weights | restricted-weights
+    **`weights_license_tier`:**
+    - `open-weights` — OSI-anerkannte oder vergleichbar permissive Lizenz ohne
+      kommerzielle Nutzungsbeschränkung
+    - `restricted-weights` — öffentliche Gewichte unter Custom-/Nutzungsbedingungen
+    - `proprietary` — keine öffentlichen Gewichte
 
-    **vendor:** Muss exakt einem der kanonischen Hersteller-Namen entsprechen
-    (SSoT: config/classification_taxonomy.json → manufacturers → values):
-    Alibaba, Anthropic, DeepSeek, Google, Meta, MiniMax, Mistral AI,
-    Moonshot AI, NousResearch, NVIDIA, OpenAI, xAI, Zhipu AI
+    **Konsistenzregel license_url:**
+    - `license: "Apache 2.0"` → `license_url` muss auf die Apache-Lizenz
+      zeigen: `https://www.apache.org/licenses/LICENSE-2.0`
+      NICHT auf `https://ai.google.dev/gemma/terms` oder eine
+      modellspezifische Seite
+    - `license: "MIT"` → `https://opensource.org/licenses/MIT`
+    - Custom-Lizenzen → URL zur offiziellen Lizenzseite des Herstellers
+    - Die `license_url` muss zur `license` passen — nie eine generische
+      Hersteller-URL verwenden wenn eine SPDX-Lizenz angegeben ist
 
-    **architecture_tags:** Whitelist in config/card_vocabulary.yaml.
-    Typische Werte: General, Instruct, Code, Reasoning, MoE, Multimodal,
-    Vision, Local, Quantized, Community
+    **WICHTIG:** Die Lizenzklassifikation darf nie aus dem Modellnamen oder
+    der Modellfamilie abgeleitet werden. "Gemma" im Namen bedeutet nicht
+    automatisch "Gemma Terms". Jede Modellversion wird einzeln geprüft.
 
-    **input_modalities / output_modalities:** Erlaubte Werte: text, image, audio, video
-    ("text" ist immer implizit enthalten)
+    **`weights_provenance_risk`:**
+    - `low` — EU oder vergleichbar risikoarm
+    - `medium` — US-Jurisdiktion, CLOUD-Act-Risiko möglich
+    - `high` — chinesische Jurisdiktion oder stark unklare Eigentümerstruktur
 
-    **community:** Kanonischer Name der Community-Gruppe, die dieses Modell quantisiert,
-    fine-getuned oder distribuiert hat. Nur setzen wenn konkret identifiziert.
-    null für kommerzielle Cloud-Modelle und Modelle, die direkt vom Hersteller
-    veröffentlicht wurden (keine Community-Distribution).
-    Kontrollierte Werte (SSoT: config/classification_taxonomy.json → community_groups):
-    Unsloth, mradermacher, HauhauCS, ARA-APEX
+    **`use_case_primary`:**
+    - `generalist`
+    - `coding`
+    - `reasoning`
+    - `vision-language`
+    - `agentic`
+
+    **`parameter_architecture`:**
+    - `dense`
+    - `moe`
+    - `hybrid`
+
+    **`community`:**
+    Nur setzen, wenn der konkrete Community-Distributor identifizierbar ist.
+    Kontrollierte Werte: `Unsloth`, `mradermacher`, `HauhauCS`, `ARA-APEX`. [file:56]
 
     ## Auftrag
 
-    Bearbeite alle Model Cards in `benchmark_scores/model_cards/` bei
-    denen das Feld `"profile_verified": false` gesetzt ist.
-
-    Überspringe: `_index.json`
+    Bearbeite alle Model Cards im Zielverzeichnis oder im vom Operator gewählten
+    Teilset. Verwende nicht den bisherigen Card-Zustand als Autorität, sondern
+    das aktuelle Template plus offizielle Quellen.
 
     ## Vorgehen pro Card
 
-    ### Schritt 1 — Datei lesen
-    Lese die JSON-Datei vollständig. Notiere dir `model_id`, `display_name`,
-    `developer` und `vendor`. Identifiziere alle Felder mit dem Wert `"TODO"`
-    oder `null` (außer Felder, die null sein dürfen — siehe Schritt 4).
+    ### Schritt 1 — Template und Card lesen
+    Lies zuerst:
+    - die bestehende Model Card vollständig
+    - das aktuelle `card_template_model.yaml` vollständig
 
-    ### Schritt 2 — Recherche
-    Recherchiere über das Modell (nutze offizielle Quellen: Entwickler-Website,
-    HuggingFace Model Card, offizielle Ankündigungs-Blogposts, API-Dokumentation):
+    Erstelle gedanklich drei Mengen:
+    1. Felder, die laut Template vorhanden sein müssen
+    2. Felder, die optional laut Template erlaubt sind
+    3. Felder, die in der Card existieren, aber nicht mehr im Template vorkommen
 
-    **Identität & Klassifikation:**
-    - Korrekter `display_name` (z.B. "GPT-5.4 Mini", nicht "gpt-5_4-mini")
-    - `developer` — vollständiger Lab-/Firmenname (z.B. "Google DeepMind")
-    - `vendor` — kanonischer Hersteller-Name (aus Glossar oben)
-    - `origin_country` — Herkunftsland (z.B. "USA", "China", "France")
-    - `developer_jurisdiction` — Rechtsraum (z.B. "US", "EU", "CN")
-    - `model_family` — Modellfamilie (z.B. "GPT", "Claude", "Gemma", "Qwen")
-    - `model_version` — Versions-String laut Hersteller
+    ### Schritt 2 — Schema-Sync durchführen
+    Vor der Inhaltsrecherche:
 
-    **Architektur & Fähigkeiten:**
-    - `parameter_architecture` — dense / moe / hybrid
-    - `params_total_b` — Gesamtparameter in Milliarden (null wenn nicht bekannt)
-    - `params_active_b` — Aktive Parameter bei MoE (null für dense)
-    - `context_window_k` — maximales Context-Window in Tausend Tokens
-    - `knowledge_cutoff` — Trainings-Datensatz-Cutoff (Format: YYYY-MM)
-    - `input_modalities` — was das Modell nativ verarbeitet (text/image/audio/video)
-    - `output_modalities` — was das Modell erzeugt (text/image/audio)
-    - `supports_tool_use` — true wenn Modell Function Calling / Tool Use
-      offiziell unterstützt, false wenn nicht, null wenn unklar
-      (Hinweis: wird ggf. vom Tooluse-Benchmark überschrieben)
-    - `architecture_tags` — relevante Tags (aus Whitelist, s. Glossar)
-    - `primary_focus` — general / reasoning / code / multimodal / agentic
+    - Fehlende Template-Felder ergänzen
+    - Nicht mehr definierte Felder entfernen
+    - Feldnamen exakt an das Template anpassen
+    - Defaults nur als Platzhalter verwenden, nicht als recherchierte Wahrheit missverstehen
 
-    **Deployment & Lizenz:**
-    - `deployment_type` — cloud-only / open-weights-cloud-available / open-weights / localweights
-    - `local_deployment_possible` — bool
-    - `license` — SPDX-Name oder "Proprietary"
-    - `license_url` — URL zur Lizenz (null für Proprietary ohne öffentliche URL)
-    - `commercial_use_allowed` — bool
-    - `weights_license_tier` — proprietary / open-weights / restricted-weights
+    ### GGUF-Recherchepfad (verbindlich für alle Community-Quantisierungen)
 
-    **Preise (nur für Cloud-Modelle, null für lokale Modelle):**
-    - `input_price_per_1m` — USD pro 1M Input-Tokens (aktueller Listenpreis)
-    - `output_price_per_1m` — USD pro 1M Output-Tokens (aktueller Listenpreis)
+    Erkennungsregel: Ein Modell ist eine Community-GGUF-Distribution wenn
+    `deployment_type: localweights` ODER `architecture_tags` den Wert
+    `Quantized` enthält ODER `model_id` / `display_name` einen der folgenden
+    Hinweise enthalten: GGUF, Q4, Q5, Q6, Q8, IQ, UD, Dynamic, iMatrix,
+    GPTQ, AWQ, EXL2.
 
-    **Sovereign Risk:**
-    - `weights_provenance_risk` — low / medium / high (s. Glossar)
-    - `weights_provenance_risk_rationale` — 1–2 Sätze, warum dieses Level
+    Für diese Modelle gilt zwingend folgender Recherchepfad:
 
-    **Modell-Zusammenfassung (`summary`) — Redaktionelle Vorgaben:**
-    Schreibe einen sachlichen, redaktionell formulierten Kurztext über das
-    Modell. Dieser Text erscheint auf der CrucibleMark-Website im Modell-Profil
-    und richtet sich an Product Engineers.
+    #### Schritt A — HuggingFace-URL konstruieren
 
-    Vorgaben:
-    - Ziel: 360 Zeichen (optimal). Minimum: 240 Zeichen. Maximum: 480 Zeichen.
-    - Ton: sachlich mit leichter Prosa. Nicht zu technisch, nicht werblich.
-      Kein Marketingsprech ("führend", "revolutionär", "bahnbrechend").
-    - Sprache: Deutsch.
-    - Keine Bindestriche zur Aufzählung (nicht "–", nicht "•", nicht "-").
-      Fließtext, keine Listen innerhalb des `summary`-Feldes.
-    - Keine Wortwitzversuche, keine Metaphern.
-    - Inhalt: Was ist das Modell? Wofür ist es optimiert? Was zeichnet es aus?
-    - Besondere Modelltypen explizit benennen:
-      * Quantisierte Modelle (Q4, Q5, Q8, GGUF, GPTQ, AWQ): erwähnen, dass es
-        sich um eine quantisierte Version handelt, welcher Vorteil daraus folgt
-        (z.B. lauffähig auf Consumer-Hardware) und welche Qualitätsstufe
-        (Q4 = stärkste Kompression, Q8 = nahezu verlustfrei).
-      * Abliterierte/Uncensored-Modelle: explizit darauf hinweisen, dass
-        Sicherheitsmechanismen entfernt wurden. Sachlich, nicht wertend.
-      * Community-Modelle (Unsloth, mradermacher, etc.): den Community-
-        Distributor und den Charakter der Distribution nennen.
-      * Instruct-Varianten vs. Base-Modelle: den Unterschied klarstellen,
-        wenn relevant.
-    - Alle genannten Fakten müssen recherchiert und belegbar sein.
+    Regel: Die `model_id` entspricht dem HuggingFace Repo-Slug oder enthält
+    Hinweise darauf. Baue die URL wie folgt:
+    `https://huggingface.co/{community_distributor}/{repo_name}`
 
-    **use_case_primary:** Klassifikation nach Hauptanwendungsfall
+    Typische Distributor-Präfixe im `model_id`:
+    - `UD` oder `Dynamic` im Namen → Unsloth-Distribution
+      → URL: `https://huggingface.co/unsloth/{repo_name}`
+    - Name enthält `mradermacher` → `https://huggingface.co/mradermacher/{repo_name}`
+    - Name enthält `HauhauCS` → `https://huggingface.co/HauhauCS/{repo_name}`
 
-    **Community-Zuordnung (nur für lokale / open-weights Modelle):**
-    Prüfe bei Modellen mit `deployment_type: localweights` oder `open-weights`:
-    - Wer hat die konkreten Gewichte auf HuggingFace veröffentlicht?
-      Schau dir die HuggingFace-Modellseite des Modells an (Org/User in der URL).
-    - HuggingFace-Org/User `unsloth` oder `unslothai` → community: "Unsloth"
-    - HuggingFace-User `mradermacher` → community: "mradermacher"
-    - HuggingFace-Org/User `HauhauCS` → community: "HauhauCS"
-    - Modellname oder HF-Handle enthält "ARA-APEX" → community: "ARA-APEX"
-    - Original-Modell direkt vom Hersteller publiziert → community: null
-    - Anderer bekannter Community-Distributor → null setzen, Rückfrage
-      als Kommentar in `known_limitations` ergänzen
-    - Für `cloud-only` und `open-weights-cloud-available` Modelle (keine GGUF-Quants):
-      community: null (nie setzen bei Cloud-nativen Modellen)
+    Falls der Distributor nicht eindeutig erkennbar ist:
+    → Suche auf HuggingFace nach dem vollständigen `model_id`-String.
 
-    ### Schritt 3 — Card aktualisieren
-    Aktualisiere **ausschließlich** die folgenden Felder — aber nur, wenn sie
-    den Wert `"TODO"` haben, `null` sind (und kein erlaubtes null-Feld,
-    siehe Schritt 4), oder nachweislich veraltet/falsch sind:
+    #### Schritt B — HuggingFace Model Card aufrufen und auslesen
 
-    ```
-    display_name
-    developer
-    vendor                          ← muss aus kanonischer Liste (Glossar)
-    origin_country
-    developer_jurisdiction
-    model_family
-    model_version
-    parameter_architecture
-    params_total_b                  ← null wenn nicht öffentlich bekannt
-    params_active_b                 ← null für dense-Modelle
-    context_window_k
-    knowledge_cutoff                ← Format YYYY-MM
-    input_modalities
-    output_modalities
-    supports_tool_use               ← null wenn unklar
-    architecture_tags
-    primary_focus
-    deployment_type
-    local_deployment_possible
-    license
-    license_url                     ← null für Proprietary ohne URL
-    commercial_use_allowed
-    weights_license_tier
-    input_price_per_1m              ← null für lokale Modelle
-    output_price_per_1m             ← null für lokale Modelle
-    weights_provenance_risk
-    weights_provenance_risk_rationale
-    summary                         ← redaktioneller Kurztext (Deutsch, 240–480 Zeichen, Ziel 360)
-    strengths
-    known_limitations
-    judge_context_hint
-    use_case_primary
-    community                       ← kanonischer Community-Name oder null (s. Glossar)
-    profile_verified                ← true (nach erfolgreicher Verifikation)
-    profile_verified_at             ← heutiges Datum (ISO 8601: YYYY-MM-DD)
-    ```
+    Rufe die HuggingFace-Seite des Repos auf. Extrahiere:
+    - Vollständigen Namen des Basismodells (z.B. "Google Gemma 3 27B IT")
+    - Link zur Basismodell-Seite (z.B. `google/gemma-3-27b-it`)
+    - Quantisierungsformat und Stufe (z.B. Q8_K_XL, UD Dynamic 2.0)
+    - Distributor-Name (z.B. Unsloth AI)
+    - Etwaige Hinweise auf Abliterierung oder Uncensored-Fine-Tuning
 
-    ### Schritt 4 — Was du NICHT verändern darfst
-    Diese Felder sind entweder automatisch gesetzt oder Operator-reserviert:
+    #### Schritt C — Basismodell-Seite aufrufen
 
-    ```
-    model_id                    ← ID ändert sich nie
-    generated_at                ← automatischer Timestamp
-    card_status                 ← nur durch Operator
-    unknown                     ← nur durch Operator
-    size_class                  ← auto-berechnet aus params_total_b / params_active_b
-    thinking_probe_detected     ← Probe-Ergebnis (automatisch)
-    thinking_probe_evidence     ← Probe-Ergebnis (automatisch)
-    thinking_probe_confidence   ← Probe-Ergebnis (automatisch)
-    thinking_probe_at           ← Probe-Ergebnis (automatisch)
-    cot_marker_family           ← Probe-Ergebnis (automatisch)
-    cot_tags_detected           ← Probe-Ergebnis (automatisch)
-    tooluse_tested_at           ← Benchmark-Ergebnis (automatisch)
-    tooluse_score_p1            ← Benchmark-Ergebnis (automatisch)
-    tooluse_score_p2            ← Benchmark-Ergebnis (automatisch)
-    tooluse_recommendation      ← Benchmark-Ergebnis (automatisch)
-    temperature                 ← Sampling-Parameter (Operator)
-    top_p                       ← Sampling-Parameter (Operator)
-    top_k                       ← Sampling-Parameter (Operator)
-    repetition_penalty          ← Sampling-Parameter (Operator)
-    frequency_penalty           ← Sampling-Parameter (Operator)
-    presence_penalty            ← Sampling-Parameter (Operator)
-    seed                        ← Sampling-Parameter (Operator)
-    stop_sequences              ← Sampling-Parameter (Operator)
-    system_prompt_override      ← Operator
-    heritage_ids                ← Operator
-    ```
+    Rufe die HuggingFace-Seite des Basismodells auf. Extrahiere:
+    - Vollständige offizielle Modellbezeichnung laut Hersteller
+    - Parameter-Anzahl (offiziell, in Milliarden)
+    - Architektur (dense / MoE)
+    - Context-Window
+    - Knowledge-Cutoff (nur wenn explizit dokumentiert)
+    - Lizenz-SPDX-Name und URL der Lizenzdatei
+    - Input-Modalitäten (Text, Bild, Audio)
+    - Offizielle HuggingFace-Org des Herstellers
 
-    ### Schritt 5 — Abschlussprüfung
-    Stelle sicher:
-    - JSON ist valide (kein Syntaxfehler, korrektes Quoting)
-    - `summary` liegt zwischen 240 und 480 Zeichen (Zielwert: 360)
-    - `summary` enthält keine Bindestriche als Aufzählungszeichen
-    - `profile_verified: true` und `profile_verified_at` korrekt gesetzt
-    - Kein Feld enthält noch den Wert `"TODO"`
-    - `vendor` ist exakt aus der kanonischen Liste
-    - `params_active_b` ist nur für MoE-Modelle gesetzt (für dense: null)
-    - Preise für lokale Modelle (localweights / open-weights ohne API) sind null
-    - `knowledge_cutoff` im Format YYYY-MM (z.B. "2025-09"), nicht YYYY
+    #### Schritt D — Konfliktauflösung bei Lizenzwiderspruch
+
+    Wenn dein internes Training-Wissen von der offiziellen Quelle abweicht:
+    → Die offizielle Quelle gewinnt immer, ohne Ausnahme.
+    → Den alten Wert aus dem Training komplett verwerfen.
+    → Den neuen, recherchierten Wert in das Feld schreiben.
+    → In `known_limitations` oder `judge_context_hint` einen Hinweis
+      ergänzen, wenn ein Lizenzwechsel gegenüber Vorgängerversionen
+      für den Nutzer relevant ist.
+
+    Konkretes Beispiel Gemma-Familie:
+    - Gemma 1, 2, 3 → "Gemma Terms of Use" → `restricted-weights`
+    - Gemma 4 → Apache 2.0 → `open-weights`
+    Diese Information muss aktiv von `https://ai.google.dev/gemma/terms`
+    oder der HuggingFace Model Card des Basismodells bestätigt werden —
+    nicht aus dem Training übernommen werden.
+
+
+    #### Schritt E — Felder aus beiden Quellen ableiten
+
+    Erst nach Abschluss von Schritt A–D alle Felder befüllen.
+
+    Spezialregeln für GGUF-Distributions:
+
+    - `developer` und `vendor` = das originale Hersteller-Lab (z.B. "Google DeepMind"),
+      NICHT der Distributor (Unsloth, mradermacher, etc.)
+    - `community` = kanonischer Distributor-Name (z.B. "Unsloth")
+    - `deployment_type` = `localweights`
+    - `local_deployment_possible` = `true`
+    - `input_price_per_1m` = `null`
+    - `output_price_per_1m` = `null`
+    - `parameter_architecture`: dense wenn keine offizielle MoE-Quelle vorliegt
+      — konservativ, nicht aus Modellnamen ableiten
+    - `params_active_b`: nur setzen wenn MoE offiziell bestätigt, sonst `null`
+    - `supports_tool_use`: `null` wenn der lokale Inference-Stack dies
+      bestimmt und kein offizieller Herstellerbeleg für diese Gewichts-
+      Variante existiert
+    - `input_modalities`: Wenn das Basismodell multimodal ist, aber die
+      GGUF-Distribution das Bildformat nicht explizit unterstützt, muss
+      `known_limitations` darauf hinweisen. Der Eintrag in `input_modalities`
+      richtet sich nach dem Basismodell, wenn die Quantisierung keine
+      Einschränkung dokumentiert.
+    - `display_name` = `"{Offizieller Basismodellname} ({Distributor} {Quantisierungsstufe})"`,
+      z.B. `"Gemma 3 27B IT (Unsloth Dynamic Q8_K_XL)"`
+    - `summary` muss Basismodell, Distributor, Quantisierungsstufe und
+      den praktischen Deploymentvorteil nennen
+    - `judge_context_hint` muss auf die Quantisierungsvariante und
+      mögliche Runtime-Unterschiede bei Vision/Tool-Use hinweisen
+
+    #### Erkennungsbeispiel für diesen Recherchepfad
+
+    `model_id: gemma-4-26B-A4B-it-UD-Q8_K_XL`
+    → "UD" und "Q8_K_XL" → Unsloth Dynamic GGUF
+    → HuggingFace-Suche: `https://huggingface.co/unsloth/gemma-4-26B-A4B-it-UD-Q8_K_XL`
+      (alternativ: Suche nach dem model_id-String auf HuggingFace)
+    → Basismodell laut HF-Card: Google Gemma 3 27B IT (`google/gemma-3-27b-it`)
+    → Basismodell-Seite aufrufen → Lizenz, Parameter, Context, Cutoff extrahieren
+    → `display_name: "Gemma 3 27B IT (Unsloth Dynamic Q8_K_XL)"`
+    → `community: "Unsloth"`
+    → `license: "Gemma Terms of Use"`, `license_url: "https://ai.google.dev/gemma/terms"`
+    → `params_total_b: 27`, `params_active_b: null`, `parameter_architecture: "dense"`
+
+    ### Schritt 3 — Inhaltlich recherchieren
+
+    Recherchiere für alle template-definierten Inhaltsfelder, sofern sie:
+    - fehlen,
+    - `TODO` sind,
+    - `null` sind, obwohl ein belastbarer Wert öffentlich recherchierbar ist,
+    - offensichtlich veraltet oder falsch sind,
+    - zeitvariabel sind, insbesondere Preise.
+
+    Besonders wichtig:
+
+    **Identität & Klassifikation**
+    - `display_name`
+    - `developer`
+    - `vendor`
+    - `origin_country`
+    - `developer_jurisdiction`
+    - `model_family`
+    - `model_version`
+
+    **Architektur & Fähigkeiten**
+    - `parameter_architecture`
+    - `params_total_b`
+    - `params_active_b`
+    - `context_window_k`
+    - `knowledge_cutoff` nur wenn offiziell dokumentiert, sonst `null`
+    - `input_modalities`
+    - `output_modalities`
+    - `supports_tool_use`
+    - `architecture_tags`
+    - `primary_focus`
+    - `use_case_primary`
+
+    **Deployment & Lizenz**
+    - `deployment_type`
+    - `local_deployment_possible`
+    - `license`
+    - `license_url`
+    - `commercial_use_allowed`
+    - `weights_license_tier`
+
+    **Pricing**
+    - `input_price_per_1m`
+    - `output_price_per_1m`
+
+    **Sovereign Risk**
+    - `weights_provenance_risk`
+    - `weights_provenance_risk_rationale`
+
+    **Redaktionelle Felder**
+    - `summary`
+    - `strengths`
+    - `known_limitations`
+    - `judge_context_hint`
+
+    **Community-Zuordnung**
+    - `community` bei lokalen/open-weight Community-Distributionen
+
+    ### Schritt 4 — Bearbeitungsregeln für einzelne Felder
+
+    **`knowledge_cutoff`:**
+    Nur setzen, wenn für die konkrete Modellversion öffentlich dokumentiert.
+    Sonst `null`. Nicht schätzen. [file:57]
+
+    **`summary`:**
+    240–480 Zeichen, Ziel 360. Deutsch, Fließtext, keine Listen,
+    kein Werbeton, keine Metaphern, keine nicht-lateinischen Zeichen.
+
+    **`strengths` / `known_limitations`:**
+    Sachlich, präzise, nicht werblich. Nur belegte Aussagen.
+
+    **`judge_context_hint`:**
+    1–2 Sätze. Nur Dinge nennen, die für die konkrete Modellvariante
+    wirklich belegt sind. Keine Spekulation über Thinking-Modus,
+    Tool-Use oder Hidden Features.
+
+    **`community`:**
+    Bei HuggingFace-Distributor:
+    - `unsloth` / `unslothai` → `Unsloth`
+    - `mradermacher` → `mradermacher`
+    - `HauhauCS` → `HauhauCS`
+    - Handle/Name mit `ARA-APEX` → `ARA-APEX`
+    - Herstellerdirekter Release → `null`
+
+    ### Schritt 5 — Automatische und operator-reservierte Felder respektieren
+
+    **KRITISCH — profile_verified Sperregel:**
+    profile_verified darf NUR auf true gesetzt werden wenn:
+    - Kein einziges 🔴-Finding im Report vorliegt
+    - Alle Pflichtfelder mit verifizierten Werten befüllt sind
+
+    Bei einem oder mehr 🔴-Findings:
+    - profile_verified MUSS false bleiben
+    - profile_verified_at NICHT setzen
+    - In der Zusammenfassung explizit nennen, warum false bleibt
+    - Der Operator korrigiert die Card manuell und löst den Lock
+
+    Nicht redaktionell überschreiben:
+    - `model_id`
+    - `generated_at`
+    - `unknown`
+    - `size_class`
+    - `thinking_probe_detected`
+    - `thinking_probe_evidence`
+    - `thinking_probe_confidence`
+    - `thinking_probe_at`
+    - `tooluse_tested_at`
+    - `tooluse_score_p1`
+    - `tooluse_score_p2`
+    - `tooluse_recommendation`
+    - `cot_marker_family`
+    - `cot_tags_detected`
+
+    Operator-/systemnahe Felder nur ändern, wenn dies Teil der Datenpflege ist:
+    - `profile_verified`
+    - `profile_verified_at`
+    - `profile_verified_by`
+    - `last_modified_at`
+
+    **Setze nach erfolgreicher inhaltlicher Verifikation:**
+    - `profile_verified: true`
+    - `profile_verified_at: heutiges Datum (YYYY-MM-DD)`
+    - `profile_verified_by: "llm:<modellname>"` falls bekannt, sonst `"llm"`
+    - `last_modified_at: heutiges Datum (YYYY-MM-DD)`
+
+    **WICHTIG:** Wenn nur Preise geändert wurden, ist `last_modified_at`
+    trotzdem zu aktualisieren. [file:57]
+
+    ### Schritt 6 — Abschlussprüfung
+
+    Prüfe abschließend:
+
+    - JSON ist valide
+    - Alle Template-Pflichtfelder sind vorhanden
+    - Keine fremden Alt-Felder außerhalb des Templates mehr vorhanden
+    - `summary` liegt zwischen 240 und 480 Zeichen
+    - Kein Textfeld enthält nicht-lateinische Schriftzeichen
+    - `vendor` ist aus der kanonischen Liste
+    - `architecture_tags` nur aus der Whitelist
+    - `params_active_b` nur für MoE sinnvoll gesetzt, sonst `null`
+    - Preise für lokale Modelle sind `null`
+    - Preise für Cloud-Modelle sind aktuell geprüft
+    - `knowledge_cutoff` ist entweder `YYYY-MM` oder `null`
+    - `license` und `weights_license_tier` sind konsistent
+    - `profile_verified_at`, `profile_verified_by`, `last_modified_at` korrekt gesetzt
 
     ## Ausgabe-Format
 
-    Nach Abschluss aller Cards: Kurze Zusammenfassung:
-    - Wie viele Cards bearbeitet
-    - Welche Felder sich wesentlich geändert haben (je Card)
-    - Unsicherheiten oder fehlende Informationen → dann `profile_verified: false`
-      lassen und in `summary` oder `known_limitations` einen Hinweis ergänzen,
-      was nicht verifiziert werden konnte
+    Gib nach Abschluss eine kurze Zusammenfassung aus:
+    - welche Cards bearbeitet wurden
+    - welche Felder wesentlich geändert wurden
+    - welche Felder neu ergänzt wurden, weil sie im Template fehlten
+    - welche Felder entfernt wurden, weil sie nicht mehr im Template stehen
+    - welche Unsicherheiten offen geblieben sind
+
+    Wenn wesentliche Felder trotz Recherche nicht belastbar verifiziert werden konnten,
+    setze `profile_verified` nicht auf true und nenne die Unsicherheiten klar.
 
     ## Qualitätskriterien
 
-    - Bevorzuge offizielle Quellen: Hersteller-Website, offizielle HuggingFace-
-      Model-Card, API-Pricing-Seite
-    - Bei Unsicherheit bei `weights_provenance_risk`: konservativ bewerten
-      (chinesische Firmen → high, US-Firmen → medium, EU → low bis medium)
-    - `summary` auf Deutsch: sachlich, leicht prosaisch, kein Werbeton,
-      keine Bindestriche, zwischen 240 und 480 Zeichen, Ziel 360
-    - `strengths`, `known_limitations` auf Deutsch: sachlich, präzise, keine Werbung
-    - `judge_context_hint` auf Deutsch: 1–2 Sätze, die dem Judge helfen,
-      Antworten dieses Modells im richtigen Kontext zu bewerten
-    - Quantisierte Modelle (GGUF, GPTQ, AWQ): `developer` ist das originale Lab,
-      `vendor` ebenfalls. `architecture_tags` enthält "Quantized" und ggf. "Community".
-      `summary` nennt explizit die Quantisierungsstufe und den Deploymentvorteil.
-    - `community` nur setzen wenn der konkrete Distributor identifiziert ist —
-      nicht raten. Bei Unklarheit: null lassen und Hinweis in `known_limitations`
-
+    - Template schlägt Altbestand
+    - Offizielle Quellen schlagen Sekundärquellen
+    - `null` schlägt unbelegte Fantasiewerte
+    - Preise immer aktualisieren
+    - Lizenzfelder immer aktiv prüfen
+    - Keine CJK-Zeichen
+    - Keine erfundenen Tags oder Klassifikationen
 
 # ----------------------------------------------------------------------------
 # PROMPT: community_card_verification
 # ----------------------------------------------------------------------------
-# Aufgabe: Community Cards (card_subtype: "community") mit profile_verified: false
-# recherchieren, Felder aktualisieren, Verifikations-Flag setzen.
-
-# Empfohlene Modelle: Claude Opus 4+, GPT-5+, Gemini 2.5 Pro (mit Web-Recherche)
-# Benötigte Fähigkeiten: Web-Recherche (Search/Browse), Datei-Schreibzugriff
-# Geschätzte Dauer: 3–6 Minuten pro Community-Gruppe
+# Empfohlene Modelle: Claude Opus 4+, GPT-5+, Gemini 2.5 Pro
+# Benötigte Fähigkeiten: Web-Recherche, Datei-Schreibzugriff
+# Geschätzte Dauer: 3–6 Min. pro Community-Gruppe
 # ----------------------------------------------------------------------------
 community_card_verification:
   name: "Community Card Verification"
-  version: "1.1.0"
+  version: "1.2.0"
   description: >
-    Verifiziert und ergänzt die Metadaten in Community Cards (card_subtype: "community").
-    Community Cards dokumentieren GGUF-Quantisierer, Fine-Tuner und Community-
-    Distributoren, die auf Basis öffentlicher Modellgewichte arbeiten
-    (z.B. Unsloth, mradermacher, HauhauCS).
+    Verifiziert und ergänzt Community Cards (card_subtype: "community").
+    Dokumentiert GGUF-Quantisierer, Fine-Tuner und Community-Distributoren.
   targets:
     directory: "benchmark_scores/vendor_cards/"
     filter: "card_subtype == 'community' AND profile_verified == false"
@@ -514,124 +619,74 @@ community_card_verification:
   prompt: |
     # Aufgabe: Community Card Verification
 
-    Du bist ein erfahrener Tech-Redakteur mit Kenntnissen der Open-Source-
-    KI-Community. Deine Aufgabe ist es, die Metadaten in CrucibleMark Community
-    Cards zu verifizieren, zu ergänzen und einen prägnanten Beschreibungstext
-    (`description`) zu verfassen.
+    Du bist ein erfahrener Tech-Redakteur mit Kenntnissen der Open-Source-KI-Community.
+    Antworte ausschließlich auf Deutsch — keine nicht-lateinischen Schriftzeichen.
 
-    **Recherchepflicht:** Alle inhaltlichen Angaben müssen auf aktuellen,
-    öffentlich verifizierbaren Quellen basieren (primär: HuggingFace-Profil,
-    GitHub, Community-Foren). Kein Training-Wissen verwenden, keine Annahmen
-    treffen. Wenn eine Information nicht recherchierbar ist, bleibt das Feld
-    null — nicht schätzen.
+    **Recherchepflicht (strikt):** Kein Training-Wissen, keine Annahmen.
+    Primärquellen: HuggingFace-Profil, GitHub, Community-Foren.
+    Nicht recherchierbare Felder → null (nicht schätzen).
 
     ## Kontext
 
-    CrucibleMark ist ein LLM-Benchmark-Framework. Community Cards dokumentieren
-    Community-Distributoren: Gruppen oder Einzelpersonen, die auf Basis
-    öffentlicher Modellgewichte tätig sind — als GGUF-Quantisierer, Fine-Tuner
-    oder Community-Distributor. Beispiele: Unsloth AI, mradermacher, HauhauCS.
+    Community Cards dokumentieren Gruppen/Einzelpersonen, die auf Basis
+    öffentlicher Gewichte tätig sind: GGUF-Quantisierer, Fine-Tuner,
+    Community-Distributoren (z.B. Unsloth AI, mradermacher, HauhauCS).
 
-    Community Cards teilen das JSON-Schema mit regulären Vendor Cards, sind aber
-    durch `"card_subtype": "community"` gekennzeichnet. Unterschiede zu regulären
-    Vendor Cards:
-    - Keine proprietäre API — nur HuggingFace-Profil als Anlaufstelle
-    - Nutzung immer lokal (kein Cloud-Act-Risiko, kein DPA notwendig)
+    Unterschiede zu regulären Vendor Cards:
+    - Keine proprietäre API (nur HuggingFace als Anlaufstelle)
+    - Nutzung immer lokal (kein Cloud-Act-Risiko, kein DPA)
     - `deployment`-Block hat feste Lokal-Werte (s. Schritt 3)
 
     ## Auftrag
 
-    Bearbeite alle Dateien in `benchmark_scores/vendor_cards/` bei denen BEIDE
-    Bedingungen zutreffen:
-    - `"card_subtype": "community"` ist gesetzt
-    - `"profile_verified": false` ist gesetzt
-
-    Überspringe: `_index.json`
+    Bearbeite alle Cards in `benchmark_scores/vendor_cards/` mit
+    `"card_subtype": "community"` UND `"profile_verified": false`.
+    Überspringe: `_index.json`.
 
     ## Vorgehen pro Card
 
     ### Schritt 1 — Datei lesen
-    Lese die JSON-Datei vollständig. Notiere dir `vendor_id`, `display_name`
-    und `company`. Prüfe, welche Felder `"TODO"` oder `null` enthalten.
+    Vollständig lesen. `vendor_id`, `display_name`, `company` notieren.
+    Felder mit `"TODO"` oder null identifizieren.
 
     ### Schritt 2 — Recherche
-    Recherchiere über die Community-Gruppe (Primärquellen: HuggingFace-Profil,
-    GitHub, Community-Diskussionen bei Reddit/LLM-Foren, Eigene Website):
 
     **Identität:**
     - Vollständiger Name / Handle
-      (z.B. "mradermacher" = Person, "Unsloth AI" = Firma)
-    - HuggingFace-Profil-URL (z.B. https://huggingface.co/unsloth)
-    - GitHub oder eigene Website (falls vorhanden, sonst null)
-    - Gründungsjahr / "Aktiv seit" (approximativ; null wenn unbekannt)
-    - Herkunft / Sitz (falls bekannt, sonst "Remote (international)")
+    - HuggingFace-Profil-URL
+    - GitHub oder eigene Website (null wenn nicht vorhanden)
+    - Gründungsjahr / "Aktiv seit" (null wenn unbekannt — nicht schätzen)
+    - Herkunft/Sitz (null → "Remote (international)")
 
     **Spezialisierung:**
-    - Art der Arbeit: GGUF-Quantisierung, Fine-Tuning, Uncensored-Fine-Tune,
-      Abliterierung oder eine Kombination?
-    - Welche Quantisierungsformate werden eingesetzt?
-      (Standard-GGUF, iMatrix/i1, Dynamic 2.0, QAT, GPTQ, AWQ, EXL2, etc.)
-    - Welche Basis-Modellreihen werden primär bearbeitet?
-      (Llama, Qwen, Gemma, Mistral, DeepSeek, Hermes, etc.)
-    - Besondere Qualitätsmerkmale (z.B. Unsloth Dynamic 2.0 = per-Layer-Bit-
-      Optimierung für bessere Qualität bei gleicher Kompressionsrate)
-    - Bekannte Einschränkungen oder Kontroversen
-      (z.B. Abliterated/Heretic-Varianten entfernen Sicherheitsmechanismen —
-      das kann Kohärenz und Faktentreue beeinträchtigen)
+    - Art der Arbeit: GGUF-Quantisierung, Fine-Tuning, Abliterierung, etc.
+    - Eingesetzte Formate: Standard-GGUF, iMatrix/i1, Dynamic 2.0, GPTQ, AWQ, EXL2, etc.
+    - Bearbeitete Basis-Modellreihen
+    - Besondere Qualitätsmerkmale (z.B. Unsloth Dynamic 2.0 = per-Layer-Bit-Optimierung)
+    - Kontroversen (z.B. Abliterated-Varianten: Sicherheitsmechanismen entfernt)
 
     **Umfang & Reputation:**
-    - Ungefähre Anzahl veröffentlichter Modelle auf HuggingFace
-    - Bekanntheitsgrad (Downloads, Empfehlungen in der LLM-Community)
-    - Zuletzt aktiv (letzter Upload / Commit)?
+    - Ungefähre Anzahl HuggingFace-Modelle
+    - Bekanntheitsgrad, zuletzt aktiv
 
-    **Community-Beschreibung (`description`) — Redaktionelle Vorgaben:**
-    Schreibe einen sachlichen, redaktionell formulierten Kurztext über die
-    Community-Gruppe. Dieser Text erscheint auf der CrucibleMark-Website
-    im Community-Profil und richtet sich an Product Engineers.
+    **`description` — Redaktionelle Vorgaben:**
+    240–480 Zeichen (Ziel: 360). Deutsch, Fließtext, keine Aufzählungszeichen.
+    Wer ist die Gruppe, womit beschäftigt sie sich, was zeichnet sie aus?
+    Bei Uncensored/Abliterated: sachlicher Hinweis auf entfernte Sicherheitsmechanismen.
 
-    Vorgaben:
-    - Ziel: 360 Zeichen (optimal). Minimum: 240 Zeichen. Maximum: 480 Zeichen.
-    - Ton: sachlich mit leichter Prosa. Nicht zu technisch, nicht werblich.
-    - Sprache: Deutsch.
-    - Keine Bindestriche zur Aufzählung (nicht "–", nicht "•", nicht "-").
-      Fließtext, keine Listen innerhalb des `description`-Feldes.
-    - Keine Wortwitzversuche.
-    - Inhalt: Wer ist die Gruppe? Womit beschäftigt sie sich? Was zeichnet
-      ihre Arbeit aus? Bei Uncensored/Abliterated-Spezialisten: sachlicher
-      Hinweis, dass Sicherheitsmechanismen entfernt werden.
-    - Alle genannten Fakten müssen recherchiert und belegbar sein.
-
-    **Profil-Verifikation:**
-    - Existiert das HuggingFace-Profil und ist es auffindbar?
-    - Wenn ja und wesentliche Felder klar recherchierbar → `profile_verified: true`
-    - Wenn Profil begrenzt verfügbar oder Identität unklar → `profile_verified: false`
-      lassen, Hinweis in `privacy_note` ergänzen
-
-    ### Schritt 3 — Card aktualisieren
-    Aktualisiere **ausschließlich** folgende Felder:
-
+    ### Schritt 3 — Felder aktualisieren (nur diese)
     ```
-    company               ← vollständiger Name / Handle
-                            (z.B. "Unsloth AI (unslothai)", "mradermacher")
-    headquarters          ← Sitz (oder "Remote (international)" wenn unbekannt)
-    founding_year         ← int oder null
-    description           ← redaktioneller Kurztext (Deutsch, 240–480 Zeichen, Ziel 360)
-    api_documentation_url ← HuggingFace-Profil-URL (primäre Anlaufstelle)
-    notable_models        ← 3–6 repräsentative Modell-Beispiele dieser Gruppe
-                            (z.B. "gemma-4-12b-it-GGUF (Dynamic 2.0)")
-    privacy_note          ← Datenschutz-Hinweis (Deutsch, 2–4 Sätze):
-                            Standard-Fall: lokale Nutzung, kein Datentransfer,
-                            freie Redistribution öffentlicher Basismodelle.
-                            Uncensored-Fine-Tunes (HauhauCS, Abliterated):
-                            zusätzlich Hinweis, dass Sicherheitsmechanismen
-                            absichtlich entfernt wurden.
-    last_verified_at      ← heutiges Datum (ISO 8601: YYYY-MM-DD)
-    verification_source   ← HuggingFace-Profil-URL oder primäre Quelle
-    profile_verified      ← true (nach erfolgreicher Verifikation)
-    profile_verified_at   ← heutiges Datum (ISO 8601: YYYY-MM-DD)
+    company, headquarters, founding_year, description,
+    api_documentation_url (← HuggingFace-Profil-URL),
+    notable_models (3–6 repräsentative Beispiele),
+    privacy_note (2–4 Sätze, Deutsch; bei Uncensored-Gruppen:
+      Hinweis auf absichtlich entfernte Safety-Filter),
+    last_verified_at (heute, YYYY-MM-DD),
+    verification_source (HuggingFace-URL),
+    profile_verified (→ true), profile_verified_at (heute, YYYY-MM-DD)
     ```
 
-    Das `deployment`-Sub-Dict für Community-Distributoren (lokale Nutzung):
+    `deployment`-Block (Standard für lokale Community-Distributoren):
     ```json
     "deployment": {
       "cloud_act_exposure": false,
@@ -643,152 +698,113 @@ community_card_verification:
       "chinese_nsl_risk": "none"
     }
     ```
-    Ausnahme: Gruppe betreibt eine eigene Cloud-API (sehr selten) → dann
-    angepasste Compliance-Werte setzen und `privacy_note` entsprechend.
+    Ausnahme: eigene Cloud-API → angepasste Compliance-Werte.
 
-    ### Schritt 4 — Was du NICHT verändern darfst
+    ### Schritt 4 — Nicht anfassen
     ```
-    vendor_id          ← ID ändert sich nie
-    card_subtype       ← muss "community" bleiben — nie entfernen!
-    display_name       ← nur manuell durch Operator änderbar
-    stats              ← Laufzeitdaten, nicht redaktionell
-    pricing_model      ← nur manuell änderbar
-    unknown            ← nur durch Operator
-    generated_at       ← Timestamp der letzten automatischen Generierung
-    api_base_url       ← bleibt null (Community-Distributoren haben keine eigene API)
+    vendor_id, card_subtype (MUSS "community" bleiben!),
+    display_name, stats, pricing_model, unknown, generated_at,
+    api_base_url (bleibt null)
     ```
 
     ### Schritt 5 — Abschlussprüfung
-    Stelle sicher:
-    - JSON ist valide (kein Syntaxfehler)
-    - `description` liegt zwischen 240 und 480 Zeichen (Zielwert: 360)
-    - `description` enthält keine Bindestriche als Aufzählungszeichen
-    - `card_subtype` ist noch `"community"` (nie entfernen!)
-    - `profile_verified: true` und `profile_verified_at` korrekt gesetzt
-    - `api_base_url` ist `null`
-    - `deployment` entspricht dem Lokal-Template (außer bei eigener Cloud-API)
-    - `notable_models` enthält reale, repräsentative Modelle dieser Gruppe
+    - [ ] JSON valide
+    - [ ] `description` 240–480 Zeichen, keine Aufzählungszeichen
+    - [ ] Kein nicht-lateinisches Zeichen in irgendeinem Textfeld
+    - [ ] `card_subtype: "community"` erhalten
+    - [ ] `api_base_url: null`
+    - [ ] `deployment` entspricht Lokal-Template
+    - [ ] `notable_models` enthält reale Modelle dieser Gruppe
+    - [ ] `profile_verified: true` und `profile_verified_at` gesetzt
 
     ## Ausgabe-Format
-
-    Nach Abschluss aller Cards: Kurze Zusammenfassung:
-    - Welche Cards wurden aktualisiert
-    - Haupterkenntnisse zur Gruppe (Spezialisierung, Qualitätseinschätzung)
-    - Nicht verifizierbare Felder → `profile_verified: false` lassen,
-      Hinweis in `privacy_note`
+    Kurze Zusammenfassung: welche Cards aktualisiert, Haupterkenntnisse,
+    nicht verifizierbare Felder (→ `profile_verified: false` + Hinweis
+    in `privacy_note`).
 
     ## Qualitätskriterien
-
-    - Primärquelle: HuggingFace-Profil der Community-Gruppe
-    - `description` auf Deutsch: sachlich, leicht prosaisch, kein Werbeton,
-      keine Bindestriche, zwischen 240 und 480 Zeichen, Ziel 360
-    - `privacy_note` auf Deutsch, 2–4 Sätze:
-      - Reine GGUF-Quantisierer (Unsloth, mradermacher Standard): lokale
-        Nutzung, kein Datentransfer, keine eigene Cloud-Infrastruktur
-      - Uncensored Fine-Tunes (HauhauCS, mradermacher Abliterated/Heretic):
-        zusätzlicher Hinweis auf absichtliche Entfernung von Safety-Filtern
-        und mögliche Auswirkungen auf Kohärenz/Faktentreue
-    - Bei unbekanntem Sitz: "Remote (international)" ist akzeptabel
-    - `unknown: true` nur wenn HuggingFace-Profil überhaupt nicht auffindbar
-      oder die Gruppe dahinter vollständig unklar ist
-    - Nicht spekulieren: Wenn Gründungsjahr oder Herkunft nicht recherchierbar
-      → null setzen, nicht schätzen
+    - `unknown: true` nur wenn HuggingFace-Profil nicht auffindbar
+    - Reine Quantisierer (Unsloth, mradermacher): lokale Nutzung, kein Datentransfer
+    - Uncensored/Abliterated (HauhauCS, mradermacher Heretic): Hinweis auf
+      entfernte Safety-Filter und mögliche Auswirkungen auf Kohärenz/Faktentreue
 
 # ----------------------------------------------------------------------------
 # PROMPT: model_onboarding
 # ----------------------------------------------------------------------------
-# Aufgabe: Neue Modelle korrekt onboarden — Model Card erstellen, provider_config
-# eintragen und Namenskonventionen einhalten.
-#
 # Empfohlene Modelle: Claude Sonnet 4.5+, GPT-5+
-# Benötigte Fähigkeiten: Datei-Schreibzugriff, Web-Recherche optional
-# Geschätzte Dauer: 5–15 Minuten pro Modell
+# Benötigte Fähigkeiten: Datei-Schreibzugriff (Web-Recherche optional)
+# Geschätzte Dauer: 5–15 Min. pro Modell
 # ----------------------------------------------------------------------------
 model_onboarding:
   name: "Model Onboarding"
   version: "1.0.0"
   description: >
     Legt für neue Modelle eine vollständige Model Card an und trägt sie korrekt
-    in provider_config.yaml ein. Erzwingt die Namenskonventionen (keine Punkte
-    in model_id) und verhindert Dot-Naming-Bugs in audit_logs und review-Dirs.
+    in provider_config.yaml ein. Erzwingt Namenskonventionen und verhindert
+    Dot-Naming-Bugs in audit_logs und review-Dirs.
   targets:
     directory: "benchmark_scores/model_cards/"
     config: "config/provider_config.yaml"
   prompt: |
     # Aufgabe: Model Onboarding — Neue Modelle korrekt anlegen
 
-    Du onboardest ein neues Modell in CrucibleMark. Folge dieser Anleitung
-    exakt — Abweichungen erzeugen Datenkonsistenz-Bugs (Dot-Dirs, Lookup-Fehler).
+    Du onboardest ein neues Modell in CrucibleMark. Folge exakt —
+    Abweichungen erzeugen Datenkonsistenz-Bugs (Dot-Dirs, Lookup-Fehler).
 
     ## ⚠️ KRITISCHE Namenskonvention: model_id = kanonische API-ID
 
-    Das `model_id`-Feld in Model Cards enthält die **kanonische API-ID** des Modells
-    — genau so wie sie im Leaderboard-CSV und im Tooluse-Lookup erscheint.
+    `model_id` enthält die kanonische API-ID exakt wie im Leaderboard-CSV.
     Punkte in Versionsnummern bleiben erhalten.
+    Dateiname = `_safe_name(model_id)`: Slashes/Punkte/Colons → Underscores.
 
-    Konvertierungsregel für den **Dateinamen** (nicht für model_id):
-    Slashes und Punkte → Underscores (`_safe_name()`).
+    | API-ID / model_id                          | Dateiname                                       |
+    |--------------------------------------------|-------------------------------------------------|
+    | `xiaomi/mimo-v2.5-pro`                     | `xiaomi_mimo-v2_5-pro.json`                     |
+    | `nvidia/llama-3.3-nemotron-super-49b-v1.5` | `nvidia_llama-3_3-nemotron-super-49b-v1_5.json` |
+    | `qwen/qwen3.5-397b-a17b`                   | `qwen_qwen3_5-397b-a17b.json`                   |
+    | `gemini-2.5-flash`                         | `gemini-2_5-flash.json`                         |
+    | `gpt-oss:120b-cloud`                       | `gpt-oss_120b-cloud.json`                       |
 
-    | API-ID / model_id (Card-Feld)           | Dateiname                                           |
-    |-----------------------------------------|-----------------------------------------------------|
-    | `xiaomi/mimo-v2.5-pro`                  | `xiaomi_mimo-v2_5-pro.json`                         |
-    | `nvidia/llama-3.3-nemotron-super-49b-v1.5` | `nvidia_llama-3_3-nemotron-super-49b-v1_5.json`  |
-    | `qwen/qwen3.5-397b-a17b`               | `qwen_qwen3_5-397b-a17b.json`                       |
-    | `gemini-2.5-flash`                      | `gemini-2_5-flash.json`                             |
-    | `gpt-oss:120b-cloud`                    | `gpt-oss_120b-cloud.json`                           |
+    Ausnahme: Lokale llama.cpp-Modelle ohne echte API-ID → selbstgewählte ID
+    ohne Sonderzeichen (z.B. `qwen3_5-35b-a3b-q8`).
 
-    Regel: **model_id-Feld = API-ID exakt** (Dots bleiben!).
-    **Dateiname** = `_safe_name(model_id)` (Dots/Slashes/Colons → Underscores).
-
-    Ausnahme: Lokale llama.cpp-Modelle ohne echte API-ID verwenden eine
-    selbstgewählte ID ohne Sonderzeichen (z.B. `qwen3_5-35b-a3b-q8`).
-
-    ## Schritt 1: Model Card erstellen
+    ## Schritt 1 — Model Card erstellen
 
     Dateiname: `benchmark_scores/model_cards/{safe_model_id}.json`
-    Normalisierung für Dateinamen via `_safe_name()`: Slashes/Punkte/Colons → `_`
-    Beispiel: `xiaomi/mimo-v2.5-pro` → Dateiname `xiaomi_mimo-v2_5-pro.json`
-
     Pflichtfelder aus `config/card_template_model.yaml` vollständig befüllen.
     Besonders wichtig:
-    - `model_id`: Kanonische API-ID (Dots bleiben! z.B. `"xiaomi/mimo-v2.5-pro"`)
-    - `display_name`: Lesbarer Name (z.B. "Xiaomi MiMo V2.5 Pro")
+    - `model_id`: Kanonische API-ID (Dots bleiben!)
+    - `display_name`: Lesbarer Name
     - `vendor`: Kanonischer Vendor-Name aus `config/classification_taxonomy.json`
     - `weights_license_tier`: "proprietary" | "restricted-weights" | "open-weights"
     - `provider`: Laufzeit-Provider (z.B. "openrouter", "llamacpp", "anthropic")
     - `card_status`: "complete" wenn alle Felder ausgefüllt, sonst "draft"
     - `profile_verified`: false (wird nach Recherche auf true gesetzt)
 
-    ## Schritt 2: provider_config.yaml eintragen
+    ## Schritt 2 — provider_config.yaml eintragen
 
     Abschnitt: `providers.{provider}.models`
-    Eintragsformat:
     ```yaml
-    - model: xiaomi/mimo-v2.5-pro          # API-ID mit Punkt (wie im Leaderboard)
+    - model: xiaomi/mimo-v2.5-pro    # API-ID mit Punkt (wie im Leaderboard)
       display_name: "Xiaomi MiMo V2.5 Pro"
     ```
 
-    ## Schritt 3: Index neu bauen
-
-    Nach dem Anlegen der Card:
+    ## Schritt 3 — Index neu bauen
     ```bash
     python3 -c "from utils.card_template import rebuild_card_index; rebuild_card_index('model')"
     ```
 
-    ## Schritt 4: Verify
-
+    ## Schritt 4 — Verify
     ```bash
     python3 scripts/verify_model_cards.py
     ```
-
-    Erwartetes Ergebnis: Neue Card erscheint ohne ⚠️-Warnungen (außer
-    legitimen: thinking_probe_* = null, license_url = null bei proprietären Modellen).
+    Erwartet: keine ⚠️-Warnungen (außer legitimen: `thinking_probe_*` = null,
+    `license_url` = null bei proprietären Modellen).
 
     ## Häufige Fehler
-
-    - ❌ `model_id: "xiaomi/mimo-v2_5-pro"` → Underscore statt Dot (bricht Leaderboard-Lookup!)
-    - ❌ Dateiname `xiaomi_mimo-v2.5-pro.json` → Punkt im Dateinamen (unerwünscht, safe_name verwenden)
-    - ❌ `card_status: "draft"` bei vollständig ausgefüllter Card lassen
-    - ❌ `profile_verified: true` ohne tatsächliche Recherche setzen
+    - ❌ `model_id: "xiaomi/mimo-v2_5-pro"` → Underscore statt Dot (bricht Lookup!)
+    - ❌ Dateiname mit Punkt → safe_name verwenden
+    - ❌ `card_status: "draft"` bei vollständig ausgefüllter Card
+    - ❌ `profile_verified: true` ohne tatsächliche Recherche
     - ✅ `model_id: "xiaomi/mimo-v2.5-pro"` → API-ID mit Dot erhalten
-    - ✅ Dateiname `xiaomi_mimo-v2_5-pro.json` → korrekt via _safe_name normalisiert
+    - ✅ Dateiname `xiaomi_mimo-v2_5-pro.json` → korrekt via _safe_name
