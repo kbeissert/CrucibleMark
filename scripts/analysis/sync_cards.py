@@ -30,7 +30,7 @@ ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-from utils.card_sync import CardType, format_summary, sync_all, apply_sync  # noqa: E402
+from utils.card_sync import CardType, SyncPlan, format_summary, sync_all, apply_sync  # noqa: E402
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
@@ -62,8 +62,8 @@ def _resolve_single_card_path(model_id: str, card_type: str) -> Path:
     return path
 
 
-def _collect_sync_plans(args: argparse.Namespace):
-    """Sammelt alle Sync-Pläne fuer die gewaehlt Card-Typen."""
+def _collect_sync_plans(args: argparse.Namespace) -> list[SyncPlan]:
+    """Sammelt alle Sync-Pläne für die gewählten Card-Typen."""
     if args.model:
         card_type = args.card_type if args.card_type != "all" else "model"
         path = _resolve_single_card_path(args.model, card_type)
@@ -75,7 +75,7 @@ def _collect_sync_plans(args: argparse.Namespace):
         card_types = ["model", "vendor"] if args.card_type == "all" else [args.card_type]
         plans = []
         for ct in card_types:
-            plans.extend(sync_all(cast("CardType", ct), dry_run=args.dry_run, yes=args.yes))
+            plans.extend(sync_all(cast(CardType, ct), dry_run=args.dry_run, yes=args.yes))
         return plans
 
 
@@ -152,7 +152,7 @@ def main() -> None:
     # Exit-Code: 1 wenn es Löschungen gab, die nicht durchgeführt wurden
     # (Dry-Run mit Deletes signalisiert: User soll prüfen)
     if args.dry_run and any(p.delete_count > 0 for p in all_plans):
-        sys.exit(0)  # dry-run ist immer exit 0; nur Info
+        sys.exit(1)
 
 
 if __name__ == "__main__":

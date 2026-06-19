@@ -97,11 +97,15 @@ def _lookup_provider_info(
 
 
 def _known_vendor_set() -> set[str]:
-    """Laedt die kanonischen Vendor-Namen aus der Taxonomie."""
+    """Lädt die kanonischen Vendor-Namen aus der Taxonomie."""
     try:
         taxonomy = load_taxonomy()
         return set(taxonomy.get("manufacturers", {}).get("values", {}).keys())
-    except (FileNotFoundError, json.JSONDecodeError):
+    except (FileNotFoundError, json.JSONDecodeError) as exc:
+        logger.warning(
+            "Taxonomie nicht verfügbar (%s) — Vendor-Prüfung übersprungen.",
+            exc,
+        )
         return set()
 
 
@@ -246,7 +250,10 @@ def main() -> int:  # noqa: C901 — Komplexitaet akzeptabel nach Split in Hilfe
         return 0
 
     # Skeleton via SSoT — erzeugt alle Template-Felder + provider-Konflikt-Resolver.
-    ensure_card(args.model, provider=args.provider)
+    try:
+        ensure_card(args.model, provider=args.provider)
+    except (FileNotFoundError, OSError, json.JSONDecodeError) as exc:
+        raise SystemExit(f"❌ ensure_card fehlgeschlagen: {exc}") from exc
 
     # Pre-Fill: display_name / developer ueberschreiben (nur falls TODO).
     updated = _post_fill_card(target_path, display_name, developer)

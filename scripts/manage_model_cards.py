@@ -644,20 +644,12 @@ def _check_murks(card: dict) -> list[CardFinding]:
     return findings
 
 
-def _discover_research_targets(args: argparse.Namespace) -> list[tuple[str, Path]]:
-    """Targets fuer den Research-Modus (profile_verified-aware).
+def _glob_model_cards(force: bool) -> list[tuple[str, Path]]:
+    """Scannt alle Model-Cards im cards-Verzeichnis.
 
-    - ``--card``: einzelne Card (Error wenn nicht existent).
-    - sonst: alle Cards mit ``profile_verified != True`` (gleicher Skip-Pfad
-      wie Phase 1 ``_discover_targets``). Mit ``--force`` werden auch
-      verifizierte Cards einbezogen.
+    Cards mit ``profile_verified=True`` werden übersprungen, es sei denn
+    ``force`` ist ``True``.
     """
-    if args.card:
-        path = _find_card(args.card)
-        if not path.exists():
-            raise SystemExit(f"❌ Card nicht gefunden: {args.card}")
-        return [(args.card, path)]
-
     base = cards_dir("model")
     targets: list[tuple[str, Path]] = []
     for p in sorted(base.glob("*.json")):
@@ -671,10 +663,25 @@ def _discover_research_targets(args: argparse.Namespace) -> list[tuple[str, Path
         if not isinstance(data, dict):
             continue
         model_id = data.get("model_id") or p.stem
-        if not args.force and data.get("profile_verified") is True:
+        if not force and data.get("profile_verified") is True:
             continue
         targets.append((model_id, p))
     return targets
+
+
+def _discover_research_targets(args: argparse.Namespace) -> list[tuple[str, Path]]:
+    """Targets fuer den Research-Modus (profile_verified-aware).
+
+    - ``--card``: einzelne Card (Error wenn nicht existent).
+    - sonst: alle Cards mit ``profile_verified != True``. Mit ``--force``
+      werden auch verifizierte Cards einbezogen.
+    """
+    if args.card:
+        path = _find_card(args.card)
+        if not path.exists():
+            raise SystemExit(f"❌ Card nicht gefunden: {args.card}")
+        return [(args.card, path)]
+    return _glob_model_cards(args.force)
 
 
 def _apply_research_diff(original: dict, response: dict) -> dict:
@@ -751,6 +758,138 @@ class Researcher:
         self.llm_spec = llm_spec
         self.summary = RunSummary()
 
+    # ------------------------------------------------------------------
+    # Shared helpers for lock / backup / commit / findings extraction
+    # ------------------------------------------------------------------
+
+    def _load_card(self, path: Path, report: ResearchReport) -> dict | None:
+        """Load card JSON or set report.error and return None."""
+        try:
+            return json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            report.error = f"Card nicht lesbar: {exc}"
+            self.summary.errors += 1
+            self.summary.research_reports.append(report)
+            return None
+
+    def _apply_lock(
+        self, original: dict, path: Path, report: ResearchReport
+    ) -> bool:
+        """Set profile_verified=False on disk. Returns False on failure."""
+        if self.args.dry_run:
+            return True
+        locked = dict(original)
+        locked["profile_verified"] = False
+        locked["profile_verified_at"] = None
+        locked["profile_verified_by"] = None
+        locked["last_modified_at"] = date.today().isoformat()
+        try:
+            path.write_text(
+                json.dumps(locked, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+            )
+            report.locked = True
+            logger.info("    🔓 Lock geoeffnet: %s (profile_verified=false)", path.name)
+            return True
+        except OSError as exc:
+            report.error = f"Lock fehlgeschlagen: {exc}"
+            self.summary.errors += 1
+            self.summary.research_reports.append(report)
+            return False
+
+    def _create_backup(
+        self, path: Path, report: ResearchReport
+    ) -> Path | None:
+        """Create .pre-research.bak if not dry_run. Returns backup path."""
+        if self.args.dry_run:
+            return None
+        backup_path = path.with_name(path.name + self.BACKUP_SUFFIX)
+        try:
+            backup_path.write_text(path.read_text(encoding="utf-8"), encoding="utf-8")
+            report.backup_path = backup_path
+            return backup_path
+        except OSError as exc:
+            logger.warning("    ⚠️ Backup fehlgeschlagen: %s — weiter ohne.", exc)
+            return None
+
+    def _extract_findings(
+        self, parsed: dict, report: ResearchReport
+    ) -> None:
+        """Append LLM findings from parsed JSON to report."""
+        findings_raw = parsed.get("findings", [])
+        if not isinstance(findings_raw, list):
+            return
+        for item in findings_raw:
+            if not isinstance(item, dict):
+                continue
+            report.findings.append(CardFinding(
+                field=str(item.get("field", "")),
+                severity=str(item.get("severity", "info")),
+                message=str(item.get("message", "")),
+                current=item.get("current"),
+                suggested=item.get("suggested"),
+            ))
+        report.summary = str(parsed.get("summary", ""))
+
+    def _commit_card(
+        self,
+        original: dict,
+        parsed: dict,
+        path: Path,
+        report: ResearchReport,
+        backup_path: Path | None,
+    ) -> None:
+        """Merge, validate and write (or dry-run) the card. Unlocks on success."""
+        merged = _apply_research_diff(original, parsed)
+        merged = _preserve_operator_fields(original, merged)
+        cleaned, warnings = _validate_against_template(merged, self.template)
+        for w in warnings:
+            logger.info("    · %s", w)
+            report.findings.append(CardFinding(
+                field=w.split(":")[0].strip() if ":" in w else w,
+                severity="warning",
+                message=w,
+                current=None,
+                suggested=None,
+            ))
+
+        report.would_write = True
+        if self.args.dry_run:
+            logger.info(
+                "    [DRY-RUN] Wuerde %s aktualisieren (%d Felder, %d Findings).",
+                path.name, len(cleaned), len(report.findings),
+            )
+        else:
+            final = dict(cleaned)
+            final["profile_verified"] = True
+            final["profile_verified_at"] = date.today().isoformat()
+            final["profile_verified_by"] = f"llm:{self.llm_spec.model}"
+            final["last_modified_at"] = date.today().isoformat()
+            path.write_text(
+                json.dumps(final, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+            )
+            report.unlocked = True
+            report.wrote = True
+            logger.info("    🔒 Lock geschlossen: %s (profile_verified=true)", path.name)
+            if backup_path and backup_path.exists():
+                try:
+                    backup_path.unlink()
+                    report.backup_path = None
+                except OSError as exc:
+                    logger.warning("    ⚠️ Backup loeschen fehlgeschlagen: %s", exc)
+
+        self.summary.processed += 1
+
+    def _handle_research_error(
+        self, exc: Exception, path: Path, report: ResearchReport
+    ) -> None:
+        """Common error handler for research exceptions."""
+        report.error = str(exc)
+        logger.error("    🔓 Lock bleibt offen: %s (Fehler: %s)", path.name, exc)
+        self.summary.errors += 1
+        self.summary.research_reports.append(report)
+
     def run(self) -> RunSummary:
         targets = _discover_research_targets(self.args)
         if not targets:
@@ -787,47 +926,17 @@ class Researcher:
     def _research_one(self, mid: str, path: Path, idx: int, total: int) -> ResearchReport:
         report = ResearchReport(model_id=mid, card_path=path)
 
-        try:
-            original = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError) as exc:
-            report.error = f"Card nicht lesbar: {exc}"
-            self.summary.errors += 1
-            self.summary.research_reports.append(report)
+        original = self._load_card(path, report)
+        if original is None:
             return report
 
-        # Pre-Check-Heuristik (Murks / Chinesisch / em-dash)
         pre_findings = _check_murks(original)
         report.findings.extend(pre_findings)
 
-        # Lock-Phase (auch bei Dry-Run, damit der State konsistent ist)
-        if not self.args.dry_run:
-            locked = dict(original)
-            locked["profile_verified"] = False
-            locked["profile_verified_at"] = None
-            locked["profile_verified_by"] = None
-            locked["last_modified_at"] = date.today().isoformat()
-            try:
-                path.write_text(
-                    json.dumps(locked, ensure_ascii=False, indent=2) + "\n",
-                    encoding="utf-8",
-                )
-                report.locked = True
-                logger.info("    🔓 Lock geoeffnet: %s (profile_verified=false)", path.name)
-            except OSError as exc:
-                report.error = f"Lock fehlgeschlagen: {exc}"
-                self.summary.errors += 1
-                self.summary.research_reports.append(report)
-                return report
+        if not self._apply_lock(original, path, report):
+            return report
 
-        # Backup (nur bei echtem Write)
-        backup_path: Path | None = None
-        if not self.args.dry_run:
-            backup_path = path.with_name(path.name + self.BACKUP_SUFFIX)
-            try:
-                backup_path.write_text(path.read_text(encoding="utf-8"), encoding="utf-8")
-                report.backup_path = backup_path
-            except OSError as exc:
-                logger.warning("    ⚠️ Backup fehlgeschlagen: %s — weiter ohne.", exc)
+        backup_path = self._create_backup(path, report)
 
         try:
             user_prompt = _build_research_user_prompt(original, self.editor_prompt, pre_findings)
@@ -846,67 +955,11 @@ class Researcher:
                 self.summary.research_reports.append(report)
                 return report
 
-            # LLM-Findings (zusaetzlich zu Pre-Findings)
-            findings_raw = parsed.get("findings", [])
-            if isinstance(findings_raw, list):
-                for item in findings_raw:
-                    if not isinstance(item, dict):
-                        continue
-                    report.findings.append(CardFinding(
-                        field=str(item.get("field", "")),
-                        severity=str(item.get("severity", "info")),
-                        message=str(item.get("message", "")),
-                        current=item.get("current"),
-                        suggested=item.get("suggested"),
-                    ))
-            report.summary = str(parsed.get("summary", ""))
-
-            merged = _apply_research_diff(original, parsed)
-            merged = _preserve_operator_fields(original, merged)
-            cleaned, warnings = _validate_against_template(merged, self.template)
-            for w in warnings:
-                logger.info("    · %s", w)
-                report.findings.append(CardFinding(
-                    field=w.split(":")[0].strip() if ":" in w else w,
-                    severity="warning",
-                    message=w,
-                    current=None,
-                    suggested=None,
-                ))
-
-            report.would_write = True
-            if self.args.dry_run:
-                logger.info(
-                    "    [DRY-RUN] Wuerde %s aktualisieren (%d Felder, %d Findings).",
-                    path.name, len(cleaned), len(report.findings),
-                )
-            else:
-                # Un-Lock: profile_verified = True + Metadaten
-                final = dict(cleaned)
-                final["profile_verified"] = True
-                final["profile_verified_at"] = date.today().isoformat()
-                final["profile_verified_by"] = f"llm:{self.llm_spec.model}"
-                final["last_modified_at"] = date.today().isoformat()
-                path.write_text(
-                    json.dumps(final, ensure_ascii=False, indent=2) + "\n",
-                    encoding="utf-8",
-                )
-                report.unlocked = True
-                report.wrote = True
-                logger.info("    🔒 Lock geschlossen: %s (profile_verified=true)", path.name)
-                # Backup loeschen bei Erfolg
-                if backup_path and backup_path.exists():
-                    try:
-                        backup_path.unlink()
-                        report.backup_path = None
-                    except OSError as exc:
-                        logger.warning("    ⚠️ Backup loeschen fehlgeschlagen: %s", exc)
-
-            self.summary.processed += 1
+            self._extract_findings(parsed, report)
+            self._commit_card(original, parsed, path, report, backup_path)
         except (OSError, json.JSONDecodeError, openai.APIError, ValueError) as exc:  # noqa: BLE001
-            report.error = str(exc)
-            logger.error("    🔒 Lock geschlossen: %s (profile_verified=true)", path.name)
-            self.summary.processed += 1
+            self._handle_research_error(exc, path, report)
+            return report
 
         self.summary.research_reports.append(report)
         return report
@@ -915,44 +968,17 @@ class Researcher:
         report = ResearchReport(model_id=mid, card_path=path)
         mcp_url = getattr(self.args, "mcp_url", "http://localhost:8765")
 
-        try:
-            original = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError) as exc:
-            report.error = f"Card nicht lesbar: {exc}"
-            self.summary.errors += 1
-            self.summary.research_reports.append(report)
+        original = self._load_card(path, report)
+        if original is None:
             return report
 
         pre_findings = _check_murks(original)
         report.findings.extend(pre_findings)
 
-        if not self.args.dry_run:
-            locked = dict(original)
-            locked["profile_verified"] = False
-            locked["profile_verified_at"] = None
-            locked["profile_verified_by"] = None
-            locked["last_modified_at"] = date.today().isoformat()
-            try:
-                path.write_text(
-                    json.dumps(locked, ensure_ascii=False, indent=2) + "\n",
-                    encoding="utf-8",
-                )
-                report.locked = True
-                logger.info("    🔓 Lock geoeffnet: %s (profile_verified=false)", path.name)
-            except OSError as exc:
-                report.error = f"Lock fehlgeschlagen: {exc}"
-                self.summary.errors += 1
-                self.summary.research_reports.append(report)
-                return report
+        if not self._apply_lock(original, path, report):
+            return report
 
-        backup_path: Path | None = None
-        if not self.args.dry_run:
-            backup_path = path.with_name(path.name + self.BACKUP_SUFFIX)
-            try:
-                backup_path.write_text(path.read_text(encoding="utf-8"), encoding="utf-8")
-                report.backup_path = backup_path
-            except OSError as exc:
-                logger.warning("    ⚠️ Backup fehlgeschlagen: %s — weiter ohne.", exc)
+        backup_path = self._create_backup(path, report)
 
         tool_schema_json = json.dumps(TOOL_SCHEMAS, ensure_ascii=False, indent=2)
         system_prompt = (
@@ -1056,64 +1082,10 @@ class Researcher:
             if final_parsed is None:
                 final_parsed = {}
 
-            findings_raw = final_parsed.get("findings", [])
-            if isinstance(findings_raw, list):
-                for item in findings_raw:
-                    if not isinstance(item, dict):
-                        continue
-                    report.findings.append(CardFinding(
-                        field=str(item.get("field", "")),
-                        severity=str(item.get("severity", "info")),
-                        message=str(item.get("message", "")),
-                        current=item.get("current"),
-                        suggested=item.get("suggested"),
-                    ))
-            report.summary = str(final_parsed.get("summary", ""))
-
-            merged = _apply_research_diff(original, final_parsed)
-            merged = _preserve_operator_fields(original, merged)
-            cleaned, warnings = _validate_against_template(merged, self.template)
-            for w in warnings:
-                logger.info("    · %s", w)
-                report.findings.append(CardFinding(
-                    field=w.split(":")[0].strip() if ":" in w else w,
-                    severity="warning",
-                    message=w,
-                    current=None,
-                    suggested=None,
-                ))
-
-            report.would_write = True
-            if self.args.dry_run:
-                logger.info(
-                    "    [DRY-RUN] Wuerde %s aktualisieren (%d Felder, %d Findings).",
-                    path.name, len(cleaned), len(report.findings),
-                )
-            else:
-                final = dict(cleaned)
-                final["profile_verified"] = True
-                final["profile_verified_at"] = date.today().isoformat()
-                final["profile_verified_by"] = f"llm:{self.llm_spec.model}"
-                final["last_modified_at"] = date.today().isoformat()
-                path.write_text(
-                    json.dumps(final, ensure_ascii=False, indent=2) + "\n",
-                    encoding="utf-8",
-                )
-                report.unlocked = True
-                report.wrote = True
-                logger.info("    🔒 Lock geschlossen: %s (profile_verified=true)", path.name)
-                if backup_path and backup_path.exists():
-                    try:
-                        backup_path.unlink()
-                        report.backup_path = None
-                    except OSError as exc:
-                        logger.warning("    ⚠️ Backup loeschen fehlgeschlagen: %s", exc)
-
-            self.summary.processed += 1
+            self._extract_findings(final_parsed, report)
+            self._commit_card(original, final_parsed, path, report, backup_path)
         except (OSError, json.JSONDecodeError, openai.APIError, ValueError) as exc:  # noqa: BLE001
-            report.error = str(exc)
-            logger.error("    ❌ Tool-Use-Recherche fehlgeschlagen — Lock bleibt offen: %s", exc)
-            self.summary.errors += 1
+            self._handle_research_error(exc, path, report)
 
         self.summary.research_reports.append(report)
         return report
@@ -1161,7 +1133,7 @@ def _render_research_markdown_report(reports: list[ResearchReport], today: str) 
 
 
 def _discover_targets(
-    args: argparse.Namespace, template: CardTemplate
+    args: argparse.Namespace,
 ) -> list[tuple[str, Path]]:
     if args.card:
         if args.mode == "check":
@@ -1174,30 +1146,16 @@ def _discover_targets(
             logger.info("ℹ️  Card existiert nicht: %s — wird im 'make'-Modus erzeugt.", args.card)
         return [(args.card, path)]
 
-    base = cards_dir("model")
-    targets: list[tuple[str, Path]] = []
-    for p in sorted(base.glob("*.json")):
-        if p.name == "_index.json":
-            continue
-        try:
-            data = json.loads(p.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError) as exc:
-            logger.warning("Konnte %s nicht laden: %s", p.name, exc)
-            continue
-        if not isinstance(data, dict):
-            continue
-        model_id = data.get("model_id") or p.stem
-        if not args.force and data.get("profile_verified") is True:
-            continue
-        targets.append((model_id, p))
-    return targets
+    return _glob_model_cards(args.force)
 
 
-def _render_markdown_report(reports: list[CardCheckReport], today: str) -> str:
+def _render_markdown_report(
+    reports: list[CardCheckReport], today: str, *, mode_label: str = "check (dry-run)"
+) -> str:
     lines: list[str] = [
         f"# Model Card Check Report — {today}",
         "",
-        "**Modus:** check (dry-run)",
+        f"**Modus:** {mode_label}",
         f"**Verarbeitet:** {sum(1 for r in reports if not r.error and r.parse_error is None)}"
         f" · **Übersprungen:** 0"
         f" · **Fehler:** {sum(1 for r in reports if r.error or r.parse_error)}",
@@ -1246,7 +1204,7 @@ class CardManager:
         self.summary = RunSummary()
 
     def run(self) -> RunSummary:
-        targets = _discover_targets(self.args, self.template)
+        targets = _discover_targets(self.args)
         if not targets:
             logger.info("⚠️  Keine Ziel-Cards gefunden.")
             return self.summary
@@ -1496,6 +1454,9 @@ def main() -> int:
     if args.mode == "check" and not args.fix:
         today = date.today().isoformat()
         print(_render_markdown_report(summary.check_reports, today))
+    elif args.mode == "check" and args.fix:
+        today = date.today().isoformat()
+        print(_render_markdown_report(summary.check_reports, today, mode_label="check (fix)"))
     elif args.mode == "research":
         today = date.today().isoformat()
         print(_render_research_markdown_report(summary.research_reports, today))
