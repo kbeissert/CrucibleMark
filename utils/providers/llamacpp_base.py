@@ -438,7 +438,9 @@ class LlamaCppBaseClient(BaseProviderClient):
 
         import httpx  # lokaler Import: nur aktiv, wenn openai lib vorhanden
 
-        timeout_cfg = httpx.Timeout(connect=10.0, read=300.0, write=300.0, pool=300.0)
+        prov_cfg = self._provider_cfg()
+        read_timeout = float(prov_cfg.get("read_timeout", 300.0))
+        timeout_cfg = httpx.Timeout(connect=10.0, read=read_timeout, write=300.0, pool=300.0)
         limits = httpx.Limits(max_keepalive_connections=0, max_connections=10)
         http_client = httpx.Client(timeout=timeout_cfg, limits=limits)
         self._client = OpenAI(
@@ -759,10 +761,19 @@ class LlamaCppBaseClient(BaseProviderClient):
 
         if reasoning:
             usage = getattr(response, "usage", None)
-            comp_tokens = getattr(usage, "completion_tokens", 0) if usage else 0
-            if not content.strip():
-                self.last_response_metadata["reasoning_tokens"] = comp_tokens
-            self.last_response_metadata["thinking_content"] = reasoning
+            # reasoning_tokens: bevorzugt aus usage.completion_tokens_details
+            # (llama.cpp >= b5XXX), sonst Fallback auf completion_tokens wenn
+            # kein Content vorhanden ist.
+            rt: int | None = None
+            if usage:
+                ctd = getattr(usage, "completion_tokens_details", None)
+                if ctd:
+                    rt = getattr(ctd, "reasoning_tokens", None)
+                if rt is None and not content.strip():
+                    rt = getattr(usage, "completion_tokens", 0)
+            if rt is not None:
+                self.last_response_metadata["reasoning_tokens"] = rt
+            self.last_response_metadata["think_content"] = reasoning
 
         return content
 
@@ -797,6 +808,9 @@ class LlamaCppBaseClient(BaseProviderClient):
         initial_tokens, _ = resolve_token_budget(
             model, raw_requested, self.config, kwargs.get("_module_key")
         )
+        model_cfg_max_tokens = self._model_cfg(model).get("max_tokens")
+        if model_cfg_max_tokens is not None:
+            initial_tokens = min(initial_tokens, model_cfg_max_tokens)
 
         params: dict[str, Any] = {
             "model": model,

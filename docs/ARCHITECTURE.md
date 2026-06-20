@@ -215,6 +215,40 @@ Spark-spezifische Besonderheiten:
 - Bei Endpoint-Konflikten wird nur gewarnt; der Lauf bricht kontrolliert ab statt den fremden Server zu überschreiben.
 - Seit v4.3.0 erzwingt `UnifiedBenchmarkRunner.run_benchmark()` den lokalen Provider-Cleanup in `finally`; bei `cleanup_on_exit: true` werden Stop- und Post-Stop-Kommandos auch bei Abbruch ausgeführt.
 
+**Spark Token-Management (Session 26):**
+
+Der `llamacpp_spark`-Server ist ein eigenständiger llama.cpp-Prozess mit eigenem Kontextfenster. Drei Config-Ebenen steuern das Token-Verhalten pro Modell:
+
+| Config-Ebene | Feld | Server-Flag | Wirkung |
+|---|---|---|---|
+| 1. Kontextfenster | `context_length` | `--ctx-size` | KV-Cache-Größe beim Serverstart (Input + Output gemeinsam) |
+| 2. Output-Cap | `max_tokens` | HTTP `max_tokens` | Maximale Output-Tokens pro einzelner Anfrage |
+| 3. Parallelität | `parallel` | `--parallel` | Gleichzeitige Request-Slots (KV-Cache-Multiplikator) |
+
+**Kardinalregel:** `max_tokens` muss kleiner sein als `context_length`, und der httpx `read_timeout` muss groß genug sein für `max_tokens / tokens_per_second`. Ohne `max_tokens`-Cap generiert das Modell bis zum Kontextfenster → HTTP-Read-Timeout-Loop.
+
+**Per-Model-Cap-Logik** (`llamacpp_base.py:query()`, ab Session 26):
+Nach `resolve_token_budget()` wird der per-Model `max_tokens` aus der provider_config angewendet:
+```python
+model_cfg_max_tokens = self._model_cfg(model).get("max_tokens")
+if model_cfg_max_tokens is not None:
+    initial_tokens = min(initial_tokens, model_cfg_max_tokens)
+```
+
+**`read_timeout`-Konfiguration** (ab Session 26):
+Der httpx Read-Timeout wird provider-seitig konfiguriert (`provider_config.yaml → read_timeout`), Default 300s. Für `llamacpp_spark` auf 2400s gesetzt (40 Min), da lokale 27B-Modelle bei 10-15 t/s für 16K Output-Tokens ~22 Minuten benötigen.
+
+**Empfohlene Spark-Config pro Modell:**
+```yaml
+- id: my-model
+  context_length: 32768     # Explizit statt Provider-Default (65536)
+  max_tokens: 16384         # Output-Cap (Hälfte von context_length)
+  parallel: 2               # Provider-Default; 1 für Hybrid-Attention-Modelle
+```
+
+**`reasoning_content`-Verhalten bei Thinking-Modellen:**
+llama.cpp-Modelle mit `--reasoning on` geben Thinking-Inhalte im separaten API-Feld `reasoning_content` zurück (nicht im Standard-`content`). `_extract_response_content()` in `llamacpp_base.py` extrahiert beide Felder. `reasoning_tokens` wird bevorzugt aus `usage.completion_tokens_details.reasoning_tokens` gelesen (llama.cpp-native), Fallback auf `completion_tokens` nur wenn Content leer. Das `think_content`-Feld in der CSV enthält den vollständigen Thinking-Block.
+
 | Provider | Auth | Token Limit | Streaming | Retry Logic | Besonderheiten |
 |----------|------|-------------|-----------|-------------|----------------|
 | Ollama | Keine (localhost) | Modellabhängig (8K–128K) | ✅ | N/A (lokal) | `finish_reason` + `tps_eval` aus Ollama-Metadaten |

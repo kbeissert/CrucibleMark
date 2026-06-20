@@ -2,6 +2,32 @@
 
 Letzte Releases + aktueller Stand. Vollständige Historie: `reference/decisions-log.md`.
 
+### 2026-06-20 (Session 26) — Spark Token-Management + Bugfixes
+
+**Auslöser:** `qwopus3_6-27b-v2-mtp-q8` auf `llamacpp_spark` blieb bei Test 1/5 (Code Quality Audit) stecken — 24+ Minuten ohne Fortschritt, Retry-Loop alle 300s.
+
+**Root Cause:** Kein `max_tokens`-Cap → Modell generierte bis zum Kontextfenster (65536 Tokens) → httpx Read-Timeout (300s) griff nach 5 Min → OpenAI-Client retried → erneut 300s → LLMClient retried → endloser Zyklus.
+
+**Änderungen:**
+
+1. **`config/provider_config.yaml`:**
+   - `read_timeout: 2400` für `llamacpp_spark` (Provider-Level)
+   - `parallel: 4` → `parallel: 2` (Provider-Default)
+   - `context_length` für alle 6 Spark-Modelle ohne expliziten Wert ergänzt
+   - `max_tokens: 16384` für `qwopus3_6-27b-v2-mtp-q8` und `qwopus-3_6-27b-coder-mtp-q8`
+
+2. **`utils/providers/llamacpp_base.py`:**
+   - `_get_or_create_client()`: `read_timeout` aus Provider-Config lesen (Default 300s)
+   - `query()`: Per-Model `max_tokens`-Cap NACH `resolve_token_budget()`: `min(initial_tokens, model_cfg_max_tokens)`
+   - `_extract_response_content()`: Key-Mismatch `"thinking_content"` → `"think_content"` gefixt
+   - `_extract_response_content()`: `reasoning_tokens` bevorzugt aus `usage.completion_tokens_details.reasoning_tokens` lesen
+
+**Verifikation:** 31 llamacpp-Tests + 119 Thinking-Tests grün.
+
+**Dokumentation:** CLAUDE.md (3 Pitfalls), ARCHITECTURE.md, DEVELOPER_GUIDE.md, SETUP_GUIDE.md aktualisiert.
+
+---
+
 ### 2026-06-20 (Session 25, Runde 2) — Web-Export Nullwert-Entfernung
 
 **Ziel:** Alle Werte ohne Inhalt (None/null) sollen nicht im Web-Export landen. Karten mit Werten bleiben erhalten.

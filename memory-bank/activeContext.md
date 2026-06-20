@@ -15,6 +15,16 @@ to know what reference files exist.
 
 ## Aktueller Status (2026-06-20)
 
+- **Session 26 abgeschlossen (2026-06-20) — Spark Token-Management + Bugfixes:**
+  - **Root Cause Timeout-Loop:** `qwopus3_6-27b-v2-mtp-q8` auf `llamacpp_spark` produzierte endlose Generierungen weil kein `max_tokens`-Cap gesetzt war. Das Modell generierte bis zum Kontextfenster (65536 Tokens), httpx Read-Timeout (300s) griff nach 5 Min → Retry-Loop.
+  - **Per-Model `max_tokens`-Cap implementiert:** `max_tokens: 16384` für beide Qwopus-Modelle in `provider_config.yaml`. Cap-Logik in `llamacpp_base.py:query()` NACH `resolve_token_budget()`: `min(initial_tokens, model_cfg_max_tokens)`.
+  - **`read_timeout` konfigurierbar gemacht:** `llamacpp_spark` Provider-Level `read_timeout: 2400` (40 Min statt 5 Min Default). `llamacpp_base.py` liest jetzt `prov_cfg.get("read_timeout", 300.0)`.
+  - **`context_length` für alle Spark-Modelle explizit gesetzt:** Qwopus=32768, Qwen3.6/3.5=65536, Gemma-4=65536, Qwen3-Coder=65536. Vorher: nur Hermes und Gemma-4-MTP hatten explizite Werte.
+  - **`parallel` 4→2:** Provider-Default von `parallel=4` auf `parallel=2` gesetzt (Benchmark ist sequentiell, spare Slot für Health-Checks reicht). Hermes behält `parallel=1`.
+  - **Bugfix `think_content` Key-Mismatch:** `_extract_response_content()` speicherte `"thinking_content"` statt `"think_content"` — `base_runner.py` las aber `"think_content"`. Key einheitlich auf `"think_content"` gesetzt.
+  - **Bugfix `reasoning_tokens`-Extraktion:** Wurde nur bei leerem Content gesetzt. Jetzt bevorzugt aus `usage.completion_tokens_details.reasoning_tokens` gelesen (llama.cpp-native), Fallback auf `completion_tokens` nur wenn Content leer.
+  - **Dokumentation aktualisiert:** `CLAUDE.md` (3 neue Pitfalls), `docs/ARCHITECTURE.md` (Spark Token-Management), `docs/DEVELOPER_GUIDE.md` (Spark Connector + reasoning_content), `docs/SETUP_GUIDE.md` (Per-Model Token-Management).
+
 - **Session 25 abgeschlossen (2026-06-20) — Card-Research Force-Run + Template-Cleanup:**
   - **110/110 Cards `profile_verified=true`** — vollständiger Force-Run aller Model Cards.
   - **Template-Änderungen (required → optional):** `params_total_b`, `params_active_b`, `knowledge_cutoff`, `license_url`, `input_price_per_1m`, `output_price_per_1m`. Grund: Beschreibungen sagten "null wenn X" aber `required: true` — Widerspruch.
@@ -183,6 +193,7 @@ Mögliche Anlässe für User-Aktivität (alle aus dem Backlog):
 
 ## Letzte Änderungen
 
+- **2026-06-20 (Session 26):** Spark Token-Management + Bugfixes. `provider_config.yaml`: `read_timeout: 2400`, `parallel: 2`, `context_length` für alle Spark-Modelle, `max_tokens: 16384` für Qwopus. `llamacpp_base.py`: Per-Model `max_tokens`-Cap, `read_timeout` aus Config, `think_content` Key-Mismatch Fix, `reasoning_tokens` Extraktion verbessert. Dokumentation: CLAUDE.md (3 Pitfalls), ARCHITECTURE.md, DEVELOPER_GUIDE.md, SETUP_GUIDE.md.
 - **2026-06-20 (Session 25, Runde 2):** Web-Export Nullwert-Entfernung. `web_export.py`: `_strip_none()` Helper — entfernt `None`-Werte rekursiv aus Dicts vor JSON-Export. Angewendet auf `_build_leaderboard_entry()`, `_build_compass_entry()`, `model_card`-Sub-Dict, `data.json`-Write. Neue Export-Felder: `profile_verified_by`, `last_modified_at`. Tests: 818/818 grün. 93 Modelle exportiert, 0 None-Werte.
 - **2026-06-19 (Session 24):** Card-Research MCP Tool-Use + Lizenz-Heuristik + GGUF-Konventionen + MCP Auto-Lifecycle. `manage_model_cards.py`: neue Imports (urllib, subprocess), Tool-Schemas, MCP-Helfer (`_parse_tool_call`, `_call_mcp_tool`, `_extract_tool_content`), `Researcher._research_tooluse_one()` (Multi-Step-Loop, max. 3 Runden), CLI-Flags `--tooluse` + `--mcp-url`. Makefile: `TOOLUSE=1` Flag. Lizenz-Heuristik: `_KNOWN_LICENSE_MAPPINGS`, `_KNOWN_COMMUNITY_GROUPS`, `_match_family()`, `_check_license_consistency()`, `_check_community()`, `_check_license_text_fields()` (Pre-Finding), `_check_license_cascade()` (Post-Merge), `_ensure_license_consistency()`. GGUF: `_is_gguf_model()`, `_ensure_gguf_conventions()`. `_commit_card()`: iteriert `report.findings`, `profile_verified` via finale-Karte-Validierung. MCP Auto-Lifecycle: `_ensure_mcp_running()`, `_stop_mcp_server()`, `_reset_llama_context()`, `_check_health()`. System-Prompt Regel 5: Textfelder bei Lizenz-Wechsel.
 - **2026-06-13 (Session 20 — Commits 994d447 + 8e02609 + 9c38063):** PC-Coverage vollständig. `web_export.py`: `card_id`-Feld + Datum-Fallback-Lookup. 28 Bias-Reviews generiert. Ghost-Model `z-ai/glm-5` (April-2026) via `--force`-Re-Run überschrieben. 2 Orphan-Vendor-Cards gelöscht (`alibaba_cloud.json`, `alibaba_group_qwen_team.json`), hauhaucs `card_subtype: "community"` gesetzt, Community-Filter in `web_export.py`. Web-Export: 24 → 18 Vendor-Einträge.

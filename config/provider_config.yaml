@@ -14,24 +14,34 @@ providers:
       enabled: true
       env_var: MISTRAL_API_KEY
       models:
+      # Mistral — neueste zuerst
       - id: mistral-medium-3-5
         name: Mistral Medium 3.5
       - id: mistral-small-2603
         name: Mistral Small 4 (24B)
       - id: mistral-large-2512
         name: Mistral Large 3 (675B)
-      - id: devstral-2512
-        name: Devstral 2
-      - id: magistral-medium-latest
-        name: Magistral Medium 1.2
-      - id: magistral-small-latest
-        name: Magistral Small 1.2
-      - id: codestral-latest
-        name: Codestral
       - id: mistral-small-2503
         name: Mistral Small 3.1 (24B)
       - id: mistral-large-2411
         name: Mistral Large 2.1 (123B)
+
+        # Devstral (Mistral-Partner) — neueste zuerst
+      - id: devstral-2512
+        name: Devstral 2
+
+        #Magistral (Mistral-Partner) — neueste zuerst
+      - id: magistral-medium-latest
+        name: Magistral Medium 1.2
+      - id: magistral-small-latest
+        name: Magistral Small 1.2
+
+        # Codestral (Mistral-Partner) — neueste zuerst
+      - id: codestral-2508
+        name: Codestral 25.08 (22B)
+      - id: codestral-2405
+        name: Codestral 24.05 (22B)
+
 
     anthropic:
       name: Anthropic
@@ -439,7 +449,7 @@ providers:
     #
     # Hardware-Kontext:
     #   DGX Spark: ~128 GB unified memory, davon ~120 GB für Modell + Kontext nutzbar.
-    #   Default Context=65536 + parallel=4 — funktioniert für 30B-40B MoE-Modelle
+    #   Default Context=65536 + parallel=2 — funktioniert für 30B-40B MoE-Modelle
     #   (Q4-Q8) und Standard-Attention-Transformer (Qwen 3.5/3.6, Gemma 4).
     #   Per-Modell-Override möglich: model_cfg.context_length / model_cfg.parallel
     #   werden in _build_server_cmd() zuerst gelesen. Beispiel: Hermes 4.3 36B
@@ -452,6 +462,7 @@ providers:
       api_type: llamacpp
       model_type: open_weights_local
       enabled: true
+      read_timeout: 2400
       context_window: 65536
       num_predict: 65536
       base_url: "http://192.168.1.191:1235/v1"
@@ -473,7 +484,7 @@ providers:
       server_log: ~/ai/llama-lab-spark.log
       bind_host: 0.0.0.0
       threads: 10
-      parallel: 4
+      parallel: 2
       hardware_profile: dgx_spark_cuda
       models:
 
@@ -585,6 +596,7 @@ providers:
         name: Gemma 4 26B A4B Instruct UD-Q8_K_XL (GGUF)
         model_file: Gemma4-26B/gemma-4-26B-A4B-it-UD-Q8_K_XL.gguf
         n_gpu_layers: 99
+        context_length: 65536
         enable_thinking: false
         temperature: 1.0
         top_k: 64
@@ -649,6 +661,7 @@ providers:
         name: Qwen 3.6 35B-A3B MTP UD-Q8_K_XL (GGUF)
         model_file: Qwen3.6/Qwen3.6-35B-A3B-MTP-UD-Q8_K_XL.gguf
         n_gpu_layers: 99
+        context_length: 65536
         enable_thinking: true
         temperature: 0.7
         top_p: 0.8
@@ -665,6 +678,7 @@ providers:
         name: Qwen 3.5 35B-A3B UD-Q8_K_XL (GGUF)
         model_file: Qwen3.5/Qwen3.5-35B-A3B-UD-Q8_K_XL.gguf
         n_gpu_layers: 99
+        context_length: 65536
         enable_thinking: false
         temperature: 0.7
         top_p: 0.8
@@ -675,14 +689,58 @@ providers:
         name: Qwen 3 Coder Next UD-Q4_K_XL (GGUF)
         model_file: Qwen3-Coder-Next/Qwen3-Coder-Next-UD-Q4_K_XL.gguf
         n_gpu_layers: 99
+        context_length: 65536
         enable_thinking: false
 
-       # 7) Gemma4-Creative-Wordsmith/gemma-4-Creative-Wordsmith-31B-it-uncensored-heretic-Q8_0 [~32.6 GB]
+      # 7) Gemma4-Creative-Wordsmith/gemma-4-Creative-Wordsmith-31B-it-uncensored-heretic-Q8_0 [~32.6 GB]
       # - id: gemma-4-31b-it-creative-wordsmith-q8
       #   name: Gemma 4 31B Creative Wordsmith Uncensored Q8_0 (GGUF)
       #   model_file: Gemma4-Creative-Wordsmith/gemma-4-Creative-Wordsmith-31B-it-uncensored-heretic-Q8_0.gguf
       #   n_gpu_layers: 99
       #   enable_thinking: false
+
+      # 8) Qwopus3.6-27B-v2/Qwopus3.6-27B-v2-MTP-Q8_0 [28.3 GB]
+      #    Base: Qwen3.6-27B → multi-stage Trace Inversion SFT (Claude Opus 4.6/4.7)
+      #    87.43% MMLU-Pro (350 subset), 75.25% SWE-bench Verified (202 slice)
+      #    MTP-Speedup: 1.66x (draft=2), temp=0.7
+      #    MTP-Heads: eingebettet im Haupt-GGUF (keine separate Draft-Datei)
+      - id: qwopus3_6-27b-v2-mtp-q8
+        name: Qwopus 3.6-27B-v2 MTP-Q8_0 (GGUF)
+        model_file: Qwopus3.6-27B-v2/Qwopus3.6-27B-v2-MTP-Q8_0.gguf
+        n_gpu_layers: 99
+        context_length: 32768
+        max_tokens: 16384
+        enable_thinking: true
+        temperature: 0.7
+        top_p: 0.8
+        top_k: 20
+        presence_penalty: 1.5
+        repeat_penalty: 1.0
+        extra_server_args:
+          - "--spec-type draft-mtp"
+          - "--spec-draft-n-max 2"
+
+      # 9) Qwopus3.6-27B/Qwopus3.6-27B-Coder-MTP-Q8_0 [28.3 GB]
+      #    Base: Qwopus3.6-27B-v2 → Agentic Coding SFT (Hermes-agent-reasoning-traces)
+      #    Trace Inversion: Claude Opus 4.6/4.7 → <think> reconstructed reasoning traces
+      #    MTP draft=2 (gleiche Architektur wie Eintrag #8, MTP-Heads eingebettet im Haupt-GGUF)
+      #    SWE-bench Verified: 67.0% thinking-off (Q5_K_M, RTX 5090, ~100 t/s)
+      #    335/500 resolved — stark auf scikit-learn, requests, django, xarray
+      - id: qwopus-3_6-27b-coder-mtp-q8
+        name: Qwopus-3.6-27B-Coder MTP-Q8_0 (GGUF)
+        model_file: Qwopus3.6-27B/Qwopus3.6-27B-Coder-MTP-Q8_0.gguf
+        n_gpu_layers: 99
+        context_length: 32768
+        max_tokens: 16384
+        enable_thinking: true
+        temperature: 0.7
+        top_p: 0.8
+        top_k: 20
+        presence_penalty: 1.5
+        repeat_penalty: 1.0
+        extra_server_args:
+          - "--spec-type draft-mtp"
+          - "--spec-draft-n-max 2"
 
       # Auskommentiert — nicht auf Spark:
       # - id: qwen3.6-35b-a3b-q8 (Qwen3.6-35B-A3B-UD-Q8_K_XL.gguf — nicht vorhanden)

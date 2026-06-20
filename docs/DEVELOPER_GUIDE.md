@@ -133,6 +133,59 @@ Historische Lifecycle-Flags wie `always_stop_before_start` sind für den konsoli
 
 Seit v4.3.0 gilt zusätzlich: Der `UnifiedBenchmarkRunner` führt den lokalen Provider-Cleanup in `finally` aus. Bei aktivem `cleanup_on_exit` werden `server_stop_cmd` und optional `server_post_stop_cmd` deshalb auch bei `KeyboardInterrupt`/Abbruch ausgeführt.
 
+### Spark: Token-Management pro Modell (ab Session 26)
+
+Der `llamacpp_spark`-Server ist ein eigenständiger Prozess mit eigenem Kontextfenster. Drei Ebenen steuern das Token-Verhalten:
+
+1. **`context_length`** (Provider-Config, per-Modell) → `--ctx-size` beim Serverstart
+   - Gesamtkontextfenster (Input + Output gemeinsam)
+   - Bestimmt KV-Cache-Speicher pro Slot: `context_length × layer_count × head_dim × 2`
+   - Beispiel: 32768 × 27B × Q8 = ~16 GB KV-Cache pro Slot
+   - **Alle Spark-Modelle sollten explizit `context_length` setzen** — nicht auf den Provider-Default (65536) verlassen
+
+2. **`max_tokens`** (Provider-Config, per-Modell) → HTTP `max_tokens` pro Anfrage
+   - Begrenzt nur die Generierung, nicht den Input
+   - **Kardinalregel:** `max_tokens < context_length`
+   - Ohne Cap generiert das Modell bis zum Kontextfenster → HTTP-Read-Timeout-Loop
+   - Per-Model-Cap wird in `llamacpp_base.py:query()` NACH `resolve_token_budget()` angewendet
+
+3. **`parallel`** (Provider-Config, Provider-Level oder per-Modell) → `--parallel`
+   - Anzahl gleichzeitiger Request-Slots (Continuous Batching)
+   - Für sequentiellen Benchmark: `parallel=2` (Spare Slot für Health-Checks) statt `parallel=4`
+   - Hybrid-Attention-Modelle (z.B. Hermes 4.3 36B): `parallel=1` (SWA-Re-Processings verursachen Connection-Resets bei mehreren Slots)
+
+4. **`read_timeout`** (Provider-Config, Provider-Level) → httpx Read-Timeout
+   - Default 300s — zu kurz für lokale 27B-Modelle bei 10-15 t/s
+   - `llamacpp_spark`: 2400s (40 Min) — deckt 16K Tokens × 12 t/s + Sicherheitsmarge
+   - Berechnung: `read_timeout ≥ max_tokens / min_tps × 1.5`
+
+**Config-Beispiel (provider_config.yaml):**
+
+```yaml
+llamacpp_spark:
+  read_timeout: 2400          # Provider-Level (httpx)
+  parallel: 2                 # Provider-Default
+  models:
+  - id: my-thinking-model
+    context_length: 32768     # Explizit (nicht 65536 Provider-Default)
+    max_tokens: 16384         # Output-Cap (Hälfte von context_length)
+    enable_thinking: true
+  - id: my-hybrid-model
+    context_length: 16384     # Kleiner wegen Hybrid-Attention
+    parallel: 1               # Per-Modell-Override
+```
+
+### Spark: `reasoning_content`-Extraktion (ab Session 26)
+
+llama.cpp-Modelle mit `--reasoning on` (bzw. `enable_thinking: true`) geben Thinking-Inhalte im API-Response-Feld `reasoning_content` zurück — **nicht** im Standard-`content`. Die Extraktion in `_extract_response_content()` (`llamacpp_base.py`):
+
+1. `content = msg.content` — die sichtbare Antwort
+2. `reasoning = msg.reasoning_content` — der Thinking-Block
+3. `reasoning_tokens` — bevorzugt aus `usage.completion_tokens_details.reasoning_tokens` (llama.cpp-native), Fallback auf `completion_tokens` nur wenn Content leer
+4. `think_content` — der vollständige Thinking-Block (Key einheitlich mit `base_runner.py`)
+
+**Historischer Bug (Session 26):** `_extract_response_content()` speicherte `"thinking_content"` statt `"think_content"` — `base_runner.py:163` las aber `"think_content"`. Ergebnis: `think_content` blieb immer leer in CSV. Zusätzlich: `reasoning_tokens` wurde nur bei leerem Content gesetzt — jetzt bevorzugt aus `usage.completion_tokens_details.reasoning_tokens` gelesen.
+
 ### Config-Lookup mit ID-Normalisierung (Defense-in-Depth)
 
 Die Model-IDs in `config/provider_config.yaml` werden in der Regel in der rohen Schreibweise des Providers eingetragen (z. B. `qwen3.5-35b-a3b-q8` mit Punkten). `resolve_canonical_model_id()` in `utils/model_utils.py` normalisiert diese ID früh im Entry-Point (Punkte/Bindestriche → Underscores), sodass `qwen3_5-35b-a3b-q8` durch die gesamte Benchmark-Pipeline gereicht wird — identisch zur Schreibweise in CSV-Spalten, Card-Dateinamen und Leaderboard-Zeilen.

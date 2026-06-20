@@ -106,6 +106,24 @@ Für den konsolidierten `llamacpp_spark`-Betrieb werden typischerweise nur diese
 - Abschluss-Cleanup: `cleanup_on_exit`, `server_post_stop_cmd`
 - Modelle: pro Modell `id`, `name`, `model_file`, `n_gpu_layers`
 
+**Per-Modell Token-Management (ab Session 26):**
+
+Jedes Spark-Modell sollte drei zusätzliche Felder haben:
+
+| Feld | Zweck | Beispiel |
+|---|---|---|
+| `context_length` | Server-Kontextfenster (`--ctx-size`) | `32768` |
+| `max_tokens` | Output-Cap pro Anfrage (HTTP) | `16384` |
+| `read_timeout` | httpx Read-Timeout (Provider-Level) | `2400` |
+
+**Zusammenhang:**
+- `context_length` = Input + Output gemeinsam (KV-Cache)
+- `max_tokens` = nur Output (darf nicht > `context_length` sein)
+- `read_timeout` ≥ `max_tokens / tokens_per_second × 1.5`
+- `parallel` = gleichzeitige Slots (KV-Cache-Multiplikator); `2` für Benchmark, `1` für Hybrid-Attention
+
+Ohne `max_tokens`-Cap generiert das Modell bis zum Kontextfenster → HTTP-Timeout-Loop. Details: `docs/DEVELOPER_GUIDE.md` → "Spark: Token-Management pro Modell".
+
 Frühere Lifecycle-Schalter wie `always_stop_before_start` sind im aktuellen Connector-Stand nicht mehr erforderlich.
 
 #### Verbindungsbesonderheiten bei Spark (SSH)
