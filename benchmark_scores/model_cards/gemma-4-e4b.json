@@ -13,7 +13,7 @@
   "generated_at": "2026-05-30T15:54:49.249742+00:00",
   "input_price_per_1m": 0.0,
   "judge_context_hint": "Plattform: Apple M4 Mac (~18 GB Unified Memory, Metal-GPU, lokal — kein Cloud-Provider, kein externer Datentransfer). Kompakte Gemma-4-Variante für lokale Alltagsaufgaben. Die Bewertung sollte Effizienz und brauchbares Instruction-Following betonen.",
-  "knowledge_cutoff": "2025-06",
+  "knowledge_cutoff": "2025-01",
   "known_limitations": [
     "Leistung hinter deutlich größeren Modellen der Gemini-Serie",
     "Lokale Quantisierung kann minimale Qualitätsverluste verursachen"
@@ -29,7 +29,7 @@
   "parameter_architecture": "hybrid",
   "params_active_b": 4.5,
   "params_total_b": 8.0,
-  "primary_focus": "general",
+  "primary_focus": "generalist",
   "size_class": "Desktop",
   "strengths": [
     "Effiziente lokale Ausführung",
@@ -44,7 +44,7 @@
   "thinking_probe_evidence": "Gemma-4 native thinking via reasoning_content API field (llama.cpp). Model outputs structured reasoning in separate reasoning_content field for complex tasks. Standard ThinkingProbe (simple math) does not trigger native thinking mode. Manually confirmed: tasks 6C/6D/6E generated 500 reasoning tokens in reasoning_content with empty message.content.",
   "unknown": false,
   "use_case_primary": "generalist",
-  "vendor": "Google",
+  "vendor": "Google DeepMind",
   "weights_license_tier": "open-weights",
   "weights_provenance_risk": "medium",
   "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch ist der CLOUD Act bei lokal betriebenen Open-Weights-Modellen nicht direkt anwendbar.",
