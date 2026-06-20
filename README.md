@@ -1,6 +1,6 @@
 # CrucibleMark
 
-[![Version](https://img.shields.io/badge/version-4.9.3-blue)](.)
+[![Version](https://img.shields.io/badge/version-4.10.0-blue)](.)
 
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](.)
 [![License](https://img.shields.io/badge/license-MIT-green)](.)
@@ -163,9 +163,9 @@ Tiefergehende Einblicke in die Methodik findest du im `docs/` Verzeichnis:
 
 Die vollständige Versionshistorie steht in [CHANGELOG.md](CHANGELOG.md). Kurzfassung der letzten drei Releases:
 
+- **v4.10.0 (2026-06-20) — Card-Research Force-Run: 110/110 Cards `profile_verified=true` + Template-Cleanup:** Template von 42 auf 37 required Felder reduziert (6 → optional: `params_total_b`, `params_active_b`, `knowledge_cutoff`, `license_url`, `input_price_per_1m`, `output_price_per_1m`). `MODEL=all` Support für Batch-Processing. `MAX_CARDS=N` limitiert pro Run. 9 lokale Modelle: Thinking-Probe-Placeholder manuell ersetzt (Ollama entfernt). `probe_thinking.py` Path-Bug gefixt.
 - **v4.9.3 (2026-06-12) — Vendor Card Template v1.1.0: `description`-Feld + Editor-Prompt-Fix:** Neues Optionalfeld `description` in `config/card_template_vendor.yaml` für redaktionelle Organisationsbeschreibungen (240–480 Zeichen, Ziel 360, Deutsch). Semantisch getrennt von `privacy_note` (Compliance). Konsumenten: `web_export`, `review`. Drei Fehler im `provider_card_verification`-Prompt korrigiert: falscher Verzeichnispfad (`provider_cards/` → `vendor_cards/`), Feldname `provider_id` → `vendor_id` (2 Stellen). 803/803 Tests grün.
 - **v4.9.1 (2026-06-12) — Terminologie-Refactoring: Provider Cards → Vendor Cards:** 50 Dateien umbenannt (`provider_cards/` → `vendor_cards/`, `card_template_provider.yaml` → `card_template_vendor.yaml`, `provider_id` → `vendor_id`). SSoT-Verknüpfung Taxonomy → Vendor Cards. 803/803 Tests grün.
-- **v4.9.0 (2026-06-12) — Card-Datenpflege-System (Vendor-Kanonisierung + profile_verified + Editor-Prompt):** 13 kanonische Hersteller-Namen in `config/classification_taxonomy.json` als SSoT. Neue Felder `profile_verified` / `profile_verified_at` in `config/card_template_model.yaml` + Bulk-Migration aller 119 Model Card JSONs via `jq`. `verify_model_cards.py` erweitert: `🏭`-Warnung bei nicht-kanonischem `manufacturer`, `🔍`-Warnung bei `profile_verified: false`. `model_card_verification`-Editor-Prompt in `config/editor_prompts.yaml` als Checkliste für manuelle Pflege. Doku: `docs/CARD_MANAGEMENT.md §Vendor-Kanonisierung`.
 
 ---
 
@@ -173,5 +173,5 @@ Die vollständige Versionshistorie steht in [CHANGELOG.md](CHANGELOG.md). Kurzfa
 
 - **Maintainer:** kbeissert
 - **Repository:** [github.com/kbeissert/cruciblemark](https://github.com/kbeissert/cruciblemark)
-- **Status:** ✅ Production-Ready (v4.9.3)
+- **Status:** ✅ Production-Ready (v4.10.0)
 

@@ -764,7 +764,7 @@ def _build_leaderboard_entry(
     _card_version = extract_version(card.get("model_version")) if card else None
     _csv_version = extract_version(row.get(LdbCols.VERSION))
     _raw_model_id = str(row.get(LdbCols.MODEL_ID, row.get("model_id_raw", row.get("model_id", "")))).strip()
-    return {
+    return _strip_none({
         "slug": slug,
         "model_id": (card.get("model_id") if card else None) or (_raw_model_id or None),
         "model_name": (card.get("display_name") if card else None) or str(row.get(LdbCols.MODEL_NAME, "")),
@@ -830,7 +830,7 @@ def _build_leaderboard_entry(
             review_published_at,
             review_updated_at if review_updated_at != review_published_at else None,
         ]), default=None),
-        "model_card": {
+        "model_card": _strip_none({
             # Identitaet (self-contained sub-dict, spiegelt Card-Sicht)
             "model_id": card.get("model_id"),
             "model_version": card.get("model_version"),
@@ -884,6 +884,8 @@ def _build_leaderboard_entry(
             # Profil-Verifikation (v4.9.0): wurde die Card manuell geprüft?
             "profile_verified": card.get("profile_verified"),
             "profile_verified_at": card.get("profile_verified_at"),
+            "profile_verified_by": card.get("profile_verified_by"),
+            "last_modified_at": card.get("last_modified_at"),
             # Optional v4.7.1 Thinking-Probe-Quartett: nur exportieren wenn gesetzt
             # (Sonde schreibt die Felder nur bei detektiertem CoT; sonst noise vermeiden).
             **(
@@ -905,8 +907,8 @@ def _build_leaderboard_entry(
                 if card is not None
                 else None
             ),
-        } if card else None,
-    }
+        }) if card else None,
+    })
 
 
 def _lookup_pc_row(
@@ -992,7 +994,7 @@ def _build_compass_entry(
     def _lb_str(key: str) -> str | None:
         return str(lb_row.get(key, "")) if lb_row is not None else None
 
-    return {
+    return _strip_none({
         "card_id": card_id,
         "slug": slug,
         "name": model_name,
@@ -1017,7 +1019,7 @@ def _build_compass_entry(
         "archetype": archetype,
         "extremism_status": extremism,
         "blocks": _build_block_scores(metrics.get("module_stats", {}), block_meta),
-    }
+    })
 
 
 
@@ -1461,7 +1463,7 @@ def _process_leaderboard(
             cat_files.sort()
 
         with open(model_out / "data.json", "w", encoding="utf-8") as f:
-            json.dump(_strip_emojis(model_json), f, indent=2, ensure_ascii=False)
+            json.dump(_strip_emojis(_strip_none(model_json)), f, indent=2, ensure_ascii=False)
 
     return {
         "models_list": models_list,
@@ -1526,6 +1528,15 @@ def _normalize_export_tags(tags: list[str]) -> list[str]:
     if not tags:
         return tags
     return normalize_tags(tags)[0]
+
+
+def _strip_none(obj: Any) -> Any:
+    """Entfernt None-Werte rekursiv aus dicts. Listen und Skalare bleiben erhalten."""
+    if isinstance(obj, dict):
+        return {k: _strip_none(v) for k, v in obj.items() if v is not None}
+    if isinstance(obj, list):
+        return [_strip_none(item) for item in obj]
+    return obj
 
 
 if __name__ == "__main__":

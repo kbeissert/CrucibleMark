@@ -63,7 +63,9 @@ help:
 	@printf "  %-25s %s\n" "cards-sync"      "SSoT-Synchronisierung"
 	@printf "  %-25s %s\n" "card-create"     "Neue Card aus provider_config.yaml anlegen"
 	@printf "  %-25s %s\n" "card-validate"   "Cards mit Template synchronisieren (alle oder MODEL=)"
-	@printf "  %-25s %s\n" "card-research"   "LLM-Inhalts-Recherche (Murks/Chinesisch/Preise)"
+	@printf "  %-25s %s\n" "card-research"   "LLM-Recherche (MAX_CARDS=N, TOOLUSE=1, FORCE=1)"
+	@printf "  %-25s %s\n" "probe-thinking"  "Thinking-Probe (MODEL=, PROVIDER=)"
+	@printf "  %-25s %s\n" "probe-all-thinking" "Thinking-Probe für alle ohne Probe"
 	@printf "\n"
 	@printf "\033[1;32mCleanup & Maintenance\033[0m\n"
 	@printf "  %-25s %s\n" "backup"          "Snapshot-Pipeline (Tar + Clean)"
@@ -180,7 +182,8 @@ card-research:
 		$(if $(DRY),--dry-run,) \
 		$(if $(PAUSE),--pause "$(PAUSE)",) \
 		$(if $(TOOLUSE),--tooluse,) \
-		$(if $(TIMEOUT),--timeout-s $(TIMEOUT),)
+		$(if $(TIMEOUT),--timeout-s $(TIMEOUT),) \
+		$(if $(MAX_CARDS),--max-cards $(MAX_CARDS),)
 
 vendor-cards-update:
 	@echo "=== Provider Card Update (--update in generate_vendor_cards.py) ==="

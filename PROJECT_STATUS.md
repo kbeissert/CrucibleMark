@@ -1,15 +1,17 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-06-12
-**Current Version:** 4.9.3 — Vendor Card Template v1.1.0: `description`-Feld + Editor-Prompt-Fix
+**Last Updated:** 2026-06-20
+**Current Version:** 4.10.0 — Card-Research Force-Run: 110/110 Cards profile_verified + Template-Cleanup
 **Status:** ✅ Production-Ready
 
 > **Hinweis:** Die Executive Summary weiter unten historisch auf v4.6.1.
-> Die Sub-Versionen v4.6.2–v4.9.0 sind im CHANGELOG.md vollständig dokumentiert.
+> Die Sub-Versionen v4.6.2–v4.10.0 sind im CHANGELOG.md vollständig dokumentiert.
 > Dieser Header wird bei jedem Phase-Commit nachgezogen,
 > die Executive Summary nur bei Major-Milestones.
 >
-> **Aktueller Stand (v4.9.3):**
+> **Aktueller Stand (v4.10.0):**
+> - **Web-Export Nullwert-Entfernung** (v4.10.0): `_strip_none()` entfernt `None`-Werte rekursiv aus allen exportierten Dicts. 93 Modelle exportiert, 0 None-Werte. Neue Export-Felder: `profile_verified_by`, `last_modified_at`. 818/818 Tests grün.
+> - **Card-Research Force-Run** (v4.10.0): 110/110 Cards `profile_verified=true`. Template von 42 auf 37 required Felder reduziert (6 → optional). `MODEL=all` Support, `MAX_CARDS=N` für Batch-Processing. Thinking-Probe-Placeholder für 9 lokale Modelle manuell gesetzt (Ollama entfernt).
 > - **Vendor Card Template v1.1.0** (v4.9.3): Neues Optionalfeld `description` (240–480 Zeichen, Ziel 360, Deutsch, Konsumenten: web_export + review). Semantisch getrennt von `privacy_note`. Drei Fehler in `provider_card_verification`-Prompt korrigiert (Pfad + Feldname).
 > - **Terminologie-Refactoring Provider → Vendor** (v4.9.1): 50 Dateien umbenannt, `vendor_id` als kanonischer Feldname.
 > - **Card-Datenpflege-System vollständig implementiert** (v4.9.0)

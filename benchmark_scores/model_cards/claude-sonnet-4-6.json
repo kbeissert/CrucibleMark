@@ -17,27 +17,48 @@
   "params_active_b": null,
   "context_window_k": 1000,
   "knowledge_cutoff": "2026-01",
-  "summary": "Claude Sonnet 4.6 ist Anthropics aktualisiertes Sonnet-Modell für Coding, Computer-Use-nahe Agenten-Workflows und professionelle Wissensarbeit. Offiziell angekündigt wurden ein 1M-Kontextfenster in Beta, bessere Leistung in größeren Codebasen sowie unverändertes Pricing von $3 Input und $15 Output pro 1M Tokens. Das Modell bleibt proprietär, multimodal für Text-/Bildeingaben und über Anthropic sowie große Cloud-Plattformen verfügbar.",
+  "summary": "Claude Sonnet 4.6 ist ein fortschrittliches Modell von Anthropic, das auf Coding, agentische Workflows und komplexe Wissensarbeit optimiert ist. Es bietet ein erweitertes Kontextfenster von bis zu 1 Million Tokens in der Beta-Phase und zeigt verbesserte Fähigkeiten bei der Navigation in grossen Codebasen. Das Modell ist multimodal für Text- und Bildeingaben und eignet sich durch sein Kostenprofil ideal als effiziente Alternative zur Opus-Klasse.",
   "strengths": [
-    "Sehr starkes Preis-Leistungs-Verhältnis für Coding- und Agent-Workflows unterhalb der Opus-Klasse",
-    "1M-Kontextfenster in Beta für lange Kontexte, Planung und Recherche",
-    "Verbesserte Codebase-Navigation, Planung und längere agentische Sitzungen laut Anthropic-Ankündigung",
-    "Verfügbar über Anthropic API und große Cloud-Plattformen bei unverändertem Pricing"
+    "Hervorragendes Gleichgewicht zwischen Leistung und Kosten für Coding- und Agent-Workflows",
+    "Erweitertes 1M-Kontextfenster (Beta) für umfangreiche Recherche und Planung",
+    "Optimierte Fähigkeiten zur Navigation in komplexen Codebasen und für langfristige agentische Aufgaben"
   ],
   "known_limitations": [
-    "Proprietäres Cloud-Modell ohne lokale Gewichte",
-    "Das 1M-Kontextfenster wird von Anthropic als Beta ausgewiesen",
-    "Für maximale Frontier-Leistung bei sehr anspruchsvollen Aufgaben ist Opus 4.6 höher positioniert"
+    "Keine lokalen Gewichte verfügbar (Proprietär)",
+    "Das 1M-Kontextfenster befindet sich im Beta-Status",
+    "Geringere Kapazitäten bei extrem anspruchsvollen Aufgaben im Vergleich zur Opus-Modellklasse"
   ],
-  "judge_context_hint": "Claude Sonnet 4.6 ist ein schnelles bis starkes Agenten- und Coding-Modell mit 1M Kontext in Beta und multimodalem Input. Erwartbar sind gute Planung, robuste Tool-Workflows und hohe Praktikabilität bei besserem Kostenprofil als Opus.",
+  "judge_context_hint": "Modell mit Fokus auf Coding und Agentic-Workflows. Beachtet das 1M-Kontextfenster (Beta) und die multimodalen Fähigkeiten bei der Bewertung von Planung und Tool-Use.",
   "architecture_tags": [
-    "General",
+    "Thinking",
     "Vision-Capable",
     "Agentic",
     "Long-Context",
     "Thinking-Optional"
   ],
+  "input_modalities": [
+    "text",
+    "image"
+  ],
+  "output_modalities": [
+    "text"
+  ],
   "supports_tool_use": true,
+  "tooluse_tested_at": null,
+  "tooluse_score_p1": null,
+  "tooluse_score_p2": null,
+  "tooluse_recommendation": null,
+  "temperature": null,
+  "system_prompt_override": null,
+  "cot_marker_family": null,
+  "cot_tags_detected": null,
+  "top_p": null,
+  "top_k": null,
+  "repetition_penalty": null,
+  "frequency_penalty": null,
+  "presence_penalty": null,
+  "seed": null,
+  "stop_sequences": null,
   "license": "Proprietary (Anthropic Commercial Terms)",
   "license_url": "https://www.anthropic.com/legal/commercial-terms",
   "commercial_use_allowed": true,
@@ -49,26 +70,14 @@
   "card_status": "complete",
   "size_class": "Frontier",
   "generated_at": "2026-06-10T11:36:00+00:00",
-  "thinking_probe_detected": null,
-  "thinking_probe_evidence": null,
-  "thinking_probe_confidence": null,
-  "thinking_probe_at": null,
-  "top_p": null,
-  "top_k": null,
-  "repetition_penalty": null,
-  "frequency_penalty": null,
-  "presence_penalty": null,
-  "seed": null,
-  "stop_sequences": null,
-  "input_modalities": [
-    "text",
-    "image"
-  ],
-  "output_modalities": [
-    "text"
-  ],
+  "thinking_probe_detected": true,
+  "thinking_probe_evidence": "Multi-Probe (3 prompts, 3 detected, best confidence=medium):\n  - math: [math] Inline CoT im content-Feld: Antwort 468 chars (>200) mit 8 Berechnungs-Operatoren. First 200 chars: # Solving for Average Speed\n\n## Formula\n\n$$\\text{Average Speed} = \\frac{\\text{Distance}}{\\text{Time}}$$\n\n## Given Information\n\n| Variable | Value |\n|----------|-------|\n| Distance | 120 km |\n| Time | \n  - code: [code] Inline CoT im content-Feld: Antwort 914 chars (>200) mit 45 Berechnungs-Operatoren. First 200 chars: # Sorting [3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5] using Bubble Sort\n\n## How Bubble Sort Works\nRepeatedly compare **adjacent pairs** and swap if the left is greater than the right. Each full pass \"bubbles\" t\n  - decision: [decision] Inline CoT im content-Feld: Antwort 1527 chars (>200) mit 13 Berechnungs-Operatoren. First 200 chars: This is worth thinking through carefully rather than just validating the most emotionally appealing answer.\n\n## Key Ethical Considerations\n\n**Arguments for swerving (prioritizing pedestrian):**\n- Util",
+  "thinking_probe_confidence": "medium",
+  "thinking_probe_at": "2026-06-19T22:42:20.904731+00:00",
   "profile_verified": true,
-  "profile_verified_at": "2026-06-19",
+  "profile_verified_at": "2026-06-20",
   "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
-  "last_modified_at": "2026-06-19"
+  "last_modified_at": "2026-06-20",
+  "heritage_ids": [],
+  "community": null
 }

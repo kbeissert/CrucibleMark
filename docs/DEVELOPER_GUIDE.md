@@ -781,10 +781,10 @@ Jede Model Card JSON muss folgende Felder enthalten. Cards mit `card_status: "dr
 | Feld | Typ | Werte / Format | Beschreibung |
 |---|---|---|---|
 | `parameter_architecture` | string | `dense` / `moe` | Dense = alle Parameter aktiv; MoE = nur Teilnetzwerke aktiv |
-| `params_total_b` | float | z. B. `14.0` | Gesamtparameter in Milliarden |
-| `params_active_b` | float | z. B. `3.5` | Aktive Parameter (MoE); bei MoE ist dies der relevante Vergleichswert |
+| `params_total_b` | float | z. B. `14.0` | Gesamtparameter in Milliarden (**optional**, null bei proprietären Modellen ohne Angabe) |
+| `params_active_b` | float | z. B. `3.5` | Aktive Parameter (MoE); bei MoE ist dies der relevante Vergleichswert (**optional**, null bei proprietären Modellen) |
 | `context_window_k` | integer | z. B. `128` | Maximales Kontextfenster in Kilotoken |
-| `knowledge_cutoff` | string | `YYYY-MM` | Trainingsdaten-Stichtag |
+| `knowledge_cutoff` | string | `YYYY-MM` | Trainingsdaten-Stichtag (**optional**, wird nachgetragen wenn bekannt) |
 | `size_class` | string | `Nano` / `Edge` / `Desktop` / `Workstation` / `Server` / `Frontier` | Hardware-Tier — abgeleitet aus Parameteranzahl oder API-Only-Status |
 | `deployment_type` | string | `api_only` / `local_weights` | Ob das Modell lokal deploybar ist |
 | `supports_tool_use` | boolean | `true` / `false` | Function-Calling-Unterstützung |
@@ -796,7 +796,7 @@ Jede Model Card JSON muss folgende Felder enthalten. Cards mit `card_status: "dr
 |---|---|---|
 | `weights_license_tier` | string | `proprietary` / `restricted-weights` / `open-weights` — Bestimmt die Kategorie-Anzeige via `get_model_category()` |
 | `license` | string | SPDX-ID oder Kurzname (z. B. `"Apache-2.0"`, `"Meta Community License"`) |
-| `license_url` | string | URL zur Volllizenz |
+| `license_url` | string | URL zur Volllizenz (**optional**, null bei Proprietary) |
 | `commercial_use_allowed` | boolean / null | `true` = frei kommerziell nutzbar; `false` = verboten; `null` = skalenabhängig / unklar |
 | `weights_provenance_risk_rationale` | string | Begründung für Lizenz-/Herkunftsrisiken (z. B. CNKI-Verbindungen, dual-use) |
 
@@ -804,8 +804,8 @@ Jede Model Card JSON muss folgende Felder enthalten. Cards mit `card_status: "dr
 
 | Feld | Typ | Beschreibung |
 |---|---|---|
-| `input_price_per_1m` | float | Preis pro 1M Input-Tokens in USD |
-| `output_price_per_1m` | float | Preis pro 1M Output-Tokens in USD |
+| `input_price_per_1m` | float | Preis pro 1M Input-Tokens in USD (**optional**, null bei lokalen Modellen) |
+| `output_price_per_1m` | float | Preis pro 1M Output-Tokens in USD (**optional**, null bei lokalen Modellen) |
 
 **Wichtig:** Preise gehören ausschließlich in die Model Card.
 

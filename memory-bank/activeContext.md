@@ -13,16 +13,34 @@ to know what reference files exist.
 
 # Active Context
 
-## Aktueller Status (2026-06-19)
+## Aktueller Status (2026-06-20)
 
-- **Session 24 abgeschlossen (2026-06-19) — Card-Research MCP Tool-Use:**
+- **Session 25 abgeschlossen (2026-06-20) — Card-Research Force-Run + Template-Cleanup:**
+  - **110/110 Cards `profile_verified=true`** — vollständiger Force-Run aller Model Cards.
+  - **Template-Änderungen (required → optional):** `params_total_b`, `params_active_b`, `knowledge_cutoff`, `license_url`, `input_price_per_1m`, `output_price_per_1m`. Grund: Beschreibungen sagten "null wenn X" aber `required: true` — Widerspruch.
+  - **`MAX_CARDS=N`** implementiert: `make card-research MODEL=all MAX_CARDS=10` für Batch-Verarbeitung. Fortschrittsanzeige am Ende.
+  - **`MODEL=all`** gefixt: Early-Validation und `_discover_research_targets()` erkennen jetzt `all` als "alle Cards".
+  - **`probe_thinking.py`** Path-Bug gefixt: `card_path.relative_to(ROOT_DIR)` Crash bei relativen Pfaden.
+  - **Thinking-Probe Platzhalter:** 9 lokale Modelle (Ollama entfernt) → manuell sinnvolle Werte gesetzt basierend auf Modellfamilie (Qwen3 = thinking detected, Gemma 4 = not detected).
+  - **Lizenz-String-Konsistenz:** `Apache-2.0` vs `Apache 2.0` — LLM erkennt das als Lizenz-Wechsel und rewrite't alle Textfelder. Führt zu vielen roten Findings aber korrektem Ergebnis.
+  - **Parse-Fehler:** 1× `qwen3_5-9b` (LLM lieferte kein valides JSON) → Retry erfolgreich.
+  - **Claude `license_url`:** Manuell auf `https://www.anthropic.com/legal/terms` gesetzt für `claude-sonnet-4-5-20250929`.
+  - **`thinking_probe_at` Timestamp:** 7 Cards hatten Probe-Ergebnisse aber keinen Timestamp → nachgetragen.
+  - **`supports_tool_use`:** `gemma-4-26B-A4B-it-UD-Q8_K_XL` hatte kein `supports_tool_use` → `False` gesetzt.
+  - **Dokumentation aktualisiert:** `docs/DEVELOPER_GUIDE.md` (optional-Felder markiert), `docs/ARCHITECTURE.md` (Card-Research Flow + optionale Template-Felder), `CLAUDE.md` (6 neue Pitfalls), `Makefile` (probe-thinking Hilfe).
+
+- **Session 24 abgeschlossen (2026-06-19) — Card-Research MCP Tool-Use + Lizenz-Heuristik + GGUF-Fixes:**
   - `manage_model_cards.py --mode research` kann jetzt über MCP `web_search` + `fetch` im Internet recherchieren.
   - Architektur: JSON-RPC 2.0 HTTP POST zum bestehenden MCP-Server (`:8765`), keine Änderungen am MCP-Server nötig.
   - Neue Funktionen: `_parse_tool_call()`, `_call_mcp_tool()`, `_extract_tool_content()`
   - Neue Methode: `Researcher._research_tooluse_one()` — Multi-Step-Loop (max. 3 Runden)
   - Neue CLI-Flags: `--tooluse` (nur mit `--mode research`), `--mcp-url` (Default: `http://localhost:8765`)
   - Makefile: `TOOLUSE=1` Flag an `card-research` Target
-  - Usage: `make card-research MODEL=claude-sonnet-4-6 TOOLUSE=1`
+  - Lizenz-Heuristik: `_KNOWN_LICENSE_MAPPINGS` (Gemma/Qwen/Llama), `_KNOWN_COMMUNITY_GROUPS`, `_match_family()`, `_check_license_consistency()`, `_check_community()`, `_check_license_text_fields()` (Pre-Finding), `_check_license_cascade()` (Post-Merge), `_ensure_license_consistency()`
+  - GGUF-Fixes: `_is_gguf_model()`, `_ensure_gguf_conventions()` (Post-Apply: deployment_type, params_active_b, Preise)
+  - `profile_verified`-Fix: Validiert finale Karte statt Findings-Historie
+  - MCP Auto-Lifecycle: `_ensure_mcp_running()` + `_stop_mcp_server()` + `_reset_llama_context()` + `_check_health()`
+  - Usage: `make card-research MODEL=gemma-4-12b-it-ud-q8_k_xl TOOLUSE=1` (MCP auto-start/stop)
 
 - **Session 23 abgeschlossen (2026-06-17) — Review-Auto-Fixes + MTP-Modell + 128 GB-Korrektur + (GGUF)-Cleanup:**
   - **Bug 1 (Python 3.14 @dataclass-Crash):** `scripts/analysis/generate_review.py` `_load_card_module()` lud Modul via `module_from_spec` ohne `sys.modules`-Registrierung. Fix: `sys.modules[module_name] = module` VOR `exec_module`. Hintergrund: Python 3.14 `@dataclass` ruft `sys.modules[cls.__module__].__dict__` für KW_ONLY-Detection → NoneType-AttributeError ohne Registrierung.
@@ -165,7 +183,8 @@ Mögliche Anlässe für User-Aktivität (alle aus dem Backlog):
 
 ## Letzte Änderungen
 
-- **2026-06-19 (Session 24):** Card-Research MCP Tool-Use. `manage_model_cards.py`: neue Imports (urllib), Tool-Schemas, MCP-Helfer (`_parse_tool_call`, `_call_mcp_tool`, `_extract_tool_content`), `Researcher._research_tooluse_one()` (Multi-Step-Loop, max. 3 Runden), CLI-Flags `--tooluse` + `--mcp-url`. Makefile: `TOOLUSE=1` Flag.
+- **2026-06-20 (Session 25, Runde 2):** Web-Export Nullwert-Entfernung. `web_export.py`: `_strip_none()` Helper — entfernt `None`-Werte rekursiv aus Dicts vor JSON-Export. Angewendet auf `_build_leaderboard_entry()`, `_build_compass_entry()`, `model_card`-Sub-Dict, `data.json`-Write. Neue Export-Felder: `profile_verified_by`, `last_modified_at`. Tests: 818/818 grün. 93 Modelle exportiert, 0 None-Werte.
+- **2026-06-19 (Session 24):** Card-Research MCP Tool-Use + Lizenz-Heuristik + GGUF-Konventionen + MCP Auto-Lifecycle. `manage_model_cards.py`: neue Imports (urllib, subprocess), Tool-Schemas, MCP-Helfer (`_parse_tool_call`, `_call_mcp_tool`, `_extract_tool_content`), `Researcher._research_tooluse_one()` (Multi-Step-Loop, max. 3 Runden), CLI-Flags `--tooluse` + `--mcp-url`. Makefile: `TOOLUSE=1` Flag. Lizenz-Heuristik: `_KNOWN_LICENSE_MAPPINGS`, `_KNOWN_COMMUNITY_GROUPS`, `_match_family()`, `_check_license_consistency()`, `_check_community()`, `_check_license_text_fields()` (Pre-Finding), `_check_license_cascade()` (Post-Merge), `_ensure_license_consistency()`. GGUF: `_is_gguf_model()`, `_ensure_gguf_conventions()`. `_commit_card()`: iteriert `report.findings`, `profile_verified` via finale-Karte-Validierung. MCP Auto-Lifecycle: `_ensure_mcp_running()`, `_stop_mcp_server()`, `_reset_llama_context()`, `_check_health()`. System-Prompt Regel 5: Textfelder bei Lizenz-Wechsel.
 - **2026-06-13 (Session 20 — Commits 994d447 + 8e02609 + 9c38063):** PC-Coverage vollständig. `web_export.py`: `card_id`-Feld + Datum-Fallback-Lookup. 28 Bias-Reviews generiert. Ghost-Model `z-ai/glm-5` (April-2026) via `--force`-Re-Run überschrieben. 2 Orphan-Vendor-Cards gelöscht (`alibaba_cloud.json`, `alibaba_group_qwen_team.json`), hauhaucs `card_subtype: "community"` gesetzt, Community-Filter in `web_export.py`. Web-Export: 24 → 18 Vendor-Einträge.
 - **2026-06-13 (Session 18):** Deployment-Badge-Refactoring. `provider_config.yaml`: `hardware_profiles`-Block + `deployment_category` pro Provider + LCL-Shortcodes (M4APL→LCL, SPRK→LCL). `model_utils.py`: `_PROVIDER_DEPLOYMENT_CATEGORY`, `_PROVIDER_HARDWARE_PROFILES`, `get_deployment_category()`, `get_hardware_profile()`. Leaderboard: 2 neue Spalten. Web-Export: 3 neue Felder. `MODEL_CLASSIFICATION.md` neu geschrieben.
 - **2026-06-12 (Session 17):** 4 SSoT-Robustness-Fixes. `generate_review.py`: Tooluse-Schritt nach Loop mit `model=None` (3225a78), Blacklist-Check via `model_id` (411e5e3). `web_export.py`: PC-Lookup via `raw_model_id` statt Display-Name (4aaf450). `system_context.py` + `generate_review.py`: Hardware-Profil aus `provider_config.yaml` SSoT (e5799bb). Architektur-Prinzip: `model_id` = einziger Kommunikations-Anker. Memory Bank aktualisiert.

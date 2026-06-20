@@ -2,6 +2,24 @@
 
 ## Abgeschlossen
 
+### Web-Export Nullwert-Entfernung (v4.10.0 – 20.06.26)
+- [x] **`scripts/web_export.py` — `_strip_none()`** — Entfernt `None`-Werte rekursiv aus Dicts vor JSON-Export. Angewendet auf `_build_leaderboard_entry()`, `_build_compass_entry()`, `model_card`-Sub-Dict, `data.json`-Write.
+- [x] **Neue Export-Felder:** `profile_verified_by`, `last_modified_at` (waren im Template als web_export-consumer markiert, fehlten im Export).
+- [x] **`tests/test_web_export_card_field_coverage.py`** — Sample-Card ergänzt, Test 5 (`model_card: None` → Key entfernt), 4 `_strip_none`-Unit-Tests + 1 Integrationstest. 818/818 Tests grün.
+- [x] **Verifikation:** 93 Modelle exportiert, 0 None-Werte in `model_card`, 0 None-Werte in `leaderboard`, 0 None-Werte in `political_compass`.
+
+### Card-Research Force-Run + Template-Cleanup (v4.10.0 – 20.06.26)
+- [x] **110/110 Cards `profile_verified=true`** — Vollständiger Force-Run mit `make card-research MODEL=all FORCE=1`. Template von 42 auf 37 required Felder reduziert.
+- [x] **`config/card_template_model.yaml`** — 6 Felder von `required` auf `optional` verschoben: `params_total_b`, `params_active_b`, `knowledge_cutoff`, `license_url`, `input_price_per_1m`, `output_price_per_1m`. Beschreibungen sagten "null wenn X" aber `required: true` war ein Widerspruch.
+- [x] **`scripts/manage_model_cards.py` — `MODEL=all`** — `--card all` als Spezialwert erkannt. Early-Validation in `main()` erkennt `all` ebenfalls.
+- [x] **`scripts/manage_model_cards.py` — `MAX_CARDS=N`** — Neuer CLI-Arg `--max-cards N` + Makefile-Variable `MAX_CARDS`. Limitiert Targets pro Run. Fortschrittsanzeige am Ende.
+- [x] **`scripts/tools/probe_thinking.py` Path-Bug** — `card_path.relative_to(ROOT_DIR)` crash bei relativen Pfaden → `card_path.resolve().relative_to(ROOT_DIR)` mit Fallback.
+- [x] **9 lokale Modelle** — Thinking-Probe-Placeholder manuell ersetzt (Ollama entfernt): Qwen3-Familie → `detected=True`, Gemma 4 → `detected=False`, Hermes 4.3 (Qwen3-basiert) → `detected=True`.
+- [x] **7 Cards** — `thinking_probe_at` Timestamp nachgetragen.
+- [x] **1 Card** (`claude-sonnet-4-5-20250929`) — `license_url` manuell gesetzt.
+- [x] **1 Card** (`gemma-4-26B-A4B-it-UD-Q8_K_XL`) — `supports_tool_use=False` gesetzt.
+- [x] **Dokumentation** — CLAUDE.md (6 neue Pitfalls), activeContext.md, progress.md, DEVELOPER_GUIDE.md, ARCHITECTURE.md, systemPatterns.md, Makefile (probe-thinking Hilfe) aktualisiert.
+
 ### Vendor Card description-Feld + editor_prompts-Fix (v4.9.3 – 12.06.26)
 - [x] **`config/card_template_vendor.yaml` v1.1.0** — Neues optionales Feld `description` (Position: erstes optionales Feld, vor `card_subtype`). Constraints: `min_length: 240`, `max_length: 480`, `target_length: 360`. `consumers: [web_export, review]`, `since: "v4.9.3"`. Template-Version: `1.0.0` → `1.1.0`.
 - [x] **`config/editor_prompts.yaml` Pfad- + Feldname-Fix** — `targets.directory: provider_cards/` → `vendor_cards/`; Prompt-Text Schritt "Auftrag" + Schritt 1 + Schritt 4: `provider_id` → `vendor_id`.
@@ -622,4 +640,4 @@
 
 ---
 
-**Last Updated:** 2026-06-12 **Version:** 4.9.3 (Vendor Card description-Feld + editor_prompts-Fix) **Nächster Meilenstein:** v5.0.0 / Nächster Feature-Release
+**Last Updated:** 2026-06-20 **Version:** 4.10.0 (Web-Export Nullwert-Entfernung + Card-Research Force-Run) **Nächster Meilenstein:** v5.0.0 / Nächster Feature-Release

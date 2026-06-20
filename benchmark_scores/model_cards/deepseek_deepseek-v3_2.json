@@ -10,7 +10,7 @@
   "weights_provenance_risk_rationale": "DeepSeek ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann. Das BSI hat am 04.02.2025 vor dem Einsatz des DeepSeek-Cloud-Dienstes gewarnt; bei ausschließlich lokalem Betrieb der Open-Weights-Variante ohne Datenübertragung nach China ist das cloud-spezifische Risikoszenario reduziert.",
   "model_family": "DeepSeek",
   "primary_focus": "general",
-  "summary": "DeepSeek V3 ist ein chinesisches Frontier-Modell von DeepSeek mit Open-Weights-Lizenz, ausgelegt auf Sprach-, Code- und Reasoning-Aufgaben. Es lässt sich lokal betreiben und ist über verschiedene Cloud-Provider kostengünstig nutzbar. Chinesische Herkunft und das nationale Sicherheitsgesetz (NSL) sind bei der Einschätzung des Datenrisikos zu berücksichtigen.",
+  "summary": "DeepSeek V3.2 ist ein hocheffizientes Frontier-Modell von DeepSeek, das auf Sprach-, Code- und Reasoning-Aufgaben optimiert wurde. Es nutzt eine Mixture-of-Experts-Architektur und bietet eine Open-Weights-Lizenz. Das Modell ist sowohl für den lokalen Einsatz als auch über kostengünstige Cloud-Schnittstellen verfügbar und setzt neue Standards in der Effizienz.",
   "strengths": [
     "Starke Leistung bei Coding- und Mathematikaufgaben",
     "Sehr gutes Preis-Leistungs-Verhältnis im Vergleich zu Konkurrenzmodellen",
@@ -60,7 +60,17 @@
     "text"
   ],
   "profile_verified": true,
-  "profile_verified_at": "2026-06-18",
+  "profile_verified_at": "2026-06-20",
   "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
-  "last_modified_at": "2026-06-18"
+  "last_modified_at": "2026-06-20",
+  "tooluse_tested_at": null,
+  "tooluse_score_p1": null,
+  "tooluse_score_p2": null,
+  "tooluse_recommendation": null,
+  "temperature": null,
+  "system_prompt_override": null,
+  "cot_marker_family": null,
+  "cot_tags_detected": null,
+  "heritage_ids": [],
+  "community": null
 }

@@ -10,7 +10,7 @@
   "weights_provenance_risk_rationale": "DeepSeek ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann. Das BSI hat am 04.02.2025 vor dem Einsatz des DeepSeek-Cloud-Dienstes gewarnt; bei ausschließlich lokalem Betrieb der Open-Weights-Variante ohne Datenübertragung nach China ist das cloud-spezifische Risikoszenario reduziert.",
   "model_family": "DeepSeek",
   "primary_focus": "general",
-  "summary": "DeepSeek-V3 ist ein leistungsstarkes 671B-Parameter-MoE-Modell (37B aktiv) von DeepSeek. Es nutzt eine spezialisierte MoE-Architektur für hohe Effizienz und unterstützt ein Kontextfenster von 128K Token. Aufgrund der Herkunft aus China und der damit verbundenen regulatorischen Rahmenbedingungen ist bei der Nutzung des Cloud-Dienstes Vorsicht geboten.",
+  "summary": "DeepSeek-V3 ist ein leistungsstarkes MoE-Modell von DeepSeek mit insgesamt 671 Milliarden Parametern, von denen pro Token nur 37 Milliarden aktiv sind. Diese Architektur ermöglicht eine hohe Effizienz bei gleichzeitig exzellenter Performance in den Bereichen Reasoning und Coding. Das Modell unterstützt ein Kontextfenster von 128K Token. Aufgrund der regulatorischen Rahmenbedingungen in China ist bei der Nutzung der Cloud-API Vorsicht geboten.",
   "strengths": [
     "Starke Coding-Leistung für ein MoE-Modell mit hoher Präzision",
     "MoE-Architektur: 671B Gesamtparameter, nur 37B aktiv – hoher Durchsatz bei geringem Inferenz-Overhead",
@@ -64,7 +64,17 @@
     "text"
   ],
   "profile_verified": true,
-  "profile_verified_at": "2026-06-18",
+  "profile_verified_at": "2026-06-20",
   "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
-  "last_modified_at": "2026-06-18"
+  "last_modified_at": "2026-06-20",
+  "tooluse_tested_at": null,
+  "tooluse_score_p1": null,
+  "tooluse_score_p2": null,
+  "tooluse_recommendation": null,
+  "temperature": null,
+  "system_prompt_override": null,
+  "cot_marker_family": null,
+  "cot_tags_detected": null,
+  "heritage_ids": [],
+  "community": null
 }

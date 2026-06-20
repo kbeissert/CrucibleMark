@@ -156,6 +156,10 @@ def run_probe(
 
     card_path = _write_probe_to_card(model_id, probe)
     icon = "🧠" if probe.detected else "💬"
+    try:
+        display_path = card_path.resolve().relative_to(ROOT_DIR)
+    except ValueError:
+        display_path = card_path
     logger.info(
         "%s  %s → detected=%s (confidence=%s)\n   Evidence: %s\n   Card: %s",
         icon,
@@ -163,7 +167,7 @@ def run_probe(
         probe.detected,
         probe.confidence,
         probe.evidence[:120],
-        card_path.relative_to(ROOT_DIR),
+        display_path,
     )
     return True
 

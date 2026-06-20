@@ -2,7 +2,45 @@
 
 Letzte Releases + aktueller Stand. Vollständige Historie: `reference/decisions-log.md`.
 
-### 2026-06-19 (Session 24) — Card-Research MCP Tool-Use
+### 2026-06-20 (Session 25, Runde 2) — Web-Export Nullwert-Entfernung
+
+**Ziel:** Alle Werte ohne Inhalt (None/null) sollen nicht im Web-Export landen. Karten mit Werten bleiben erhalten.
+
+**Änderungen:**
+- `scripts/web_export.py`:
+  - Neue Funktion `_strip_none(obj)` — entfernt `None`-Werte rekursiv aus Dicts. Listen/Strings/Zahlen/Booleans bleiben erhalten.
+  - `_build_leaderboard_entry()`: Rückgabe-Dict wird durch `_strip_none()` gefiltert. `model_card`-Sub-Dict likewise.
+  - `_build_compass_entry()`: Rückgabe-Dict ebenfalls durch `_strip_none()` gefiltert.
+  - `data.json`-Write: `_strip_emojis(_strip_none(model_json))` statt nur `_strip_emojis(model_json)`.
+  - Neue Export-Felder: `profile_verified_by`, `last_modified_at` (waren im Template aber fehlten im Export).
+- `tests/test_web_export_card_field_coverage.py`:
+  - Sample-Card: fehlende Felder ergänzt (`size_class`, `community`, `profile_verified*`, `last_modified_at`).
+  - Test 2: `community="TestCommunity"` im Call ergänzt.
+  - Test 5: `model_card: None` → Key wird entfernt (nicht mehr `null`).
+  - 4 neue `_strip_none`-Unit-Tests + 1 None-Stripping-Integrationstest.
+
+**Verifikation:** 818/818 Tests grün (1 pre-existing Tag-Vocabulary-Failure ausgenommen). 93 Modelle exportiert, 0 None-Werte in `model_card`, 0 None-Werte in `leaderboard`-Top-Level, 0 None-Werte in `political_compass`.
+
+### 2026-06-20 (Session 25) — Card-Research Force-Run + Template-Cleanup
+
+**Ziel:** Alle 110 Model Cards `profile_verified=true` durch vollständigen Force-Run.
+
+**Ergebnis:** 110/110 verified. Template von 42 auf 37 required Felder reduziert (6 → optional).
+
+**Änderungen:**
+- `config/card_template_model.yaml`: `params_total_b`, `params_active_b`, `knowledge_cutoff`, `license_url`, `input_price_per_1m`, `output_price_per_1m` → optional
+- `scripts/manage_model_cards.py`: `MODEL=all` Support, `MAX_CARDS=N`, Fortschrittsanzeige
+- `scripts/tools/probe_thinking.py`: Path-Bug Fix (`relative_to` Crash)
+- 9 lokale Modelle: Thinking-Probe-Placeholder manuell ersetzt (Ollama entfernt)
+- 7 Cards: `thinking_probe_at` Timestamp nachgetragen
+- 1 Card: `supports_tool_use=False` gesetzt
+- 1 Card: `license_url` manuell gesetzt (Claude Sonnet 4.5)
+
+**Bugs gefunden:**
+- Parse-Fehler bei `qwen3_5-9b` (1×) — LLM lieferte kein valides JSON, Retry erfolgreich
+- `Apache-2.0` vs `Apache 2.0` — LLM interpretiert als Lizenz-Wechsel und rewrite't alle Textfelder (viel Lärm, aber korrektes Ergebnis)
+
+### 2026-06-19 (Session 24) — Card-Research MCP Tool-Use + Lizenz-Heuristik
 
 **Ziel:** `manage_model_cards.py --mode research` soll über MCP `web_search` + `fetch` im Internet recherchieren können — ohne Änderungen am tooluse-MCP-Server oder Benchmark-Code. **Alle Änderungen ausschließlich in `manage_model_cards.py` + Makefile.**
 
@@ -59,6 +97,61 @@ make card-research MODEL=claude-sonnet-4-6 TOOLUSE=1 DRY=1
 ```
 
 **Verifikation:** Syntax-Check (`py_compile`) grün, `--help` zeigt neue Flags, `--tooluse` + `--mode check` → `SystemExit` (Validierung), `_parse_tool_call()` + `_extract_tool_content()` Unit-Tests grün.
+
+### 2026-06-19 (Session 24, Runde 2+3) — Lizenz-Heuristik + Textfeld-Cascade
+
+**Auslöser:** `make card-research MODEL=gemma-4-12b-it-ud-q8_k_xl` zeigte: LLM erkannte Lizenz-Fehler (Apache 2.0 statt Gemma Terms), aber (a) Pre-Finding `suggested`-Werte wurden nicht angewandt, (b) Textfelder (summary, strengths, etc.) blieben mit alter Lizenz-Referenz, (c) Log/Report-Messages waren hardcodiert.
+
+**Bugs gefixt (Runde 2):**
+1. `_commit_card` Log `(profile_verified=true)` hardcodiert → dynamisch `%s`
+2. `_render_research_markdown_report` Report-Message hardcodiert → `ResearchReport.profile_verified` Feld
+3. `_commit_card` nutzte `parsed["findings"]` statt `report.findings` → Pre-Findings gingen verloren
+4. Textfelder nach Lizenz-Wechsel nicht erkannt → `_check_license_cascade()` als Post-Merge-Check (Strings + Listen)
+
+**Textfeld-Pre-Findings (Runde 3):**
+- Problem: Cascade-Check lief POST-Merge (in `_commit_card`) mit `suggested=None` → keine Auto-Korrektur möglich. LLM fand nur strukturelle Felder, keine Text-Rewrites.
+- Fix 1: `_check_license_text_fields()` als Pre-Finding auf ORIGINAL-Card (VOR dem LLM-Call). Erkennt Textfelder, die alte Lizenz referenzieren wenn Mapping eine Änderung erzwingt.
+- Fix 2: System-Prompt Regel 5: "TEXTFELDER BEI LIZENZ-WECHSEL: Wenn sich die Lizenz ändert, MÜSSEN ALLE Textfelder aktualisiert werden mit KOMPLETT NEU GESCHRIEBENEM Text als suggested-Wert."
+- Integration: In `_research_one()` + `_research_tooluse_one()` nach `_check_community()` eingefügt. System-Prompt in beiden Modi + dead-code `_build_tooluse_system_instruction()` aktualisiert.
+- Verifikation: Syntax-Check grün, Integrationstest: 8 Pre-Findings (3 strukturell + 5 Text), Cascade nach LLM-Text-Rewrites = 0.
+
+**Hinzugefügt in `manage_model_cards.py`:**
+- `_check_license_text_fields()` — Pre-Finding: prüft Textfelder gegen EXPECTED-Lizenz aus Mapping
+- `_RESTRICTED_KEYWORDS` / `_OPEN_KEYWORDS` — Keyword-Sets für Cascade-Detection
+- `_LICENSE_CASCADE_FIELDS` — Tuple der zu prüfenden Textfelder
+- `_check_license_cascade()` — Post-Merge-Check (Strings + Listen)
+- `_ensure_license_consistency()` — Post-Apply Lizenz/Tier-Korrektur
+- `_KNOWN_LICENSE_MAPPINGS` — Gemma 2/3/4, Qwen 2.5/3/3.5, Llama 3/4
+- `_KNOWN_COMMUNITY_GROUPS` — Unsloth, mradermacher, HauhauCS, ARA-APEX
+- `_match_family()` — Longest-Prefix-Match
+- `_check_license_consistency()` — Lizenz-Felder gegen Mappings
+- `_check_community()` — Community gegen Taxonomie
+- `ResearchReport.profile_verified` Feld
+
+### 2026-06-19 (Session 24, Runde 4) — GGUF-Konventionen + profile_verified-Fix + MCP Auto-Lifecycle
+
+**Auslöser:** LLM überschrieb bei jedem Run korrekte Werte: `deployment_type: localweights` → `open-weights`, `params_active_b: 12` → `null`, Preise `0.0` → `null`. Außerdem: `profile_verified` blieb `false` weil Findings-Historie statt finale Karte geprüft wurde.
+
+**Fixes:**
+1. `_is_gguf_model()` — GGUF-Erkennung via `q[2-8]_[k0-9]`, `gguf`, `-ud-`/`_ud_` im model_id
+2. `_ensure_gguf_conventions()` — Post-Apply-Korrektur in `_commit_card` NACH allen Findings: `deployment_type=localweights`, `params_active_b=params_total_b` (dense), Preise `0.0`
+3. `profile_verified`-Logik umgestellt: Validiert jetzt FINALE Karte (re-runs `_check_license_consistency` + `_check_license_text_fields` + `_check_community` + Pflichtfelder auf `merged`) statt Findings-Historie zu zählen
+4. System-Prompt: "Preise muessen 0.0 sein" statt "null" (beide Modi)
+5. MCP Auto-Lifecycle: `_ensure_mcp_running()` startet MCP automatisch wenn `TOOLUSE=1`, `_stop_mcp_server()` stoppt am Ende
+6. llama.cpp Context-Reset: `_reset_llama_context()` via `POST /slots/{id}?action=reset` nach jeder Karte
+7. Health-Check: `GET /health` auf llama.cpp vor jeder Karte
+
+**Ergebnis:** `make card-research MODEL=gemma-4-12b-it-ud-q8_k_xl` → `profile_verified=true`, alle Felder korrekt. GGUF-Erkennung 8/8 Tests bestanden.
+
+**Hinzugefügt in `manage_model_cards.py`:**
+- `_is_gguf_model()` — Regex-basierte GGUF-Erkennung
+- `_ensure_gguf_conventions()` — Post-Apply GGUF-Korrektur
+- `_server_root_url()` — Extrahiert Root-URL aus base_url
+- `_check_health()` — Generischer Health-Check
+- `_reset_llama_context()` — KV-Cache-Reset via `/slots`-API
+- `_ensure_mcp_running()` — Auto-Start MCP-Server
+- `_stop_mcp_server()` — MCP-Server stoppen
+- `import subprocess` ergänzt
 
 ---
 

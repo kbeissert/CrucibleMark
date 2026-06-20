@@ -17,7 +17,7 @@
   "params_active_b": null,
   "context_window_k": 1000,
   "knowledge_cutoff": "2025-12",
-  "summary": "GLM-5.2 ist Z.ais Flaggschiff-Modell für langlaufende Aufgaben, veröffentlicht am 16. Juni 2026, mit dem Fokus auf Engineering-Workflows über ein stabiles 1M-Token-Kontextfenster. Es nutzt eine neue IndexShare-Architektur (Cross-Layer Sparse-Attention-Index-Wiederverwendung, 2,9-fache Reduktion der per-Token-FLOPs bei 1M Kontext) und eine verbesserte MTP-Schicht für Speculative Decoding. Coding- und Agentic-Leistungen liegen im Bereich aktueller Frontier-Modelle; Gewichte und Code stehen unter MIT-Lizenz auf Hugging Face zur Verfügung.",
+  "summary": "GLM-5.2 ist das Flaggschiff-Modell von Zhipu AI fuer komplexe Engineering-Workflows und langlaufende Aufgaben. Es bietet ein stabiles Kontextfenster von 1M Token und nutzt die neue IndexShare-Architektur zur effizienten Verarbeitung langer Sequenzen. Durch eine optimierte MTP-Schicht wird Speculative Decoding verbessert. Das Modell zeigt Frontier-Leistungen in den Bereichen Coding und Agentic-Tasks. Die Gewichte sind unter der MIT-Lizenz auf Hugging Face verfügbar.",
   "strengths": [
     "Solides 1M-Token-Kontextfenster für projektweite Engineering-Aufgaben und langlaufende Agent-Workflows",
     "Verbesserte IndexShare-Architektur reduziert per-Token-FLOPs um Faktor 2,9 bei langen Kontexten",
@@ -27,14 +27,8 @@
     "Reine Open-Source-MIT-Lizenz ohne regionale Einschränkungen, kommerzielle Nutzung erlaubt",
     "Flexible Thinking Effort Levels zur Balance zwischen Performance und Latenz"
   ],
-  "known_limitations": [
-    "Chinesische Herkunft (Zhipu AI) mit Compliance-Risiken (NSL) und potenzieller politischer Einflussnahme",
-    "Hoher Hardware-Bedarf für lokales Deployment (753B Parameter, mehrere High-End-GPUs erforderlich)",
-    "Aktive Parameterzahl pro Token nicht öffentlich spezifiziert (DeepSeek-Style Sparse Attention)",
-    "Knowledge Cutoff nicht offiziell kommuniziert (geschätzt 2025-12 analog zu GLM-5)",
-    "Erhöhte Latenz bei voller 1M-Kontextauslastung ohne IndexShare-Optimierung in manchen Backends"
-  ],
-  "judge_context_hint": "GLM-5.2 ist Z.ais Flaggschiff für langlaufende Agent- und Engineering-Aufgaben (veröffentlicht 16. Juni 2026). MoE mit 753B Gesamtparametern, 1M-Token-Kontext, IndexShare Sparse Attention, MTP-optimiert für Speculative Decoding. Lizenz: MIT (kommerziell offen, keine regionalen Limits). Listenpreis: 1,40 USD Input / 4,40 USD Output pro 1M Tokens über OpenRouter. Bei der Bewertung sollten Coding-Qualität über lange Kontexte, Agentic-Performance und Tool-Use höher gewichtet werden als isolierte Single-Turn-Antworten. Sovereign-Risk: mittel (chinesischer Anbieter, NSL; jedoch MIT-Open-Source).",
+  "known_limitations": "[\n    \"Chinesische Herkunft (Zhipu AI) mit Compliance-Risiken (NSL) und potenzieller politischer Einflussnahme\",\n    \"Hoher Hardware-Bedarf fuer lokales Deployment (753B Parameter, mehrere High-End-GPUs erforderlich)\",\n    \"Aktive Parameterzahl pro Token nicht oeffentlich spezifiziert\",\n    \"Erhoehte Latenz bei voller 1M-Kontextauslastung ohne IndexShare-Optimierung in manchen Backends\"\n]",
+  "judge_context_hint": "GLM-5.2 ist ein MoE-Modell (753B) mit 1M Kontext und Fokus auf Coding/Agentic-Tasks. Bei der Bewertung sollten Coding-Qualitaet in langen Kontexten und Tool-Use priorisiert werden. Sovereign-Risk ist mittel aufgrund der chinesischen Jurisdiktion.",
   "architecture_tags": [
     "Thinking",
     "MoE",
@@ -75,5 +69,16 @@
   "seed": null,
   "stop_sequences": null,
   "profile_verified": true,
-  "profile_verified_at": "2026-06-17"
+  "profile_verified_at": "2026-06-20",
+  "tooluse_tested_at": null,
+  "tooluse_score_p1": null,
+  "tooluse_score_p2": null,
+  "tooluse_recommendation": null,
+  "system_prompt_override": null,
+  "cot_marker_family": null,
+  "cot_tags_detected": null,
+  "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
+  "last_modified_at": "2026-06-20",
+  "heritage_ids": [],
+  "community": null
 }

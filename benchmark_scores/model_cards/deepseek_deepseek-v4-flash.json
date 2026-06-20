@@ -36,7 +36,7 @@
     "Geeignet für mehrstufige Aufgaben und Code-Verständnis",
     "Cloud-Verfügbarkeit für produktive Nutzung"
   ],
-  "summary": "DeepSeek V4 Flash ist die schnelle Reasoning-Variante der DeepSeek-V4-Familie aus China. Sie ist auf kosteneffiziente Cloud-Nutzung ausgelegt und kombiniert schnelle Inferenz mit internem Reasoning und multimedialer Eingabe. Aufgrund der chinesischen Herkunft bleibt das Sovereign-Risk erhöht.",
+  "summary": "DeepSeek V4 Flash ist eine auf niedrige Latenz und hohe Effizienz optimierte Reasoning-Variante der DeepSeek-V4-Modellfamilie aus China. Durch eine Mixture-of-Experts (MoE) Architektur nutzt das Modell interne Denkprozesse zur Steigerung der Argumentationsqualität bei gleichzeitig hoher Inferenzgeschwindigkeit. Es unterstützt Text- und Bild-Eingaben und ist primär für den kosteneffizienten Einsatz via Cloud-API konzipiert, wobei aufgrund der chinesischen Jurisdiktion ein hohes Sovereign-Risk besteht.",
   "supports_tool_use": true,
   "thinking_probe_at": "2026-05-03T18:34:58.651262+00:00",
   "thinking_probe_confidence": "medium",
@@ -63,7 +63,17 @@
     "text"
   ],
   "profile_verified": true,
-  "profile_verified_at": "2026-06-18",
+  "profile_verified_at": "2026-06-20",
   "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
-  "last_modified_at": "2026-06-18"
+  "last_modified_at": "2026-06-20",
+  "tooluse_tested_at": null,
+  "tooluse_score_p1": null,
+  "tooluse_score_p2": null,
+  "tooluse_recommendation": null,
+  "temperature": null,
+  "system_prompt_override": null,
+  "cot_marker_family": null,
+  "cot_tags_detected": null,
+  "heritage_ids": [],
+  "community": null
 }

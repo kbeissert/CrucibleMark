@@ -17,7 +17,7 @@
   "params_active_b": null,
   "context_window_k": 1000,
   "knowledge_cutoff": "2026-01",
-  "summary": "N/A",
+  "summary": "Claude Opus 4.7 ist ein hochleistungsfaehiges Frontier-Modell von Anthropic, das speziell fuer komplexe agentische Workflows und anspruchsvolle Programmieraufgaben optimiert wurde. Es zeichnet sich durch eine extreme inhaltliche Tiefe und Zuverlaessigkeit bei der Bearbeitung von Langzeitaufgaben aus. Als Cloud-only-Modell bietet es eine robuste Architektur fuer Aufgaben, die hoechste logische Konsistenz und ein tiefes Verstaendnis fuer Kontext erfordern.",
   "strengths": [
     "Sehr stark bei Coding und agentischen Workflows",
     "Robust bei langen, komplexen Aufgaben",
@@ -30,12 +30,34 @@
   ],
   "judge_context_hint": "Frontier-Modell mit Fokus auf Tiefe und Zuverlässigkeit. Antworten sollten nach inhaltlicher Qualität und Aufgabenfortschritt bewertet werden, nicht nach Kürze.",
   "architecture_tags": [
-    "General",
+    "Thinking",
     "Vision-Capable",
     "Agentic",
     "Long-Context"
   ],
+  "input_modalities": [
+    "text",
+    "image"
+  ],
+  "output_modalities": [
+    "text"
+  ],
   "supports_tool_use": true,
+  "tooluse_tested_at": null,
+  "tooluse_score_p1": null,
+  "tooluse_score_p2": null,
+  "tooluse_recommendation": null,
+  "temperature": null,
+  "system_prompt_override": null,
+  "cot_marker_family": null,
+  "cot_tags_detected": null,
+  "top_p": null,
+  "top_k": null,
+  "repetition_penalty": null,
+  "frequency_penalty": null,
+  "presence_penalty": null,
+  "seed": null,
+  "stop_sequences": null,
   "license": "Proprietary (Anthropic Commercial Terms)",
   "license_url": "https://www.anthropic.com/legal/commercial-terms",
   "commercial_use_allowed": true,
@@ -47,26 +69,14 @@
   "card_status": "complete",
   "size_class": "Frontier",
   "generated_at": "2026-06-10T11:36:00+00:00",
-  "thinking_probe_detected": null,
-  "thinking_probe_evidence": null,
-  "thinking_probe_confidence": null,
-  "thinking_probe_at": null,
-  "top_p": null,
-  "top_k": null,
-  "repetition_penalty": null,
-  "frequency_penalty": null,
-  "presence_penalty": null,
-  "seed": null,
-  "stop_sequences": null,
-  "input_modalities": [
-    "text",
-    "image"
-  ],
-  "output_modalities": [
-    "text"
-  ],
-  "profile_verified": false,
-  "profile_verified_at": null,
-  "profile_verified_by": null,
-  "last_modified_at": "2026-06-19"
+  "thinking_probe_detected": true,
+  "thinking_probe_evidence": "Multi-Probe (3 prompts, 3 detected, best confidence=medium):\n  - math: [math] Inline CoT im content-Feld: Antwort 642 chars (>200) mit 14 Berechnungs-Operatoren. First 200 chars: # Solving for Average Speed\n\n## Step 1: Identify the Formula\nAverage speed is calculated using the formula:\n$$\\text{Average Speed} = \\frac{\\text{Total Distance}}{\\text{Total Time}}$$\n\n## Step 2: Ident\n  - code: [code] Inline CoT im content-Feld: Antwort 985 chars (>200) mit 12 Berechnungs-Operatoren. First 200 chars: # Sorting [3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5]\n\nI'll use **Insertion Sort** — it's intuitive, like sorting playing cards in your hand.\n\n## Algorithm Explanation\n\n**Insertion Sort** works by:\n1. Treat the\n  - decision: [decision] Inline CoT im content-Feld: Antwort 1513 chars (>200) mit 6 Berechnungs-Operatoren. First 200 chars: This is one of the genuinely hard problems in ethics, and I think honest engagement requires admitting there's no clean answer. Let me work through it rather than pretending otherwise.\n\n**The case for",
+  "thinking_probe_confidence": "medium",
+  "thinking_probe_at": "2026-06-19T22:35:07.660881+00:00",
+  "profile_verified": true,
+  "profile_verified_at": "2026-06-20",
+  "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
+  "last_modified_at": "2026-06-20",
+  "heritage_ids": [],
+  "community": null
 }

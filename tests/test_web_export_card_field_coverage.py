@@ -18,7 +18,7 @@ import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from scripts.web_export import _build_leaderboard_entry  # noqa: E402
+from scripts.web_export import _build_leaderboard_entry, _strip_none  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 TEMPLATE_PATH = ROOT / "config" / "card_template_model.yaml"
@@ -86,7 +86,7 @@ def sample_card() -> dict:
         "use_case_primary": "generalist",
         "parameter_architecture": "dense",
         "params_total_b": 7.0,
-        "params_active_b": None,
+        "params_active_b": 7.0,
         "context_window_k": 32,
         "knowledge_cutoff": "2025-09",
         "input_modalities": ["text", "image"],
@@ -104,6 +104,12 @@ def sample_card() -> dict:
         "input_price_per_1m": 0.0,
         "output_price_per_1m": 0.0,
         "supports_tool_use": True,
+        "size_class": "Desktop",
+        "community": "TestCommunity",
+        "profile_verified": True,
+        "profile_verified_at": "2026-06-20",
+        "profile_verified_by": "card-research",
+        "last_modified_at": "2026-06-20",
         # Optional v4.7.1: hier ungesetzt (kein Probe-Quartett)
     }
 
@@ -187,6 +193,7 @@ def test_model_card_subdict_covers_all_web_export_consumer_fields(sample_card, s
         review_updated_at=None,
         benchmark_run_at="2026-05-01",
         inference_provider="TestCorp",
+        community="TestCommunity",
     )
     sub = entry["model_card"]
     assert sub is not None
@@ -251,7 +258,7 @@ def test_model_card_subdict_passes_through_required_text_fields(field, sample_ca
 # ---------------------------------------------------------------------------
 
 def test_model_card_is_none_when_card_missing(sample_row) -> None:
-    """Wenn load_model_card() None liefert, ist model_card: None (kein leeres Dict)."""
+    """Wenn load_model_card() None liefert, wird model_card komplett entfernt (kein null im JSON)."""
     entry = _build_leaderboard_entry(
         row=sample_row, card=None, slug="missing", vendor=None,
         thinking_mode="standard", model_type="Proprietär",
@@ -259,7 +266,7 @@ def test_model_card_is_none_when_card_missing(sample_row) -> None:
         review_published_at=None, review_updated_at=None,
         benchmark_run_at=None, inference_provider=None,
     )
-    assert entry["model_card"] is None
+    assert "model_card" not in entry
 
 
 # ---------------------------------------------------------------------------
@@ -296,3 +303,60 @@ def test_real_export_data_json_contains_all_required_fields() -> None:
         "Folgende Modelle haben unvollstaendige model_card sub-dicts: "
         + ", ".join(f"{slug}:{sorted(m)}" for slug, m in failed[:5])
     )
+
+
+# ---------------------------------------------------------------------------
+# Test 5: None-Werte werden aus dem Export entfernt
+# ---------------------------------------------------------------------------
+
+def test_model_card_strips_none_values(sample_card, sample_row) -> None:
+    """None-Werte duerfen NICHT im Web-Export landen (Nullwert-Entfernung)."""
+    sample_card["params_active_b"] = None
+    sample_card["knowledge_cutoff"] = None
+    sample_card["license_url"] = None
+
+    entry = _build_leaderboard_entry(
+        row=sample_row,
+        card=sample_card,
+        slug="test-model-7b",
+        vendor="TestCorp",
+        thinking_mode="standard",
+        model_type="Offen",
+        has_report=False,
+        has_review=False,
+        review_published_at=None,
+        review_updated_at=None,
+        benchmark_run_at=None,
+        inference_provider=None,
+    )
+    sub = entry["model_card"]
+    assert sub is not None
+
+    none_keys = [k for k, v in sub.items() if v is None]
+    assert not none_keys, f"None-Werte im model_card sub-dict: {none_keys}"
+
+    assert "params_active_b" not in sub
+    assert "knowledge_cutoff" not in sub
+    assert "license_url" not in sub
+    assert "params_total_b" in sub  # Hat Wert → bleibt
+
+
+# ---------------------------------------------------------------------------
+# Test 6: _strip_none Unit-Tests
+# ---------------------------------------------------------------------------
+
+def test_strip_none_removes_none_values():
+    assert _strip_none({"a": 1, "b": None, "c": "x"}) == {"a": 1, "c": "x"}
+
+def test_strip_none_preserves_false_and_zero():
+    assert _strip_none({"a": 0, "b": False, "c": "", "d": []}) == {"a": 0, "b": False, "c": "", "d": []}
+
+def test_strip_none_nested():
+    data = {"outer": {"inner": None, "keep": 42}, "list": [1, None, 3]}
+    result = _strip_none(data)
+    assert result == {"outer": {"keep": 42}, "list": [1, None, 3]}
+
+def test_strip_none_returns_non_dict_unchanged():
+    assert _strip_none(None) is None
+    assert _strip_none([1, 2]) == [1, 2]
+    assert _strip_none("hello") == "hello"

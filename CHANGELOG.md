@@ -5,6 +5,55 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v4.10.0] - 2026-06-20
+
+**Card-Research Force-Run: 110/110 Cards `profile_verified=true`. Template-Cleanup, Batch-Processing, `MODEL=all`.**
+
+### Changed
+
+- **`config/card_template_model.yaml`** — 6 Felder von `required` auf `optional` verschoben:
+  `params_total_b`, `params_active_b`, `knowledge_cutoff`, `license_url`,
+  `input_price_per_1m`, `output_price_per_1m`. Beschreibungen sagten "null wenn X" aber
+  `required: true` war ein Widerspruch — `is_unknown_sentinel(None)` returned `True`,
+  also wird `null` bei `required: true` als Fehler gewertet. Template: 42 → 37 required Felder.
+
+### Added
+
+- **`scripts/manage_model_cards.py` — `MODEL=all` Support** — `--card all` wird als
+  Spezialwert erkannt (gleichbedeutend mit kein `--card`). Early-Validation in `main()`
+  erkennt `all` ebenfalls.
+
+- **`scripts/manage_model_cards.py` — `MAX_CARDS=N`** — Neuer CLI-Arg `--max-cards N`
+  + Makefile-Variable `MAX_CARDS`. Limitiert Targets pro Run. Fortschrittsanzeige am Ende:
+  `📊 Fortschritt: X verarbeitet, Y noch offen.`
+
+### Fixed
+
+- **`scripts/tools/probe_thinking.py`** — `card_path.relative_to(ROOT_DIR)` crash bei
+  relativen Pfaden. Fix: `card_path.resolve().relative_to(ROOT_DIR)` mit Fallback.
+
+- **110 Model Cards** — Alle `profile_verified=true` durch vollständigen Force-Run.
+  9 lokale Modelle: Thinking-Probe-Placeholder manuell ersetzt (Ollama entfernt).
+  7 Cards: `thinking_probe_at` Timestamp nachgetragen.
+  1 Card (`claude-sonnet-4-5-20250929`): `license_url` manuell gesetzt.
+  1 Card (`gemma-4-26B-A4B-it-UD-Q8_K_XL`): `supports_tool_use=False` gesetzt.
+
+### Removed
+
+- **`scripts/web_export.py` — None-Werte im Export** — `_strip_none()` entfernt
+  `None`-Werte rekursiv aus allen exportierten Dicts (Leaderboard-Entry, `model_card`-Sub-Dict,
+  Political-Compass-Entry, `data.json`). Felder mit Wert (`0`, `False`, `""`, `[]`) bleiben
+  erhalten. `"model_card": null` wird komplett entfernt (Key fehlt statt `null`). Neue
+  Export-Felder: `profile_verified_by`, `last_modified_at`.
+
+### Tests
+
+- Parse-Fehler bei `qwen3_5-9b` (1×) — LLM lieferte kein valides JSON, Retry erfolgreich.
+- `Apache-2.0` vs `Apache 2.0` — LLM interpretiert als Lizenz-Wechsel, rewrite't alle
+  Textfelder (viel Lärm, aber korrektes Ergebnis).
+
+---
+
 ## [v4.9.3] - 2026-06-12
 
 **Vendor Card Template v1.1.0 — `description`-Feld + Editor-Prompt-Fix.**

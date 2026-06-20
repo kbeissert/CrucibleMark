@@ -17,7 +17,7 @@
   "params_active_b": null,
   "context_window_k": 128,
   "knowledge_cutoff": "2025-01",
-  "summary": "Hermes 4.3 36B ist ein offenes, hybrides Reasoning-Modell von NousResearch auf Basis von Seed 36B. Es kombiniert Instruct-Verhalten mit optionalem Thinking, unterstützt Tool Use und strukturierte Ausgaben und liegt hier als Q6_K mit moderatem Speicherbedarf vor.",
+  "summary": "Hermes 4.3 36B ist ein leistungsstarkes Open-Weights-Modell von NousResearch. Es zeichnet sich durch präzises Instruction-Following und die Fähigkeit zu strukturierten Ausgaben sowie Tool Use aus. Diese Version liegt als Q6_K-Quantisierung vor, was eine effiziente lokale Ausführung bei gleichzeitig hoher Modellqualität ermöglicht.",
   "strengths": [
     "Starkes Instruction-Following mit optionalem Thinking",
     "Gute Tool-Use- und JSON-Adhärenz",
@@ -45,10 +45,10 @@
   "card_status": "complete",
   "size_class": "Workstation",
   "generated_at": "2026-06-06T16:20:00+02:00",
-  "thinking_probe_detected": null,
-  "thinking_probe_evidence": null,
-  "thinking_probe_confidence": null,
-  "thinking_probe_at": null,
+  "thinking_probe_detected": true,
+  "thinking_probe_evidence": "Hermes 4.3 basiert auf Qwen3-Architektur mit eingebautem Thinking-Modus. Supportet /think und /nothink Tags.",
+  "thinking_probe_confidence": "medium",
+  "thinking_probe_at": "2026-06-19T23:17:01.985345+00:00",
   "top_p": null,
   "top_k": null,
   "repetition_penalty": null,
@@ -63,8 +63,17 @@
     "text"
   ],
   "profile_verified": true,
-  "profile_verified_at": "2026-06-12",
+  "profile_verified_at": "2026-06-20",
   "tooluse_tested_at": "2026-06-11T17:49:32Z",
   "tooluse_score_p1": 90.0,
-  "tooluse_score_p2": 36.67
+  "tooluse_score_p2": 36.67,
+  "tooluse_recommendation": null,
+  "temperature": null,
+  "system_prompt_override": null,
+  "cot_marker_family": null,
+  "cot_tags_detected": null,
+  "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
+  "last_modified_at": "2026-06-20",
+  "heritage_ids": [],
+  "community": null
 }

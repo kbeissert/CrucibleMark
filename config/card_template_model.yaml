@@ -308,15 +308,6 @@ required_fields:
     since: "v1.0"
     example: "Proprietary"
 
-  - name: license_url
-    type: str
-    required: true
-    default: null
-    description: "URL zur Lizenz (oder null bei Proprietary)"
-    consumers: [review, web_export]
-    since: "v1.0"
-    example: null
-
   - name: commercial_use_allowed
     type: bool
     required: true
@@ -356,24 +347,6 @@ required_fields:
     since: "v1.0"
     example: "5.4"
 
-  - name: input_price_per_1m
-    type: float
-    required: true
-    default: null
-    description: "USD pro 1M Input-Tokens (null für lokale Modelle)"
-    consumers: [cost, leaderboard, web_export]
-    since: "v1.0"
-    example: 0.75
-
-  - name: output_price_per_1m
-    type: float
-    required: true
-    default: null
-    description: "USD pro 1M Output-Tokens (null für lokale Modelle)"
-    consumers: [cost, leaderboard, web_export]
-    since: "v1.0"
-    example: 4.5
-
   - name: use_case_primary
     type: str
     required: true
@@ -397,23 +370,6 @@ required_fields:
     # Whitelist-SSoT: config/classification_taxonomy.json > parameter_architecture.values
     # Wird von utils/card_utils.py:get_valid_values() validiert.
 
-  - name: params_total_b
-    type: float
-    required: true
-    default: null
-    description: "Gesamt-Parameter in Milliarden (null wenn nicht öffentlich)"
-    consumers: [leaderboard, web_export, review]
-    since: "v1.0"
-    example: null
-
-  - name: params_active_b
-    type: float
-    required: true
-    default: null
-    description: "Aktive Parameter in Milliarden (für MoE)"
-    consumers: [leaderboard, web_export]
-    since: "v1.0"
-    example: null
 
   - name: context_window_k
     type: int
@@ -424,19 +380,59 @@ required_fields:
     since: "v1.0"
     example: 128
 
-  - name: knowledge_cutoff
-    type: str
-    required: true
-    default: null
-    description: "Trainings-Daten-Cutoff (YYYY-MM)"
-    consumers: [review, web_export]
-    since: "v1.0"
-    example: "2025-09"
 
 # ----------------------------------------------------------------------------
 # Optionalfelder — werden vom Validator NICHT als Fehler gewertet
 # ----------------------------------------------------------------------------
 optional_fields:
+
+  - name: params_total_b
+    type: float
+    required: false
+    description: "Gesamt-Parameter in Milliarden (null wenn nicht öffentlich)"
+    consumers: [leaderboard, web_export, review]
+    since: "v1.0"
+    example: null
+
+  - name: knowledge_cutoff
+    type: str
+    required: false
+    description: "Trainings-Daten-Cutoff (YYYY-MM)"
+    consumers: [review, web_export]
+    since: "v1.0"
+    example: "2025-09"
+
+  - name: params_active_b
+    type: float
+    required: false
+    description: "Aktive Parameter in Milliarden (für MoE, null wenn nicht öffentlich)"
+    consumers: [leaderboard, web_export]
+    since: "v1.0"
+    example: null
+
+  - name: license_url
+    type: str
+    required: false
+    description: "URL zur Lizenz (oder null bei Proprietary)"
+    consumers: [review, web_export]
+    since: "v1.0"
+    example: null
+
+  - name: input_price_per_1m
+    type: float
+    required: false
+    description: "USD pro 1M Input-Tokens (null für lokale Modelle)"
+    consumers: [cost, leaderboard, web_export]
+    since: "v1.0"
+    example: 0.75
+
+  - name: output_price_per_1m
+    type: float
+    required: false
+    description: "USD pro 1M Output-Tokens (null für lokale Modelle)"
+    consumers: [cost, leaderboard, web_export]
+    since: "v1.0"
+    example: 4.5
 
   - name: tooluse_tested_at
     type: str

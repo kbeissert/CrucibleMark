@@ -17,7 +17,7 @@
   "params_active_b": 32.0,
   "context_window_k": 256,
   "knowledge_cutoff": "2025-10",
-  "summary": "Kimi K2.7 Code ist Moonshot AIs codingfokussiertes Agent-Modell aus der K2-Familie, veröffentlicht am 12. Juni 2026 und auf langlaufende, end-to-end Software-Engineering-Workflows optimiert. Es aktiviert 32B von 1T Gesamtparametern über 384 Experten, behält im Always-on Thinking-Modus den vollständigen Reasoning-Inhalt über Multi-Turn-Dialoge hinweg und nutzt 256K Kontext für langfristige Code-Aufgaben, Tool-Ketten und Agentic-Frameworks wie Kimi Code CLI.",
+  "summary": "Kimi K2.7 Code ist das auf Programmierung spezialisierte Agenten-Modell von Moonshot AI aus der K2-Familie. Es wurde am 12. Juni 2026 veroeffentlicht und ist fuer langfristige Software-Engineering-Workflows optimiert. Das Modell nutzt eine MoE-Architektur mit 32B aktiven Parametern aus insgesamt 1T Parametern. Mit einem Kontext von 256K Token und einem permanenten Thinking-Modus eignet es sich ideal fuer komplexe Code-Aufgaben und Agentic-Frameworks.",
   "strengths": [
     "Codingfokussiertes Agent-Modell mit starken Leistungen auf realen End-to-End-Engineering-Tasks (Kimi Code Bench v2 62.0, Program Bench 53.6)",
     "Nativ multimodales MoE-Modell mit Text-, Bild- und Video-Input für multimodale Code-Aufgaben",
@@ -76,5 +76,16 @@
   "seed": null,
   "stop_sequences": null,
   "profile_verified": true,
-  "profile_verified_at": "2026-06-17"
+  "profile_verified_at": "2026-06-20",
+  "tooluse_tested_at": null,
+  "tooluse_score_p1": null,
+  "tooluse_score_p2": null,
+  "tooluse_recommendation": null,
+  "system_prompt_override": null,
+  "cot_marker_family": null,
+  "cot_tags_detected": null,
+  "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
+  "last_modified_at": "2026-06-20",
+  "heritage_ids": [],
+  "community": null
 }

@@ -27,6 +27,7 @@ import json
 import logging
 import os
 import re
+import subprocess
 import sys
 import urllib.error
 import urllib.request
@@ -175,6 +176,7 @@ class ResearchReport:
     unlocked: bool = False
     would_write: bool = False
     wrote: bool = False
+    profile_verified: bool = False
     backup_path: Optional[Path] = None
 
 
@@ -325,13 +327,42 @@ _MAKE_SYSTEM_INSTRUCTION = (
     "Antworte NUR mit dem JSON-Objekt."
 )
 
+_LLM_TEXT_FIELDS = frozenset({
+    "summary",
+    "strengths",
+    "known_limitations",
+    "judge_context_hint",
+    "weights_provenance_risk_rationale",
+})
+
 _RESEARCH_SYSTEM_INSTRUCTION = (
-    "Du bist ein Card-Researcher. Pruefe die unten angegebene Model Card auf "
-    "inhaltliche Korrektheit: Preise (input_price_per_1m / output_price_per_1m), "
-    "Context-Window, Knowledge-Cutoff, Display-Name, Summary-Inhalt (kein Murks, "
-    "keine chinesischen Zeichen, keine Em-Dashes). Recherchiere ueber offizielle "
-    "Quellen (Hersteller-Website, HuggingFace, API-Pricing). "
-    "Antworte AUSSCHLIESSLICH mit JSON: "
+    "Du bist ein Card-Researcher. Deine Aufgabe ist es, die TEXTFELDER der "
+    "Model Card auf inhaltliche Korrektheit zu pruefen und bei Bedarf neu zu "
+    "schreiben.\n\n"
+    "DEIN FOKUS — nur diese Felder darfst du pruefen/ändern:\n"
+    "- summary\n"
+    "- strengths\n"
+    "- known_limitations\n"
+    "- judge_context_hint\n"
+    "- weights_provenance_risk_rationale\n\n"
+    "NICHT DEIN FOKUS — diese Felder wurden bereits validiert:\n"
+    "- Lizenz-Felder (license, license_url, weights_license_tier, commercial_use_allowed)\n"
+    "- Strukturfelder (deployment_type, params_active_b, params_total_b,\n"
+    "  input_price_per_1m, output_price_per_1m, community, display_name,\n"
+    "  developer, model_version, context_window_k, knowledge_cutoff)\n"
+    "Diese Felder sind vom Script geprueft und korrekt. Ueberschreibe sie NICHT.\n\n"
+    "WANN DU AKTIONIERST:\n"
+    "- Wenn Pre-Findings einen Lizenz-Wechsel anzeigen, muessen ALLE 5 Textfelder\n"
+    "  komplett neu geschrieben werden (nicht nur Woerter ersetzen).\n"
+    "- Wenn Murks (CJK, em-dash) erkannt wurde, das betroffene Feld neu schreiben.\n"
+    "- Wenn ein Text inhaltlich falsch ist (z.B. falsche Lizenz im Text), korrigieren.\n"
+    "- Wenn alles korrekt ist, antworte mit einem leeren findings-Array.\n"
+    "- Wenn du keinen konkreten Verbesserungstext hast, erzeuge KEIN Finding.\n"
+    "  Leere findings-Arrays sind erwuenscht wenn alles korrekt ist.\n\n"
+    "WICHTIG: Fuer JEDES Finding MUSS ein \"suggested\"-Wert mit dem komplett\n"
+    "neu geschriebenen Text angegeben werden. Findings ohne suggested-Wert\n"
+    "werfen verworfen.\n\n"
+    "Antworte AUSSCHLIESSLICH mit JSON:\n"
     '{"findings": [{"field": ..., "severity": "error|warning|info", '
     '"message": ..., "current": ..., "suggested": ...}], '
     '"summary": "..."}. '
@@ -354,9 +385,21 @@ def _build_tooluse_system_instruction(tool_schemas: list[dict]) -> str:
         "3. Wiederhole Schritt 1-2 bis du genug Informationen hast.\n"
         '4. Wenn du fertig bist, antworte AUSSCHLIESSLICH mit einem JSON-Objekt:\n'
         '{"findings": [...], "summary": "..."}\n\n'
+        "FOKUS — diese Felder prioritaetisch pruefen:\n"
+        "- summary, strengths, known_limitations, judge_context_hint,\n"
+        "  weights_provenance_risk_rationale (Textfelder)\n\n"
+        "ZUSATZLICH — diese Felder koennen bei Bedarf recherchiert werden:\n"
+        "- Lizenz (license, license_url, weights_license_tier)\n"
+        "- Preise (input_price_per_1m, output_price_per_1m)\n"
+        "- Context-Window, Knowledge-Cutoff\n\n"
         "Regeln:\n"
         "- Nutze web_search um Preise, Context-Window, Knowledge-Cutoff etc. zu finden.\n"
         "- Nutze fetch um konkrete URLs (Hersteller-Seiten, HF-Cards) zu lesen.\n"
+        "- TEXTFELDER BEI LIZENZ-WECHSEL: Wenn sich die Lizenz aendert, MUESSEN\n"
+        "  ALLE Textfelder aktualisiert werden mit komplett neu geschriebenen Texten.\n"
+        "- Fuer JEDES Finding MUSS ein suggested-Wert angegeben werden.\n"
+        "  Ohne suggested-Wert wird das Finding verworfen.\n"
+        "- Wenn alles korrekt ist, antworte mit einem leeren findings-Array.\n"
         "- Antworte NUR mit JSON — kein Markdown-Fence, keine Kommentare.\n"
         "- Erfinde keine Inhalte — alles muss aus Tool-Ergebnissen stammen."
     )
@@ -470,6 +513,289 @@ _CJK_RANGES: tuple[tuple[int, int], ...] = (
     (0xAC00, 0xD7AF),    # Hangul Syllables
 )
 
+# --- Lizenz-Mappings (SSoT für Heuristik-Checks) ---
+_KNOWN_LICENSE_MAPPINGS: dict[str, dict] = {
+    "gemma-4": {
+        "license": "Apache 2.0",
+        "license_url": "https://ai.google.dev/gemma/apache_2",
+        "weights_license_tier": "open-weights",
+    },
+    "gemma-3": {
+        "license": "Google Gemma Terms of Use",
+        "license_url": "https://ai.google.dev/gemma/terms",
+        "weights_license_tier": "restricted-weights",
+    },
+    "gemma-2": {
+        "license": "Google Gemma Terms of Use",
+        "license_url": "https://ai.google.dev/gemma/terms",
+        "weights_license_tier": "restricted-weights",
+    },
+    "qwen3": {
+        "license": "Apache 2.0",
+        "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
+        "weights_license_tier": "open-weights",
+    },
+    "qwen3_5": {
+        "license": "Apache 2.0",
+        "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
+        "weights_license_tier": "open-weights",
+    },
+    "qwen2_5": {
+        "license": "Apache 2.0",
+        "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
+        "weights_license_tier": "open-weights",
+    },
+    "llama-4": {
+        "license": "Llama 4 Community License",
+        "license_url": "https://github.com/meta-llama/llama-models/blob/main/models/llama4/LICENSE",
+        "weights_license_tier": "restricted-weights",
+    },
+    "llama-3": {
+        "license": "Llama 3 Community License",
+        "license_url": "https://github.com/meta-llama/llama-models/blob/main/models/llama3/LICENSE",
+        "weights_license_tier": "restricted-weights",
+    },
+}
+
+_KNOWN_COMMUNITY_GROUPS: frozenset[str] = frozenset([
+    "Unsloth", "mradermacher", "HauhauCS", "ARA-APEX",
+])
+
+
+def _match_family(model_id: str, family: str) -> tuple[str, dict] | None:
+    """Longest-prefix match on model_id/family against _KNOWN_LICENSE_MAPPINGS.
+
+    Returns ``(key, mapping)`` or None. Keys like ``'gemma-4'`` must match
+    before ``'gemma'`` — sorted longest-first.
+    """
+    model_id = model_id.lower()
+    family = family.lower()
+    if not model_id and not family:
+        return None
+    for key in sorted(_KNOWN_LICENSE_MAPPINGS.keys(), key=len, reverse=True):
+        if key in model_id or key in family:
+            return key, _KNOWN_LICENSE_MAPPINGS[key]
+    return None
+
+
+def _check_license_consistency(card: dict) -> list[CardFinding]:
+    """Heuristik: Lizenz-Felder gegen bekannte Mappings pruefen."""
+    findings: list[CardFinding] = []
+    model_id = card.get("model_id", "")
+    family = card.get("model_family", "")
+    matched = _match_family(model_id, family)
+    if matched is None:
+        return findings
+    key, mapping = matched
+    license_val = card.get("license")
+    if license_val and license_val != mapping["license"]:
+        findings.append(CardFinding(
+            field="license",
+            severity="error",
+            message=f"Lizenz {license_val!r} widerspricht bekanntem Mapping fuer {key}: '{mapping['license']}'",
+            current=license_val,
+            suggested=mapping["license"],
+        ))
+    tier = card.get("weights_license_tier")
+    if tier and tier != mapping["weights_license_tier"]:
+        findings.append(CardFinding(
+            field="weights_license_tier",
+            severity="error",
+            message=f"weights_license_tier '{tier}' widerspricht bekanntem Mapping fuer {key}: '{mapping['weights_license_tier']}'",
+            current=tier,
+            suggested=mapping["weights_license_tier"],
+        ))
+    return findings
+
+
+def _check_community(card: dict) -> list[CardFinding]:
+    """Pruefe ob community-Wert in kontrollierter Taxonomie liegt.
+
+    Unbekannte Werte sind Fehler. suggested=None — LLM/Distributor soll
+    den korrekten Namen erausfinden (via HuggingFace-Recherche im Tool-Use-Modus).
+    """
+    findings: list[CardFinding] = []
+    community = card.get("community")
+    if community and community not in _KNOWN_COMMUNITY_GROUPS:
+        findings.append(CardFinding(
+            field="community",
+            severity="error",
+            message=f"Community {community!r} ist nicht in der kontrollierten Taxonomie. Erlaubt: {', '.join(sorted(_KNOWN_COMMUNITY_GROUPS))}",
+            current=community,
+            suggested=None,
+        ))
+    return findings
+
+
+def _check_license_text_fields(card: dict) -> list[CardFinding]:
+    """Pre-finding: Textfelder pruefen, die alte Lizenz-Referenzen enthalten.
+
+    Laeuft VOR dem LLM-Call auf der ORIGINAL-Card.
+    Wenn die Lizenz laut Mapping geaendert werden muss, pruefe ob Textfelder
+    noch die alte (falsche) Lizenz referenzieren. LLM MUSS diese Felder dann
+    mit korrektem Text als suggested-Wert liefern.
+    """
+    findings: list[CardFinding] = []
+    model_id = card.get("model_id", "")
+    family = card.get("model_family", "")
+    matched = _match_family(model_id, family)
+    if matched is None:
+        return findings
+    key, mapping = matched
+    current_license = str(card.get("license", ""))
+    expected_license = mapping["license"]
+    if current_license == expected_license:
+        return findings
+
+    is_expected_open = "Apache" in expected_license
+    keywords = _RESTRICTED_KEYWORDS if is_expected_open else _OPEN_KEYWORDS
+
+    for field_name in _LICENSE_CASCADE_FIELDS:
+        val = card.get(field_name)
+        if val is None:
+            continue
+        texts: list[str] = []
+        if isinstance(val, str):
+            texts.append(val)
+        elif isinstance(val, list):
+            texts.extend(str(item) for item in val if isinstance(item, str))
+        else:
+            continue
+        for text in texts:
+            for kw in keywords:
+                if kw.lower() in text.lower():
+                    findings.append(CardFinding(
+                        field=field_name,
+                        severity="error",
+                        message=(
+                            f"Text enthaelt '{kw}', aber Lizenz muss laut {key}-Mapping "
+                            f"zu '{expected_license}' geaendert werden. "
+                            f"Textfeld muss komplett neu geschrieben werden — "
+                            f"suggested-Wert mit korrigiertem Text ist PFLICHT."
+                        ),
+                        current=kw,
+                        suggested=None,
+                    ))
+                    break
+            else:
+                continue
+            break
+    return findings
+
+
+def _ensure_license_consistency(card: dict) -> dict:
+    """Konsistenz-Korrektur nach _apply_research_diff: wenn license geaendert
+    wurde, pruefe ob weights_license_tier noch passt."""
+    license_val = str(card.get("license", ""))
+    tier = card.get("weights_license_tier")
+    if "Apache" in license_val and tier == "restricted-weights":
+        card["weights_license_tier"] = "open-weights"
+    if "Terms of Use" in license_val and tier == "open-weights":
+        card["weights_license_tier"] = "restricted-weights"
+    return card
+
+
+def _is_gguf_model(model_id: str, card: dict | None = None) -> bool:
+    """Erkennt GGUF-Modelle anhand von Namensmustern oder Card-Feldern."""
+    mid = model_id.lower()
+    if re.search(r"q[2-8]_[k0-9]", mid):
+        return True
+    if "gguf" in mid:
+        return True
+    if re.search(r"(?:^|[-_])ud(?:[-_]|$)", mid):
+        return True
+    if card:
+        mv = str(card.get("model_version", "")).lower()
+        if "gguf" in mv:
+            return True
+        mfile = str(card.get("model_file", "")).lower()
+        if "gguf" in mfile or re.search(r"q[2-8]_[k0-9]", mfile):
+            return True
+    return False
+
+
+def _ensure_gguf_conventions(card: dict) -> dict:
+    """Post-Apply GGUF-Korrektur: deployment_type, params_active_b, Preise.
+
+    Läuft NACH allen Findings in _commit_card, um LLM-Korrekturen
+    (z.B. Falschwert open-weights statt localweights) zuverlässig zu
+    überschreiben.
+    """
+    model_id = str(card.get("model_id", ""))
+    if not _is_gguf_model(model_id, card):
+        return card
+
+    changed: list[str] = []
+
+    if card.get("deployment_type") != "localweights":
+        card["deployment_type"] = "localweights"
+        changed.append("deployment_type=localweights")
+
+    if card.get("params_active_b") is None and card.get("parameter_architecture") == "dense":
+        total = card.get("params_total_b")
+        if total is not None:
+            card["params_active_b"] = total
+            changed.append(f"params_active_b={total}")
+
+    if card.get("input_price_per_1m") is None:
+        card["input_price_per_1m"] = 0.0
+        changed.append("input_price_per_1m=0.0")
+    if card.get("output_price_per_1m") is None:
+        card["output_price_per_1m"] = 0.0
+        changed.append("output_price_per_1m=0.0")
+
+    if changed:
+        logger.info("    🔧 GGUF-Konventionen: %s", ", ".join(changed))
+
+    return card
+
+
+_LICENSE_CASCADE_FIELDS = ("summary", "strengths", "known_limitations", "judge_context_hint", "weights_provenance_risk_rationale")
+
+_RESTRICTED_KEYWORDS = ("restriktiv", "restricted", "Terms of Use", "mit Auflagen", "Gemma-Lizenz", "Gemma License")
+_OPEN_KEYWORDS = ("Apache 2.0", "open-weights", "uneingeschraenkt")
+
+
+def _check_license_cascade(card: dict) -> list[CardFinding]:
+    """Pruefe ob Textfelder noch alte Lizenz-Referenzen enthalten nach Lizenz-Wechsel.
+
+    Läuft NACH Lizenz-Korrektur (suggested-Werte bereits angewandt).
+    Erkennt Inkonsistenzen zwischen dem neuen Lizenz-Wert und Texten.
+    Prüft sowohl String-Felder als auch Listen von Strings.
+    """
+    findings: list[CardFinding] = []
+    license_val = str(card.get("license", ""))
+    is_open = "Apache" in license_val
+    keywords = _RESTRICTED_KEYWORDS if is_open else _OPEN_KEYWORDS
+    expected_severity = "error" if is_open else "warning"
+
+    for field_name in _LICENSE_CASCADE_FIELDS:
+        val = card.get(field_name)
+        if val is None:
+            continue
+        texts: list[str] = []
+        if isinstance(val, str):
+            texts.append(val)
+        elif isinstance(val, list):
+            texts.extend(str(item) for item in val if isinstance(item, str))
+        else:
+            continue
+        for text in texts:
+            for kw in keywords:
+                if kw.lower() in text.lower():
+                    findings.append(CardFinding(
+                        field=field_name,
+                        severity=expected_severity,
+                        message=f"Text enthaelt '{kw}', aber Lizenz ist '{license_val}'. Text muss aktualisiert werden.",
+                        current=kw,
+                        suggested=None,
+                    ))
+                    break
+            else:
+                continue
+            break
+    return findings
+
 
 def _build_check_user_prompt(card: dict, editor_prompt: str) -> str:
     return (
@@ -580,6 +906,23 @@ def _preserve_operator_fields(original: dict, new: dict) -> dict:
     return new
 
 
+def _prefill_template_fields(card: dict, template: CardTemplate) -> dict:
+    """Füllt alle Template-Felder (required + optional) mit Defaults auf.
+
+    Wird VOR dem LLM-Call ausgeführt, damit das LLM eine vollständige
+    Card-Struktur sieht und fehlende Felder (z.B. community) erkennt.
+    """
+    result = dict(card)
+    added: list[str] = []
+    for spec in template.required_fields + template.optional_fields:
+        if spec.name not in result:
+            result[spec.name] = spec.default
+            added.append(spec.name)
+    if added:
+        logger.info("    📋 Template-Prefill: %d Felder ergänzt: %s", len(added), ", ".join(added))
+    return result
+
+
 def _validate_against_template(
     card: dict, template: CardTemplate
 ) -> tuple[dict, list[str]]:
@@ -676,7 +1019,7 @@ def _discover_research_targets(args: argparse.Namespace) -> list[tuple[str, Path
     - sonst: alle Cards mit ``profile_verified != True``. Mit ``--force``
       werden auch verifizierte Cards einbezogen.
     """
-    if args.card:
+    if args.card and args.card.lower() != "all":
         path = _find_card(args.card)
         if not path.exists():
             raise SystemExit(f"❌ Card nicht gefunden: {args.card}")
@@ -687,9 +1030,8 @@ def _discover_research_targets(args: argparse.Namespace) -> list[tuple[str, Path
 def _apply_research_diff(original: dict, response: dict) -> dict:
     """Uebertraegt die LLM-vorgeschlagenen Werte aus ``findings`` in die Card.
 
-    Pro Finding wird ``suggested`` uebernommen wenn nicht None und der
-    Zielfeld in der Card existiert. Felder ohne Finding werden nicht
-    angefasst.
+    Pro Finding wird ``suggested`` uebernommen wenn nicht None.
+    Neue Felder (die noch nicht in der Card existieren) werden hinzugefuegt.
     """
     findings = response.get("findings", [])
     if not isinstance(findings, list):
@@ -702,7 +1044,7 @@ def _apply_research_diff(original: dict, response: dict) -> dict:
         if suggested is None:
             continue
         field = finding.get("field")
-        if not field or field not in merged:
+        if not field:
             continue
         merged[field] = suggested
     return merged
@@ -710,12 +1052,20 @@ def _apply_research_diff(original: dict, response: dict) -> dict:
 
 def _build_research_user_prompt(card: dict, editor_prompt: str, pre_findings: list[CardFinding]) -> str:
     """User-Prompt fuer den Research-Modus: Card + Editor-Prompt + Pre-Findings."""
+    text_card = {k: v for k, v in card.items() if k in _LLM_TEXT_FIELDS}
+    structural_card = {k: v for k, v in card.items() if k not in _LLM_TEXT_FIELDS}
+
     parts: list[str] = [
         editor_prompt,
         "",
-        "## Zu recherchierende Card",
+        "## Strukturelle Felder (bereits validiert — nicht aendern)",
         "```json",
-        json.dumps(card, ensure_ascii=False, indent=2),
+        json.dumps(structural_card, ensure_ascii=False, indent=2),
+        "```",
+        "",
+        "## Zu pruefende Textfelder",
+        "```json",
+        json.dumps(text_card, ensure_ascii=False, indent=2),
         "```",
     ]
     if pre_findings:
@@ -728,6 +1078,86 @@ def _build_research_user_prompt(card: dict, editor_prompt: str, pre_findings: li
         for f in pre_findings:
             parts.append(f"- `{f.field}` [{f.severity}]: {f.message}")
     return "\n".join(parts)
+
+
+# ---------------------------------------------------------------------------
+# Server lifecycle helpers (MCP + llama.cpp)
+# ---------------------------------------------------------------------------
+
+def _server_root_url(base_url: str) -> str:
+    """Extract root URL from OpenAI-compatible base_url (strip /v1)."""
+    return base_url.rstrip("/").removesuffix("/v1")
+
+
+def _check_health(url: str, name: str, timeout: float = 3.0) -> bool:
+    """Generic health check via GET. Returns True if server responds 200."""
+    try:
+        with urllib.request.urlopen(url, timeout=timeout) as resp:
+            return resp.status == 200
+    except (urllib.error.URLError, OSError, TimeoutError):
+        return False
+
+
+def _reset_llama_context(base_url: str) -> None:
+    """Reset llama.cpp KV cache via POST /slots/{id}?action=reset.
+
+    Best-effort: Die OpenAI-compatible API ist stateless (kein Context-Leak
+    zwischen Requests). Der Reset ist nur beim nativen /completion-Endpoint
+    mit cache_prompt=true relevant.
+    """
+    root = _server_root_url(base_url)
+    try:
+        slots_url = f"{root}/slots"
+        req = urllib.request.Request(slots_url, method="GET")
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            slots = json.loads(resp.read())
+        if not isinstance(slots, list):
+            return
+        for slot in slots:
+            slot_id = slot.get("id", 0)
+            reset_url = f"{slots_url}/{slot_id}?action=reset"
+            reset_req = urllib.request.Request(reset_url, method="POST")
+            urllib.request.urlopen(reset_req, timeout=5)
+            logger.info("    🔄 Context-Reset: Slot %d", slot_id)
+    except (urllib.error.URLError, OSError, TimeoutError) as exc:
+        logger.debug("    ℹ️ Context-Reset uebersprungen: %s", exc)
+
+
+def _ensure_mcp_running(mcp_url: str) -> bool:
+    """Start MCP server if not already running. Returns True if available."""
+    health_url = f"{mcp_url}/health"
+    if _check_health(health_url, "MCP"):
+        logger.info("    MCP-Server bereits aktiv (%s).", mcp_url)
+        return True
+
+    logger.info("    🚀 Starte MCP-Server (%s)...", mcp_url)
+    subprocess.Popen(
+        "source ~/.api_keys 2>/dev/null; python3 cruciblemark-mcp/server.py --mode live",
+        shell=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        start_new_session=True,
+        cwd=str(Path(__file__).parent.parent),
+    )
+    for _ in range(30):
+        time.sleep(1)
+        if _check_health(health_url, "MCP"):
+            logger.info("    ✅ MCP-Server gestartet.")
+            return True
+    logger.error("    ❌ MCP-Server start fehlgeschlagen (30s Timeout).")
+    return False
+
+
+def _stop_mcp_server() -> None:
+    """Stop MCP server process."""
+    try:
+        subprocess.run(
+            ["pkill", "-f", "cruciblemark-mcp/server.py"],
+            capture_output=True, timeout=5,
+        )
+        logger.info("    🛑 MCP-Server gestoppt.")
+    except (subprocess.TimeoutExpired, OSError) as exc:
+        logger.warning("    ⚠️ MCP-Server stop fehlgeschlagen: %s", exc)
 
 
 class Researcher:
@@ -813,21 +1243,35 @@ class Researcher:
             return None
 
     def _extract_findings(
-        self, parsed: dict, report: ResearchReport
+        self, parsed: dict, report: ResearchReport, *, text_only: bool = True
     ) -> None:
-        """Append LLM findings from parsed JSON to report."""
+        """Append LLM findings from parsed JSON to report.
+
+        Args:
+            text_only: If True, discard findings for structural fields
+                (only keep _LLM_TEXT_FIELDS). Used in non-tooluse mode where
+                the LLM cannot actually search the web.
+        """
         findings_raw = parsed.get("findings", [])
         if not isinstance(findings_raw, list):
             return
         for item in findings_raw:
             if not isinstance(item, dict):
                 continue
+            field_name = str(item.get("field", ""))
+            if text_only and field_name not in _LLM_TEXT_FIELDS:
+                logger.debug("    🗑️ LLM-Finding verworfen (strukturelles Feld): %s", field_name)
+                continue
+            suggested = item.get("suggested")
+            if suggested is None or (isinstance(suggested, str) and not suggested.strip()):
+                logger.debug("    🗑️ LLM-Finding verworfen (kein suggested): %s", field_name)
+                continue
             report.findings.append(CardFinding(
-                field=str(item.get("field", "")),
+                field=field_name,
                 severity=str(item.get("severity", "info")),
                 message=str(item.get("message", "")),
                 current=item.get("current"),
-                suggested=item.get("suggested"),
+                suggested=suggested,
             ))
         report.summary = str(parsed.get("summary", ""))
 
@@ -840,7 +1284,13 @@ class Researcher:
         backup_path: Path | None,
     ) -> None:
         """Merge, validate and write (or dry-run) the card. Unlocks on success."""
-        merged = _apply_research_diff(original, parsed)
+        merged = dict(original)
+        for f in report.findings:
+            if f.suggested is not None and f.field:
+                merged[f.field] = f.suggested
+        merged = _ensure_license_consistency(merged)
+        merged = _ensure_gguf_conventions(merged)
+        report.findings.extend(_check_license_cascade(merged))
         merged = _preserve_operator_fields(original, merged)
         cleaned, warnings = _validate_against_template(merged, self.template)
         for w in warnings:
@@ -861,9 +1311,25 @@ class Researcher:
             )
         else:
             final = dict(cleaned)
-            final["profile_verified"] = True
-            final["profile_verified_at"] = date.today().isoformat()
-            final["profile_verified_by"] = f"llm:{self.llm_spec.model}"
+            final_checks: list[CardFinding] = []
+            final_checks.extend(_check_license_consistency(dict(final)))
+            final_checks.extend(_check_license_text_fields(dict(final)))
+            final_checks.extend(_check_community(dict(final)))
+            pflicht_warnings = [w for w in warnings if "Pflichtfeld" in w]
+            has_remaining_errors = (
+                any(f.severity == "error" for f in final_checks)
+                or len(pflicht_warnings) > 0
+            )
+            if has_remaining_errors:
+                err_count = len([f for f in final_checks if f.severity == "error"]) + len(pflicht_warnings)
+                logger.warning("    ⚠️ profile_verified bleibt false — %d verbleibende Probleme.", err_count)
+                final["profile_verified"] = False
+                final["profile_verified_at"] = None
+                final["profile_verified_by"] = None
+            else:
+                final["profile_verified"] = True
+                final["profile_verified_at"] = date.today().isoformat()
+                final["profile_verified_by"] = f"llm:{self.llm_spec.model}"
             final["last_modified_at"] = date.today().isoformat()
             path.write_text(
                 json.dumps(final, ensure_ascii=False, indent=2) + "\n",
@@ -871,7 +1337,8 @@ class Researcher:
             )
             report.unlocked = True
             report.wrote = True
-            logger.info("    🔒 Lock geschlossen: %s (profile_verified=true)", path.name)
+            report.profile_verified = bool(final.get("profile_verified", False))
+            logger.info("    🔒 Lock geschlossen: %s (profile_verified=%s)", path.name, report.profile_verified)
             if backup_path and backup_path.exists():
                 try:
                     backup_path.unlink()
@@ -897,8 +1364,14 @@ class Researcher:
             return self.summary
 
         tooluse = getattr(self.args, "tooluse", False)
+        mcp_url = getattr(self.args, "mcp_url", "http://localhost:8765")
+        mcp_started_by_us = False
+
         if tooluse:
-            mcp_url = getattr(self.args, "mcp_url", "http://localhost:8765")
+            mcp_started_by_us = _ensure_mcp_running(mcp_url)
+            if not mcp_started_by_us and not _check_health(f"{mcp_url}/health", "MCP"):
+                logger.error("❌ MCP-Server nicht erreichbar — Abbruch.")
+                return self.summary
             logger.info(
                 "🔬 Card-Researcher Tool-Use: %s/%s (MCP=%s)",
                 self.llm_spec.provider_name, self.llm_spec.model, mcp_url,
@@ -910,17 +1383,44 @@ class Researcher:
             )
         logger.info("📦 %d Card(s) zu recherchieren.", len(targets))
 
-        for idx, (mid, path) in enumerate(targets, 1):
-            if idx > 1:
-                pause = getattr(self.args, 'pause', 1.0)
-                time.sleep(pause)
-                logger.info("    ⏸ Pause %.1fs vor nächster Card.", pause)
-            print(f"\n[{idx}/{len(targets)}] {mid}")
-            logger.info("[%d/%d] %s — %s", idx, len(targets), mid, path.name)
-            if tooluse:
-                self._research_tooluse_one(mid, path, idx, len(targets))
-            else:
-                self._research_one(mid, path, idx, len(targets))
+        max_cards = getattr(self.args, "max_cards", 0)
+        if max_cards > 0:
+            targets = targets[:max_cards]
+            logger.info("    🔢 Limitiert auf %d Cards pro Run.", max_cards)
+
+        llm_root = _server_root_url(self.llm_spec.base_url)
+        try:
+            for idx, (mid, path) in enumerate(targets, 1):
+                if idx > 1:
+                    pause = getattr(self.args, 'pause', 1.0)
+                    time.sleep(pause)
+                    logger.info("    ⏸ Pause %.1fs vor nächster Card.", pause)
+
+                if not _check_health(f"{llm_root}/health", "llama.cpp", timeout=5):
+                    logger.error("    ❌ llama.cpp nicht erreichbar — überspringe %s.", mid)
+                    self.summary.errors += 1
+                    continue
+
+                print(f"\n[{idx}/{len(targets)}] {mid}")
+                logger.info("[%d/%d] %s — %s", idx, len(targets), mid, path.name)
+                if tooluse:
+                    self._research_tooluse_one(mid, path, idx, len(targets))
+                else:
+                    self._research_one(mid, path, idx, len(targets))
+
+                _reset_llama_context(self.llm_spec.base_url)
+        finally:
+            if mcp_started_by_us:
+                _stop_mcp_server()
+
+        remaining = len(_discover_research_targets(self.args))
+        if remaining > 0:
+            logger.info(
+                "📊 Fortschritt: %d verarbeitet, %d noch offen. "
+                "Server neustarten und erneut laufen lassen.",
+                self.summary.processed, remaining,
+            )
+
         return self.summary
 
     def _research_one(self, mid: str, path: Path, idx: int, total: int) -> ResearchReport:
@@ -930,7 +1430,12 @@ class Researcher:
         if original is None:
             return report
 
+        original = _prefill_template_fields(original, self.template)
+
         pre_findings = _check_murks(original)
+        pre_findings.extend(_check_license_consistency(original))
+        pre_findings.extend(_check_community(original))
+        pre_findings.extend(_check_license_text_fields(original))
         report.findings.extend(pre_findings)
 
         if not self._apply_lock(original, path, report):
@@ -972,7 +1477,12 @@ class Researcher:
         if original is None:
             return report
 
+        original = _prefill_template_fields(original, self.template)
+
         pre_findings = _check_murks(original)
+        pre_findings.extend(_check_license_consistency(original))
+        pre_findings.extend(_check_community(original))
+        pre_findings.extend(_check_license_text_fields(original))
         report.findings.extend(pre_findings)
 
         if not self._apply_lock(original, path, report):
@@ -990,15 +1500,29 @@ class Researcher:
             '   {"tool_call": {"name": "web_search", "parameters": {"query": "..."}}}\n'
             "   ODER\n"
             '   {"tool_call": {"name": "fetch", "parameters": {"url": "...", "max_chars": 3000}}}\n'
-            "2. Ich liefere dir das Tool-Ergebnis zurück.\n"
+            "2. Ich liefere dir das Tool-Ergebnis zurueck.\n"
             "3. Wiederhole Schritt 1-2 bis du genug Informationen hast.\n"
             '4. Wenn du fertig bist, antworte AUSSCHLIESSLICH mit einem JSON-Objekt:\n'
             '{"findings": [...], "summary": "..."}\n\n'
+            "Pflicht-Pruefungen:\n"
+            "1. Lizenz: Recherchiere die korrekte Lizenz (z.B. Gemma 4 = Apache 2.0).\n"
+            "2. Community: Wenn community nicht in [Unsloth, mradermacher, HauhauCS, ARA-APEX],\n"
+            "   recherchiere auf HuggingFace ob eine Gruppe mit diesem Namen existiert.\n"
+            "   Wenn nicht gefunden: community=null, in known_limitations dokumentieren.\n"
+            "3. GGUF-Konsistenz: deployment_type=localweights, Preise=0.0 bei GGUF-Modellen.\n"
+            "4. Preise, Context-Window, Knowledge-Cutoff, Display-Name, Summary.\n"
+            "5. TEXTFELDER BEI LIZENZ-WECHSEL: Wenn sich die Lizenz aendert (erkennbar\n"
+            "   an Pre-Findings), MUESSEN ALLE Textfelder aktualisiert werden, die die\n"
+            "   alte Lizenz referenzieren: summary, strengths, known_limitations,\n"
+            "   judge_context_hint, weights_provenance_risk_rationale. Jedes dieser\n"
+            "   Felder braucht ein Finding mit einem KOMPLETT NEU GESCHRIEBENEN Text\n"
+            "   als suggested-Wert. Nur einzelne Woerter ersetzen reicht NICHT.\n\n"
             "Regeln:\n"
             "- Nutze web_search um Preise, Context-Window, Knowledge-Cutoff etc. zu finden.\n"
             "- Nutze fetch um konkrete URLs (Hersteller-Seiten, HF-Cards) zu lesen.\n"
             "- Antworte NUR mit JSON — kein Markdown-Fence, keine Kommentare, kein Text davor oder danach.\n"
             "- Erfinde keine Inhalte — alles muss aus Tool-Ergebnissen stammen.\n"
+            "- Fuer JEDES Finding MUSS ein 'suggested'-Wert angegeben werden.\n"
             "- WICHTIG: Deine Antwort MUSS ein gueltiges JSON-Objekt sein. Kein Fliesstext."
         )
 
@@ -1008,13 +1532,19 @@ class Researcher:
 
         try:
             for round_num in range(1, max_tool_rounds + 1):
-                card_json = json.dumps(original, ensure_ascii=False, indent=2)
+                text_card = {k: v for k, v in original.items() if k in _LLM_TEXT_FIELDS}
+                structural_card = {k: v for k, v in original.items() if k not in _LLM_TEXT_FIELDS}
                 parts = [
                     self.editor_prompt,
                     "",
-                    "## Zu recherchierende Card",
+                    "## Strukturelle Felder (vom Script validiert)",
                     "```json",
-                    card_json,
+                    json.dumps(structural_card, ensure_ascii=False, indent=2),
+                    "```",
+                    "",
+                    "## Zu pruefende Textfelder",
+                    "```json",
+                    json.dumps(text_card, ensure_ascii=False, indent=2),
                     "```",
                 ]
                 if pre_findings:
@@ -1082,7 +1612,7 @@ class Researcher:
             if final_parsed is None:
                 final_parsed = {}
 
-            self._extract_findings(final_parsed, report)
+            self._extract_findings(final_parsed, report, text_only=False)
             self._commit_card(original, final_parsed, path, report, backup_path)
         except (OSError, json.JSONDecodeError, openai.APIError, ValueError) as exc:  # noqa: BLE001
             self._handle_research_error(exc, path, report)
@@ -1127,7 +1657,10 @@ def _render_research_markdown_report(reports: list[ResearchReport], today: str) 
         if r.locked and not r.unlocked:
             lines.append("  - _🔓 Lock offen (profile_verified=false) — bei naechstem Lauf Resumption_")
         elif r.unlocked:
-            lines.append("  - _🔒 Lock geschlossen (profile_verified=true)_")
+            if r.profile_verified:
+                lines.append("  - _🔒 Lock geschlossen (profile_verified=true)_")
+            else:
+                lines.append("  - _🔒 Lock geschlossen (profile_verified=false) — error-Findings vorhanden_")
         lines.append("")
     return "\n".join(lines)
 
@@ -1395,6 +1928,8 @@ def main() -> int:
     parser.add_argument("--timeout-s", type=int, default=PER_CALL_TIMEOUT_S)
     parser.add_argument("--pause", type=float, default=1.0,
                         help="Pause in Sekunden zwischen jeder Card (Default: 1.0).")
+    parser.add_argument("--max-cards", type=int, default=0,
+                        help="Max. Cards pro Run (0=alle). Bei llama.cpp-Speicherproblemen nutzen.")
     parser.add_argument(
         "--tooluse", action="store_true",
         help="Tool-Use-Modus: LLM recherchiert via MCP (web_search/fetch).",
@@ -1413,7 +1948,7 @@ def main() -> int:
         if not _find_card(args.card).exists():
             raise SystemExit(f"❌ Card nicht gefunden: {args.card}")
     if args.card and args.mode == "research":
-        if not _find_card(args.card).exists():
+        if args.card.lower() != "all" and not _find_card(args.card).exists():
             raise SystemExit(f"❌ Card nicht gefunden: {args.card}")
     if args.write and args.dry_run:
         raise SystemExit("❌ --write und --dry-run sind nicht kombinierbar.")
