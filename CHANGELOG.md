@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v4.10.4] - 2026-06-21
+
+**CSV-Write-Through Bug: Atomare Schreibvorgänge + Existing-Row-Schutz. Provider-Config Cleanup.**
+
+### Fixed
+
+- **`utils/result_manager.py` `_write_to_csv()` — 3 Root Causes für Datenverlust:**
+  1. **Truncate-on-Open (`"w"`):** `_write_to_csv()` öffnete die CSV mit `"w"` (truncate). Bei Kill/Crash während des Full-Rewrites gingen ALLE Daten verloren — die Originaldatei war bereits gelöscht bevor die neue geschrieben war. **Fix:** Atomare Schreibvorgänge via `tempfile.mkstemp()` + `os.replace()`. Originaldatei bleibt intakt bis der Write komplett ist. Bei Fehler: Temp-Datei wird aufgeräumt.
+  2. **Re-Validierung aller Existing Rows:** Bestehende Zeilen wurden bei jedem Full-Rewrite durch die Hard-Fail-Guard-Validierung gejagt. Wenn sich die Validierungslogik änderte (z.B. neue Pflichtfelder), wurden alte, bereits gültige Zeilen verworfen. **Fix:** Nur neue Zeilen werden validiert. Existing Rows aus der CSV werden ungeprüft übernommen — sie waren gültig als sie geschrieben wurden.
+  3. **`_csv_header_matches()` — exakter Vergleich beibehalten:** Tolerantes Matching (Teilmengen-Vergleich) hätte im Append-Path Zeilen mit falscher Spaltenanzahl erlaubt. Full-Rewrite ist jetzt sicher durch atomare Writes → exakter Match ist korrekt.
+
+- **Root Cause für 10 Modelle mit 0 CSV-Einträgen:**
+  10 Modelle (llama-3.3-70b-versatile, llama-4-scout, nemotron-3-ultra, qwen3-32b, qwen3.5-397b, glm-4.7, glm-5-20260211, glm-5-turbo, glm-5.1, glm-5.2) hatten dispatch summaries + audit logs aber LEERE CSVs. Ursächlich: ein Full-Rewrite während eines Session-Wechsels (Kill/Restart) verwarf alle Daten. Die Audit-Logs enthalten alle Daten — Re-Run der Modelle oder `sanitize_benchmark_csvs.py`-Rekonstruktion möglich.
+
+- **`deepseek/deepseek-chat-v3.1` — abgebrochenes Modell:**
+  34/43 Tasks in CSV (Write-Through funktionierte korrekt). Fehlende Tasks: content_transformation 003-005, cultural_intelligence, tooluse. Audit-Logs vollständig für alle 34 abgeschlossenen Tasks.
+
+### Added
+
+- **4 neue Tests in `tests/test_result_manager_validates.py`:**
+  - `test_full_rewrite_preserves_existing_rows_not_revalidated` — Existing Rows werden beim Full-Rewrite nicht re-validiert
+  - `test_atomic_write_no_corruption_on_header_mismatch` — Bei Header-Mismatch: Originaldatei bleibt intakt
+  - `test_write_through_fast_path_single_result` — O(1) Append bei neuem (model, asset_id)
+  - `test_upsert_dedup_replaces_existing_row` — Gleiche (model, asset_id) Kombination wird ersetzt
+
+### Changed
+
+- **`config/provider_config.yaml` — Cleanup (-130 Zeilen):**
+  Redundante navigational/description Kommentare entfernt. 92 aktive Modelle + alle auskommentierten Modelle erhalten. Technische Kommentare (Hermes SWA, enable_thinking: false, MTP, Hybrid-Attention) beibehalten. Section-Header (`# ── Aktive Spark-Modelle ──`) ersetzen nummerierte Einträge.
+
+---
+
 ## [v4.10.3] - 2026-06-21
 
 **Token-Budget-Refactoring: SSoT-Helper `_resolve_request_tokens()` in `base.py`. Provider-Kaskade `max_tokens`. Design-Constraints dokumentiert.**

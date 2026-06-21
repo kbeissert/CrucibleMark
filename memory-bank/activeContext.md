@@ -14,6 +14,32 @@ to know what reference files exist.
 # Active Context
 ## Aktueller Status (2026-06-21)
 
+- **Session 29 abgeschlossen (2026-06-21) — CSV-Write-Through Bug + Abbruchverhalten + Provider-Config-Cleanup:**
+
+  1. **CSV-Write-Through Bug (v4.10.4) — 3 Root Causes behoben:**
+     - `_write_to_csv()` öffnete mit `"w"` (truncate) → bei Kill/Crash gingen ALLE CSV-Daten verloren
+     - Fix: Atomare Schreibvorgänge via `tempfile.mkstemp()` + `os.replace()`
+     - Bestehende Zeilen werden beim Full-Rewrite NICHT re-validiert (nur neue Zeilen → Hard-Fail-Guard)
+     - `_csv_header_matches()` exakter Vergleich beibehalten (korrekt für Append-Path)
+
+  2. **10 Modelle mit 0 CSV-Einträgen identifiziert:**
+     - llama-3.3-70b-versatile, llama-4-scout, nemotron-3-ultra, qwen3-32b, qwen3.5-397b, glm-4.7, glm-5-20260211, glm-5-turbo, glm-5.1, glm-5.2
+     - Dispatch summaries + audit logs vorhanden, CSV aber leer → Root Cause war Full-Rewrite-Überschreibung
+     - Re-Run oder `sanitize_benchmark_csvs.py`-Rekonstruktion möglich
+
+  3. **Abbruchverhalten analysiert:**
+     - `deepseek/deepseek-chat-v3.1` bei 13:33 mid-`content_transformation` abgebrochen
+     - Write-Through funktionierte korrekt: 34/43 Tasks in CSV
+     - Fehlende Tasks: content_transformation 003-005, cultural_intelligence, tooluse
+
+  4. **Provider-Config Cleanup:**
+     - `provider_config.yaml`: 768→638 Zeilen (−17%), redundante Kommentare entfernt
+     - 92 aktive Modelle + alle auskommentierten Modelle erhalten
+
+  5. **Tests:** 823/823 grün (4 neue Tests für atomare Writes + Existing-Row-Schutz)
+
+  6. **Dokumentation:** CHANGELOG v4.10.4, README Version Badge, CLAUDE.md (2 Pitfalls: atomare Writes + Daten-Pipeline)
+
 - **Session 28 abgeschlossen (2026-06-21) — Token-Budget-Refactoring + Design-Constraints + CSV-Gap-Analyse:**
 
   1. **Design-Constraints dokumentiert** (`systemPatterns.md`, `CLAUDE.md`):
@@ -43,6 +69,7 @@ to know what reference files exist.
 
 - **Offene Tasks:**
   - Re-Run fehlender Module für 9 Modelle (Hermes 4.3, Kimi K2.7, GLM 4.6, 5× Gemma-4)
+  - Re-Run oder Rekonstruktion für 10 Modelle mit 0 CSV-Einträgen (llama-3.3-70b-versatile, llama-4-scout, nemotron-3-ultra, qwen3-32b, qwen3.5-397b, glm-4.7, glm-5-20260211, glm-5-turbo, glm-5.1, glm-5.2)
   - Political Compass für alle 30 Modelle nachholen (deaktiviert im Auto-Benchmark)
 
 ---
@@ -246,7 +273,9 @@ Mögliche Anlässe für User-Aktivität (alle aus dem Backlog):
 
 ## Letzte Änderungen
 
-- **2026-06-20 (Session 26):** Spark Token-Management + Bugfixes. `provider_config.yaml`: `read_timeout: 2400`, `parallel: 2`, `context_length` für alle Spark-Modelle, `max_tokens: 16384` für Qwopus. `llamacpp_base.py`: Per-Model `max_tokens`-Cap, `read_timeout` aus Config, `think_content` Key-Mismatch Fix, `reasoning_tokens` Extraktion verbessert. Dokumentation: CLAUDE.md (3 Pitfalls), ARCHITECTURE.md, DEVELOPER_GUIDE.md, SETUP_GUIDE.md.
+- **2026-06-21 (Session 29):** CSV-Write-Through Bug Fix (v4.10.4). `result_manager.py`: atomare Writes via `tempfile.mkstemp()` + `os.replace()`, Existing Rows nicht re-validiert. `provider_config.yaml`: −130 Zeilen Cleanup. 4 neue Tests. 10 Modelle mit 0 CSV-Einträgen identifiziert. CHANGELOG v4.10.4, README, CLAUDE.md (2 Pitfalls). 823/823 Tests grün.
+- **2026-06-21 (Session 28):** Token-Budget-Refactoring (v4.10.3). `_resolve_request_tokens()` in `base.py`, 7 Provider migriert, Provider-Kaskade `max_tokens`, Token-Budget-Optimierung, Design-Constraints dokumentiert. Commit `d5f3a85`.
+- **2026-06-20 (Session 27):** Provider-Connector Thinking/Reasoning-Fix (v4.10.1). Alle 7 Provider-Connectors gefixt. Anthropic Streaming komplett neu. 2 pre-existing Test-Failures behoben. 819/819 Tests grün.
 - **2026-06-20 (Session 25, Runde 2):** Web-Export Nullwert-Entfernung. `web_export.py`: `_strip_none()` Helper — entfernt `None`-Werte rekursiv aus Dicts vor JSON-Export. Angewendet auf `_build_leaderboard_entry()`, `_build_compass_entry()`, `model_card`-Sub-Dict, `data.json`-Write. Neue Export-Felder: `profile_verified_by`, `last_modified_at`. Tests: 818/818 grün. 93 Modelle exportiert, 0 None-Werte.
 - **2026-06-19 (Session 24):** Card-Research MCP Tool-Use + Lizenz-Heuristik + GGUF-Konventionen + MCP Auto-Lifecycle. `manage_model_cards.py`: neue Imports (urllib, subprocess), Tool-Schemas, MCP-Helfer (`_parse_tool_call`, `_call_mcp_tool`, `_extract_tool_content`), `Researcher._research_tooluse_one()` (Multi-Step-Loop, max. 3 Runden), CLI-Flags `--tooluse` + `--mcp-url`. Makefile: `TOOLUSE=1` Flag. Lizenz-Heuristik: `_KNOWN_LICENSE_MAPPINGS`, `_KNOWN_COMMUNITY_GROUPS`, `_match_family()`, `_check_license_consistency()`, `_check_community()`, `_check_license_text_fields()` (Pre-Finding), `_check_license_cascade()` (Post-Merge), `_ensure_license_consistency()`. GGUF: `_is_gguf_model()`, `_ensure_gguf_conventions()`. `_commit_card()`: iteriert `report.findings`, `profile_verified` via finale-Karte-Validierung. MCP Auto-Lifecycle: `_ensure_mcp_running()`, `_stop_mcp_server()`, `_reset_llama_context()`, `_check_health()`. System-Prompt Regel 5: Textfelder bei Lizenz-Wechsel.
 - **2026-06-13 (Session 20 — Commits 994d447 + 8e02609 + 9c38063):** PC-Coverage vollständig. `web_export.py`: `card_id`-Feld + Datum-Fallback-Lookup. 28 Bias-Reviews generiert. Ghost-Model `z-ai/glm-5` (April-2026) via `--force`-Re-Run überschrieben. 2 Orphan-Vendor-Cards gelöscht (`alibaba_cloud.json`, `alibaba_group_qwen_team.json`), hauhaucs `card_subtype: "community"` gesetzt, Community-Filter in `web_export.py`. Web-Export: 24 → 18 Vendor-Einträge.

@@ -2,6 +2,39 @@
 
 Letzte Releases + aktueller Stand. Vollständige Historie: `reference/decisions-log.md`.
 
+### 2026-06-21 (Session 29) — CSV-Write-Through Bug Fix + Abbruchverhalten + Provider-Config-Cleanup
+
+**Auslöser:** User fragte nach dem Abbruchverhalten des Auto-Benchmarks. Analyse offenbarte 10 Modelle mit dispatch summaries + audit logs aber LEEREN CSVs. Root Cause: `_write_to_csv()` öffnete mit `"w"` (truncate) — bei Kill/Crash gingen alle Daten verloren.
+
+**Änderungen:**
+
+1. **`utils/result_manager.py` — Atomare Schreibvorgänge (v4.10.4):**
+   - `_write_to_csv()`: `tempfile.mkstemp()` + `os.replace()` statt `open("w")`
+   - Bestehende Zeilen werden NICHT re-validiert beim Full-Rewrite
+   - `_csv_header_matches()`: exakter Vergleich beibehalten (korrekt für Append-Path)
+
+2. **`config/provider_config.yaml` — Cleanup (-130 Zeilen):**
+   - Redundante navigational/description Kommentare entfernt
+   - 92 aktive Modelle + alle auskommentierten Modelle erhalten
+   - Technische Kommentare beibehalten
+
+3. **4 neue Tests in `tests/test_result_manager_validates.py`:**
+   - `test_full_rewrite_preserves_existing_rows_not_revalidated`
+   - `test_atomic_write_no_corruption_on_header_mismatch`
+   - `test_write_through_fast_path_single_result`
+   - `test_upsert_dedup_replaces_existing_row`
+
+**Dokumentation:** CHANGELOG v4.10.4, README Version Badge, CLAUDE.md (2 Pitfalls: atomare Writes + Daten-Pipeline).
+
+**Verifikation:** 823/823 Tests grün.
+
+**Kritische Funde:**
+- **10 Modelle mit 0 CSV-Einträgen:** llama-3.3-70b-versatile (Groq, 50 Audit-Files), llama-4-scout (Groq, 50), nemotron-3-ultra (OR, 44), qwen3-32b (Groq, 50), qwen3.5-397b (OR, 0 Audit), glm-4.7 (OR, 50), glm-5-20260211 (OR, 50), glm-5-turbo (OR, 50), glm-5.1 (OR, 0 Audit), glm-5.2 (OR, 49)
+- **deepseek/deepseek-chat-v3.1 (abgebrochen):** 34/43 Tasks in CSV. Write-Through funktionierte korrekt.
+- **CSV-Daten-Pipeline verifiziert:** `save_results()` = Upsert (ersetzt gleiche Keys), `data_loader.py` = dedup (latest per key), `consolidate_csv.py` = physische Reduktion auf 1 Zeile pro Key.
+
+---
+
 ### 2026-06-21 (Session 28) — Token-Budget-Refactoring + Design-Constraints + CSV-Gap-Analyse
 
 **Auslöser:** Auto-Benchmark für 30 fehlende Modelle lief langsam. Token-Fenster von 65536 bei Thinking-Modellen verursachte bis zu 85 Min/Task. CSV-Write-Bug: 9 Modelle mit fehlenden Einträgen trotz vollständiger Audit-Logs.

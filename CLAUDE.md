@@ -117,6 +117,8 @@ KONTEXT-ÜBERGABE:
 - **Judge Parser:** Bei Parse-Fehler `parse_success=False` (niemals Exception schlucken)
 - **CSV-Felder:** Neue dynamische Spalten in `result_manager.py` → `_get_updated_fieldnames` eintragen
 - **CSV-Korruption:** Audit-Logs niemals direkt in CSV schreiben — immer separate Dateien verwenden. Bei Korruption: `load_csv_robust()` mit `on_bad_lines="skip"` verwenden
+- **CSV-Write-Through atomar (v4.10.4):** `_write_to_csv()` nutzt `tempfile.mkstemp()` + `os.replace()` — Originaldatei bleibt intakt bei Kill/Crash. NIEMALS `"w"` (truncate) zum Überschreiben verwenden. Bestehende Zeilen werden beim Full-Rewrite NICHT re-validiert — nur neue Zeilen gehen durch Hard-Fail-Guard. `make backup` → tar (Snapshot) → `consolidate-csv` (Dedup latest-per-key) → bereinigte Live-CSV.
+- **CSV-Daten-Pipeline:** `save_results()` = Upsert (gleiche `(model, asset_id)` wird ersetzt). `data_loader.py` dedupliziert via `drop_duplicates(keep="last")` nach Timestamp. `consolidate_csv.py` reduziert physisch auf 1 Zeile pro Key. Alle drei Schichten sind idempotent.
 - **Token-Budget SSoT:** `resolve_token_budget()` in `utils/model_utils.py` — nie inline duplizieren
 - **`token_param_name` per Provider:** aus `benchmark_config.yaml` lesen, nie hardcoden
 - **ThinkingProbe Signal-C-Verbot:** Response-Länge ist kein CoT-Signal — nur Signal A (`<think>`-Tags) und Signal B (`reasoning_tokens > 0`) verwenden
