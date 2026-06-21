@@ -2,6 +2,28 @@
 
 ## Abgeschlossen
 
+### Provider-Connector SSoT + Judge Token Usage Context (v4.10.5 – 21.06.26)
+- [x] **`utils/providers/base.py` — 3 SSoT-Utilities:** `_extract_reasoning_tokens(usage)` (provider-agnostisch), `_extract_think_from_message(msg, field_names)` (generisch), `ThinkAccumulator` (Streaming-Helper). Ersetzen 5 identische lokale Methoden + 7 Streaming `think_parts`-Patterns.
+- [x] **9 Provider auf Shared Utilities umgestellt:** openai, anthropic, groq, xai, openrouter, google, mistral, ollama, llamacpp_base.
+- [x] **Streaming-Bugs gefixt:** OpenRouter fehlte `reasoning_tokens` im Streaming; llamacpp_base fehlte `reasoning_tokens` + `think_content` im Streaming.
+- [x] **Judge Token Usage Context (universal):** `judge_evaluator.py` baut `token_usage_context` (tokens_used, reasoning_tokens, token_budget, module_budget, truncated). `judge_runner.py` + `judge_prompt_builder.py` rendern `### TOKEN USAGE ###` Section. 7 Verifikations-Tests inline. 822/822 Tests grün.
+
+### CSV-Write-Through Bug Fix (v4.10.4 – 21.06.26)
+- [x] **`utils/result_manager.py` — Atomare Schreibvorgänge:** `_write_to_csv()` mit `tempfile.mkstemp()` + `os.replace()` statt `"w"` (truncate). Existing Rows werden NICHT re-validiert. 10 Modelle mit 0 CSV-Einträgen identifiziert (Root-Cause: Full-Rewrite-Überschreibung).
+- [x] **`config/provider_config.yaml` — Cleanup (-130 Zeilen):** Redundante Kommentare entfernt, 92 aktive Modelle erhalten.
+- [x] **4 neue Tests** in `test_result_manager_validates.py`. 822/822 Tests grün.
+
+### Token-Budget-Refactoring (v4.10.3 – 21.06.26)
+- [x] **`utils/providers/base.py` — `_resolve_request_tokens()` (SSoT):** Shared Helper für alle 7 API-Provider. Zweistufige Kaskade: `resolve_token_budget()` → Provider-Default `max_tokens` → Per-Model Override `model_max_tokens`.
+- [x] **7 Provider migriert:** openrouter, openai, anthropic, groq, xai, google, mistral.
+- [x] **Provider-Config:** 7 Provider mit `max_tokens` Default, OpenRouter mit Per-Model Overrides.
+- [x] **Token-Budget-Optimierung:** code_quality 65536→20000, cultural_intelligence 1000→3000, documentation_quality 6000→8000.
+- [x] **Design-Constraints dokumentiert** in `systemPatterns.md` + `CLAUDE.md`. 819/819 Tests grün.
+
+### Provider-Connector Thinking/Reasoning-Fix (v4.10.1 – 20.06.26)
+- [x] **Alle 7 Provider-Connectors:** `reasoning_tokens`, `think_content`, `usage` jetzt konsistent in `last_response_metadata`. Anthropic Streaming komplett neu implementiert.
+- [x] **Card-Cleanup:** 3 Cards mit fehlenden Sampling-Keys ergänzt, 1 Taxonomy-Placeholder entfernt. 819/819 Tests grün.
+
 ### Web-Export Nullwert-Entfernung (v4.10.0 – 20.06.26)
 - [x] **`scripts/web_export.py` — `_strip_none()`** — Entfernt `None`-Werte rekursiv aus Dicts vor JSON-Export. Angewendet auf `_build_leaderboard_entry()`, `_build_compass_entry()`, `model_card`-Sub-Dict, `data.json`-Write.
 - [x] **Neue Export-Felder:** `profile_verified_by`, `last_modified_at` (waren im Template als web_export-consumer markiert, fehlten im Export).

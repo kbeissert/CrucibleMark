@@ -14,7 +14,7 @@ to know what reference files exist.
 # Active Context
 ## Aktueller Status (2026-06-21)
 
-- **Session 29 abgeschlossen (2026-06-21) — CSV-Write-Through Bug + Abbruchverhalten + Provider-Config-Cleanup:**
+- **Session 29 abgeschlossen (2026-06-21) — CSV-Write-Through Bug + Provider-Connector SSoT + Judge Token Usage + Provider-Config-Cleanup:**
 
   1. **CSV-Write-Through Bug (v4.10.4) — 3 Root Causes behoben:**
      - `_write_to_csv()` öffnete mit `"w"` (truncate) → bei Kill/Crash gingen ALLE CSV-Daten verloren
@@ -27,18 +27,31 @@ to know what reference files exist.
      - Dispatch summaries + audit logs vorhanden, CSV aber leer → Root Cause war Full-Rewrite-Überschreibung
      - Re-Run oder `sanitize_benchmark_csvs.py`-Rekonstruktion möglich
 
-  3. **Abbruchverhalten analysiert:**
+  3. **Provider-Connector SSoT (v4.10.5):**
+     - 3 Reasoning/Thinking-Extraktions-Utilities in `utils/providers/base.py`:
+       - `_extract_reasoning_tokens(usage)` — provider-agnostisch (completion_tokens_details → output_tokens_details → reasoning_tokens)
+       - `_extract_think_from_message(msg, field_names)` — generisch
+       - `ThinkAccumulator` — Streaming-Helper (ersetzt `think_parts: list[str]`)
+     - 9 Provider migriert (openai, anthropic, groq, xai, openrouter, google, mistral, ollama, llamacpp_base)
+     - Streaming-Bugs gefixt: OpenRouter fehlte `reasoning_tokens`, llamacpp_base fehlte beides
+
+  4. **Judge Token Usage Context (v4.10.5):**
+     - LLM-Judge erhält universelle Token-Verbrauchsinformation für JEDE Aufgabe:
+       `tokens_used`, `reasoning_tokens`, `token_budget`, `module_budget`, `truncated`
+     - Neue `### TOKEN USAGE ###` Section im Judge-System-Prompt
+     - Judge kann Budget-Compliance, Reasoning-Overhead, Resource Discipline bewerten
+
+  5. **Abbruchverhalten analysiert:**
      - `deepseek/deepseek-chat-v3.1` bei 13:33 mid-`content_transformation` abgebrochen
      - Write-Through funktionierte korrekt: 34/43 Tasks in CSV
-     - Fehlende Tasks: content_transformation 003-005, cultural_intelligence, tooluse
 
-  4. **Provider-Config Cleanup:**
+  6. **Provider-Config Cleanup:**
      - `provider_config.yaml`: 768→638 Zeilen (−17%), redundante Kommentare entfernt
      - 92 aktive Modelle + alle auskommentierten Modelle erhalten
 
-  5. **Tests:** 823/823 grün (4 neue Tests für atomare Writes + Existing-Row-Schutz)
+  7. **Tests:** 822/822 grün (4 neue Tests für atomare Writes + Existing-Row-Schutz, 1 pre-existing deselect)
 
-  6. **Dokumentation:** CHANGELOG v4.10.4, README Version Badge, CLAUDE.md (2 Pitfalls: atomare Writes + Daten-Pipeline)
+  8. **Dokumentation:** CHANGELOG v4.10.3/v4.10.4/v4.10.5, README Version Badge + Recent Versions, CLAUDE.md (Provider-Connector SSoT Pitfall + 2 CSV Pitfalls)
 
 - **Session 28 abgeschlossen (2026-06-21) — Token-Budget-Refactoring + Design-Constraints + CSV-Gap-Analyse:**
 
@@ -273,7 +286,7 @@ Mögliche Anlässe für User-Aktivität (alle aus dem Backlog):
 
 ## Letzte Änderungen
 
-- **2026-06-21 (Session 29):** CSV-Write-Through Bug Fix (v4.10.4). `result_manager.py`: atomare Writes via `tempfile.mkstemp()` + `os.replace()`, Existing Rows nicht re-validiert. `provider_config.yaml`: −130 Zeilen Cleanup. 4 neue Tests. 10 Modelle mit 0 CSV-Einträgen identifiziert. CHANGELOG v4.10.4, README, CLAUDE.md (2 Pitfalls). 823/823 Tests grün.
+- **2026-06-21 (Session 29):** Provider-Connector SSoT (v4.10.5) — 3 Utilities in `base.py` (`_extract_reasoning_tokens`, `_extract_think_from_message`, `ThinkAccumulator`), 9 Provider migriert, Streaming-Bugs gefixt. Judge Token Usage Context (v4.10.5) — universelle Token-Verbrauchsinformation für Judge. CSV-Write-Through Bug Fix (v4.10.4) — atomare Writes via tempfile+replace, 10 Modelle mit 0 CSV identifiziert. `provider_config.yaml`: −17% Cleanup. 822/822 Tests grün.
 - **2026-06-21 (Session 28):** Token-Budget-Refactoring (v4.10.3). `_resolve_request_tokens()` in `base.py`, 7 Provider migriert, Provider-Kaskade `max_tokens`, Token-Budget-Optimierung, Design-Constraints dokumentiert. Commit `d5f3a85`.
 - **2026-06-20 (Session 27):** Provider-Connector Thinking/Reasoning-Fix (v4.10.1). Alle 7 Provider-Connectors gefixt. Anthropic Streaming komplett neu. 2 pre-existing Test-Failures behoben. 819/819 Tests grün.
 - **2026-06-20 (Session 25, Runde 2):** Web-Export Nullwert-Entfernung. `web_export.py`: `_strip_none()` Helper — entfernt `None`-Werte rekursiv aus Dicts vor JSON-Export. Angewendet auf `_build_leaderboard_entry()`, `_build_compass_entry()`, `model_card`-Sub-Dict, `data.json`-Write. Neue Export-Felder: `profile_verified_by`, `last_modified_at`. Tests: 818/818 grün. 93 Modelle exportiert, 0 None-Werte.

@@ -1,32 +1,21 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-06-20
-**Current Version:** 4.10.0 — Card-Research Force-Run: 110/110 Cards profile_verified + Template-Cleanup
+**Last Updated:** 2026-06-21
+**Current Version:** 4.10.5 — Provider-Connector SSoT-Utilities + Judge Token Usage Context
 **Status:** ✅ Production-Ready
 
 > **Hinweis:** Die Executive Summary weiter unten historisch auf v4.6.1.
-> Die Sub-Versionen v4.6.2–v4.10.0 sind im CHANGELOG.md vollständig dokumentiert.
+> Die Sub-Versionen v4.6.2–v4.10.5 sind im CHANGELOG.md vollständig dokumentiert.
 > Dieser Header wird bei jedem Phase-Commit nachgezogen,
 > die Executive Summary nur bei Major-Milestones.
 >
-> **Aktueller Stand (v4.10.0):**
-> - **Web-Export Nullwert-Entfernung** (v4.10.0): `_strip_none()` entfernt `None`-Werte rekursiv aus allen exportierten Dicts. 93 Modelle exportiert, 0 None-Werte. Neue Export-Felder: `profile_verified_by`, `last_modified_at`. 818/818 Tests grün.
-> - **Card-Research Force-Run** (v4.10.0): 110/110 Cards `profile_verified=true`. Template von 42 auf 37 required Felder reduziert (6 → optional). `MODEL=all` Support, `MAX_CARDS=N` für Batch-Processing. Thinking-Probe-Placeholder für 9 lokale Modelle manuell gesetzt (Ollama entfernt).
-> - **Vendor Card Template v1.1.0** (v4.9.3): Neues Optionalfeld `description` (240–480 Zeichen, Ziel 360, Deutsch, Konsumenten: web_export + review). Semantisch getrennt von `privacy_note`. Drei Fehler in `provider_card_verification`-Prompt korrigiert (Pfad + Feldname).
-> - **Terminologie-Refactoring Provider → Vendor** (v4.9.1): 50 Dateien umbenannt, `vendor_id` als kanonischer Feldname.
-> - **Card-Datenpflege-System vollständig implementiert** (v4.9.0)
-> - Vendor-Kanonisierung: 13 kanonische Hersteller in `classification_taxonomy.json`, `_normalize_vendor()` in `web_export.py`, `🏭`-Warnungen in `verify_model_cards.py`
-> - `profile_verified` / `profile_verified_at`: 2 neue optionale Felder in `card_template_model.yaml`; 119 Model Card JSONs per `jq` migriert; `🔍`-Warnungen in `verify_model_cards.py`
-> - `config/editor_prompts.yaml`: Neuer Prompt `model_card_verification` für redaktionelle LLM-gestützte Card-Verifikation
-> - `docs/CARD_MANAGEMENT.md`: 3 neue Sektionen (Vendor-Kanonisierung, profile_verified, Editor-Prompts)
-> - v4.8.6: Robustness-Fixes — Judge-Skip-Coverage, Draft-Card-Warning, ToolUse P1/P2 als Card-SSoT
-> - v4.8.5: Pricing-Update: 11 Modellkarten auf Stand Juni 2026. Neues `scripts/update_model_pricing.py`.
-> - v4.8.4: Backup-System-Audit abgeschlossen (cleanup_reviews SSoT, Test-Lücke, BACKUP_STRATEGY.md)
-> - v4.8.3: ToolUse P1/P2 NaN-Bug behoben — Flat-Column-Schema, CRUCIBLE_DELEGATE_PARENT, MCP idle_timeout
-> - v4.8.0: Per-Modell `server_ready_timeout_sec` in llamacpp_base (Split-GGUF-Fix)
-> - v4.7.4: Heartbeat konfigurierbar — `benchmark_config.yaml → heartbeat:`
-> - v4.7.3: Thinking-SSoT + Runner-Consumer-Anbindung
-> - v4.7.0: 4-Phasen-Refactoring der Kern-Skripte (Phase 30)
+> **Aktueller Stand (v4.10.5):**
+> - **Provider-Connector SSoT-Utilities** (v4.10.5): 3 Reasoning/Thinking-Extraktions-Utilities in `utils/providers/base.py`: `_extract_reasoning_tokens()`, `_extract_think_from_message()`, `ThinkAccumulator`. 9 Provider migriert. Streaming-Bugs in OpenRouter + llamacpp gefixt.
+> - **Judge Token Usage Context** (v4.10.5): LLM-Judge erhält universelle Token-Verbrauchsinformation (tokens_used, reasoning_tokens, token_budget, module_budget, truncated) für JEDE Aufgabe. Neue `### TOKEN USAGE ###` Section im Judge-System-Prompt.
+> - **CSV-Write-Through Bug Fix** (v4.10.4): Atomare Schreibvorgänge via `tempfile.mkstemp()` + `os.replace()`. 10 Modelle mit 0 CSV-Einträgen identifiziert (Root-Cause: Full-Rewrite-Überschreibung bei Kill/Crash). Existing Rows werden NICHT re-validiert.
+> - **Token-Budget-Refactoring** (v4.10.3): SSoT `_resolve_request_tokens()` in `base.py`, 7 Provider migriert, Provider-Kaskade `max_tokens`, Token-Budget-Optimierung (code_quality 65536→20000, cultural_intelligence 1000→3000, documentation_quality 6000→8000).
+> - **Provider-Connector Thinking/Reasoning-Fix** (v4.10.1): Alle 7 Provider-Connectors extrahieren jetzt konsistent `reasoning_tokens`, `think_content` und `usage`. Anthropic Streaming komplett neu implementiert.
+> - **Card-Research Force-Run** (v4.10.0): 110/110 Cards `profile_verified=true`. Template von 42 auf 37 required Felder reduziert (6 → optional). `MODEL=all` Support, `MAX_CARDS=N` für Batch-Processing.
 
 
 ---

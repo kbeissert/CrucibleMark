@@ -2,7 +2,48 @@
 
 Letzte Releases + aktueller Stand. Vollständige Historie: `reference/decisions-log.md`.
 
-### 2026-06-21 (Session 29) — CSV-Write-Through Bug Fix + Abbruchverhalten + Provider-Config-Cleanup
+### 2026-06-21 (Session 29, Runde 2) — Provider-Connector SSoT + Judge Token Usage Context (v4.10.5)
+
+**Auslöser:** Provider-Connector-Audit (v4.10.1) ergab: Extraktions-Utilities für `reasoning_tokens`/`think_content` waren über 9 Provider dupliziert. Streaming-Bugs in OpenRouter + llamacpp_base. Judge sah nie den tatsächlichen Token-Verbrauch pro Aufgabe.
+
+**Änderungen:**
+
+1. **`utils/providers/base.py` — 3 SSoT-Utilities:**
+   - `_extract_reasoning_tokens(usage)` — Provider-agnostisch. Prüft: `completion_tokens_details` (OpenAI-kompatibel) → `output_tokens_details` (Anthropic) → `usage.reasoning_tokens` (Mistral). Ersetzt 5 identische lokale Methoden.
+   - `_extract_think_from_message(msg, field_names)` — Generisch. Versucht `getattr(msg, field)` für jedes Feld. Ersetzt identische Inline-Patterns in 4 Providern.
+   - `ThinkAccumulator` — Streaming-Helper. `add(chunk)` → `content`/`has_content`. Ersetzt `think_parts: list[str]` + `"".join(think_parts)` in 7 Streaming-Pfaden.
+
+2. **9 Provider auf Shared Utilities umgestellt:**
+   | Provider | Reasoning | Think Msg | ThinkAcc |
+   |---|---|---|---|
+   | openai.py | Base | ✅ | ✅ |
+   | anthropic.py | Base | eigene `_extract_think_content` | ✅ |
+   | groq.py | Base | ✅ | ✅ |
+   | xai.py | Base | ✅ | ✅ |
+   | openrouter.py | Inline→Base | ✅ | ✅ |
+   | google.py | Inline (`thoughts_token_count`) | candidate parts | ✅ |
+   | mistral.py | Inline→Base | Chunk-Liste | — (kein Streaming) |
+   | ollama.py | Inline (`eval_count`) | Inline (`msg.thinking`) | — (eigene Logik) |
+   | llamacpp_base.py | Inline→Base + Fallback | Inline (`reasoning_content`) | ✅ |
+
+3. **Streaming-Bugs gefixt:**
+   - `openrouter.py`: `reasoning_tokens` wurde im Streaming-Pfad nie extrahiert
+   - `llamacpp_base.py`: Streaming ignorierte `delta.reasoning_content` (llama.cpp-natives Thinking-Feld)
+
+4. **Judge Token Usage Context (universal):**
+   - `judge_evaluator.py`: Baut `token_usage_context` dict aus result (tokens_used, reasoning_tokens, token_budget, module_budget, truncated)
+   - `judge_runner.py`: Neuer `token_usage_context` Parameter in `score()`
+   - `judge_prompt_builder.py`: Neue `### TOKEN USAGE ###` Section mit Budget, Verbrauch, Thinking-Ratio, Truncation, Compliance-Guidance
+   - Bestehende 3 Kontexte (token_budget_context, truncation_context, small_model_token_context) bleiben erhalten
+   - 7 inline Verifikations-Tests bestanden
+
+**Dokumentation:** CHANGELOG v4.10.5, README (Recent Versions + Footer), PROJECT_STATUS, REF_TODO, activeContext, progress, systemPatterns (SSoT-Brücken).
+
+**Verifikation:** 822/822 Tests grün (1 pre-existing deselect: `test_no_forbidden_placeholder`).
+
+---
+
+### 2026-06-21 (Session 29) — CSV-Write-Through Bug Fix + Abbruchverhalten + Provider-Config-Cleanup (v4.10.4)
 
 **Auslöser:** User fragte nach dem Abbruchverhalten des Auto-Benchmarks. Analyse offenbarte 10 Modelle mit dispatch summaries + audit logs aber LEEREN CSVs. Root Cause: `_write_to_csv()` öffnete mit `"w"` (truncate) — bei Kill/Crash gingen alle Daten verloren.
 

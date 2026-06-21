@@ -163,9 +163,9 @@ Tiefergehende Einblicke in die Methodik findest du im `docs/` Verzeichnis:
 
 Die vollständige Versionshistorie steht in [CHANGELOG.md](CHANGELOG.md). Kurzfassung der letzten drei Releases:
 
-- **v4.10.0 (2026-06-20) — Card-Research Force-Run: 110/110 Cards `profile_verified=true` + Template-Cleanup:** Template von 42 auf 37 required Felder reduziert (6 → optional: `params_total_b`, `params_active_b`, `knowledge_cutoff`, `license_url`, `input_price_per_1m`, `output_price_per_1m`). `MODEL=all` Support für Batch-Processing. `MAX_CARDS=N` limitiert pro Run. 9 lokale Modelle: Thinking-Probe-Placeholder manuell ersetzt (Ollama entfernt). `probe_thinking.py` Path-Bug gefixt.
-- **v4.9.3 (2026-06-12) — Vendor Card Template v1.1.0: `description`-Feld + Editor-Prompt-Fix:** Neues Optionalfeld `description` in `config/card_template_vendor.yaml` für redaktionelle Organisationsbeschreibungen (240–480 Zeichen, Ziel 360, Deutsch). Semantisch getrennt von `privacy_note` (Compliance). Konsumenten: `web_export`, `review`. Drei Fehler im `provider_card_verification`-Prompt korrigiert: falscher Verzeichnispfad (`provider_cards/` → `vendor_cards/`), Feldname `provider_id` → `vendor_id` (2 Stellen). 803/803 Tests grün.
-- **v4.9.1 (2026-06-12) — Terminologie-Refactoring: Provider Cards → Vendor Cards:** 50 Dateien umbenannt (`provider_cards/` → `vendor_cards/`, `card_template_provider.yaml` → `card_template_vendor.yaml`, `provider_id` → `vendor_id`). SSoT-Verknüpfung Taxonomy → Vendor Cards. 803/803 Tests grün.
+- **v4.10.5 (2026-06-21) — Provider-Connector SSoT-Utilities + Judge Token Usage Context:** 3 Reasoning/Thinking-Extraktions-Utilities in `base.py` (`_extract_reasoning_tokens()`, `_extract_think_from_message()`, `ThinkAccumulator`). 9 Provider migriert. Streaming-Bugs in OpenRouter + llamacpp gefixt. LLM-Judge erhält universelle Token-Verbrauchsinformation (tokens_used, reasoning_tokens, token_budget, module_budget, truncated) für JEDE Aufgabe. 822/822 Tests grün.
+- **v4.10.4 (2026-06-21) — CSV-Write-Through Bug Fix: Atomare Schreibvorgänge + Existing-Row-Schutz:** `_write_to_csv()` nutzt `tempfile.mkstemp()` + `os.replace()` statt `"w"` (truncate). 10 Modelle mit 0 CSV-Einträgen identifiziert (Root-Cause: Full-Rewrite-Überschreibung). Bestehende Zeilen werden beim Rewrite NICHT re-validiert. Provider-Config-Cleanup (−17%). 4 neue Tests. 822/822 Tests grün.
+- **v4.10.3 (2026-06-21) — Token-Budget-Refactoring: SSoT `_resolve_request_tokens()` + Provider-Kaskade:** Alle 7 API-Provider nutzen Shared Helper in `base.py`. Zweistufige Provider-Kaskade: Provider-Default `max_tokens` → Per-Model Override `model_max_tokens`. Token-Budget-Optimierung (code_quality 65536→20000, cultural_intelligence 1000→3000, documentation_quality 6000→8000). Design-Constraints dokumentiert. 819/819 Tests grün.
 
 ---
 
@@ -173,5 +173,5 @@ Die vollständige Versionshistorie steht in [CHANGELOG.md](CHANGELOG.md). Kurzfa
 
 - **Maintainer:** kbeissert
 - **Repository:** [github.com/kbeissert/cruciblemark](https://github.com/kbeissert/cruciblemark)
-- **Status:** ✅ Production-Ready (v4.10.0)
+- **Status:** ✅ Production-Ready (v4.10.5)
 

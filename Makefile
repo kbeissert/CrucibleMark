@@ -70,6 +70,11 @@ help:
 	@printf "\033[1;32mCleanup & Maintenance\033[0m\n"
 	@printf "  %-25s %s\n" "backup"          "Snapshot-Pipeline (Tar + Clean)"
 	@printf "  %-25s %s\n" "clean-all"       "Cache/CSV Bereinigung"
+	@printf "  %-25s %s\n" "clean-model"     "Alle Spuren + Card loeschen (MODEL=<id>)"
+	@printf "  %-25s %s\n" "clean-module"    "Alle Spuren eines Moduls loeschen (MODULE=<key>)"
+	@printf "  %-25s %s\n" "clean-csv"       "CSV korrigieren/bereinigen"
+	@printf "  %-25s %s\n" "clean-runs"      "Run-Zeitraum bereinigen (standard: 5 behalten)"
+	@printf "  %-25s %s\n" "clean-reviews"   "Reviews bereinigen"
 
 
 # === BENCHMARKING ===

@@ -45,6 +45,8 @@ Diese Eigenschaften sind **bewusste Design-Entscheidungen** für faire, reproduz
 | **Tri-State Tool-Use** | Card `supports_tool_use`: `true`/`false`/`"untested"` | `normalize_supports_tool_use()` Helper |
 | **Card-Research MCP Tool-Use** | `manage_model_cards.py` → MCP Server `:8765` (JSON-RPC 2.0 HTTP POST) | `--tooluse` + `--mcp-url`; `_call_mcp_tool()` POST `tools/call`; `_parse_tool_call()` extrahiert `{"tool_call": {...}}`; `_extract_tool_content()` liest Transcript |
 | **CSV-Daten-Pipeline (v4.10.4)** | `result_manager.save_results()` = Upsert → `data_loader.py` dedup → `consolidate_csv.py` physische Reduktion | Atomare Writes via `tempfile.mkstemp()` + `os.replace()`. Existing Rows werden NICHT re-validiert. `make backup` → tar → consolidate → bereinigte CSV. Alle drei Schichten idempotent. |
+| **Provider-Thinking-Extraktion (v4.10.5)** | `utils/providers/base.py`: `_extract_reasoning_tokens()`, `_extract_think_from_message()`, `ThinkAccumulator` | 9 Provider nutzen Shared Utilities statt Inline-Code. Streaming + Non-Streaming. Provider-spezifische Felder (Google `thoughts_token_count`, Ollama `eval_count`) bleiben inline. |
+| **Judge Token Usage Context (v4.10.5)** | `judge_evaluator.py` baut `token_usage_context` → `judge_runner.py` → `judge_prompt_builder.py` | Universell für alle Modelle: `tokens_used`, `reasoning_tokens`, `token_budget`, `module_budget`, `truncated`. Neue `### TOKEN USAGE ###` Section im Judge-System-Prompt. |
 
 **Code-Beispiele und Felder:** `reference/data-schema.md`. Pitfalls: `reference/pitfall-diagnoses.md`.
 
@@ -97,6 +99,7 @@ Aktivierung: `value` bool, `reason` nicht whitespace-only, `active_until` in der
 - **Card-Research Batch-Processing (2026-06-20):** `MAX_CARDS=N` limitiert pro Run. Ohne `FORCE` werden nur unverifizierte Cards verarbeitet — Batch-Processing funktioniert (10 pro Run, nächster Run nächste 10). Mit `FORCE=1` werden immer die ersten N alphabetischen Cards verarbeitet (kein Skip). `MODEL=all` ist Spezialwert für "alle Cards".
 - **Web-Export None-Stripping (2026-06-20):** `_strip_none()` in `web_export.py` entfernt `None`-Werte rekursiv vor JSON-Export. Verhindert `"field": null` im Web-Payload. Felder mit Wert (`0`, `False`, `""`, `[]`) bleiben erhalten. `model_card: null` wird komplett entfernt (Key fehlt statt null).
 - **CSV-Write-Through atomar (v4.10.4, 2026-06-21):** `_write_to_csv()` nutzt `tempfile.mkstemp()` + `os.replace()` — Originaldatei bleibt intakt bei Kill/Crash. NIEMALS `"w"` (truncate) verwenden. Bestehende Zeilen beim Full-Rewrite NICHT re-validieren — nur neue Zeilen durch Hard-Fail-Guard. 10 Modelle mit 0 CSV-Einträgen waren Root Cause für diesen Fix.
+- **Provider-Thinking-Extraktion SSoT (v4.10.5, 2026-06-21):** `_extract_reasoning_tokens()`, `_extract_think_from_message()`, `ThinkAccumulator` in `base.py`. NIEMALS eigene Inline-Extraction schreiben — immer die Base-Utilities verwenden. Provider-spezifische Felder (Google `thoughts_token_count`, Ollama `eval_count`) bleiben inline.
 
 Whenever a task involves refactoring, unexpected behavior, or
 architecture changes: automatically load reference/pitfall-diagnosis.md before proposing any solution.
