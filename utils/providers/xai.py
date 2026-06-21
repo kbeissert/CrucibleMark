@@ -22,6 +22,16 @@ except ImportError:
     OpenAI = None
 # Configure logging
 logger = logging.getLogger(__name__)
+
+# Einige Model-IDs werden intern mit Underscore gespeichert (kanonische ID),
+# die xAI API erwartet jedoch die Punkt-Schreibweise.
+# Wird in query() vor dem API-Call aufgelöst.
+_XAI_ID_ALIASES: dict[str, str] = {
+    "grok-4_20-0309-reasoning": "grok-4.20-0309-reasoning",
+    "grok-4_20-0309-non-reasoning": "grok-4.20-0309-non-reasoning",
+    "grok-4_3": "grok-4.3",
+}
+
 from utils.providers.base import BaseProviderClient
 class XAIClient(BaseProviderClient):
     """XAI Provider Client"""
@@ -92,8 +102,10 @@ class XAIClient(BaseProviderClient):
             import logging
             logger = logging.getLogger(__name__)
             _system = kwargs.get("system")
+            # Kanonische Underscore-IDs auf die von der API erwartete Punkt-Form mappen
+            api_model = _XAI_ID_ALIASES.get(model, model)
             params = {
-                "model": model,
+                "model": api_model,
                 "messages": (
                     [{"role": "system", "content": _system}] if _system else []
                 ) + [{"role": "user", "content": prompt}],
@@ -114,6 +126,8 @@ class XAIClient(BaseProviderClient):
             )
             if stream_handler:
                 full_content = ""
+                think_parts: list[str] = []
+                stream_usage = None
                 self.last_response_metadata = {
                     "token_limit_fallback": fallback_triggered,
                     "token_limit_used": used_max_tokens,
@@ -125,14 +139,33 @@ class XAIClient(BaseProviderClient):
                         self.last_response_metadata["model"] = chunk.model
                     if chunk.choices and hasattr(chunk.choices[0], "finish_reason") and chunk.choices[0].finish_reason:
                         self.last_response_metadata["finish_reason"] = chunk.choices[0].finish_reason
+                    # Usage (falls verfügbar)
+                    if hasattr(chunk, "usage") and chunk.usage:
+                        stream_usage = chunk.usage
                     if chunk.choices:
-                        delta = chunk.choices[0].delta.content
-                        if delta:
-                            stream_handler(delta)
-                            full_content += delta
+                        delta = chunk.choices[0].delta
+                        if hasattr(delta, "content") and delta.content:
+                            stream_handler(delta.content)
+                            full_content += delta.content
+                        # Reasoning/Thinking extrahieren
+                        reasoning_piece = getattr(delta, "reasoning", None) or getattr(delta, "reasoning_content", None)
+                        if reasoning_piece:
+                            think_parts.append(str(reasoning_piece))
+                # Post-stream metadata
+                if stream_usage:
+                    self.last_response_metadata["usage"] = stream_usage
+                    rt = self._extract_reasoning_tokens(stream_usage)
+                    if rt is not None:
+                        self.last_response_metadata["reasoning_tokens"] = rt
+                if think_parts:
+                    self.last_response_metadata["think_content"] = "".join(think_parts)
                 return full_content
             else:
                 raw_text = response.choices[0].message.content
+                msg = response.choices[0].message if response.choices else None
+                reasoning = None
+                if msg:
+                    reasoning = getattr(msg, "reasoning", None) or getattr(msg, "reasoning_content", None) or getattr(msg, "think_content", None)
                 self.last_response_metadata = {
                     "token_limit_fallback": fallback_triggered,
                     "token_limit_used": used_max_tokens,
@@ -141,13 +174,28 @@ class XAIClient(BaseProviderClient):
                     "finish_reason": response.choices[0].finish_reason if response.choices else None,
                 }
                 if hasattr(response, "usage") and response.usage:
-                    self.last_response_metadata["usage"] = response.usage
+                    usage = response.usage
+                    self.last_response_metadata["usage"] = usage
+                    rt = self._extract_reasoning_tokens(usage)
+                    if rt is not None:
+                        self.last_response_metadata["reasoning_tokens"] = rt
+                if reasoning:
+                    self.last_response_metadata["think_content"] = reasoning
                 return raw_text if raw_text else ""
         except Exception as e:
             import logging
             logger = logging.getLogger(__name__)
             logger.error("XAI API Error: %s", e)
             raise e
+    def _extract_reasoning_tokens(self, usage) -> int | None:
+        """Extrahiere reasoning_tokens aus OpenAI-kompatiblem usage-Objekt."""
+        if not usage:
+            return None
+        details = getattr(usage, "completion_tokens_details", None)
+        if details:
+            return getattr(details, "reasoning_tokens", None)
+        return None
+
     def get_available_models(self) -> list:
         try:
             models = self.client.models.list()

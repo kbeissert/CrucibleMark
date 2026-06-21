@@ -14,6 +14,25 @@ except ImportError:
 # Configure logging
 logger = logging.getLogger(__name__)
 
+# Einige Model-IDs werden intern mit Underscore gespeichert (kanonische ID),
+# die OpenRouter API erwartet jedoch die Punkt-Schreibweise.
+# Wird in query() vor dem API-Call aufgelöst.
+_OPENROUTER_ID_ALIASES: dict[str, str] = {
+    "z-ai/glm_5_2": "z-ai/glm-5.2",
+    "z-ai/glm_5_1-20260406": "z-ai/glm-5.1-20260406",
+    "z-ai/glm_4_7": "z-ai/glm-4.7",
+    "z-ai/glm_4_6": "z-ai/glm-4.6",
+    "moonshotai/kimi-k2_7-code": "moonshotai/kimi-k2.7-code",
+    "moonshotai/kimi-k2_6": "moonshotai/kimi-k2.6",
+    "moonshotai/kimi-k2_5-0127": "moonshotai/kimi-k2.5-0127",
+    "deepseek/deepseek-chat-v3_1": "deepseek/deepseek-chat-v3.1",
+    "deepseek/deepseek-v3_2": "deepseek/deepseek-v3.2",
+    "minimax/minimax-m2_7-20260318": "minimax/minimax-m2.7-20260318",
+    "qwen/qwen3_7-max": "qwen/qwen3.7-max",
+    "qwen/qwen3_6-plus": "qwen/qwen3.6-plus",
+    "qwen/qwen3_5-397b-a17b": "qwen/qwen3.5-397b-a17b",
+}
+
 from utils.providers.base import BaseProviderClient
 
 
@@ -90,8 +109,10 @@ class OpenRouterClient(BaseProviderClient):
         """Query OpenRouter API"""
         try:
             _system = kwargs.get("system")
+            # Kanonische Underscore-IDs auf die von der API erwartete Punkt-Form mappen
+            api_model = _OPENROUTER_ID_ALIASES.get(model, model)
             params = {
-                "model": model,
+                "model": api_model,
                 "messages": (
                     [{"role": "system", "content": _system}] if _system else []
                 ) + [{"role": "user", "content": prompt}],
@@ -124,30 +145,53 @@ class OpenRouterClient(BaseProviderClient):
 
             if stream_handler:
                 full_content = ""
+                think_parts = []
+                stream_usage = None
                 for chunk in response:
-                    if hasattr(chunk.choices[0].delta, "content") and chunk.choices[0].delta.content:
-                        content_piece = chunk.choices[0].delta.content
+                    delta = chunk.choices[0].delta
+                    # Content extrahieren
+                    if hasattr(delta, "content") and delta.content:
+                        content_piece = delta.content
                         full_content += content_piece
                         stream_handler(content_piece)
+                    # Reasoning/Thinking extrahieren (GLM 5.x: "reasoning")
+                    reasoning_piece = getattr(delta, "reasoning", None) or getattr(delta, "reasoning_content", None)
+                    if reasoning_piece:
+                        think_parts.append(reasoning_piece)
+                    # Usage kommt im letzten Streaming-Chunk
+                    if hasattr(chunk, "usage") and chunk.usage:
+                        stream_usage = chunk.usage
 
-                self.last_response_metadata = {
-                    "total_tokens": 0,
-                    "prompt_tokens": 0,
-                    "completion_tokens": 0,
+                meta = {
+                    "total_tokens": stream_usage.total_tokens if stream_usage else 0,
+                    "prompt_tokens": stream_usage.prompt_tokens if stream_usage else 0,
+                    "completion_tokens": stream_usage.completion_tokens if stream_usage else 0,
                     "token_limit_used": used_max_tokens,
                     "token_limit_fallback": fallback_triggered,
                 }
+                if think_parts:
+                    meta["think_content"] = "".join(think_parts)
+                if stream_usage:
+                    meta["usage"] = stream_usage
+                self.last_response_metadata = meta
                 return full_content
 
             else:
-                result = response.choices[0].message.content or ""
+                msg = response.choices[0].message if response.choices else None
+                result = (msg.content or "") if msg else ""
+
+                # Reasoning/Thinking-Content extrahieren (GLM 5.x: "reasoning",
+                # andere Provider: evtl. "reasoning_content" oder "think_content")
+                reasoning = None
+                if msg:
+                    reasoning = getattr(msg, "reasoning", None) or getattr(msg, "reasoning_content", None) or getattr(msg, "think_content", None)
 
                 usage = response.usage
                 if usage:
                     reasoning_tokens: int | None = None
                     if hasattr(usage, "completion_tokens_details") and usage.completion_tokens_details:
                         reasoning_tokens = getattr(usage.completion_tokens_details, "reasoning_tokens", None)
-                    self.last_response_metadata = {
+                    meta = {
                         "total_tokens": usage.total_tokens,
                         "prompt_tokens": usage.prompt_tokens,
                         "completion_tokens": usage.completion_tokens,
@@ -155,7 +199,11 @@ class OpenRouterClient(BaseProviderClient):
                         "token_limit_fallback": fallback_triggered,
                         "finish_reason": response.choices[0].finish_reason if response.choices else None,
                         "reasoning_tokens": reasoning_tokens,
+                        "usage": usage,
                     }
+                    if reasoning:
+                        meta["think_content"] = reasoning
+                    self.last_response_metadata = meta
 
                 return result
 

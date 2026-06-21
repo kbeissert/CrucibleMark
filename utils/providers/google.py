@@ -33,6 +33,18 @@ except ImportError:
     genai = None
 # Configure logging
 logger = logging.getLogger(__name__)
+
+# Einige Model-IDs werden intern mit Underscore gespeichert (kanonische ID),
+# die Google Gemini API erwartet jedoch die Punkt-Schreibweise.
+# Wird in query() vor dem API-Call aufgelöst.
+_GOOGLE_ID_ALIASES: dict[str, str] = {
+    "gemini-3_5-flash": "gemini-3.5-flash",
+    "gemini-3_1-pro-preview": "gemini-3.1-pro-preview",
+    "gemini-3_1-flash-lite-preview": "gemini-3.1-flash-lite-preview",
+    "gemini-2_5-flash": "gemini-2.5-flash",
+    "gemini-2_5-pro": "gemini-2.5-pro",
+}
+
 from utils.providers.base import BaseProviderClient
 class GoogleClient(BaseProviderClient):
     """Google Gemini Provider Client"""
@@ -84,8 +96,10 @@ class GoogleClient(BaseProviderClient):
                 generation_config.top_k = kwargs["top_k"]
             # Initialize Model
             _system = kwargs.get("system")
+            # Kanonische Underscore-IDs auf die von der API erwartete Punkt-Form mappen
+            api_model = _GOOGLE_ID_ALIASES.get(model, model)
             gemini_model = genai.GenerativeModel(
-                model_name=model,
+                model_name=api_model,
                 **({"system_instruction": _system} if _system else {}),
             )
             initial_max_tokens = kwargs.get("max_tokens", self.config.get("defaults", {}).get("generation", {}).get("num_predict", 8192))
@@ -106,6 +120,7 @@ class GoogleClient(BaseProviderClient):
             if stream_handler:
                 response = response_or_stream
                 full_text = ""
+                think_parts: list[str] = []
                 self.last_response_metadata = {
                     "token_limit_fallback": fallback_triggered,
                     "token_limit_used": used_max_tokens,
@@ -123,15 +138,23 @@ class GoogleClient(BaseProviderClient):
                         full_text += text_chunk
                     # Metadata Extraction (if available in chunk)
                     if hasattr(chunk, "usage_metadata") and chunk.usage_metadata:
+                        um = chunk.usage_metadata
                         # thoughts_token_count is cumulative; last chunk holds final value.
                         # Always overwrite (never add) to match OpenRouter pattern.
-                        thoughts = getattr(chunk.usage_metadata, "thoughts_token_count", None)
+                        thoughts = getattr(um, "thoughts_token_count", None)
                         self.last_response_metadata["reasoning_tokens"] = thoughts if thoughts else 0
+                        self.last_response_metadata["usage"] = um
                     if hasattr(chunk, "candidates") and chunk.candidates:
                         fr = chunk.candidates[0].finish_reason
                         if fr:
                             # Usually an enum, convert to string
                             self.last_response_metadata["finish_reason"] = getattr(fr, "name", str(fr))
+                        # Extrahiere thinking-Content aus Candidates
+                        for part in getattr(chunk.candidates[0], "content", None).parts if hasattr(chunk.candidates[0], "content") else []:
+                            if hasattr(part, "thinking") and part.thinking:
+                                think_parts.append(str(part.thinking))
+                if think_parts:
+                    self.last_response_metadata["think_content"] = "".join(think_parts)
                 return full_text
             # Blocking Call
             response = response_or_stream
@@ -143,9 +166,18 @@ class GoogleClient(BaseProviderClient):
                 fr = response.candidates[0].finish_reason
                 if fr:
                     self.last_response_metadata["finish_reason"] = getattr(fr, "name", str(fr))
+                # Extrahiere thinking-Content aus Candidates
+                think_parts: list[str] = []
+                for part in getattr(response.candidates[0], "content", None).parts if hasattr(response.candidates[0], "content") else []:
+                    if hasattr(part, "thinking") and part.thinking:
+                        think_parts.append(str(part.thinking))
+                if think_parts:
+                    self.last_response_metadata["think_content"] = "".join(think_parts)
             if hasattr(response, "usage_metadata") and response.usage_metadata:
-                thoughts = getattr(response.usage_metadata, "thoughts_token_count", None)
+                um = response.usage_metadata
+                thoughts = getattr(um, "thoughts_token_count", None)
                 self.last_response_metadata["reasoning_tokens"] = thoughts if thoughts else 0
+                self.last_response_metadata["usage"] = um
             try:
                 return response.text
             except ValueError:
