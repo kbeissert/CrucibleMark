@@ -7,7 +7,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [v4.10.5] - 2026-06-21
 
-**Reasoning/Thinking-Extraktion: SSoT-Utilities in `base.py`. Streaming-Bugs in OpenRouter + llamacpp gefixt.**
+**Reasoning/Thinking-Extraktion: SSoT-Utilities in `base.py`. Streaming-Bugs in OpenRouter + llamacpp gefixt. Judge erhält universelle Token-Verbrauchsinformation.**
+
+### Added
+
+- **Judge TOKEN USAGE Context (universal für alle Modelle):**
+  Der LLM-Judge erhält jetzt für JEDE Aufgabe die tatsächliche Token-Verbrauchsinformation:
+  - `tokens_used` — Gesamtverbrauch
+  - `reasoning_tokens` — Thinking/Reasoning-Anteil
+  - `token_budget` — das tatsächlich gesetzte `max_tokens` (API-Limit)
+  - `module_budget` — das konfigurierte Modul-Budget aus `benchmark_config.yaml`
+  - `truncated` — ob die Antwort abgeschnitten wurde
+
+  Der Judge kann damit beurteilen, ob das Modell:
+  - sein Token-Budget eingehalten hat
+  - übermäßig viel Thinking-Token verbraucht hat
+  - die Antwort innerhalb des Limits abgeschlossen hat
+
+  Bisher sah der Judge nur Budget-Bereiche (standard/elevated) für Reasoning-Modelle,
+  aber nie den tatsächlichen Verbrauch. Drei separate, bedingte Kontexte
+  (reasoning, truncation, small_model) wurden durch den universellen Context ergänzt.
+
+  **Dateien:**
+  - `utils/scoring/judge_evaluator.py`: Baut `token_usage_context` aus result dict
+  - `utils/scoring/llm_judge/judge_runner.py`: Neuer `token_usage_context` Parameter in `score()`
+  - `utils/scoring/llm_judge/judge_prompt_builder.py`: Neuer Parameter + TOKEN USAGE NOTE Section
 
 ### Fixed
 

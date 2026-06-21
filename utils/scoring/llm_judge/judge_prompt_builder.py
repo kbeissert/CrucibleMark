@@ -176,6 +176,7 @@ def build_prompts(
     token_budget_context: Optional[Dict[str, int]] = None,
     truncation_context: bool = False,
     small_model_token_context: Optional[Dict[str, Any]] = None,
+    token_usage_context: Optional[Dict[str, Any]] = None,
     tool_content: Optional[str] = None,
     tool_content_quality: Optional[str] = None,
 ) -> Tuple[str, str]:
@@ -201,6 +202,10 @@ def build_prompts(
             for reasoning models. When provided, the judge is instructed to deduct
             from output_quality if the visible response is unnecessarily verbose
             beyond the standard budget.
+        token_usage_context: Optional dict with actual token consumption data.
+            Keys: ``tokens_used``, ``reasoning_tokens``, ``token_budget``,
+            ``module_budget``, ``truncated``. Universal — provided for ALL models
+            so the judge can assess whether the model followed its token budget.
 
     Returns:
         Tuple of (system_prompt, user_prompt).
@@ -277,6 +282,54 @@ def build_prompts(
             "do not penalize because the response is shorter than expected or ends abruptly. "
             "Score what is present on its own merits."
         )
+
+    # Universelle Token-Verbrauchsinformation für JEDE Aufgabe.
+    # Der Judge sieht: Budget, Verbrauch, Thinking-Tokens, Truncation.
+    if token_usage_context:
+        _tu_used = token_usage_context.get("tokens_used")
+        _tu_reasoning = token_usage_context.get("reasoning_tokens")
+        _tu_budget = token_usage_context.get("token_budget")
+        _tu_module = token_usage_context.get("module_budget")
+        _tu_truncated = token_usage_context.get("truncated", False)
+
+        _lines: list[str] = []
+        if _tu_budget is not None:
+            _lines.append(f"- **Applied token budget** (max_tokens sent to API): **{_tu_budget:,} tokens**")
+        if _tu_module is not None and _tu_module != _tu_budget:
+            _lines.append(f"- **Module default budget** (from config): {_tu_module:,} tokens")
+        if _tu_used is not None:
+            _lines.append(f"- **Total tokens consumed**: **{_tu_used:,} tokens**")
+            if _tu_budget and _tu_budget > 0:
+                _pct = round(_tu_used / _tu_budget * 100)
+                if _pct > 100:
+                    _lines.append(f"  (⚠️ **{_pct}%** of budget — exceeded allocated budget)")
+                else:
+                    _lines.append(f"  ({_pct}% of budget)")
+        if _tu_reasoning is not None and _tu_reasoning > 0:
+            _lines.append(f"- **Thinking / reasoning tokens**: **{_tu_reasoning:,} tokens**")
+            if _tu_used and _tu_used > 0:
+                _think_pct = round(_tu_reasoning / _tu_used * 100)
+                _lines.append(f"  ({_think_pct}% of total consumption)")
+            if _tu_used and _tu_reasoning:
+                _visible = _tu_used - _tu_reasoning
+                _lines.append(f"- **Visible output tokens** (approx.): {_visible:,} tokens")
+        if _tu_truncated:
+            _lines.append(f"- **Truncated**: YES (response was cut off at budget limit)")
+
+        if _lines:
+            _usage_block = "\n".join(_lines)
+            system_prompt += (
+                f"\n\n### TOKEN USAGE ###\n"
+                f"Resource consumption for this specific task:\n"
+                f"{_usage_block}\n\n"
+                f"Use this information to assess whether the model followed its token budget:\n"
+                f"- If the model **exceeded its budget**, consider whether the extra tokens added "
+                f"substantive quality or were wasted on padding, repetition, or excessive reasoning.\n"
+                f"- If **thinking tokens are very high** relative to visible output, the model may have "
+                f"over-reasoned — the visible response should still be evaluated on its own merits.\n"
+                f"- A model that **stays within budget** while delivering quality content demonstrates "
+                f"good resource discipline."
+            )
 
     if small_model_token_context:
         _smc_size = small_model_token_context.get("size_class")

@@ -77,6 +77,37 @@ def evaluate_with_judge(
             "language_weight": language_weight,
         }
 
+        # ── Universal token usage context (für ALLE Modelle) ──────────────
+        # Der Judge erhält für JEDE Aufgabe die tatsächliche Token-Verbrauchsinformation,
+        # damit er beurteilen kann, ob das Modell dem Token-Budget gefolgt ist.
+        _token_usage: dict[str, Any] = {}
+        _tokens_used = result.get("tokens_used")
+        _reasoning_tokens = result.get("reasoning_tokens")
+        _token_limit_used = result.get("token_limit_used")
+        if _tokens_used is not None:
+            _token_usage["tokens_used"] = int(_tokens_used)
+        if _reasoning_tokens is not None:
+            _token_usage["reasoning_tokens"] = int(_reasoning_tokens)
+        if _token_limit_used is not None:
+            _token_usage["token_budget"] = int(_token_limit_used)
+        if result.get("token_limit_cutoff"):
+            _token_usage["truncated"] = True
+        # Config-Budget als Referenz (was das Modul vorgibt)
+        try:
+            _judge_cfg_cache = getattr(evaluate_with_judge, "_cfg_cache", None)
+            if _judge_cfg_cache is None:
+                from utils.config_validator import ConfigValidator
+                _judge_cfg_cache = ConfigValidator().config
+                evaluate_with_judge._cfg_cache = _judge_cfg_cache
+            _cfg = _judge_cfg_cache
+            _module_budget = _cfg.get("token_budgets", {}).get(eval_module_id)
+            if _module_budget:
+                _token_usage["module_budget"] = int(_module_budget)
+        except Exception:
+            pass  # Non-critical
+        if _token_usage:
+            kwargs["token_usage_context"] = _token_usage
+
         # Inject token budget context for reasoning models so the Judge can penalise
         # unnecessary verbosity in the visible output (elevated budget = thinking tokens only).
         from utils.model_utils import is_reasoning_model
