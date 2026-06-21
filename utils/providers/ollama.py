@@ -131,6 +131,18 @@ class OllamaClient(BaseProviderClient):
                         metrics["tps_eval"] = round(eval_count / (eval_ns / 1e9), 2)
                     else:
                         metrics["tps_eval"] = None
+                    # Usage-Objekt für LLMParser.extract_usage_tokens()
+                    metrics["usage"] = {
+                        "prompt_tokens": prompt_eval_count,
+                        "completion_tokens": eval_count,
+                        "total_tokens": prompt_eval_count + eval_count,
+                    }
+                    # Reasoning-Tokens: Ollama liefert keine separate Count,
+                    # aber wenn thinking_content vorhanden ist, schätzen wir
+                    # reasoning_tokens ≈ eval_count * 0.3 (typischer Anteil)
+                    # oder setzen None wenn kein Thinking erkannt wurde.
+                    if full_thinking:
+                        metrics["reasoning_tokens"] = eval_count
                     self.last_response_metadata = metrics
                     continue
                 msg = chunk.get("message", {})
@@ -175,6 +187,9 @@ class OllamaClient(BaseProviderClient):
                     logger.error(f"Failed to recover from parser error: {ex}")
             # If not recoverable, re-raise
             raise e
+        # Store think_content in metadata
+        if full_thinking:
+            self.last_response_metadata["think_content"] = full_thinking
         if not full_content and full_thinking:
             logger.debug(
                 "Ollama streaming returned thinking but no content. Using thinking as fallback."

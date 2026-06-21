@@ -1,0 +1,239 @@
+# Laufzeitumgebung: Welches Hardware-Profil ist aktiv (beeinflusst lokale Benchmarks)
+runner_environment:
+  active_profile: apple_silicon_m4
+  profiles:
+    apple_silicon_m4:
+      type: local_unified
+      description: Apple Silicon M4, 24GB Unified Memory (Shared RAM/VRAM)
+      compute_unit: CPU/Metal
+      ram_gb: 24
+    # Alias für llamacpp-Provider hardware_profile-Key (SSOT: config/provider_config.yaml)
+    m4_macbook_pro_metal:
+      type: local_unified
+      description: Apple Silicon M4, 24GB Unified Memory (Shared RAM/VRAM)
+      compute_unit: CPU/Metal
+      ram_gb: 24
+    # DGX Spark — wird via llamacpp_spark-Provider referenziert
+    dgx_spark_cuda:
+      type: local_server
+      description: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, ~115 GB Unified Memory)
+      compute_unit: CUDA (Blackwell)
+      ram_gb: 115
+    nvidia_rtx4090:
+      type: local_dedicated
+      description: NVIDIA RTX 4090, 24GB VRAM, 64GB System RAM
+      compute_unit: CUDA
+      ram_gb: 64
+
+# LLM-Judge: Bewertet Antworten qualitativ und ergänzt die regelbasierten Scorer
+# mode: complement = Score nur wenn Regex/Rule-Scorer kein Urteil liefern können
+llm_judge:
+  enabled: true
+  mode: complement
+  provider:
+    name: anthropic
+    model: claude-haiku-4-5-20251001
+    max_tokens: 8192
+    temperature: 1.0
+  scoring:
+    scale: 5
+    require_reasoning: true
+    fail_on_parse_error: false
+  sub_scores:
+    task_compliance:
+      label: Task Compliance
+      description: "Wurde die Aufgabe vollst\xE4ndig und korrekt erf\xFCllt?"
+      scale: 5
+    output_quality:
+      label: Output Quality
+      description: "Ist der Output klar, pr\xE4zise und professionell?"
+      scale: 5
+    standard_adherence:
+      label: Standard Adherence
+      description: Werden Fach-Standards und Best Practices korrekt angewendet?
+      scale: 5
+  applicable_modules:
+  - code_quality
+  - ux_writing
+  - documentation_quality
+  - content_transformation
+  - cultural_intelligence
+  - cli_benchmark
+  - reasoning
+
+# LLM-Review: Modell für vollständige Modell-Reviews (make review / make review-new)
+llm_review:
+  enabled: true
+  provider:
+    name: openai
+    model: gpt-5.4
+    max_tokens: 32768
+    # Alternativen: google/gemini-3.1-pro-preview, anthropic/claude-sonnet-4-6
+
+# LLM-Card-Manager: Recherchiert und verifiziert Model Cards
+# (manage_model_cards.py → --mode check / --mode make)
+# OpenRouter — Gemini 2.5 Pro
+llm_card_manager:
+  enabled: true
+  provider:
+    # name: openrouter
+    # model: google/gemini-2.5-pro
+    # base_url: https://openrouter.ai/api/v1
+    # api_key_env: OPENROUTER_API_KEY
+    # max_tokens: 32768
+    # temperature: 0.0   # deterministisch — Recherche/Faktensammlung, nicht Prosa
+
+    name: openai-compatible
+    model: gemma-4-26B-A4B-it-UD-Q5_K_XL
+    base_url: http://100.89.110.0:1235/v1
+    api_key: sk-local-mg2026
+    max_tokens: 32768
+    temperature: 0.0   # deterministisch — Recherche/Faktensammlung, nicht Prosa
+
+# Generierungs-Defaults für lokale Modelle — kommerzielle Provider ignorieren diese Werte
+defaults:
+  generation:
+    temperature: 0.1
+    repeat_penalty: 1.1
+    top_k: 40
+    top_p: 0.9
+    num_predict: 8192
+  token_limits:
+    default_max: 8192
+    fallback_cascade:
+    - 4096
+    - 2048
+    - 1024
+
+# Ausgabepfade für CSV-Ergebnisse, Leaderboard und Web-Export
+output:
+  directory: benchmark_scores
+  commercial_csv: benchmark_scores/commercial_models_benchmark.csv
+  cloud_models_csv: benchmark_scores/cloud_models_benchmark.csv
+  local_models_csv: benchmark_scores/local_models_benchmark.csv
+  leaderboard_csv: benchmark_scores/benchmark_leaderboard.csv
+  web_export_dir: ../cruciblemark-web/src/_data/raw/
+  streaming_output_commercial_providers: false
+
+# Logging (Datei + Konsole, Rotation)
+logging:
+  file_path: logs/crucible.log
+  console_level: INFO
+  file_level: DEBUG
+  rotation_max_bytes: 10485760   # 10 MB pro Datei
+  rotation_backup_count: 5       # 5 Backups → max. 50 MB gesamt (crucible.log.1 … .5)
+
+# Heartbeat: Status-Prints während langer Benchmarks (verhindert "hängt das?"-Frage)
+# Konfiguriert den Daemon-Thread in scripts/core/unified_runner.py::_run_asset_loop
+heartbeat:
+  enabled: true              # Komplett ausschalten (z.B. CI-Runs, kurze Tests)
+  interval_seconds: 120      # Sekunden zwischen Status-Prints
+                              # 60  = Original-Verhalten
+                              # 120 = Default (maximale Ruhe bei langen Läufen)
+
+
+# Modul-Registry: Der Key (z.B. 'reasoning') ist die ID für --module und MODULE=
+# Der 'path' zeigt auf das Verzeichnis; die interne ID kommt aus der config.yaml des Moduls
+modules:
+  code_quality:
+    path: benchmark_modules/code_quality
+    enabled: true
+  cli_benchmark:
+    path: benchmark_modules/cli_benchmark
+    enabled: true
+  reasoning:
+    path: benchmark_modules/reasoning_logic
+    enabled: true
+  ux_writing:
+    path: benchmark_modules/ux_writing
+    enabled: true
+  documentation_quality:
+    path: benchmark_modules/documentation_quality
+    enabled: true
+  content_transformation:
+    path: benchmark_modules/content_transformation
+    enabled: true
+  cultural_intelligence:
+    path: benchmark_modules/cultural_intelligence
+    enabled: true
+  political_compass:
+    path: benchmark_modules/political_compass
+    enabled: false
+  tooluse:
+    path: benchmark_modules/tooluse
+    enabled: true
+    requires_mcp: true
+
+# Bewertungsstufen für Badge-Vergabe im Leaderboard (threshold = Mindest-Score in %)
+scoring_tiers:
+  platinum:
+    threshold: 95.0
+    badge: "\U0001F48E Platinum"
+    prompt_description: '- **Ab {threshold}% (Platin-Standard, SOTA Elite):** Absolute
+      Spitzenliga.'
+  gold:
+    threshold: 80.0
+    badge: "\U0001F3C6 Gold"
+    prompt_description: "- **Ab {threshold}% bis unter {next_threshold}% (Gold-Standard,\
+      \ Excellent/Good):** Hervorragende, verl\xE4ssliche Modelle."
+  silver:
+    threshold: 65.0
+    badge: "\U0001F948 Silver"
+    prompt_description: '- **Ab {threshold}% bis unter {next_threshold}% (Silber-Standard,
+      Adequate):** Sehr solide Basis. The model performs adequately.'
+  bronze:
+    threshold: 50.0
+    badge: "\U0001F949 Bronze"
+    prompt_description: "- **Ab {threshold}% bis unter {next_threshold}% (Bronze-Standard):**\
+      \ Akzeptable Leistung mit Einschr\xE4nkungen."
+  standard:
+    threshold: 0.0
+    badge: "\u2696\uFE0F Standard"
+    prompt_description: "- **Unter {next_threshold}% (Standard/Fail):** Suboptimale\
+      \ Leistung, oft ungeeignet f\xFCr komplexe Agenten-Aufgaben."
+
+# Token-Budget-Schwellwerte pro Modul (Anzahl Output-Tokens, ab der 1.5× Overhead als Verbosity-Flag gilt)
+# Module ohne Eintrag werden NICHT geflaggt (z.B. reasoning, reasoning_metacog).
+# Werte basieren auf empirischen Medianen aus den ersten Benchmark-Runs (April 2026).
+# v4.8.3: Erhöht auf 1000 für Gemma-4-12B Q*_K_XL Quants, die intern 500 Reasoning-Tokens verbrauchen
+# v4.10.3: cultural_intelligence 1000→3000 (Cloud-Modelle brauchen mehr), documentation_quality 6000→8000 (Cloud-p90=7789)
+token_budgets:
+  cultural_intelligence: 3000
+  ux_writing: 3500
+  content_transformation: 3500
+  documentation_quality: 8000
+  code_quality: 6000
+  cli_benchmark: 4000
+
+# Token-Budget für kleine lokale Modelle (Desktop, Workstation, Edge, Nano).
+# Gilt für GGUF-Quantisierungen, die durch kürzere effektive Ausgabefenster
+# bei aufwendigen Modulen (z.B. documentation_quality_005, ux_writing) truncaten.
+# Klassen: Nano (≤4B), Edge (5–9B), Desktop (10–22B), Workstation (20–35B).
+# Erhöhte Werte nur für Module mit nachgewiesenem Truncation-Problem.
+token_budgets_small_models:
+  documentation_quality: 8000
+  ux_writing: 5000
+  code_quality: 8000
+  content_transformation: 5000
+  cli_benchmark: 5000
+
+# Separates Budget für Reasoning-Modelle (o1, o3, gpt-5).
+# Bei Reasoning-Modellen fressen interne CoT-Tokens das max_completion_tokens-Budget mit—
+# 'token_budgets' kontrolliert Output-Compliance, diese Werte kontrollieren das
+# Gesamtkontingent (Thinking + sichtbarer Output). Fallback: 5× das Standard-Budget.
+# 'reasoning' und 'reasoning_metacog' bleiben weiterhin ohne jedes Limit.
+#
+# Provider-spezifische Anpassungen:
+# - llamacpp (MacBook Pro): 32768 Tokens (32k)
+# - llamacpp_spark (DGX Spark): 65536 Tokens (64k)
+# v4.10.3: code_quality 65536→20000 (p99=16382, max=24985 bei kimi-k2.7-code)
+#          Reduktion von 85 Min/Task auf ~26 Min/Task bei 12.75 T/s (kimi).
+#          Nur kimi-k2.7-code (25K) wird légère Truncation erfahren — Judge
+#          bekommt token_limit_cutoff=True Context.
+token_budgets_reasoning_models:
+  cultural_intelligence: 4000
+  ux_writing: 8000
+  content_transformation: 8000
+  documentation_quality: 12000
+  code_quality: 20000
+  cli_benchmark: 16000

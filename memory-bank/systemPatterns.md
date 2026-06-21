@@ -13,12 +13,24 @@ Architektur-Regeln + aktuelle SSoT-Brücken (One-Liner). Details: `reference/dat
 
 ---
 
+## 🛑 Design-Bedingungen: Benchmark-Ausführung (nicht optimierbar)
+
+Diese Eigenschaften sind **bewusste Design-Entscheidungen** für faire, reproduzierbare Messungen. Sie dürfen NICHT zugunsten von Performance optimiert werden.
+
+1. **Sequenzielle Modell-Abarbeitung:** Modelle werden einzeln nacheinander getestet. Zwischen Modellen wird der Server gestoppt und neu gestartet. `AdaptivePauseCalculator` sorgt für Cooldown zwischen Tasks. **Ziel:** Gleichwertige Testumgebung für jedes Modell — kein "warmes" Modell hat Vorteile durch gecachten KV-Cache.
+2. **Judge-Reset zwischen Tasks:** Der LLM-Judge wird NICHT gecacht. Jede Bewertung ist ein frischer API-Call ohne vorherigen Kontext. **Ziel:** Kein Kontextmix durch gecachten Kontext aus vorherigen Bewertungen — jede Bewertung ist unabhängig.
+3. **Keine Cross-Run-Pollution:** Jeder Benchmark-Run ist unabhängig (Stateless Runs). Ergebnisse aus vorherigen Runs beeinflussen den aktuellen Run nicht.
+
+---
+
 ## SSoT-Brücken (One-Liner + Datei)
 
 | Brücke | SSoT-Speicherort | Hot-Aufruf |
 |---|---|---|
 | **Token-Budget** | `benchmark_config.yaml → token_budgets` + `token_budgets_reasoning_models` | `resolve_token_budget()` → `min(budget, provider_num_predict)` |
+| **Token-Kaskade (Provider)** | `provider_config.yaml → <provider>.max_tokens` + `<provider>.model_max_tokens` | `_resolve_request_tokens()` in `base.py` → Kaskade: `min(resolve_budget, model_override ?? provider_default)` |
 | **Thinking** | Card `thinking_probe_detected` + optional `thinking_override` (Provider-Card) | `resolve_effective_thinking()` Priorität: Override > Probe > None |
+| **Provider-Config SSOT-Chain** | Provider-Config → Card Name → Card `model_id` → Downstream SSOT | Provider-Config definiert die ID, Card wird daraus abgeleitet, Card `model_id` wird SSOT für alles Weitere. Card-Name/CARDFELD `model_id` NICHT ändern — ist an `provider_config.yaml` gebunden. |
 | **Model-Identität** | Card `model_id` ist einziger Identifier | `resolve_canonical_model_id()` (5-Level-Lookup) |
 | **Model-ID als Kommunikations-Anker** | Card `model_id` / `raw_model_id` | Alle CSV-/Leaderboard-Lookups via `model_id`. `raw_model_id` lesen, dann `slugify()` für Format-Matching. NIEMALS Display-Name für Lookups verwenden. |
 | **Card-ID-Pipeline** | `{base}--{shortcode}` Schema | `build_card_id()`, `resolve_unique_card_id()` |

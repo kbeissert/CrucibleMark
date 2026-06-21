@@ -253,6 +253,19 @@ class ResultManager:
         ]
 
         try:
+            # Fast-path: Single-result write-through (append-only, O(1)).
+            # Used by the write-through pattern in _handle_single_asset().
+            # Falls back to full rewrite for multi-result saves or when
+            # header needs updating (new columns).
+            if (
+                len(results) == 1
+                and file_exists
+                and clean_existing_rows == existing_rows  # no dedup needed
+                and self._csv_header_matches(csv_path, fieldnames)
+            ):
+                self._append_single_row(csv_path, fieldnames, results[0])
+                return csv_path
+
             self._write_to_csv(csv_path, fieldnames, results, clean_existing_rows)
 
             return csv_path
@@ -312,6 +325,34 @@ class ResultManager:
         print(
             f"\n💾 Ergebnisse gespeichert in: {csv_path} (Upsert: {len(valid_new)} neu/updated, {skipped} übersprungen)"
         )
+
+    @staticmethod
+    def _csv_header_matches(csv_path: Path, fieldnames: list[str]) -> bool:
+        """Check if the existing CSV header matches the expected fieldnames."""
+        try:
+            with csv_path.open("r", encoding="utf-8") as f:
+                reader = csv.reader(f)
+                existing_header = next(reader)
+            return existing_header == fieldnames
+        except (OSError, csv.Error, StopIteration):
+            return False
+
+    def _append_single_row(
+        self,
+        csv_path: Path,
+        fieldnames: list[str],
+        row: dict[str, Any],
+    ) -> None:
+        """Append a single validated row to CSV (O(1), no full rewrite).
+
+        Only used by the write-through path when no dedup or header update
+        is needed. Validates the row before writing.
+        """
+        self._validate_row_for_write(row, fieldnames)
+        with csv_path.open("a", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction="ignore")
+            writer.writerow(row)
+        logger.debug("Appended single row to %s (asset=%s)", csv_path, row.get("asset_id"))
 
     def update_leaderboard(self):
         """Triggert das Update des Leaderboards."""

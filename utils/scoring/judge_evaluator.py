@@ -25,7 +25,11 @@ def evaluate_with_judge(
     """
     Executes the LLM Judge scoring methodology and updates the result dictionary.
     """
-    time.sleep(0.5)
+    # Configurable pre-judge delay (default 200ms, reduced from hardcoded 500ms).
+    # Providers with rate limits should use the RateLimiter instead.
+    _pre_delay = judge_cfg_dict.get("pre_call_delay_ms", 200)
+    if _pre_delay > 0:
+        time.sleep(_pre_delay / 1000.0)
 
     try:
         judge_config = LLMJudgeConfig.from_dict(judge_cfg_dict)
@@ -35,7 +39,18 @@ def evaluate_with_judge(
         elif "llm_judge_model" in benchmark_info:
             judge_config.module_judge_model = benchmark_info["llm_judge_model"]
 
-        runner = JudgeRunner(judge_config)
+        # Reuse cached JudgeRunner when config hasn't changed (avoids
+        # re-instantiating provider HTTP clients per task).
+        _cached_runner = getattr(evaluate_with_judge, "_runner_cache", None)
+        _cached_cfg_key = getattr(evaluate_with_judge, "_runner_cfg_key", None)
+        _cfg_key = (judge_config.provider.name, judge_config.provider.model, judge_config.module_judge_model)
+        if _cached_runner is not None and _cached_cfg_key == _cfg_key:
+            runner = _cached_runner
+            runner._config = judge_config  # update in case module_judge_model changed
+        else:
+            runner = JudgeRunner(judge_config)
+            evaluate_with_judge._runner_cache = runner
+            evaluate_with_judge._runner_cfg_key = _cfg_key
 
         raw_prompt = asset_data.get("prompt", asset_data.get("instruction", ""))
         golden = asset_data.get("golden_standard", asset_data.get("golden", ""))
@@ -43,7 +58,6 @@ def evaluate_with_judge(
             # Format dict for the judge as string if text not present
             golden_text = golden.get("text", "")
             if not golden_text:
-                import json
                 golden_text = json.dumps(golden, indent=2)
             golden = golden_text
         golden = str(golden)
@@ -68,8 +82,12 @@ def evaluate_with_judge(
         from utils.model_utils import is_reasoning_model
         if is_reasoning_model(model):
             try:
-                from utils.config_validator import ConfigValidator
-                _cfg = ConfigValidator().config
+                _judge_cfg_cache = getattr(evaluate_with_judge, "_cfg_cache", None)
+                if _judge_cfg_cache is None:
+                    from utils.config_validator import ConfigValidator
+                    _judge_cfg_cache = ConfigValidator().config
+                    evaluate_with_judge._cfg_cache = _judge_cfg_cache
+                _cfg = _judge_cfg_cache
                 _module_key = eval_module_id
                 _standard = _cfg.get("token_budgets", {}).get(_module_key)
                 _elevated = _cfg.get("token_budgets_reasoning_models", {}).get(_module_key)
@@ -94,8 +112,12 @@ def evaluate_with_judge(
             _size = get_model_size_class(model)
             if _size in ("Nano", "Edge", "Desktop", "Workstation"):
                 try:
-                    from utils.config_validator import ConfigValidator
-                    _cfg = ConfigValidator().config
+                    _judge_cfg_cache = getattr(evaluate_with_judge, "_cfg_cache", None)
+                    if _judge_cfg_cache is None:
+                        from utils.config_validator import ConfigValidator
+                        _judge_cfg_cache = ConfigValidator().config
+                        evaluate_with_judge._cfg_cache = _judge_cfg_cache
+                    _cfg = _judge_cfg_cache
                     _small = _cfg.get("token_budgets_small_models", {}).get(eval_module_id)
                     _standard = _cfg.get("token_budgets", {}).get(eval_module_id)
                     if _small and _standard and _small > _standard:

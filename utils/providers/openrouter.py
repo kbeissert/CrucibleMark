@@ -40,6 +40,8 @@ class OpenRouterClient(BaseProviderClient):
     """OpenRouter Provider Client (OpenAI-compatible)"""
 
     PROVIDER_NAMES = ["openrouter"]
+    PROVIDER_CONFIG_KEY = "openrouter"
+    DEFAULT_TOKEN_PARAM = "max_tokens"
 
     def __init__(self, config: dict):
         super().__init__(config)
@@ -119,12 +121,7 @@ class OpenRouterClient(BaseProviderClient):
                 "temperature": temperature,
             }
 
-            from utils.model_utils import resolve_token_budget
-            _provider_cfg = self.config.get("providers", {}).get("commercial", {}).get("openrouter", {})
-            token_param_name = _provider_cfg.get("token_param_name", "max_tokens")
-            req_tokens, _ = resolve_token_budget(
-                model, kwargs.get("max_tokens"), self.config, kwargs.get("_module_key")
-            )
+            token_param_name, req_tokens = self._resolve_request_tokens(model, kwargs)
             params[token_param_name] = req_tokens
 
             if stream_handler:
@@ -137,7 +134,7 @@ class OpenRouterClient(BaseProviderClient):
             # Ausführen mit Token-Fallback Kaskade
             response, used_max_tokens, fallback_triggered = self._execute_with_token_fallback(
                 func=self.client.chat.completions.create,
-                token_param_name="max_tokens",
+                token_param_name=token_param_name,
                 initial_max_tokens=req_tokens,
                 error_keywords=["maximum context length", "max_tokens", "context window", "context_length"],
                 func_kwargs=params,

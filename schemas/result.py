@@ -79,9 +79,9 @@ class BenchmarkResult(BaseModel):
     )
 
     # --- Judge Sub-Scores ---
-    judge_task_compliance: Optional[int] = Field(default=None, description="Task Compliance sub-score from LLM Judge")
-    judge_output_quality: Optional[int] = Field(default=None, description="Output Quality sub-score from LLM Judge")
-    judge_standard_adherence: Optional[int] = Field(default=None, description="Standard Adherence sub-score from LLM Judge")
+    judge_task_compliance: Optional[float] = Field(default=None, description="Task Compliance sub-score from LLM Judge (0-5)")
+    judge_output_quality: Optional[float] = Field(default=None, description="Output Quality sub-score from LLM Judge (0-5)")
+    judge_standard_adherence: Optional[float] = Field(default=None, description="Standard Adherence sub-score from LLM Judge (0-5)")
     thought_tag_compliance: Optional[float] = Field(default=None, description="Score for compliance with thinking tag constraints")
     think_content: Optional[str] = Field(default=None, description="Internal reasoning content from ThinkChunks (e.g. Magistral Small). Not scored; surfaced in audit log only.")
 

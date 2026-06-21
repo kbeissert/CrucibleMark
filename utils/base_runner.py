@@ -13,47 +13,11 @@ from utils.config_validator import ConfigValidator
 from utils.result_manager import ResultManager
 from utils.module_loader import load_test_class
 from utils.constants import QUALITY_EXCELLENT, QUALITY_GOOD, QUALITY_OK
-from utils.model_utils import resolve_token_budget
+from utils.model_utils import resolve_token_budget, get_hardware_profile
 
 from schemas.result import BenchmarkResult
 
 logger = logging.getLogger(__name__)
-
-
-def _get_hardware_profile(config: dict, provider: str) -> str | None:
-    """Liest das Hardware-Profil für lokale Provider aus benchmark_config.yaml.
-
-    SSoT: providers.local.<provider>.hardware_profile
-    Nur für lokale Provider (llamacpp, ollama) — Cloud/Commercial = None.
-    """
-    provider_l = provider.lower()
-    _local_providers = (
-        "ollama",
-        "llamacpp",
-        "llamacpp_spark",
-        "llama_cpp",
-        "llamacpp_local",
-    )
-    if provider_l not in _local_providers:
-        return None
-
-    alias_map = {
-        "llama_cpp": "llamacpp",
-        "llamacpp_local": "llamacpp",
-        "ollama": "ollama_local",
-    }
-    provider_key = alias_map.get(provider_l, provider_l)
-
-    try:
-        local_cfg = config.get("providers", {}).get("local", {})
-        profile = local_cfg.get(provider_key, {}).get("hardware_profile")
-        if profile:
-            return profile
-
-        # Backward-compatible fallback for older configs.
-        return local_cfg.get("config", {}).get("hardware_profile")
-    except Exception:
-        return None
 
 
 class BaseBenchmarkRunner:
@@ -200,7 +164,7 @@ class BaseBenchmarkRunner:
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "status": exec_result.status,
             "provider": provider,
-            "hardware_profile": _get_hardware_profile(self.validator.config, provider),
+            "hardware_profile": get_hardware_profile(self.validator.config, provider),
             "model": model,
             "asset_id": asset_id,
             "asset_name": asset_name,
@@ -518,7 +482,7 @@ class BaseBenchmarkRunner:
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "status": report.get("status", "success"),
             "provider": provider,
-            "hardware_profile": _get_hardware_profile(self.validator.config, provider),
+            "hardware_profile": get_hardware_profile(self.validator.config, provider),
             "model": model,
             "model_version": model_version,
             "asset_id": batch_asset_id,

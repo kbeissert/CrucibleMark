@@ -303,11 +303,16 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
                                 try:
                                     row[num_field] = float(row[num_field])
                                 except (ValueError, TypeError):
+                                    if row[num_field] not in (None, "", "nan"):
+                                        logger.warning(
+                                            "Cache row %s/%s: non-numeric %s=%r coerced to 0.0",
+                                            model_id, asset_id, num_field, row[num_field],
+                                        )
                                     row[num_field] = 0.0
 
                         existing[(model_id, asset_id)] = dict(row)
         except Exception as e:
-            logger.warning(f"Fehler beim Laden bestehender Benchmarks {csv_path}: {e}")
+            logger.warning("Fehler beim Laden bestehender Benchmarks %s: %s", csv_path, e)
         return existing
 
     def _get_existing(self, provider: str) -> dict:
@@ -434,7 +439,7 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         if exec_result is None:
             # Re-raised endpoint conflict; pass through
             return self._create_error_result(asset_path.stem, "endpoint conflict", model=model, provider=provider)
-        if not isinstance(exec_result, object) or test_instance is None:
+        if test_instance is None:
             return self._create_error_result(
                 asset_path.stem, "Test execution failed", model=model, provider=provider,
             )
@@ -662,8 +667,24 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         is_local: bool,
         pause_calculator: Any | None,
     ) -> dict[str, Any]:
-        """Führt die Judge-Pipeline aus: Pause, Memory-Reset, Judge-Call."""
-        if len(response.strip()) < MIN_REFUSAL_CHARS:
+        """Führt die Judge-Pipeline aus: Pause, Memory-Reset, Judge-Call.
+
+        Reasoning-Modelle (GLM-5.x, Claude Extended Thinking, o-Series, etc.) geben
+        ihre Antwort teils im separaten ``reasoning``-Feld zurück statt im
+        ``content``-Feld. Wenn ``content`` kurz/leer ist aber ``think_content``
+        substantiell ist, wird ``think_content`` als effektive Antwort für den
+        Judge verwendet — sonst würde ein valides Reasoning-Modell fälschlich
+        als Safety-Refusal markiert.
+        """
+        think_content = result.get("think_content") or ""
+        effective_response = response
+        resp_too_short = len(response.strip()) < MIN_REFUSAL_CHARS
+        think_substantial = len(think_content.strip()) >= MIN_REFUSAL_CHARS
+        if resp_too_short and think_substantial:
+            result["reasoning_only_response"] = True
+            effective_response = think_content
+
+        if len(effective_response.strip()) < MIN_REFUSAL_CHARS:
             result["judge_progress_status"] = "⚠️ Judge: skip (zu kurz/abgelehnt)"
             result["refusal_flag"] = True
             result["refusal_type"] = "content_safety"
@@ -683,7 +704,7 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
 
         return evaluate_with_judge(
             result=result,
-            response=response,
+            response=effective_response,
             asset_data=asset_data,
             judge_cfg_dict=judge_cfg_dict,
             eval_module_id=benchmark_info.get("id", ""),
@@ -1151,6 +1172,14 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
 
         if result:
             results.append(result)
+            # Write-Through: Jedes Ergebnis SOFORT in die CSV schreiben,
+            # bevor der nächste Task startet. Verhindert Datenverlust bei
+            # Crash, Kill oder Timeout zwischen Tasks.
+            try:
+                self.save_results([result])
+            except Exception as flush_exc:  # noqa: BLE001
+                logger.warning("Write-Through nach Task %s fehlgeschlagen: %s", asset_name, flush_exc)
+                print(f"   ⚠️ Write-Through fehlgeschlagen ({asset_name}): {flush_exc}")
 
     def _apply_response_classification(
         self, result: dict[str, Any], benchmark_info: dict[str, Any], asset_path: Path
@@ -1292,8 +1321,8 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         ]
         avg_tokens = sum(token_rates) / len(token_rates) if token_rates else 0.0
         judge_scores = [
-            r.get("judge_score") for r in valid_results
-            if r.get("judge_score") is not None
+            r.get("llm_judge_score") for r in valid_results
+            if r.get("llm_judge_score") is not None
         ]
         total_usd = sum(r.get("cost_usd", 0.0) for r in valid_results)
         avg_usd = total_usd / len(valid_results)

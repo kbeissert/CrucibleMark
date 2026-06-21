@@ -27,7 +27,6 @@ from utils.model_utils import (get_ollama_models_info,
 )
 from utils.module_loader import load_test_class
 from utils.provider_selector import ProviderSelector
-from utils.provider_selector import ProviderSelector
 from utils.benchmark_utils import select_from_list
 from utils.similarity import SemanticSimilarity
 from utils.config_validator import ConfigValidator
@@ -281,64 +280,9 @@ class BenchmarkRunner:
                 except Exception as e:  # pylint: disable=broad-exception-caught
                     print(f"⚠️ Unerwarteter Fehler: {e}")
         finally:
-            self._cleanup_local_provider(provider)
-
-    def _cleanup_local_provider(self, provider: str) -> None:
-        """Optionaler End-of-Run Cleanup für lokale Provider (Stop + Cache-Clear).
-
-        Für llama.cpp-Provider (llamacpp, llamacpp_spark) wird der Cleanup
-        NICHT ausgeführt, wenn CRUCIBLE_SKIP_LLAMACPP_CLEANUP=1 gesetzt ist
-        ODER das Flag _skip_llamacpp_cleanup auf dem Runner gesetzt ist.
-        Dies verhindert, dass der Server zwischen Modul-Runs gestoppt wird,
-        wenn der Batch-Orchestrator den Lifecycle übernimmt.
-        """
-        provider_l = provider.lower()
-        if provider_l not in ("ollama", "llamacpp", "llamacpp_spark", "llama_cpp", "llamacpp_local"):
-            return
-
-        # llama.cpp-Provider: Skip-Cleanup wenn vom Orchestrator vorgesehen
-        _llamacpp_providers = ("llamacpp", "llamacpp_spark", "llama_cpp", "llamacpp_local")
-        if provider_l in _llamacpp_providers:
-            # Prüfe sowohl Env-Variable als auch das Flag auf dem Runner
-            _env_skip = os.environ.get("CRUCIBLE_SKIP_LLAMACPP_CLEANUP") == "1"
-            _flag_skip = getattr(self, "_skip_llamacpp_cleanup", False)
-            if _env_skip or _flag_skip:
-                logger.debug(
-                    "_cleanup_local_provider: llama.cpp-Cleanup übersprungen "
-                    "(provider=%s, env=%s, flag=%s)",
-                    provider,
-                    _env_skip,
-                    _flag_skip,
-                )
-                return
-
-        local_cfg = self.config.get("providers", {}).get("local", {})
-        alias_map = {
-            "llama_cpp": "llamacpp",
-            "llamacpp_local": "llamacpp",
-            "ollama": "ollama_local",
-        }
-        provider_key = alias_map.get(provider_l, provider_l)
-        provider_cfg = local_cfg.get(provider_key, {})
-
-        if not provider_cfg.get("cleanup_on_exit", False):
-            return
-
-        stop_cmd = provider_cfg.get("server_stop_cmd")
-        post_stop_cmd = provider_cfg.get("server_post_stop_cmd")
-
-        print("\n🧹 End-of-Run Cleanup aktiv: stoppe lokalen Server und bereinige Cache …")
-        if stop_cmd:
-            try:
-                subprocess.run(stop_cmd, shell=True, check=False)
-            except Exception as exc:  # noqa: BLE001
-                print(f"⚠️ Cleanup stop failed: {exc}")
-
-        if post_stop_cmd:
-            try:
-                subprocess.run(post_stop_cmd, shell=True, check=False)
-            except Exception as exc:  # noqa: BLE001
-                print(f"⚠️ Cleanup post-stop failed: {exc}")
+            # Cleanup is handled by UnifiedBenchmarkRunner.run_benchmark() in its
+            # own finally-block — no need to duplicate here.
+            pass
 
     def _run_benchmark(
         self,
@@ -394,24 +338,14 @@ class BenchmarkRunner:
             "scoring": internal_config.get("scoring", {}),
         })
 
-        if is_local:
-            runner = UnifiedBenchmarkRunner(force=force, audit_mode=audit_mode)
-            results = runner.run_benchmark(
-                provider, model, benchmark_info, num_runs=num_runs
-            )
-            if results:
-                runner.save_results(results)
-                runner.print_summary(results, model)
-                self._check_for_anomaly(mod_id, model, results)
-        else:
-            runner = UnifiedBenchmarkRunner(force=force, audit_mode=audit_mode)
-            results = runner.run_benchmark(
-                provider, model, benchmark_info, num_runs=num_runs
-            )
-            if results:
-                runner.save_results(results)
-                runner.print_summary(results, model)
-                self._check_for_anomaly(mod_id, model, results)
+        runner = UnifiedBenchmarkRunner(force=force, audit_mode=audit_mode)
+        results = runner.run_benchmark(
+            provider, model, benchmark_info, num_runs=num_runs
+        )
+        if results:
+            runner.save_results(results)
+            runner.print_summary(results, model)
+            self._check_for_anomaly(mod_id, model, results)
 
 
     def _run_delegate(
@@ -493,7 +427,7 @@ class BenchmarkRunner:
                         subprocess.run([sys.executable, "scripts/core/verify_compass_anomalies.py", "--model_id", model], check=False)
                         break
                 except Exception as e:
-                    print(f"Fehler bei Anomalie-Trigger: {e}")
+                    logger.exception("Anomaly trigger failed for model %s", model)
 
     @staticmethod
     def _print_header(title: str):

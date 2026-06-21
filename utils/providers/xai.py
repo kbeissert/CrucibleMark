@@ -36,6 +36,8 @@ from utils.providers.base import BaseProviderClient
 class XAIClient(BaseProviderClient):
     """XAI Provider Client"""
     PROVIDER_NAMES = ["xai"]
+    PROVIDER_CONFIG_KEY = "xai"
+    DEFAULT_TOKEN_PARAM = "max_completion_tokens"
 
     def __init__(self, config: dict):
         super().__init__(config)
@@ -111,15 +113,13 @@ class XAIClient(BaseProviderClient):
                 ) + [{"role": "user", "content": prompt}],
                 "temperature": temperature,
             }
-            req_tokens = kwargs.get("max_tokens")
-            if not req_tokens:
-                req_tokens = self.config.get("defaults", {}).get("generation", {}).get("num_predict", 8192)
-            params["max_completion_tokens"] = req_tokens
+            token_param_name, req_tokens = self._resolve_request_tokens(model, kwargs)
+            params[token_param_name] = req_tokens
             if stream_handler:
                 params["stream"] = True
             response, used_max_tokens, fallback_triggered = self._execute_with_token_fallback(
                 func=self.client.chat.completions.create,
-                token_param_name="max_completion_tokens",
+                token_param_name=token_param_name,
                 initial_max_tokens=req_tokens,
                 error_keywords=["maximum context length", "max_tokens", "max_completion_tokens"],
                 func_kwargs=params

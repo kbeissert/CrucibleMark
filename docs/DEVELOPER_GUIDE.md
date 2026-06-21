@@ -186,6 +186,61 @@ llama.cpp-Modelle mit `--reasoning on` (bzw. `enable_thinking: true`) geben Thin
 
 **Historischer Bug (Session 26):** `_extract_response_content()` speicherte `"thinking_content"` statt `"think_content"` — `base_runner.py:163` las aber `"think_content"`. Ergebnis: `think_content` blieb immer leer in CSV. Zusätzlich: `reasoning_tokens` wurde nur bei leerem Content gesetzt — jetzt bevorzugt aus `usage.completion_tokens_details.reasoning_tokens` gelesen.
 
+### Provider-Connector Thinking/Reasoning-Extraktion (ab v4.10.1)
+
+Alle Provider-Connectors in `utils/providers/` extrahieren seit v4.10.1 konsistent drei Felder in `last_response_metadata`:
+
+| Feld | OpenAI | Anthropic | Google | Mistral | OpenRouter | Ollama | Groq | xAI |
+|------|--------|-----------|--------|---------|------------|--------|------|-----|
+| `reasoning_tokens` | `usage.completion_tokens_details.reasoning_tokens` | `usage.output_tokens_details.reasoning_tokens` | `usage_metadata.thoughts_token_count` | `usage.completion_tokens_details.reasoning_tokens` | `usage.completion_tokens_details.reasoning_tokens` | `eval_count` (wenn Thinking erkannt) | `usage.completion_tokens_details.reasoning_tokens` | `usage.completion_tokens_details.reasoning_tokens` |
+| `think_content` | `msg.reasoning` / `msg.reasoning_content` | `response.content[b].thinking` (type=thinking) | `candidates[0].content.parts[].thinking` | `chunk.thinking` (list-Response) | `msg.reasoning` / `msg.reasoning_content` / `msg.think_content` | `msg.thinking` (Streaming) | `msg.reasoning` / `msg.reasoning_content` | `msg.reasoning` / `msg.reasoning_content` |
+| `usage` | `response.usage` | `response.usage` | `usage_metadata` | `response.usage` | `response.usage` | Dict (synthetisiert) | `response.usage` | `response.usage` |
+
+**Streaming-Pfade (ab v4.10.1):**
+
+| Provider | Reasoning-Streaming | Usage-Streaming |
+|----------|---------------------|-----------------|
+| OpenAI | `delta.reasoning` akkumuliert | `chunk.usage` (mit `stream_options={"include_usage": True}`) |
+| Anthropic | `content_block_delta.delta.thinking` (type=thinking_delta) | `message_delta.usage` |
+| Google | `candidates[0].content.parts[].thinking` (pro Chunk) | `chunk.usage_metadata` (kumulativ — letzter Chunk gewinnt) |
+| OpenRouter | `delta.reasoning` akkumuliert | `chunk.usage` (letzter Chunk) |
+| Groq | `delta.reasoning` akkumuliert | `chunk.usage` (falls verfügbar) |
+| xAI | `delta.reasoning` akkumuliert | `chunk.usage` (falls verfügbar) |
+| Ollama | `msg.thinking` akkumuliert | Final-Chunk (`chunk.get("done") == True`) |
+| Mistral | Kein Streaming (Blocking-Only) | Blocking-Only |
+
+**DRY-Helper `_extract_reasoning_tokens(usage)`:**
+
+Definiert in `anthropic.py`, `openai.py`, `groq.py`, `xai.py`:
+
+```python
+def _extract_reasoning_tokens(self, usage) -> int | None:
+    """Extrahiere reasoning_tokens aus usage-Objekt (OpenAI-kompatibel)."""
+    if not usage:
+        return None
+    details = getattr(usage, "completion_tokens_details", None)
+    if details:
+        return getattr(details, "reasoning_tokens", None)
+    return None
+```
+
+**Pitfall: ohne `usage`-Objekt fällt `llm_client.py` auf `estimate_tokens()` zurück** (`llm_client.py:248`):
+
+```python
+# llm_client.py:238
+usage = self.last_response_metadata.get("usage")
+input_tokens, output_tokens = LLMParser.extract_usage_tokens(usage)
+
+# Fallback to estimation for Local/Ollama or if Usage missing
+if input_tokens == 0 and output_tokens == 0:
+    input_tokens = self.estimate_tokens(prompt)
+    output_tokens = self.estimate_tokens(response_text)
+```
+
+Ohne `usage` in `last_response_metadata` werden Tokens geschätzt (1 Token ≈ 4 Zeichen) statt von der API gezählt. **Bei allen Provider-Fixes muss `usage` mitgespeichert werden**, damit `LLMParser.extract_usage_tokens()` echte Werte liefert.
+
+**Pitfall: Anthropic hat keinen einheitlichen Usage-Schema.** OpenAI-kompatible Provider (`usage.completion_tokens_details.reasoning_tokens`) und Google (`thoughts_token_count`) liefern Reasoning-Tokens direkt im Usage-Objekt. Anthropic hat das in `usage.output_tokens_details.reasoning_tokens` (neue SDK-Versionen). Beide Schemata müssen parallel geprüft werden.
+
 ### Config-Lookup mit ID-Normalisierung (Defense-in-Depth)
 
 Die Model-IDs in `config/provider_config.yaml` werden in der Regel in der rohen Schreibweise des Providers eingetragen (z. B. `qwen3.5-35b-a3b-q8` mit Punkten). `resolve_canonical_model_id()` in `utils/model_utils.py` normalisiert diese ID früh im Entry-Point (Punkte/Bindestriche → Underscores), sodass `qwen3_5-35b-a3b-q8` durch die gesamte Benchmark-Pipeline gereicht wird — identisch zur Schreibweise in CSV-Spalten, Card-Dateinamen und Leaderboard-Zeilen.

@@ -48,10 +48,12 @@ Die Probe wertet drei Signale aus, in absteigender Confidence:
 
 **Befund aus Discovery (9 Modelle, 27 Probes, 2026-06-09):**
 - Signal A hat sich als **wenig zuverlässig** erwiesen (llama.cpp strippt Tags bei `enable_thinking: false`, OpenRouter strippt Tags aus dem Content)
-- Signal B ist **nur bei OpenRouter** verfügbar (OpenAI-kompatible Metadaten), nur für manche Modelle
+- Signal B war initial **nur bei OpenRouter** verfügbar (OpenAI-kompatible Metadaten) — **ab v4.10.1 wird Signal B in allen Provider-Connectors extrahiert**: `reasoning_tokens` aus `usage.completion_tokens_details.reasoning_tokens` (OpenAI/Mistral/OpenRouter/Groq/xAI), `usage.output_tokens_details.reasoning_tokens` (Anthropic), `usage_metadata.thoughts_token_count` (Google), `eval_count` (Ollama bei Thinking-Modellen).
 - Signal C ist die **einzige robuste Erkennung** über alle Provider hinweg
 
 → Inline-CoT ist der primäre Trigger, Tags/Metadaten sind Verstärkung.
+
+**Provider-Extraktion (ab v4.10.1):** Alle Provider-Connectors in `utils/providers/` speichern `reasoning_tokens` und `think_content` in `last_response_metadata`. Konsumenten: `judge_evaluator.py` (Thinking-Aufwand pro Aufgabe), `base_runner.py` (Reasoning-Budget-Entscheidung), `benchmark_utils.py` (Audit-Log mit Reasoning-Token-Block). Siehe `docs/ARCHITECTURE.md` → "Provider Thinking/Reasoning-Extraktion" für die vollständige Mapping-Tabelle.
 
 ---
 

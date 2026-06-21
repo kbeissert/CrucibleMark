@@ -30,6 +30,8 @@ from utils.providers.base import BaseProviderClient
 class AnthropicClient(BaseProviderClient):
     """Anthropic Claude Provider Client"""
     PROVIDER_NAMES = ["anthropic"]
+    PROVIDER_CONFIG_KEY = "anthropic"
+    DEFAULT_TOKEN_PARAM = "max_tokens"
 
     def __init__(self, config: dict[str, Any]):
         super().__init__(config)
@@ -110,13 +112,7 @@ class AnthropicClient(BaseProviderClient):
         self.last_request_time = time.time()
         try:
             model = self._resolve_model(model)
-            # Default to config, but override with kwargs if present
-            max_tokens = kwargs.get("max_tokens")
-            if not max_tokens:
-                max_tokens = self.config.get("anthropic", {}).get(
-                    "max_tokens", MAX_TOKENS_ANTHROPIC
-                )
-            # Note: Streaming not implemented yet for Anthropic in this wrapper
+            token_param_name, max_tokens = self._resolve_request_tokens(model, kwargs)
             func_kwargs: dict[str, Any] = {
                 "model": model,
                 "messages": [{"role": "user", "content": prompt}],
@@ -126,6 +122,11 @@ class AnthropicClient(BaseProviderClient):
                 func_kwargs["system"] = system
             if model not in ANTHROPIC_NO_TEMPERATURE_MODELS:
                 func_kwargs["temperature"] = temperature
+            if stream_handler:
+                func_kwargs["stream"] = True
+                return self._query_streaming(
+                    model, max_tokens, func_kwargs, fallback_triggered=False
+                )
             response, used_max_tokens, fallback_triggered = self._execute_with_token_fallback(
                 func=self.client.messages.create,
                 token_param_name="max_tokens",
@@ -134,6 +135,8 @@ class AnthropicClient(BaseProviderClient):
                 func_kwargs=func_kwargs
             )
             # Capture Metadata
+            reasoning_tokens = self._extract_reasoning_tokens(response.usage)
+            think_content = self._extract_think_content(response.content)
             self.last_response_metadata = {
                 "model": response.model,
                 "id": response.id,
@@ -141,7 +144,10 @@ class AnthropicClient(BaseProviderClient):
                 "finish_reason": getattr(response, "stop_reason", None),
                 "token_limit_fallback": fallback_triggered,
                 "token_limit_used": used_max_tokens,
+                "reasoning_tokens": reasoning_tokens,
             }
+            if think_content:
+                self.last_response_metadata["think_content"] = think_content
             stop_reason = getattr(response, "stop_reason", None)
             if stop_reason == "refusal":
                 logger.warning("Anthropic API refusal for model %s", model)
@@ -154,6 +160,102 @@ class AnthropicClient(BaseProviderClient):
         except Exception:
             # Let RetryHandler handle logging
             raise
+
+    def _extract_reasoning_tokens(self, usage) -> int | None:
+        """Extrahiere reasoning_tokens aus Anthropic usage-Objekt."""
+        if not usage:
+            return None
+        details = getattr(usage, "output_tokens_details", None)
+        if details:
+            return getattr(details, "reasoning_tokens", None)
+        return None
+
+    def _extract_think_content(self, content_blocks) -> str | None:
+        """Extrahiere thinking-Content aus Anthropic ContentBlock-Liste."""
+        think_parts: list[str] = []
+        for block in content_blocks:
+            if getattr(block, "type", None) == "thinking" and hasattr(block, "thinking"):
+                thinking = block.thinking
+                if thinking:
+                    think_parts.append(str(thinking))
+        return "".join(think_parts) if think_parts else None
+
+    def _query_streaming(
+        self,
+        model: str,
+        max_tokens: int,
+        func_kwargs: dict[str, Any],
+        fallback_triggered: bool = False,
+    ) -> str:
+        """Streaming-Query für Anthropic mit Thinking-Extraktion."""
+        full_content = ""
+        think_parts: list[str] = []
+        stream_usage = None
+        model_name = None
+        response_id = None
+        stop_reason = None
+        used_max_tokens = max_tokens
+
+        try:
+            response_stream = self.client.messages.create(**func_kwargs)
+            for event in response_stream:
+                # Capture metadata from stream events
+                if event.type == "message_start":
+                    model_name = event.message.model
+                    response_id = event.message.id
+                    stream_usage = event.message.usage
+                elif event.type == "content_block_start":
+                    block = event.content_block
+                    if getattr(block, "type", None) == "thinking":
+                        if hasattr(block, "thinking") and block.thinking:
+                            think_parts.append(str(block.thinking))
+                elif event.type == "content_block_delta":
+                    delta = event.delta
+                    if hasattr(delta, "type") and delta.type == "thinking_delta":
+                        if hasattr(delta, "thinking") and delta.thinking:
+                            think_parts.append(str(delta.thinking))
+                            if stream_handler:
+                                stream_handler(delta.thinking)
+                    elif hasattr(delta, "type") and delta.type == "input_delta":
+                        if hasattr(delta, "partial_json") and delta.partial_json:
+                            full_content += delta.partial_json
+                            if stream_handler:
+                                stream_handler(delta.partial_json)
+                elif event.type == "message_delta":
+                    delta = event.delta
+                    if hasattr(delta, "stop_reason"):
+                        stop_reason = delta.stop_reason
+                    if hasattr(delta, "usage"):
+                        stream_usage = delta.usage
+
+            used_max_tokens, fallback_triggered = self._get_used_max_tokens(
+                max_tokens, stream_usage
+            )
+
+            self.last_response_metadata = {
+                "model": model_name or model,
+                "id": response_id,
+                "usage": stream_usage,
+                "finish_reason": stop_reason,
+                "token_limit_fallback": fallback_triggered,
+                "token_limit_used": used_max_tokens,
+                "reasoning_tokens": self._extract_reasoning_tokens(stream_usage),
+            }
+            if think_parts:
+                self.last_response_metadata["think_content"] = "".join(think_parts)
+
+        except Exception:
+            raise
+
+        return full_content
+
+    def _get_used_max_tokens(self, initial: int, usage) -> tuple[int, bool]:
+        """Ermittle tatsächliche max_tokens und ob Fallback ausgelöst wurde."""
+        if not usage:
+            return initial, False
+        output = getattr(usage, "output_tokens", 0) or 0
+        # Fallback: wenn output_tokens < initial, aber kein explizites Fallback-Signal
+        return initial, False
     def get_available_models(self) -> List[str]:
         """Listet verfügbare Claude-Modelle"""
         return [

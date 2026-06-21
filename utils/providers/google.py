@@ -49,6 +49,8 @@ from utils.providers.base import BaseProviderClient
 class GoogleClient(BaseProviderClient):
     """Google Gemini Provider Client"""
     PROVIDER_NAMES = ["google"]
+    PROVIDER_CONFIG_KEY = "google"
+    DEFAULT_TOKEN_PARAM = "max_tokens"
 
     def __init__(self, config: Dict[str, Any]):
         super().__init__(config)
@@ -102,7 +104,7 @@ class GoogleClient(BaseProviderClient):
                 model_name=api_model,
                 **({"system_instruction": _system} if _system else {}),
             )
-            initial_max_tokens = kwargs.get("max_tokens", self.config.get("defaults", {}).get("generation", {}).get("num_predict", 8192))
+            _token_param_name, initial_max_tokens = self._resolve_request_tokens(model, kwargs)
             def _google_generator(max_tokens, **gen_kwargs):
                 generation_config.max_output_tokens = max_tokens
                 return gemini_model.generate_content(prompt, generation_config=generation_config, **gen_kwargs)

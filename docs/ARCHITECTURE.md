@@ -251,14 +251,32 @@ llama.cpp-Modelle mit `--reasoning on` geben Thinking-Inhalte im separaten API-F
 
 | Provider | Auth | Token Limit | Streaming | Retry Logic | Besonderheiten |
 |----------|------|-------------|-----------|-------------|----------------|
-| Ollama | Keine (localhost) | Modellabhängig (8K–128K) | ✅ | N/A (lokal) | `finish_reason` + `tps_eval` aus Ollama-Metadaten |
-| OpenAI | Bearer token | 128K (GPT-4) | ✅ | 429 → Exponential Backoff | — |
-| Mistral | API key | 32K | ❌ | 500 → 3× Retry | ThinkChunk-Handling für Magistral (Streaming-Artefakt) |
-| Anthropic | API key | 200K | ✅ | 429 → Exponential Backoff | `stop_reason` → normalisiert zu `finish_reason` |
-| Google | API key | 1M–2M | ❌ | SDK-seitig | `STOP` uppercase → normalisiert |
-| OpenRouter | Bearer token | Modellabhängig | ✅ | Im Wrapper | **Reasoning-Token-Budget** (siehe unten); Free-Tier-Modelle (`vendor/model:free`) nutzen separates Rate-Limit-Profil (`openrouter_free`, 18 RPM) |
-| xAI | Bearer token | Modellabhängig | ✅ | Im Wrapper | `finish_reason` aus Streaming-Chunks extrahiert |
-| Groq | Bearer token | Modellabhängig | ✅ | Im Wrapper | `max_completion_tokens` statt `max_tokens` (config-getrieben) |
+| Ollama | Keine (localhost) | Modellabhängig (8K–128K) | ✅ | N/A (lokal) | `finish_reason` + `tps_eval` aus Ollama-Metadaten; `usage` aus `prompt_eval_count`/`eval_count` synthetisiert |
+| OpenAI | Bearer token | 128K (GPT-4) | ✅ | 429 → Exponential Backoff | `reasoning_tokens` aus `usage.completion_tokens_details`; `think_content` aus `msg.reasoning` |
+| Mistral | API key | 32K | ❌ | 500 → 3× Retry | ThinkChunk-Handling für Magistral (Streaming-Artefakt); `think_content` aus `chunk.thinking` |
+| Anthropic | API key | 200K | ✅ | 429 → Exponential Backoff | `stop_reason` → normalisiert zu `finish_reason`; `think_content` aus ContentBlock `type="thinking"`; Streaming mit `thinking_delta`-Events |
+| Google | API key | 1M–2M | ❌ | SDK-seitig | `STOP` uppercase → normalisiert; `think_content` aus `candidates[0].content.parts[].thinking`; `thoughts_token_count` für Reasoning-Token-Count |
+| OpenRouter | Bearer token | Modellabhängig | ✅ | Im Wrapper | **Reasoning-Token-Budget** (siehe unten); Free-Tier-Modelle (`vendor/model:free`) nutzen separates Rate-Limit-Profil (`openrouter_free`, 18 RPM); `think_content` aus `msg.reasoning`/`msg.reasoning_content` |
+| xAI | Bearer token | Modellabhängig | ✅ | Im Wrapper | `finish_reason` aus Streaming-Chunks extrahiert; `reasoning_tokens` aus `usage.completion_tokens_details` |
+| Groq | Bearer token | Modellabhängig | ✅ | Im Wrapper | `max_completion_tokens` statt `max_tokens` (config-getrieben); `reasoning_tokens` aus `usage.completion_tokens_details` |
+
+**Provider Thinking/Reasoning-Extraktion (ab v4.10.1):**
+
+Alle Provider-Connectors in `utils/providers/` extrahieren seit v4.10.1 konsistent drei Felder in `last_response_metadata`:
+
+| Feld | Quelle | Konsument |
+|------|--------|-----------|
+| `reasoning_tokens` | `usage.completion_tokens_details.reasoning_tokens` (OpenAI-kompatibel), `usage.output_tokens_details.reasoning_tokens` (Anthropic), `usage_metadata.thoughts_token_count` (Google), `eval_count` (Ollama) | Judge-Evaluator (`judge_evaluator.py:272`), `base_runner.py:159` (Reasoning-Budget-Entscheidung) |
+| `think_content` | `msg.reasoning`/`msg.reasoning_content` (OpenAI), `delta.reasoning` (OpenAI Streaming), `part.thinking` (Google), `block.thinking` (Anthropic), `delta.thinking`/`block.thinking` (Anthropic Streaming), `msg.thinking` (Ollama), `chunk.thinking` (Mistral) | Judge-Evaluator (`judge_evaluator.py:273`), `base_runner.py:163`, Audit-Log (`benchmark_utils.py:382`) |
+| `usage` | `response.usage` (OpenAI/Anthropic/Mistral/OpenRouter/Groq/xAI), `usage_metadata` (Google), `{"prompt_tokens": ..., "completion_tokens": ..., "total_tokens": ...}` (Ollama) | `LLMParser.extract_usage_tokens()` (`llm_client.py:244`) — ermöglicht echte API-Token-Zählung statt `estimate_tokens()`-Fallback |
+
+**Sonderfälle:**
+
+- **OpenAI o-Series:** Reasoning wird intern verborgen — `reasoning_tokens` und `think_content` sind leer. Karten manuell mit `thinking_probe_manual_override: true` setzen.
+- **Anthropic Extended Thinking:** `think_content` aus ContentBlock `type="thinking"` mit Thinking-Inhalt + `signature` (verifiziertes Thinking). Streaming über `content_block_start`/`content_block_delta` mit `type="thinking_delta"`.
+- **Google Gemini:** `thoughts_token_count` ist kumulativ — letzter Chunk hält den finalen Wert (nicht addieren).
+- **Ollama:** Keine separate `reasoning_tokens`-API — `eval_count` wird als Reasoning-Count verwendet wenn Thinking erkannt wurde (sonst Output-Token-Count).
+- **Groq/xAI:** Reasoning-Unterstützung in `usage` prüfen — `completion_tokens_details.reasoning_tokens` ist OpenAI-kompatibel und verfügbar.
 
 **Globaler Token-Fallback-Wrapper:**
 Das Framework implementiert einen robusten Ansatz zur Bewältigung harter Output-Token-Limits, zentral im `BaseProviderClient` über `_execute_with_token_fallback`.

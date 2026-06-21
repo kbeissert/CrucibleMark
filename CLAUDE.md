@@ -34,6 +34,10 @@ mit einem unabhängigen LLM-Judge (Blind-Evaluierung) und generiert Leaderboards
 - **LLM-Blind-Evaluierung beibehalten:** Judge kennt Modellnamen während Bewertung NICHT
 - Scoring-Logik nie stillschweigend verändern — das verfälscht historische Benchmarks
 - Konfiguration ausschließlich über Config-Files, nie hardcodiert
+- **Sequenzielle Modell-Abarbeitung (Design-Constraint):** Modelle werden einzeln nacheinander getestet, Server wird zwischen Modellen neu gestartet, Cooldown via `AdaptivePauseCalculator`. Das ist KEIN Performance-Bug — es garantiert gleichwertige Testumgebungen. NICHT parallelisieren.
+- **Judge-Reset zwischen Tasks (Design-Constraint):** Jede Judge-Bewertung ist ein frischer API-Call ohne Kontext aus vorherigen Bewertungen. KEIN Judge-Caching einführen — verhindert Kontextmix.
+- **Token-Budget SSoT:** `resolve_token_budget()` in `utils/model_utils.py` — nie inline duplizieren
+- **`token_param_name` per Provider:** aus `benchmark_config.yaml` lesen, nie hardcoden
 
 ---
 
@@ -107,6 +111,7 @@ KONTEXT-ÜBERGABE:
 
 ## Critical Pitfalls (Known Issues)
 
+- **CSV Write-Through (ab v4.10.2):** `_handle_single_asset()` in `unified_runner.py` schreibt jedes Ergebnis SOFORT per `save_results([result])` in die CSV. Vorher: Batch-Write erst am Ende des Runs — bei Crash/Kill/Timeout waren ALLE Ergebnisse des Runs verloren (Audit-Logs blieben, CSV aber leer). Der Caller (`benchmark_auto.py:498`, `run_score_benchmark.py:180`) behält den finalen `save_results(results)` als Safety-Netz (Upsert ist idempotent).
 - **Namespace-Kollision:** Bei `importlib` mit gleichnamigen Plugin-Dateien `{parent.name}_{stem}` verwenden
 - **Asset Schema:** Jede YAML-Aufgabe braucht zwingend `prompt`/`prompts`-Feld
 - **Judge Parser:** Bei Parse-Fehler `parse_success=False` (niemals Exception schlucken)
@@ -120,6 +125,11 @@ KONTEXT-ÜBERGABE:
 - **Card-Naming SSoT:** `_card_path()` und `_find_card()` aus `utils/model_utils.py` — nie inline `Path(...) / f"{re.sub(...)}".json`. `-latest`-Aliases mit bekannter Version werden unter `{base}-{version}.json` abgelegt (`mistral-large-latest` → `mistral-large-3.json`). Die `model_id` *in der Card* bleibt immer der API-Alias.
 - **Review-Dir SSoT — `_safe_name()` zwingend:** Jedes Schreiben in `docs/reviews/{slug}/` muss `_safe_name(model_id)` nutzen — nie `subdir.name` oder rohe Audit-Log-Ordnernamen. Audit-Logs können `.` enthalten (z.B. `qwen_qwen3.6-plus`), `_safe_name` normalisiert zu `_` → ohne Normalisierung entstehen parallele Verzeichnisse, die im Web-Export Key-Kollisionen auslösen.
 - **`audit_logger.py` `safe_model` — Punkte ersetzen:** `AuditLogWriter.write_audit_log()` und `PoliticalCompassTest.execute()` in `benchmark_modules/political_compass/` nutzen `str(model).replace(":", "_").replace("/", "_")` — **muss `.replace(".", "_")` enthalten**, sonst entstehen `xiaomi_mimo-v2.5/`-DOT-Dirs parallel zu den korrekten `xiaomi_mimo-v2_5/`-Underscore-Dirs. Fix: `.replace(":", "_").replace("/", "_").replace(".", "_")`.
+- **Provider-Connector Thinking/Reasoning-Extraktion (ab v4.10.1 SSoT):** Jeder Provider-Connector MUSS drei Felder in `last_response_metadata` speichern:
+  1. `reasoning_tokens` — aus `usage.completion_tokens_details.reasoning_tokens` (OpenAI/Mistral/OpenRouter/Groq/xAI), `usage.output_tokens_details.reasoning_tokens` (Anthropic), `usage_metadata.thoughts_token_count` (Google), `eval_count` (Ollama bei Thinking-Modellen)
+  2. `think_content` — der vollständige Thinking-Text (OpenAI: `msg.reasoning`, Anthropic: `block.thinking`, Google: `part.thinking`, Mistral: `chunk.thinking`, Ollama: `msg.thinking`)
+  3. `usage` — das vollständige `response.usage`-Objekt für `LLMParser.extract_usage_tokens()` (`llm_client.py:244`). OHNE `usage` fällt die Pipeline auf `estimate_tokens()` zurück (Zeichen-basierte Schätzung). NIEMALS `usage` weglassen.
+  Helper: `_extract_reasoning_tokens(usage)` (DRY-Pattern) in anthropic.py, openai.py, groq.py, xai.py. Streaming-Pfade: Reasoning-Chunks akkumulieren (`delta.reasoning`, `thinking_delta`, `part.thinking`, `msg.thinking`). Konsumenten: `base_runner.py:159` (Reasoning-Budget), `judge_evaluator.py:272` (Thinking-Aufwand), `benchmark_utils.py:382` (Audit-Log).
 - **Model-ID-Namenskonvention (keine Punkte in IDs):** Interne `model_id`-Felder und provider_config-Einträge dürfen **keine Punkte** enthalten — nur Bindestriche und Unterstriche. Versionspunkte werden zu Unterstrichen: `v2.5` → `v2_5`, `3.3` → `3_3`. Beispiele: `xiaomi/mimo-v2_5-pro` ✓, `nvidia/llama-3_3-nemotron-super-49b-v1_5` ✓. Die OpenRouter/API-ID (mit Punkt) wird als `api_model_id` oder via Provider-Alias getrennt gespeichert. Editor-Prompt: `config/editor_prompts.yaml → model_onboarding`.
 - **`is_accessible()` — 404 ≠ kein Zugriff:** `NotFoundError`/404 und `RateLimitError`/429 → `True` zurückgeben
 - **Refusal-Flag statt Re-Run:** Antwort < 15 Zeichen → `refusal_flag=True`, kein Re-Run, kein Asset-Fix

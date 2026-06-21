@@ -12,8 +12,61 @@ to know what reference files exist.
 ---
 
 # Active Context
+## Aktueller Status (2026-06-21)
+
+- **Session 28 abgeschlossen (2026-06-21) — Token-Budget-Refactoring + Design-Constraints + CSV-Gap-Analyse:**
+
+  1. **Design-Constraints dokumentiert** (`systemPatterns.md`, `CLAUDE.md`):
+     - Sequenzielle Modell-Abarbeitung (Server-Restart + Cooldown) — KEIN Performance-Bug
+     - Judge-Reset zwischen Tasks (kein Caching) — verhindert Kontextmix
+     - Keine Cross-Run-Pollution (Stateless Runs)
+
+  2. **Token-Budget-Refactoring — SSoT `_resolve_request_tokens()` in `base.py`:**
+     - **Alle 7 API-Provider** nutzen jetzt einen Shared Helper statt inline duplizierter Token-Logik
+     - **Zweistufige Provider-Kaskade:** Provider-Default `max_tokens` → Per-Model Override `model_max_tokens`
+     - **Provider ohne Budget (anthropic, groq, xai, google)** bekommen jetzt korrekte Reasoning-Budgets
+     - **Duplikat-Code eliminiert:** ~30 Zeilen in groq.py + xai.py (Copy-Paste), ~60 Zeilen inline in 7 Providern
+     - **Config:** `provider_config.yaml` — 7 Provider mit `max_tokens` Default, OpenRouter mit 7 Per-Model Overrides
+
+  3. **Token-Budget-Optimierung** (`benchmark_config.yaml`):
+     - `code_quality` Reasoning: **65536 → 20000** (p99=16382, Reduktion 85→26 Min/Task)
+     - `cultural_intelligence` Standard: **1000 → 3000** (Cloud-p90=2893)
+     - `documentation_quality` Standard: **6000 → 8000** (Cloud-p90=7789)
+
+  4. **CSV-Gap-Analyse** (9 Modelle mit fehlenden Einträgen):
+     - Hermes 4.3 36B: 37/43, Kimi K2.7 Code: 5/43, GLM 4.6: 32/43, Gemma-4 (5 Modelle): 38–42/43
+     - DeepSeek V4 Pro: 43/43 ✅ (Analyse-Fehler korrigiert)
+     - **Audit-Logs enthalten ALLE Daten** — Tasks wurden ausgeführt, CSV-Write-Through schlug fehl
+     - **Aktion:** Re-Run der fehlenden Module (kein Code-Fix nötig)
+
+  5. **Dokumentation:** CHANGELOG v4.10.3, README (Version Badge + Token-Budget-Beschreibung), CLAUDE.md (SSoT-Pitfalls), systemPatterns.md (Design-Constraints + Token-Kaskade-Brücke)
+
+- **Offene Tasks:**
+  - Re-Run fehlender Module für 9 Modelle (Hermes 4.3, Kimi K2.7, GLM 4.6, 5× Gemma-4)
+  - Political Compass für alle 30 Modelle nachholen (deaktiviert im Auto-Benchmark)
+
+---
 
 ## Aktueller Status (2026-06-20)
+
+- **Session 27 abgeschlossen (2026-06-20) — Provider-Connector Thinking/Reasoning-Fix + Card-Cleanup:**
+  - **Auslöser:** OpenRouter war der einzige Provider, der `reasoning_tokens`/`think_content`/`usage` korrekt in `last_response_metadata` speicherte. Andere Provider (anthropic, openai, google, groq, xai, ollama, mistral) hatten Lücken, was zu:
+    - fehlerhafter Judge-Evaluation (Thinking-Aufwand pro Aufgabe nicht messbar)
+    - falscher Cost-Analyse (Pipeline fiel auf `estimate_tokens()`-Fallback zurück)
+    - verfälschter Benchmark-Qualität (Tokens geschätzt statt gezählt) führte
+  - **Alle 7 Provider-Connectors gefixt** (`utils/providers/anthropic.py`, `openai.py`, `google.py`, `groq.py`, `xai.py`, `ollama.py`, `mistral.py`):
+    - `reasoning_tokens` extrahiert aus `usage.completion_tokens_details.reasoning_tokens` (OpenAI-kompatibel) / `usage.output_tokens_details.reasoning_tokens` (Anthropic) / `usage_metadata.thoughts_token_count` (Google) / `eval_count` (Ollama, wenn Thinking erkannt)
+    - `think_content` extrahiert aus `msg.reasoning`/`delta.reasoning` (OpenAI), `block.thinking`/`thinking_delta` (Anthropic), `part.thinking` (Google), `msg.thinking` (Ollama), `chunk.thinking` (Mistral)
+    - `usage` in `last_response_metadata["usage"]` gespeichert (vorher fehlte in google.py und groq.py/xai.py Streaming)
+  - **Anthropic Streaming-Pfad komplett neu implementiert** (`_query_streaming()`): akkumuliert `content_block_delta`-Events mit `type="thinking_delta"`, trackt `usage` aus `message_start`/`message_delta` Events.
+  - **DRY-Helper `_extract_reasoning_tokens(usage)`** in anthropic.py, openai.py, groq.py, xai.py (4x identisches Pattern).
+  - **Mistral `think_content`-Fix:** wurde vorher nur bei leerem Content gesetzt — jetzt immer wenn ThinkChunks vorhanden.
+  - **Ollama `usage`-Dict synthetisiert** aus `prompt_eval_count`/`eval_count` (Ollama liefert kein einheitliches `usage`-Objekt).
+  - **2 pre-existing Test-Failures behoben:**
+    - `test_sampling_defaults_ssot.py`: 3 Model-Cards fehlten Sampling-Keys (`gemma-4-31b-it-creative-wordsmith-q8`, `hermes-4_3-36b-q6`, `mistral-large-2512`) — alle 7 Sampling-Default-Felder als `null` ergänzt.
+    - `test_taxonomy_ssot.py`: `gemini-3-flash-preview.json` hatte `parameter_architecture: "unknown"` (verbotener Placeholder) → `"dense"` (gültiger Taxonomie-Wert).
+  - **Dokumentation aktualisiert:** `CLAUDE.md` (neuer Pitfall-Eintrag "Provider-Connector Thinking/Reasoning-Extraktion"), `CHANGELOG.md` (neue v4.10.1), `docs/ARCHITECTURE.md` (Provider-Tabelle + "Provider Thinking/Reasoning-Extraktion" Sektion), `docs/DEVELOPER_GUIDE.md` (neue Sektion "Provider-Connector Thinking/Reasoning-Extraktion"), `docs/THINKING_PROBE.md` (Signal-B-Update mit v4.10.1-Verweis).
+  - **Verifikation:** 819/819 Tests grün.
 
 - **Session 26 abgeschlossen (2026-06-20) — Spark Token-Management + Bugfixes:**
   - **Root Cause Timeout-Loop:** `qwopus3_6-27b-v2-mtp-q8` auf `llamacpp_spark` produzierte endlose Generierungen weil kein `max_tokens`-Cap gesetzt war. Das Modell generierte bis zum Kontextfenster (65536 Tokens), httpx Read-Timeout (300s) griff nach 5 Min → Retry-Loop.

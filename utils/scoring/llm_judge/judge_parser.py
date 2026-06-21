@@ -135,8 +135,10 @@ def parse(raw_response: str) -> JudgeResult:
             "Raw response (last 800 chars): %.800s",
             raw_response[-800:],
         )
-        with open("last_failed_raw.txt", "w", encoding="utf-8") as f:
-            f.write(raw_response)
+        logger.debug(
+            "LLM Judge: full failed response written to debug log. Length=%d chars",
+            len(raw_response),
+        )
         return JudgeResult(
             score=None,
             reasoning=reasoning,

@@ -12,6 +12,7 @@ providers:
       token_param_name: max_tokens
       model_type: proprietary_api
       enabled: true
+      max_tokens: 16384
       env_var: MISTRAL_API_KEY
       models:
       # Mistral — neueste zuerst
@@ -73,6 +74,7 @@ providers:
       token_param_name: max_completion_tokens
       model_type: proprietary_api
       enabled: true
+      max_tokens: 16384
       env_var: OPENAI_API_KEY
       model_max_tokens:
         gpt-4o: 4096
@@ -111,6 +113,7 @@ providers:
       api_type: google
       model_type: proprietary_api
       enabled: true
+      max_tokens: 16384
       env_var: GOOGLE_API_KEY
       models:
       - id: gemini-3.5-flash
@@ -133,6 +136,7 @@ providers:
       token_param_name: max_completion_tokens
       model_type: proprietary_api
       enabled: true
+      max_tokens: 16384
       env_var: XAI_API_KEY
       models:
       - id: grok-4.20-0309-reasoning
@@ -157,6 +161,7 @@ providers:
       token_param_name: max_completion_tokens
       model_type: open_weights_cloud
       enabled: true
+      max_tokens: 16384
       env_var: GROQ_API_KEY
       models:
       # OpenAI GPT OSS — bei Bedarf aktivieren
@@ -182,7 +187,19 @@ providers:
       token_param_name: max_tokens
       model_type: open_weights_cloud
       enabled: true
+      max_tokens: 16384
       env_var: OPENROUTER_API_KEY
+      # Per-Modell Token-Limits (max_tokens Cap). Überschreibt den Provider-Default
+      # (16384) für einzelne Modelle. Werte basieren auf empirischen p99 + Headroom.
+      # Kimi K2.x Thinking-Modelle brauchen mehr wegen hoher Reasoning-Anteile (60-75%).
+      model_max_tokens:
+        moonshotai/kimi-k2.7-code: 25000
+        moonshotai/kimi-k2.6: 20000
+        moonshotai/kimi-k2.5-0127: 18000
+        moonshotai/kimi-k2-thinking-20251106: 16000
+        moonshotai/kimi-k2: 16000
+        deepseek/deepseek-v4-pro: 16000
+        deepseek/deepseek-v4-flash: 16000
       models:
       # NVIDIA — neueste zuerst
       - id: nvidia/nemotron-3-ultra-550b-a55b
@@ -190,9 +207,9 @@ providers:
         model_type: open_weights_cloud  # MoE 55B/550B
 
        # Z.ai (GLM) — neueste zuerst
-      # - id: z-ai/glm-5.2
-      #   name: GLM 5.2 (Z.ai) via OpenRouter
-      #   model_type: proprietary_api  # Proprietäres Modell, Gewichte nicht öffentlich
+      - id: z-ai/glm-5.2
+        name: GLM 5.2 (Z.ai) via OpenRouter
+        model_type: proprietary_api  # Proprietäres Modell, Gewichte nicht öffentlich
       - id: z-ai/glm-5.1-20260406
         name: GLM 5.1-20260406 (Z.ai) via OpenRouter
         model_type: proprietary_api  # Proprietäres Modell, Gewichte nicht öffentlich
@@ -208,8 +225,8 @@ providers:
         name: GLM 4.6 (Z.ai) via OpenRouter
 
       # Moonshot AI (Kimi) — neueste zuerst
-      # - id: moonshotai/kimi-k2.7-code
-      #   name: Kimi K2.7 Code via OpenRouter
+      - id: moonshotai/kimi-k2.7-code
+        name: Kimi K2.7 Code via OpenRouter
       - id: moonshotai/kimi-k2.6
         name: Kimi K2.6 via OpenRouter
       - id: moonshotai/kimi-k2.5-0127

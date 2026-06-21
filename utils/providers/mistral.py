@@ -28,6 +28,8 @@ from utils.providers.base import BaseProviderClient
 class MistralClient(BaseProviderClient):
     """Mistral AI Provider Client"""
     PROVIDER_NAMES = ["mistral"]
+    PROVIDER_CONFIG_KEY = "mistral"
+    DEFAULT_TOKEN_PARAM = "max_tokens"
 
     def __init__(self, config: dict[str, Any]):
         super().__init__(config)
@@ -75,13 +77,7 @@ class MistralClient(BaseProviderClient):
         """Query Mistral API"""
         try:
             model = self._resolve_model(model)
-            # Mistral supports max_tokens
-            from utils.model_utils import resolve_token_budget
-            _provider_cfg = self.config.get("providers", {}).get("commercial", {}).get("mistral", {})
-            token_param_name = _provider_cfg.get("token_param_name", "max_tokens")
-            max_tokens, _ = resolve_token_budget(
-                model, kwargs.get("max_tokens"), self.config, kwargs.get("_module_key")
-            )
+            token_param_name, max_tokens = self._resolve_request_tokens(model, kwargs)
             # Note: Streaming not implemented yet for Mistral in this wrapper
             _system = kwargs.get("system")
             func_kwargs = {
@@ -100,13 +96,22 @@ class MistralClient(BaseProviderClient):
                 func_kwargs=func_kwargs
             )
             # Capture Metadata
+            usage = response.usage
+            reasoning_tokens = None
+            if usage:
+                ctd = getattr(usage, "completion_tokens_details", None)
+                if ctd:
+                    reasoning_tokens = getattr(ctd, "reasoning_tokens", None)
+                if reasoning_tokens is None:
+                    reasoning_tokens = getattr(usage, "reasoning_tokens", None)
             self.last_response_metadata = {
                 "model": response.model,
                 "id": response.id,
-                "usage": response.usage,
+                "usage": usage,
                 "token_limit_fallback": fallback_triggered,
                 "token_limit_used": used_max_tokens,
                 "finish_reason": getattr(response.choices[0], "finish_reason", None) if response.choices else None,
+                "reasoning_tokens": reasoning_tokens,
             }
             content = response.choices[0].message.content
             # Reasoning models (e.g. magistral) return a list of chunks
@@ -151,7 +156,7 @@ class MistralClient(BaseProviderClient):
                 content = "".join(text_parts)
                 # If TextChunk is empty but ThinkChunk has content, store it as metadata
                 # so the audit log can surface it as informational context
-                if not content.strip() and think_parts:
+                if think_parts:
                     self.last_response_metadata["think_content"] = "".join(think_parts)
             if stream_handler and content:
                 stream_handler(content)

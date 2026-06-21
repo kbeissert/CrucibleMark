@@ -382,11 +382,6 @@ def _aggregate_basic_stats(
     #    "execution_time": ["mean", "max", p95, p99, count_timeouts]
     # }
 
-    # 1. Base Aggregation
-    base_stats = (
-        df.groupby(["model", "model_version", "type"]).agg(base_aggs).reset_index()
-    )
-
     # Calculate rigorous time stats
     time_stats = (
         df.groupby(["model", "model_version", "type"])["execution_time"]
@@ -560,14 +555,18 @@ def _calculate_stability_score(df: pd.DataFrame) -> pd.DataFrame:
     # Handle single-item variance (std is NaN) -> CV is 0 (Stable)
     asset_stats["asset_std"] = asset_stats["asset_std"].fillna(0)
 
-    # 3. Calculate CV per asset (Coefficient of Variation)
-    asset_stats["asset_cv"] = asset_stats.apply(
-        lambda x: x["asset_std"] / x["asset_mean"] if x["asset_mean"] > 0 else 0, axis=1
-    )
+    # 3. Calculate normalized variability per asset.
+    #    Uses σ / global_mean instead of CV (σ/μ) to avoid penalizing
+    #    inherently fast tasks (e.g. 0.1s ± 0.05s CV=0.5 vs 10s ± 1s CV=0.1).
+    global_mean = df_perf["execution_time"].mean()
+    if global_mean > 0:
+        asset_stats["asset_nv"] = asset_stats["asset_std"] / global_mean
+    else:
+        asset_stats["asset_nv"] = 0.0
 
-    # 4. Average the CVs across all assets (Asset-Aware Stability)
+    # 4. Average the normalized variabilities across all assets (Asset-Aware Stability)
     stability_stats = (
-        asset_stats.groupby(["model", "model_version", "type"])["asset_cv"]
+        asset_stats.groupby(["model", "model_version", "type"])["asset_nv"]
         .agg(stability_score="mean")
         .reset_index()
     )
@@ -619,7 +618,11 @@ def calculate_scores(
     df_all = df_all[(df_all["category"] != "Other")]
 
     # pylint: disable=too-many-locals,too-many-statements
-    df_success = df_all[df_all["status"] == "success"].copy()
+    # Include all valid completions in scoring (not just 'success').
+    # language_mismatch, truncated, verbose_outlier all carry real scores
+    # and are treated as non-error by the runner (unified_runner.py).
+    _valid_statuses = {"success", "language_mismatch", "truncated", "verbose_outlier", "refusal"}
+    df_success = df_all[df_all["status"].isin(_valid_statuses)].copy()
     # --- Performance Ratio Calculation (Removed, using raw) ---
     df_success["performance_ratio"] = df_success["percentage"]
 

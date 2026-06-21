@@ -11,6 +11,14 @@ class BaseProviderClient:
     # Liste der logischen Provider-Namen, für die dieser Client verantwortlich ist (z.B. ["openai"])
     PROVIDER_NAMES: List[str] = []
 
+    # Config-Key unter providers.commercial (z.B. "openrouter", "openai", "anthropic").
+    # Subklassen setzen diesen Wert, damit _resolve_request_tokens() die richtige
+    # Provider-Config laden kann. None = kein Provider-Config-Lookup (z.B. Ollama).
+    PROVIDER_CONFIG_KEY: Optional[str] = None
+
+    # Standard-Token-Parametername, falls nicht in der Config definiert.
+    DEFAULT_TOKEN_PARAM: str = "max_tokens"
+
     # Registry aller Clients
     _registry: dict[str, type] = {}
 
@@ -63,6 +71,62 @@ class BaseProviderClient:
         Standardmäßig True, sollte von Subklassen überschrieben werden.
         """
         return True
+
+    def _get_provider_cfg(self) -> dict[str, Any]:
+        """Lädt die Provider-Config aus provider_config.yaml (commercial-Pfad).
+
+        Returns {} wenn PROVIDER_CONFIG_KEY nicht gesetzt ist oder die Config fehlt.
+        """
+        key = self.PROVIDER_CONFIG_KEY
+        if not key:
+            return {}
+        return self.config.get("providers", {}).get("commercial", {}).get(key, {})
+
+    def _resolve_request_tokens(
+        self,
+        model: str,
+        kwargs: dict,
+    ) -> tuple[str, int]:
+        """Zentrale Token-Budget-Auflösung für alle API-Provider (SSoT).
+
+        Zweistufige Kaskade (Config-Driven):
+          1. ``resolve_token_budget()`` — Reasoning-/Thinking-Erkennung + Modul-Budgets
+             aus benchmark_config.yaml
+          2. Provider-Default ``max_tokens`` — Obergrenze für ALLE Modelle dieses Providers
+          3. Per-Model Override ``model_max_tokens[model_id]`` — überschreibt den Provider-Default
+             für einzelne Modelle (z.B. kimi-k2.7-code braucht mehr als der Standard)
+
+        Die Kaskade ist: ``min(resolve_budget, model_override ?? provider_default)``.
+        Modelle ohne expliziten Override erben den Provider-Standard.
+
+        Args:
+            model: Modell-ID (z.B. "moonshotai/kimi-k2.6")
+            kwargs: Query-Kwargs (enthält ``max_tokens`` und ``_module_key``)
+
+        Returns:
+            (token_param_name, effective_tokens)
+        """
+        from utils.model_utils import resolve_token_budget
+
+        provider_cfg = self._get_provider_cfg()
+        token_param_name = provider_cfg.get("token_param_name", self.DEFAULT_TOKEN_PARAM)
+
+        # 1. Reasoning-/Thinking-Budget auflösen
+        req_tokens, _ = resolve_token_budget(
+            model, kwargs.get("max_tokens"), self.config, kwargs.get("_module_key")
+        )
+
+        # 2. Zweistufige Token-Kaskade:
+        #    Provider-Default → Per-Model Override (überschreibt Default)
+        provider_cap = provider_cfg.get("max_tokens")
+        model_limits = provider_cfg.get("model_max_tokens", {})
+        effective_cap = model_limits.get(model, provider_cap)
+
+        if effective_cap is not None:
+            req_tokens = min(req_tokens, effective_cap)
+
+        return token_param_name, req_tokens
+
     def _execute_with_token_fallback(
         self,
         func: Callable,

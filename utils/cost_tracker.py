@@ -116,8 +116,8 @@ class CostTracker:
                 # Card vorhanden, aber keine Preise (z.B. lokales Modell)
                 logging.getLogger(__name__).debug(
                     "Keine Preise für Modell '%s' (%s): Model Card vorhanden "
-                    "aber input_price_per_1m/output_price_per_1m=null (lokales Modell). "
-                    "Kosten werden mit 0.0 geloggt.",
+                    "aber input_price_per_1m/output_price_per_1m=0.0 (lokales GGUF-Modell). "
+                    "Kosten werden mit 0.0 USD berechnet.",
                     model,
                     provider,
                 )
@@ -125,8 +125,8 @@ class CostTracker:
         except Exception:
             pass
 
-        logging.getLogger(__name__).warning(
-            "Keine Model Card für '%s' (%s): Kosten werden mit 0.0 geloggt.",
+        logging.getLogger(__name__).info(
+            "Keine Model Card für '%s' (%s): Preis nicht angegeben, Kosten werden mit 0.0 USD berechnet.",
             model,
             provider,
         )

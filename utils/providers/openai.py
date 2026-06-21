@@ -37,6 +37,8 @@ from utils.providers.base import BaseProviderClient
 class OpenAIClient(BaseProviderClient):
     """OpenAI Provider Client"""
     PROVIDER_NAMES = ["openai"]
+    PROVIDER_CONFIG_KEY = "openai"
+    DEFAULT_TOKEN_PARAM = "max_completion_tokens"
 
     def __init__(self, config: dict[str, Any]):
         super().__init__(config)
@@ -104,17 +106,7 @@ class OpenAIClient(BaseProviderClient):
             )
             if not is_reasoning:
                 params["temperature"] = temperature
-            from utils.model_utils import resolve_token_budget
-            _provider_cfg = self.config.get("providers", {}).get("commercial", {}).get("openai", {})
-            token_param_name = _provider_cfg.get("token_param_name", "max_completion_tokens")
-            # Modellspezifische Token-Limits aus Config (z.B. gpt-4o: 4096)
-            _model_limits = _provider_cfg.get("model_max_tokens", {})
-            raw_requested: int | None = kwargs.get("max_tokens")
-            if raw_requested and model in _model_limits:
-                raw_requested = min(raw_requested, _model_limits[model])
-            initial_tokens_to_try, _ = resolve_token_budget(
-                model, raw_requested, self.config, kwargs.get("_module_key")
-            )
+            token_param_name, initial_tokens_to_try = self._resolve_request_tokens(model, kwargs)
             if stream_handler:
                 params["stream"] = True
                 # Request usage info in stream (OpenAI feature)
@@ -129,6 +121,8 @@ class OpenAIClient(BaseProviderClient):
             if stream_handler:
                 response_stream = response_or_stream
                 full_content = ""
+                think_parts: list[str] = []
+                stream_usage = None
                 self.last_response_metadata = {
                     "token_limit_fallback": fallback_triggered,
                     "token_limit_used": used_max_tokens,
@@ -145,29 +139,51 @@ class OpenAIClient(BaseProviderClient):
                         )
                     # Capture Usage (usually in last chunk)
                     if hasattr(chunk, "usage") and chunk.usage:
-                        self.last_response_metadata["usage"] = chunk.usage
+                        stream_usage = chunk.usage
                     if chunk.choices and hasattr(chunk.choices[0], "finish_reason") and chunk.choices[0].finish_reason:
                         self.last_response_metadata["finish_reason"] = chunk.choices[0].finish_reason
                     # Content
                     if chunk.choices:
-                        delta = chunk.choices[0].delta.content
-                        if delta:
-                            stream_handler(delta)
-                            full_content += delta
+                        delta = chunk.choices[0].delta
+                        if hasattr(delta, "content") and delta.content:
+                            stream_handler(delta.content)
+                            full_content += delta.content
+                        # Reasoning/Thinking extrahieren (o1/o3/o4: "reasoning")
+                        reasoning_piece = getattr(delta, "reasoning", None) or getattr(delta, "reasoning_content", None)
+                        if reasoning_piece:
+                            think_parts.append(str(reasoning_piece))
+                # Post-stream metadata
+                if stream_usage:
+                    self.last_response_metadata["usage"] = stream_usage
+                    rt = self._extract_reasoning_tokens(stream_usage)
+                    if rt is not None:
+                        self.last_response_metadata["reasoning_tokens"] = rt
+                if think_parts:
+                    self.last_response_metadata["think_content"] = "".join(think_parts)
                 return full_content
             # Blocking Call (Legacy / No Stream)
             response = response_or_stream
+            msg = response.choices[0].message if response.choices else None
+            content = (msg.content or "") if msg else ""
+            # Reasoning/Thinking extrahieren (o1/o3/o4: "reasoning", "reasoning_content")
+            reasoning = None
+            if msg:
+                reasoning = getattr(msg, "reasoning", None) or getattr(msg, "reasoning_content", None) or getattr(msg, "think_content", None)
+            usage = response.usage
+            reasoning_tokens = self._extract_reasoning_tokens(usage) if usage else None
             # Capture Metadata
             self.last_response_metadata = {
                 "model": response.model,
                 "id": response.id,
                 "system_fingerprint": getattr(response, "system_fingerprint", None),
-                "usage": response.usage,
+                "usage": usage,
                 "finish_reason": getattr(response.choices[0], "finish_reason", None) if response.choices else None,
                 "token_limit_fallback": fallback_triggered,
                 "token_limit_used": used_max_tokens,
+                "reasoning_tokens": reasoning_tokens,
             }
-            content = response.choices[0].message.content or ""
+            if reasoning:
+                self.last_response_metadata["think_content"] = reasoning
             # Ensure we don't call stream_handler twice if falling back to blocking
             # The original code called it here, but since we have a dedicated stream branch,
             # this is only for the non-streaming case.
@@ -178,6 +194,15 @@ class OpenAIClient(BaseProviderClient):
         except Exception as e:
             logger.error("OpenAI query failed: %s", e)
             raise
+    def _extract_reasoning_tokens(self, usage) -> int | None:
+        """Extrahiere reasoning_tokens aus OpenAI usage-Objekt."""
+        if not usage:
+            return None
+        details = getattr(usage, "completion_tokens_details", None)
+        if details:
+            return getattr(details, "reasoning_tokens", None)
+        return None
+
     def get_available_models(self) -> List[str]:
         """List available OpenAI models"""
         return ["gpt-5.2-pro", "gpt-5-mini", "o3-mini", "gpt-4o"]

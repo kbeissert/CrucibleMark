@@ -243,9 +243,12 @@ class LLMClient:
 
         input_tokens, output_tokens = LLMParser.extract_usage_tokens(usage)
 
-        # Fallback to estimation for Local/Ollama or if Usage missing
-        if input_tokens == 0 and output_tokens == 0:
+        # Fallback to estimation for Local/Ollama or if Usage missing.
+        # Apply independently per field — a provider may return input but not
+        # output tokens (e.g. mid-generation error).
+        if input_tokens == 0:
             input_tokens = self.estimate_tokens(prompt)
+        if output_tokens == 0:
             output_tokens = self.estimate_tokens(response_text)
 
         cost = self.cost_tracker.track_request(

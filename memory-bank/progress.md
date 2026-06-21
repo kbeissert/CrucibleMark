@@ -2,6 +2,117 @@
 
 Letzte Releases + aktueller Stand. Vollständige Historie: `reference/decisions-log.md`.
 
+### 2026-06-21 (Session 28) — Token-Budget-Refactoring + Design-Constraints + CSV-Gap-Analyse
+
+**Auslöser:** Auto-Benchmark für 30 fehlende Modelle lief langsam. Token-Fenster von 65536 bei Thinking-Modellen verursachte bis zu 85 Min/Task. CSV-Write-Bug: 9 Modelle mit fehlenden Einträgen trotz vollständiger Audit-Logs.
+
+**Änderungen:**
+
+1. **`utils/providers/base.py` — `_resolve_request_tokens()` (SSoT):**
+   Neuer Shared Helper für alle 7 API-Provider. Zweistufige Kaskade: `resolve_token_budget()` → Provider-Default `max_tokens` → Per-Model Override `model_max_tokens`. Neue Klassen-Attribute: `PROVIDER_CONFIG_KEY`, `DEFAULT_TOKEN_PARAM`.
+
+2. **7 Provider-Connectors auf Shared Helper umgestellt:**
+   - `openrouter.py`: 15 Zeilen inline → 1 Zeile. Bugfix: hardcoded `"max_tokens"` in Fallback-Call → config-aufgelöst.
+   - `openai.py`: 12 Zeilen inline → 1 Zeile.
+   - `mistral.py`: 8 Zeilen inline → 1 Zeile.
+   - `anthropic.py`: KEIN Budget → jetzt mit Budget (via Shared Helper).
+   - `groq.py`: KEIN Budget, hardcoded → jetzt mit Budget. Duplikat mit xai.py eliminiert.
+   - `xai.py`: KEIN Budget, hardcoded → jetzt mit Budget.
+   - `google.py`: KEIN Budget, hardcoded → jetzt mit Budget.
+   - `llamacpp_base.py`: unverändert (eigene Config-Struktur `providers.local`).
+
+3. **`config/provider_config.yaml` — Provider-Default `max_tokens`:**
+   Alle 7 API-Provider haben jetzt einen Provider-Default. OpenRouter zusätzlich mit 7 Per-Model Overrides (Kimi K2.x, DeepSeek V4).
+
+4. **`benchmark_config.yaml` — Token-Budget-Optimierung:**
+   - `code_quality` Reasoning: 65536 → 20000 (p99=16382)
+   - `cultural_intelligence` Standard: 1000 → 3000 (Cloud-p90=2893)
+   - `documentation_quality` Standard: 6000 → 8000 (Cloud-p90=7789)
+
+5. **Design-Constraints dokumentiert** (`systemPatterns.md`, `CLAUDE.md`):
+   - Sequenzielle Modell-Abarbeitung (Server-Restart + Cooldown) — Design, kein Bug
+   - Judge-Reset zwischen Tasks (kein Caching) — verhindert Kontextmix
+
+6. **CSV-Gap-Analyse:** 9 Modelle mit fehlenden CSV-Einträgen identifiziert. Audit-Logs vollständig — Re-Run der fehlenden Module nötig.
+
+**Dokumentation:** CHANGELOG v4.10.3, README (Version + Token-Budget-Beschreibung), CLAUDE.md (SSoT-Pitfalls), systemPatterns.md (Design-Constraints + Token-Kaskade).
+
+**Verifikation:** 819/819 Tests grün.
+
+---
+
+### 2026-06-20 (Session 27) — Provider-Connector Thinking/Reasoning-Fix + Card-Cleanup
+
+**Auslöser:** Audit aller Provider-Connectors auf korrekte Thinking/Reasoning vs. Response-Token-Trennung. OpenRouter war SSoT-Referenz (nach v4.10.0-Fix), aber 7 andere Provider hatten Lücken:
+- `anthropic.py`: kein `think_content`, kein `reasoning_tokens`, kein Streaming
+- `openai.py`: kein `think_content`, kein `reasoning_tokens` (o1/o3/o4 Reasoning nicht erfasst)
+- `google.py`: `reasoning_tokens` ✓, aber kein `think_content` und kein `usage` in metadata
+- `groq.py`/`xai.py`: kein `reasoning_tokens`, kein `think_content`, kein `usage` im Streaming
+- `ollama.py`: `think_content` ✓ (im Stream akkumuliert), aber nie in metadata; kein `usage`; kein `reasoning_tokens`
+- `mistral.py`: `think_content` ✓ (nur bei leerem Content), `usage` ✓, aber kein `reasoning_tokens`
+
+**Impact (vor Fix):**
+- Judge-Evaluator (`judge_evaluator.py:272`) sah keine `reasoning_tokens` → Thinking-Aufwand pro Aufgabe nicht messbar
+- `LLMParser.extract_usage_tokens()` (`llm_client.py:244`) bekam `usage=None` → Pipeline fiel auf `estimate_tokens()` zurück (Zeichen-basierte Schätzung, 1 Token ≈ 4 Zeichen)
+- `tokens_used` in CSV war geschätzt statt von API gezählt
+- Cost-Tracker rechnete mit falschen Token-Werten
+
+**Änderungen pro Provider:**
+
+1. **`utils/providers/anthropic.py`** — Vollständiger Rewrite von `query()`:
+   - Neuer Helper `_extract_reasoning_tokens(usage)` — `usage.output_tokens_details.reasoning_tokens` (neue SDK-Versionen)
+   - Neuer Helper `_extract_think_content(content_blocks)` — extrahiert `block.thinking` aus ContentBlocks mit `type="thinking"`
+   - Neue Methode `_query_streaming()` — vollständige Streaming-Implementierung:
+     - `message_start` → metadata + initial usage
+     - `content_block_start` (type=thinking) → pre-fill thinking content
+     - `content_block_delta` (type=thinking_delta) → akkumuliere thinking
+     - `message_delta` → final usage + stop_reason
+   - Beide Pfade (blocking + streaming) setzen `reasoning_tokens` und `think_content` in `last_response_metadata`
+
+2. **`utils/providers/openai.py`**:
+   - Non-Streaming: `msg.reasoning`/`msg.reasoning_content`/`msg.think_content` als `think_content`; `usage.completion_tokens_details.reasoning_tokens` als `reasoning_tokens`
+   - Streaming: `delta.reasoning` in `think_parts` akkumuliert; `stream_usage` + `reasoning_tokens` nach Loop
+   - Neuer Helper `_extract_reasoning_tokens(usage)` (DRY mit anthropic.py)
+
+3. **`utils/providers/google.py`**:
+   - `usage_metadata` jetzt in `last_response_metadata["usage"]` (vorher nur `reasoning_tokens` aus `thoughts_token_count`)
+   - `think_content` aus `candidates[0].content.parts[].thinking` extrahiert (beide Pfade)
+
+4. **`utils/providers/groq.py`** + **`xai.py`**:
+   - Neuer Helper `_extract_reasoning_tokens(usage)` (DRY)
+   - Non-Streaming: `reasoning_tokens` + `think_content` + `usage` in metadata
+   - Streaming: `stream_usage` tracking hinzugefügt; `think_content` aus `delta.reasoning` akkumuliert
+
+5. **`utils/providers/ollama.py`**:
+   - `usage` als Dict synthetisiert: `{"prompt_tokens": prompt_eval_count, "completion_tokens": eval_count, "total_tokens": ...}` (Ollama liefert kein einheitliches usage-Objekt)
+   - `reasoning_tokens = eval_count` wenn Thinking erkannt wurde (kein separater Count verfügbar)
+   - `think_content` aus akkumuliertem `full_thinking` in metadata gespeichert (vorher nur als Return-Value verwendet)
+
+6. **`utils/providers/mistral.py`**:
+   - `reasoning_tokens` aus `usage.completion_tokens_details.reasoning_tokens` ODER `usage.reasoning_tokens`
+   - `think_content` wird jetzt immer gesetzt wenn ThinkChunks vorhanden (vorher: `if not content.strip() and think_parts`)
+
+**Card-Cleanup (2 pre-existing Test-Failures behoben):**
+
+1. **`tests/test_sampling_defaults_ssot.py::test_all_cards_have_sampling_keys`** — 3 Cards fehlten Sampling-Default-Felder:
+   - `gemma-4-31b-it-creative-wordsmith-q8.json`: `presence_penalty: null` ergänzt
+   - `hermes-4_3-36b-q6.json`: alle 7 Sampling-Keys (`top_p`, `top_k`, `repetition_penalty`, `frequency_penalty`, `presence_penalty`, `seed`, `stop_sequences`) als `null` ergänzt
+   - `mistral-large-2512.json`: alle 7 Sampling-Keys als `null` ergänzt
+
+2. **`tests/test_taxonomy_ssot.py::TestNoPlaceholderStrings::test_no_forbidden_placeholder_in_taxonomy_fields`** — `gemini-3-flash-preview.json`:
+   - `parameter_architecture: "unknown"` (verbotener Placeholder in `FORBIDDEN_PLACEHOLDERS`) → `"dense"` (gültiger Taxonomie-Wert, Flash ist Dense-Transformer)
+
+**Dokumentation aktualisiert:**
+- `CHANGELOG.md` — Neue Version v4.10.1 mit allen Provider-Fixes + Card-Cleanup
+- `CLAUDE.md` — Neuer Pitfall-Eintrag "Provider-Connector Thinking/Reasoning-Extraktion (ab v4.10.1 SSoT)" in der Critical-Pitfalls-Liste
+- `docs/ARCHITECTURE.md` — Provider-Tabelle erweitert um Reasoning-Quellen + neue Sektion "Provider Thinking/Reasoning-Extraktion (ab v4.10.1)" mit Mapping-Tabelle
+- `docs/DEVELOPER_GUIDE.md` — Neue Sektion "Provider-Connector Thinking/Reasoning-Extraktion (ab v4.10.1)" mit kompletter Mapping-Tabelle aller 8 Provider + Streaming-Pfade-Tabelle + DRY-Helper
+- `docs/THINKING_PROBE.md` — Signal-B Befund aktualisiert: ab v4.10.1 in allen Provider-Connectors verfügbar, nicht mehr nur OpenRouter
+
+**Verifikation:** 819/819 Tests grün (vorher: 814 — 5 neue Tests durch Sampling-Keys-Tests).
+
+---
+
 ### 2026-06-20 (Session 26) — Spark Token-Management + Bugfixes
 
 **Auslöser:** `qwopus3_6-27b-v2-mtp-q8` auf `llamacpp_spark` blieb bei Test 1/5 (Code Quality Audit) stecken — 24+ Minuten ohne Fortschritt, Retry-Loop alle 300s.

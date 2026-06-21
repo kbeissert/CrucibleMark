@@ -5,6 +5,118 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v4.10.3] - 2026-06-21
+
+**Token-Budget-Refactoring: SSoT-Helper `_resolve_request_tokens()` in `base.py`. Provider-Kaskade `max_tokens`. Design-Constraints dokumentiert.**
+
+### Added
+
+- **`utils/providers/base.py` `_resolve_request_tokens()` — Zentrale Token-Budget-Auflösung (SSoT):**
+  Alle 7 API-Provider-Connectors (openrouter, openai, anthropic, groq, xai, google, mistral) nutzen jetzt einen Shared Helper in `base.py` statt inline duplizierter Token-Logik. Zweistufige Kaskade:
+  1. `resolve_token_budget()` — Reasoning-/Thinking-Erkennung + Modul-Budgets aus `benchmark_config.yaml`
+  2. Provider-Default `max_tokens` → Per-Model Override `model_max_tokens[model_id]` aus `provider_config.yaml`
+
+  Neue Klassen-Attribute auf `BaseProviderClient`: `PROVIDER_CONFIG_KEY` (z.B. `"openrouter"`) und `DEFAULT_TOKEN_PARAM` (z.B. `"max_tokens"`). Neuer Provider → nur Attribut setzen, fertig.
+
+- **`config/provider_config.yaml` — Provider-Default `max_tokens` für alle 7 API-Provider:**
+  | Provider | Default | Per-Model Overrides |
+  |---|---|---|
+  | openrouter | 16384 | kimi-k2.7-code: 25000, kimi-k2.6: 20000, kimi-k2.5: 18000, deepseek-v4: 16000 |
+  | openai | 16384 | gpt-4o: 4096, gpt-4o-mini: 4096 |
+  | anthropic | 8192 | — |
+  | xai | 16384 | — |
+  | groq | 16384 | — |
+  | google | 16384 | — |
+  | mistral | 16384 | — |
+
+- **`benchmark_config.yaml` — Token-Budget-Optimierung (empirisch kalibriert):**
+  | Budget | Vorher | Nachher | Begründung |
+  |---|---|---|---|
+  | `code_quality` (Reasoning) | 65536 | 20000 | p99=16382, max=24985 (kimi-k2.7-code). Reduktion von 85 Min/Task auf 26 Min/Task bei 12.75 T/s |
+  | `cultural_intelligence` (Standard) | 1000 | 3000 | Cloud-p90=2893 |
+  | `documentation_quality` (Standard) | 6000 | 8000 | Cloud-p90=7789 |
+
+### Fixed
+
+- **`utils/providers/anthropic.py`, `groq.py`, `xai.py`, `google.py` — Token-Budget fehlte komplett:**
+  Diese 4 Provider gaben `max_tokens` unverändert an die API durch, ohne `resolve_token_budget()` aufzurufen. Reasoning-/Thinking-Modelle erhielten kein elevated Budget → Antworten wurden abgeschnitten. Jetzt: alle 7 Provider nutzen `_resolve_request_tokens()`.
+
+- **`utils/providers/openrouter.py` — Hardcoded `"max_tokens"` in Fallback-Call:**
+  `_execute_with_token_fallback()` erhielt hardcoded `"max_tokens"` statt des config-aufgelösten `token_param_name`. Bei Provider-Config-Override wäre der falsche Parametername verwendet worden.
+
+- **Duplikat-Code entfernt:**
+  `groq.py` und `xai.py` enthielten nahezu identischen Token-Handling-Code (Copy-Paste). Beide nutzen jetzt den Shared Helper. ~30 Zeilen Duplikat eliminiert.
+
+### Design Constraints (dokumentiert)
+
+- **Sequenzielle Modell-Abarbeitung:** `systemPatterns.md` + `CLAUDE.md` — Modelle werden einzeln getestet, Server-Restart + Cooldown zwischen Modellen. Kein Performance-Bug — garantiert gleichwertige Testumgebungen.
+- **Judge-Reset zwischen Tasks:** `systemPatterns.md` + `CLAUDE.md` — Jede Bewertung ist ein frischer API-Call. Kein Caching — verhindert Kontextmix.
+
+---
+
+## [v4.10.2] - 2026-06-21
+
+**Judge-Pipeline: Reasoning-Modelle mit leerem `content`-Feld nicht mehr als Safety-Refusal markiert. + CSV Write-Through gegen Datenverlust.**
+
+### Fixed
+
+- **`scripts/core/unified_runner.py` `_handle_single_asset` — CSV Write-Through (Datenverlust-Fix):**
+  Jedes Benchmark-Ergebnis wird jetzt SOFORT nach der Generierung in die CSV geschrieben (`save_results([result])`), nicht erst gesammelt am Ende des gesamten Runs. Vorher: bei Crash/Kill/Timeout zwischen Tasks waren ALLE Ergebnisse des Runs verloren — Audit-Logs blieben (werden pro Task geschrieben), CSV aber leer. Der finale `save_results(results)`-Aufruf in `benchmark_auto.py:498` und `run_score_benchmark.py:180` bleibt als Safety-Netz (Upsert ist idempotent).
+  
+  Root Cause: 35 Modelle (minimax M3, Xiaomi MiMo, NVIDIA Nemotron, DeepSeek V4 etc.) hatten vollständige Scoring-Audit-Logs aber leere CSV-Einträge — der Batch-Write am Ende wurde nie erreicht.
+
+- **`scripts/core/unified_runner.py` `_apply_judge_pipeline` — Reasoning-only Response Detection:**
+  Reasoning-Modelle (GLM-5.x via OpenRouter, Claude Extended Thinking, o-Series, etc.) geben ihre Antwort teils im separaten `reasoning`/`think_content`-Feld zurück statt im `content`-Feld. Wenn `content` kürzer als `MIN_REFUSAL_CHARS` (15) Zeichen ist, aber `think_content` aus `last_response_metadata` substantiell ist, wird jetzt `think_content` als effektive Antwort für den Judge verwendet.
+  
+  Vorher: `raw_response = content` (leer/zu kurz) → `refusal_flag=True` → Judge wird übersprungen → Score 0%.
+  Nachher: `effective_response = think_content` → Judge bewertet das tatsächliche Reasoning → valides Score.
+  
+  Neues Feld `result["reasoning_only_response"]: True` markiert diesen Fall für Audit/CSV. Nur wenn BEIDE Felder zu kurz sind, wird der Refusal-Flag gesetzt.
+
+- **Betroffenes Modell:** GLM-5.2 (`z-ai/glm-5.2`) — Code Quality Test 1 lieferte valides Reasoning im `reasoning`-Feld, aber leeres `content`-Feld → wurde fälschlich als "Unusable Specialist" mit 0.0% bewertet.
+
+### Impact
+
+- Reasoning-Modelle, die ihre Antwort primär im `reasoning`-Feld zurückgeben, werden nicht mehr fälschlich als Safety-Refusal klassifiziert.
+- Der Judge bewertet jetzt das tatsächliche Reasoning-Output solcher Modelle.
+
+
+## [v4.10.1] - 2026-06-20
+
+**Provider-Connectors: Vollständige Thinking/Reasoning vs. Response-Token-Trennung. Sampling-Keys SSOT-Fix.**
+
+### Fixed
+
+- **Alle Provider-Connectors extrahieren jetzt konsistent `reasoning_tokens`, `think_content` und `usage`** in `last_response_metadata`:
+  - **`anthropic.py`** — Vollständiger Fix: `think_content` aus `response.content` Blocks mit `type="thinking"`, `reasoning_tokens` aus `usage.output_tokens_details.reasoning_tokens`. **Streaming-Pfad neu implementiert** (`_query_streaming`): akkumuliert `thinking_delta`-Chunks aus `content_block_delta`-Events, trackt `usage` aus `message_start`/`message_delta`-Events.
+  - **`openai.py`** — `think_content` aus `msg.reasoning` / `msg.reasoning_content` (Non-Streaming) und `delta.reasoning` (Streaming). `reasoning_tokens` aus `usage.completion_tokens_details.reasoning_tokens` in beiden Pfaden.
+  - **`google.py`** — `think_content` aus `candidates[0].content.parts[].thinking`. `usage_metadata` jetzt in `last_response_metadata["usage"]` gespeichert (vorher fehlend). `reasoning_tokens` aus `thoughts_token_count` bereits korrekt.
+  - **`groq.py`** — `think_content` und `reasoning_tokens` in beiden Pfaden extrahiert. `usage` jetzt auch im Streaming-Pfad gespeichert.
+  - **`xai.py`** — `think_content` und `reasoning_tokens` in beiden Pfaden extrahiert. `usage` jetzt auch im Streaming-Pfad gespeichert.
+  - **`ollama.py`** — `usage` als Dict (`prompt_tokens`/`completion_tokens`/`total_tokens`) aus `prompt_eval_count`/`eval_count` erstellt. `reasoning_tokens` aus `eval_count` gesetzt wenn Thinking erkannt wurde (Ollama liefert keine separate Count). `think_content` jetzt in `last_response_metadata["think_content"]` gespeichert.
+  - **`mistral.py`** — `reasoning_tokens` aus `usage.completion_tokens_details.reasoning_tokens` oder `usage.reasoning_tokens` extrahiert. `think_content` wird jetzt immer gesetzt wenn Thinking-Chunks vorhanden sind (vorher nur bei leerem Content).
+
+- **Model-Card Sampling-Keys SSOT-Fix** — Fehlende 7 Sampling-Default-Felder (`top_p`, `top_k`, `repetition_penalty`, `frequency_penalty`, `presence_penalty`, `seed`, `stop_sequences`) in 3 Cards ergänzt:
+  - `gemma-4-31b-it-creative-wordsmith-q8.json`: `presence_penalty: null`
+  - `hermes-4_3-36b-q6.json`: alle 7 Sampling-Keys als `null`
+  - `mistral-large-2512.json`: alle 7 Sampling-Keys als `null`
+
+- **Model-Card Taxonomy-Placeholder entfernt** — `gemini-3-flash-preview.json`: `parameter_architecture: "unknown"` (verbotener Placeholder) → `"dense"` (gültiger Taxonomie-Wert).
+
+### Impact
+
+- **Judge-Evaluation:** Thinking-Aufwand pro Aufgabe wird jetzt pro Provider gemessen — Judge sieht reale `reasoning_tokens` aus `last_response_metadata`.
+- **Cost-Analyse:** `LLMParser.extract_usage_tokens()` greift jetzt auf echte `usage`-Objekte zu (vorher fiel es auf `estimate_tokens()` zurück). Reasoning-Tokens werden korrekt als `completion_tokens` abgerechnet.
+- **Benchmark-Qualität:** `tokens_used` zählt reale API-Tokens statt geschätzte Zeichen-Tokens.
+- **`_extract_reasoning_tokens(usage)` Helper** wurde als DRY-Pattern in `anthropic.py`, `openai.py`, `groq.py`, `xai.py` eingeführt (OpenAI-kompatibles Schema: `usage.completion_tokens_details.reasoning_tokens`).
+
+### Tests
+
+- 819/819 Tests grün (Stand 2026-06-20).
+- 2 vorbestehende Failures (`test_sampling_defaults_ssot.py`, `test_taxonomy_ssot.py`) behoben.
+
+---
+
 ## [v4.10.0] - 2026-06-20
 
 **Card-Research Force-Run: 110/110 Cards `profile_verified=true`. Template-Cleanup, Batch-Processing, `MODEL=all`.**

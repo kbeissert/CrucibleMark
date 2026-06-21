@@ -69,10 +69,13 @@ NARRATIVE_PREFIXES = (
 )
 
 # Markdown-Marker in der asset_id.
-MARKDOWN_MARKERS = ("##", "###", "---", "***", "===")
+MARKDOWN_MARKERS = ("##", "###", "---", "***", "===", "**", "→")
 
 # Boolean-Strings, die NICHT als model_id vorkommen.
 BOOLEAN_MODEL_VALUES = frozenset({"true", "false"})
+
+# Known finish_reason values that should never appear as model names.
+FINISH_REASON_VALUES = frozenset({"length", "stop", "content_filter", "tool_calls"})
 
 # Datei-Liste, die bereinigt wird.
 TARGET_CSVS = (LOCAL_CSV, CLOUD_CSV, COMMERCIAL_CSV)
@@ -102,13 +105,20 @@ def _is_invalid_model(model: str) -> tuple[bool, str]:
     """Prueft ob der model-Wert ein gueltiger Model-Identifier ist.
 
     Returns:
-        (is_invalid, reason) -- reason ist "empty" | "boolean" | "unknown"
+        (is_invalid, reason) -- reason ist "empty" | "boolean" | "numeric" | "finish_reason" | "unknown"
     """
     m = (model or "").strip()
     if not m or m.lower() in {"nan", "none", "null"}:
         return True, "empty"
     if m.lower() in BOOLEAN_MODEL_VALUES:
         return True, "boolean"
+    # Pure-numeric model names (e.g. "65536", "12000", "4") are column-shift artifacts
+    # from token limits, max_tokens, or judge sub-scores leaking into the model field.
+    if m.replace(".", "").replace("_", "").replace("-", "").isdigit():
+        return True, "numeric"
+    # Known finish_reason values (e.g. "length", "stop") that shifted into model field.
+    if m.lower() in FINISH_REASON_VALUES:
+        return True, "finish_reason"
     return False, ""
 
 

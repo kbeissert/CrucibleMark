@@ -59,6 +59,48 @@ def get_provider_shortcode(provider: str) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Hardware profile lookup — SSoT for local provider hardware identification
+# ---------------------------------------------------------------------------
+
+_LOCAL_PROVIDER_NAMES: tuple[str, ...] = (
+    "ollama", "llamacpp", "llamacpp_spark", "llama_cpp", "llamacpp_local",
+)
+
+_PROVIDER_ALIAS_MAP: dict[str, str] = {
+    "llama_cpp": "llamacpp",
+    "llamacpp_local": "llamacpp",
+    "ollama": "ollama_local",
+}
+
+
+def get_hardware_profile(config: dict, provider: str) -> str | None:
+    """Returns the hardware_profile key for a local provider from config.
+
+    SSoT: providers.local.<provider>.hardware_profile in benchmark_config.yaml.
+    Returns None for cloud/commercial providers or on error.
+
+    Args:
+        config: The full benchmark config dict (benchmark_config.yaml).
+        provider: Provider name (e.g. 'llamacpp', 'ollama').
+    """
+    provider_l = str(provider).lower().strip()
+    if provider_l not in _LOCAL_PROVIDER_NAMES:
+        return None
+
+    provider_key = _PROVIDER_ALIAS_MAP.get(provider_l, provider_l)
+
+    try:
+        local_cfg = config.get("providers", {}).get("local", {})
+        profile = local_cfg.get(provider_key, {}).get("hardware_profile")
+        if profile:
+            return profile
+        # Backward-compatible fallback for older configs.
+        return local_cfg.get("config", {}).get("hardware_profile")
+    except Exception:  # noqa: BLE001
+        return None
+
+
+# ---------------------------------------------------------------------------
 # Card path helpers — SSoT for all model card filename operations
 # ---------------------------------------------------------------------------
 
