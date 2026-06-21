@@ -14,6 +14,13 @@ except ImportError:
 # Configure logging
 logger = logging.getLogger(__name__)
 
+# Einige Model-IDs werden intern mit Underscore gespeichert (kanonische ID),
+# die Groq-API erwartet jedoch die Punkt-Schreibweise.
+# Wird in query() vor dem API-Call aufgelöst.
+_GROQ_ID_ALIASES: dict[str, str] = {
+    "llama-3_3-70b-versatile": "llama-3.3-70b-versatile",
+}
+
 from utils.providers.base import BaseProviderClient
 
 
@@ -95,8 +102,10 @@ class GroqClient(BaseProviderClient):
         """Query Groq API"""
         try:
             _system = kwargs.get("system")
+            # Kanonische Underscore-IDs auf die von der API erwartete Punkt-Form mappen
+            api_model = _GROQ_ID_ALIASES.get(model, model)
             params = {
-                "model": model,
+                "model": api_model,
                 "messages": (
                     [{"role": "system", "content": _system}] if _system else []
                 ) + [{"role": "user", "content": prompt}],
@@ -123,42 +132,78 @@ class GroqClient(BaseProviderClient):
 
             if stream_handler:
                 full_content = ""
+                think_parts: list[str] = []
+                stream_usage = None
                 for chunk in response:
                     # Groq returns similar chunk structure to OpenAI
                     if hasattr(chunk.choices[0].delta, "content") and chunk.choices[0].delta.content:
                         content_piece = chunk.choices[0].delta.content
                         full_content += content_piece
                         stream_handler(content_piece)
+                    # Reasoning/Thinking extrahieren
+                    reasoning_piece = getattr(chunk.choices[0].delta, "reasoning", None) or getattr(chunk.choices[0].delta, "reasoning_content", None)
+                    if reasoning_piece:
+                        think_parts.append(str(reasoning_piece))
+                    # Usage (falls verfügbar)
+                    if hasattr(chunk, "usage") and chunk.usage:
+                        stream_usage = chunk.usage
 
-                # Fetch metadata from response logic if possible (Groq may not provide usage in stream, but we handle it gracefully)
-                self.last_response_metadata = {
-                    "total_tokens": 0,
-                    "prompt_tokens": 0,
-                    "completion_tokens": 0,
+                meta = {
+                    "total_tokens": stream_usage.total_tokens if stream_usage else 0,
+                    "prompt_tokens": stream_usage.prompt_tokens if stream_usage else 0,
+                    "completion_tokens": stream_usage.completion_tokens if stream_usage else 0,
                     "token_limit_used": used_max_tokens,
-                    "token_limit_fallback": fallback_triggered
+                    "token_limit_fallback": fallback_triggered,
                 }
+                if stream_usage:
+                    rt = self._extract_reasoning_tokens(stream_usage)
+                    if rt is not None:
+                        meta["reasoning_tokens"] = rt
+                    meta["usage"] = stream_usage
+                if think_parts:
+                    meta["think_content"] = "".join(think_parts)
+                self.last_response_metadata = meta
                 return full_content
 
             else:
                 result = response.choices[0].message.content or ""
 
+                msg = response.choices[0].message if response.choices else None
+                reasoning = None
+                if msg:
+                    reasoning = getattr(msg, "reasoning", None) or getattr(msg, "reasoning_content", None) or getattr(msg, "think_content", None)
+
                 usage = response.usage
                 if usage:
-                    self.last_response_metadata = {
+                    rt = self._extract_reasoning_tokens(usage)
+                    meta = {
                         "total_tokens": usage.total_tokens,
                         "prompt_tokens": usage.prompt_tokens,
                         "completion_tokens": usage.completion_tokens,
                         "token_limit_used": used_max_tokens,
                         "token_limit_fallback": fallback_triggered,
                         "finish_reason": response.choices[0].finish_reason if response.choices else None,
+                        "reasoning_tokens": rt,
+                        "usage": usage,
                     }
+                    if reasoning:
+                        meta["think_content"] = reasoning
+                    self.last_response_metadata = meta
 
                 return result
 
         except Exception as e:
             logger.debug(f"Groq API Error: {str(e)}")
             raise
+
+    def _extract_reasoning_tokens(self, usage) -> int | None:
+        """Extrahiere reasoning_tokens aus OpenAI-kompatiblem usage-Objekt."""
+        if not usage:
+            return None
+        details = getattr(usage, "completion_tokens_details", None)
+        if details:
+            return getattr(details, "reasoning_tokens", None)
+        return None
 
     def get_available_models(self) -> list:
         try:
