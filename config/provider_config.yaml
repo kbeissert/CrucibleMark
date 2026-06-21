@@ -1,6 +1,7 @@
 # Provider-Konfiguration — wird von ConfigValidator in benchmark_config.yaml eingeblendet.
 # Modell-IDs müssen exakt der jeweiligen Anbieter-API entsprechen.
 # Duplikate (gleiche id in mehreren Providern) → WARNING beim Start, zweiter Eintrag wird ignoriert.
+# Auskommentierte Modelle: sind Reserve, können jederzeit wieder einkommentiert werden.
 
 providers:
   # ── Proprietäre APIs (Kosten per Token) ───────────────────────────────────────
@@ -15,7 +16,6 @@ providers:
       max_tokens: 16384
       env_var: MISTRAL_API_KEY
       models:
-      # Mistral — neueste zuerst
       - id: mistral-medium-3-5
         name: Mistral Medium 3.5
       - id: mistral-small-2603
@@ -26,23 +26,16 @@ providers:
         name: Mistral Small 3.1 (24B)
       - id: mistral-large-2411
         name: Mistral Large 2.1 (123B)
-
-        # Devstral (Mistral-Partner) — neueste zuerst
       - id: devstral-2512
         name: Devstral 2
-
-        #Magistral (Mistral-Partner) — neueste zuerst
       - id: magistral-medium-latest
         name: Magistral Medium 1.2
       - id: magistral-small-latest
         name: Magistral Small 1.2
-
-        # Codestral (Mistral-Partner) — neueste zuerst
       - id: codestral-2508
         name: Codestral 25.08 (22B)
       - id: codestral-2405
         name: Codestral 24.05 (22B)
-
 
     anthropic:
       name: Anthropic
@@ -164,19 +157,14 @@ providers:
       max_tokens: 16384
       env_var: GROQ_API_KEY
       models:
-      # OpenAI GPT OSS — bei Bedarf aktivieren
       # - id: openai/gpt-oss-120b
       #   name: OpenAI GPT OSS 120B via Groq
       # - id: openai/gpt-oss-20b
       #   name: OpenAI GPT OSS 20B via Groq
-
-      # Meta
       - id: meta-llama/llama-4-scout-17b-16e-instruct
         name: Llama 4 Scout (17B) Instruct
       - id: llama-3.3-70b-versatile
         name: Llama 3.3 (70B) Versatile
-
-      # Qwen (Alibaba)
       - id: qwen/qwen3-32b
         name: Qwen 3 (32B) via Groq
 
@@ -189,9 +177,8 @@ providers:
       enabled: true
       max_tokens: 16384
       env_var: OPENROUTER_API_KEY
-      # Per-Modell Token-Limits (max_tokens Cap). Überschreibt den Provider-Default
-      # (16384) für einzelne Modelle. Werte basieren auf empirischen p99 + Headroom.
-      # Kimi K2.x Thinking-Modelle brauchen mehr wegen hoher Reasoning-Anteile (60-75%).
+      # Per-Modell Token-Caps (überschreibt Provider-Default 16384).
+      # Kimi K2.x Thinking-Modelle brauchen mehr wegen hoher Reasoning-Anteile.
       model_max_tokens:
         moonshotai/kimi-k2.7-code: 25000
         moonshotai/kimi-k2.6: 20000
@@ -201,30 +188,27 @@ providers:
         deepseek/deepseek-v4-pro: 16000
         deepseek/deepseek-v4-flash: 16000
       models:
-      # NVIDIA — neueste zuerst
       - id: nvidia/nemotron-3-ultra-550b-a55b
         name: NVIDIA Nemotron 3 Ultra via OpenRouter
-        model_type: open_weights_cloud  # MoE 55B/550B
+        model_type: open_weights_cloud
 
-       # Z.ai (GLM) — neueste zuerst
       - id: z-ai/glm-5.2
         name: GLM 5.2 (Z.ai) via OpenRouter
-        model_type: proprietary_api  # Proprietäres Modell, Gewichte nicht öffentlich
+        model_type: proprietary_api
       - id: z-ai/glm-5.1-20260406
         name: GLM 5.1-20260406 (Z.ai) via OpenRouter
-        model_type: proprietary_api  # Proprietäres Modell, Gewichte nicht öffentlich
+        model_type: proprietary_api
       - id: z-ai/glm-5-turbo-20260315
         name: GLM 5 Turbo-20260315 (Z.ai) via OpenRouter
-        model_type: proprietary_api  # Proprietäres Modell, Gewichte nicht öffentlich
+        model_type: proprietary_api
       - id: z-ai/glm-5-20260211
         name: GLM 5-20260211 (Z.ai) via OpenRouter
-        model_type: proprietary_api  # Proprietäres Modell, Gewichte nicht öffentlich
+        model_type: proprietary_api
       - id: z-ai/glm-4.7
         name: GLM 4.7 (Z.ai) via OpenRouter
       - id: z-ai/glm-4.6
         name: GLM 4.6 (Z.ai) via OpenRouter
 
-      # Moonshot AI (Kimi) — neueste zuerst
       - id: moonshotai/kimi-k2.7-code
         name: Kimi K2.7 Code via OpenRouter
       - id: moonshotai/kimi-k2.6
@@ -236,36 +220,28 @@ providers:
       - id: moonshotai/kimi-k2
         name: Kimi K2 0711 via OpenRouter
 
-      # DeepSeek — neueste zuerst
       - id: deepseek/deepseek-v4-pro
         name: DeepSeek V4 Pro via OpenRouter
       - id: deepseek/deepseek-v4-flash
         name: DeepSeek V4 Flash via OpenRouter
-
-      # DeepSeek — ältere Ollama-era Modelle (jetzt via OpenRouter)
       - id: deepseek/deepseek-chat-v3.1
         name: DeepSeek V3.1 671B via OpenRouter
       - id: deepseek/deepseek-v3.2
         name: DeepSeek V3.2 via OpenRouter
 
-      # Google Gemma — Cloud-Modelle via OpenRouter
       - id: google/gemma-4-31b-it
         name: Gemma 4 31B Instruct via OpenRouter
 
-
-      # MiniMax
       - id: minimax/minimax-m3
         name: MiniMax M3 via OpenRouter
       - id: minimax/minimax-m2.7-20260318
         name: MiniMax M2.7-20260318 via OpenRouter
 
-      # NousResearch (Hermes)
       - id: nousresearch/hermes-4-405b
         name: Hermes 4 405B via OpenRouter
       - id: nousresearch/hermes-4-70b
         name: Hermes 4 70B via OpenRouter
 
-      # Qwen (Alibaba) — via OpenRouter ($1.25/$3.75 und $0.33/$1.95 per 1M Tokens)
       - id: qwen/qwen3.7-max
         name: Qwen 3.7 Max via OpenRouter
         model_type: proprietary_api
@@ -280,7 +256,7 @@ providers:
       name: Ollama (Cloud Proxies)
       api_type: ollama
       model_type: open_weights_cloud
-      enabled: false  # Paywall – via OpenRouter abgedeckt
+      enabled: false  # Paywall — via OpenRouter abgedeckt
       auto_discover: true
       models_filter: cloud
       models: []
@@ -291,44 +267,21 @@ providers:
       context_window: 32768
       default_temperature: 0.1
 
-      # =====================================================================
-      # llama.cpp Defaults (SSoT für Server-Start-Flags)
-      # =====================================================================
-      # Diese Werte werden als Server-Start-Flags (`--temp`, `--top-p`, `--top-k`,
-      # `--min-p`, `--presence-penalty`, `--repeat-penalty`, `--seed`) an
-      # llama-server durchgereicht. Sie entsprechen den llama.cpp-Upstream-
-      # Defaults, mit Ausnahme von `seed=42` für reproduzierbare Benchmarks.
-      #
-      # Pro-Modell-Override in `provider_config.yaml > providers.local.*.models`
-      # überschreibt jeden dieser Defaults. Beispiel: ein Modell mit
-      # `temperature: 0.3` bekommt `--temp 0.3` statt `--temp 0.8`.
-      #
-      # Hinweise:
-      #   - temperature: 0.6  — llama.cpp Default; lässt Modelle frei atmen
-      #   - top_p: 0.95        — leichte Nucleus-Filterung (Community-Default)
-      #   - top_k: 40          — filtert nur echten Müll
-      #   - min_p: 0.0         — deaktiviert
-      #   - presence_penalty: 0.0 — deaktiviert
-      #   - repeat_penalty: 1.0  — deaktiviert (kein Penalty gegen Loops)
-      #   - seed: 42           — explizit (llama.cpp wäre -1, random)
-      # =====================================================================
+      # llama.cpp Defaults (werden als Server-Start-Flags an llama-server durchgereicht).
+      # Pro-Modell-Override in models[]. überschreibt jeden dieser Defaults.
+      # seed=42 für reproduzierbare Benchmarks (Upstream: -1 = random).
       llama_cpp_defaults:
-        seed: 42                    # Explizit für Reproduzierbarkeit (Upstream: -1)
-        temperature: 0.6            # llama.cpp-Default
-        top_p: 0.95                 # llama.cpp-Default
-        top_k: 40                   # llama.cpp-Default
-        min_p: 0.0                  # llama.cpp-Default (deaktiviert)
-        presence_penalty: 0.0       # llama.cpp-Default (deaktiviert)
-        repeat_penalty: 1.0         # llama.cpp-Default (kein Penalty)
+        seed: 42
+        temperature: 0.6
+        top_p: 0.95
+        top_k: 40
+        min_p: 0.0
+        presence_penalty: 0.0
+        repeat_penalty: 1.0
 
-      # Hardware-Profile werden pro Provider definiert (nicht global).
-      # Werte: m4_macbook_pro_metal, dgx_spark_cuda, ...
-      # Models that cannot use the global context_window due to native architecture limits.
-      # Ollama silently falls back to the model's native context if VRAM is insufficient —
-      # setting the real limit here makes the constraint explicit and surfaces it as
-      # token_limit_fallback=True in CSV/audit logs instead of a silent truncation.
+      # Modelle mit nativem Context-Limit < global context_window.
+      # Ollama fällt sonst still auf das Modell-Limit zurück → hier explizit gemacht.
       model_context_overrides:
-        # Mistral-Nemo architecture: native 4096-token context window
         "mistral-nemo": 4096
         "dolphin-mistral-nemo": 4096
 
@@ -342,26 +295,9 @@ providers:
 
     # llama.cpp: Lokaler Inferenz-Server (OpenAI-kompatible API).
     # Jedes Modell muss explizit eingetragen werden — kein auto_discover.
-    # Der Provider löst model_file → GGUF-Pfad auf und startet/swappt den Server
-    # automatisch beim Modellwechsel. Der Server wird mit --alias <id> gestartet,
-    # damit der API-Aufruf denselben model-Bezeichner wie die Config verwendet.
-    #
-    # Pflichtfelder pro Modell:
-    #   id         — Bezeichner für API-Call, CSV und Leaderboard (frei wählbar)
-    #   name       — Anzeigename im Wizard
-    #   model_file — GGUF-Dateiname relativ zu model_dir (nur für Server-Start via llamacpp.py,
-    #                nicht für API-Kommunikation — dort gilt ausschließlich die id)
-    #
-    # Optionale Felder (nur eintragen wenn vom Default abweichend):
-    #   context_length — --ctx-size in Tokens, Default: providers.local.config.context_window (32768)
-    #   n_gpu_layers   — --n-gpu-layers, Default: 99 (vollständiges GPU-Offloading)
-    #
-    # Beschreibung/Metadaten → Model Card JSON (benchmark_scores/model_cards/)
-    #
-    # Hardware-Kontext:
-    #   MacBook Pro (M4 Max): ~16-18 GB nutzbarer VRAM für Modell + Kontext.
-    #   Bei Context=32000 und parallel=4 bleiben pro Slot ~4K Tokens reservierter Kontext,
-    #   was für Puffer + KV-Cache bei 12B-14B Modellen (Q4-Q6) ausreichend ist.
+    # Pflichtfelder pro Modell: id, name, model_file (GGUF-Dateiname relativ zu model_dir).
+    # Optionale Felder: context_length (--ctx-size), n_gpu_layers (--n-gpu-layers, Default: 99).
+    # Beschreibung/Metadaten → Model Card JSON (benchmark_scores/model_cards/).
     llamacpp:
       name: Llama.cpp (MacBook Pro)
       short_code: M4APL
@@ -400,17 +336,17 @@ providers:
         name: Gemma 4 12B Instruct UD-Q4_K_XL (GGUF)
         model_file: gemma-4-12b-it-UD-Q4_K_XL.gguf
         n_gpu_layers: 99
-        enable_thinking: false  # Thinking-Modus → unbounded Hang (wie Qwen) — fix v4.4.1
+        enable_thinking: false  # Thinking → unbounded Hang (v4.4.1)
       - id: gemma-4-12b-it-ud-q6_k_xl
         name: Gemma 4 12B Instruct UD-Q6_K_XL (GGUF)
         model_file: gemma-4-12b-it-UD-Q6_K_XL.gguf
         n_gpu_layers: 99
-        enable_thinking: false  # Thinking-Modus → unbounded Hang (wie Qwen) — fix v4.4.1
+        enable_thinking: false
       - id: gemma-4-12b-it-ud-q8_k_xl
         name: Gemma 4 12B Instruct UD-Q8_K_XL (GGUF)
         model_file: gemma-4-12b-it-UD-Q8_K_XL.gguf
         n_gpu_layers: 99
-        enable_thinking: false  # Thinking-Modus → unbounded Hang (wie Qwen) — fix v4.4.1
+        enable_thinking: false
       - id: hermes-3-8b
         name: Hermes 3 Llama 3.1 8B Q6_K_L (GGUF)
         model_file: Hermes-3-Llama-3.1-8B-Q6_K_L.gguf
@@ -459,20 +395,9 @@ providers:
         n_gpu_layers: 99
         enable_thinking: false
 
-    # llama.cpp auf DGX Spark (NVIDIA CUDA, lokaler Server im Intranet)
-    # Steuerung erfolgt per SSH vom Benchmark-Host.
-    # GGUF-Pfad: /home/kay_beissert/ai/models/llm/gguf/
-    # Port 1235 wird für den Benchmark-Server genutzt.
-    #
-    # Hardware-Kontext:
-    #   DGX Spark: ~128 GB unified memory, davon ~120 GB für Modell + Kontext nutzbar.
-    #   Default Context=65536 + parallel=2 — funktioniert für 30B-40B MoE-Modelle
-    #   (Q4-Q8) und Standard-Attention-Transformer (Qwen 3.5/3.6, Gemma 4).
-    #   Per-Modell-Override möglich: model_cfg.context_length / model_cfg.parallel
-    #   werden in _build_server_cmd() zuerst gelesen. Beispiel: Hermes 4.3 36B
-    #   (Hybrid-Attention, SWA-Re-Processings) erzwingt context_length=16384 +
-    #   parallel=1, damit der Server beim Model-Swap mit angepassten Flags startet.
-    #   Server-Start nach Refactoring (llamacpp_batch.py) deutlich schneller: Timeout von 420s → 180s.
+    # llama.cpp auf DGX Spark (NVIDIA CUDA, lokaler Server im Intranet).
+    # Steuerung per SSH vom Benchmark-Host. GGUF-Pfad: /home/kay_beissert/ai/models/llm/gguf/
+    # Server-Log wird lokal auf dem Mac gespeichert (SSH-Redirect).
     llamacpp_spark:
       name: Llama.cpp (DGX Spark)
       short_code: SPRK
@@ -494,10 +419,6 @@ providers:
       existing_server_ready_timeout_sec: 120
       server_ready_poll_sec: 5
       server_ready_probe_timeout_sec: 60
-      # server_log: Lokal auf dem Benchmark-Host (Mac) gespeichert, nicht auf dem Spark.
-      # Der Shell-Redirect `>>` liegt außerhalb der SSH-Quoting-Grenze:
-      # SSH tunnelt Remote-stdout → SSH-Client-stdout → lokale Datei.
-      # ~/ai/llama-lab-spark.log entspricht dem M4-Muster (llama-lab-server.log).
       server_log: ~/ai/llama-lab-spark.log
       bind_host: 0.0.0.0
       threads: 10
@@ -505,110 +426,92 @@ providers:
       hardware_profile: dgx_spark_cuda
       models:
 
-        # nano-desktop-models (auskommentiert — nicht auf Spark)
+      # ── Auskommentiert: nano-desktop-models (nicht auf Spark) ──
       # - id: gemma-3-12b-it-spark
       #   name: Gemma 3 12B Instruct Q4_K_M (GGUF)
       #   model_file: nano-desktop-modells/gemma-3-12b-it-Q4_K_M.gguf
       #   n_gpu_layers: 99
-
       # - id: gemma-3-12b-it-q8-spark
       #   name: Gemma 3 12B Instruct Q8_0 (GGUF)
       #   model_file: nano-desktop-modells/google_gemma-3-12b-it-Q8_0.gguf
       #   n_gpu_layers: 99
-
       # - id: gemma-4-12b-it-q4
       #   name: Gemma 4 12B Instruct Q4_K_XL (GGUF)
       #   model_file: nano-desktop-modells/gemma-4-12b-it-UD-Q4_K_XL.gguf
       #   n_gpu_layers: 99
-
       # - id: gemma-4-12b-it-q6
       #   name: Gemma 4 12B Instruct Q6_K_XL (GGUF)
       #   model_file: gemma-4-12b-it-UD-Q6_K_XL.gguf
       #   n_gpu_layers: 99
-
       # - id: gemma-4-12b-it-q8
       #   name: Gemma 4 12B Instruct Q8_K_XL (GGUF)
       #   model_file: nano-desktop-modells/gemma-4-12b-it-UD-Q8_K_XL.gguf
       #   n_gpu_layers: 99
-
       # - id: gemma-4-e4b
       #   name: Gemma 4 E4B (GGUF)
       #   model_file: nano-desktop-modells/gemma-4-E4B.gguf
       #   n_gpu_layers: 99
-
       # - id: google-gemma-3-12b-it-q8
       #   name: Google Gemma 3 12B Q8_0 (GGUF)
       #   model_file: nano-desktop-modells/google_gemma-3-12b-it-Q8_0.gguf
       #   n_gpu_layers: 99
-
       # - id: hermes-3-8b
       #   name: Hermes 3 Llama 3.1 8B Q6_K_L (GGUF)
       #   model_file: nano-desktop-modells/Hermes-3-Llama-3.1-8B-Q6_K_L.gguf
       #   n_gpu_layers: 99
-
       # - id: hermes-4-14b-abliterated
       #   name: Hermes 4 14B BF16 Abliterated (GGUF)
       #   model_file: nano-desktop-modells/hermes-4-14b-bf16-abliterated-q6_k.gguf
       #   n_gpu_layers: 99
-
       # - id: hermes-4-14b-q4
       #   name: Hermes 4 14B Q4_K_M (GGUF)
       #   model_file: nano-desktop-modells/hermes-4-14b-q4_k_m.gguf
       #   n_gpu_layers: 99
-
       # - id: qwen2.5-coder-7b
       #   name: Qwen 2.5 Coder 7B Instruct Q6_K (GGUF)
       #   model_file: nano-desktop-modells/qwen2.5-coder-7b-instruct-q6_k.gguf
       #   n_gpu_layers: 99
-
       # - id: qwen2.5-vl-7b
       #   name: Qwen 2.5 Vision 7B Q4_K_M (GGUF)
       #   model_file: nano-desktop-modells/qwen2.5-vl-7b-instruct-q4_k_m.gguf
       #   n_gpu_layers: 99
-
       # - id: qwen3-14b
       #   name: Qwen 3 14B Q6_K (GGUF)
       #   model_file: nano-desktop-modells/Qwen3-14B-Q6_K.gguf
       #   n_gpu_layers: 99
-
       # - id: qwen3-4b
       #   name: Qwen 3 4B Q6_K (GGUF)
       #   model_file: nano-desktop-modells/Qwen3-4B-Q6_K.gguf
       #   n_gpu_layers: 99
-
       # - id: qwen3.5-4b-q4
       #   name: Qwen 3.5 4B Q4_K_XL (GGUF)
       #   model_file: nano-desktop-modells/Qwen3.5-4B-UD-Q4_K_XL.gguf
       #   n_gpu_layers: 99
-
       # - id: qwen3.5-4b-q6
       #   name: Qwen 3.5 4B Q6_K_XL (GGUF)
       #   model_file: nano-desktop-modells/Qwen3.5-4B-UD-Q6_K_XL.gguf
       #   n_gpu_layers: 99
-
       # - id: qwen3.5-4b-q8
       #   name: Qwen 3.5 4B Q8_K_XL (GGUF)
       #   model_file: nano-desktop-modells/Qwen3.5-4B-UD-Q8_K_XL.gguf
       #   n_gpu_layers: 99
-
       # - id: qwen3.5-9b
       #   name: Qwen 3.5 9B Q6_K_XL (GGUF)
       #   model_file: nano-desktop-modells/Qwen3.5-9B-UD-Q6_K_XL.gguf
       #   n_gpu_layers: 99
 
-      # QAT-Modelle (auskommentiert — nicht auf Spark)
+      # ── Auskommentiert: QAT-Modelle (nicht auf Spark) ──
       # - id: gemma-4-26B-A4B-it-qat-ud-q4
       #   name: Gemma 4 26B A4B Instruct Q4_K_XL (GGUF)
       #   model_file: gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf
       #   n_gpu_layers: 99
-
       # - id: gemma-4-31B-it-qat-ud-q4
       #   name: Gemma 4 31B A4B Instruct Q4_K_XL (GGUF)
       #   model_file: gemma-4-31B-it-qat-UD-Q4_K_XL.gguf
       #   n_gpu_layers: 99
 
-      # server-models (nur Modelle aus der aktuellen Spark-Liste)
-      # 1) Gemma4-26B/gemma-4-26B-A4B-it-UD-Q8_K_XL [25.7 GB]
+      # ── Aktive Spark-Modelle ──
+
       - id: gemma-4-26B-A4B-it-UD-Q8_K_XL
         name: Gemma 4 26B A4B Instruct UD-Q8_K_XL (GGUF)
         model_file: Gemma4-26B/gemma-4-26B-A4B-it-UD-Q8_K_XL.gguf
@@ -618,7 +521,6 @@ providers:
         temperature: 1.0
         top_k: 64
 
-      # 2) Hermes4-3/NousResearch_Hermes-4.3-36B-Q6_K [27.6 GB]
       - id: hermes-4.3-36b-q6
         name: Hermes 4.3 36B Q6_K (GGUF)
         model_file: Hermes4-3/NousResearch_Hermes-4.3-36B-Q6_K.gguf
@@ -626,32 +528,13 @@ providers:
         enable_thinking: false
         temperature: 0.8
         min_p: 0.05
+        # Hybrid-Attention (SWA): llama.cpp reguliert n_ctx automatisch herunter.
+        # parallel=1 verhindert sporadische Connection-Resets bei Heavy-Tasks.
+        context_length: 16384
+        parallel: 1
 
-        # Hermes 4.3 36B ist ein Hybrid-Mode Reasoning Modell (basierend auf
-        # ByteDance Seed-OSS 36B) mit SWA/Hybrid-Attention. Beobachtung aus
-        # ~/ai/llama-lab-spark.log (8.6.2026, 22:49-23:47 Benchmark-Lauf):
-        #   - llama.cpp hat trotz Config context_window=65536 auf n_ctx=16384
-        #     runterreguliert (n_ctx_train=524288 ist das Trainingsfenster des
-        #     Modells, llama.cpp wählt automatisch einen kleineren Slot wenn
-        #     4× parallel × 65536 × 36B-Layer nicht in den Speicher passt)
-        #   - 4 parallele Slots in Verbindung mit SWA-Re-Processings
-        #     ("forcing full prompt re-processing due to lack of cache data")
-        #     führen nach Heavy-Tasks (>200s) zu sporadischen Connection-Resets
-        #     am OpenAI-Client ("Retrying request to /chat/completions")
-        #   - Decoding-Speed 5.83-5.92 t/s (vs. 43-44 t/s für Gemma 4 26B-A4B
-        #     auf demselben Server) belegt den Recurrent-Layer-Overhead
-        # Override: hermes-spezifisch auf n_ctx=16384 + parallel=1 zwingen,
-        # damit llama.cpp den 4-Slot-Betrieb für dieses eine Modell aufgibt.
-        # Per-Modell-Override lässt die anderen Spark-Modelle (Qwen 3.6, Gemma 4)
-        # unverändert auf 4 parallel.
-
-        context_length: 16384     # --ctx-size; Provider-Default context_window=65536
-        parallel: 1                # Provider-Default parallel=4; siehe _build_server_cmd()
-        # num_predict bleibt global bei 65536 (Token-Output-Cap reicht für längste Hermes-Outputs: 2145 T)
-
-      # 2) Gemma4-26B/gemma-4-26B-A4B-it-UD-Q5_K_XL [+MTP ⚡] [25.7 GB + 0.5 GB Draft]
       - id: gemma-4-26B-A4B-it-UD-Q5_K_XL-mtp
-        name: Gemma 4 26B A4B IT UD-Q5_K_XL [+MTP ⚡] (GGUF)
+        name: Gemma 4 26B A4B IT UD-Q5_K_XL [+MTP] (GGUF)
         model_file: Gemma4-26B/gemma-4-26B-A4B-it-UD-Q5_K_XL.gguf
         model_draft_file: Gemma4-26B/gemma-4-26B-A4B-it-Q8_0-MTP.gguf
         n_gpu_layers: 99
@@ -661,9 +544,8 @@ providers:
           - "--spec-type draft-mtp"
           - "--spec-draft-n-max 4"
 
-      # 3) Gemma4-31b/gemma-4-31B-it-UD-Q8_K_XL [+MTP ⚡] [32.6 GB + 0.5 GB Draft]
       - id: gemma-4-31B-it-UD-Q8_K_XL-mtp
-        name: Gemma 4 31B IT UD-Q8_K_XL [+MTP ⚡] (GGUF)
+        name: Gemma 4 31B IT UD-Q8_K_XL [+MTP] (GGUF)
         model_file: Gemma4-31b/gemma-4-31B-it-UD-Q8_K_XL.gguf
         model_draft_file: Gemma4-31b/gemma-4-31B-it-Q8_0-MTP.gguf
         n_gpu_layers: 99
@@ -673,7 +555,6 @@ providers:
           - "--spec-type draft-mtp"
           - "--spec-draft-n-max 4"
 
-      # 4) Qwen3.6/Qwen3.6-35B-A3B-MTP-UD-Q8_K_XL [36.4 GB]
       - id: qwen3_6-35b-a3b-mtp-ud-q8
         name: Qwen 3.6 35B-A3B MTP UD-Q8_K_XL (GGUF)
         model_file: Qwen3.6/Qwen3.6-35B-A3B-MTP-UD-Q8_K_XL.gguf
@@ -690,7 +571,6 @@ providers:
           - "--spec-draft-n-max 2"
           - '--chat-template-kwargs {"preserve_thinking":true}'
 
-      # 5) Qwen3.5/Qwen3.5-35B-A3B-UD-Q8_K_XL [45.3 GB]
       - id: qwen3_5-35b-a3b-q8
         name: Qwen 3.5 35B-A3B UD-Q8_K_XL (GGUF)
         model_file: Qwen3.5/Qwen3.5-35B-A3B-UD-Q8_K_XL.gguf
@@ -701,7 +581,6 @@ providers:
         top_p: 0.8
         top_k: 20
 
-      # 6) Qwen3-Coder-Next/Qwen3-Coder-Next-UD-Q4_K_XL [46.2 GB]
       - id: qwen3-coder-next-q4
         name: Qwen 3 Coder Next UD-Q4_K_XL (GGUF)
         model_file: Qwen3-Coder-Next/Qwen3-Coder-Next-UD-Q4_K_XL.gguf
@@ -709,18 +588,14 @@ providers:
         context_length: 65536
         enable_thinking: false
 
-      # 7) Gemma4-Creative-Wordsmith/gemma-4-Creative-Wordsmith-31B-it-uncensored-heretic-Q8_0 [~32.6 GB]
       # - id: gemma-4-31b-it-creative-wordsmith-q8
       #   name: Gemma 4 31B Creative Wordsmith Uncensored Q8_0 (GGUF)
       #   model_file: Gemma4-Creative-Wordsmith/gemma-4-Creative-Wordsmith-31B-it-uncensored-heretic-Q8_0.gguf
       #   n_gpu_layers: 99
       #   enable_thinking: false
 
-      # 8) Qwopus3.6-27B-v2/Qwopus3.6-27B-v2-MTP-Q8_0 [28.3 GB]
-      #    Base: Qwen3.6-27B → multi-stage Trace Inversion SFT (Claude Opus 4.6/4.7)
-      #    87.43% MMLU-Pro (350 subset), 75.25% SWE-bench Verified (202 slice)
-      #    MTP-Speedup: 1.66x (draft=2), temp=0.7
-      #    MTP-Heads: eingebettet im Haupt-GGUF (keine separate Draft-Datei)
+      # Qwopus: Qwen3.6-Base → multi-stage Trace Inversion SFT (Claude Opus 4.6/4.7).
+      # MTP-Heads eingebettet im Haupt-GGUF (keine separate Draft-Datei).
       - id: qwopus3_6-27b-v2-mtp-q8
         name: Qwopus 3.6-27B-v2 MTP-Q8_0 (GGUF)
         model_file: Qwopus3.6-27B-v2/Qwopus3.6-27B-v2-MTP-Q8_0.gguf
@@ -737,12 +612,7 @@ providers:
           - "--spec-type draft-mtp"
           - "--spec-draft-n-max 2"
 
-      # 9) Qwopus3.6-27B/Qwopus3.6-27B-Coder-MTP-Q8_0 [28.3 GB]
-      #    Base: Qwopus3.6-27B-v2 → Agentic Coding SFT (Hermes-agent-reasoning-traces)
-      #    Trace Inversion: Claude Opus 4.6/4.7 → <think> reconstructed reasoning traces
-      #    MTP draft=2 (gleiche Architektur wie Eintrag #8, MTP-Heads eingebettet im Haupt-GGUF)
-      #    SWE-bench Verified: 67.0% thinking-off (Q5_K_M, RTX 5090, ~100 t/s)
-      #    335/500 resolved — stark auf scikit-learn, requests, django, xarray
+      # Qwopus Coder: v2 → Agentic Coding SFT (Hermes-agent-reasoning-traces).
       - id: qwopus-3_6-27b-coder-mtp-q8
         name: Qwopus-3.6-27B-Coder MTP-Q8_0 (GGUF)
         model_file: Qwopus3.6-27B/Qwopus3.6-27B-Coder-MTP-Q8_0.gguf
@@ -759,7 +629,7 @@ providers:
           - "--spec-type draft-mtp"
           - "--spec-draft-n-max 2"
 
-      # Auskommentiert — nicht auf Spark:
+      # ── Auskommentiert: nicht auf Spark / nicht vorhanden ──
       # - id: qwen3.6-35b-a3b-q8 (Qwen3.6-35B-A3B-UD-Q8_K_XL.gguf — nicht vorhanden)
       # - id: qwen3.6-35b-a3b-uncensored (Uncensored-HauhauCS — nicht vorhanden)
       # - id: qwen3.5-35b-a3b-q4 (Q4-Quantisierung — nicht vorhanden)

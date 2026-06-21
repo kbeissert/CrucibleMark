@@ -6,11 +6,17 @@ Defense-in-Depth (Phase 9): Validierung in _write_to_csv() wirft ValueError
 wenn eine Zeile mit korruptem Inhalt (Header-Repeat, narrative Asset-ID,
 ungültigem Model) geschrieben werden würde. Verhindert, dass ein zukünftiges
 Modul Müll in die CSV schreibt.
+
+Atomare Schreibvorgänge: Full-Rewrites schreiben zuerst in eine .tmp-Datei
+und ersetzen die Originaldatei per os.replace() (atomar auf POSIX).
+Verhindert Datenverlust bei Kill/Crash während des Schreibens.
 """
 
 import sys
 import csv
 import logging
+import os
+import tempfile
 from pathlib import Path
 from typing import Any
 from utils.config_validator import ConfigValidator
@@ -283,52 +289,83 @@ class ResultManager:
     ) -> None:
         """Schreibt die kombinierten Daten in die CSV-Datei (Rewrite mit Deduplizierung).
 
-        Phase 9 (Defense-in-Depth): Jede Zeile wird VOR dem Write validiert.
-        Korrupte Zeilen werden geloggt und ÜBERSPRUNGEN (kein Hard-Fail der ganzen
-        Save-Operation). Damit bleibt das Benchmark resilient, aber der Müll wird
-        nicht in die CSV geschrieben. Im Fehlerfall hilft der Sanitizer beim
-        Aufräumen bestehender Altlasten.
+        Defense-in-Depth (Phase 9): Neue Zeilen werden VOR dem Write validiert.
+        Bestehende Zeilen (bereits in der CSV) werden NICHT erneut validiert —
+        sie waren beim ersten Schreiben valide und eine erneute Validierung
+        könnte Zeilen verwerfen, wenn sich die Validierungslogik geändert hat.
+
+        Atomare Schreibvorgänge: Schreibt zuerst in eine .tmp-Datei im selben
+        Verzeichnis und ersetzt die Originaldatei per os.replace() (atomar auf
+        POSIX). Verhindert Datenverlust bei Kill/Crash während des Schreibens.
         """
-        # Validierung: new + existing filtern
+        # Validierung: nur neue Zeilen filtern (existing rows waren bereits valide)
         valid_new: list[dict[str, Any]] = []
-        skipped = 0
+        skipped_new = 0
         for r in new_results:
             try:
                 self._validate_row_for_write(r, fieldnames)
                 valid_new.append(r)
             except ValueError as e:
                 logger.warning("[Hard-Fail-Guard] %s", e)
-                skipped += 1
+                skipped_new += 1
 
-        valid_existing: list[dict[str, Any]] = []
-        for r in existing_rows:
-            try:
-                self._validate_row_for_write(r, fieldnames)
-                valid_existing.append(r)
-            except ValueError as e:
-                logger.warning("[Hard-Fail-Guard] %s", e)
-                skipped += 1
-
-        if skipped:
+        if skipped_new:
             print(
-                f"   🛡️  Hard-Fail-Guard: {skipped} korrupte Zeile(n) übersprungen"
+                f"   🛡️  Hard-Fail-Guard: {skipped_new} neue Zeile(n) übersprungen"
             )
 
-        all_rows = valid_existing + valid_new
+        all_rows = existing_rows + valid_new
 
-        # Komplettes Neuschreiben
-        with csv_path.open("w", newline="", encoding="utf-8") as f:
-            writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction="ignore")
-            writer.writeheader()
-            writer.writerows(all_rows)
+        # Atomare Schreibvorgänge: erst .tmp, dann os.replace()
+        tmp_fd = None
+        tmp_path = None
+        try:
+            tmp_fd, tmp_path_str = tempfile.mkstemp(
+                suffix=".csv.tmp", dir=str(csv_path.parent)
+            )
+            tmp_path = Path(tmp_path_str)
+            os.close(tmp_fd)
+            tmp_fd = None  # fd geschlossen, nicht doppelt schließen
 
-        print(
-            f"\n💾 Ergebnisse gespeichert in: {csv_path} (Upsert: {len(valid_new)} neu/updated, {skipped} übersprungen)"
-        )
+            with tmp_path.open("w", newline="", encoding="utf-8") as f:
+                writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction="ignore")
+                writer.writeheader()
+                writer.writerows(all_rows)
+
+            # Atomarer Rename (POSIX: os.replace ist atomar wenn src/dst auf gleichem FS)
+            os.replace(str(tmp_path), str(csv_path))
+            tmp_path = None  # erfolgreich ersetzt, nicht löschen
+
+            print(
+                f"\n💾 Ergebnisse gespeichert in: {csv_path} "
+                f"(Upsert: {len(valid_new)} neu/updated, {skipped_new} übersprungen)"
+            )
+        except (OSError, csv.Error) as e:
+            logger.error("Failed to write CSV atomically to %s: %s", csv_path, e)
+            print(f"❌ Fehler beim atomaren Schreiben: {e}")
+            # Cleanup: tmp-Datei löschen wenn vorhanden
+            if tmp_fd is not None:
+                try:
+                    os.close(tmp_fd)
+                except OSError:
+                    pass
+            if tmp_path is not None and tmp_path.exists():
+                try:
+                    tmp_path.unlink()
+                except OSError:
+                    pass
+            raise  # Caller (save_results) fängt OSError/csv.Error ab
 
     @staticmethod
     def _csv_header_matches(csv_path: Path, fieldnames: list[str]) -> bool:
-        """Check if the existing CSV header matches the expected fieldnames."""
+        """Check if the existing CSV header exactly matches the expected fieldnames.
+
+        Exact match is required for the fast-path (append) because
+        DictWriter writes one value per fieldname — a mismatched header
+        would produce rows with wrong column count.
+        Falls back to _write_to_csv (atomic full rewrite) when columns
+        are added, removed, or reordered.
+        """
         try:
             with csv_path.open("r", encoding="utf-8") as f:
                 reader = csv.reader(f)
