@@ -761,16 +761,11 @@ class LlamaCppBaseClient(BaseProviderClient):
 
         if reasoning:
             usage = getattr(response, "usage", None)
-            # reasoning_tokens: bevorzugt aus usage.completion_tokens_details
-            # (llama.cpp >= b5XXX), sonst Fallback auf completion_tokens wenn
-            # kein Content vorhanden ist.
-            rt: int | None = None
-            if usage:
-                ctd = getattr(usage, "completion_tokens_details", None)
-                if ctd:
-                    rt = getattr(ctd, "reasoning_tokens", None)
-                if rt is None and not content.strip():
-                    rt = getattr(usage, "completion_tokens", 0)
+            # reasoning_tokens via SSoT-Helper + llamacpp-Fallback
+            # (completion_tokens wenn kein Content — native Thinking-Modelle)
+            rt = self._extract_reasoning_tokens(usage)
+            if rt is None and not content.strip():
+                rt = getattr(usage, "completion_tokens", 0) if usage else None
             if rt is not None:
                 self.last_response_metadata["reasoning_tokens"] = rt
             self.last_response_metadata["think_content"] = reasoning
@@ -843,6 +838,8 @@ class LlamaCppBaseClient(BaseProviderClient):
 
         if stream_handler:
             full_content = ""
+            from utils.providers.base import ThinkAccumulator
+            think = ThinkAccumulator()
             for chunk in response_or_stream:
                 if hasattr(chunk, "usage") and chunk.usage:
                     self.last_response_metadata["usage"] = chunk.usage
@@ -850,10 +847,27 @@ class LlamaCppBaseClient(BaseProviderClient):
                     finish = getattr(chunk.choices[0], "finish_reason", None)
                     if finish:
                         self.last_response_metadata["finish_reason"] = finish
-                    delta = chunk.choices[0].delta.content
-                    if delta:
-                        stream_handler(delta)
-                        full_content += delta
+                    delta = chunk.choices[0].delta
+                    # Content
+                    content_piece = getattr(delta, "content", None)
+                    if content_piece:
+                        stream_handler(content_piece)
+                        full_content += content_piece
+                    # Reasoning/Thinking (llama.cpp native: reasoning_content)
+                    reasoning_piece = getattr(delta, "reasoning_content", None) or getattr(delta, "reasoning", None)
+                    if reasoning_piece:
+                        think.add(reasoning_piece)
+
+            # Post-Stream: reasoning_tokens + think_content setzen
+            if think.has_content:
+                self.last_response_metadata["think_content"] = think.content
+            usage = self.last_response_metadata.get("usage")
+            if usage:
+                rt = self._extract_reasoning_tokens(usage)
+                if rt is None and think.has_content:
+                    rt = getattr(usage, "completion_tokens", 0)
+                if rt is not None:
+                    self.last_response_metadata["reasoning_tokens"] = rt
             return full_content
 
         return self._extract_response_content(response_or_stream, model)

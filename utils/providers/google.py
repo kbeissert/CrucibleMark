@@ -122,7 +122,8 @@ class GoogleClient(BaseProviderClient):
             if stream_handler:
                 response = response_or_stream
                 full_text = ""
-                think_parts: list[str] = []
+                from utils.providers.base import ThinkAccumulator
+                think = ThinkAccumulator()
                 self.last_response_metadata = {
                     "token_limit_fallback": fallback_triggered,
                     "token_limit_used": used_max_tokens,
@@ -154,9 +155,9 @@ class GoogleClient(BaseProviderClient):
                         # Extrahiere thinking-Content aus Candidates
                         for part in getattr(chunk.candidates[0], "content", None).parts if hasattr(chunk.candidates[0], "content") else []:
                             if hasattr(part, "thinking") and part.thinking:
-                                think_parts.append(str(part.thinking))
-                if think_parts:
-                    self.last_response_metadata["think_content"] = "".join(think_parts)
+                                think.add(part.thinking)
+                if think.has_content:
+                    self.last_response_metadata["think_content"] = think.content
                 return full_text
             # Blocking Call
             response = response_or_stream
@@ -169,12 +170,13 @@ class GoogleClient(BaseProviderClient):
                 if fr:
                     self.last_response_metadata["finish_reason"] = getattr(fr, "name", str(fr))
                 # Extrahiere thinking-Content aus Candidates
-                think_parts: list[str] = []
+                from utils.providers.base import ThinkAccumulator
+                think = ThinkAccumulator()
                 for part in getattr(response.candidates[0], "content", None).parts if hasattr(response.candidates[0], "content") else []:
                     if hasattr(part, "thinking") and part.thinking:
-                        think_parts.append(str(part.thinking))
-                if think_parts:
-                    self.last_response_metadata["think_content"] = "".join(think_parts)
+                        think.add(part.thinking)
+                if think.has_content:
+                    self.last_response_metadata["think_content"] = think.content
             if hasattr(response, "usage_metadata") and response.usage_metadata:
                 um = response.usage_metadata
                 thoughts = getattr(um, "thoughts_token_count", None)

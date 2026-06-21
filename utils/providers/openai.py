@@ -121,7 +121,8 @@ class OpenAIClient(BaseProviderClient):
             if stream_handler:
                 response_stream = response_or_stream
                 full_content = ""
-                think_parts: list[str] = []
+                from utils.providers.base import ThinkAccumulator
+                think = ThinkAccumulator()
                 stream_usage = None
                 self.last_response_metadata = {
                     "token_limit_fallback": fallback_triggered,
@@ -151,24 +152,22 @@ class OpenAIClient(BaseProviderClient):
                         # Reasoning/Thinking extrahieren (o1/o3/o4: "reasoning")
                         reasoning_piece = getattr(delta, "reasoning", None) or getattr(delta, "reasoning_content", None)
                         if reasoning_piece:
-                            think_parts.append(str(reasoning_piece))
+                            think.add(reasoning_piece)
                 # Post-stream metadata
                 if stream_usage:
                     self.last_response_metadata["usage"] = stream_usage
                     rt = self._extract_reasoning_tokens(stream_usage)
                     if rt is not None:
                         self.last_response_metadata["reasoning_tokens"] = rt
-                if think_parts:
-                    self.last_response_metadata["think_content"] = "".join(think_parts)
+                if think.has_content:
+                    self.last_response_metadata["think_content"] = think.content
                 return full_content
             # Blocking Call (Legacy / No Stream)
             response = response_or_stream
             msg = response.choices[0].message if response.choices else None
             content = (msg.content or "") if msg else ""
             # Reasoning/Thinking extrahieren (o1/o3/o4: "reasoning", "reasoning_content")
-            reasoning = None
-            if msg:
-                reasoning = getattr(msg, "reasoning", None) or getattr(msg, "reasoning_content", None) or getattr(msg, "think_content", None)
+            reasoning = self._extract_think_from_message(msg)
             usage = response.usage
             reasoning_tokens = self._extract_reasoning_tokens(usage) if usage else None
             # Capture Metadata
@@ -195,13 +194,8 @@ class OpenAIClient(BaseProviderClient):
             logger.error("OpenAI query failed: %s", e)
             raise
     def _extract_reasoning_tokens(self, usage) -> int | None:
-        """Extrahiere reasoning_tokens aus OpenAI usage-Objekt."""
-        if not usage:
-            return None
-        details = getattr(usage, "completion_tokens_details", None)
-        if details:
-            return getattr(details, "reasoning_tokens", None)
-        return None
+        """Delegiert an BaseProviderClient._extract_reasoning_tokens (SSoT)."""
+        return super()._extract_reasoning_tokens(usage)
 
     def get_available_models(self) -> List[str]:
         """List available OpenAI models"""

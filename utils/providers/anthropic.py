@@ -162,13 +162,12 @@ class AnthropicClient(BaseProviderClient):
             raise
 
     def _extract_reasoning_tokens(self, usage) -> int | None:
-        """Extrahiere reasoning_tokens aus Anthropic usage-Objekt."""
-        if not usage:
-            return None
-        details = getattr(usage, "output_tokens_details", None)
-        if details:
-            return getattr(details, "reasoning_tokens", None)
-        return None
+        """Delegiert an BaseProviderClient._extract_reasoning_tokens (SSoT).
+
+        Anthropic nutzt ``output_tokens_details`` statt ``completion_tokens_details``.
+        Die Base-Methode prüft beide Pfade.
+        """
+        return super()._extract_reasoning_tokens(usage)
 
     def _extract_think_content(self, content_blocks) -> str | None:
         """Extrahiere thinking-Content aus Anthropic ContentBlock-Liste."""
@@ -189,7 +188,8 @@ class AnthropicClient(BaseProviderClient):
     ) -> str:
         """Streaming-Query für Anthropic mit Thinking-Extraktion."""
         full_content = ""
-        think_parts: list[str] = []
+        from utils.providers.base import ThinkAccumulator
+        think = ThinkAccumulator()
         stream_usage = None
         model_name = None
         response_id = None
@@ -208,12 +208,12 @@ class AnthropicClient(BaseProviderClient):
                     block = event.content_block
                     if getattr(block, "type", None) == "thinking":
                         if hasattr(block, "thinking") and block.thinking:
-                            think_parts.append(str(block.thinking))
+                            think.add(block.thinking)
                 elif event.type == "content_block_delta":
                     delta = event.delta
                     if hasattr(delta, "type") and delta.type == "thinking_delta":
                         if hasattr(delta, "thinking") and delta.thinking:
-                            think_parts.append(str(delta.thinking))
+                            think.add(delta.thinking)
                             if stream_handler:
                                 stream_handler(delta.thinking)
                     elif hasattr(delta, "type") and delta.type == "input_delta":
@@ -241,8 +241,8 @@ class AnthropicClient(BaseProviderClient):
                 "token_limit_used": used_max_tokens,
                 "reasoning_tokens": self._extract_reasoning_tokens(stream_usage),
             }
-            if think_parts:
-                self.last_response_metadata["think_content"] = "".join(think_parts)
+            if think.has_content:
+                self.last_response_metadata["think_content"] = think.content
 
         except Exception:
             raise

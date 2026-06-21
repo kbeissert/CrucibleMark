@@ -142,7 +142,8 @@ class OpenRouterClient(BaseProviderClient):
 
             if stream_handler:
                 full_content = ""
-                think_parts = []
+                from utils.providers.base import ThinkAccumulator
+                think = ThinkAccumulator()
                 stream_usage = None
                 for chunk in response:
                     delta = chunk.choices[0].delta
@@ -154,7 +155,7 @@ class OpenRouterClient(BaseProviderClient):
                     # Reasoning/Thinking extrahieren (GLM 5.x: "reasoning")
                     reasoning_piece = getattr(delta, "reasoning", None) or getattr(delta, "reasoning_content", None)
                     if reasoning_piece:
-                        think_parts.append(reasoning_piece)
+                        think.add(reasoning_piece)
                     # Usage kommt im letzten Streaming-Chunk
                     if hasattr(chunk, "usage") and chunk.usage:
                         stream_usage = chunk.usage
@@ -166,10 +167,14 @@ class OpenRouterClient(BaseProviderClient):
                     "token_limit_used": used_max_tokens,
                     "token_limit_fallback": fallback_triggered,
                 }
-                if think_parts:
-                    meta["think_content"] = "".join(think_parts)
+                if think.has_content:
+                    meta["think_content"] = think.content
                 if stream_usage:
                     meta["usage"] = stream_usage
+                    # reasoning_tokens via SSoT-Helper
+                    rt = self._extract_reasoning_tokens(stream_usage)
+                    if rt is not None:
+                        meta["reasoning_tokens"] = rt
                 self.last_response_metadata = meta
                 return full_content
 
@@ -177,17 +182,12 @@ class OpenRouterClient(BaseProviderClient):
                 msg = response.choices[0].message if response.choices else None
                 result = (msg.content or "") if msg else ""
 
-                # Reasoning/Thinking-Content extrahieren (GLM 5.x: "reasoning",
-                # andere Provider: evtl. "reasoning_content" oder "think_content")
-                reasoning = None
-                if msg:
-                    reasoning = getattr(msg, "reasoning", None) or getattr(msg, "reasoning_content", None) or getattr(msg, "think_content", None)
+                # Reasoning/Thinking-Content extrahieren
+                reasoning = self._extract_think_from_message(msg)
 
                 usage = response.usage
                 if usage:
-                    reasoning_tokens: int | None = None
-                    if hasattr(usage, "completion_tokens_details") and usage.completion_tokens_details:
-                        reasoning_tokens = getattr(usage.completion_tokens_details, "reasoning_tokens", None)
+                    reasoning_tokens = self._extract_reasoning_tokens(usage)
                     meta = {
                         "total_tokens": usage.total_tokens,
                         "prompt_tokens": usage.prompt_tokens,

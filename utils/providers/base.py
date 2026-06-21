@@ -5,6 +5,41 @@ Getrennte Implementierungen für Ollama, Anthropic, Mistral
 import logging
 from typing import Any, List, Optional, Callable
 logger = logging.getLogger(__name__)
+
+
+class ThinkAccumulator:
+    """Streaming-Helper für Think-Content-Akkumulation (SSoT).
+
+    Alle Provider, die Reasoning/Thinking-Content im Streaming-Modus
+    empfangen, nutzen diesen Accumulator statt eigener ``think_parts: list[str]``.
+
+    Usage::
+
+        think = ThinkAccumulator()
+        for chunk in response:
+            think.add(getattr(chunk.choices[0].delta, "reasoning", None))
+        if think.has_content:
+            meta["think_content"] = think.content
+    """
+
+    __slots__ = ("_parts",)
+
+    def __init__(self) -> None:
+        self._parts: list[str] = []
+
+    def add(self, text: str | None) -> None:
+        """Einzelnes Chunk anhängen (None/leer wird ignoriert)."""
+        if text:
+            self._parts.append(str(text))
+
+    @property
+    def content(self) -> str | None:
+        """Zusammengesetzter Think-Content oder None."""
+        return "".join(self._parts) if self._parts else None
+
+    @property
+    def has_content(self) -> bool:
+        return bool(self._parts)
 class BaseProviderClient:
     """Basis-Klasse für Provider-spezifische Clients"""
 
@@ -126,6 +161,61 @@ class BaseProviderClient:
             req_tokens = min(req_tokens, effective_cap)
 
         return token_param_name, req_tokens
+
+    # ── Reasoning/Thinking Extraction Utilities (SSoT) ──────────────────
+
+    @staticmethod
+    def _extract_reasoning_tokens(usage: Any) -> int | None:
+        """Extrahiert reasoning_tokens aus einem Usage-Objekt (provider-agnostisch).
+
+        Prüft der Reihe nach:
+        1. ``usage.completion_tokens_details.reasoning_tokens`` (OpenAI-kompatibel:
+           OpenAI, Groq, xAI, OpenRouter, Mistral, llama.cpp)
+        2. ``usage.output_tokens_details.reasoning_tokens`` (Anthropic)
+        3. ``usage.reasoning_tokens`` (Mistral-Fallback)
+
+        Returns ``None`` wenn kein Feld vorhanden oder ``usage`` falsy.
+        """
+        if not usage:
+            return None
+        # Pfad 1: OpenAI-kompatibel (completion_tokens_details)
+        details = getattr(usage, "completion_tokens_details", None)
+        if details:
+            rt = getattr(details, "reasoning_tokens", None)
+            if rt is not None:
+                return rt
+        # Pfad 2: Anthropic (output_tokens_details)
+        out_details = getattr(usage, "output_tokens_details", None)
+        if out_details:
+            rt = getattr(out_details, "reasoning_tokens", None)
+            if rt is not None:
+                return rt
+        # Pfad 3: Mistral-Fallback (direktes Feld auf usage)
+        return getattr(usage, "reasoning_tokens", None)
+
+    @staticmethod
+    def _extract_think_from_message(
+        msg: Any,
+        field_names: tuple[str, ...] = ("reasoning", "reasoning_content", "think_content"),
+    ) -> str | None:
+        """Extrahiert Think-Content aus einer Message (provider-agnostisch).
+
+        Versucht ``getattr(msg, field)`` für jedes ``field_names``-Element.
+        Returns den ersten nicht-leeren Treffer oder ``None``.
+
+        Args:
+            msg: OpenAI-kompatibles Message-Objekt (``.reasoning``, ``.reasoning_content``, etc.)
+            field_names: Zu prüfende Attributnamen (Reihenfolge = Priorität)
+        """
+        if not msg:
+            return None
+        for field in field_names:
+            val = getattr(msg, field, None)
+            if val:
+                return str(val)
+        return None
+
+    # ── Token Fallback ─────────────────────────────────────────────────
 
     def _execute_with_token_fallback(
         self,

@@ -126,7 +126,8 @@ class XAIClient(BaseProviderClient):
             )
             if stream_handler:
                 full_content = ""
-                think_parts: list[str] = []
+                from utils.providers.base import ThinkAccumulator
+                think = ThinkAccumulator()
                 stream_usage = None
                 self.last_response_metadata = {
                     "token_limit_fallback": fallback_triggered,
@@ -150,22 +151,20 @@ class XAIClient(BaseProviderClient):
                         # Reasoning/Thinking extrahieren
                         reasoning_piece = getattr(delta, "reasoning", None) or getattr(delta, "reasoning_content", None)
                         if reasoning_piece:
-                            think_parts.append(str(reasoning_piece))
+                            think.add(reasoning_piece)
                 # Post-stream metadata
                 if stream_usage:
                     self.last_response_metadata["usage"] = stream_usage
                     rt = self._extract_reasoning_tokens(stream_usage)
                     if rt is not None:
                         self.last_response_metadata["reasoning_tokens"] = rt
-                if think_parts:
-                    self.last_response_metadata["think_content"] = "".join(think_parts)
+                if think.has_content:
+                    self.last_response_metadata["think_content"] = think.content
                 return full_content
             else:
                 raw_text = response.choices[0].message.content
                 msg = response.choices[0].message if response.choices else None
-                reasoning = None
-                if msg:
-                    reasoning = getattr(msg, "reasoning", None) or getattr(msg, "reasoning_content", None) or getattr(msg, "think_content", None)
+                reasoning = self._extract_think_from_message(msg)
                 self.last_response_metadata = {
                     "token_limit_fallback": fallback_triggered,
                     "token_limit_used": used_max_tokens,
@@ -188,13 +187,8 @@ class XAIClient(BaseProviderClient):
             logger.error("XAI API Error: %s", e)
             raise e
     def _extract_reasoning_tokens(self, usage) -> int | None:
-        """Extrahiere reasoning_tokens aus OpenAI-kompatiblem usage-Objekt."""
-        if not usage:
-            return None
-        details = getattr(usage, "completion_tokens_details", None)
-        if details:
-            return getattr(details, "reasoning_tokens", None)
-        return None
+        """Delegiert an BaseProviderClient._extract_reasoning_tokens (SSoT)."""
+        return super()._extract_reasoning_tokens(usage)
 
     def get_available_models(self) -> list:
         try:

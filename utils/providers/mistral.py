@@ -97,13 +97,7 @@ class MistralClient(BaseProviderClient):
             )
             # Capture Metadata
             usage = response.usage
-            reasoning_tokens = None
-            if usage:
-                ctd = getattr(usage, "completion_tokens_details", None)
-                if ctd:
-                    reasoning_tokens = getattr(ctd, "reasoning_tokens", None)
-                if reasoning_tokens is None:
-                    reasoning_tokens = getattr(usage, "reasoning_tokens", None)
+            reasoning_tokens = self._extract_reasoning_tokens(usage)
             self.last_response_metadata = {
                 "model": response.model,
                 "id": response.id,

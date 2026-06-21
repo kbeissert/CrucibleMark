@@ -5,6 +5,40 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v4.10.5] - 2026-06-21
+
+**Reasoning/Thinking-Extraktion: SSoT-Utilities in `base.py`. Streaming-Bugs in OpenRouter + llamacpp gefixt.**
+
+### Fixed
+
+- **`utils/providers/openrouter.py` Streaming — `reasoning_tokens` fehlte:**
+  Der Streaming-Pfad extrahierte `usage` und `think_content` korrekt, aber `_extract_reasoning_tokens()` wurde nie aufgerufen. Downstream-Konsumenten (`judge_evaluator.py:272`, `base_runner.py:159`) erhielten `None` für OpenRouter-Streaming-Responses.
+
+- **`utils/providers/llamacpp_base.py` Streaming — `reasoning_tokens` + `think_content` fehlte:**
+  Der Streaming-Las `delta.content` nur — `delta.reasoning_content` (llama.cpp-natives Thinking-Feld) wurde ignoriert. `_extract_response_content()` (Non-Streaming) wurde nicht aufgerufen. Fix: Think-Content-Akkumulation + Post-Stream `reasoning_tokens`-Extraktion.
+
+### Added (SSoT)
+
+- **`utils/providers/base.py` — 3 Reasoning/Thinking-Extraktions-Utilities (SSoT):**
+  1. `_extract_reasoning_tokens(usage)` — Provider-agnostisch. Prüft: `completion_tokens_details` (OpenAI-kompatibel) → `output_tokens_details` (Anthropic) → `usage.reasoning_tokens` (Mistral-Fallback). ersetzt 5 identische lokale Methoden in openai.py, groq.py, xai.py, anthropic.py + Inline-Code in openrouter.py, mistral.py, llamacpp_base.py.
+  2. `_extract_think_from_message(msg, field_names)` — Generisch. Versucht `getattr(msg, field)` für jedes Feld. Ersetzt identische Inline-Patterns in openai.py, groq.py, xai.py, openrouter.py.
+  3. `ThinkAccumulator` — Streaming-Helper. `add(chunk)` → `content`/`has_content`. Ersetzt `think_parts: list[str]` + `"".join(think_parts)` in allen 7 Streaming-Pfaden.
+
+- **9 Provider auf Shared Utilities umgestellt:**
+  | Provider | `_extract_reasoning_tokens` | `_extract_think_from_message` | `ThinkAccumulator` |
+  |---|---|---|---|
+  | openai.py | Delegation auf Base | ✅ Non-Streaming | ✅ Streaming |
+  | anthropic.py | Delegation auf Base | — (eigene `_extract_think_content`) | ✅ Streaming |
+  | groq.py | Delegation auf Base | ✅ Non-Streaming | ✅ Streaming |
+  | xai.py | Delegation auf Base | ✅ Non-Streaming | ✅ Streaming |
+  | openrouter.py | Inline → Base | ✅ Non-Streaming | ✅ Streaming |
+  | google.py | Inline (`thoughts_token_count`) | — (candidate parts) | ✅ beide Pfade |
+  | mistral.py | Inline → Base | — (Chunk-Liste) | — (kein Streaming) |
+  | ollama.py | Inline (`eval_count`-Heuristik) | Inline (`msg.thinking`) | — (always streaming, eigene Logik) |
+  | llamacpp_base.py | Inline → Base + Fallback | Inline (`reasoning_content`) | ✅ Streaming |
+
+---
+
 ## [v4.10.4] - 2026-06-21
 
 **CSV-Write-Through Bug: Atomare Schreibvorgänge + Existing-Row-Schutz. Provider-Config Cleanup.**

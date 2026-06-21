@@ -131,7 +131,8 @@ class GroqClient(BaseProviderClient):
 
             if stream_handler:
                 full_content = ""
-                think_parts: list[str] = []
+                from utils.providers.base import ThinkAccumulator
+                think = ThinkAccumulator()
                 stream_usage = None
                 for chunk in response:
                     # Groq returns similar chunk structure to OpenAI
@@ -142,7 +143,7 @@ class GroqClient(BaseProviderClient):
                     # Reasoning/Thinking extrahieren
                     reasoning_piece = getattr(chunk.choices[0].delta, "reasoning", None) or getattr(chunk.choices[0].delta, "reasoning_content", None)
                     if reasoning_piece:
-                        think_parts.append(str(reasoning_piece))
+                        think.add(reasoning_piece)
                     # Usage (falls verfügbar)
                     if hasattr(chunk, "usage") and chunk.usage:
                         stream_usage = chunk.usage
@@ -159,8 +160,8 @@ class GroqClient(BaseProviderClient):
                     if rt is not None:
                         meta["reasoning_tokens"] = rt
                     meta["usage"] = stream_usage
-                if think_parts:
-                    meta["think_content"] = "".join(think_parts)
+                if think.has_content:
+                    meta["think_content"] = think.content
                 self.last_response_metadata = meta
                 return full_content
 
@@ -168,9 +169,7 @@ class GroqClient(BaseProviderClient):
                 result = response.choices[0].message.content or ""
 
                 msg = response.choices[0].message if response.choices else None
-                reasoning = None
-                if msg:
-                    reasoning = getattr(msg, "reasoning", None) or getattr(msg, "reasoning_content", None) or getattr(msg, "think_content", None)
+                reasoning = self._extract_think_from_message(msg)
 
                 usage = response.usage
                 if usage:
@@ -196,13 +195,8 @@ class GroqClient(BaseProviderClient):
             raise
 
     def _extract_reasoning_tokens(self, usage) -> int | None:
-        """Extrahiere reasoning_tokens aus OpenAI-kompatiblem usage-Objekt."""
-        if not usage:
-            return None
-        details = getattr(usage, "completion_tokens_details", None)
-        if details:
-            return getattr(details, "reasoning_tokens", None)
-        return None
+        """Delegiert an BaseProviderClient._extract_reasoning_tokens (SSoT)."""
+        return super()._extract_reasoning_tokens(usage)
 
     def get_available_models(self) -> list:
         try:
