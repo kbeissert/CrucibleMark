@@ -31,7 +31,7 @@ from utils.benchmark_utils import select_from_list
 from utils.similarity import SemanticSimilarity
 from utils.config_validator import ConfigValidator
 from utils.module_registry import load_module_config, get_active_modules
-from scripts.core.runner_contract import write_run_summary
+from scripts.core.runner_contract import write_run_summary, update_leaderboard
 
 # Configure logging
 logging.basicConfig(
@@ -258,27 +258,22 @@ class BenchmarkRunner:
                     )
                     continue
                 print(f"\n>>> Running Module: {module_config['name']}")
-                self._run_benchmark(
-                    mod_id,
-                    module_config,
-                    model_id,
-                    provider,
-                    num_runs=run_config.num_runs,
-                    force=run_config.force,
-                    audit_mode=run_config.audit_mode,
-                )
-
-            # Leaderboard Update
-            if modules_to_run:
-                print("\n📊 Aktualisiere Leaderboard...")
                 try:
-                    subprocess.run(
-                        [sys.executable, "scripts/core/generate_leaderboard.py"], check=True
+                    self._run_benchmark(
+                        mod_id,
+                        module_config,
+                        model_id,
+                        provider,
+                        num_runs=run_config.num_runs,
+                        force=run_config.force,
+                        audit_mode=run_config.audit_mode,
                     )
-                except subprocess.CalledProcessError:
-                    print("⚠️ Fehler beim Aktualisieren des Leaderboards.")
-                except Exception as e:  # pylint: disable=broad-exception-caught
-                    print(f"⚠️ Unerwarteter Fehler: {e}")
+                finally:
+                    # Leaderboard nach jedem Modul aktualisieren (SSoT-Parität
+                    # mit benchmark_auto.py). finally stellt sicher, dass das
+                    # Update auch bei Teil-Ergebnissen nach Fehlern/Timeouts
+                    # stattfindet — partielle Scores sind besser als keine.
+                    update_leaderboard()
         finally:
             # Cleanup is handled by UnifiedBenchmarkRunner.run_benchmark() in its
             # own finally-block — no need to duplicate here.

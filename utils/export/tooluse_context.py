@@ -271,7 +271,7 @@ def get_tooluse_web_data(model_id: str) -> dict[str, Any] | None:
             "mcp_latency_s": _row_float("mcp_latency_s"),
             "call2_time_s": _row_float("call2_time_s"),
             "total_time_s": _row_float("total_time_s"),
-            "total_tokens": int(row.get("total_tokens") or 0),
+            "total_tokens": int(float(row.get("total_tokens") or 0)),
             "cost_usd": cost_v if cost_v is not None else 0.0,
         },
         "assets": assets,

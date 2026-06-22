@@ -192,14 +192,43 @@ def _build_vendor_card_id_lookup(config_dir: Path) -> dict[str, str]:
 def _normalize_vendor(vendor: str | None, alias_map: dict[str, str]) -> str | None:
     """Normalisiert einen vendor-Wert auf den kanonischen Hersteller-Namen.
 
-    Gibt den Originalwert zurück, wenn kein Alias-Match gefunden wird,
-    und loggt einen WARNING für unbekannte Vendor-Strings.
+    Lookup-Reihenfolge:
+    1. Exakter Match im Alias-Map.
+    2. Compound-String-Fallback: Bei ``/``-getrennten Vendors wird jedes Segment
+       (getrimmt) gegen den Alias-Map geprüft. Erster Match gewinnt.
+       Beispiel: ``"Google DeepMind / Unsloth (Quantisierung)"`` → Segment
+       ``"Google DeepMind"`` → ``"Google"``.
+    3. Bei keinem Match: WARNING + Originalwert (Callers wie Web-Export können
+       den Wert als Fallback verwenden).
+
+    Warum Compound-Fallback
+    -----------------------
+    Community-Quantisierungen erzeugen neue Compound-Vendor-Strings
+    (Basis-Entwickler + Distributor). Jede mögliche Kombination als Alias
+    in die Taxonomy aufzunemen skaliert nicht. Stattdessen wird der erste
+    Segment (Basis-Entwickler) extrahiert und normalisiert.
     """
     if vendor is None:
         return None
     normalized = alias_map.get(vendor)
     if normalized is not None:
         return normalized
+
+    # Compound-String-Fallback: "Google DeepMind / Unsloth (Quantisierung)"
+    # → erster Segment "Google DeepMind" → Alias "Google"
+    if "/" in vendor:
+        for segment in vendor.split("/"):
+            segment = segment.strip()
+            if not segment:
+                continue
+            seg_normalized = alias_map.get(segment)
+            if seg_normalized is not None:
+                logging.debug(
+                    "Vendor-Compound-Fallback: '%s' → Segment '%s' → '%s'",
+                    vendor, segment, seg_normalized,
+                )
+                return seg_normalized
+
     logging.warning(
         "Unbekannter vendor '%s' — nicht in classification_taxonomy.json/manufacturers. "
         "Bitte eintragen oder Alias hinzufügen.",
@@ -388,6 +417,12 @@ def load_model_card(model_name: str, root_dir: Path) -> dict | None:
     # Full directory scan matching stripped model_id.
     safe = _safe_name(canonical)
     display_norm = canonical.lower()
+
+    def _sep_norm(s: str) -> str:
+        """Normalisiert Punkte und Underscores zu Bindestrichen für Fuzzy-Vergleich."""
+        return re.sub(r'[._]', '-', s).lower()
+
+    display_norm_sep = _sep_norm(display_norm)
     for card_file in sorted(card_dir.glob("*.json")):
         card_data = _try_load(card_file)
         if not card_data or not isinstance(card_data, dict):
@@ -395,7 +430,12 @@ def load_model_card(model_name: str, root_dir: Path) -> dict | None:
         cid = card_data.get("model_id", "")
         base = cid.split("/", 1)[1] if "/" in cid else cid
         base = re.sub(r"-\d{4,8}$", "", base)
-        if base.lower() == display_norm:
+        # Exakter Match oder separator-normalisierter Match (Punkte/Underscores ↔ Bindestriche)
+        if base.lower() == display_norm or _sep_norm(base) == display_norm_sep:
+            logging.debug(
+                "load_model_card: Fallback-Match '%s' für '%s' (base='%s', separator-normalisiert)",
+                card_file.name, model_name, cid,
+            )
             return card_data
 
     # Web-export fallback: hf.co / HuggingFace GGUF — card is "hf_co_<org>_<safe>.json"
