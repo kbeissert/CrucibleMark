@@ -163,9 +163,9 @@ Tiefergehende Einblicke in die Methodik findest du im `docs/` Verzeichnis:
 
 Die vollständige Versionshistorie steht in [CHANGELOG.md](CHANGELOG.md). Kurzfassung der letzten drei Releases:
 
+- **v4.10.7 (2026-06-22) — `clean-results` Variant-Handling + `_rebuild_index()` Fix:** `clean_results.py` bereinigt jetzt ALLE ID-Varianten (Underscore, Hyphen, Punkt). Neue SSoT `_collect_model_id_variants()`. `--dry-run` in `clean.py` ergänzt. `_rebuild_index()`-Crash in `generate_review.py` gefixt. Dead-Model `grok-4.1-fast-reasoning` vollständig entfernt. 10/10 Tests grün.
 - **v4.10.6 (2026-06-22) — Anthropic Token-Cap + Benchmark-Cleanup:** Anthropic `max_tokens` 8192→32768 (Claude 4.x unterstützt 128K Output). 144 verfälschte Benchmark-Zeilen entfernt (24× MAX_TOKENS-Truncation + 130× CI@500). 27 Modelle im Leaderboard mit fehlenden Tasks markiert — werden beim nächsten `benchmark_auto` automatisch nachgetestet.
 - **v4.10.5 (2026-06-21) — Provider-Connector SSoT-Utilities + Judge Token Usage Context:** 3 Reasoning/Thinking-Extraktions-Utilities in `base.py`. 9 Provider migriert. Streaming-Bugs gefixt. Judge erhält universelle Token-Verbrauchsinformation für JEDE Aufgabe. 822/822 Tests grün.
-- **v4.10.4 (2026-06-21) — CSV-Write-Through Bug Fix:** Atomare Schreibvorgänge via `tempfile.mkstemp()` + `os.replace()`. 10 Modelle mit 0 CSV-Einträgen identifiziert. 822/822 Tests grün.
 
 ---
 
@@ -173,5 +173,5 @@ Die vollständige Versionshistorie steht in [CHANGELOG.md](CHANGELOG.md). Kurzfa
 
 - **Maintainer:** kbeissert
 - **Repository:** [github.com/kbeissert/cruciblemark](https://github.com/kbeissert/cruciblemark)
-- **Status:** ✅ Production-Ready (v4.10.6)
+- **Status:** ✅ Production-Ready (v4.10.7)
 

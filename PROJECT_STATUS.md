@@ -1,13 +1,17 @@
 # PROJECT_STATUS.md
 
 **Last Updated:** 2026-06-22
-**Current Version:** 4.10.6 — Provider-Connector SSoT-Utilities + Judge Token Usage Context
+**Current Version:** 4.10.7 — clean-results Variant-Handling + _rebuild_index Fix
 **Status:** ✅ Production-Ready
 
 > **Hinweis:** Die Executive Summary weiter unten historisch auf v4.6.1.
-> Die Sub-Versionen v4.6.2–v4.10.6 sind im CHANGELOG.md vollständig dokumentiert.
+> Die Sub-Versionen v4.6.2–v4.10.7 sind im CHANGELOG.md vollständig dokumentiert.
 > Dieser Header wird bei jedem Phase-Commit nachgezogen,
 > die Executive Summary nur bei Major-Milestones.
+>
+> **Aktueller Stand (v4.10.7):**
+> - **clean-results Variant-Handling** (v4.10.7): `clean_results.py` bereinigt jetzt ALLE ID-Varianten (Underscore, Hyphen, Punkt). Neue SSoT `_collect_model_id_variants()`. `--dry-run` in `clean.py` ergänzt. Dead-Model `grok-4.1-fast-reasoning` vollständig entfernt.
+> - **`_rebuild_index()` Fix** (v4.10.7): Verwaister `mc_gen._rebuild_index()`-Aufruf + unbenutzter Import in `generate_review.py` entfernt. `reviews-auto` Crash bei Modell 54/118 behoben.
 >
 > **Aktueller Stand (v4.10.6):**
 > - **Anthropic Token-Cap + Benchmark-Cleanup** (v4.10.6): Anthropic `max_tokens` 8192→32768. `fallback_max_tokens` entfernt (Dead Config). Per-Model Override für Haiku 4.5 (8192). 144 verfälschte Benchmark-Zeilen entfernt (MAX_TOKENS + CI@500). 27 Modelle mit fehlenden Tasks im Leaderboard. Backup: `.bak_token_cleanup_20260622`.

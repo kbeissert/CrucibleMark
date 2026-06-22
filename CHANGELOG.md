@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v4.10.7] - 2026-06-22
+
+**`clean-results`-Script: Vollständige Varianten-Auflösung für Model-IDs. `grok-4.1-fast-reasoning` vollständig entfernt. `_rebuild_index()`-Crash in `generate_review.py` gefixt.**
+
+### Fixed
+
+- **`scripts/maintenance/clean_results.py` — 5 Fixes für Variant-Handling:**
+  - **Fix 1 (`clean_model_card`):** Löscht jetzt ALLE Card-Dateien für ein Modell (Underscore, Hyphen, Dot-Varianten). Vorher: nur eine Variante via `_safe_name()` → Orphan-Cards blieben übrig.
+  - **Fix 2 (`clean_csv`):** Matched alle ID-Varianten direkt in CSV-Spalten (`model`, `Model ID`, `model_id_raw`). Vorher: nur kanonische Form → Orphan-Zeilen mit anderen Schreibweisen blieben.
+  - **Fix 3 (Reihenfolge):** CSV-Bereinigung vor Card-Löschung. `resolve_canonical_model_id()` braucht die Card für die Variant-Auflösung — wenn die Card zuerst gelöscht wird, fehlt die Quelle.
+  - **Fix 4 (`clean_model_output_directories`):** Variant-aware Matching für audit_logs, comparisons, runs, reviews via `_collect_model_id_variants()`.
+  - **Fix 5 (neue Funktionen):** `clean_cost_log()` für `outputs/cost_log.csv`. `_dead_model_info()`-Checker (warnt wenn Modell in Blacklist oder provider_config auskommentiert). `LEADERBOARD_CSVS`-Konstante für `benchmark_leaderboard.csv` + `benchmark_leaderboard_detailed.csv`.
+  - **Neue SSoT-Funktion `_collect_model_id_variants()`:** Sammelt alle Schreibweisen einer Model-ID (Underscore, Hyphen, Punkt) über `_safe_name()` + `_find_card()` + Card-Inhalt-Scan. Wird von allen Clean-Funktionen verwendet.
+
+- **`scripts/maintenance/clean.py` — `--dry-run` Flag ergänzt:**
+  - `argparse` akzeptierte `--dry-run` nicht, obwohl `Makefile` es übergab. Flag jetzt in beiden Dispatchern (`main()` + `main_with_args()`) verfügbar.
+
+- **`scripts/analysis/generate_review.py` — `_rebuild_index()` Crash gefixt:**
+  - Verwaister `mc_gen._rebuild_index()`-Aufruf (Zeile 200) + unbenutzter `mc_gen`-Import entfernt. Die Funktion wurde in `utils.card_template.rebuild_card_index()` verschoben, aber der Caller nicht aktualisiert. Symptom: `AttributeError` bei `reviews-auto` Lauf (Modell 54/118).
+
+- **Dead-Model `grok-4.1-fast-reasoning` vollständig entfernt:**
+  - 49 CSV-Zeilen, 256 cost_log-Einträge, 6 Leaderboard-Einträge, 1 Model Card, audit_logs-Dir, reviews-Dir.
+  - Alle 3 ID-Varianten (`grok-4_1-fast-reasoning`, `grok-4-1-fast-reasoning`, `grok-4.1-fast-reasoning`) bereinigt.
+
+### Added
+
+- **`--dry-run` Support für `make clean-model`:** `make clean-model MODEL=x DRY=1` zeigt jetzt korrekt eine Vorschau ohne zu löschen (funktioniert mit dem neuen `--dry-run`-Flag in `clean.py`).
+
 ## [v4.10.6] - 2026-06-22
 
 **Anthropic Provider-Cap angehoben (8192→32768). 144 verfälschte Benchmark-Zeilen entfernt (MAX_TOKENS + CI@500). Leaderboard aktualisiert.**

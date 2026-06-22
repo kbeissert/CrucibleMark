@@ -2,6 +2,13 @@
 
 ## Abgeschlossen
 
+### clean-results Variant-Handling + _rebuild_index Fix (v4.10.7 – 22.06.26)
+- [x] **`clean_results.py` — 5 Fixes:** `_collect_model_id_variants()` (SSoT), `clean_model_card()` (alle Varianten), `clean_csv()` (alle ID-Varianten in allen Spalten), `clean_model_output_directories()` (variant-aware), `clean_cost_log()` + `_dead_model_info()` (neu).
+- [x] **Reihenfolge-Fix:** CSVs werden VOR Cards bereinigt (Card wird für Variant-Auflösung via `resolve_canonical_model_id()` gebraucht).
+- [x] **`clean.py`:** `--dry-run` Argument ergänzt (Makefile erwartete es).
+- [x] **`generate_review.py`:** Verwaister `mc_gen._rebuild_index()`-Aufruf + unbenutzter Import entfernt. `reviews-auto` Crash (Modell 54/118) behoben.
+- [x] **Dead-Model grok-4.1-fast-reasoning:** 49 CSV, 256 cost_log, 6 Leaderboard, 1 Card, 1 Audit-Log-Dir, 1 Review-Dir entfernt. 10/10 Tests grün.
+
 ### Anthropic Token-Cap + Benchmark-Cleanup (v4.10.6 – 22.06.26)
 - [x] **`config/provider_config.yaml` — Anthropic `max_tokens` 8192 → 32768:** Claude 4.x unterstützt bis 128K Output. Altes Limit cappte Reasoning-Budgets (code_quality −59%, documentation_quality −32%).
 - [x] **Per-Model Override `claude-haiku-4-5-20251001: 8192`:** Desktop-Klasse ohne Thinking-Tag, braucht kein 32K-Fenster.

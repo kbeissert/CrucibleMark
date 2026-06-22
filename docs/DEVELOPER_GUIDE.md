@@ -956,16 +956,18 @@ Die Skripte überspringen Cards, die das Feld bereits haben, und geben einen tab
 
 `make clean-model MODEL=<id>` (via `scripts/maintenance/clean_results.py`) entfernt seit v3.8.1 alle Spuren eines Modells in einem einzigen Schritt:
 
-- CSV-Zeilen aus allen Benchmark- und PC-CSVs
+- CSV-Zeilen aus allen Benchmark-, PC- und Leaderboard-CSVs (inkl. `cost_log.csv`)
 - `outputs/audit_logs/<dir>/`, `outputs/comparisons/<dir>/`, `outputs/runs/<dir>/`
 - `docs/reviews/<dir>/`
-- Model Card JSON (`benchmark_scores/model_cards/<card>.json`)
+- Model Card JSON (`benchmark_scores/model_cards/<card>.json`) — **alle Varianten** (Underscore, Hyphen, Punkt)
 - Political-Compass-Session-Checkpoint (`outputs/temp/session_*.json`)
 
 ```bash
 make clean-model MODEL="mistral-large-2411"       # Löschen
 make clean-model MODEL="mistral-large-2411" DRY=1 # Vorschau
 ```
+
+**Variant-Handling (ab v4.10.7):** Model-IDs existieren oft in mehreren Schreibweisen (z.B. `grok-4_1-fast-reasoning`, `grok-4-1-fast-reasoning`, `grok-4.1-fast-reasoning`). `_collect_model_id_variants()` sammelt automatisch alle Varianten über `_safe_name()` + Card-Inhalt-Scan und bereinigt ALLE Spuren. Die Reihenfolge ist kritisch: CSVs werden VOR Cards bereinigt, da `resolve_canonical_model_id()` die Card für die Variant-Auflösung benötigt.
 
 Verwaiste Verzeichnisse (kein Leaderboard-Eintrag mehr, aber Dir noch vorhanden) lassen sich mit `make clean-model PRUNE_ORPHANS=1` aufspüren und entfernen.
 
