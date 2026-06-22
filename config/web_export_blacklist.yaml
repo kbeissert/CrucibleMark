@@ -72,3 +72,8 @@ blacklist:
 
   # Deepseek
   - "deepseek_deepseek-chat-v3_1"
+
+  # Deprecated (API-seitig nicht mehr verfügbar oder mit Migrationsfrist)
+  - "xiaomi/mimo-v2-flash"         # Xiaomi MiMo V2 Flash — deprecated auf OpenRouter (HTTP 404, Redirect auf V2.5)
+  - "grok-4-1-fast-reasoning"      # xAI Grok 4.1 Fast Reasoning — deprecated, Migration bis 15.08.2026
+  - "mistral-medium-2312"          # Mistral Medium 1.0 — Legacy/Deprecated, ersetzt durch Mistral Medium 3.5
