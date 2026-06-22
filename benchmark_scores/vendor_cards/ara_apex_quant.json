@@ -2,8 +2,8 @@
   "vendor_id": "ara_apex_quant",
   "card_subtype": "community",
   "display_name": "ARA-APEX Quant",
-  "company": "ARA-APEX (Community-Contributor)",
-  "headquarters": "Community/privat (Ort unbekannt)",
+  "company": "Community contributor / privat",
+  "headquarters": "Unknown",
   "founding_year": null,
   "pricing_model": "open-source-self-hosted",
   "api_base_url": null,
@@ -17,14 +17,18 @@
     "data_retention_days": 0,
     "chinese_nsl_risk": "none"
   },
-  "privacy_note": "ARA-APEX-Modelle werden ausschließlich lokal betrieben. Kein Datentransfer an externe Server. Die Modelle sind GGUF-Quantisierungen öffentlicher Basismodelle.",
-  "notable_models": [],
+  "privacy_note": "ARA-APEX-Modelle werden ausschließlich lokal betrieben. Kein Datentransfer an externe Server. Die Modelle sind GGUF-Quantisierungen öffentlicher Basismodelle; das Datenschutz- und Compliance-Risiko hängt ausschließlich vom eigenen Hosting ab.",
+  "notable_models": [
+    "APEX GGUF quantizations",
+    "MoE-aware GGUF quantizations"
+  ],
   "stats": {},
   "unknown": true,
   "generated_at": "2026-06-12T08:00:00+00:00",
-  "last_verified_at": "2026-06-12",
-  "verification_source": "https://huggingface.co/ARA-APEX",
+  "last_verified_at": "2026-06-22",
+  "verification_source": "https://huggingface.co/collections/mudler/apex-quants-gguf",
   "profile_verified": true,
-  "profile_verified_at": "2026-06-12",
-  "description": "ARA-APEX ist ein Community-Contributor auf Hugging Face, der GGUF-Quantisierungen öffentlicher Basismodelle bereitstellt. Über Firmensitz oder rechtliche Struktur sind keine Informationen verfügbar. Da alle Modelle lokal betrieben werden, entstehen keine API-seitigen Datenschutzrisiken. Die Privacy-Bewertung hängt ausschließlich vom gewählten Hosting ab."
+  "profile_verified_at": "2026-06-22",
+  "profile_verified_by": "llm:perplexity",
+  "description": "ARA-APEX ist eine Community-/Hugging-Face-nahe Quantisierungs- und Distributionskarte für APEX-GGUF-Modelle. Über Firmensitz oder rechtliche Struktur sind keine belastbaren Informationen verfügbar. Da die Modelle lokal betrieben werden, entstehen keine API-seitigen Datenschutzrisiken; die Privacy-Bewertung hängt ausschließlich vom gewählten Hosting ab."
 }

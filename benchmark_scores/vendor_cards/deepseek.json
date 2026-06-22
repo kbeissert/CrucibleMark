@@ -8,15 +8,15 @@
   "api_base_url": "https://api.deepseek.com",
   "api_documentation_url": "https://api-docs.deepseek.com",
   "deployment": {
-    "cloud_act_exposure": false,
+    "cloud_act_exposure": true,
     "applicable_law": "China (PIPL/CSL/DSL)",
-    "data_residency": "China",
+    "data_residency": "China + EU/US cloud partners",
     "gdpr_dpa_available": false,
     "eu_adequacy_decision": false,
     "data_retention_days": -1,
     "chinese_nsl_risk": "high"
   },
-  "privacy_note": "DeepSeek verarbeitet API-Anfragen in China und unterliegt chinesischem Datenschutzrecht. Für europäische Nutzer besteht damit ein relevantes Drittlandtransfer-Risiko ohne EU-Angemessenheitsbeschluss. Ein öffentlich ausgewiesenes DSGVO-DPA ist nicht ersichtlich; die konkrete Aufbewahrungsdauer bleibt unklar.",
+  "privacy_note": "DeepSeek verarbeitet API-Anfragen in China und unterliegt chinesischem Datenschutzrecht. Für europäische Nutzer besteht damit ein relevantes Drittlandtransfer-Risiko ohne EU-Angemessenheitsbeschluss. Ein öffentlich ausgewiesenes DSGVO-DPA ist nicht ersichtlich; die konkrete Aufbewahrungsdauer bleibt unklar. Bei Nutzung über EU- oder US-Cloud-Partner kann die Datenresidenz vom Direkt-API-Betrieb abweichen.",
   "notable_models": [
     "DeepSeek-V4 Pro",
     "DeepSeek-V4 Flash",
@@ -27,9 +27,10 @@
   "stats": {},
   "unknown": false,
   "generated_at": "2026-06-02T21:00:00.000000+00:00",
-  "last_verified_at": "2026-06-12",
-  "verification_source": "https://deepseek.com/en",
+  "last_verified_at": "2026-06-22",
+  "verification_source": "https://api-docs.deepseek.com/api/deepseek-api",
   "profile_verified": true,
-  "profile_verified_at": "2026-06-12",
-  "description": "DeepSeek bietet eine API für die Modelle der DeepSeek-Familie, darunter V4, V3 und R1. Das Unternehmen sitzt in Hangzhou und operiert unter chinesischem Recht. Für europäische Product Engineers ist relevant, dass die Datenverarbeitung in China erfolgt und kein DSGVO-konformes DPA ausgewiesen ist."
+  "profile_verified_at": "2026-06-22",
+  "profile_verified_by": "llm:perplexity",
+  "description": "DeepSeek bietet eine API für die Modelle der DeepSeek-Familie, darunter V4, V3 und R1. Das Unternehmen sitzt in Hangzhou und operiert unter chinesischem Recht. Für europäische Product Engineers ist relevant, dass die Datenverarbeitung bei Direktnutzung in China erfolgt und kein DSGVO-konformes DPA ausgewiesen ist."
 }

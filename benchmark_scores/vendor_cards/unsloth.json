@@ -19,17 +19,18 @@
   },
   "privacy_note": "Unsloth-Modelle werden ausschließlich lokal betrieben. Kein Datentransfer an externe Server. Die Modelle sind GGUF-Quantisierungen öffentlicher Basismodelle (Llama, Qwen, Gemma u.a.) mit Unsloth Dynamic 2.0-Optimierung (per-Layer-Bit-Zuweisung für bessere Qualität bei gleicher Komprimierungsrate).",
   "notable_models": [
-    "gemma-4-12b-it-GGUF (Dynamic 2.0)",
-    "Qwen3-27B-GGUF",
-    "gemma-4-12B-it-qat-GGUF (QAT)",
-    "Llama-3.3-70B-Instruct-GGUF"
+    "Gemma 4 Dynamic 2.0 Quants",
+    "Qwen3 Dynamic 2.0 Quants",
+    "Llama 3.3 Dynamic 2.0 Quants",
+    "Gemma 4 QAT GGUF"
   ],
   "stats": {},
   "unknown": false,
   "generated_at": "2026-06-12T08:00:00+00:00",
-  "last_verified_at": "2026-06-12",
-  "verification_source": "https://huggingface.co/unsloth",
+  "last_verified_at": "2026-06-22",
+  "verification_source": "https://unsloth.ai/docs/basics/unsloth-dynamic-2.0-ggufs",
   "profile_verified": true,
-  "profile_verified_at": "2026-06-12",
+  "profile_verified_at": "2026-06-22",
+  "profile_verified_by": "llm:perplexity",
   "description": "Unsloth kuratiert offene Modellgewichte und legt den Schwerpunkt auf speichereffiziente Quantisierung, QAT und praxisnahe lokale Nutzung. Die Community-Veredelungen zielen auf bessere Qualität pro Bit und auf möglichst robuste GGUF-Deployments. Privacy hängt ausschließlich vom gewählten Hosting ab, nicht von Unsloth selbst."
 }

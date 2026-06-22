@@ -4,8 +4,8 @@
   "company": "Meta Platforms, Inc.",
   "headquarters": "Menlo Park, CA, USA",
   "founding_year": 2004,
-  "pricing_model": "open-source-self-hosted",
-  "api_base_url": "https://llama.meta.com",
+  "pricing_model": "open-weights-self-hosted",
+  "api_base_url": null,
   "api_documentation_url": "https://llama.meta.com/docs",
   "deployment": {
     "cloud_act_exposure": true,
@@ -16,7 +16,7 @@
     "data_retention_days": -1,
     "chinese_nsl_risk": "none"
   },
-  "privacy_note": "Meta betreibt keinen klassischen kommerziellen Inferenz-API-Dienst; Llama-Modelle werden typischerweise über Drittanbieter bereitgestellt, die jeweils eigene Datenschutzbedingungen haben. WICHTIG: Llama-4-Modelle dürfen laut Lizenz NICHT auf europäischen Servern betrieben werden. Nutzung ist ausschließlich über US-Server oder Server im nicht-europäischen Ausland möglich. Dies schränkt die Einsetzbarkeit für europäische Betreiber erheblich ein.",
+  "privacy_note": "Meta betreibt keinen klassischen kommerziellen Inferenz-API-Dienst; Llama-Modelle werden typischerweise über Drittanbieter bereitgestellt, die jeweils eigene Datenschutzbedingungen haben. WICHTIG: Llama-4-Modelle dürfen laut Lizenz nicht von EU-domiciled Personen oder EU-basierten Unternehmen genutzt oder bereitgestellt werden. Nutzung ist daher nur außerhalb der EU-Lizenzrestriktionen möglich.",
   "notable_models": [
     "Llama 4 Scout",
     "Llama 3.3 70B",
@@ -25,9 +25,10 @@
   "stats": {},
   "unknown": false,
   "generated_at": "2026-06-02T21:00:00.000000+00:00",
-  "last_verified_at": "2026-06-12",
+  "last_verified_at": "2026-06-22",
   "verification_source": "https://llama.meta.com/llama4/",
   "profile_verified": true,
-  "profile_verified_at": "2026-06-12",
-  "description": "Meta veröffentlicht die Llama-Modellfamilie als Open-Source-Gewichte und betreibt keinen eigenen kommerziellen Inferenz-Service. Die Modelle werden typischerweise über Drittanbieter oder selbst gehostet. Für europäische Nutzer hängt die Datenschutz-Bewertung damit vom gewählten Hosting-Partner ab, nicht von Meta selbst."
+  "profile_verified_at": "2026-06-22",
+  "profile_verified_by": "llm:perplexity",
+  "description": "Meta veröffentlicht die Llama-Modellfamilie als Open-Weights und betreibt keinen eigenen klassischen kommerziellen Inferenz-Service. Die Modelle werden typischerweise über Drittanbieter oder selbst gehostet. Für europäische Nutzer hängt die Datenschutz-Bewertung damit vom gewählten Hosting-Partner ab; für Llama 4 gelten zudem EU-Lizenzbeschränkungen."
 }

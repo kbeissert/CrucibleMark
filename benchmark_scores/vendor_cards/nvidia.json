@@ -4,7 +4,7 @@
   "company": "NVIDIA Corporation",
   "headquarters": "Santa Clara, California, USA",
   "founding_year": 1993,
-  "pricing_model": "open-weights",
+  "pricing_model": "open-weights+pay-per-token",
   "api_base_url": "https://build.nvidia.com",
   "api_documentation_url": "https://docs.api.nvidia.com",
   "deployment": {
@@ -12,20 +12,21 @@
     "applicable_law": "US (CLOUD Act)",
     "data_residency": "USA",
     "gdpr_dpa_available": true,
-    "eu_adequacy_decision": true,
+    "eu_adequacy_decision": false,
     "data_retention_days": -1,
     "chinese_nsl_risk": "none"
   },
-  "privacy_note": "Bei Nutzung der NVIDIA API über build.nvidia.com sind Datenverarbeitung und Zugriffsrisiken an die US-Jurisdiktion gebunden. Ein DPA ist laut aktueller Kartenstruktur verfügbar; zur genauen Aufbewahrungsdauer der API-Anfragen macht die geprüfte Quelle keine klare Angabe. Lokales oder eigenes Hosting reduziert das Risiko deutlich.",
+  "privacy_note": "Bei Nutzung der NVIDIA API über build.nvidia.com sind Datenverarbeitung und Zugriffsrisiken an die US-Jurisdiktion gebunden. Ein DPA ist verfügbar; zur genauen Aufbewahrungsdauer der API-Anfragen macht die geprüfte Quelle keine klare Angabe. Lokales oder eigenes Hosting über NVIDIA NIM reduziert das Risiko deutlich.",
   "notable_models": [
     "Nemotron 3 Ultra 550B-A55B"
   ],
   "stats": {},
   "unknown": false,
   "generated_at": "2026-06-12T08:00:00.000000+00:00",
-  "last_verified_at": "2026-06-12",
-  "verification_source": "https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-software-license-agreement/",
+  "last_verified_at": "2026-06-22",
+  "verification_source": "https://www.nvidia.com/en-us/agreements/data-processing-addendum/nvidia-cloud-services-data-processing-addendum/",
   "profile_verified": true,
-  "profile_verified_at": "2026-06-12",
-  "description": "NVIDIA bietet mit Build und den Nemotron-Modellen eine Plattform für Entwickler, die Modelle lokal, in der eigenen Infrastruktur oder über Cloud-Angebote nutzen möchten. Das Unternehmen sitzt in den USA, wodurch API-Nutzung dem CLOUD Act unterliegen kann. Für europäische Teams ist die Mischung aus Open Weights und US-Hosting entscheidend."
+  "profile_verified_at": "2026-06-22",
+  "profile_verified_by": "llm:perplexity",
+  "description": "NVIDIA bietet mit Build.nvidia.com/NIM und den Nemotron-Modellen eine Plattform für Entwickler, die Modelle lokal, in der eigenen Infrastruktur oder über Cloud-Angebote nutzen möchten. Das Unternehmen sitzt in den USA, wodurch API-Nutzung dem CLOUD Act unterliegen kann. Nemotron 3 Ultra ist als Open-Weights-Frontier-Modell mit 550B Parametern (55B aktiv) verfügbar."
 }

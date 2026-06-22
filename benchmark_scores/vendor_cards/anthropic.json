@@ -12,7 +12,7 @@
     "applicable_law": "US (CLOUD Act)",
     "data_residency": "USA",
     "gdpr_dpa_available": true,
-    "eu_adequacy_decision": true,
+    "eu_adequacy_decision": false,
     "data_retention_days": 30,
     "chinese_nsl_risk": "none"
   },
@@ -31,9 +31,10 @@
   },
   "unknown": false,
   "generated_at": "2026-06-02T21:00:00.000000+00:00",
-  "last_verified_at": "2026-06-12",
+  "last_verified_at": "2026-06-22",
   "verification_source": "https://privacy.claude.com/",
   "profile_verified": true,
-  "profile_verified_at": "2026-06-12",
-  "description": "Anthropic entwickelt die Claude-Familie und positioniert sich als Forschungs und Safety Unternehmen mit Public Benefit Corporation Struktur. Die API wird aus den USA bereitgestellt; für europäische Nutzer sind vor allem CLOUD Act, US Datenstandort und die klar geregelten kommerziellen Datenschutzbedingungen relevant."
+  "profile_verified_at": "2026-06-22",
+  "profile_verified_by": "llm:perplexity",
+  "description": "Anthropic entwickelt die Claude-Familie und positioniert sich als Forschungs- und Safety-Unternehmen mit Public Benefit Corporation Struktur. Die API wird aus den USA bereitgestellt; für europäische Nutzer sind vor allem CLOUD Act, US-Datenstandort und die klar geregelten kommerziellen Datenschutzbedingungen relevant."
 }

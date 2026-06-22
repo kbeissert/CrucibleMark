@@ -6,14 +6,14 @@
   "founding_year": 2023,
   "pricing_model": "free_open_source",
   "api_base_url": null,
-  "api_documentation_url": "https://github.com/ggerganov/llama.cpp",
+  "api_documentation_url": "https://github.com/ggml-org/llama.cpp",
   "type": "local_inference_engine",
   "inference_interfaces": [
     {
       "name": "Metal (Apple Silicon)",
       "vendor_id": "llamacpp",
       "hardware_profile": "m4_macbook_pro_metal",
-      "description": "llama.cpp mit Apple Metal Performance Shaders (MPS) GPU-Offload. Optimal für MacBook Pro mit M4 Chip. Modell-Ladung aus GGUF, CPU+GPU RAM geteilt.",
+      "description": "llama.cpp mit Apple Metal GPU-Offload. Geeignet für Apple Silicon; Modell-Ladung aus GGUF, CPU und GPU teilen sich den Speicher.",
       "accelerator": "Metal (Apple Silicon GPU)",
       "typical_throughput_tps": 25,
       "memory_bandwidth_gb_s": 300
@@ -22,7 +22,7 @@
       "name": "CUDA (NVIDIA)",
       "vendor_id": "llamacpp",
       "hardware_profile": "dgx_spark_cuda",
-      "description": "llama.cpp mit NVIDIA CUDA GPU-Offload auf DGX Spark. Hoher Token-Durchsatz durch viele CUDA-Cores, ideal für 35B+ Modelle. Modell-Ladung aus GGUF, dedizierter VRAM/RAM.",
+      "description": "llama.cpp mit NVIDIA CUDA GPU-Offload. Geeignet für große GGUF-Modelle; Modell-Ladung aus GGUF, dedizierter VRAM/RAM.",
       "accelerator": "CUDA (NVIDIA GPU)",
       "typical_throughput_tps": 45,
       "memory_bandwidth_gb_s": 400
@@ -32,13 +32,14 @@
     "cloud_act_exposure": false,
     "applicable_law": "N/A (Local Only)",
     "data_residency": "Local (Device)",
-    "gdpr_dpa_available": true,
-    "eu_adequacy_decision": true,
+    "gdpr_dpa_available": false,
+    "eu_adequacy_decision": false,
     "data_retention_days": 0,
     "chinese_nsl_risk": "none"
   },
   "privacy_note": "llama.cpp verarbeitet Eingaben lokal auf dem eigenen Gerät oder in der eigenen Infrastruktur. Dadurch entstehen kein CLOUD-Act-Bezug und kein externer Datenabfluss durch den Inferenzkern selbst. Datenschutzrisiken hängen primär von den verwendeten Modellen, Laufzeitumgebungen und eventuellen externen Diensten ab.",
   "notable_models": [
+    "GGUF",
     "Qwen 3.6 35B-A3B",
     "Qwen 3.5 35B-A3B",
     "Gemma 4 26B"
@@ -46,9 +47,10 @@
   "stats": {},
   "unknown": false,
   "generated_at": "2026-06-04T18:40:00.000000+00:00",
-  "last_verified_at": "2026-06-12",
-  "verification_source": "https://github.com/ggerganov/llama.cpp",
+  "last_verified_at": "2026-06-22",
+  "verification_source": "https://github.com/ggml-org/llama.cpp",
   "profile_verified": true,
-  "profile_verified_at": "2026-06-12",
+  "profile_verified_at": "2026-06-22",
+  "profile_verified_by": "llm:perplexity",
   "description": "llama.cpp ist eine quelloffene Inferenz-Engine für lokale und hybride Ausführung von LLMs. Das Projekt wird von ggml-org gepflegt und konzentriert sich auf minimale Abhängigkeiten, breite Hardware-Unterstützung und On-Device-Nutzung. Für europäische Nutzer entsteht kaum Datenschutzrisiko, weil die Ausführung lokal stattfindet."
 }

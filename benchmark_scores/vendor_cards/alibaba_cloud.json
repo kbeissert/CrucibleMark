@@ -1,1 +1,36 @@
-{"vendor_id": "alibaba_cloud", "display_name": "Alibaba Cloud", "company": "Alibaba Cloud Computing Ltd.", "headquarters": "Hangzhou, China", "founding_year": 2009, "pricing_model": "free-tier+pay-per-token", "api_base_url": "https://dashscope.aliyuncs.com", "api_documentation_url": "https://help.aliyun.com/zh/model-studio/developer-reference/api-details", "deployment": {"cloud_act_exposure": false, "applicable_law": "China (PIPL/CSL/DSL)", "data_residency": "China + global Alibaba Cloud regions", "gdpr_dpa_available": true, "eu_adequacy_decision": false, "data_retention_days": -1, "chinese_nsl_risk": "high"}, "privacy_note": "Für europäische Nutzer besteht ein erhöhtes Datenschutzrisiko, da Alibaba Cloud ein chinesischer Anbieter ist und API-Daten chinesischem Datenschutz- und Sicherheitsrecht unterliegen können. Bei grenzüberschreitender Verarbeitung außerhalb der EU ist ohne EU-Angemessenheitsbeschluss regelmäßig mit zusätzlichen Transfer-Risiken zu rechnen.", "notable_models": ["Qwen3-235B-A22B", "Qwen3-32B", "Qwen3-Coder-480B", "Qwen3.7-Max", "Qwen3.5-397B"], "stats": {}, "unknown": false, "generated_at": "2026-06-12T16:39:04.144936+00:00", "last_verified_at": "2026-06-12", "verification_source": "https://www.alibabacloud.com/help/en/model-studio/getting-started/what-is-model-studio", "description": "Alibaba Cloud (Aliyun) stellt über die Model Studio API Qwen-Modelle und weitere KI-Dienste bereit. Das Unternehmen operiert unter chinesischem Recht (PIPL/CSL/DSL) und verarbeitet Daten primär in China. Für europäische Nutzer besteht erhöhtes Datenschutzrisiko ohne EU-Angemessenheitsbeschluss.", "profile_verified": true, "profile_verified_at": "2026-06-12"}
+{
+  "vendor_id": "alibaba_cloud",
+  "display_name": "Alibaba Cloud",
+  "company": "Alibaba Cloud Computing Ltd.",
+  "headquarters": "Hangzhou, China",
+  "founding_year": 2009,
+  "pricing_model": "free-tier+pay-per-token",
+  "api_base_url": "https://dashscope.aliyuncs.com",
+  "api_documentation_url": "https://help.aliyun.com/zh/model-studio/developer-reference/api-details",
+  "deployment": {
+    "cloud_act_exposure": true,
+    "applicable_law": "China (PIPL/CSL/DSL)",
+    "data_residency": "China + global Alibaba Cloud regions",
+    "gdpr_dpa_available": true,
+    "eu_adequacy_decision": false,
+    "data_retention_days": -1,
+    "chinese_nsl_risk": "high"
+  },
+  "privacy_note": "Für europäische Nutzer besteht ein erhöhtes Datenschutzrisiko, da Alibaba Cloud ein chinesischer Anbieter ist und API-Daten chinesischem Datenschutz- und Sicherheitsrecht unterliegen können. Bei grenzüberschreitender Verarbeitung außerhalb der EU ist ohne EU-Angemessenheitsbeschluss regelmäßig mit zusätzlichen Transfer-Risiken zu rechnen. Aufgrund der US-Börsennotierung und globaler Infrastruktur-Präsenz besteht zudem potenzielles CLOUD-Act-Exposure.",
+  "notable_models": [
+    "Qwen3-235B-A22B",
+    "Qwen3-32B",
+    "Qwen3-Coder-480B",
+    "Qwen3.7-Max"
+  ],
+  "stats": {},
+  "unknown": false,
+  "generated_at": "2026-06-12T16:39:04.144936+00:00",
+  "last_verified_at": "2026-06-22",
+  "verification_source": "https://www.alibabacloud.com/help/en/model-studio/getting-started/what-is-model-studio",
+  "description": "Alibaba Cloud (Aliyun) stellt über die Model Studio API Qwen-Modelle und weitere KI-Dienste bereit. Das Unternehmen operiert unter chinesischem Recht (PIPL/CSL/DSL) und verarbeitet Daten primär in China. Aufgrund der US-Börsennotierung und globaler Infrastruktur-Präsenz ist zusätzliches CLOUD-Act-Exposure nicht auszuschließen. Für europäische Nutzer besteht erhöhtes Datenschutzrisiko ohne EU-Angemessenheitsbeschluss.",
+  "profile_verified": true,
+  "profile_verified_at": "2026-06-22",
+  "profile_verified_by": "llm:perplexity",
+  "last_modified_at": "2026-06-22"
+}

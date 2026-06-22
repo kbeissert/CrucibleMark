@@ -1,7 +1,7 @@
 {
   "vendor_id": "google_deepmind_base_llmfan46_fine_tune_mradermacher_gguf_quant",
   "display_name": "Google DeepMind / llmfan46 / mradermacher",
-  "company": "Google LLC / unknown / unknown",
+  "company": "Google LLC / llmfan46 / mradermacher",
   "headquarters": "Mountain View, CA, USA / unknown / unknown",
   "founding_year": 2010,
   "pricing_model": "open-source-self-hosted",
@@ -11,8 +11,8 @@
     "cloud_act_exposure": false,
     "applicable_law": "N/A (lokal only)",
     "data_residency": "N/A (lokal only)",
-    "gdpr_dpa_available": "unknown",
-    "eu_adequacy_decision": "unknown",
+    "gdpr_dpa_available": false,
+    "eu_adequacy_decision": false,
     "data_retention_days": 0,
     "chinese_nsl_risk": "none"
   },
@@ -24,6 +24,10 @@
   "stats": {},
   "unknown": false,
   "generated_at": "2026-06-17T13:43:16.322852+00:00",
-  "last_verified_at": null,
-  "verification_source": "https://ai.google.dev/gemma"
+  "last_verified_at": "2026-06-22",
+  "verification_source": "https://ai.google.dev/gemma",
+  "profile_verified": true,
+  "profile_verified_at": "2026-06-22",
+  "profile_verified_by": "llm:perplexity",
+  "description": "Diese Karte beschreibt Google-DeepMind-Gemma-Basismodelle, die von llmfan46 weiterverarbeitet und von mradermacher als GGUF quantisiert wurden. Da die Modelle lokal betrieben werden, entstehen keine API-seitigen Datenschutzrisiken. Die Privacy-Bewertung hängt vollständig vom gewählten Host und dessen Logging/Transfer-Konfiguration ab."
 }

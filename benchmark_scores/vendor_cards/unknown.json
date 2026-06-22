@@ -12,7 +12,7 @@
     "applicable_law": "Unknown",
     "data_residency": "Unknown",
     "gdpr_dpa_available": "unknown",
-    "eu_adequacy_decision": "unknown",
+    "eu_adequacy_decision": false,
     "data_retention_days": -1,
     "chinese_nsl_risk": "none"
   },
@@ -21,7 +21,7 @@
   "stats": {},
   "unknown": true,
   "generated_at": "2026-06-02T21:00:00.000000+00:00",
-  "last_verified_at": "2026-06-02",
+  "last_verified_at": null,
   "verification_source": null,
   "profile_verified": false,
   "profile_verified_at": null

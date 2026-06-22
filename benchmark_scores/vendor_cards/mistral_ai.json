@@ -12,11 +12,11 @@
     "applicable_law": "EU (GDPR)",
     "data_residency": "EU",
     "gdpr_dpa_available": true,
-    "eu_adequacy_decision": true,
+    "eu_adequacy_decision": false,
     "data_retention_days": 30,
     "chinese_nsl_risk": "none"
   },
-  "privacy_note": "Mistral AI ist ein französischer Anbieter mit EU-Datenhaltung und bietet für kommerzielle Kunden ein DPA an. Für europäische Nutzer ist das rechtlich günstiger als bei US- oder China-Anbietern; ein CLOUD-Act-Bezug besteht nach der aktuellen Anbieterstruktur nicht. Die öffentliche Aufbewahrungsdauer ist auf 30 Tage für bestimmte Daten angegeben.",
+  "privacy_note": "Mistral AI ist ein französischer Anbieter mit EU-Datenhaltung und bietet für kommerzielle Kunden ein DPA an. Für europäische Nutzer ist das rechtlich günstiger als bei US- oder China-Anbietern; ein CLOUD-Act-Bezug besteht nach der aktuellen Anbieterstruktur nicht. Die öffentliche Aufbewahrungsdauer beträgt für die reguläre API 30 Tage Rolling-Retention, während Zero-Data-Retention für bestimmte Routen verfügbar sein kann.",
   "notable_models": [
     "Mistral Large 2512",
     "Magistral Medium",
@@ -33,9 +33,10 @@
   },
   "unknown": false,
   "generated_at": "2026-06-02T21:00:00.000000+00:00",
-  "last_verified_at": "2026-06-12",
-  "verification_source": "https://www.mistral.ai/terms/",
+  "last_verified_at": "2026-06-22",
+  "verification_source": "https://legal.mistral.ai/terms/privacy-policy",
   "profile_verified": true,
-  "profile_verified_at": "2026-06-12",
+  "profile_verified_at": "2026-06-22",
+  "profile_verified_by": "llm:perplexity",
   "description": "Mistral AI entwickelt eine europäische Modellfamilie mit starker Ausrichtung auf offene Gewichte und kommerzielle API-Nutzung. Das Unternehmen sitzt in Paris, verarbeitet Daten in der EU und stellt für Geschäftskunden einen Data Processing Addendum bereit, was es für europäische Produktteams vergleichsweise gut anschlussfähig macht."
 }

@@ -20,16 +20,17 @@
   "notable_models": [
     "Hermes-4 405B",
     "Hermes-4 70B",
-    "Hermes-4 14B (GGUF)",
+    "Hermes-4 14B",
     "Hermes-3-Llama-3.1-405B",
     "Nous-Capybara-34B"
   ],
   "stats": {},
   "unknown": false,
   "generated_at": "2026-06-02T21:00:00.000000+00:00",
-  "last_verified_at": "2026-06-12",
+  "last_verified_at": "2026-06-22",
   "verification_source": "https://huggingface.co/NousResearch",
   "profile_verified": true,
-  "profile_verified_at": "2026-06-12",
+  "profile_verified_at": "2026-06-22",
+  "profile_verified_by": "llm:perplexity",
   "description": "Nous Research entwickelt offene Sprachmodelle und veröffentlicht sie mit starkem Community-Bezug auf Hugging Face und der eigenen Website. Das Unternehmen sitzt in den USA und betreibt keine klassische öffentliche Inferenz-API. Für europäische Nutzer ist deshalb vor allem das Selbsthosting oder der gewählte Drittanbieter entscheidend."
 }

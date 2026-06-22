@@ -3,7 +3,7 @@
   "display_name": "Google DeepMind",
   "company": "Google LLC / DeepMind Technologies Limited",
   "headquarters": "London, UK (DeepMind) / Mountain View, CA, USA (Google)",
-  "founding_year": 2023,
+  "founding_year": 2010,
   "pricing_model": "free-tier+pay-per-token",
   "api_base_url": "https://generativelanguage.googleapis.com",
   "api_documentation_url": "https://ai.google.dev/gemini-api/docs",
@@ -12,7 +12,7 @@
     "applicable_law": "US (CLOUD Act)",
     "data_residency": "USA",
     "gdpr_dpa_available": true,
-    "eu_adequacy_decision": true,
+    "eu_adequacy_decision": false,
     "data_retention_days": -1,
     "chinese_nsl_risk": "none"
   },
@@ -26,9 +26,10 @@
   "stats": {},
   "unknown": false,
   "generated_at": "2026-06-02T21:00:00.000000+00:00",
-  "last_verified_at": "2026-06-12",
+  "last_verified_at": "2026-06-22",
   "verification_source": "https://policies.google.com/privacy",
   "profile_verified": true,
-  "profile_verified_at": "2026-06-12",
-  "description": "Google DeepMind entstand 2023 aus der Fusion von Google Brain und DeepMind Technologies. Die Gemini Modellfamilie wird über die Google AI API bereitgestellt. Da Google ein US-Konzern ist, unterliegen API-Anfragen dem CLOUD Act. Für europäische Nutzer sind vor allem die verfügbaren Standard Contractual Clauses und der Data Processing Addendum relevant."
+  "profile_verified_at": "2026-06-22",
+  "profile_verified_by": "llm:perplexity",
+  "description": "Google DeepMind entstand 2023 aus der Fusion von Google Brain und DeepMind Technologies. Die Gemini-Modellfamilie wird über die Google AI API bereitgestellt. Da Google ein US-Konzern ist, unterliegen API-Anfragen dem CLOUD Act. Für europäische Nutzer sind vor allem die verfügbaren Standard Contractual Clauses und der Data Processing Addendum relevant."
 }

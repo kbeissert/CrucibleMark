@@ -9,7 +9,7 @@
     "api_base_url": "https://dashscope.aliyuncs.com",
     "api_documentation_url": "https://www.alibabacloud.com/help/en/model-studio/application-api-reference",
     "deployment": {
-      "cloud_act_exposure": false,
+      "cloud_act_exposure": true,
       "applicable_law": "China (PIPL/CSL/DSL)",
       "data_residency": "China (+ regionale Rechenzentren weltweit)",
       "gdpr_dpa_available": true,
@@ -17,7 +17,7 @@
       "data_retention_days": -1,
       "chinese_nsl_risk": "high"
     },
-    "privacy_note": "Alibaba Cloud verarbeitet API-Anfragen unter chinesischem Recht, insbesondere PIPL, CSL und DSL. Für europäische Nutzer entsteht dadurch ein Drittlandtransfer-Risiko ohne EU-Angemessenheitsbeschluss. Ein DPA ist verfügbar; die konkrete Aufbewahrungsdauer für API-Anfragen ist öffentlich nicht klar ausgewiesen.",
+    "privacy_note": "Alibaba Cloud verarbeitet API-Anfragen unter chinesischem Recht, insbesondere PIPL, CSL und DSL. Für europäische Nutzer entsteht dadurch ein Drittlandtransfer-Risiko ohne EU-Angemessenheitsbeschluss. Ein DPA ist verfügbar; die konkrete Aufbewahrungsdauer für API-Anfragen ist öffentlich nicht klar ausgewiesen. Bei Nutzung der globalen Alibaba-Cloud-Infrastruktur ist zusätzlich ein mögliches CLOUD-Act-Exposure zu berücksichtigen.",
     "notable_models": [
       "Qwen3.7-Max",
       "Qwen3.6-Plus",
@@ -27,11 +27,12 @@
     "stats": {},
     "unknown": false,
     "generated_at": "2026-06-02T21:00:00.000000+00:00",
-    "last_verified_at": "2026-06-12",
+    "last_verified_at": "2026-06-22",
     "verification_source": "https://www.alibabacloud.com/help/en/model-studio/application-api-reference",
     "profile_verified": true,
-    "profile_verified_at": "2026-06-12",
-    "description": "Alibaba Cloud betreibt mit DashScope die API für Qwen-Modelle und weitere KI-Dienste. Der Anbieter sitzt in Hangzhou und agiert unter chinesischem Datenschutzrecht. Für europäische Nutzer ist vor allem relevant, dass Datenverarbeitung in China stattfindet und kein EU-Angemessenheitsbeschluss vorliegt."
+    "profile_verified_at": "2026-06-22",
+    "profile_verified_by": "llm:perplexity",
+    "description": "Alibaba Cloud betreibt mit DashScope die API für Qwen-Modelle und weitere KI-Dienste. Der Anbieter sitzt in Hangzhou und agiert unter chinesischem Datenschutzrecht. Für europäische Nutzer ist vor allem relevant, dass Datenverarbeitung in China stattfindet und kein EU-Angemessenheitsbeschluss vorliegt. Bei globaler Alibaba-Cloud-Nutzung ist zusätzliches CLOUD-Act-Exposure nicht auszuschließen."
   },
   {
     "vendor_id": "alibaba_cloud",
@@ -43,7 +44,7 @@
     "api_base_url": "https://dashscope.aliyuncs.com",
     "api_documentation_url": "https://help.aliyun.com/zh/model-studio/developer-reference/api-details",
     "deployment": {
-      "cloud_act_exposure": false,
+      "cloud_act_exposure": true,
       "applicable_law": "China (PIPL/CSL/DSL)",
       "data_residency": "China + global Alibaba Cloud regions",
       "gdpr_dpa_available": true,
@@ -51,22 +52,23 @@
       "data_retention_days": -1,
       "chinese_nsl_risk": "high"
     },
-    "privacy_note": "Für europäische Nutzer besteht ein erhöhtes Datenschutzrisiko, da Alibaba Cloud ein chinesischer Anbieter ist und API-Daten chinesischem Datenschutz- und Sicherheitsrecht unterliegen können. Bei grenzüberschreitender Verarbeitung außerhalb der EU ist ohne EU-Angemessenheitsbeschluss regelmäßig mit zusätzlichen Transfer-Risiken zu rechnen.",
+    "privacy_note": "Für europäische Nutzer besteht ein erhöhtes Datenschutzrisiko, da Alibaba Cloud ein chinesischer Anbieter ist und API-Daten chinesischem Datenschutz- und Sicherheitsrecht unterliegen können. Bei grenzüberschreitender Verarbeitung außerhalb der EU ist ohne EU-Angemessenheitsbeschluss regelmäßig mit zusätzlichen Transfer-Risiken zu rechnen. Aufgrund der US-Börsennotierung und globaler Infrastruktur-Präsenz besteht zudem potenzielles CLOUD-Act-Exposure.",
     "notable_models": [
       "Qwen3-235B-A22B",
       "Qwen3-32B",
       "Qwen3-Coder-480B",
-      "Qwen3.7-Max",
-      "Qwen3.5-397B"
+      "Qwen3.7-Max"
     ],
     "stats": {},
     "unknown": false,
     "generated_at": "2026-06-12T16:39:04.144936+00:00",
-    "last_verified_at": "2026-06-12",
+    "last_verified_at": "2026-06-22",
     "verification_source": "https://www.alibabacloud.com/help/en/model-studio/getting-started/what-is-model-studio",
-    "description": "Alibaba Cloud (Aliyun) stellt über die Model Studio API Qwen-Modelle und weitere KI-Dienste bereit. Das Unternehmen operiert unter chinesischem Recht (PIPL/CSL/DSL) und verarbeitet Daten primär in China. Für europäische Nutzer besteht erhöhtes Datenschutzrisiko ohne EU-Angemessenheitsbeschluss.",
+    "description": "Alibaba Cloud (Aliyun) stellt über die Model Studio API Qwen-Modelle und weitere KI-Dienste bereit. Das Unternehmen operiert unter chinesischem Recht (PIPL/CSL/DSL) und verarbeitet Daten primär in China. Aufgrund der US-Börsennotierung und globaler Infrastruktur-Präsenz ist zusätzliches CLOUD-Act-Exposure nicht auszuschließen. Für europäische Nutzer besteht erhöhtes Datenschutzrisiko ohne EU-Angemessenheitsbeschluss.",
     "profile_verified": true,
-    "profile_verified_at": "2026-06-12"
+    "profile_verified_at": "2026-06-22",
+    "profile_verified_by": "llm:perplexity",
+    "last_modified_at": "2026-06-22"
   },
   {
     "vendor_id": "alibaba_group_qwen_team",
@@ -78,18 +80,17 @@
     "api_base_url": "https://dashscope.aliyuncs.com",
     "api_documentation_url": "https://www.alibabacloud.com/help/en/model-studio/",
     "deployment": {
-      "cloud_act_exposure": false,
+      "cloud_act_exposure": true,
       "applicable_law": "China (PIPL/CSL/DSL)",
-      "data_residency": "China",
-      "gdpr_dpa_available": false,
+      "data_residency": "China + global Alibaba Cloud regions",
+      "gdpr_dpa_available": true,
       "eu_adequacy_decision": false,
       "data_retention_days": -1,
       "chinese_nsl_risk": "high"
     },
-    "privacy_note": "Für EU-Nutzer besteht ein erhöhtes Datenschutzrisiko, da API-Daten voraussichtlich unter chinesischem Datenschutz- und Sicherheitsrecht verarbeitet werden. Es gibt keinen EU-Angemessenheitsbeschluss für China, sodass internationale Datentransfers zusätzliche Compliance-Risiken verursachen können.",
+    "privacy_note": "Für EU-Nutzer besteht ein erhöhtes Datenschutzrisiko, da API-Daten voraussichtlich unter chinesischem Datenschutz- und Sicherheitsrecht verarbeitet werden. Es gibt keinen EU-Angemessenheitsbeschluss für China, sodass internationale Datentransfers zusätzliche Compliance-Risiken verursachen können. Bei Nutzung von Alibaba-Cloud-Diensten ist zudem ein mögliches CLOUD-Act-Exposure zu berücksichtigen.",
     "notable_models": [
       "Qwen3.7-Max",
-      "Qwen3.5-397B",
       "Qwen3.6-Plus",
       "Qwen3-32B",
       "Qwen3-Coder"
@@ -97,11 +98,12 @@
     "stats": {},
     "unknown": false,
     "generated_at": "2026-06-12T16:42:01.327061+00:00",
-    "last_verified_at": "2026-06-12",
+    "last_verified_at": "2026-06-22",
     "verification_source": "https://www.alibabacloud.com/help/en/model-studio/",
-    "description": "Das Qwen-Team von Alibaba Cloud entwickelt die Qwen-Modellfamilie und stellt diese über DashScope und Cloud-Partner bereit. Die Modelle sind teilweise als Open Weights verfügbar. Datenverarbeitung erfolgt unter chinesischem Recht; für europäische Nutzer besteht erhöhtes Compliance-Risiko.",
+    "description": "Das Qwen-Team von Alibaba Cloud entwickelt die Qwen-Modellfamilie und stellt diese über DashScope und Cloud-Partner bereit. Die Modelle sind teilweise als Open Weights verfügbar. Datenverarbeitung erfolgt unter chinesischem Recht; für europäische Nutzer besteht erhöhtes Compliance-Risiko. Für die proprietären Qwen-Cloud-Modelle ist zusätzliches CLOUD-Act-Exposure nicht auszuschließen.",
     "profile_verified": true,
-    "profile_verified_at": "2026-06-12"
+    "profile_verified_at": "2026-06-22",
+    "profile_verified_by": "llm:perplexity"
   },
   {
     "vendor_id": "alibaba_group_qwen_team_hauhaucs_community_fine_tune",
@@ -113,28 +115,29 @@
     "api_base_url": null,
     "api_documentation_url": "https://qwenlm.github.io/",
     "deployment": {
-      "cloud_act_exposure": false,
-      "applicable_law": "N/A (lokal only)",
+      "cloud_act_exposure": true,
+      "applicable_law": "China (PIPL/CSL/DSL)",
       "data_residency": "N/A (lokal only)",
       "gdpr_dpa_available": false,
       "eu_adequacy_decision": false,
       "data_retention_days": 0,
       "chinese_nsl_risk": "high"
     },
-    "privacy_note": "Bei selbst gehosteter Nutzung werden API-Daten lokal verarbeitet; das primäre Risiko entsteht daher aus Ihrer eigenen Hosting- und Transferkonfiguration. Da das Basismodell von einem chinesischen Anbieter stammt, besteht bei Nutzung offizieller Alibaba-Cloud-Dienste ein erhöhtes chinesisches Datenschutz- und Zugriffsrisiko, dies gilt jedoch nicht automatisch für rein lokale Deployments.",
+    "privacy_note": "Bei selbst gehosteter Nutzung werden API-Daten lokal verarbeitet; das primäre Risiko entsteht daher aus Ihrer eigenen Hosting- und Transferkonfiguration. Da das Basismodell von einem chinesischen Anbieter stammt, besteht bei Nutzung offizieller Alibaba-Cloud-Dienste ein erhöhtes chinesisches Datenschutz- und Zugriffsrisiko, dies gilt jedoch nicht automatisch für rein lokale Deployments. Für die Community-Fine-Tunes selbst besteht kein zusätzliches Provider-Risiko durch Alibaba-Cloud, solange sie ausschließlich lokal betrieben werden.",
     "notable_models": [
       "Qwen3-14B (HauhauCS Fine-Tune)",
-      "Qwen3-32B (HauhauCS Fine-Tune)",
-      "Qwen2.5-Coder-7B"
+      "Qwen3-32B (HauhauCS Fine-Tune)"
     ],
     "stats": {},
     "unknown": false,
     "generated_at": "2026-06-12T16:49:41.962525+00:00",
-    "last_verified_at": "2026-06-12",
+    "last_verified_at": "2026-06-22",
     "verification_source": "https://qwenlm.github.io/",
-    "description": "Diese Karte beschreibt Community-Fine-Tunes des Qwen-Teams durch HauhauCS auf Basis offener Qwen-Gewichte. Die Modelle werden lokal betrieben, sodass kein API-seitiges Datenschutzrisiko entsteht. Das Risiko hängt ausschließlich vom gewählten Hosting ab.",
+    "description": "Diese Karte beschreibt Community-Fine-Tunes des Qwen-Teams durch HauhauCS auf Basis offener Qwen-Gewichte. Die Modelle werden lokal betrieben, sodass kein API-seitiges Datenschutzrisiko durch den Community-Distributor entsteht. Das Risiko hängt ausschließlich vom gewählten Hosting ab.",
     "profile_verified": true,
-    "profile_verified_at": "2026-06-12"
+    "profile_verified_at": "2026-06-22",
+    "profile_verified_by": "llm:perplexity",
+    "last_modified_at": "2026-06-22"
   },
   {
     "vendor_id": "anthropic",
@@ -150,7 +153,7 @@
       "applicable_law": "US (CLOUD Act)",
       "data_residency": "USA",
       "gdpr_dpa_available": true,
-      "eu_adequacy_decision": true,
+      "eu_adequacy_decision": false,
       "data_retention_days": 30,
       "chinese_nsl_risk": "none"
     },
@@ -169,18 +172,19 @@
     },
     "unknown": false,
     "generated_at": "2026-06-02T21:00:00.000000+00:00",
-    "last_verified_at": "2026-06-12",
+    "last_verified_at": "2026-06-22",
     "verification_source": "https://privacy.claude.com/",
     "profile_verified": true,
-    "profile_verified_at": "2026-06-12",
-    "description": "Anthropic entwickelt die Claude-Familie und positioniert sich als Forschungs und Safety Unternehmen mit Public Benefit Corporation Struktur. Die API wird aus den USA bereitgestellt; für europäische Nutzer sind vor allem CLOUD Act, US Datenstandort und die klar geregelten kommerziellen Datenschutzbedingungen relevant."
+    "profile_verified_at": "2026-06-22",
+    "profile_verified_by": "llm:perplexity",
+    "description": "Anthropic entwickelt die Claude-Familie und positioniert sich als Forschungs- und Safety-Unternehmen mit Public Benefit Corporation Struktur. Die API wird aus den USA bereitgestellt; für europäische Nutzer sind vor allem CLOUD Act, US-Datenstandort und die klar geregelten kommerziellen Datenschutzbedingungen relevant."
   },
   {
     "vendor_id": "ara_apex_quant",
     "card_subtype": "community",
     "display_name": "ARA-APEX Quant",
-    "company": "ARA-APEX (Community-Contributor)",
-    "headquarters": "Community/privat (Ort unbekannt)",
+    "company": "Community contributor / privat",
+    "headquarters": "Unknown",
     "founding_year": null,
     "pricing_model": "open-source-self-hosted",
     "api_base_url": null,
@@ -194,22 +198,26 @@
       "data_retention_days": 0,
       "chinese_nsl_risk": "none"
     },
-    "privacy_note": "ARA-APEX-Modelle werden ausschließlich lokal betrieben. Kein Datentransfer an externe Server. Die Modelle sind GGUF-Quantisierungen öffentlicher Basismodelle.",
-    "notable_models": [],
+    "privacy_note": "ARA-APEX-Modelle werden ausschließlich lokal betrieben. Kein Datentransfer an externe Server. Die Modelle sind GGUF-Quantisierungen öffentlicher Basismodelle; das Datenschutz- und Compliance-Risiko hängt ausschließlich vom eigenen Hosting ab.",
+    "notable_models": [
+      "APEX GGUF quantizations",
+      "MoE-aware GGUF quantizations"
+    ],
     "stats": {},
     "unknown": true,
     "generated_at": "2026-06-12T08:00:00+00:00",
-    "last_verified_at": "2026-06-12",
-    "verification_source": "https://huggingface.co/ARA-APEX",
+    "last_verified_at": "2026-06-22",
+    "verification_source": "https://huggingface.co/collections/mudler/apex-quants-gguf",
     "profile_verified": true,
-    "profile_verified_at": "2026-06-12",
-    "description": "ARA-APEX ist ein Community-Contributor auf Hugging Face, der GGUF-Quantisierungen öffentlicher Basismodelle bereitstellt. Über Firmensitz oder rechtliche Struktur sind keine Informationen verfügbar. Da alle Modelle lokal betrieben werden, entstehen keine API-seitigen Datenschutzrisiken. Die Privacy-Bewertung hängt ausschließlich vom gewählten Hosting ab."
+    "profile_verified_at": "2026-06-22",
+    "profile_verified_by": "llm:perplexity",
+    "description": "ARA-APEX ist eine Community-/Hugging-Face-nahe Quantisierungs- und Distributionskarte für APEX-GGUF-Modelle. Über Firmensitz oder rechtliche Struktur sind keine belastbaren Informationen verfügbar. Da die Modelle lokal betrieben werden, entstehen keine API-seitigen Datenschutzrisiken; die Privacy-Bewertung hängt ausschließlich vom gewählten Hosting ab."
   },
   {
     "vendor_id": "cognitive_computations",
     "card_subtype": "community",
     "display_name": "Cognitive Computations",
-    "company": "Cognitive Computations (Einzelperson / Eric Hartford)",
+    "company": "Community / Eric Hartford",
     "headquarters": "USA",
     "founding_year": 2021,
     "pricing_model": "open-source-self-hosted",
@@ -224,19 +232,20 @@
       "data_retention_days": 0,
       "chinese_nsl_risk": "none"
     },
-    "privacy_note": "Cognitive Computations betreibt nach der geprüften Quelle keinen eigenen API-Dienst, sondern veröffentlicht Modelle zur freien Nutzung. Datentransfer-Risiken hängen damit nicht von der Modellquelle selbst, sondern vom gewählten Inference-Hosting ab. Bei lokalem Einsatz verbleiben die Daten auf der eigenen Infrastruktur.",
+    "privacy_note": "Cognitive Computations veröffentlicht Modelle zur freien Nutzung; ein eigener API-Dienst ist nicht die primäre Vertriebsform. Datentransfer-Risiken hängen daher vom gewählten Inference-Hosting ab. Bei lokalem Einsatz verbleiben die Daten auf der eigenen Infrastruktur.",
     "notable_models": [
       "Dolphin 2.9 (Llama 3)",
       "Dolphin 2.9.1 (Llama 3 70B)",
-      "Dolphin Mixtral 8x7B"
+      "Dolphin 3.0 Collection"
     ],
     "stats": {},
     "unknown": false,
     "generated_at": "2026-06-02T21:00:00.000000+00:00",
-    "last_verified_at": "2026-06-12",
+    "last_verified_at": "2026-06-22",
     "verification_source": "https://huggingface.co/cognitivecomputations",
     "profile_verified": true,
-    "profile_verified_at": "2026-06-12",
+    "profile_verified_at": "2026-06-22",
+    "profile_verified_by": "llm:perplexity",
     "description": "Cognitive Computations veröffentlicht offene Modelle mit starkem Community- und Forschungsbezug und stellt sie primär über Hugging Face bereit. Die Karten beschreiben weniger einen Anbieter als eine kuratierte Modellquelle für Selbsthosting oder Drittanbieter-Deployment. Privacy hängt damit vollständig vom gewählten Host ab."
   },
   {
@@ -249,15 +258,15 @@
     "api_base_url": "https://api.deepseek.com",
     "api_documentation_url": "https://api-docs.deepseek.com",
     "deployment": {
-      "cloud_act_exposure": false,
+      "cloud_act_exposure": true,
       "applicable_law": "China (PIPL/CSL/DSL)",
-      "data_residency": "China",
+      "data_residency": "China + EU/US cloud partners",
       "gdpr_dpa_available": false,
       "eu_adequacy_decision": false,
       "data_retention_days": -1,
       "chinese_nsl_risk": "high"
     },
-    "privacy_note": "DeepSeek verarbeitet API-Anfragen in China und unterliegt chinesischem Datenschutzrecht. Für europäische Nutzer besteht damit ein relevantes Drittlandtransfer-Risiko ohne EU-Angemessenheitsbeschluss. Ein öffentlich ausgewiesenes DSGVO-DPA ist nicht ersichtlich; die konkrete Aufbewahrungsdauer bleibt unklar.",
+    "privacy_note": "DeepSeek verarbeitet API-Anfragen in China und unterliegt chinesischem Datenschutzrecht. Für europäische Nutzer besteht damit ein relevantes Drittlandtransfer-Risiko ohne EU-Angemessenheitsbeschluss. Ein öffentlich ausgewiesenes DSGVO-DPA ist nicht ersichtlich; die konkrete Aufbewahrungsdauer bleibt unklar. Bei Nutzung über EU- oder US-Cloud-Partner kann die Datenresidenz vom Direkt-API-Betrieb abweichen.",
     "notable_models": [
       "DeepSeek-V4 Pro",
       "DeepSeek-V4 Flash",
@@ -268,11 +277,12 @@
     "stats": {},
     "unknown": false,
     "generated_at": "2026-06-02T21:00:00.000000+00:00",
-    "last_verified_at": "2026-06-12",
-    "verification_source": "https://deepseek.com/en",
+    "last_verified_at": "2026-06-22",
+    "verification_source": "https://api-docs.deepseek.com/api/deepseek-api",
     "profile_verified": true,
-    "profile_verified_at": "2026-06-12",
-    "description": "DeepSeek bietet eine API für die Modelle der DeepSeek-Familie, darunter V4, V3 und R1. Das Unternehmen sitzt in Hangzhou und operiert unter chinesischem Recht. Für europäische Product Engineers ist relevant, dass die Datenverarbeitung in China erfolgt und kein DSGVO-konformes DPA ausgewiesen ist."
+    "profile_verified_at": "2026-06-22",
+    "profile_verified_by": "llm:perplexity",
+    "description": "DeepSeek bietet eine API für die Modelle der DeepSeek-Familie, darunter V4, V3 und R1. Das Unternehmen sitzt in Hangzhou und operiert unter chinesischem Recht. Für europäische Product Engineers ist relevant, dass die Datenverarbeitung bei Direktnutzung in China erfolgt und kein DSGVO-konformes DPA ausgewiesen ist."
   },
   {
     "vendor_id": "google",

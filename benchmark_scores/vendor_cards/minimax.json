@@ -8,15 +8,15 @@
   "api_base_url": "https://api.minimax.chat",
   "api_documentation_url": "https://platform.minimax.io/docs",
   "deployment": {
-    "cloud_act_exposure": false,
+    "cloud_act_exposure": true,
     "applicable_law": "China (PIPL/CSL/DSL)",
-    "data_residency": "China",
+    "data_residency": "China + global MiniMax/OpenRouter partner routes",
     "gdpr_dpa_available": false,
     "eu_adequacy_decision": false,
     "data_retention_days": -1,
     "chinese_nsl_risk": "high"
   },
-  "privacy_note": "MiniMax verarbeitet API-Anfragen in China und bietet nach der geprüften Dokumentation kein DSGVO-taugliches DPA. Für europäische Nutzer besteht damit ein klares Drittlandtransfer-Risiko ohne EU-Angemessenheitsbeschluss. Der Einsatz sollte auf nicht personenbezogene oder streng minimierte Daten beschränkt bleiben.",
+  "privacy_note": "MiniMax verarbeitet API-Anfragen in China und bietet nach der geprüften Dokumentation kein DSGVO-taugliches DPA. Für europäische Nutzer besteht damit ein klares Drittlandtransfer-Risiko ohne EU-Angemessenheitsbeschluss. Der Einsatz sollte auf nicht personenbezogene oder streng minimierte Daten beschränkt bleiben. Bei Nutzung über Partner-Routen kann sich die Datenpfad- und Residenzsituation unterscheiden.",
   "notable_models": [
     "MiniMax-M3",
     "MiniMax-M2.7",
@@ -26,9 +26,10 @@
   "stats": {},
   "unknown": false,
   "generated_at": "2026-06-02T21:00:00.000000+00:00",
-  "last_verified_at": "2026-06-12",
+  "last_verified_at": "2026-06-22",
   "verification_source": "https://platform.minimax.io/docs",
   "profile_verified": true,
-  "profile_verified_at": "2026-06-12",
-  "description": "MiniMax bietet mit seiner API und Modellfamilie eine chinesische Plattform für Text und Multimodalität. Das Unternehmen sitzt in Shanghai und unterliegt chinesischem Datenschutzrecht. Für europäische Nutzer ist die fehlende EU-Angemessenheit entscheidend; die Nutzung mit personenbezogenen Daten bleibt daher besonders sensibel."
+  "profile_verified_at": "2026-06-22",
+  "profile_verified_by": "llm:perplexity",
+  "description": "MiniMax bietet eine chinesische Plattform für Text und multimodale Modelle. Die API wird für agentische, Coding- und Multimodal-Workflows verwendet; für europäische Nutzer sind der China-Datenpfad, fehlende EU-Angemessenheit und die verteilte Partner-Distribution die zentralen Compliance-Themen."
 }

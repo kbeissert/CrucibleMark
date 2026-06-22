@@ -2,8 +2,8 @@
   "vendor_id": "hauhaucs",
   "card_subtype": "community",
   "display_name": "HauhauCS",
-  "company": "HauhauCS (Community-Contributor, HuggingFace)",
-  "headquarters": "Community/privat (Ort unbekannt)",
+  "company": "Community contributor / privat",
+  "headquarters": "Unknown",
   "founding_year": null,
   "pricing_model": "open-source-self-hosted",
   "api_base_url": null,
@@ -17,19 +17,20 @@
     "data_retention_days": 0,
     "chinese_nsl_risk": "none"
   },
-  "privacy_note": "HauhauCS-Modelle werden ausschließlich lokal betrieben. Kein Datentransfer an externe Server. Die Modelle sind Fine-Tunes öffentlicher Basismodelle (primär Qwen, Gemma) mit entfernten Sicherheitsbeschränkungen (\"Aggressive\"- und \"Balanced\"-Varianten).",
+  "privacy_note": "HauhauCS-Modelle werden ausschließlich lokal betrieben. Kein Datentransfer an externe Server. Die Modelle sind Fine-Tunes öffentlicher Basismodelle (primär Qwen, Gemma) mit entfernten Sicherheitsbeschränkungen, typischerweise in Aggressive- und Balanced-Varianten.",
   "notable_models": [
-    "Qwen3.5-9B-Uncensored-HauhauCS-Aggressive",
-    "Qwen3.6-27B-Uncensored-HauhauCS-Aggressive",
+    "Qwen3.5-35B-A3B-Uncensored-HauhauCS-Aggressive",
     "Qwen3.6-35B-A3B-Uncensored-HauhauCS-Aggressive",
-    "Gemma-4-E4B-Uncensored-HauhauCS-Aggressive"
+    "Gemma-4-E4B-Uncensored-HauhauCS-Aggressive",
+    "Gemma4-26B-A4B-Uncensored-HauhauCS-Balanced"
   ],
   "stats": {},
   "unknown": false,
   "generated_at": "2026-06-12T08:00:00+00:00",
-  "last_verified_at": "2026-06-12",
+  "last_verified_at": "2026-06-22",
   "verification_source": "https://huggingface.co/HauhauCS",
   "profile_verified": true,
-  "profile_verified_at": "2026-06-12",
+  "profile_verified_at": "2026-06-22",
+  "profile_verified_by": "llm:perplexity",
   "description": "HauhauCS kuratiert Community-Fine-Tunes mit klarer Ausrichtung auf unzensierte und experimentelle Varianten. Der Schwerpunkt liegt auf praktischer Verwendbarkeit über lokale Inferenz oder selbst gehostete Deployments. Die Qualität bemisst sich vor allem an Modellkonsistenz, Nutzbarkeit und der Passung zum gewünschten Einsatzprofil."
 }

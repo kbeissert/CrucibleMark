@@ -8,7 +8,7 @@
   "api_base_url": "https://api.moonshot.cn",
   "api_documentation_url": "https://platform.moonshot.cn/docs/intro",
   "deployment": {
-    "cloud_act_exposure": false,
+    "cloud_act_exposure": true,
     "applicable_law": "China (PIPL/CSL/DSL)",
     "data_residency": "China",
     "gdpr_dpa_available": false,
@@ -16,7 +16,7 @@
     "data_retention_days": -1,
     "chinese_nsl_risk": "high"
   },
-  "privacy_note": "Moonshot AI verarbeitet API-Nutzung in China und regelt die Nutzung über chinesische Vertrags- und Datenschutzdokumente. Für europäische Nutzer besteht kein EU-Angemessenheitsbeschluss; ein DSGVO-taugliches DPA ist in der geprüften Dokumentation nicht ersichtlich. Personenbezogene Daten sollten daher nicht unkritisch übertragen werden.",
+  "privacy_note": "Moonshot AI verarbeitet API-Nutzung in China und regelt die Nutzung über chinesische Vertrags- und Datenschutzdokumente. Für europäische Nutzer besteht kein EU-Angemessenheitsbeschluss; ein DSGVO-taugliches DPA ist in der geprüften Dokumentation nicht ersichtlich. Personenbezogene Daten sollten daher nicht unkritisch übertragen werden. Bei Partner-Routen oder Drittanbieter-Distributionen kann der Datenpfad abweichen.",
   "notable_models": [
     "Kimi K2.6",
     "Kimi K2.5",
@@ -26,9 +26,10 @@
   "stats": {},
   "unknown": false,
   "generated_at": "2026-06-02T21:00:00.000000+00:00",
-  "last_verified_at": "2026-06-12",
+  "last_verified_at": "2026-06-22",
   "verification_source": "https://platform.moonshot.cn/docs/agreement",
   "profile_verified": true,
-  "profile_verified_at": "2026-06-12",
+  "profile_verified_at": "2026-06-22",
+  "profile_verified_by": "llm:perplexity",
   "description": "Moonshot AI betreibt die Kimi API und richtet sich mit einer klar dokumentierten Entwicklerplattform an produktive Anwendungsfälle. Das Unternehmen sitzt in Beijing und operiert unter chinesischem Recht. Für europäische Teams ist relevant, dass Daten in China verarbeitet werden und die Nutzung eine strenge Drittlandbewertung verlangt."
 }

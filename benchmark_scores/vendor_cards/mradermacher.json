@@ -2,9 +2,9 @@
   "vendor_id": "mradermacher",
   "card_subtype": "community",
   "display_name": "mradermacher (GGUF/Abliterated)",
-  "company": "mradermacher (Hugging Face Community Contributor) — Basismodelle: Mistral AI SAS",
-  "headquarters": "Community/privat; Mistral AI: Paris, France",
-  "founding_year": 2023,
+  "company": "mradermacher (Hugging Face Community Contributor)",
+  "headquarters": "Unknown",
+  "founding_year": null,
   "pricing_model": "open-source-self-hosted",
   "api_base_url": null,
   "api_documentation_url": "https://huggingface.co/mradermacher",
@@ -20,14 +20,16 @@
   "privacy_note": "Da diese Modelle ausschließlich lokal betrieben werden, findet keine Datenübertragung an externe Server statt. Es besteht kein API-seitiges Datenschutzrisiko – sämtliche Verarbeitung erfolgt auf der eigenen Infrastruktur des Nutzers.",
   "notable_models": [
     "Mistral-7B-Instruct-v0.3 (GGUF, mradermacher)",
-    "Mistral-Small-3.1 Abliterated (GGUF, mradermacher)"
+    "Mistral-Small-Instruct-2409-abliterated (GGUF, mradermacher)",
+    "Mistral-Small-3.1-documentazione-64k (GGUF, mradermacher)"
   ],
   "stats": {},
   "unknown": false,
   "generated_at": "2026-06-02T21:00:00.000000+00:00",
-  "last_verified_at": "2026-06-02",
+  "last_verified_at": "2026-06-22",
   "verification_source": "https://huggingface.co/mradermacher",
   "profile_verified": true,
-  "profile_verified_at": "2026-06-12",
+  "profile_verified_at": "2026-06-22",
+  "profile_verified_by": "llm:perplexity",
   "description": "mradermacher veröffentlicht GGUF- und abliterated Varianten öffentlicher Basismodelle mit Fokus auf lokale Nutzbarkeit und geringere Sicherheitsbeschränkungen. Die Community-Arbeit ist praktisch orientiert und richtet sich an Nutzer, die stabile Offline-Setups oder eigene Server bevorzugen. Privacy ist hier eine Hosting-Frage."
 }

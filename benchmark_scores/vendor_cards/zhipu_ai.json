@@ -8,7 +8,7 @@
   "api_base_url": "https://open.bigmodel.cn",
   "api_documentation_url": "https://open.bigmodel.cn/dev/howuse/introduction",
   "deployment": {
-    "cloud_act_exposure": false,
+    "cloud_act_exposure": true,
     "applicable_law": "China (PIPL/CSL/DSL)",
     "data_residency": "China",
     "gdpr_dpa_available": false,
@@ -16,7 +16,7 @@
     "data_retention_days": -1,
     "chinese_nsl_risk": "high"
   },
-  "privacy_note": "Zhipu AI verarbeitet API-Anfragen in China und fällt damit unter chinesisches Datenschutzrecht. Ein EU-Angemessenheitsbeschluss liegt nicht vor; ein DSGVO-taugliches DPA ist in den geprüften Quellen nicht ersichtlich. Für europäische Nutzer ist die Nutzung mit personenbezogenen Daten daher nur mit erheblichem Risiko vertretbar.",
+  "privacy_note": "Zhipu AI verarbeitet API-Anfragen in China und fällt damit unter chinesisches Datenschutzrecht. Ein EU-Angemessenheitsbeschluss liegt nicht vor; ein DSGVO-taugliches DPA ist in den geprüften Quellen nicht ersichtlich. Für europäische Nutzer ist die Nutzung mit personenbezogenen Daten daher nur mit erheblichem Risiko vertretbar. Bei Nutzung über externe Provider-Routen kann der Datenpfad abweichen.",
   "notable_models": [
     "GLM-5.1",
     "GLM-5 Turbo",
@@ -27,9 +27,10 @@
   "stats": {},
   "unknown": false,
   "generated_at": "2026-06-02T21:00:00.000000+00:00",
-  "last_verified_at": "2026-06-12",
-  "verification_source": "https://open.bigmodel.cn/dev/howuse/agreement",
+  "last_verified_at": "2026-06-22",
+  "verification_source": "https://open.bigmodel.cn/dev/howuse/introduction",
   "profile_verified": true,
-  "profile_verified_at": "2026-06-12",
-  "description": "Zhipu AI betreibt die BigModel Plattform für die GLM-Familie und weitere generative Dienste. Das Unternehmen sitzt in Beijing und verarbeitet API-Anfragen in China. Für europäische Teams ist die chinesische Jurisdiktion mit PIPL, CSL und DSL der zentrale Compliance-Punkt."
+  "profile_verified_at": "2026-06-22",
+  "profile_verified_by": "llm:perplexity",
+  "description": "Zhipu AI betreibt die BigModel-Plattform für die GLM-Familie und weitere generative Dienste. Das Unternehmen sitzt in Beijing und verarbeitet API-Anfragen in China. Für europäische Teams ist die chinesische Jurisdiktion mit PIPL, CSL und DSL der zentrale Compliance-Punkt."
 }
