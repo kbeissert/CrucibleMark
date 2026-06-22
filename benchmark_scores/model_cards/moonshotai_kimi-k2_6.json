@@ -7,10 +7,10 @@
   "deployment_type": "open-weights-cloud-available",
   "local_deployment_possible": true,
   "weights_provenance_risk": "high",
-  "weights_provenance_risk_rationale": "Moonshot AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten ermöglichen kann. Das BSI hat im Februar 2025 explizit vor der Nutzung chinesischer KI-Cloud-Dienste gewarnt (BSI-Referenz: Warnung DeepSeek, 04.02.2025); diese Risikoeinschätzung gilt analog für alle chinesischen Cloud-KI-Anbieter, die Nutzerdaten auf chinesischen Servern verarbeiten.",
+  "weights_provenance_rationale": "Moonshot AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten ermöglichen kann. Das BSI hat im Februar 2025 explizit vor der Nutzung chinesischer KI-Cloud-Dienste gewarnt; diese Risikoeinschätzung gilt konservativ auch hier.",
   "model_family": "Kimi",
-  "primary_focus": "general",
-  "summary": "Kimi K2.6 ist ein fortschrittliches Modell von Moonshot AI, das speziell für agentische Aufgaben, Coding und multimodale Interaktionen optimiert wurde. Es bietet native Unterstützung für Text und Bild und ist als Cloud-API verfügbar. Aufgrund des Herkunftsortes China ist bei der Nutzung im geschäftlichen Kontext das entsprechende Sovereign-Risk zu berücksichtigen.",
+  "primary_focus": "agentic",
+  "summary": "Kimi K2.6 ist ein fortschrittliches Modell von Moonshot AI, das speziell für agentische Aufgaben, Coding und multimodale Interaktionen optimiert wurde. Es bietet native Unterstützung für Text, Bild und Video und ist als Cloud-API sowie als Open-Weights-Modell verfügbar. Aufgrund des Herkunftsortes China ist bei der Nutzung im geschäftlichen Kontext das entsprechende Sovereign-Risk zu berücksichtigen.",
   "strengths": [
     "Nativ multimodal",
     "Stark für Coding und Agent-Workflows",
@@ -24,7 +24,9 @@
   "judge_context_hint": "Agentisches multimodales Modell aus der K2-Familie. Bei der Bewertung sollten Tool Use und Aufgabenorientierung höher gewichtet werden als narrative Antworten.",
   "architecture_tags": [
     "Agentic-Orchestrator",
-    "Thinking-Optional"
+    "Thinking-Optional",
+    "Multimodal",
+    "Long-Context"
   ],
   "unknown": false,
   "generated_at": "2026-05-02T20:31:39.248362+00:00",
@@ -36,7 +38,7 @@
   "thinking_probe_at": "2026-05-03T19:26:41.855429+00:00",
   "supports_tool_use": true,
   "license": "Moonshot AI License",
-  "license_url": "https://huggingface.co/moonshotai/Kimi-K2-Instruct/blob/main/LICENSE",
+  "license_url": "https://huggingface.co/moonshotai/Kimi-K2.6/blob/main/LICENSE",
   "commercial_use_allowed": true,
   "vendor": "Moonshot AI",
   "weights_license_tier": "open-weights",
@@ -47,7 +49,7 @@
   "parameter_architecture": "moe",
   "params_total_b": 1000.0,
   "params_active_b": 32.0,
-  "context_window_k": 128,
+  "context_window_k": 256,
   "knowledge_cutoff": "2025-12",
   "top_p": null,
   "top_k": null,
@@ -58,7 +60,8 @@
   "stop_sequences": null,
   "input_modalities": [
     "text",
-    "image"
+    "image",
+    "video"
   ],
   "output_modalities": [
     "text"
@@ -73,7 +76,7 @@
   "system_prompt_override": null,
   "cot_marker_family": null,
   "cot_tags_detected": null,
-  "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
+  "profile_verified_by": "llm:perplexity",
   "last_modified_at": "2026-06-20",
   "heritage_ids": [],
   "community": null

@@ -12,13 +12,14 @@
   "developer_jurisdiction": "US",
   "display_name": "Gemini 3 Flash Preview",
   "generated_at": "2026-04-23T22:01:35.418589+00:00",
-  "input_price_per_1m": 0.5,
+  "input_price_per_1m": 0.3,
   "judge_context_hint": "Experimentelle Flash-Preview für produktive Standardaufgaben. Antworten sollten auf Schnelligkeit und Nutzbarkeit geprüft werden, nicht auf Frontier-Tiefe.",
-  "knowledge_cutoff": "2026-01",
+  "knowledge_cutoff": "2025-01",
   "known_limitations": [
     "Preview-Status mit möglicher Verhaltensänderung",
     "Schwächer als größere Gemini-Modelle bei komplexem Reasoning",
-    "Nur über die Google-API nutzbar"
+    "Nur über die Google-API nutzbar",
+    "Natives Audio-Output (Live API) nicht im Benchmark erfasst – output_modalities spiegelt nur getestete Modalitäten wider."
   ],
   "license": "Proprietary",
   "license_url": null,
@@ -27,18 +28,18 @@
   "model_id": "gemini-3-flash-preview",
   "model_version": "3-flash-preview",
   "origin_country": "USA",
-  "output_price_per_1m": 3.0,
+  "output_price_per_1m": 2.5,
   "parameter_architecture": "dense",
   "params_active_b": null,
   "params_total_b": null,
-  "primary_focus": "general",
+  "primary_focus": "generalist",
   "size_class": "Server",
   "strengths": [
     "Sehr schnelle und effiziente Inferenz",
     "Nativ multimodal mit langem Kontext",
     "Gut für Echtzeit- und Standardaufgaben"
   ],
-  "summary": "Gemini 3 Flash Preview ist Googles experimentelle Flash-Variante für schnelle, multimodale Aufgaben mit langer Kontextverarbeitung. Das Modell ist auf niedrige Latenz und hohe Effizienz ausgelegt und eignet sich vor allem für produktive Standardaufgaben statt für maximale Reasoning-Tiefe. Es bleibt exklusiv über die Google-API verfügbar.",
+  "summary": "Gemini 3 Flash Preview ist Googles kosteneffizientes Thinking-Modell mit konfigurierbarem reasoning_budget. Optimiert für schnelle, multimodale Aufgaben mit 1M-Token-Kontextfenster. Das Modell unterstützt nativ Text, Bilder, Audio und Video-Input und ist sowohl für Echtzeit-Anwendungen als auch für produktive Standardaufgaben geeignet. Es bleibt exklusiv über die Google-API verfügbar.",
   "supports_tool_use": true,
   "thinking_probe_at": "2026-04-23T13:55:36.823503+00:00",
   "thinking_probe_confidence": "low",
@@ -60,13 +61,13 @@
   "input_modalities": [
     "text",
     "image",
-    "audio"
+    "audio",
+    "video"
   ],
   "output_modalities": [
     "text"
   ],
   "profile_verified": true,
-  "profile_verified_at": "2026-06-20",
   "tooluse_tested_at": null,
   "tooluse_score_p1": null,
   "tooluse_score_p2": null,
@@ -75,6 +76,7 @@
   "system_prompt_override": null,
   "cot_marker_family": null,
   "cot_tags_detected": null,
+  "profile_verified_at": "2026-06-20",
   "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
   "last_modified_at": "2026-06-20",
   "heritage_ids": [],

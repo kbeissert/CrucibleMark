@@ -1,11 +1,11 @@
 {
   "architecture_tags": [
     "General",
-    "No-Reasoning"
+    "Multimodal"
   ],
   "card_status": "complete",
   "commercial_use_allowed": true,
-  "context_window_k": 128,
+  "context_window_k": 2000,
   "deployment_type": "cloud-only",
   "developer": "xAI",
   "developer_jurisdiction": "US",
@@ -26,7 +26,7 @@
   "model_id": "grok-4-fast-non-reasoning",
   "model_version": "4-fast-non-reasoning",
   "origin_country": "USA",
-  "output_price_per_1m": 1.0,
+  "output_price_per_1m": 0.5,
   "parameter_architecture": "moe",
   "params_active_b": null,
   "params_total_b": null,
@@ -39,11 +39,10 @@
   ],
   "summary": "Grok 4 Fast Non-Reasoning ist xAIs schnelle Variante für kosteneffiziente Antwortzeiten und einfache allgemeine Aufgaben. Die Modellfamilie ist auf niedrige Latenz, Web- und X-Suche sowie hohe Token-Effizienz ausgelegt; diese Variante verzichtet auf explizites Reasoning und bleibt damit bei komplexen Denkaufgaben bewusst schlanker.",
   "supports_tool_use": true,
-  "thinking_probe_at": "2026-06-19T22:43:44.534767+00:00",
-  "thinking_probe_confidence": "low",
   "thinking_probe_detected": false,
   "thinking_probe_evidence": "Not yet probed.",
-  "unknown": false,
+  "thinking_probe_confidence": "low",
+  "thinking_probe_at": "2026-06-19T22:43:44.534767+00:00",
   "use_case_primary": "generalist",
   "vendor": "xAI",
   "weights_license_tier": "proprietary",
@@ -57,7 +56,8 @@
   "seed": null,
   "stop_sequences": null,
   "input_modalities": [
-    "text"
+    "text",
+    "image"
   ],
   "output_modalities": [
     "text"
@@ -72,7 +72,7 @@
   "system_prompt_override": null,
   "cot_marker_family": null,
   "cot_tags_detected": null,
-  "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
+  "profile_verified_by": "llm:perplexity",
   "last_modified_at": "2026-06-20",
   "heritage_ids": [],
   "community": null

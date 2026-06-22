@@ -16,11 +16,12 @@
   "knowledge_cutoff": "2025-01",
   "known_limitations": [
     "Weniger tief als Sonnet- und Opus-Modelle",
-    "Nur über die Anthropic-API verfügbar",
-    "Bei langen, komplexen Dokumenten weniger stark"
+    "Nur über die Anthropic-API (und Bedrock / Vertex) verfügbar",
+    "Bei langen, komplexen Dokumenten weniger stark",
+    "Retirement geplant: 15. Oktober 2026"
   ],
-  "license": "Proprietary",
-  "license_url": "https://www.anthropic.com/legal/terms",
+  "license": "Proprietary (Anthropic Commercial Terms)",
+  "license_url": "https://www.anthropic.com/legal/commercial-terms",
   "local_deployment_possible": false,
   "model_family": "Claude",
   "model_id": "claude-haiku-4-5-20251001",
@@ -33,11 +34,12 @@
   "primary_focus": "instruction-following",
   "size_class": "Desktop",
   "strengths": [
-    "Sehr schnelle Inferenz",
-    "Kosteneffizient für hohe Anfragevolumina",
-    "Gut für Echtzeit- und Assistenzaufgaben"
+    "Sehr schnelle Inferenz – ideal für Echtzeit-Interaktionen und High-Volume-Pipelines",
+    "Kosteneffizient: $1/$5 pro Million Tokens",
+    "Gut für einfache Agentenaufgaben und strukturiertes Instruction-Following",
+    "Multimodal: Text- und Bildeingaben bei kompakter Größe"
   ],
-  "summary": "Claude Haiku 4.5 ist das kompakte und schnelle Modell von Anthropic, das speziell für latenzarme Anwendungen, Echtzeit-Interaktionen und einfache Agentenaufgaben entwickelt wurde. Es zeichnet sich durch hohe Geschwindigkeit, gute Coding-Qualität und eine exzellente Kosteneffizienz aus. Das Modell ist ausschliesslich über die offizielle API von Anthropic verfügbar.",
+  "summary": "Claude Haiku 4.5 (Release: Oktober 2025) ist Anthropics kompaktes Low-Latency-Modell für Echtzeit-Interaktionen, High-Volume-Pipelines und einfache Agentenaufgaben. Pricing: $1/$5 pro Million Tokens. Retirement geplant Oktober 2026.",
   "supports_tool_use": true,
   "thinking_probe_at": "2026-04-23T13:55:05.513501+00:00",
   "thinking_probe_confidence": "low",
@@ -48,7 +50,7 @@
   "vendor": "Anthropic",
   "weights_license_tier": "proprietary",
   "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "Anthropic ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch sind die Modellgewichte nicht öffentlich zugänglich und ein staatlicher Zugriff auf die Weights selbst ist nicht bekannt.",
+  "weights_provenance_risk_rationale": "Anthropic ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act; die Modellgewichte sind nicht öffentlich zugänglich.",
   "top_p": null,
   "top_k": null,
   "repetition_penalty": null,
@@ -65,7 +67,7 @@
   ],
   "profile_verified": true,
   "profile_verified_at": "2026-06-20",
-  "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
+  "profile_verified_by": "llm:perplexity",
   "last_modified_at": "2026-06-20",
   "tooluse_tested_at": null,
   "tooluse_score_p1": null,

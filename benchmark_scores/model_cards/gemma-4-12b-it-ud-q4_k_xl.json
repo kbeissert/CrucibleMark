@@ -6,37 +6,43 @@
   "developer_jurisdiction": "US",
   "deployment_type": "localweights",
   "local_deployment_possible": true,
-  "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der primär bei API-/Cloud-Nutzung relevant ist, nicht bei lokal betriebenen Gewichten. Die Gewichte stehen unter der Apache 2.0 Lizenz. Die Q4_K_XL-Quantisierung reduziert den Speicherbedarf deutlich.",
+  "weights_provenance_risk": "low",
+  "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der primär bei API-/Cloud-Nutzung relevant ist, nicht bei lokal betriebenen Gewichten. Bei ausschliesslich lokaler Inferenz ohne Cloud-Verbindung ist das Risikoszenario minimal.",
   "model_family": "Gemma",
   "vendor": "Google DeepMind / UndiX (Quantisierung)",
-  "primary_focus": "generalist",
+  "primary_focus": "general",
   "use_case_primary": "vision-language",
   "parameter_architecture": "dense",
   "params_total_b": 12,
   "params_active_b": 12,
-  "context_window_k": 128,
+  "context_window_k": 256,
   "knowledge_cutoff": "2025-01",
-  "summary": "Gemma 4 12B Instruct liegt hier als Q4_K_XL in einer Community Distribution vor. Die Variante ist auf niedrigen Speicherbedarf und lokale Ausführung ausgelegt und behält die multimodale Gemma-4-Basis mit Instruct-Ausrichtung bei. Aufgrund der starken Kompression ist mit spürbarem Qualitätsverlust gegenüber hochpraeziseren Varianten zu rechnen.",
+  "summary": "Gemma 4 12B Instruct (Q4_K_XL) ist eine Community-Quantisierung von UndiX auf Basis von Googles erstem mittelgroßen encoder-freien Multimodal-Modell (Release: 3. Juni 2026). Es verarbeitet Text, Bild, Audio und Video nativ ohne separate Encoder und läuft lokal auf ~16 GB Unified Memory. Apache-2.0-Lizenz erlaubt uneingeschränkte kommerzielle Nutzung. Die Q4_K_XL-Kompression reduziert Speicherbedarf bei spürbarem Qualitätsverlust gegenüber höherpräzisen Varianten. Im Benchmark ohne mmproj-Datei geladen – das Modell verhält sich als reines Text-LLM. Multimodalität ist durch Nachladen der separaten mmproj-GGUF (verfügbar via ggml-org/HuggingFace) aktivierbar.",
+
   "strengths": [
-    "Lokal auf kleinerer Hardware betreibbar",
-    "Instruct-optimiert für praktische Aufgaben",
-    "Multimodale Gemma-4-Basis"
+    "Encoder-freie Multimodal-Architektur: Text, Bild, Audio und Video nativ in einem Modell",
+    "Lokal auf ~16 GB UMA betreibbar (M4 Mac) – kein Cloud-Provider, kein externer Datentransfer",
+    "Apache 2.0: vollständig kommerziell nutzbar, modifizierbar und verteilbar ohne Einschränkungen",
+    "Multi-Token-Prediction (MTP) Drafter für schnellere Inferenz ohne Qualitätsverlust",
+    "Konfigurierbare Thinking-Modi (intern via Gemma-4-Basis)"
   ],
   "known_limitations": [
-    "Q4-Kompression bringt spürbaren Qualitätsverlust",
+    "Q4_K_XL-Kompression bringt spürbaren Qualitätsverlust gegenüber Q8/F16",
     "Community-Distribution statt offizieller Google-Verpackung",
-    "Lokale Ausführung erfordert entsprechende Hardware-Ressourcen"
+    "Thinking-Tokens via llama.cpp nicht als separates Feld exponiert – kein nachweisbarer Reasoning-Kanal in Standard-Responses",
+    "Audio-Input in GGUF/llama.cpp-Deployment je nach Pipeline-Unterstützung eingeschränkt",
+	"Multimodalität externalisiert: Bild/Audio/Video erfordern eine separate mmproj-GGUF-Datei (~wenige MB bis ~1 GB). Die Unsloth-Variante nutzt keine separaten Encoder-Gewichte (encoder-frei), aber spezifische Projektions-Tensoren werden über mmproj bereitgestellt. Im Benchmark ohne mmproj geladen → reine Text-Inferenz."
   ],
-  "judge_context_hint": "Plattform: Apple M4 Mac (~18 GB Unified Memory, Metal-GPU, lokal — kein Cloud-Provider, kein externer Datentransfer). Stark komprimierte lokale Gemma-4-Variante. Die Bewertung sollte die Speicherersparnis gegen die Qualitätseinbußen abwägen.",
+  "judge_context_hint": "Plattform: Apple M4 Mac (~18 GB Unified Memory, Metal-GPU, lokal — kein Cloud-Provider, kein externer Datentransfer). Encoder-freie Multimodal-Variante (Text, Bild, Audio, Video) mit konfigurierbaren Thinking-Modi. Die Bewertung sollte Qualitätseinbußen durch Q4_K_XL-Quantisierung berücksichtigen. Thinking-Tokens via llama.cpp nicht als separates Feld sichtbar.",
   "architecture_tags": [
+    "General",
     "Instruct",
-    "Multimodal",
-    "General"
+    "Thinking-Optional",
+    "Multimodal"
   ],
   "supports_tool_use": true,
   "license": "Apache 2.0",
-  "license_url": "https://ai.google.dev/gemma/terms",
+  "license_url": "https://opensource.org/licenses/Apache-2.0",
   "commercial_use_allowed": true,
   "weights_license_tier": "open-weights",
   "model_version": "4 (Q4_K_XL GGUF)",
@@ -47,7 +53,7 @@
   "size_class": "Desktop",
   "generated_at": "2026-06-10T11:36:00+00:00",
   "thinking_probe_detected": false,
-  "thinking_probe_evidence": "Gemma 4 nutzt intern Thinking-Tokens, die im lokalen GGUF-Deployment via llama.cpp nicht als separates Feld exponiert werden. Kein CoT-Signal in Standard-Responses.",
+  "thinking_probe_evidence": "Gemma 4 nutzt intern konfigurierbare Thinking-Tokens, die im lokalen GGUF-Deployment via llama.cpp nicht als separates Feld exponiert werden. Kein CoT-Signal in Standard-Responses.",
   "thinking_probe_confidence": "medium",
   "thinking_probe_at": "2026-06-19T23:17:01.985345+00:00",
   "top_p": null,
@@ -58,9 +64,7 @@
   "seed": null,
   "stop_sequences": null,
   "input_modalities": [
-    "text",
-    "image",
-    "audio"
+    "text"
   ],
   "output_modalities": [
     "text"
@@ -76,7 +80,7 @@
   "system_prompt_override": null,
   "cot_marker_family": null,
   "cot_tags_detected": null,
-  "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
+  "profile_verified_by": "llm:perplexity",
   "last_modified_at": "2026-06-20",
   "heritage_ids": []
 }

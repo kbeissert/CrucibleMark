@@ -1,6 +1,6 @@
 {
   "model_id": "claude-opus-4-7",
-  "display_name": "N/A",
+  "display_name": "Claude Opus 4.7",
   "developer": "Anthropic",
   "origin_country": "USA",
   "developer_jurisdiction": "US",
@@ -17,20 +17,24 @@
   "params_active_b": null,
   "context_window_k": 1000,
   "knowledge_cutoff": "2026-01",
-  "summary": "Claude Opus 4.7 ist ein hochleistungsfaehiges Frontier-Modell von Anthropic, das speziell fuer komplexe agentische Workflows und anspruchsvolle Programmieraufgaben optimiert wurde. Es zeichnet sich durch eine extreme inhaltliche Tiefe und Zuverlaessigkeit bei der Bearbeitung von Langzeitaufgaben aus. Als Cloud-only-Modell bietet es eine robuste Architektur fuer Aufgaben, die hoechste logische Konsistenz und ein tiefes Verstaendnis fuer Kontext erfordern.",
+  "summary": "Claude Opus 4.7 (GA: 16. April 2026) ist Anthropics leistungsstärkstes verfügbares Modell – optimiert für Coding, Agenten und komplexe Reasoning-Aufgaben. Es bietet 87.6% SWE-bench Verified, 3,3× höhere Vision-Auflösung (bis 3.75 MP), Task Budgets für Agentic Loops, ein neues xhigh Effort Level und ein 1M-Token-Kontextfenster ohne Long-Context-Aufschlag. Pricing: $5/$25 pro Million Tokens – identisch zu Opus 4.6.",
   "strengths": [
-    "Sehr stark bei Coding und agentischen Workflows",
-    "Robust bei langen, komplexen Aufgaben",
-    "Hohe inhaltliche Tiefe und Zuverlässigkeit"
+    "87.6% SWE-bench Verified, 94.2% GPQA – stärkste Claude-Ergebnisse bei Software Engineering",
+    "xhigh Effort Level für maximales Extended Thinking bei extrem komplexen Aufgaben",
+    "3,3× höhere Vision-Auflösung (bis 2576px / 3.75 MP) gegenüber Vorgänger",
+    "Task Budgets: Token-Budget-Signal für vollständige Agentic Loops",
+    "1M-Token-Kontextfenster ohne Long-Context-Preisaufschlag"
   ],
   "known_limitations": [
-    "Nur über die Anthropic-API verfügbar",
-    "Hohe Kosten gegenüber kleineren Claude-Modellen",
-    "Kann bei Kürze-Benchmarks ausgebremst wirken"
+    "Nur über die Anthropic-API (und Bedrock / Vertex / Foundry) verfügbar",
+    "Proprietäre Gewichte nicht öffentlich zugänglich",
+    "Höhere Kosten als Sonnet-Klasse – 5× teurer bei Input",
+    "Neuer Tokenizer erzeugt 1–1.35× mehr Tokens als Opus 4.6 für identischen Text"
   ],
-  "judge_context_hint": "Frontier-Modell mit Fokus auf Tiefe und Zuverlässigkeit. Antworten sollten nach inhaltlicher Qualität und Aufgabenfortschritt bewertet werden, nicht nach Kürze.",
+  "judge_context_hint": "Frontier-Modell mit xhigh Effort Level und Task Budgets für Agentic Loops. Antworten sollten nach inhaltlicher Qualität und Aufgabenfortschritt bewertet werden, nicht nach Kürze.",
   "architecture_tags": [
     "Thinking",
+    "Thinking-Optional",
     "Vision-Capable",
     "Agentic",
     "Long-Context"
@@ -70,12 +74,12 @@
   "size_class": "Frontier",
   "generated_at": "2026-06-10T11:36:00+00:00",
   "thinking_probe_detected": true,
-  "thinking_probe_evidence": "Multi-Probe (3 prompts, 3 detected, best confidence=medium):\n  - math: [math] Inline CoT im content-Feld: Antwort 642 chars (>200) mit 14 Berechnungs-Operatoren. First 200 chars: # Solving for Average Speed\n\n## Step 1: Identify the Formula\nAverage speed is calculated using the formula:\n$$\\text{Average Speed} = \\frac{\\text{Total Distance}}{\\text{Total Time}}$$\n\n## Step 2: Ident\n  - code: [code] Inline CoT im content-Feld: Antwort 985 chars (>200) mit 12 Berechnungs-Operatoren. First 200 chars: # Sorting [3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5]\n\nI'll use **Insertion Sort** — it's intuitive, like sorting playing cards in your hand.\n\n## Algorithm Explanation\n\n**Insertion Sort** works by:\n1. Treat the\n  - decision: [decision] Inline CoT im content-Feld: Antwort 1513 chars (>200) mit 6 Berechnungs-Operatoren. First 200 chars: This is one of the genuinely hard problems in ethics, and I think honest engagement requires admitting there's no clean answer. Let me work through it rather than pretending otherwise.\n\n**The case for",
+  "thinking_probe_evidence": "Multi-Probe (3 prompts, 3 detected, best confidence=medium):\n  - math: [math] Inline CoT im content-Feld: Antwort 642 chars (>200) mit 14 Berechnungs-Operatoren. First 200 chars: # Solving for Average Speed\n\n## Step 1: Identify the Formula\nAverage Speed is calculated using the formula:\n$$\\text{Average Speed} = \\frac{\\text{Total Distance}}{\\text{Total Time}}$$\n\n## Step 2: Ident\n  - code: [code] Inline CoT im content-Feld: Antwort 985 chars (>200) mit 12 Berechnungs-Operatoren. First 200 chars: # Sorting [3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5]\n\nI'll use **Insertion Sort** — it's intuitive, like sorting playing cards in your hand.\n\n## Algorithm Explanation\n\n**Insertion Sort** works by:\n1. Treat the\n  - decision: [decision] Inline CoT im content-Feld: Antwort 1513 chars (>200) mit 6 Berechnungs-Operatoren. First 200 chars: This is one of the genuinely hard problems in ethics, and I think honest engagement requires admitting there's no clean answer. Let me work through it rather than pretending otherwise.\n\n**The case for",
   "thinking_probe_confidence": "medium",
   "thinking_probe_at": "2026-06-19T22:35:07.660881+00:00",
   "profile_verified": true,
   "profile_verified_at": "2026-06-20",
-  "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
+  "profile_verified_by": "llm:perplexity",
   "last_modified_at": "2026-06-20",
   "heritage_ids": [],
   "community": null

@@ -6,35 +6,39 @@
   "developer_jurisdiction": "US",
   "deployment_type": "open-weights-cloud-available",
   "local_deployment_possible": true,
-  "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "NVIDIA ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act. Die Gewichte sind öffentlich verfügbar auf Hugging Face unter NVIDIA Open Model License (permissiv, kommerzielle Nutzung erlaubt). Transparenz über Trainingsdetails ist gegeben.",
+  "weights_provenance_risk": "low",
+  "weights_provenance_risk_rationale": "Rein lokale Inferenz ohne Cloud-Verbindung möglich. CLOUD Act ist nur bei API-Nutzung über NVIDIA-Infrastruktur relevant, nicht bei lokalem Deployment der öffentlich verfügbaren Gewichte.",
   "model_family": "Nemotron",
   "vendor": "NVIDIA",
   "primary_focus": "general",
   "use_case_primary": "generalist",
   "parameter_architecture": "moe",
-  "params_total_b": 30,
-  "params_active_b": 3,
-  "context_window_k": 256,
+  "params_total_b": 31.6,
+  "params_active_b": 3.2,
+  "context_window_k": 1000,
   "knowledge_cutoff": "2026-04",
-  "summary": "NVIDIA Nemotron 3 Nano 30B A3B ist ein effizientes Mixture-of-Experts-Modell der Nemotron-3-Serie. Mit 30 Milliarden Gesamtparametern und nur 3 Milliarden aktiven Parametern optimiert es die Rechenleistung fuer Edge- und Embedded-Anwendungen. Das Modell bietet eine hohe Generalisierungsfaehigkeit bei minimalem Ressourcenverbrauch und ist Teil der Nemotron-3-Familie, die auch groessere Modelle wie Ultra 550B umfasst.",
+  "summary": "NVIDIA Nemotron 3 Nano 30B A3B ist ein effizientes Hybrid-MoE-Modell (Mamba-2 + Transformer) der Nemotron-3-Serie. Mit 31,6 Milliarden Gesamtparametern und nur 3,2 Milliarden aktiven Parametern pro Forward-Pass bietet es 3,3× höheren Durchsatz als Qwen3-30B-A3B bei vergleichbarer Genauigkeit. Das Modell unterstützt bis zu 1M-Token-Kontext, konfigurierbares Reasoning (Thinking on/off, Thinking Budget) und native Tool-Calls – ausgelegt für Agentic AI, Coding und Long-Context-Tasks.",
   "strengths": [
     "Open Weights (NVIDIA Open Model License) – vollständig lokal deploybar",
-    "Nur 3B aktive Parameter – sehr geringe Inferenzkosten bei 30B MoE-Architektur",
-    "Extrem günstig im Cloud-Betrieb ($0.05/$0.20 pro 1M Tokens)",
-    "256K-Token-Kontext für mittlere Dokumentlängen",
-    "Gut geeignet für Edge-Deployment und ressourcenbeschränkte Umgebungen"
+    "Nur 3,2B aktive Parameter – 3,3× höherer Durchsatz als Qwen3-30B-A3B bei gleicher Genauigkeit",
+    "Bis zu 1M-Token-Kontext – state-of-the-art auf RULER Long-Context-Benchmark",
+    "Konfigurierbares Reasoning: Thinking on/off + Thinking Budget für vorhersagbare Inferenzkosten",
+    "Native Tool-Use und Agentic-Capabilities ab Werk",
+    "Hybrid Mamba-2 + Transformer MoE – effizientes Long-Context-Handling ohne Standard-Transformer-Overhead"
   ],
   "known_limitations": [
-    "US-Anbieter (NVIDIA) – CLOUD Act bei API-Nutzung relevant",
-    "Nur 3B aktive Parameter – begrenzte Reasoning-Tiefe bei komplexen Aufgaben",
-    "Schwächer als größere Modelle (Nemotron Ultra, Llama 3.3 Nemotron Super) bei anspruchsvollen Tasks",
-    "Knowledge Cutoff April 2026 – für aktuelle Informationen nicht geeignet"
+    "NVIDIA Open Model License ist keine OSI-anerkannte Open-Source-Lizenz – kommerzielle Nutzung mit Einschränkungen prüfen",
+    "US-Anbieter (NVIDIA) – CLOUD Act bei API-Nutzung über NVIDIA-Infrastruktur relevant",
+    "Hybrid Mamba-Architektur weniger breit in Production-Tooling verankert als reine Transformer-Modelle",
+    "Schwächere Performance auf Standard-MMLU-Varianten im Vergleich zu schwereren Benchmarks",
+    "FP8: mind. 32 GB VRAM; BF16: mind. 60 GB VRAM erforderlich"
   ],
-  "judge_context_hint": "NVIDIA Nemotron 3 Nano 30B A3B ist ein kompaktes MoE-Modell (30B gesamt, 3B aktiv). NVIDIA Open Model License, Open Weights. 256K-Token-Kontext. OpenRouter: $0.05/$0.20 pro 1M Tokens. Teil der Nemotron-3-Familie. Geeignet für Edge/Embedded-Inferenz.",
+  "judge_context_hint": "NVIDIA Nemotron 3 Nano 30B A3B: Hybrid MoE (Mamba-2 + Transformer), 31,6B gesamt / 3,2B aktiv. NVIDIA Open Model License, Open Weights. 1M-Token-Kontext. Konfigurierbares Reasoning (Thinking on/off, Budget-Control). Native Tool-Use. OpenRouter: $0.05/$0.20 pro 1M Tokens. Stark bei Coding, Agentic und Long-Context-Tasks.",
   "architecture_tags": [
-    "Thinking",
-    "MoE"
+    "General",
+    "Instruct",
+    "Thinking-Optional",
+    "Agentic-Orchestrator"
   ],
   "input_modalities": [
     "text"
@@ -59,7 +63,7 @@
   "seed": null,
   "stop_sequences": null,
   "license": "NVIDIA Open Model License v1",
-  "license_url": "https://huggingface.co/nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+  "license_url": "https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/",
   "commercial_use_allowed": true,
   "weights_license_tier": "open-weights",
   "model_version": "3 Nano A3B",
@@ -70,13 +74,13 @@
   "size_class": "Medium",
   "generated_at": "2026-06-14T10:56:00+00:00",
   "thinking_probe_detected": true,
-  "thinking_probe_evidence": "Multi-Probe (3 prompts, 3 detected, best confidence=medium):\n  - math: [math] reasoning_tokens=34 in provider metadata. First 200 chars: **Step‑by‑step solution**\n\n1. **Identify the given quantities**  \n   - Distance traveled: \\(d = 120 \\text{ km}\\)  \n   - Time taken: \\(t = 1.5 \\text{ h}\\)\n\n2. **Recall the formula for average speed**  \n  - code: [code] reasoning_tokens=216 in provider metadata. First 200 chars: **Algorithm chosen:** **Bubble Sort**  \nBubble Sort is a simple comparison‑based sorting algorithm. It works by repeatedly stepping through the list, comparing each pair of adjacent elements and swapp\n  - decision: [decision] reasoning_tokens=63 in provider metadata. First 200 chars: **Short answer:**  \nThere is no universally accepted “right” answer.  The decision must be guided by a carefully designed ethical framework that balances several competing values—protecting human life",
+  "thinking_probe_evidence": "Multi-Probe (3 prompts, 3 detected, best confidence=medium):\n  - math: [math] reasoning_tokens=34 in provider metadata. First 200 chars: **Step‑by‑step solution**\n\n1. **Identify the given quantities**  \n   - Distance traveled: \\(d = 120 \\text{ km}\\)  \n   - Time taken: \\(t = 1.5 \\text{ h}\\)\n\n2. **Recall the formula for average speed**  \n  - code: [code] reasoning_tokens=216 in provider metadata. First 200 chars: **Algorithm chosen:** **Bubble Sort**  \nBubble Sort is a simple comparison‑based sorting algorithm. It works by repeatedly stepping through the list, comparing each pair of adjacent elements and swapp\n  - decision: [decision] reasoning_tokens=63 in provider metadata. First 200 chars: **Short answer:**  \nThere is no universally accepted \"right\" answer.  The decision must be guided by a carefully designed ethical framework that balances several competing values—protecting human life",
   "thinking_probe_confidence": "medium",
   "thinking_probe_at": "2026-06-19T22:35:49.665297+00:00",
   "profile_verified": true,
-  "profile_verified_at": "2026-06-20",
-  "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
-  "last_modified_at": "2026-06-20",
+  "profile_verified_at": "2026-06-21",
+  "profile_verified_by": "llm:perplexity",
+  "last_modified_at": "2026-06-21",
   "heritage_ids": [],
   "community": null
 }

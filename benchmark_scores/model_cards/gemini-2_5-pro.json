@@ -17,7 +17,8 @@
   "knowledge_cutoff": "2025-01",
   "known_limitations": [
     "Keine lokale Ausführung möglich, da der Zugriff ausschließlich über die Google Cloud API erfolgt",
-    "Erhöhte Latenzzeiten bei Nutzung des Thinking-Modus, was bei einfachen Aufgaben zu Overreasoning führen kann"
+    "Erhöhte Latenzzeiten bei Nutzung des Thinking-Modus, was bei einfachen Aufgaben zu Overreasoning führen kann",
+    "Natives Audio-Output (Live API) nicht im Benchmark erfasst – output_modalities spiegelt nur getestete Modalitäten wider."
   ],
   "license": "Proprietary",
   "license_url": null,
@@ -27,7 +28,7 @@
   "model_version": "2.5-pro",
   "origin_country": "USA",
   "output_price_per_1m": 10.0,
-  "parameter_architecture": "dense",
+  "parameter_architecture": "moe",
   "params_active_b": null,
   "params_total_b": null,
   "primary_focus": "reasoning",
@@ -37,7 +38,7 @@
     "Sehr großes Kontextfenster zur Verarbeitung umfangreicher Dokumente und langer Konversationen",
     "Exzellente Fähigkeiten im Bereich Coding, insbesondere bei komplexen Projekten und Debugging-Aufgaben"
   ],
-  "summary": "Gemini 2.5 Pro ist ein leistungsstarkes Modell von Google, das auf komplexes Reasoning, Coding und die Analyse sehr langer Kontexte spezialisiert ist. Durch die Integration von optionalem Chain-of-Thought-Reasoning bietet es hohe Präzision bei schwierigen Aufgaben. Das Modell ist exklusiv über die Google Cloud API zugänglich.",
+  "summary": "Gemini 2.5 Pro ist Googles führendes Reasoning-Modell mit Sparse-MoE-Architektur und konfigurierbarem Extended Thinking. Spezialisiert auf komplexes Reasoning, Coding und die Analyse sehr langer Kontexte (1M Token). Das Modell unterstützt nativ Text, Bilder, Audio und Video-Input und ist exklusiv über die Google Cloud API zugänglich.",
   "supports_tool_use": true,
   "thinking_probe_at": "2026-04-23T13:50:26.117380+00:00",
   "thinking_probe_confidence": "low",
@@ -48,7 +49,7 @@
   "vendor": "Google",
   "weights_license_tier": "proprietary",
   "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "Google ist ein US-Unternehmen, das dem CLOUD Act unterliegt. Da es sich um ein proprietäres Modell handelt, sind die Gewichte nicht öffentlich zugänglich.",
+  "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act; die Modellgewichte sind nicht öffentlich zugänglich.",
   "top_p": null,
   "top_k": null,
   "repetition_penalty": null,
@@ -58,13 +59,14 @@
   "stop_sequences": null,
   "input_modalities": [
     "text",
-    "image"
+    "image",
+    "audio",
+    "video"
   ],
   "output_modalities": [
     "text"
   ],
   "profile_verified": true,
-  "profile_verified_at": "2026-06-20",
   "tooluse_tested_at": null,
   "tooluse_score_p1": null,
   "tooluse_score_p2": null,
@@ -73,6 +75,7 @@
   "system_prompt_override": null,
   "cot_marker_family": null,
   "cot_tags_detected": null,
+  "profile_verified_at": "2026-06-20",
   "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
   "last_modified_at": "2026-06-20",
   "heritage_ids": [],

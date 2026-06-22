@@ -4,49 +4,54 @@
   "developer": "Google DeepMind",
   "origin_country": "USA",
   "developer_jurisdiction": "US",
-  "deployment_type": "open-weights",
+  "deployment_type": "localweights",
   "local_deployment_possible": true,
-  "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "Das Modell nutzt die Apache 2.0 Lizenz, was eine freie kommerzielle Nutzung erlaubt. Der Entwickler Google DeepMind ist ein US-Unternehmen, was das Risiko durch den CLOUD Act bei Cloud-basierten Diensten beinhaltet. Die Gewichte sind öffentlich verfügbar und erlauben einen lokalen Betrieb.",
-  "model_family": "Gemma 4",
-  "vendor": "Google",
-  "primary_focus": "generalist",
-  "use_case_primary": "vision-language",
+  "weights_provenance_risk": "low",
+  "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der primär bei API-/Cloud-Nutzung relevant ist, nicht bei lokal betriebenen Gewichten. Bei ausschliesslich lokaler Inferenz ohne Cloud-Verbindung ist das Risikoszenario minimal.",
+  "model_family": "Gemma",
+  "vendor": "Google DeepMind",
+  "primary_focus": "general",
+  "use_case_primary": "generalist",
   "parameter_architecture": "moe",
   "params_total_b": 25.2,
   "params_active_b": 4.0,
   "context_window_k": 256,
   "knowledge_cutoff": "2025-01",
-  "summary": "Gemma 4 26B-A4B ist eine multimodale Variante der Gemma 4 Familie von Google DeepMind. Das Modell nutzt eine MoE-Architektur und bietet einen grossen Kontext. Diese Card beschreibt eine Q8-Quantisierung, die auf hohe Praezision bei lokalem Betrieb abzielt. Das Modell ist fuer anspruchsvolle Text- und Bildaufgaben unter der permissiven Apache 2.0 Lizenz geeignet.",
+  "summary": "Gemma 4 26B-A4B Instruct (Q8_K_XL) ist eine offizielle Google-DeepMind-Quantisierung ohne Community-Modifikation. MoE-Architektur mit 25,2B Gesamtparametern, ~4B aktiv pro Token, 256K Kontextfenster, Apache 2.0. Im Benchmark ohne mmproj geladen → reine Text-Inferenz. Multimodalität via mmproj nachrüstbar, für diesen Benchmark irrelevant. Q8_K_XL bietet nahezu F16-Qualität.",
   "strengths": [
-    "Multimodal und kontextstark",
-    "Q8-Quantisierung mit sehr geringer Kompressionswirkung",
-    "Geeignet für lokale Nutzung auf leistungsfähiger Hardware"
+    "Q8_K_XL: nahezu F16-Qualität – höchste Präzision ohne Community-Modifikation",
+    "MoE-Architektur: ~4B aktive Parameter pro Token – Frontier-Qualität bei Workstation-Kosten",
+    "Konfigurierbare Thinking-Modi – reasoning_tokens in Probe nachgewiesen",
+    "256K Kontextfenster für große Codebasen und Dokumente",
+    "Apache 2.0: vollständig kommerziell nutzbar und modifizierbar",
+    "Offizielle Google-Distribution – keine Community-Modifikationen"
   ],
   "known_limitations": [
-    "Lokale Ausfuehrung bleibt hardwareintensiv",
-    "Community- oder ARA-spezifische Modifikationen hier nicht beschrieben"
+    "Hoher VRAM-Bedarf: ~30–35 GB für Q8_K_XL – erfordert Workstation-Hardware (DGX Spark etc.)",
+    "Multimodalität externalisiert: Bild/Audio/Video erfordern separate mmproj-GGUF. Im Benchmark ohne mmproj geladen → reine Text-Inferenz.",
+    "Kein MTP-Drafter: langsamer als Unsloth-MTP-Variante bei vergleichbarer Aufgabe"
   ],
-  "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, 128 GB Unified Memory, davon ~120 GB fuer Modell + Kontext nutzbar; Intranet-lokal). Multimodales Gemma-4-Modell mit hoher Praezision durch Q8-Quantisierung. Antworten sind als lokal betriebene Ausgaben einer unter Apache 2.0 lizenzierten Google-Variante einzustufen.",
+  "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, 128 GB Unified Memory, davon ~120 GB für Modell + Kontext nutzbar; Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). Offizielle Google-DeepMind-Quantisierung (keine Community-Modifikation). Ohne mmproj geladen → reine Text-Inferenz. Konfigurierbare Thinking-Modi aktiv (reasoning_tokens nachgewiesen).",
   "architecture_tags": [
-    "Multimodal",
-    "Thinking"
+    "General",
+    "Instruct",
+    "Thinking-Optional",
+    "Agentic-Orchestrator"
   ],
   "input_modalities": [
-    "text",
-    "image"
+    "text"
   ],
   "output_modalities": [
     "text"
   ],
   "supports_tool_use": true,
   "license": "Apache 2.0",
-  "license_url": "https://ai.google.dev/gemma/terms",
+  "license_url": "https://opensource.org/licenses/Apache-2.0",
   "commercial_use_allowed": true,
   "weights_license_tier": "open-weights",
   "model_version": "4",
-  "input_price_per_1m": null,
-  "output_price_per_1m": null,
+  "input_price_per_1m": 0.0,
+  "output_price_per_1m": 0.0,
   "unknown": false,
   "card_status": "complete",
   "size_class": "Workstation",
@@ -72,7 +77,7 @@
   "system_prompt_override": null,
   "cot_marker_family": null,
   "cot_tags_detected": null,
-  "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
+  "profile_verified_by": "llm:perplexity",
   "last_modified_at": "2026-06-20",
   "heritage_ids": [],
   "community": null

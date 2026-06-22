@@ -1,43 +1,46 @@
 {
   "architecture_tags": [
     "General",
-    "Instruct",
-    "Preview"
+    "Instruct"
   ],
   "card_status": "complete",
   "commercial_use_allowed": true,
-  "context_window_k": 128,
+  "context_window_k": 256,
   "deployment_type": "open-weights-cloud-available",
   "developer": "Google DeepMind",
   "developer_jurisdiction": "US",
-  "display_name": "Gemma 4 31B",
+  "display_name": "Gemma 4 31B (Cloud API)",
   "generated_at": "2026-04-23T22:05:37.243642+00:00",
   "input_price_per_1m": 0.14,
-  "judge_context_hint": "Das Modell basiert auf der Gemma 4 Architektur unter Apache 2.0; bei der Bewertung sollte beachtet werden, dass die API-spezifische Konfiguration das Antwortverhalten beeinflussen kann.",
+  "judge_context_hint": "Cloud-API-Variante von Gemma 4 31B (google/gemma-4-31b-it) – kein Thinking-Modus nachgewiesen (thinking_probe_detected=false, Manual Override). Bewertung sollte API-spezifische Konfiguration berücksichtigen. Multimodal: Text + Bild nativ (kein mmproj benötigt). Kein lokaler Betrieb.",
   "knowledge_cutoff": "2025-06",
   "known_limitations": [
-    "Leistungsprofil ist aufgrund der Neuheit des Modells noch in der Evaluierung",
-    "Abhängigkeit von der spezifischen API-Implementierung des Cloud-Providers"
+    "Kein Thinking-Modus nachgewiesen (Manual Override – cloud-seitige Konfiguration unterdrückt möglicherweise CoT)",
+    "Kontextfenster in Cloud-API je nach Provider-Konfiguration auf 128K limitiert",
+    "Cloud-Abhängigkeit: Daten verlassen das lokale Netzwerk – CLOUD Act relevant (US-Jurisdiktion)",
+    "Keine offizielle Garantie auf Parität mit lokalen GGUF-Varianten"
   ],
   "license": "Apache 2.0",
-  "license_url": "https://ai.google.dev/gemma/terms",
-  "local_deployment_possible": false,
+  "license_url": "https://opensource.org/licenses/Apache-2.0",
+  "local_deployment_possible": true,
   "model_family": "Gemma",
   "model_id": "google/gemma-4-31b-it",
   "model_version": "31b-cloud",
   "origin_country": "USA",
   "output_price_per_1m": 0.4,
   "parameter_architecture": "dense",
-  "params_active_b": null,
+  "params_active_b": 31.0,
   "params_total_b": 31.0,
   "primary_focus": "general",
   "size_class": "Workstation",
   "strengths": [
-    "Hohe Präzision bei der Befolgung komplexer Instruktionen",
-    "Ausgezeichnete Mehrsprachigkeit durch umfangreiche Trainingsdaten",
-    "Effizientes Reasoning und strukturierte Textgenerierung"
+    "Cloud-API-Zugang ohne lokale Hardware-Anforderungen",
+    "Nativ multimodal: Text + Bild + Audio + Video via API (31B Dense)",
+    "Apache 2.0: Gewichte frei verfügbar für lokalen Betrieb parallel zur Cloud-Nutzung",
+    "Hohe Präzision bei Instruction-Following und strukturierter Textgenerierung",
+    "Knowledge Cutoff Juni 2025 – aktueller als lokale GGUF-Varianten"
   ],
-  "summary": "Gemma 4 31B ist ein Cloud-Modell von Google DeepMind der vierten Generation, das auf allgemeine Instruktionsbefolgung und Reasoning optimiert wurde. Das Modell steht unter der Apache 2.0 Lizenz und ist primär über Cloud-Schnittstellen verfügbar. Es bietet eine effiziente Balance zwischen Leistung und Rechenaufwand für komplexe Aufgaben.",
+  "summary": "Gemma 4 31B (Cloud API) ist die API-seitig gehostete Variante von Googles Dense-Frontier-Modell mit 31B Parametern. Unter Apache 2.0 sind die Gewichte auch lokal verfügbar – diese Card beschreibt jedoch die Cloud-API-Nutzung (google/gemma-4-31b-it). Kein Thinking-Modus nachgewiesen (Manual Override). Pricing: $0.14/$0.40 pro Million Tokens.",
   "supports_tool_use": true,
   "thinking_probe_at": "2026-05-16T18:47:56.692725+00:00",
   "thinking_probe_confidence": "medium",
@@ -48,7 +51,7 @@
   "vendor": "Google",
   "weights_license_tier": "open-weights",
   "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act; die Gewichte sind als Open-Weights-Modell unter der Apache 2.0 Lizenz öffentlich zugänglich.",
+  "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act. Bei Cloud-API-Nutzung verlassen Daten das lokale Netzwerk – CLOUD Act ist direkt relevant. Die Gewichte sind als Open-Weights-Modell unter Apache 2.0 öffentlich zugänglich.",
   "top_p": null,
   "top_k": null,
   "repetition_penalty": null,
@@ -58,7 +61,9 @@
   "stop_sequences": null,
   "input_modalities": [
     "text",
-    "image"
+    "image",
+    "audio",
+    "video"
   ],
   "output_modalities": [
     "text"
@@ -73,7 +78,7 @@
   "system_prompt_override": null,
   "cot_marker_family": null,
   "cot_tags_detected": null,
-  "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
+  "profile_verified_by": "llm:perplexity",
   "last_modified_at": "2026-06-20",
   "heritage_ids": [],
   "community": null

@@ -11,13 +11,14 @@
   "developer_jurisdiction": "US",
   "display_name": "Gemini 2.5 Flash",
   "generated_at": "2026-04-23T22:01:44.605898+00:00",
-  "input_price_per_1m": 0.3,
+  "input_price_per_1m": 0.30,
   "judge_context_hint": "Schnelles Multimodal-Modell mit optionalem Thinking. Die Bewertung sollte Effizienz und Vielseitigkeit berücksichtigen, nicht Frontier-Tiefe erwarten.",
   "knowledge_cutoff": "2025-01",
   "known_limitations": [
     "Nur über die Google-API nutzbar",
     "Schwächer als Gemini 2.5 Pro bei komplexem Reasoning",
-    "Proprietäre Gewichte nicht öffentlich zugänglich"
+    "Proprietäre Gewichte nicht öffentlich zugänglich",
+    "Natives Audio-Output (Live API) nicht im Benchmark erfasst – output_modalities spiegelt nur getestete Modalitäten wider."
   ],
   "license": "Proprietary",
   "license_url": null,
@@ -26,18 +27,19 @@
   "model_id": "gemini-2_5-flash",
   "model_version": "2.5-flash",
   "origin_country": "USA",
-  "output_price_per_1m": 2.5,
-  "parameter_architecture": "dense",
+  "output_price_per_1m": 2.50,
+  "parameter_architecture": "moe",
   "params_active_b": null,
   "params_total_b": null,
   "primary_focus": "general",
   "size_class": "Server",
   "strengths": [
-    "Sehr großes Kontextfenster",
-    "Starke multimodale Fähigkeiten",
-    "Effizient für Low-Latency- und High-Volume-Workloads"
+    "Sehr großes Kontextfenster (1M Token)",
+    "Starke multimodale Fähigkeiten (Text, Bild, Audio, Video)",
+    "Effizient für Low-Latency- und High-Volume-Workloads",
+    "Konfigurierbares Thinking-Budget für Kosten-Qualitäts-Tradeoff"
   ],
-  "summary": "Gemini 2.5 Flash ist Googles schnelles Multimodal-Modell für kosteneffiziente Inferenz über Text, Bild und Code hinweg. Es unterstützt sehr lange Kontexte, optionales Thinking und ist auf niedrigere Latenz bei hohen Volumina ausgelegt. Das Modell ist nur über die Google-API verfügbar.",
+  "summary": "Gemini 2.5 Flash ist Googles kosteneffizientes Hybrid-Reasoning-Modell mit konfigurierbarem Thinking-Budget (on/off). Als Sparse-MoE-Architektur optimiert es Inferenzkosten bei voller multimodaler Unterstützung für Text, Bild, Audio und Video. Mit 1M-Token-Kontextfenster ist es auf High-Volume-Workloads und niedrige Latenz ausgelegt. Das Modell ist ausschließlich über die Google-API verfügbar.",
   "supports_tool_use": true,
   "thinking_probe_at": "2026-04-23T13:50:20.420986+00:00",
   "thinking_probe_confidence": "low",
@@ -48,7 +50,7 @@
   "vendor": "Google",
   "weights_license_tier": "proprietary",
   "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, die Modellgewichte sind nicht öffentlich zugänglich.",
+  "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act; die Modellgewichte sind nicht öffentlich zugänglich.",
   "top_p": null,
   "top_k": null,
   "repetition_penalty": null,
@@ -59,13 +61,13 @@
   "input_modalities": [
     "text",
     "image",
-    "audio"
+    "audio",
+    "video"
   ],
   "output_modalities": [
     "text"
   ],
   "profile_verified": true,
-  "profile_verified_at": "2026-06-20",
   "tooluse_tested_at": null,
   "tooluse_score_p1": null,
   "tooluse_score_p2": null,
@@ -74,6 +76,7 @@
   "system_prompt_override": null,
   "cot_marker_family": null,
   "cot_tags_detected": null,
+  "profile_verified_at": "2026-06-20",
   "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
   "last_modified_at": "2026-06-20",
   "heritage_ids": [],

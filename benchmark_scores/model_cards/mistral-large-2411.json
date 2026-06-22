@@ -1,10 +1,11 @@
 {
   "architecture_tags": [
     "General",
-    "Instruct"
+    "Instruct",
+    "Multimodal"
   ],
   "card_status": "complete",
-  "commercial_use_allowed": false,
+  "commercial_use_allowed": true,
   "context_window_k": 128,
   "deployment_type": "open-weights-cloud-available",
   "developer": "Mistral AI",
@@ -15,40 +16,40 @@
   "judge_context_hint": "Großes Mistral-Modell mit Schwerpunkt auf Analyse und mehrsprachigen Aufgaben. Die Bewertung sollte Qualität und Struktur priorisieren, nicht maximale Kreativität erwarten.",
   "knowledge_cutoff": "2024-11",
   "known_limitations": [
-    "Weights nur unter Research License, nicht frei kommerziell nutzbar",
     "Weniger spezialisiert als dedizierte Coding-Modelle",
-    "Bei sensiblen Produktionsanforderungen sorgfältig lizenzieren"
+    "Bei sensiblen Produktionsanforderungen sorgfältig lizenzieren",
+    "Großes MoE-Modell mit entsprechendem Infrastrukturbedarf"
   ],
-  "license": "Mistral Research License",
-  "license_url": "https://mistral.ai/licenses/MRL-0.1.md",
+  "license": "Modified MIT",
+  "license_url": "https://help.mistral.ai/en/articles/347393-under-which-license-are-mistral-s-open-models-available",
   "local_deployment_possible": true,
   "model_family": "Mistral",
   "model_id": "mistral-large-2411",
   "model_version": "2411",
   "origin_country": "France",
   "output_price_per_1m": 6.0,
-  "parameter_architecture": "dense",
-  "params_active_b": null,
-  "params_total_b": 123.0,
+  "parameter_architecture": "moe",
+  "params_active_b": 41.0,
+  "params_total_b": 675.0,
   "primary_focus": "general",
   "size_class": "Frontier",
   "strengths": [
     "Starkes mehrsprachiges Verständnis",
     "Geeignet für komplexe Analyse- und Reasoning-Aufgaben",
-    "Weights verfügbar unter Research License, kommerzielle Nutzung über API"
+    "Weights verfügbar unter permissiver Open-Weight-Lizenz"
   ],
-  "summary": "Mistral Large 3 ist das leistungsstarke Flaggschiff-Modell von Mistral AI, das auf komplexes Reasoning, tiefgehende Analysen und exzellente Mehrsprachigkeit optimiert wurde. Während die Modellgewichte unter der Mistral Research License für Forschungszwecke bereitgestellt werden, erfolgt die kommerzielle Nutzung primär über die offizielle Mistral-API. Es eignet sich ideal für anspruchsvolle Generalist-Workloads in produktiven Umgebungen.",
+  "summary": "Mistral Large 3 ist das leistungsstarke Flaggschiff-Modell von Mistral AI, das auf komplexes Reasoning, tiefgehende Analysen und exzellente Mehrsprachigkeit optimiert wurde. Die Modellgewichte sind offen verfügbar, und das Modell kann lokal oder über Cloud-Provider betrieben werden. Es eignet sich ideal für anspruchsvolle Generalist-Workloads in produktiven Umgebungen.",
   "supports_tool_use": true,
-  "thinking_probe_at": "2026-04-23T13:57:02.810497+00:00",
-  "thinking_probe_confidence": "low",
   "thinking_probe_detected": false,
-  "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 486 chars",
+  "thinking_probe_evidence": "No CoT signals found (text-only and no exposed reasoning traces).",
+  "thinking_probe_confidence": "low",
+  "thinking_probe_at": "2026-04-23T13:57:02.810497+00:00",
   "unknown": false,
   "use_case_primary": "generalist",
   "vendor": "Mistral AI",
-  "weights_license_tier": "restricted-weights",
+  "weights_license_tier": "open-weights",
   "weights_provenance_risk": "low",
-  "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU. Die Datenhaltung und der Zugriff auf die Modellgewichte unterliegen der europäischen Rechtsordnung, was das Risiko staatlicher Zugriffspflichten im Vergleich zu US-amerikanischen oder chinesischen Jurisdiktionen minimiert.",
+  "weights_provenance_rationale": "Mistral AI is an EU-based vendor and the model weights are publicly available under a permissive open-weight license. Local deployment is possible and avoids API data transfer.",
   "top_p": null,
   "top_k": null,
   "repetition_penalty": null,
@@ -57,7 +58,8 @@
   "seed": null,
   "stop_sequences": null,
   "input_modalities": [
-    "text"
+    "text",
+    "image"
   ],
   "output_modalities": [
     "text"
@@ -72,7 +74,7 @@
   "system_prompt_override": null,
   "cot_marker_family": null,
   "cot_tags_detected": null,
-  "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
+  "profile_verified_by": "llm:perplexity",
   "last_modified_at": "2026-06-20",
   "heritage_ids": [],
   "community": null

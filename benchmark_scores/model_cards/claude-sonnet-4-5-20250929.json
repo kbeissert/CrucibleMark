@@ -17,7 +17,8 @@
   "known_limitations": [
     "Nur über die Anthropic-API verfügbar",
     "Proprietäre Gewichte nicht öffentlich zugänglich",
-    "Bei sehr knappen Antworten kann das Modell ausführlicher sein als nötig"
+    "Bei sehr knappen Antworten kann das Modell ausführlicher sein als nötig",
+    "Retirement geplant: 29. September 2026"
   ],
   "license": "Proprietary",
   "license_url": "https://www.anthropic.com/legal/terms",
@@ -33,11 +34,12 @@
   "primary_focus": "general",
   "size_class": "Server",
   "strengths": [
-    "Sehr stark bei Coding und komplexen Agenten-Workflows",
-    "Gute Kombination aus Reasoning, Tool Use und Latenz",
+    "Sehr stark bei Coding und komplexen Agenten-Workflows (30h-agentic-Coding-Sessions)",
+    "Extended Thinking Mode für tiefes Reasoning bei komplexen Aufgaben",
+    "200K Kontextfenster mit intelligenter Auto-Summarization und Cross-Conversation Memory",
     "Besonders geeignet für Computer Use und lange Aufgabenketten"
   ],
-  "summary": "Claude Sonnet 4.5 ist Anthropics stärkeres Allround-Modell mit klarer Ausrichtung auf Coding, komplexe Agenten und Computer Use. Anthropic bewirbt das Modell als besonders gut für mehrstufige Aufgaben und bietet es ausschließlich über die API an; die Preise liegen bei 3 Dollar Input und 15 Dollar Output pro Million Tokens.",
+  "summary": "Claude Sonnet 4.5 (Release: 29. September 2025) ist Anthropics Mid-Tier-Modell mit klarer Ausrichtung auf Coding, komplexe Agenten und Computer Use. Es bietet Extended Thinking Mode, ein 200K-Kontextfenster mit Auto-Summarization und Cross-Conversation Memory. Pricing: $3/$15 pro Million Tokens. Retirement geplant September 2026.",
   "supports_tool_use": true,
   "thinking_probe_at": "2026-04-23T13:55:19.126410+00:00",
   "thinking_probe_confidence": "low",
@@ -65,7 +67,7 @@
   ],
   "profile_verified": true,
   "profile_verified_at": "2026-06-20",
-  "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
+  "profile_verified_by": "llm:perplexity",
   "last_modified_at": "2026-06-20",
   "tooluse_tested_at": null,
   "tooluse_score_p1": null,

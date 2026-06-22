@@ -7,10 +7,10 @@
   "deployment_type": "open-weights-cloud-available",
   "local_deployment_possible": true,
   "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "Meta ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der staatlichen Zugriff auf Daten bei API-Nutzung ermöglicht. Die Gewichte sind öffentlich verfügbar. Hinweis zur Lizenz: Die Llama 4 Community License schliesst multimodale Llama-4-Modelle explizit fuer EU-Domizilierte aus. Personen oder Unternehmen mit Wohnsitz oder Hauptsitz in der EU duerfen das Modell nicht selbst betreiben oder deployen. Die Nutzung als Endkunde ueber API-Dienste von Nicht-EU-Anbietern bleibt davon unberuehrt.",
+  "weights_provenance_risk_rationale": "Meta ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der staatlichen Zugriff auf Daten bei API-Nutzung ermöglichen kann. Die Gewichte sind öffentlich verfügbar. Die Llama 4 Community License schließt multimodale Llama-4-Modelle für EU-Domizilierte bei Selbstbetrieb/Deployment aus; Endkundennutzung über Drittanbieter-APIs bleibt davon getrennt zu bewerten.",
   "model_family": "Llama",
-  "primary_focus": "general",
-  "summary": "Llama 4 Scout ist ein multimodales Modell der vierten Llama-Generation von Meta. Es kombiniert allgemeine Sprachverarbeitung mit Bildverständnis in einer effizienten Mixture-of-Experts-Architektur mit 109 Milliarden Parametern (17 Milliarden aktiv). Das Modell bietet ein Kontextfenster von 10.000 Tokens und ist für Cloud-Deployments optimiert.",
+  "primary_focus": "vision-language",
+  "summary": "Llama 4 Scout ist ein multimodales Modell der vierten Llama-Generation von Meta. Es kombiniert allgemeine Sprachverarbeitung mit Bildverständnis in einer effizienten Mixture-of-Experts-Architektur mit 109 Milliarden Parametern (17 Milliarden aktiv). Das Modell bietet ein Kontextfenster von 128K Token und ist für Cloud-Deployments optimiert.",
   "strengths": [
     "Effiziente MoE-Architektur: hohe Leistung bei vergleichsweise geringem Rechenaufwand",
     "Multimodale Fähigkeiten: Unterstützung von Text- und Bild-Inputs",
@@ -23,12 +23,13 @@
   "judge_context_hint": "Das Modell nutzt eine Mixture-of-Experts-Architektur. Es ist auf effiziente Verarbeitung ausgelegt, kann jedoch bei sehr kurzen Aufgaben tendenziell ausschweifender antworten als reine Dense-Modelle.",
   "architecture_tags": [
     "General",
-    "Instruct"
+    "Instruct",
+    "Multimodal"
   ],
   "unknown": false,
   "generated_at": "2026-04-23T22:02:51.147355+00:00",
   "card_status": "complete",
-  "size_class": "Desktop",
+  "size_class": "Server",
   "supports_tool_use": true,
   "license": "Llama 4 Community License",
   "license_url": "https://www.llama.com/llama4/license/",
@@ -46,7 +47,7 @@
   "parameter_architecture": "moe",
   "params_total_b": 109.0,
   "params_active_b": 17.0,
-  "context_window_k": 10000,
+  "context_window_k": 128,
   "knowledge_cutoff": "2024-12",
   "top_p": null,
   "top_k": null,
@@ -72,7 +73,7 @@
   "system_prompt_override": null,
   "cot_marker_family": null,
   "cot_tags_detected": null,
-  "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
+  "profile_verified_by": "llm:perplexity",
   "last_modified_at": "2026-06-20",
   "heritage_ids": [],
   "community": null

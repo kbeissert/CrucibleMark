@@ -1,51 +1,51 @@
 {
   "model_id": "gemma-4-26B-A4B-it-qat-ud-q4",
   "display_name": "Gemma 4 26B-A4B Instruct (QAT, UD-Q4)",
-  "developer": "Google DeepMind",
+  "developer": "Google DeepMind (Base) / Unsloth (Community-Distribution)",
   "origin_country": "USA",
   "developer_jurisdiction": "US",
   "deployment_type": "localweights",
   "local_deployment_possible": true,
-  "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "Die Gewichte unterliegen der permissiven Apache 2.0 Lizenz. Der Entwickler Google DeepMind ist in den USA ansässig (US-Jurisdiktion). Durch die Verfuegbarkeit der Gewichte ist ein lokaler Betrieb ohne Cloud-Abhaengigkeit moeglich.",
-  "model_family": "Gemma 4",
+  "weights_provenance_risk": "low",
+  "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der primär bei API-/Cloud-Nutzung relevant ist, nicht bei lokal betriebenen Gewichten. Bei ausschliesslich lokaler Inferenz ohne Cloud-Verbindung ist das Risikoszenario minimal.",
+  "model_family": "Gemma",
   "vendor": "Google DeepMind / Unsloth (Quantisierung)",
-  "primary_focus": "generalist",
+  "primary_focus": "general",
   "use_case_primary": "generalist",
   "parameter_architecture": "moe",
   "params_total_b": 25.2,
   "params_active_b": 4.0,
   "context_window_k": 256,
   "knowledge_cutoff": "2025-01",
-  "summary": "Gemma 4 26B-A4B Instruct als QAT UD-Q4 via llama.cpp auf DGX Spark betrieben. QAT (Quantization-Aware Training) sorgt fuer eine praezisere Q4-Variante im Vergleich zu Standard-Quantisierungen. Die MoE-Architektur bietet 25,2B Gesamtparameter bei etwa 4B aktiven Parametern pro Token. Das UD-Q4 Format von Unsloth optimiert die Mischpräzision fuer maximale Effizienz bei geringem VRAM-Bedarf.",
+  "summary": "Gemma 4 26B-A4B Instruct (QAT UD-Q4) ist eine quantisierungsbewusst trainierte MoE-Variante von Googles Gemma 4, betrieben via llama.cpp auf DGX Spark. QAT (Quantization-Aware Training) liefert höhere Q4-Präzision als Standard-Post-Training-Quantisierung. Die MoE-Architektur aktiviert nur ~4B von 25,2B Parametern pro Token. Im Benchmark ohne mmproj geladen → reine Text-Inferenz. Multimodalität via mmproj nachrüstbar, für diesen Benchmark irrelevant.",
   "strengths": [
-    "MoE-Architektur: Hohe Effizienz durch nur ~4B aktive Parameter pro Token",
-    "QAT-Optimierung: Hohe Präzision durch quantisierungsbewusstes Training",
-    "Unsloth UD-Q4: Optimiertes Mixed-Precision-Format fuer geringen VRAM-Bedarf",
-    "Open Weights: Nutzung unter der permissiven Apache 2.0 Lizenz moeglich",
-    "Reasoning-Fähigkeiten: Integrierte Thinking-Modi fuer komplexe Aufgaben"
+    "MoE-Architektur: ~4B aktive Parameter pro Token – Frontier-Qualität bei Desktop-Inferenzkosten",
+    "QAT-Optimierung: präzisere Q4-Variante gegenüber Standard-Post-Training-Quantisierung",
+    "Konfigurierbare Thinking-Modi – reasoning_tokens in math-Probe nachgewiesen",
+    "Tool Use: P1=88.33%, P2=63.33% – Empfehlung PRODUCTION",
+    "Apache 2.0: vollständig kommerziell nutzbar und modifizierbar"
   ],
   "known_limitations": [
-    "Quantisierungsverlust: Q4-Variante zeigt bei hochkomplexen Aufgaben leichte Einbuessen gegenüber Q8",
-    "Modalitäten: Audio-Input wird von dieser Version nicht unterstützt",
-    "Vision-Setup: Erfordert korrekt geladenes mmproj-Modul in der Runtime",
-    "Thinking-Verhalten: Bei initialem Load kann es zu kurzen Verzögerungen oder leeren Reasoning-Tokens kommen (Cold-Start)"
+    "Q4-Variante zeigt bei hochkomplexen Aufgaben leichte Einbussen gegenüber Q8/Q6",
+    "Multimodalität externalisiert: Bild/Audio/Video erfordern separate mmproj-GGUF. Im Benchmark ohne mmproj geladen → reine Text-Inferenz.",
+    "Thinking-Probe teilweise Cold-Start-bedingt: code/decision-Probe lieferten reasoning_tokens=512 ohne sichtbaren Output – Wiederholung bei warmem Server empfohlen",
+    "Community-Distribution statt offizieller Google-Verpackung"
   ],
-  "judge_context_hint": "Modell ist ein MoE-System (25,2B total / 4B active) unter Apache 2.0 Lizenz. Betrieb auf lokaler DGX Spark Hardware. Beachte, dass das integrierte Reasoning (thinking_tokens) intern erfolgt und nicht zwingend als sichtbarer Text ausgegeben wird; keine Abzüge fuer fehlende explizite Begründungsschritte.",
+  "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, 128 GB Unified Memory; Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). MoE-Modell (25,2B total / 4B aktiv) mit QAT-Optimierung. Ohne mmproj geladen → reine Text-Inferenz. Thinking-Modi aktiv (reasoning_tokens intern, nicht zwingend sichtbar im Output).",
   "architecture_tags": [
-    "Vision-Capable",
-    "Thinking"
+    "General",
+    "Thinking-Optional",
+    "Agentic-Orchestrator"
   ],
   "input_modalities": [
-    "text",
-    "image"
+    "text"
   ],
   "output_modalities": [
     "text"
   ],
   "supports_tool_use": true,
   "license": "Apache 2.0",
-  "license_url": "https://ai.google.dev/gemma/terms",
+  "license_url": "https://opensource.org/licenses/Apache-2.0",
   "commercial_use_allowed": true,
   "weights_license_tier": "open-weights",
   "model_version": "UD-Q4 (GGUF/QAT)/SPRK",
@@ -77,7 +77,7 @@
   "system_prompt_override": null,
   "cot_marker_family": null,
   "cot_tags_detected": null,
-  "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
+  "profile_verified_by": "llm:perplexity",
   "last_modified_at": "2026-06-20",
   "heritage_ids": []
 }

@@ -1,17 +1,18 @@
 {
   "architecture_tags": [
     "General",
-    "Instruct"
+    "Thinking",
+    "Multimodal"
   ],
   "card_status": "complete",
   "commercial_use_allowed": true,
-  "context_window_k": 128,
+  "context_window_k": 1000,
   "deployment_type": "cloud-only",
   "developer": "xAI",
   "developer_jurisdiction": "US",
   "display_name": "Grok 4.3",
   "generated_at": "2026-06-05T22:16:00.000000+00:00",
-  "input_price_per_1m": 0.5,
+  "input_price_per_1m": 1.25,
   "judge_context_hint": "Bei der Bewertung sollte der direkte und unzensierte Antwortstil berücksichtigt werden. Das Modell zeigt eine starke Performance bei agentischen Routineaufgaben, ist jedoch bei komplexem Software-Engineering weniger leistungsfähig als spezialisierte Modelle.",
   "knowledge_cutoff": "2026-03",
   "known_limitations": [
@@ -31,21 +32,20 @@
   "parameter_architecture": "moe",
   "params_active_b": null,
   "params_total_b": null,
-  "primary_focus": "general",
+  "primary_focus": "reasoning",
   "size_class": "Frontier",
   "strengths": [
-    "Nativ multimodale Verarbeitung von Text, Bild und Video",
+    "Nativ multimodale Verarbeitung von Text und Bild",
     "Grosses Kontextfenster von 1M Token",
     "Echtzeit-Zugriff auf Daten der X-Plattform",
     "Hohe Effizienz bei agentischen Routineaufgaben"
   ],
-  "summary": "Grok 4.3 ist ein von xAI entwickeltes Flaggschiff-Modell mit einer Mixture-of-Experts Architektur. Es unterstützt neben Text und Bild auch nativen Video-Input und bietet ein Kontextfenster von einer Million Token. Das Modell ist für allgemeine Sprachaufgaben, Reasoning und den Zugriff auf Echtzeit-Daten der X-Plattform optimiert. Der Zugriff erfolgt ausschliesslich über die xAI-API, wobei das Modell eine hohe Effizienz bei agentischen Routineaufgaben aufweist.",
+  "summary": "Grok 4.3 ist ein von xAI entwickeltes Flaggschiff-Modell mit einer Mixture-of-Experts Architektur. Es unterstützt Text- und Bildeingaben und bietet ein Kontextfenster von einer Million Token. Das Modell ist für allgemeine Sprachaufgaben, Reasoning und den Zugriff auf Echtzeit-Daten der X-Plattform optimiert. Der Zugriff erfolgt ausschliesslich über die xAI-API, wobei das Modell eine hohe Effizienz bei agentischen Routineaufgaben aufweist.",
   "supports_tool_use": true,
+  "thinking_probe_detected": true,
+  "thinking_probe_evidence": "Reasoning model with always-on reasoning; no visible CoT tags because reasoning is not exposed.",
+  "thinking_probe_confidence": "medium",
   "thinking_probe_at": "2026-06-19T22:43:44.534767+00:00",
-  "thinking_probe_confidence": "low",
-  "thinking_probe_detected": false,
-  "thinking_probe_evidence": "Not yet probed.",
-  "unknown": false,
   "use_case_primary": "generalist",
   "vendor": "xAI",
   "weights_license_tier": "proprietary",
@@ -75,7 +75,7 @@
   "system_prompt_override": null,
   "cot_marker_family": null,
   "cot_tags_detected": null,
-  "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
+  "profile_verified_by": "llm:perplexity",
   "last_modified_at": "2026-06-20",
   "heritage_ids": [],
   "community": null

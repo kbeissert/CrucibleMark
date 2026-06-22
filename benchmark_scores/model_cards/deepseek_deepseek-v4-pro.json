@@ -1,42 +1,46 @@
 {
   "architecture_tags": [
-    "Thinking"
+    "Thinking",
+    "Thinking-Optional",
+    "Agentic-Orchestrator",
+    "Long-Context"
   ],
   "card_status": "complete",
   "commercial_use_allowed": true,
-  "context_window_k": 128,
+  "context_window_k": 1000,
   "deployment_type": "open-weights-cloud-available",
   "developer": "DeepSeek",
   "developer_jurisdiction": "CN",
   "display_name": "DeepSeek V4 Pro",
   "generated_at": "2026-05-03T19:31:34.837029+00:00",
   "input_price_per_1m": 0.435,
-  "judge_context_hint": "Flaggschiff-Reasoning-Modell der DeepSeek-V4-Linie. Der Fokus sollte auf Argumentationsqualität und Aufgabenlösung liegen, nicht auf lokaler Betriebsfähigkeit.",
-  "knowledge_cutoff": "2025-09",
+  "judge_context_hint": "Flaggschiff-Reasoning-Modell der DeepSeek-V4-Linie mit konfigurierbarem Thinking-Modus (Non-Thinking / Thinking / Think Max). Der Fokus sollte auf Argumentationsqualität und Aufgabenlösung liegen, nicht auf lokaler Betriebsfähigkeit.",
+  "knowledge_cutoff": "2025-05",
   "known_limitations": [
-    "Nur über die Cloud-API verfügbar",
-    "Höhere Latenz und Kosten als die Flash-Variante",
-    "Chinesischer Anbieter mit erhöhtem Sovereign-Risk"
+    "Chinesischer Anbieter mit erhöhtem Sovereign-Risk – BSI-Warnung vom 04.02.2025 gilt für Cloud-API-Nutzung",
+    "Höhere Latenz und Kosten als V4-Flash bei gleicher Kontextgröße",
+    "Open-Weights-Betrieb lokal unpraktisch (1.6T Parameter erfordern extreme Hardware-Kapazität)"
   ],
-  "license": "DeepSeek License",
-  "license_url": "https://github.com/deepseek-ai/DeepSeek-V3/blob/main/LICENSE",
-  "local_deployment_possible": false,
+  "license": "MIT",
+  "license_url": "https://github.com/deepseek-ai/DeepSeek-V4/blob/main/LICENSE",
+  "local_deployment_possible": true,
   "model_family": "DeepSeek-V4",
   "model_id": "deepseek/deepseek-v4-pro",
   "model_version": "4",
   "origin_country": "China",
   "output_price_per_1m": 0.87,
   "parameter_architecture": "moe",
-  "params_active_b": null,
-  "params_total_b": null,
+  "params_active_b": 49,
+  "params_total_b": 1600,
   "primary_focus": "reasoning",
   "size_class": "Frontier",
   "strengths": [
-    "Hohe Reasoning-Qualität in Mathematik, Code und Analyse",
-    "Stärkste Variante der DeepSeek-V4-Familie",
-    "Geeignet für komplexe mehrstufige Aufgaben"
+    "1.6T/49B Hybrid-Attention-MoE – größtes Open-Weight-Modell (SWE-bench 80.6%, Codeforces 3206)",
+    "Drei Reasoning-Modi: Non-Thinking, Thinking, Think Max – konfigurierbar per API",
+    "1M-Token-Kontextfenster mit nur 27% der FLOPs und 10% KV-Cache von V3.2",
+    "Wettbewerbsfähiges Pricing (~1/7 des Preises vergleichbarer Frontier-Modelle)"
   ],
-  "summary": "DeepSeek V4 Pro ist das leistungsstarke Reasoning-Modell der DeepSeek-V4-Serie, optimiert für komplexe Mathematik, Coding und multimodale Text-Bild-Analysen. Als Cloud-Modell bietet es hohe Antworttiefe durch internes Reasoning, unterliegt jedoch aufgrund der chinesischen Jurisdiktion einem erhöhten Sovereign-Risk.",
+  "summary": "DeepSeek V4 Pro ist DeepSeeks Flaggschiff-Open-Weight-Modell (1.6T Parameter, 49B aktiv) mit Hybrid-Attention-MoE-Architektur (CSA + HCA). Es unterstützt drei Reasoning-Modi (Non-Thinking / Thinking / Think Max) und ein 1M-Token-Kontextfenster. Optimiert für komplexe Coding-, Reasoning- und agentische Aufgaben – bei Frontier-Niveau und wettbewerbsfähigem Preis. Aufgrund chinesischer Jurisdiktion gilt für API-Nutzung erhöhtes Sovereign-Risk.",
   "supports_tool_use": true,
   "thinking_probe_at": "2026-05-03T19:31:34.837023+00:00",
   "thinking_probe_confidence": "medium",
@@ -56,14 +60,12 @@
   "seed": null,
   "stop_sequences": null,
   "input_modalities": [
-    "text",
-    "image"
+    "text"
   ],
   "output_modalities": [
     "text"
   ],
   "profile_verified": true,
-  "profile_verified_at": "2026-06-20",
   "tooluse_tested_at": null,
   "tooluse_score_p1": null,
   "tooluse_score_p2": null,
@@ -72,6 +74,7 @@
   "system_prompt_override": null,
   "cot_marker_family": null,
   "cot_tags_detected": null,
+  "profile_verified_at": "2026-06-20",
   "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
   "last_modified_at": "2026-06-20",
   "heritage_ids": [],

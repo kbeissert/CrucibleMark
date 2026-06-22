@@ -18,7 +18,7 @@
   "known_limitations": [
     "Weniger geeignet für allgemeine Dialogaufgaben",
     "Tool- und Parser-Fehler können in komplexen Workflows auftreten",
-    "Kein klarer Thinking-Modus in der Card"
+    "Kein Thinking-Modus – reines Instruction-Following-Modell"
   ],
   "license": "modified-MIT",
   "license_url": "https://huggingface.co/mistralai/Devstral-2-123B-Instruct-2512",
@@ -34,11 +34,12 @@
   "primary_focus": "coding",
   "size_class": "Frontier",
   "strengths": [
-    "Stark für agentisches Software-Engineering",
-    "Gute Unterstützung für Multi-File-Codebasen",
-    "Langes Kontextfenster für komplexe Projekte"
+    "Stark für agentisches Software-Engineering (Codebasis-Exploration, Multi-File-Änderungen, Bug-Fixing)",
+    "Native Vision-Unterstützung für Bild-Inputs (Code-Screenshots, Diagramme)",
+    "256K Kontextfenster für komplexe Projekte und große Codebasen",
+    "Open-Weights unter modified-MIT – fine-tunable für spezifische Sprachen und Enterprise-Codebasen"
   ],
-  "summary": "Devstral 2 ist ein spezialisiertes Modell von Mistral AI für agentisches Software-Engineering. Es wurde für die Exploration von Codebasen, Multi-File-Änderungen und komplexes Debugging optimiert. Das Modell nutzt ein grosses Kontextfenster zur Verarbeitung umfangreicher Projekte und steht als Open-Weights-Modell zur Verfügung.",
+  "summary": "Devstral 2 ist Mistral AIs Frontier-Code-Agent-Modell (123B Dense Transformer) für agentisches Software-Engineering. Optimiert für Codebasis-Exploration, Multi-File-Änderungen, Debugging und Legacy-Modernisierung mit 256K Kontextfenster und nativer Vision-Unterstützung. Das Modell steht als Open-Weights-Modell unter modified-MIT-Lizenz zur Verfügung und ist auch über die Mistral API abrufbar.",
   "supports_tool_use": true,
   "thinking_probe_at": "2026-05-26T02:14:04.591427+00:00",
   "thinking_probe_confidence": "low",
@@ -65,7 +66,6 @@
     "text"
   ],
   "profile_verified": true,
-  "profile_verified_at": "2026-06-20",
   "tooluse_tested_at": null,
   "tooluse_score_p1": null,
   "tooluse_score_p2": null,
@@ -74,7 +74,8 @@
   "system_prompt_override": null,
   "cot_marker_family": null,
   "cot_tags_detected": null,
-  "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
+"profile_verified_at": "2026-06-20",
+  "profile_verified_by": "llm:perplexity",
   "last_modified_at": "2026-06-20",
   "heritage_ids": [],
   "community": null

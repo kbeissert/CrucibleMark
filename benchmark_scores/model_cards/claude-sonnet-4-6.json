@@ -16,19 +16,20 @@
   "params_total_b": null,
   "params_active_b": null,
   "context_window_k": 1000,
-  "knowledge_cutoff": "2026-01",
-  "summary": "Claude Sonnet 4.6 ist ein fortschrittliches Modell von Anthropic, das auf Coding, agentische Workflows und komplexe Wissensarbeit optimiert ist. Es bietet ein erweitertes Kontextfenster von bis zu 1 Million Tokens in der Beta-Phase und zeigt verbesserte Fähigkeiten bei der Navigation in grossen Codebasen. Das Modell ist multimodal für Text- und Bildeingaben und eignet sich durch sein Kostenprofil ideal als effiziente Alternative zur Opus-Klasse.",
+  "knowledge_cutoff": "2025-08",
+  "summary": "Claude Sonnet 4.6 ist Anthropics Mid-Tier-Modell (Release: 17. Feb 2026) mit nahezu Opus-Level-Performance bei Coding, Computer Use und agentischen Workflows. Es bietet Adaptive Thinking mit konfigurierbaren Effort-Levels (low/medium/high), ein 1M-Token-Kontextfenster (GA seit 13. März 2026) und 79.6% auf SWE-bench Verified – alles zum Sonnet-Preisniveau von $3/$15.",
   "strengths": [
-    "Hervorragendes Gleichgewicht zwischen Leistung und Kosten für Coding- und Agent-Workflows",
-    "Erweitertes 1M-Kontextfenster (Beta) für umfangreiche Recherche und Planung",
-    "Optimierte Fähigkeiten zur Navigation in komplexen Codebasen und für langfristige agentische Aufgaben"
+    "79.6% SWE-bench Verified – übertrifft Opus 4.5 in real-world Coding-Tests (~59% User-Präferenz)",
+    "Adaptive Thinking mit konfigurierbaren Effort-Levels (low/medium/high)",
+    "1M-Token-Kontextfenster (GA seit 13. März 2026) für Full-Repo-Agenten",
+    "Multimodal: Text, Bild und PDF als Input"
   ],
   "known_limitations": [
     "Keine lokalen Gewichte verfügbar (Proprietär)",
-    "Das 1M-Kontextfenster befindet sich im Beta-Status",
+    "Standard-Kontextfenster ist 200K – 1M erfordert expliziten API-Flag",
     "Geringere Kapazitäten bei extrem anspruchsvollen Aufgaben im Vergleich zur Opus-Modellklasse"
   ],
-  "judge_context_hint": "Modell mit Fokus auf Coding und Agentic-Workflows. Beachtet das 1M-Kontextfenster (Beta) und die multimodalen Fähigkeiten bei der Bewertung von Planung und Tool-Use.",
+  "judge_context_hint": "Modell mit Fokus auf Coding und Agentic-Workflows. Adaptive Thinking mit konfigurierbaren Effort-Levels. Das 1M-Kontextfenster (GA) und multimodale Fähigkeiten (Text, Bild, PDF) bei der Bewertung von Planung und Tool-Use berücksichtigen.",
   "architecture_tags": [
     "Thinking",
     "Vision-Capable",
@@ -38,7 +39,8 @@
   ],
   "input_modalities": [
     "text",
-    "image"
+    "image",
+    "pdf"
   ],
   "output_modalities": [
     "text"
@@ -76,7 +78,7 @@
   "thinking_probe_at": "2026-06-19T22:42:20.904731+00:00",
   "profile_verified": true,
   "profile_verified_at": "2026-06-20",
-  "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
+  "profile_verified_by": "llm:perplexity",
   "last_modified_at": "2026-06-20",
   "heritage_ids": [],
   "community": null

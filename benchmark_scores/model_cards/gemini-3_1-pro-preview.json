@@ -7,24 +7,27 @@
   "deployment_type": "cloud-only",
   "local_deployment_possible": false,
   "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der staatlichen Zugriff auf Daten bei API-Nutzung ermöglichen kann, nicht jedoch auf die Weights selbst.",
+  "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act; die Modellgewichte sind nicht öffentlich zugänglich.",
   "model_family": "Gemini",
   "primary_focus": "general",
-  "summary": "Gemini 3.1 Pro Preview ist Googles leistungsstarke Preview-Variante für komplexes Reasoning, Coding und agentische Workflows. Das Modell ist nativ multimodal, arbeitet mit sehr langen Kontexten und ist nur über die Google-API verfügbar. Als Preview-Modell kann es sich in Verhalten und Preisgestaltung noch verändern.",
+  "summary": "Gemini 3.1 Pro Preview ist Googles Frontier-Reasoning-Modell mit konfigurierbarem Extended Thinking und verbesserter Token-Effizienz gegenüber Gemini 3 Pro. Optimiert für Software Engineering, agentische Workflows und komplexe multimodale Analyse über Text, Bild, Audio, Video und PDF. Mit 1M-Token-Kontextfenster und starken SWE-Bench-Ergebnissen (80.6%) ist es Googles leistungsstärkstes verfügbares API-Modell.",
   "strengths": [
-    "Stark bei komplexem Reasoning und Coding",
-    "Nativ multimodal mit langem Kontext",
-    "Geeignet für mehrstufige Agenten-Workflows"
+    "Herausragendes Reasoning (77.1% ARC-AGI-2, 94.3% GPQA Diamond, 80.6% SWE-Bench Verified)",
+    "Extended Thinking mit konfigurierbarem Medium-Thinking-Level für Kosten-Qualitäts-Tradeoff",
+    "Vollständig multimodal (Text, Bild, Audio, Video, PDF) mit 1M-Token-Kontextfenster",
+    "Starke Eignung für agentische Workflows, Coding und mehrstufige Aufgaben"
   ],
   "known_limitations": [
     "Preview-Status mit möglicher Veränderung",
     "Nur über die Google-API nutzbar",
-    "Schwankungen in Qualität und Kosten möglich"
+    "Höhere Kosten als Flash-Varianten; Long-Context >200K Token erhöht Preis weiter",
+    "Natives Audio-Output (Live API nicht unterstützt) nicht im Benchmark erfasst – output_modalities spiegelt nur getestete Modalitäten wider."
   ],
   "judge_context_hint": "Flaggschiffartige Pro-Preview für anspruchsvolle, multimodale und agentische Aufgaben. Der Fokus sollte auf Robustheit und Aufgabenverständnis liegen.",
   "architecture_tags": [
     "General",
-    "Multimodal",
+    "Thinking-Optional",
+    "Agentic-Orchestrator",
     "Preview"
   ],
   "unknown": false,
@@ -44,12 +47,12 @@
   "model_version": "3.1-pro-preview",
   "input_price_per_1m": 2.0,
   "output_price_per_1m": 12.0,
-  "use_case_primary": "vision-language",
+  "use_case_primary": "generalist",
   "parameter_architecture": "moe",
   "params_total_b": null,
   "params_active_b": null,
   "context_window_k": 1000,
-  "knowledge_cutoff": "2026-01",
+  "knowledge_cutoff": "2025-01",
   "top_p": null,
   "top_k": null,
   "repetition_penalty": null,
@@ -60,13 +63,13 @@
   "input_modalities": [
     "text",
     "image",
-    "audio"
+    "audio",
+    "video"
   ],
   "output_modalities": [
     "text"
   ],
   "profile_verified": true,
-  "profile_verified_at": "2026-06-20",
   "tooluse_tested_at": null,
   "tooluse_score_p1": null,
   "tooluse_score_p2": null,
@@ -75,6 +78,7 @@
   "system_prompt_override": null,
   "cot_marker_family": null,
   "cot_tags_detected": null,
+  "profile_verified_at": "2026-06-20",
   "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
   "last_modified_at": "2026-06-20",
   "heritage_ids": [],

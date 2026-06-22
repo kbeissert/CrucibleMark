@@ -1,6 +1,6 @@
 {
   "model_id": "deepseek/deepseek-v3.2",
-  "display_name": "DeepSeek V3",
+  "display_name": "DeepSeek V3.2",
   "developer": "DeepSeek",
   "origin_country": "China",
   "developer_jurisdiction": "CN",
@@ -55,13 +55,15 @@
   "presence_penalty": null,
   "seed": null,
   "stop_sequences": null,
-  "input_modalities": "[\"text\"]",
+  "input_modalities": [
+    "text"
+  ],
   "output_modalities": [
     "text"
   ],
   "profile_verified": true,
   "profile_verified_at": "2026-06-20",
-  "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
+  "profile_verified_by": "llm:perplexity",
   "last_modified_at": "2026-06-20",
   "tooluse_tested_at": null,
   "tooluse_score_p1": null,

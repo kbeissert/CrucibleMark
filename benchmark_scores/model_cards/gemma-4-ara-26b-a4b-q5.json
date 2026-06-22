@@ -1,47 +1,52 @@
 {
   "model_id": "gemma-4-ara-26b-a4b-q5",
-  "display_name": "Gemma 4 ARA 26B-A4B Q5_K_M",
-  "developer": "Google DeepMind",
+  "display_name": "Gemma 4 ARA 26B-A4B Q5_K_M (ARA-Abliterated)",
+  "developer": "Google DeepMind (Base) / ARA-APEX (Abliteration + Quantisierung)",
   "origin_country": "USA",
   "developer_jurisdiction": "US",
-  "deployment_type": "open-weights",
+  "deployment_type": "localweights",
   "local_deployment_possible": true,
   "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "Das Basismodell von Google DeepMind wird unter der permissiven Apache 2.0 Lizenz bereitgestellt. In dieser spezifischen Community-Variante (ARA/APEX Q5_K_M) wurde eine eigene Verarbeitungskette angewandt. Das Risiko ist als moderat einzustufen, da die exakten Modifikationen der Quantisierung und des Tunings nicht durch den Originalhersteller dokumentiert sind.",
-  "model_family": "Gemma 4",
-  "vendor": "Google DeepMind / ARA-APEX (Quantisierung)",
-  "primary_focus": "generalist",
-  "use_case_primary": "vision-language",
+  "weights_provenance_risk_rationale": "Das Basismodell stammt von Google DeepMind (US-Jurisdiktion, CLOUD Act bei Cloud-Nutzung). Die Gewichte wurden durch ARA-APEX via Adaptive Refusal Abliteration (2-Pass Weight Modification) modifiziert, was die vollständige Nachvollziehbarkeit einschränkt. Bei rein lokaler Inferenz ist das CLOUD-Act-Risiko minimal, jedoch rechtfertigt die Community-Modifikationskette ein erhöhtes Provenance-Rating.",
+  "model_family": "Gemma",
+  "vendor": "Google DeepMind / ARA-APEX (Abliteration + Quantisierung)",
+  "primary_focus": "general",
+  "use_case_primary": "generalist",
   "parameter_architecture": "moe",
   "params_total_b": 25.2,
   "params_active_b": 4.0,
   "context_window_k": 256,
   "knowledge_cutoff": "2025-01",
-  "summary": "Diese Community-Distribution von Gemma 4 ARA 26B-A4B basiert auf der multimodalen MoE-Architektur von Google DeepMind. Die vorliegende Q5_K_M-Quantisierung ermöglicht eine effiziente lokale Nutzung bei hohem Kontext von 256K Token. Durch die Apache 2.0 Lizenz bietet das Modell eine hohe Flexibilitaet fuer die Integration in verschiedene Anwendungen.",
+  "summary": "Gemma 4 ARA 26B-A4B Q5_K_M ist eine Community-Variante von Googles MoE-Modell, bei der via Adaptive Refusal Abliteration (ARA, 2-Pass) Sicherheitsfilter entfernt wurden. 25,2B Gesamtparameter, ~4B aktiv pro Token, 256K Kontextfenster, Apache 2.0. Im Benchmark ohne mmproj geladen → reine Text-Inferenz. Thinking-Probe steht aus (Probe-Logik war zum Zeitpunkt des Tests noch ohne Inline-CoT-Heuristik).",
   "strengths": [
-    "Multimodale Gemma 4 Basis mit extrem grossem 256K Kontextfenster",
-    "Effiziente MoE-Architektur mit geringem Rechenaufwand pro Token",
-    "Apache 2.0 Lizenz erlaubt weitreichende kommerzielle Nutzung",
-    "Optimierte Q5_K_M Quantisierung bietet hohe Präzision bei geringem Speicherbedarf"
+    "MoE-Architektur: ~4B aktive Parameter pro Token – Frontier-Qualität bei Workstation-Kosten",
+    "Q5_K_M: guter Kompromiss zwischen Präzision und Speicherbedarf",
+    "ARA-Abliteration: reduzierte Refusal-Rate bei dokumentierter 2-Pass-Methode",
+    "256K Kontextfenster für lange Aufgaben",
+    "Apache 2.0: vollständig kommerziell nutzbar und modifizierbar"
   ],
   "known_limitations": [
-    "Modifikationen durch die ARA/APEX-Verarbeitung sind nicht offiziell dokumentiert",
-    "Die exakte Performance der Quantisierung kann von der FP16-Basis abweichen",
-    "Multimodale Funktionen hängen von der lokalen Inferenz-Software ab"
+    "Keine Sicherheitsfilter (ARA-abliteriert) – kann unzensierte Inhalte generieren",
+    "ARA-APEX-Modifikationen nicht offiziell durch Google dokumentiert",
+    "Multimodalität externalisiert: Bild/Audio/Video erfordern separate mmproj-GGUF. Im Benchmark ohne mmproj geladen → reine Text-Inferenz.",
+    "Thinking-Probe-Status unklar: Probe wurde vor Einführung von Signal-C-Heuristik durchgeführt – Wiederholung steht aus",
+    "Q5_K_M zeigt bei hochkomplexen Reasoning-Aufgaben messbare Einbussen gegenüber Q8"
   ],
-  "judge_context_hint": "Modell ist eine Community-Quantisierung (ARA/APEX) auf Basis von Gemma 4 unter Apache 2.0. Beachten Sie bei der Bewertung, dass die Quantisierung und die spezifische ARA-Verarbeitung zu Abweichungen vom Originalverhalten führen koennen. Die Inferenz erfolgt lokal auf NVIDIA DGX Spark Hardware.",
+  "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, 128 GB Unified Memory; Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). MoE-Modell (25,2B total / 4B aktiv), ARA-abliteriert (2-Pass), Q5_K_M. Ohne mmproj geladen → reine Text-Inferenz. Thinking-Probe steht aus – Thinking-Status unbekannt. Kein Abzug für fehlende explizite Reasoning-Schritte.",
   "architecture_tags": [
-    "Multimodal",
-    "Community-Quant"
+    "General",
+    "Instruct",
+    "Uncensored",
+    "Agentic-Orchestrator"
   ],
   "supports_tool_use": true,
   "license": "Apache 2.0",
-  "license_url": "https://ai.google.dev/gemma/terms",
+  "license_url": "https://opensource.org/licenses/Apache-2.0",
   "commercial_use_allowed": true,
   "weights_license_tier": "open-weights",
   "model_version": "4",
-  "input_price_per_1m": null,
-  "output_price_per_1m": null,
+  "input_price_per_1m": 0.0,
+  "output_price_per_1m": 0.0,
   "unknown": false,
   "card_status": "complete",
   "size_class": "Workstation",
@@ -58,8 +63,7 @@
   "seed": null,
   "stop_sequences": null,
   "input_modalities": [
-    "text",
-    "image"
+    "text"
   ],
   "output_modalities": [
     "text"
@@ -75,7 +79,7 @@
   "system_prompt_override": null,
   "cot_marker_family": null,
   "cot_tags_detected": null,
-  "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
+  "profile_verified_by": "llm:perplexity",
   "last_modified_at": "2026-06-20",
   "heritage_ids": []
 }

@@ -39,16 +39,16 @@
   ],
   "summary": "Magistral Medium ist ein spezialisiertes Reasoning-Modell von Mistral AI, das für komplexe logische Schlussfolgerungen, Mathematik und strukturierte Entscheidungsfindung optimiert wurde. Das Modell ist exklusiv über die Mistral-API verfügbar, bietet ein Kontextfenster von 40K Token und legt den Fokus auf tiefgehende, nachvollziehbare Denkprozesse. Die Gewichte sind proprietär und nicht öffentlich zugänglich.",
   "supports_tool_use": true,
-  "thinking_probe_at": "2026-04-23T18:08:27.324290+00:00",
-  "thinking_probe_confidence": "low",
   "thinking_probe_detected": false,
-  "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 469 chars",
+  "thinking_probe_evidence": "No CoT signals found; reasoning traces are not exposed in the public output.",
+  "thinking_probe_confidence": "low",
+  "thinking_probe_at": "2026-04-23T18:08:27.324290+00:00",
   "unknown": false,
   "use_case_primary": "reasoning",
   "vendor": "Mistral AI",
   "weights_license_tier": "proprietary",
   "weights_provenance_risk": "low",
-  "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU. Die Modellgewichte unterliegen somit der EU-Jurisdiktion, was das Risiko staatlicher Zugriffe im Vergleich zu US-amerikanischen oder chinesischen Anbietern minimiert.",
+  "weights_provenance_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU. Das Modell ist proprietär und wird über die Mistral-API bereitgestellt; die EU-Jurisdiktion reduziert das Risiko gegenüber US-Anbietern.",
   "top_p": null,
   "top_k": null,
   "repetition_penalty": null,
@@ -57,8 +57,7 @@
   "seed": null,
   "stop_sequences": null,
   "input_modalities": [
-    "text",
-    "image"
+    "text"
   ],
   "output_modalities": [
     "text"
@@ -73,7 +72,7 @@
   "system_prompt_override": null,
   "cot_marker_family": null,
   "cot_tags_detected": null,
-  "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
+  "profile_verified_by": "llm:perplexity",
   "last_modified_at": "2026-06-20",
   "heritage_ids": [],
   "community": null

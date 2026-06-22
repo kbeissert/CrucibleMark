@@ -12,15 +12,16 @@
   "display_name": "Hermes 4 405B",
   "generated_at": "2026-05-02T16:10:18.822288+00:00",
   "input_price_per_1m": 1.0,
-  "judge_context_hint": "Großes offenes Instruct-Modell mit optionalem Thinking. Bei Bewertungen sollten Tool Use und strukturierte Ausgabe stärker gewichtet werden als konservative Safety-Standards.",
+  "judge_context_hint": "Großes offenes Instruct-Modell mit optionalem Thinking. Hermes ist auf hohe Steerability, präzise Instruktionsbefolgung und reduzierte Refusal-Raten trainiert; bei Bewertungen sollten Tool Use, strukturierte Ausgabe, Direktheit und nutzerzentrierte Antworten stärker gewichtet werden als konservative Safety-Standards.",
   "knowledge_cutoff": "2025-01",
   "known_limitations": [
     "Hoher Ressourcenbedarf für lokale Ausführung",
     "Teilweise reduzierte Sicherheitsfilter",
-    "Gewichtszugriff unter Llama-Lizenzbedingungen"
+    "Gewichtszugriff unter Llama-Lizenzbedingungen",
+    "Bewusst auf Steerability und niedrige Refusal-Raten optimiert; sicherheitskritische Szenarien sollten separat auf Policy- und Guardrail-Verhalten geprüft werden"
   ],
   "license": "Meta Llama Community License",
-  "license_url": "https://www.llama.com/llama3/license/",
+  "license_url": "https://opensource.org/licenses/other",
   "local_deployment_possible": true,
   "model_family": "Hermes",
   "model_id": "nousresearch/hermes-4-405b",
@@ -28,16 +29,17 @@
   "origin_country": "USA",
   "output_price_per_1m": 3.0,
   "parameter_architecture": "dense",
-  "params_active_b": null,
+  "params_active_b": 405.0,
   "params_total_b": 405.0,
   "primary_focus": "reasoning",
   "size_class": "Frontier",
   "strengths": [
     "Sehr leistungsfähig bei Tool Use und strukturierten Ausgaben",
     "Große offene Gewichtsvariante für anspruchsvolle Workloads",
-    "Geeignet für agentische und kreative Anwendungen"
+    "Geeignet für agentische und kreative Anwendungen",
+    "Hohe Steerability bei gleichzeitig reduzierten Refusal-Raten"
   ],
-  "summary": "Hermes 4 405B ist ein leistungsstarkes Instruct-Modell von Nous Research, das auf der Llama-Architektur basiert. Mit 405 Milliarden Parametern ist es für komplexe Reasoning-Aufgaben und agentische Workflows optimiert. Das Modell bietet optionales Thinking und zeichnet sich durch hohe Präzision bei Tool Use sowie strukturierten Ausgaben wie JSON aus, erfordert jedoch erhebliche Hardware-Ressourcen.",
+  "summary": "Hermes 4 405B ist ein leistungsstarkes Instruct- und Reasoning-Modell von Nous Research, das auf der Llama-Architektur basiert. Mit 405 Milliarden Parametern ist es für komplexe Reasoning-Aufgaben und agentische Workflows optimiert. Das Modell bietet optionales Thinking sowie hohe Präzision bei Tool Use, JSON-Ausgaben und strukturierter Befolgung von Anweisungen, wobei es zusätzlich auf Steerability und reduzierte Refusal-Raten trainiert wurde.",
   "supports_tool_use": true,
   "thinking_probe_at": "2026-05-02T16:49:08.185081+00:00",
   "thinking_probe_confidence": "low",
@@ -47,7 +49,7 @@
   "use_case_primary": "generalist",
   "vendor": "NousResearch",
   "weights_license_tier": "restricted-weights",
-  "weights_provenance_risk": "medium",
+  "weights_provenance_risk": "low",
   "weights_provenance_risk_rationale": "Nous Research ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch sind die Gewichte öffentlich verfügbar und lokal betreibbar, sodass kein API-Zugriff durch Dritte erforderlich ist.",
   "top_p": null,
   "top_k": null,
@@ -72,7 +74,7 @@
   "system_prompt_override": null,
   "cot_marker_family": null,
   "cot_tags_detected": null,
-  "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
+  "profile_verified_by": "llm:perplexity",
   "last_modified_at": "2026-06-20",
   "heritage_ids": [],
   "community": null

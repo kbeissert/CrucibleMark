@@ -1,7 +1,9 @@
 {
   "architecture_tags": [
     "General",
-    "Instruct"
+    "Instruct",
+    "Thinking-Optional",
+    "Multimodal"
   ],
   "card_status": "complete",
   "commercial_use_allowed": true,
@@ -12,31 +14,35 @@
   "display_name": "Gemma 4 E4B",
   "generated_at": "2026-05-30T15:54:49.249742+00:00",
   "input_price_per_1m": 0.0,
-  "judge_context_hint": "Plattform: Apple M4 Mac (~18 GB Unified Memory, Metal-GPU, lokal — kein Cloud-Provider, kein externer Datentransfer). Kompakte Gemma-4-Variante für lokale Alltagsaufgaben. Die Bewertung sollte Effizienz und brauchbares Instruction-Following betonen.",
+  "judge_context_hint": "Plattform: Apple M4 Mac (~18 GB Unified Memory, Metal-GPU, lokal — kein Cloud-Provider, kein externer Datentransfer). Edge-Modell mit nativ integriertem Audio-Encoder (USM-style conformer, max. 30s) und Vision-Encoder – kein mmproj erforderlich. Konfigurierbare Thinking-Modi über reasoning_content API-Feld. Bewertung sollte Effizienz und brauchbares Instruction-Following betonen.",
   "knowledge_cutoff": "2025-01",
   "known_limitations": [
-    "Leistung hinter deutlich größeren Modellen der Gemini-Serie",
-    "Lokale Quantisierung kann minimale Qualitätsverluste verursachen"
+    "Leistung hinter deutlich größeren Modellen (26B/31B) der Gemma-4-Familie",
+    "Audio-Input auf max. 30 Sekunden begrenzt",
+    "Video-Input: max. 60 Sekunden bei 1 fps – keine Audio-Spur bei Video",
+    "Thinking-Modus triggert nicht bei einfachen Tasks – nur bei komplexen Aufgaben aktiv"
   ],
   "license": "Apache 2.0",
-  "license_url": "https://ai.google.dev/gemma/terms",
+  "license_url": "https://opensource.org/licenses/Apache-2.0",
   "local_deployment_possible": true,
   "model_family": "Gemma",
   "model_id": "gemma-4-e4b",
   "model_version": "GGUF (E4B)",
   "origin_country": "USA",
   "output_price_per_1m": 0.0,
-  "parameter_architecture": "hybrid",
+  "parameter_architecture": "dense",
   "params_active_b": 4.5,
-  "params_total_b": 8.0,
-  "primary_focus": "generalist",
-  "size_class": "Desktop",
+  "params_total_b": 4.5,
+  "primary_focus": "general",
+  "size_class": "Edge",
   "strengths": [
-    "Effiziente lokale Ausführung",
-    "Instruct-optimiert für alltägliche Aufgaben",
-    "Nutzbar auf Desktop-Hardware"
+    "Einzige offene Edge-Modellgröße mit nativem Text + Bild + Audio + Video in einem Gewichtspaket",
+    "Per-Layer Embeddings (PLE): höhere Qualität pro Parameter als klassische Dense-Architektur",
+    "Konfigurierbare Thinking-Modi – reasoning_content API-Feld nachgewiesen (high confidence)",
+    "Sehr geringer VRAM-Bedarf (~5 GB bei Q4) – läuft auf M4 Mac, Smartphone, Edge-Hardware",
+    "Apache 2.0: vollständig kommerziell nutzbar und modifizierbar"
   ],
-  "summary": "Gemma 4 E4B ist eine kompakte, effiziente Modellvariante von Google DeepMind. Durch die hybride Architektur mit PLE-basiertem Parameter-Management eignet sich das Modell hervorragend für die lokale Ausführung auf Desktop-Hardware. Es bietet eine starke Balance zwischen Leistung und Ressourcenverbrauch für alltägliche Instruct-Aufgaben und steht unter der permissiven Apache 2.0 Lizenz.",
+  "summary": "Gemma 4 E4B ist Googles Edge-Modell mit nativ integriertem Audio- (USM-style conformer, max. 30s) und Vision-Encoder. Als einzige Größe in der Gemma-4-Familie unterstützt E4B alle vier Modalitäten (Text, Bild, Video, Audio) in einem Gewichtspaket ohne externen mmproj. 4,5B effektive Parameter via Per-Layer Embeddings (PLE), 128K Kontext, konfigurierbare Thinking-Modi, Apache 2.0.",
   "supports_tool_use": true,
   "thinking_probe_at": "2026-05-30T16:33:18.488908+00:00",
   "thinking_probe_confidence": "high",
@@ -46,8 +52,8 @@
   "use_case_primary": "generalist",
   "vendor": "Google DeepMind",
   "weights_license_tier": "open-weights",
-  "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch ist der CLOUD Act bei lokal betriebenen Open-Weights-Modellen nicht direkt anwendbar.",
+  "weights_provenance_risk": "low",
+  "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der primär bei API-/Cloud-Nutzung relevant ist, nicht bei lokal betriebenen Gewichten. Bei ausschliesslich lokaler Inferenz ohne Cloud-Verbindung ist das Risikoszenario minimal.",
   "top_p": null,
   "top_k": null,
   "repetition_penalty": null,
@@ -57,7 +63,9 @@
   "stop_sequences": null,
   "input_modalities": [
     "text",
-    "image"
+    "image",
+    "audio",
+    "video"
   ],
   "output_modalities": [
     "text"
@@ -72,7 +80,7 @@
   "system_prompt_override": null,
   "cot_marker_family": null,
   "cot_tags_detected": null,
-  "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
+  "profile_verified_by": "llm:perplexity",
   "last_modified_at": "2026-06-20",
   "heritage_ids": [],
   "community": null

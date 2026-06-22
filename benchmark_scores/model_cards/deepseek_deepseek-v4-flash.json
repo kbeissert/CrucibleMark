@@ -1,42 +1,45 @@
 {
   "architecture_tags": [
-    "Thinking"
+    "Thinking",
+    "Thinking-Optional",
+    "Long-Context"
   ],
   "card_status": "complete",
   "commercial_use_allowed": true,
-  "context_window_k": 128,
+  "context_window_k": 1000,
   "deployment_type": "open-weights-cloud-available",
   "developer": "DeepSeek",
   "developer_jurisdiction": "CN",
-  "display_name": "null",
+  "display_name": "DeepSeek V4 Flash",
   "generated_at": "2026-05-03T18:34:58.651272+00:00",
-  "input_price_per_1m": "null",
-  "judge_context_hint": "Schnelle Reasoning-Variante aus der DeepSeek-V4-Familie. Antworten sollten auf Nutzwert und Argumentationsqualität geprüft werden, nicht auf lokale Betriebsfähigkeit.",
-  "knowledge_cutoff": "null",
+  "input_price_per_1m": 0.14,
+  "judge_context_hint": "Schnelle Reasoning-Variante aus der DeepSeek-V4-Familie mit konfigurierbaren Thinking-Modi (Non-Think / Think High / Think Max). Antworten sollten auf Nutzwert und Argumentationsqualität geprüft werden, nicht auf lokale Betriebsfähigkeit.",
+  "knowledge_cutoff": "2025-05",
   "known_limitations": [
-    "Chinesischer Anbieter mit erhöhtem Sovereign-Risk",
-    "Nur über Cloud-API verfügbar",
+    "Chinesischer Anbieter mit erhöhtem Sovereign-Risk – BSI-Warnung vom 04.02.2025 gilt für Cloud-API-Nutzung",
+    "Schwächer als V4 Pro bei komplexen Agent-Tasks und reinem Faktenwissen",
     "Für sensible Themen potenziell restriktive Antworten"
   ],
-  "license": "DeepSeek License",
-  "license_url": "[URL zu V4 Lizenz]",
-  "local_deployment_possible": false,
+  "license": "MIT",
+  "license_url": "https://github.com/deepseek-ai/DeepSeek-V4/blob/main/LICENSE",
+  "local_deployment_possible": true,
   "model_family": "DeepSeek-V4",
   "model_id": "deepseek/deepseek-v4-flash",
   "model_version": "4",
   "origin_country": "China",
-  "output_price_per_1m": "null",
+  "output_price_per_1m": 0.28,
   "parameter_architecture": "moe",
-  "params_active_b": null,
-  "params_total_b": "null",
+  "params_active_b": 13,
+  "params_total_b": 284,
   "primary_focus": "reasoning",
   "size_class": "Frontier",
   "strengths": [
-    "Schnelle Reasoning-Variante mit guter Kosteneffizienz",
-    "Geeignet für mehrstufige Aufgaben und Code-Verständnis",
-    "Cloud-Verfügbarkeit für produktive Nutzung"
+    "284B/13B Hybrid-Attention-MoE – auf RTX 5090 (INT4) lokal ausführbar",
+    "Drei Reasoning-Modi: Non-Think, Think High, Think Max – konfigurierbar per API",
+    "1M-Token-Kontextfenster mit ~18× günstigerem Input-Preis als GPT-5.5",
+    "MIT-Lizenz: vollständig kommerziell nutzbar und fine-tunable"
   ],
-  "summary": "DeepSeek V4 Flash ist eine auf niedrige Latenz und hohe Effizienz optimierte Reasoning-Variante der DeepSeek-V4-Modellfamilie aus China. Durch eine Mixture-of-Experts (MoE) Architektur nutzt das Modell interne Denkprozesse zur Steigerung der Argumentationsqualität bei gleichzeitig hoher Inferenzgeschwindigkeit. Es unterstützt Text- und Bild-Eingaben und ist primär für den kosteneffizienten Einsatz via Cloud-API konzipiert, wobei aufgrund der chinesischen Jurisdiktion ein hohes Sovereign-Risk besteht.",
+  "summary": "DeepSeek V4 Flash ist DeepSeeks effizienzoptimiertes Frontier-Modell (284B Parameter, 13B aktiv) mit Hybrid-Attention-MoE-Architektur und 1M-Token-Kontextfenster. Es unterstützt drei Reasoning-Modi (Non-Think / Think High / Think Max) und ist unter MIT-Lizenz als Open-Weight-Modell verfügbar. Optimiert für hohen Durchsatz und schnelle Inferenz bei wettbewerbsfähigen Kosten – mit identischer Contextkonstellation wie V4 Pro.",
   "supports_tool_use": true,
   "thinking_probe_at": "2026-05-03T18:34:58.651262+00:00",
   "thinking_probe_confidence": "medium",
@@ -56,15 +59,14 @@
   "seed": null,
   "stop_sequences": null,
   "input_modalities": [
-    "text",
-    "image"
+    "text"
   ],
   "output_modalities": [
     "text"
   ],
   "profile_verified": true,
-  "profile_verified_at": "2026-06-20",
-  "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
+"profile_verified_at": "2026-06-20",
+  "profile_verified_by": "llm:perplexity",
   "last_modified_at": "2026-06-20",
   "tooluse_tested_at": null,
   "tooluse_score_p1": null,

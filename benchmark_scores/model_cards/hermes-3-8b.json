@@ -1,13 +1,13 @@
 {
   "architecture_tags": [
     "Instruct",
-    "Uncensored-Finetuned"
+    "Uncensored"
   ],
   "card_status": "complete",
   "commercial_use_allowed": true,
   "context_window_k": 128,
   "deployment_type": "localweights",
-  "developer": "NousResearch",
+  "developer": "Meta (Base: Llama 3.1 8B) / NousResearch (Fine-Tune) / Community GGUF-Distributor",
   "developer_jurisdiction": "US",
   "display_name": "Hermes 3 8B (Q6_K_L)",
   "generated_at": "2026-06-03T12:00:00.000000+00:00",
@@ -19,7 +19,7 @@
     "Begrenzte Reasoning-Kapazität gegenüber größeren Modellen",
     "Nur als lokale Open-Weights-Variante verfügbar"
   ],
-  "license": "Meta Llama Community License",
+  "license": "Llama 3.1 Community License",
   "license_url": "https://www.llama.com/llama3/license/",
   "local_deployment_possible": true,
   "model_family": "Hermes",
@@ -30,19 +30,19 @@
   "parameter_architecture": "dense",
   "params_active_b": 8.0,
   "params_total_b": 8.0,
-  "primary_focus": "instruction-following",
+  "primary_focus": "general",
   "size_class": "Edge",
   "strengths": [
     "Starkes Instruction-Following",
     "Gute Eignung für strukturierte Ausgaben und Tool Use",
     "Kompakte lokale Ausführung als Q6_K_L"
   ],
-  "summary": "Hermes 3 8B ist ein auf Llama 3.1 8B basierendes Finetuning von NousResearch. Diese Variante wurde speziell für Instruction-Following, Tool Use sowie kreative und ambivalente Anfragen optimiert. Die vorliegende Q6_K_L-Quantisierung ermöglicht eine effiziente lokale Ausfuehrung via llama.cpp, wobei die reduzierte Ablehnungsrate ein wesentliches Merkmal dieser Distribution darstellt.",
+  "summary": "Hermes 3 8B ist ein auf Llama 3.1 8B basierendes Finetuning von NousResearch. Diese Variante wurde speziell für Instruction-Following, Tool Use sowie kreative und ambivalente Anfragen optimiert. Die vorliegende Q6_K_L-Quantisierung ermöglicht eine effiziente lokale Ausführung via llama.cpp, wobei die reduzierte Ablehnungsrate ein wesentliches Merkmal dieser Distribution darstellt.",
   "supports_tool_use": true,
-  "thinking_probe_at": "2026-06-03T12:00:00.000000+00:00",
-  "thinking_probe_confidence": "high",
   "thinking_probe_detected": false,
   "thinking_probe_evidence": "Manual override: Hermes-3 8B (Llama 3.1-Basis) ohne Thinking-/Reasoning-Fähigkeiten.",
+  "thinking_probe_confidence": "high",
+  "thinking_probe_at": "2026-06-03T12:00:00.000000+00:00",
   "unknown": false,
   "use_case_primary": "generalist",
   "vendor": "NousResearch",
@@ -72,7 +72,7 @@
   "system_prompt_override": null,
   "cot_marker_family": null,
   "cot_tags_detected": null,
-  "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
+  "profile_verified_by": "llm:perplexity",
   "last_modified_at": "2026-06-20",
   "heritage_ids": [],
   "community": null

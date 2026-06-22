@@ -1,7 +1,7 @@
 {
   "architecture_tags": [
-    "General",
-    "Instruct"
+    "Instruct",
+    "General"
   ],
   "card_status": "complete",
   "commercial_use_allowed": true,
@@ -18,7 +18,7 @@
     "Leistung bei extrem langen Kontexten kann hinter spezialisierten Modellen zurückfallen",
     "Bei hochkomplexen, mehrstufigen logischen Schlussfolgerungen sind dedizierte Reasoning-Modelle überlegen"
   ],
-  "license": "Llama 3 Community License",
+  "license": "Llama 3.3 Community License",
   "license_url": "https://www.llama.com/llama3/license/",
   "local_deployment_possible": true,
   "model_family": "Llama",
@@ -36,18 +36,18 @@
     "Ausgewogene Reasoning- und Analysefähigkeiten für die 70B-Klasse",
     "Offene Gewichte ermöglichen den flexiblen lokalen Einsatz für maximale Datensouveränität"
   ],
-  "summary": "Llama 3.3 70B Versatile ist ein Modell von Meta mit 70 Milliarden Parametern aus der Llama-3.3-Generation. Es wird unter der Llama 3 Community License bereitgestellt und bietet eine hohe Vielseitigkeit. Das Modell ist über Cloud-Anbieter kostengünstig verfügbar, kann aber aufgrund der offenen Gewichte auch lokal betrieben werden.",
+  "summary": "Llama 3.3 70B Versatile ist ein Modell von Meta mit 70 Milliarden Parametern aus der Llama-3.3-Generation. Es wird unter der Llama 3.3 Community License bereitgestellt und bietet eine hohe Vielseitigkeit. Das Modell ist über Cloud-Anbieter verfügbar, kann aber aufgrund der offenen Gewichte auch lokal betrieben werden.",
   "supports_tool_use": true,
-  "thinking_probe_at": "2026-04-23T13:56:48.020175+00:00",
-  "thinking_probe_confidence": "low",
   "thinking_probe_detected": false,
-  "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 426 chars",
+  "thinking_probe_evidence": "No CoT signals found (text-only instruction-tuned model).",
+  "thinking_probe_confidence": "low",
+  "thinking_probe_at": "2026-04-23T13:56:48.020175+00:00",
   "unknown": false,
   "use_case_primary": "generalist",
   "vendor": "Meta",
   "weights_license_tier": "restricted-weights",
   "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "Meta ist ein US-Unternehmen, was das Risiko durch den CLOUD Act impliziert. Da die Gewichte jedoch öffentlich sind, ermöglicht der lokale Betrieb eine vollständige Kontrolle über die Daten ohne API-Abhängigkeit.",
+  "weights_provenance_risk_rationale": "Meta ist ein US-Unternehmen; die Gewichte sind öffentlich zugänglich, und lokaler Betrieb vermeidet API-Datenabfluss.",
   "top_p": null,
   "top_k": null,
   "repetition_penalty": null,
@@ -71,7 +71,7 @@
   "system_prompt_override": null,
   "cot_marker_family": null,
   "cot_tags_detected": null,
-  "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
+  "profile_verified_by": "llm:perplexity",
   "last_modified_at": "2026-06-20",
   "heritage_ids": [],
   "community": null

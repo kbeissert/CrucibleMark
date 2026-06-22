@@ -6,7 +6,7 @@
   ],
   "card_status": "complete",
   "commercial_use_allowed": true,
-  "context_window_k": 128,
+  "context_window_k": 256,
   "deployment_type": "open-weights-cloud-available",
   "developer": "Moonshot AI",
   "developer_jurisdiction": "CN",
@@ -17,10 +17,11 @@
   "knowledge_cutoff": "2025-06",
   "known_limitations": [
     "Chinesischer Anbieter mit erhöhtem Sovereign-Risk",
-    "Internes Reasoning ist nicht in jeder API-Integration sichtbar"
+    "Internes Reasoning ist nicht in jeder API-Integration sichtbar",
+    "Text-only; keine Bild- oder Videoinput-Unterstützung"
   ],
-  "license": "Moonshot AI License",
-  "license_url": "https://huggingface.co/moonshotai/Kimi-K2-Instruct/blob/main/LICENSE",
+  "license": "Modified MIT",
+  "license_url": "https://huggingface.co/moonshotai/Kimi-K2-Thinking",
   "local_deployment_possible": true,
   "model_family": "Kimi",
   "model_id": "moonshotai/kimi-k2-thinking-20251106",
@@ -37,18 +38,18 @@
     "Effiziente MoE-Architektur für hohe Rechenleistung",
     "Native Kombination von Denken und Tool Use"
   ],
-  "summary": "Kimi K2 Thinking ist das Reasoning-Modell von Moonshot AI aus China, das schrittweises Denken mit Tool-Calls kombiniert. Es nutzt eine MoE-Architektur mit 1T Gesamtparametern und 32B aktivierten Parametern. Mit einem Kontextfenster von 128K ist das Modell auf komplexe, agentische Aufgaben und lange Reasoning-Ketten optimiert und über Cloud-Schnittstellen verfügbar.",
+  "summary": "Kimi K2 Thinking ist das Reasoning-Modell von Moonshot AI aus China, das schrittweises Denken mit Tool-Calls kombiniert. Es nutzt eine MoE-Architektur mit 1T Gesamtparametern und 32B aktivierten Parametern. Mit einem Kontextfenster von 256K ist das Modell auf komplexe, agentische Aufgaben und lange Reasoning-Ketten optimiert und über Cloud-Schnittstellen verfügbar.",
   "supports_tool_use": true,
-  "thinking_probe_at": "2026-05-16T18:49:05.342822+00:00",
-  "thinking_probe_confidence": "high",
   "thinking_probe_detected": true,
-  "thinking_probe_evidence": "Manual override: kimi-k2-thinking is the explicit thinking/reasoning variant of kimi-k2 with <think>-tag output.",
+  "thinking_probe_evidence": "explicit thinking model with forced thinking according to Moonshot docs; provider metadata contains reasoning tokens",
+  "thinking_probe_confidence": "high",
+  "thinking_probe_at": "2026-05-16T18:49:05.342822+00:00",
   "unknown": false,
   "use_case_primary": "reasoning",
   "vendor": "Moonshot AI",
   "weights_license_tier": "open-weights",
   "weights_provenance_risk": "high",
-  "weights_provenance_risk_rationale": "Moonshot AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten ermöglichen kann. Das BSI hat im Februar 2025 explizit vor der Nutzung chinesischer KI-Cloud-Dienste gewarnt (BSI-Referenz: Warnung DeepSeek, 04.02.2025); diese Risikoeinschätzung gilt analog für alle chinesischen Cloud-KI-Anbieter, die Nutzerdaten auf chinesischen Servern verarbeiten.",
+  "weights_provenance_rationale": "Moonshot AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten ermöglichen kann. Das BSI hat im Februar 2025 explizit vor der Nutzung chinesischer KI-Cloud-Dienste gewarnt; diese Risikoeinschätzung gilt konservativ auch hier.",
   "top_p": null,
   "top_k": null,
   "repetition_penalty": null,
@@ -57,8 +58,7 @@
   "seed": null,
   "stop_sequences": null,
   "input_modalities": [
-    "text",
-    "image"
+    "text"
   ],
   "output_modalities": [
     "text"
@@ -73,7 +73,7 @@
   "system_prompt_override": null,
   "cot_marker_family": null,
   "cot_tags_detected": null,
-  "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
+  "profile_verified_by": "llm:perplexity",
   "last_modified_at": "2026-06-20",
   "heritage_ids": [],
   "community": null

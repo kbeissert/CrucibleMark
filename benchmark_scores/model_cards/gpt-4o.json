@@ -1,7 +1,8 @@
 {
   "architecture_tags": [
     "General",
-    "Instruct"
+    "Instruct",
+    "Multimodal"
   ],
   "card_status": "complete",
   "commercial_use_allowed": true,
@@ -22,7 +23,7 @@
   "license": "Proprietary",
   "license_url": null,
   "local_deployment_possible": false,
-  "model_family": "GPT-4",
+  "model_family": "GPT",
   "model_id": "gpt-4o",
   "model_version": "2024-05-13",
   "origin_country": "USA",
@@ -48,7 +49,7 @@
   "vendor": "OpenAI",
   "weights_license_tier": "proprietary",
   "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen, dessen Modellgewichte nicht öffentlich sind und dem CLOUD Act unterliegen, jedoch kein staatlich mandatierter Zugriff wie beim chinesischen NSL bekannt ist.",
+  "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act. Bei API-Nutzung verlassen Eingabedaten das lokale Netz – behördlicher Zugriff auf verarbeitete Daten ist rechtlich möglich.",
   "tooluse_tested_at": "2026-05-25T17:37:53Z",
   "top_p": null,
   "top_k": null,
@@ -74,7 +75,7 @@
   "system_prompt_override": null,
   "cot_marker_family": null,
   "cot_tags_detected": null,
-  "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
+  "profile_verified_by": "llm:perplexity",
   "last_modified_at": "2026-06-20",
   "heritage_ids": [],
   "community": null

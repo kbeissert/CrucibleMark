@@ -17,7 +17,8 @@
   "known_limitations": [
     "Kein lokales Deployment der Gewichte möglich",
     "Modell ist ein Vorgängermodell aktuellerer Mistral-Generationen",
-    "Kontextfenster ist im Vergleich zu aktuellen Frontier-Modellen begrenzt"
+    "Kontextfenster ist im Vergleich zu aktuellen Frontier-Modellen begrenzt",
+    "Retired; nicht mehr als aktives Produktmodell führen"
   ],
   "license": "Proprietary",
   "license_url": null,
@@ -37,12 +38,12 @@
     "Gute Leistung bei multilingualen Standardaufgaben",
     "Einfache Integration über die offizielle Mistral-API"
   ],
-  "summary": "Mistral Medium 1.0 ist ein proprietäres API-Modell von Mistral AI, das für allgemeine produktive Anwendungen konzipiert wurde. Es bietet ein Kontextfenster von 32K Token und ist auf eine ausgewogene Balance zwischen Antwortqualität und Effizienz optimiert. Das Modell ist ausschließlich über die Mistral-API zugänglich, da keine öffentlichen Gewichte zur Verfügung gestellt werden.",
+  "summary": "Mistral Medium 1.0 ist ein proprietäres API-Modell von Mistral AI, das für allgemeine produktive Anwendungen konzipiert wurde. Es bietet ein Kontextfenster von 32K Token und ist auf eine ausgewogene Balance zwischen Antwortqualität und Effizienz optimiert. Das Modell ist ausschließlich über die Mistral-API zugänglich und wurde am 16. Juni 2025 retired.",
   "supports_tool_use": true,
-  "thinking_probe_at": "2026-04-23T13:57:05.868894+00:00",
-  "thinking_probe_confidence": "low",
   "thinking_probe_detected": false,
   "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 519 chars",
+  "thinking_probe_confidence": "low",
+  "thinking_probe_at": "2026-04-23T13:57:05.868894+00:00",
   "unknown": false,
   "use_case_primary": "generalist",
   "vendor": "Mistral AI",
@@ -72,7 +73,7 @@
   "system_prompt_override": null,
   "cot_marker_family": null,
   "cot_tags_detected": null,
-  "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
+  "profile_verified_by": "llm:perplexity",
   "last_modified_at": "2026-06-20",
   "heritage_ids": [],
   "community": null

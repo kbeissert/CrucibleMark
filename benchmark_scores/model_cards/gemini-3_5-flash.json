@@ -1,30 +1,33 @@
 {
   "model_id": "gemini-3.5-flash",
   "display_name": "Gemini 3.5 Flash",
-  "developer": "Google",
+  "developer": "Google DeepMind",
   "origin_country": "USA",
   "developer_jurisdiction": "US",
   "deployment_type": "cloud-only",
   "local_deployment_possible": false,
   "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "Google ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, jedoch sind die Modellgewichte nicht öffentlich zugänglich.",
+  "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act; die Modellgewichte sind nicht öffentlich zugänglich.",
   "model_family": "Gemini",
   "primary_focus": "general",
-  "summary": "Gemini 3.5 Flash ist Googles schnelles Flash-Modell für Coding, Agenten und multimodale Aufgaben mit sehr großem Kontextfenster. Die Card beschreibt es als effizienter als schwerere Gemini-Modelle, aber klar auf Geschwindigkeit und hohen Durchsatz optimiert. Es ist ausschließlich über die Google-API verfügbar.",
+  "summary": "Gemini 3.5 Flash ist Googles schnellstes Frontier-Modell (GA seit Google I/O 2026), das nahezu Pro-Level-Reasoning bei Flash-Kosten bietet. Mit Dynamic Thinking (Standard: Medium), 1M-Token-Kontextfenster und vollständiger Multimodalität (Text, Bild, Audio, Video, PDF) ist es für agentische Workflows, Coding und High-Volume-Workloads optimiert. Es ist ausschließlich über die Google-API verfügbar.",
   "strengths": [
-    "Sehr schnelle Inferenz bei hohem Durchsatz",
-    "Stark für Coding- und Agenten-Aufgaben",
-    "Nativ multimodal mit sehr langem Kontext"
+    "Frontier-Level Coding und Reasoning bei Flash-Kosten – übertrifft Gemini 3.1 Pro auf SWE-Bench",
+    "Dynamic Thinking mit konfigurierbaren Levels (minimal/low/medium/high) für Kosten-Qualitäts-Tradeoff",
+    "Vollständig multimodal: Text, Bild, Audio, Video (bis 1h), PDF – natives 1M-Token-Kontextfenster",
+    "~4× schneller als vergleichbare Frontier-Modelle, 59.59 Tokens/s"
   ],
   "known_limitations": [
     "Nur über die Google-API nutzbar",
-    "Schwächer als Pro-Modelle bei harter Reasoning-Tiefe",
-    "Preview-nahe Verfügbarkeit kann sich ändern"
+    "Teurer als Vorgänger (3× Flash 3 Preview, 6× Flash-Lite) – kein Low-Budget-Modell mehr",
+    "Token-Budget-Kollisionen bei komplexen Aufgaben möglich (internes Reasoning erhöht Verbosity)",
+    "Natives Audio-Output nicht im Benchmark erfasst – output_modalities spiegelt nur getestete Modalitäten wider."
   ],
-  "judge_context_hint": "Schnelles Flash-Modell für Coding und agentische Workloads. Antworten sollten auf Effizienz und Brauchbarkeit geprüft werden, nicht auf maximale Reasoning-Tiefe.",
+  "judge_context_hint": "Schnelles Flash-Modell mit Dynamic Thinking für Coding und agentische Workloads. Antworten sollten auf Effizienz und Brauchbarkeit geprüft werden, nicht auf maximale Reasoning-Tiefe.",
   "architecture_tags": [
     "General",
-    "Multimodal"
+    "Thinking-Optional",
+    "Agentic-Orchestrator"
   ],
   "unknown": false,
   "generated_at": "2026-06-09T20:32:00.000000+00:00",
@@ -41,14 +44,14 @@
   "vendor": "Google",
   "weights_license_tier": "proprietary",
   "model_version": "3.5-flash",
-  "input_price_per_1m": 1.5,
+  "input_price_per_1m": 1.50,
   "output_price_per_1m": 9.0,
-  "use_case_primary": "vision-language",
+  "use_case_primary": "generalist",
   "parameter_architecture": "moe",
   "params_total_b": null,
   "params_active_b": null,
   "context_window_k": 1000,
-  "knowledge_cutoff": "2026-01",
+  "knowledge_cutoff": "2025-01",
   "top_p": null,
   "top_k": null,
   "repetition_penalty": null,
@@ -59,13 +62,13 @@
   "input_modalities": [
     "text",
     "image",
-    "audio"
+    "audio",
+    "video"
   ],
   "output_modalities": [
     "text"
   ],
   "profile_verified": true,
-  "profile_verified_at": "2026-06-20",
   "tooluse_tested_at": null,
   "tooluse_score_p1": null,
   "tooluse_score_p2": null,
@@ -74,6 +77,7 @@
   "system_prompt_override": null,
   "cot_marker_family": null,
   "cot_tags_detected": null,
+  "profile_verified_at": "2026-06-20",
   "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
   "last_modified_at": "2026-06-20",
   "heritage_ids": [],

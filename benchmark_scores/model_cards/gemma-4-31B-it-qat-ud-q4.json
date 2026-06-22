@@ -1,51 +1,51 @@
 {
   "model_id": "gemma-4-31B-it-qat-ud-q4",
   "display_name": "Gemma 4 31B Instruct (Unsloth QAT UD-Q4)",
-  "developer": "Google DeepMind",
+  "developer": "Google DeepMind (Base) / Unsloth (Community-Distribution)",
   "origin_country": "USA",
   "developer_jurisdiction": "US",
   "deployment_type": "localweights",
   "local_deployment_possible": true,
-  "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "Gemma 4 ist unter der Apache 2.0 Lizenz verfuehgbart. Google DeepMind ist ein US-amerikanisches Unternehmen, was das Risiko durch den CLOUD Act begruendet.",
-  "model_family": "Gemma 4",
+  "weights_provenance_risk": "low",
+  "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der primär bei API-/Cloud-Nutzung relevant ist, nicht bei lokal betriebenen Gewichten. Bei ausschliesslich lokaler Inferenz ohne Cloud-Verbindung ist das Risikoszenario minimal.",
+  "model_family": "Gemma",
   "vendor": "Google DeepMind / Unsloth (Quantisierung)",
-  "primary_focus": "generalist",
+  "primary_focus": "general",
   "use_case_primary": "generalist",
   "parameter_architecture": "dense",
   "params_total_b": 31.0,
   "params_active_b": 31.0,
-  "context_window_k": 128,
+  "context_window_k": 256,
   "knowledge_cutoff": "2025-01",
-  "summary": "Gemma 4 31B Instruct als QAT UD-Q4 via llama.cpp auf DGX Spark betrieben. QAT (Quantization-Aware Training) erzeugt eine praezisere Q4-Variante als nachtraecliche Post-Training-Quantisierung. Die Dense-Architektur umfasst 31B Parameter. UD-Q4 (Unsloth Dynamic Q4) ist ein optimiertes Mixed-Precision-Format, das die Modellqualitaet bei geringem VRAM-Bedarf maximiert.",
+  "summary": "Gemma 4 31B Instruct (QAT UD-Q4, Unsloth) ist eine quantisierungsbewusst trainierte Dense-Variante mit 31B Parametern, betrieben via llama.cpp auf DGX Spark. QAT liefert signifikant bessere Q4-Qualität als Post-Training-Quantisierung. Kein Thinking-Modus nachgewiesen (thinking_probe_detected=false). Tool Use: P1=90%, P2=56.67% – PRODUCTION. Im Benchmark ohne mmproj geladen → reine Text-Inferenz.",
   "strengths": [
-    "QAT-Quantisierung: Signifikant bessere Qualität als Post-Training-Q4 – Gewichte wurden quantisierungsbewusst trainiert",
-    "UD-Q4 (Unsloth Dynamic): Optimiertes Mixed-Precision-Format mit per-Layer-Entscheidung",
-    "Lokaler Betrieb auf NVIDIA DGX Spark – dedizierte GPU-Hardware",
-    "Multimodal: Unterstützt Text- und Bildeingaben",
-    "Solide Instruktionsbefolgung und strukturierte Antwortgenerierung bei mittlerer Modellgröße"
+    "QAT: präzisere Q4-Variante als Post-Training-Quantisierung – Gewichte quantisierungsbewusst trainiert",
+    "UD-Q4 (Unsloth Dynamic): Mixed-Precision mit per-Layer-Entscheidung",
+    "Tool Use: P1=90%, P2=56.67% – Empfehlung PRODUCTION",
+    "Solides Instruction-Following bei 31B Dense-Kapazität",
+    "Apache 2.0: vollständig kommerziell nutzbar und modifizierbar"
   ],
   "known_limitations": [
-    "Q4-Quantisierung zeigt gegenüber Q8 messbare Qualitätsunterschiede bei komplexen Code/Security-Audits",
-    "Kein echtes Chain-of-Thought Reasoning (thinking_probe_detected=false – Inline-Probe-Signal war Signal C / Antwortlänge, kein gültiger Nachweis)",
-    "Sehr niedrige Tokens/s (~7,67) auf DGX Spark – Speed Profile ❌ Unusable für interaktive Anwendungsfälle",
-    "Audio-Input nicht unterstützt"
+    "Q4-Quantisierung zeigt gegenüber Q8 messbare Qualitätsunterschiede bei komplexen Reasoning-Aufgaben",
+    "Kein Thinking-Modus (thinking_probe_detected=false – kein Signal A/B, nur Signal C als falsch-positiv korrigiert)",
+    "Sehr niedrige Inferenzgeschwindigkeit (~7,67 t/s auf DGX Spark) – nicht geeignet für interaktive Echtzeit-Anwendungen",
+    "Multimodalität externalisiert: Bild/Audio/Video erfordern separate mmproj-GGUF. Im Benchmark ohne mmproj geladen → reine Text-Inferenz."
   ],
-  "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, 128 GB Unified Memory, davon ~120 GB für Modell + Kontext nutzbar; Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). Dense 31B-Modell von Google DeepMind, QAT UD-Q4 auf DGX Spark. Kein internes Reasoning-Budget (thinking_probe_detected=false). Antworten sind strukturiert und detailliert, aber ohne verstecktes Chain-of-Thought. Langsame Token-Generierung (~8 t/s) kann Antwortqualität bei zeitlimitierten Tasks beeinflussen.",
+  "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, 128 GB Unified Memory, davon ~120 GB für Modell + Kontext nutzbar; Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). Dense 31B, QAT UD-Q4. Kein Thinking-Modus (thinking_probe_detected=false). Ohne mmproj geladen → reine Text-Inferenz. Langsame Inferenz (~8 t/s) berücksichtigen. Tool Use: P1=90%, P2=56.67% – PRODUCTION.",
   "architecture_tags": [
-    "Vision-Capable",
-    "General"
+    "General",
+    "Instruct",
+    "Agentic-Orchestrator"
   ],
   "input_modalities": [
-    "text",
-    "image"
+    "text"
   ],
   "output_modalities": [
     "text"
   ],
   "supports_tool_use": true,
   "license": "Apache 2.0",
-  "license_url": "https://ai.google.dev/gemma/terms",
+  "license_url": "https://opensource.org/licenses/Apache-2.0",
   "commercial_use_allowed": true,
   "weights_license_tier": "open-weights",
   "model_version": "UD-Q4 (GGUF/QAT)/SPRK",
@@ -73,7 +73,7 @@
   "profile_verified": true,
   "profile_verified_at": "2026-06-20",
   "community": "Unsloth",
-  "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
+  "profile_verified_by": "llm:perplexity",
   "last_modified_at": "2026-06-20",
   "temperature": null,
   "system_prompt_override": null,

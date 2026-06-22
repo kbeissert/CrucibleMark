@@ -1,5 +1,6 @@
 {
   "architecture_tags": [
+    "General",
     "Vision-Capable",
     "Agentic"
   ],
@@ -18,8 +19,8 @@
     "Inhaltliche Restriktionen: Mögliche Zensur oder eingeschränkte Antworten bei politisch sensiblen Themen (chinesische Herkunft)",
     "Verfügbarkeit: Gewichte (Weights) sind erst kurz nach dem API-Launch verfügbar"
   ],
-  "license": "MiniMax Open License (enterprise-friendly, permissive)",
-  "license_url": "https://www.minimax.io/models/text/m3",
+  "license": "MiniMax Community License",
+  "license_url": "https://huggingface.co/MiniMaxAI/MiniMax-M3/blob/main/LICENSE",
   "local_deployment_possible": true,
   "model_family": "MiniMax",
   "model_id": "minimax/minimax-m3",
@@ -27,8 +28,8 @@
   "origin_country": "China",
   "output_price_per_1m": 1.2,
   "parameter_architecture": "moe",
-  "params_active_b": null,
-  "params_total_b": null,
+  "params_active_b": 23.0,
+  "params_total_b": 428.0,
   "primary_focus": "agentic",
   "size_class": "Frontier",
   "strengths": [
@@ -36,18 +37,18 @@
     "Effiziente Multimodalität: Native Verarbeitung von Text, Bild und Video",
     "Extreme Skalierbarkeit: 1M Token Kontext mit massiver Geschwindigkeitssteigerung (MSA-Architektur)"
   ],
-  "summary": "MiniMax M3 ist ein multimodales MoE-Modell mit einem Kontextfenster von einer Million Token. Es verarbeitet Text, Bild und Video als Input und liefert Text als Output. Dank der MSA-Architektur bietet das Modell ein extrem schnelles Prefill sowie Decoding. Die Schwerpunkte liegen auf agentischen Workflows, Coding und Tool-Use. Das Modell stammt aus China; die Gewichte werden etwa zehn Tage nach dem API-Launch veroeffentlicht.",
+  "summary": "MiniMax M3 ist ein multimodales MoE-Modell mit einem Kontextfenster von einer Million Token. Es verarbeitet Text, Bild und Video als Input und liefert Text als Output. Dank der MSA-Architektur bietet das Modell ein extrem schnelles Prefill sowie Decoding. Die Schwerpunkte liegen auf agentischen Workflows, Coding und Tool-Use. Das Modell stammt aus China und wurde als Open-Weights-Modell veröffentlicht, wobei die Gewichte kurz nach dem API-Launch verfügbar wurden.",
   "supports_tool_use": true,
-  "thinking_probe_at": "2026-06-01T00:00:00.000000+00:00",
-  "thinking_probe_confidence": "high",
   "thinking_probe_detected": true,
-  "thinking_probe_evidence": "Manual override: MiniMax M3 wird als reasoning-faehiges Chat-Modell ohne explizite Thinking-Tag-Ausgabe gefuehrt.",
+  "thinking_probe_evidence": "MiniMax M3 is a reasoning-capable chat model with toggleable thinking mode rather than explicit visible CoT tags.",
+  "thinking_probe_confidence": "high",
+  "thinking_probe_at": "2026-06-01T00:00:00.000000+00:00",
   "unknown": false,
   "use_case_primary": "agentic",
   "vendor": "MiniMax",
-  "weights_license_tier": "restricted-weights",
+  "weights_license_tier": "open-weights",
   "weights_provenance_risk": "high",
-  "weights_provenance_risk_rationale": "MiniMax ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten ermöglichen kann. Das BSI hat im Februar 2025 explizit vor der Nutzung chinesischer KI-Cloud-Dienste gewarnt (BSI-Referenz: Warnung DeepSeek, 04.02.2025); diese Risikoeinschätzung gilt analog für alle chinesischen Cloud-KI-Anbieter, die Nutzerdaten auf chinesischen Servern verarbeiten.",
+  "weights_provenance_risk_rationale": "MiniMax ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten ermöglichen kann. Das Modell wurde als open-weight veröffentlicht, bleibt aber aus souveränitätsbezogener Sicht hochriskant, wenn Daten oder Workflows in der chinesischen Jurisdiktion verarbeitet werden.",
   "top_p": null,
   "top_k": null,
   "repetition_penalty": null,
@@ -57,7 +58,8 @@
   "stop_sequences": null,
   "input_modalities": [
     "text",
-    "image"
+    "image",
+    "video"
   ],
   "output_modalities": [
     "text"
@@ -72,7 +74,7 @@
   "system_prompt_override": null,
   "cot_marker_family": null,
   "cot_tags_detected": null,
-  "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
+  "profile_verified_by": "llm:perplexity",
   "last_modified_at": "2026-06-20",
   "heritage_ids": [],
   "community": null

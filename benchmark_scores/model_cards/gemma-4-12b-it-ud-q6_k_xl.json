@@ -6,34 +6,37 @@
   "developer_jurisdiction": "US",
   "deployment_type": "localweights",
   "local_deployment_possible": true,
-  "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen (Medium Risk durch CLOUD Act bei Cloud-Nutzung). Die Gewichte liegen unter der permissiven Apache 2.0 Lizenz vor. Die Q6_K-Quantisierung optimiert die Balance zwischen Modellpräzision und lokalem Speicherbedarf.",
+  "weights_provenance_risk": "low",
+  "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der primär bei API-/Cloud-Nutzung relevant ist, nicht bei lokal betriebenen Gewichten. Bei ausschliesslich lokaler Inferenz ohne Cloud-Verbindung ist das Risikoszenario minimal.",
   "model_family": "Gemma",
   "vendor": "Google DeepMind / UndiX (Quantisierung)",
-  "primary_focus": "generalist",
+  "primary_focus": "general",
   "use_case_primary": "vision-language",
   "parameter_architecture": "dense",
   "params_total_b": 12,
   "params_active_b": 12,
-  "context_window_k": 128,
+  "context_window_k": 256,
   "knowledge_cutoff": "2025-01",
-  "summary": "Gemma 4 12B Instruct (Q6_K_XL, UndiX-Distribution) ist ein kompaktes Mid-Size-Modell von Google DeepMind, das unter der permissiven Apache 2.0 Lizenz steht. Diese 6-Bit-Quantisierung bietet eine hohe Modellqualität bei moderatem Speicherbedarf. Das Modell verfügt über ein 128K Kontextfenster, unterstützt Multimodalität (Text, Bild, Video) und bietet durch den Thinking-Modus fortgeschrittene Reasoning-Fähigkeiten.",
+  "summary": "Gemma 4 12B Instruct (Q6_K_XL, UndiX-Distribution) ist eine 6-Bit-Quantisierung von Googles encoder-freiem Multimodal-Modell (Release: 3. Juni 2026). Q6_K_XL bietet hohe Modellqualität bei moderatem Speicherbedarf und unterstützt Text, Bild, Audio und Video nativ ohne separate Encoder. Apache-2.0-Lizenz erlaubt uneingeschränkte kommerzielle Nutzung. Konfigurierbare Thinking-Modi (reasoning_tokens nachgewiesen). Im Benchmark ohne mmproj-Datei geladen – das Modell verhält sich als reines Text-LLM. Multimodalität ist durch Nachladen der separaten mmproj-GGUF (verfügbar via ggml-org/HuggingFace) aktivierbar.",
   "strengths": [
-    "Q6_K-Quantisierung: hohe Präzision bei optimiertem Speicherverbrauch",
-    "Solides Instruction-Following durch gezieltes IT-Fine-Tuning",
-    "Multimodalität mit nativem Bild- und Videoverständnis",
-    "Permissive Apache 2.0 Lizenz für uneingeschränkte Nutzung",
-    "Guter Kompromiss zwischen Reasoning-Kapazität und Hardware-Anforderungen"
+    "Q6_K_XL: höhere Präzision als Q4 bei ~20–25% mehr Speicherbedarf",
+    "Encoder-freie Multimodal-Architektur: Text, Bild, Audio und Video nativ",
+    "Konfigurierbare Thinking-Modi – reasoning_tokens in Probe nachgewiesen",
+    "Apache 2.0: vollständig kommerziell nutzbar, modifizierbar und verteilbar",
+    "Multi-Token-Prediction (MTP) Drafter für schnellere Inferenz"
   ],
   "known_limitations": [
-    "Höherer VRAM-Bedarf der Q6-Quantisierung im Vergleich zu Q4-Versionen",
-    "Reduzierte Reasoning-Tiefe gegenüber den deutlich größeren Gemma 4 Modellen (26B/31B)",
-    "Lokale Hardware-Anforderungen für flüssige multimodale Inferenz"
+    "Höherer VRAM-Bedarf als Q4-Varianten – M4 Mac (~18 GB UMA) ausreichend, aber knapper",
+    "Reduzierte Reasoning-Tiefe gegenüber größeren Gemma-4-Modellen (26B/31B)",
+    "Audio-Input in GGUF/llama.cpp-Deployment je nach Pipeline-Unterstützung eingeschränkt",
+    "Community-Distribution statt offizieller Google-Verpackung",
+	"Multimodalität externalisiert: Bild/Audio/Video erfordern eine separate mmproj-GGUF-Datei (~wenige MB bis ~1 GB). Die Unsloth-Variante nutzt keine separaten Encoder-Gewichte (encoder-frei), aber spezifische Projektions-Tensoren werden über mmproj bereitgestellt. Im Benchmark ohne mmproj geladen → reine Text-Inferenz."
   ],
-  "judge_context_hint": "Plattform: Apple M4 Mac (lokale Ausführung). Gemma 4 12B Instruct Q6_K_XL (UndiX-Distribution) ist ein kompaktes 12B-Modell mit Multimodalität (Text/Bild/Video) und 128K Kontext. Lizenz: Apache 2.0 (open-weights). Q6-Quantisierung bietet hohe Qualität bei moderatem Speicherbedarf.",
+  "judge_context_hint": "Plattform: Apple M4 Mac (~18 GB Unified Memory, Metal-GPU, lokal — kein Cloud-Provider, kein externer Datentransfer). Encoder-freie Multimodal-Variante (Text, Bild, Audio, Video) mit konfigurierbaren Thinking-Modi (reasoning_tokens=512 nachgewiesen). Q6_K_XL bietet höhere Präzision als Q4 bei moderatem Mehrspeicher.",
   "architecture_tags": [
-    "Thinking",
+    "General",
     "Instruct",
+    "Thinking-Optional",
     "Multimodal"
   ],
   "input_modalities": [
@@ -44,7 +47,7 @@
   ],
   "supports_tool_use": true,
   "license": "Apache 2.0",
-  "license_url": "https://ai.google.dev/gemma/terms",
+  "license_url": "https://opensource.org/licenses/Apache-2.0",
   "commercial_use_allowed": true,
   "weights_license_tier": "open-weights",
   "model_version": "4 (Q6_K_XL GGUF)",
@@ -76,7 +79,7 @@
   "system_prompt_override": null,
   "cot_marker_family": null,
   "cot_tags_detected": null,
-  "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
+  "profile_verified_by": "llm:perplexity",
   "last_modified_at": "2026-06-20",
   "heritage_ids": []
 }

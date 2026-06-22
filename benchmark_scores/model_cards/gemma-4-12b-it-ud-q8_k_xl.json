@@ -1,52 +1,51 @@
 {
   "model_id": "gemma-4-12b-it-ud-q8_k_xl",
   "display_name": "Gemma 4 12B Instruct Q8_K_XL (UndiX-Derivative)",
-  "developer": "Google DeepMind",
+  "developer": "Google DeepMind (Base) / UndiX (Community-Distribution)",
   "origin_country": "USA",
   "developer_jurisdiction": "US",
   "deployment_type": "localweights",
   "local_deployment_possible": true,
-  "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen. Da das Modell unter der Apache 2.0 Lizenz steht, ist die kommerzielle Nutzung unbeschaenkt moeglich. Die Q8_K_XL-Quantisierung bietet eine hohe Praezision nahe am Originalzustand bei optimiertem Speicherbedarf.",
+  "weights_provenance_risk": "low",
+  "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der primär bei API-/Cloud-Nutzung relevant ist, nicht bei lokal betriebenen Gewichten. Bei ausschliesslich lokaler Inferenz ohne Cloud-Verbindung ist das Risikoszenario minimal.",
   "model_family": "Gemma",
   "vendor": "Google DeepMind / UndiX (Quantisierung)",
-  "primary_focus": "generalist",
+  "primary_focus": "general",
   "use_case_primary": "vision-language",
   "parameter_architecture": "dense",
   "params_total_b": 12,
   "params_active_b": 12,
-  "context_window_k": 128,
+  "context_window_k": 256,
   "knowledge_cutoff": "2025-01",
-  "summary": "Gemma 4 12B Instruct (Q8_K_XL, UndiX-Distribution) ist ein effizientes Mid-Size-Modell von Google DeepMind, das unter der permissiven Apache 2.0 Lizenz steht. Es bietet 12B Parameter, ein 128K Kontextfenster und native Multimodalität fuer Text, Bild und Audio. Die Q8-Quantisierung liefert nahezu FP16-Qualitaet bei optimiertem Speicherbedarf fuer lokale Anwendungen.",
+  "summary": "Gemma 4 12B Instruct (Q8_K_XL, UndiX-Distribution) ist die höchstpräzise GGUF-Variante von Googles encoder-freiem Multimodal-Modell (Release: 3. Juni 2026). Die Q8_K_XL-Quantisierung liefert nahezu FP16-Qualität bei optimiertem Speicherbedarf. Im Benchmark ohne mmproj-Datei geladen – das Modell verhält sich als reines Text-LLM. Multimodalität (Bild, Audio, Video) ist durch Nachladen der separaten mmproj-GGUF aktivierbar, für diesen Benchmark jedoch irrelevant.",
   "strengths": [
-    "Q8_K_XL-Quantisierung: nahe FP16-Qualitaet bei reduziertem Speicherbedarf",
-    "Solides Instruction-Following durch gezieltes IT-Fine-Tuning",
-    "Multimodal mit nativem Bild- und Videoverstand",
-    "UndiX-Distribution: bewaehrte Community-Wartung",
-    "Uneingeschraenkte kommerzielle Nutzung durch Apache 2.0 Lizenz"
+    "Q8_K_XL: nahezu FP16-Qualität – höchste Präzision aller UndiX-Gemma-4-12B-Varianten",
+    "Konfigurierbare Thinking-Modi – reasoning_tokens=512 in Probe nachgewiesen",
+    "Apache 2.0: vollständig kommerziell nutzbar, modifizierbar und verteilbar",
+    "Multi-Token-Prediction (MTP) Drafter für schnellere Inferenz",
+    "Encoder-freie Basis: Multimodalität via mmproj nachrüstbar ohne separate Encoder-Gewichte"
   ],
   "known_limitations": [
-    "Q8-Quantisierung erfordert deutlich mehr VRAM als Q4 oder Q6 Versionen",
-    "Geringere Kapazitaet fuer komplexe Reasoning-Ketten im Vergleich zu den 26B oder 31B Modellen",
-    "Lokale Ausfuehrung erfordert ausreichende Hardware-Ressourcen"
+    "Q8_K_XL erfordert deutlich mehr VRAM als Q4/Q6 – auf M4 Mac (~18 GB UMA) sehr knapp",
+    "Multimodalität externalisiert: Bild/Audio/Video erfordern separate mmproj-GGUF (~wenige MB, via ggml-org/HuggingFace). Im Benchmark ohne mmproj geladen → reine Text-Inferenz.",
+    "Geringere Reasoning-Tiefe gegenüber größeren Gemma-4-Modellen (26B/31B)",
+    "Community-Distribution statt offizieller Google-Verpackung"
   ],
-  "judge_context_hint": "Lokale Ausfuehrung auf Apple M4 Mac. Gemma 4 12B Instruct (UndiX Q8_K_XL) ist ein multimodales Modell mit Apache 2.0 Lizenz und 128K Kontext. Beachte die spezifischen Anforderungen der Q8-Quantisierung an den Speicher.",
+  "judge_context_hint": "Plattform: Apple M4 Mac (~18 GB Unified Memory, Metal-GPU, lokal — kein Cloud-Provider, kein externer Datentransfer). Gemma 4 12B Q8_K_XL ohne mmproj geladen → reine Text-Inferenz. Konfigurierbare Thinking-Modi (reasoning_tokens=512 nachgewiesen). Höchste Präzision aller 12B-UndiX-Varianten.",
   "architecture_tags": [
-    "Thinking",
+    "General",
     "Instruct",
-    "Multimodal"
+    "Thinking-Optional"
   ],
   "input_modalities": [
-    "text",
-    "image",
-    "audio"
+    "text"
   ],
   "output_modalities": [
     "text"
   ],
   "supports_tool_use": true,
   "license": "Apache 2.0",
-  "license_url": "https://ai.google.dev/gemma/terms",
+  "license_url": "https://opensource.org/licenses/Apache-2.0",
   "commercial_use_allowed": true,
   "weights_license_tier": "open-weights",
   "model_version": "4 (Q8_K_XL GGUF)",
@@ -70,7 +69,7 @@
   "profile_verified": true,
   "profile_verified_at": "2026-06-20",
   "community": "Unsloth",
-  "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
+  "profile_verified_by": "llm:perplexity",
   "last_modified_at": "2026-06-20",
   "tooluse_tested_at": null,
   "tooluse_score_p1": null,
