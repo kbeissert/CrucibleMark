@@ -43,9 +43,10 @@ providers:
       api_type: anthropic
       model_type: proprietary_api
       enabled: true
-      max_tokens: 8192
-      fallback_max_tokens: 4096
+      max_tokens: 32768
       env_var: ANTHROPIC_API_KEY
+      model_max_tokens:
+        claude-haiku-4-5-20251001: 8192
       models:
       - id: claude-opus-4-7
         name: Claude Opus 4.7
@@ -187,10 +188,31 @@ providers:
         moonshotai/kimi-k2: 16000
         deepseek/deepseek-v4-pro: 16000
         deepseek/deepseek-v4-flash: 16000
+
+      # Xiaomi MiMo Thinking-Modelle — Reasoning-Anteile benötigen höheres Budget
+        xiaomi/mimo-v2.5-pro: 20000
+        xiaomi/mimo-v2.5: 16000
       models:
       - id: nvidia/nemotron-3-ultra-550b-a55b
-        name: NVIDIA Nemotron 3 Ultra via OpenRouter
-        model_type: open_weights_cloud
+        name: NVIDIA Nemotron 3 Ultra 550B MoE via OpenRouter
+        model_type: open_weights_cloud  # MoE 55B/550B, $0.50/$2.20 per 1M
+      - id: nvidia/llama-3.3-nemotron-super-49b-v1.5
+        name: NVIDIA Llama 3.3 Nemotron Super 49B v1.5 via OpenRouter
+        model_type: open_weights_cloud  # Dense 49B distilled from Llama 3.3, $0.40/$0.40 per 1M
+      - id: nvidia/nemotron-3-nano-30b-a3b
+        name: NVIDIA Nemotron 3 Nano 30B A3B via OpenRouter
+        model_type: open_weights_cloud  # MoE 30B/3B agentic-optimized, $0.05/$0.20 per 1M
+
+      # Xiaomi MiMo — neueste zuerst (getestet 22. Juni 2026)
+      - id: xiaomi/mimo-v2.5-pro
+        name: Xiaomi MiMo V2.5 Pro (Flagship) via OpenRouter
+        model_type: open_weights_cloud  # MoE 1020B/42B, 1M context, agentic, $0.435/$0.87 per 1M
+      - id: xiaomi/mimo-v2.5
+        name: Xiaomi MiMo V2.5 (Omnimodal) via OpenRouter
+        model_type: open_weights_cloud  # MoE 310B/15B, 1M context, omnimodal, $0.14/$0.28 per 1M
+      # - id: xiaomi/mimo-v2-flash
+      #   name: Xiaomi MiMo V2-Flash (Deprecated) via OpenRouter
+      #   model_type: open_weights_cloud  # ❌ DEPRECATED — HTTP 404, OpenRouter leitet auf xiaomi/mimo-v2.5 um
 
       - id: z-ai/glm-5.2
         name: GLM 5.2 (Z.ai) via OpenRouter

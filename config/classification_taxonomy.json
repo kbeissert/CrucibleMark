@@ -349,6 +349,13 @@
           "ARA-APEX Quant"
         ],
         "speciality": "quantization"
+      },
+      "Jackrong": {
+        "label": "Jackrong",
+        "vendor_card_id": "jackrong",
+        "description": "Jackrong — Community Fine-Tuner, spezialisiert auf Trace Inversion SFT und Hermes-Agent-SFT auf Qwen-Basismodellen. Zusammenarbeit mit Kyle Hessling (Trace Inversion Methodology).",
+        "aliases": [],
+        "speciality": "finetune"
       }
     }
   }

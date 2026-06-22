@@ -26,9 +26,10 @@ blacklist:
   # - "gemma-4-12b-it-ud-q8_k_xl"  # Gemma 4 12B Instruct Q8_K_XL (GGUF, UndiX-Derivative)
 
   # === gemma-4-26b (2 Varianten) ===
-  # - "gemma-4-26B-A4B-it-qat-ud-q4"  # Gemma 4 26B-A4B Instruct (QAT, UD-Q4) [Spark]
-  - "gemma-4-26b-a4b-q8"            # Gemma 4 26B-A4B Instruct Q8_K_XL (GGUF)
+  # - "gemma-4-26B-A4B-it-UD-Q5_K_XL-mtp"  # Gemma 4 26B-A4B Instruct (UD-Q5_K_XL, MTP) [Spark]
   - "gemma-4-26B-A4B-it-qat-ud-q4"  # Gemma 4 26B-A4B Instruct (QAT, UD-Q4) [Spark]
+  - "gemma-4-26b-a4b-q8"            # Gemma 4 26B-A4B Instruct Q8_K_XL (GGUF)
+  - "gemma-4-26B-A4B-it-UD-Q8_K_XL"  # Gemma 4 26B-A4B Instruct (UD-Q8_K_XL) [Spark]
 
   # === gemma-4-31b (2 Varianten) ===
   - "gemma-4-31B-it-qat-ud-q4"      # Gemma 4 31B Instruct (QAT, UD-Q4) [Spark]
@@ -64,3 +65,10 @@ blacklist:
 
   # Moonshot AI
   - "moonshotai/kimi-k2.7-code"
+
+  # Mistral AI
+  - "codestral-2405"
+  - "mistral-small-2503"
+
+  # Deepseek
+  - "deepseek_deepseek-chat-v3_1"
