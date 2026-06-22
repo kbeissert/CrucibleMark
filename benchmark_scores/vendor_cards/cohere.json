@@ -1,0 +1,38 @@
+{
+  "vendor_id": "cohere",
+  "display_name": "Cohere",
+  "company": "Cohere Inc.",
+  "headquarters": "Toronto, Ontario, Canada",
+  "founding_year": 2019,
+  "pricing_model": "free-tier+pay-per-token+open-weight",
+  "api_base_url": "https://api.cohere.com",
+  "api_documentation_url": "https://docs.cohere.com",
+  "deployment": {
+    "cloud_act_exposure": false,
+    "applicable_law": "Canada (PIPEDA) / Ontario",
+    "data_residency": "Canada + USA (AWS us-east-1 / us-west-2)",
+    "gdpr_dpa_available": true,
+    "eu_adequacy_decision": true,
+    "data_retention_days": 30,
+    "chinese_nsl_risk": "none"
+  },
+  "privacy_note": "Cohere ist ein kanadisches Unternehmen mit Hauptsitz in Toronto. Kanada besitzt einen EU-Angemessenheitsbeschluss (Art. 45 DSGVO), was den Datentransfer für europäische Nutzer rechtlich erleichtert. PIPEDA gilt als anwendbares Datenschutzrecht. Ein direkter CLOUD-Act-Bezug besteht nicht, da Kanada kein Äquivalent hat. Die API-Infrastruktur läuft primär über AWS in us-east-1/us-west-2 — bei dieser US-basierten Infrastruktur ist ein indirektes CLOUD-Act-Exposure zu berücksichtigen. Für Enterprise-Kunden ist ein DPA verfügbar. Command A+ ist als Open-Weight-Modell (Apache 2.0) auch außerhalb der Cohere API einsetzbar, was das Datenschutzprofil für Self-Hosting-Szenarien verbessert.",
+  "notable_models": [
+    "Command A+ (MoE 218B, Open-Weight, Apache 2.0)",
+    "Command A (Dense 111B)",
+    "Command A Reasoning (Dense 111B)",
+    "Command A Vision",
+    "Command R+",
+    "Command R"
+  ],
+  "stats": {},
+  "unknown": false,
+  "generated_at": "2026-06-22T14:07:00.000000+00:00",
+  "last_verified_at": "2026-06-22",
+  "verification_source": "https://cohere.com/blog/command-a-plus",
+  "profile_verified": false,
+  "profile_verified_at": null,
+  "profile_verified_by": null,
+  "description": "Cohere ist ein kanadisches KI-Unternehmen mit Hauptsitz in Toronto, gegründet 2019. Das Unternehmen entwickelt die Command-Modellfamilie, darunter das Open-Weight-Flaggschiff Command A+ (MoE, 218B total / 25B aktiv, Apache 2.0) sowie die proprietären Cloud-Modelle Command A (Dense 111B), Command A Reasoning und Command A Vision. Die API bietet Textgenerierung, Reasoning, Tool-Use, Vision und RAG. Für europäische Nutzer ist Kanada als Sitzland mit EU-Angemessenheitsbeschluss vorteilhaft; die API-Infrastruktur läuft jedoch über AWS in den USA, was ein indirektes CLOUD-Act-Exposure erzeugen kann. Ein DPA ist für Enterprise-Kunden verfügbar. Trial-Keys sind kostenlos mit Rate-Limits (20 req/min, 1000 Calls/Monat). Command A+ kann alternativ selbst gehostet werden (vLLM, Hugging Face Transformers).",
+  "last_modified_at": "2026-06-22"
+}

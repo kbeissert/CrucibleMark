@@ -1,0 +1,30 @@
+{
+  "vendor_id": "nous_research",
+  "display_name": "Nous Research",
+  "company": "Nous Research",
+  "headquarters": "New York, NY, USA",
+  "founding_year": 2023,
+  "pricing_model": "open-source-self-hosted",
+  "api_base_url": null,
+  "api_documentation_url": null,
+  "deployment": {
+    "cloud_act_exposure": true,
+    "applicable_law": "US (CLOUD Act)",
+    "data_residency": "N/A (lokal only)",
+    "gdpr_dpa_available": "unknown",
+    "eu_adequacy_decision": "unknown",
+    "data_retention_days": 0,
+    "chinese_nsl_risk": "none"
+  },
+  "privacy_note": "Nous Research ist primär als US-basierter Open-Source-Modellentwickler bekannt, nicht als klassischer gehosteter API-Provider. Bei lokaler Nutzung besteht kein zentrales Provider-Hosting-Risiko; bei Nutzung über Drittplattformen gelten jedoch deren jeweilige Datenschutz- und Transferregeln.",
+  "notable_models": [
+    "Hermes 2",
+    "Hermes 3",
+    "Nous Capybara"
+  ],
+  "stats": {},
+  "unknown": false,
+  "generated_at": "2026-06-22T19:16:33.498389+00:00",
+  "last_verified_at": null,
+  "verification_source": "https://nousresearch.com"
+}

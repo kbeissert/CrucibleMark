@@ -1,0 +1,29 @@
+{
+  "vendor_id": "alibaba_damo_academy_base_qwen3_6_27b_jackrong_fine_tune_trace_inversion_sft_kyle_hessling_trace_inversion_methodology",
+  "display_name": "Alibaba DAMO Academy / Qwen",
+  "company": "Alibaba Group Holding Limited",
+  "headquarters": "Hangzhou, China",
+  "founding_year": 1999,
+  "pricing_model": "open-source-self-hosted",
+  "api_base_url": null,
+  "api_documentation_url": null,
+  "deployment": {
+    "cloud_act_exposure": false,
+    "applicable_law": "China (PIPL/CSL/DSL)",
+    "data_residency": "N/A (lokal only)",
+    "gdpr_dpa_available": "unknown",
+    "eu_adequacy_decision": false,
+    "data_retention_days": 0,
+    "chinese_nsl_risk": "high"
+  },
+  "privacy_note": "Bei lokaler Selbsthostung werden API-Daten nicht an einen zentralen Provider übertragen. Falls das Modell stattdessen über Alibaba- oder Drittanbieter-Hosting genutzt wird, können chinesische Datenschutz- und Sicherheitsgesetze mit behördlichen Zugriffsmöglichkeiten relevant sein.",
+  "notable_models": [
+    "Qwen",
+    "Qwen2.5"
+  ],
+  "stats": {},
+  "unknown": false,
+  "generated_at": "2026-06-22T19:26:03.541493+00:00",
+  "last_verified_at": null,
+  "verification_source": "https://github.com/QwenLM/Qwen"
+}

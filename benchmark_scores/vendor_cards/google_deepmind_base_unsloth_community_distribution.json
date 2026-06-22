@@ -1,0 +1,29 @@
+{
+  "vendor_id": "google_deepmind_base_unsloth_community_distribution",
+  "display_name": "Google DeepMind / Unsloth",
+  "company": "Google LLC / Unsloth (community distribution)",
+  "headquarters": "Mountain View, CA, USA / Unknown",
+  "founding_year": 2024,
+  "pricing_model": "open-source-self-hosted",
+  "api_base_url": null,
+  "api_documentation_url": "https://docs.unsloth.ai",
+  "deployment": {
+    "cloud_act_exposure": false,
+    "applicable_law": "N/A (lokal only)",
+    "data_residency": "N/A (lokal only)",
+    "gdpr_dpa_available": "unknown",
+    "eu_adequacy_decision": "unknown",
+    "data_retention_days": 0,
+    "chinese_nsl_risk": "none"
+  },
+  "privacy_note": "Bei der Community-Distribution über Unsloth erfolgt die Nutzung typischerweise lokal oder in selbst verwalteter Infrastruktur, sodass kein inhärentes Provider-seitiges API-Datenschutzrisiko besteht. Datenschutzrisiken hängen primär von der gewählten Hosting-Umgebung des Nutzers ab, nicht von Unsloth als Cloud-Provider.",
+  "notable_models": [
+    "Gemma 2",
+    "Gemma 3"
+  ],
+  "stats": {},
+  "unknown": false,
+  "generated_at": "2026-06-22T18:34:33.106663+00:00",
+  "last_verified_at": null,
+  "verification_source": "https://docs.unsloth.ai"
+}

@@ -1,0 +1,29 @@
+{
+  "vendor_id": "z_ai_formerly_zhipu_ai",
+  "display_name": "Z.AI",
+  "company": "Beijing Zhipu Huazhang Technology Co., Ltd.",
+  "headquarters": "Beijing, China",
+  "founding_year": 2019,
+  "pricing_model": "free-tier+pay-per-token",
+  "api_base_url": "https://open.bigmodel.cn/api/paas/v4",
+  "api_documentation_url": "https://open.bigmodel.cn/dev/api",
+  "deployment": {
+    "cloud_act_exposure": false,
+    "applicable_law": "China (PIPL/CSL/DSL)",
+    "data_residency": "China",
+    "gdpr_dpa_available": "unknown",
+    "eu_adequacy_decision": false,
+    "data_retention_days": -1,
+    "chinese_nsl_risk": "high"
+  },
+  "privacy_note": "Bei API-Nutzung ist von Verarbeitung unter chinesischem Datenschutz- und Cybersicherheitsrecht auszugehen. Für EU-Nutzer bestehen erhöhte Risiken bei internationalem Datentransfer, behördlichem Zugriff und fehlender klarer EU-Transfergrundlage.",
+  "notable_models": [
+    "GLM-4",
+    "GLM-4-Flash"
+  ],
+  "stats": {},
+  "unknown": false,
+  "generated_at": "2026-06-22T19:30:16.973733+00:00",
+  "last_verified_at": null,
+  "verification_source": "https://open.bigmodel.cn/"
+}
