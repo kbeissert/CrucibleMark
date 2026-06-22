@@ -2,6 +2,13 @@
 
 ## Abgeschlossen
 
+### Anthropic Token-Cap + Benchmark-Cleanup (v4.10.6 – 22.06.26)
+- [x] **`config/provider_config.yaml` — Anthropic `max_tokens` 8192 → 32768:** Claude 4.x unterstützt bis 128K Output. Altes Limit cappte Reasoning-Budgets (code_quality −59%, documentation_quality −32%).
+- [x] **Per-Model Override `claude-haiku-4-5-20251001: 8192`:** Desktop-Klasse ohne Thinking-Tag, braucht kein 32K-Fenster.
+- [x] **`fallback_max_tokens: 4096` entfernt:** Dead Config — wurde nirgends im Code gelesen.
+- [x] **144 verfälschte Zeilen aus `commercial_models_benchmark.csv` entfernt:** 24× MAX_TOKENS-Truncation (5 Modelle) + 130× CI@500 (26 Modelle). Backup: `.bak_token_cleanup_20260622`.
+- [x] **Leaderboard aktualisiert:** 27 Modelle mit fehlenden Tasks (34/43 bis 38/43). CI-Scores auf "Pending".
+
 ### Provider-Connector SSoT + Judge Token Usage Context (v4.10.5 – 21.06.26)
 - [x] **`utils/providers/base.py` — 3 SSoT-Utilities:** `_extract_reasoning_tokens(usage)` (provider-agnostisch), `_extract_think_from_message(msg, field_names)` (generisch), `ThinkAccumulator` (Streaming-Helper). Ersetzen 5 identische lokale Methoden + 7 Streaming `think_parts`-Patterns.
 - [x] **9 Provider auf Shared Utilities umgestellt:** openai, anthropic, groq, xai, openrouter, google, mistral, ollama, llamacpp_base.

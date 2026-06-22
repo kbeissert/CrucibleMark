@@ -298,7 +298,7 @@
       "applicable_law": "US (CLOUD Act)",
       "data_residency": "USA (+ Google Cloud Regionen global)",
       "gdpr_dpa_available": true,
-      "eu_adequacy_decision": true,
+      "eu_adequacy_decision": false,
       "data_retention_days": -1,
       "chinese_nsl_risk": "none"
     },
@@ -306,7 +306,7 @@
     "notable_models": [
       "Gemini 3.5 Flash",
       "Gemini 3.1 Pro Preview",
-      "Gemini 3 Flash Preview",
+      "Gemini 3.1 Flash Live Preview",
       "Gemini 2.5 Pro",
       "Gemini 2.5 Flash",
       "Gemma 4"
@@ -320,18 +320,19 @@
     },
     "unknown": false,
     "generated_at": "2026-06-12T16:06:39.381799+00:00",
-    "last_verified_at": "2026-06-12",
+    "last_verified_at": "2026-06-22",
     "verification_source": "https://ai.google.dev/gemini-api/docs",
-    "description": "Google AI bietet mit der Gemini-Modellreihe eine leistungsstarke API für Text, Code, Bild und Audio. Das Unternehmen sitzt in Mountain View, CA, und unterliegt als US-Konzern dem CLOUD Act. Für europäische Nutzer stehen Standard Contractual Clauses und ein Data Processing Addendum bereit.",
+    "description": "Google AI bietet mit der Gemini-Modellreihe eine leistungsstarke API für Text, Code, Bild und Audio. Das Unternehmen sitzt in Mountain View, CA, und unterliegt als US-Konzern dem CLOUD Act. Für europäische Nutzer stehen Standard Contractual Clauses und ein Data Processing Addendum bereit; für EU-Residency ist bei der direkten Gemini API keine durchgängige Garantie ersichtlich, während Vertex AI regionale Kontrollen bietet.",
     "profile_verified": true,
-    "profile_verified_at": "2026-06-12"
+    "profile_verified_at": "2026-06-22",
+    "profile_verified_by": "llm:perplexity"
   },
   {
     "vendor_id": "google_deepmind",
     "display_name": "Google DeepMind",
     "company": "Google LLC / DeepMind Technologies Limited",
     "headquarters": "London, UK (DeepMind) / Mountain View, CA, USA (Google)",
-    "founding_year": 2023,
+    "founding_year": 2010,
     "pricing_model": "free-tier+pay-per-token",
     "api_base_url": "https://generativelanguage.googleapis.com",
     "api_documentation_url": "https://ai.google.dev/gemini-api/docs",
@@ -340,7 +341,7 @@
       "applicable_law": "US (CLOUD Act)",
       "data_residency": "USA",
       "gdpr_dpa_available": true,
-      "eu_adequacy_decision": true,
+      "eu_adequacy_decision": false,
       "data_retention_days": -1,
       "chinese_nsl_risk": "none"
     },
@@ -354,16 +355,17 @@
     "stats": {},
     "unknown": false,
     "generated_at": "2026-06-02T21:00:00.000000+00:00",
-    "last_verified_at": "2026-06-12",
+    "last_verified_at": "2026-06-22",
     "verification_source": "https://policies.google.com/privacy",
     "profile_verified": true,
-    "profile_verified_at": "2026-06-12",
-    "description": "Google DeepMind entstand 2023 aus der Fusion von Google Brain und DeepMind Technologies. Die Gemini Modellfamilie wird über die Google AI API bereitgestellt. Da Google ein US-Konzern ist, unterliegen API-Anfragen dem CLOUD Act. Für europäische Nutzer sind vor allem die verfügbaren Standard Contractual Clauses und der Data Processing Addendum relevant."
+    "profile_verified_at": "2026-06-22",
+    "profile_verified_by": "llm:perplexity",
+    "description": "Google DeepMind entstand 2023 aus der Fusion von Google Brain und DeepMind Technologies. Die Gemini-Modellfamilie wird über die Google AI API bereitgestellt. Da Google ein US-Konzern ist, unterliegen API-Anfragen dem CLOUD Act. Für europäische Nutzer sind vor allem die verfügbaren Standard Contractual Clauses und der Data Processing Addendum relevant."
   },
   {
     "vendor_id": "google_deepmind_base_llmfan46_fine_tune_mradermacher_gguf_quant",
     "display_name": "Google DeepMind / llmfan46 / mradermacher",
-    "company": "Google LLC / unknown / unknown",
+    "company": "Google LLC / llmfan46 / mradermacher",
     "headquarters": "Mountain View, CA, USA / unknown / unknown",
     "founding_year": 2010,
     "pricing_model": "open-source-self-hosted",
@@ -373,8 +375,8 @@
       "cloud_act_exposure": false,
       "applicable_law": "N/A (lokal only)",
       "data_residency": "N/A (lokal only)",
-      "gdpr_dpa_available": "unknown",
-      "eu_adequacy_decision": "unknown",
+      "gdpr_dpa_available": false,
+      "eu_adequacy_decision": false,
       "data_retention_days": 0,
       "chinese_nsl_risk": "none"
     },
@@ -386,8 +388,12 @@
     "stats": {},
     "unknown": false,
     "generated_at": "2026-06-17T13:43:16.322852+00:00",
-    "last_verified_at": null,
-    "verification_source": "https://ai.google.dev/gemma"
+    "last_verified_at": "2026-06-22",
+    "verification_source": "https://ai.google.dev/gemma",
+    "profile_verified": true,
+    "profile_verified_at": "2026-06-22",
+    "profile_verified_by": "llm:perplexity",
+    "description": "Diese Karte beschreibt Google-DeepMind-Gemma-Basismodelle, die von llmfan46 weiterverarbeitet und von mradermacher als GGUF quantisiert wurden. Da die Modelle lokal betrieben werden, entstehen keine API-seitigen Datenschutzrisiken. Die Privacy-Bewertung hängt vollständig vom gewählten Host und dessen Logging/Transfer-Konfiguration ab."
   },
   {
     "vendor_id": "google_deepmind_base_undix_community_distribution",
@@ -399,8 +405,8 @@
     "api_base_url": null,
     "api_documentation_url": null,
     "deployment": {
-      "cloud_act_exposure": true,
-      "applicable_law": "US (CLOUD Act)",
+      "cloud_act_exposure": false,
+      "applicable_law": "N/A (lokal only)",
       "data_residency": "N/A (lokal only)",
       "gdpr_dpa_available": false,
       "eu_adequacy_decision": false,
@@ -409,26 +415,27 @@
     },
     "privacy_note": "Bei einer Community-Distribution ohne offizielle Google-API erfolgt die Nutzung typischerweise lokal, sodass kein reguläres Provider-seitiges API-Logging anfällt. Rechts- und Datenschutzrisiken entstehen primär dann, wenn Nutzer statt lokal doch Google- oder Drittanbieter-Infrastruktur einsetzen.",
     "notable_models": [
-      "Gemma 4 26B MoE",
-      "Gemma 4 12B",
+      "Gemma 4 26B A4B",
+      "Gemma 4 31B",
       "Gemma 3 12B",
       "Gemma 3 27B"
     ],
     "stats": {},
     "unknown": false,
     "generated_at": "2026-06-12T16:20:30.624338+00:00",
-    "last_verified_at": "2026-06-12",
+    "last_verified_at": "2026-06-22",
     "verification_source": "https://ai.google.dev/gemma",
-    "description": "Diese Karte beschreibt Community-Distributionen von Gemma-Basismodellen für lokale Inferenz. Die Modelle basieren auf den offenen Gemma-Gewichten von Google DeepMind und werden lokal betrieben. Datenschutzrisiken entstehen primär durch das gewählte Hosting, nicht durch die Modelldistribution selbst.",
     "profile_verified": true,
-    "profile_verified_at": "2026-06-12"
+    "profile_verified_at": "2026-06-22",
+    "profile_verified_by": "llm:perplexity",
+    "description": "Diese Karte beschreibt Community-Distributionen von Gemma-Basismodellen für lokale Inferenz. Die Modelle basieren auf den offenen Gemma-Gewichten von Google DeepMind und werden lokal betrieben. Datenschutzrisiken entstehen primär durch das gewählte Hosting, nicht durch die Modelldistribution selbst."
   },
   {
     "vendor_id": "hauhaucs",
     "card_subtype": "community",
     "display_name": "HauhauCS",
-    "company": "HauhauCS (Community-Contributor, HuggingFace)",
-    "headquarters": "Community/privat (Ort unbekannt)",
+    "company": "Community contributor / privat",
+    "headquarters": "Unknown",
     "founding_year": null,
     "pricing_model": "open-source-self-hosted",
     "api_base_url": null,
@@ -442,20 +449,21 @@
       "data_retention_days": 0,
       "chinese_nsl_risk": "none"
     },
-    "privacy_note": "HauhauCS-Modelle werden ausschließlich lokal betrieben. Kein Datentransfer an externe Server. Die Modelle sind Fine-Tunes öffentlicher Basismodelle (primär Qwen, Gemma) mit entfernten Sicherheitsbeschränkungen (\"Aggressive\"- und \"Balanced\"-Varianten).",
+    "privacy_note": "HauhauCS-Modelle werden ausschließlich lokal betrieben. Kein Datentransfer an externe Server. Die Modelle sind Fine-Tunes öffentlicher Basismodelle (primär Qwen, Gemma) mit entfernten Sicherheitsbeschränkungen, typischerweise in Aggressive- und Balanced-Varianten.",
     "notable_models": [
-      "Qwen3.5-9B-Uncensored-HauhauCS-Aggressive",
-      "Qwen3.6-27B-Uncensored-HauhauCS-Aggressive",
+      "Qwen3.5-35B-A3B-Uncensored-HauhauCS-Aggressive",
       "Qwen3.6-35B-A3B-Uncensored-HauhauCS-Aggressive",
-      "Gemma-4-E4B-Uncensored-HauhauCS-Aggressive"
+      "Gemma-4-E4B-Uncensored-HauhauCS-Aggressive",
+      "Gemma4-26B-A4B-Uncensored-HauhauCS-Balanced"
     ],
     "stats": {},
     "unknown": false,
     "generated_at": "2026-06-12T08:00:00+00:00",
-    "last_verified_at": "2026-06-12",
+    "last_verified_at": "2026-06-22",
     "verification_source": "https://huggingface.co/HauhauCS",
     "profile_verified": true,
-    "profile_verified_at": "2026-06-12",
+    "profile_verified_at": "2026-06-22",
+    "profile_verified_by": "llm:perplexity",
     "description": "HauhauCS kuratiert Community-Fine-Tunes mit klarer Ausrichtung auf unzensierte und experimentelle Varianten. Der Schwerpunkt liegt auf praktischer Verwendbarkeit über lokale Inferenz oder selbst gehostete Deployments. Die Qualität bemisst sich vor allem an Modellkonsistenz, Nutzbarkeit und der Passung zum gewünschten Einsatzprofil."
   },
   {
@@ -466,14 +474,14 @@
     "founding_year": 2023,
     "pricing_model": "free_open_source",
     "api_base_url": null,
-    "api_documentation_url": "https://github.com/ggerganov/llama.cpp",
+    "api_documentation_url": "https://github.com/ggml-org/llama.cpp",
     "type": "local_inference_engine",
     "inference_interfaces": [
       {
         "name": "Metal (Apple Silicon)",
         "vendor_id": "llamacpp",
         "hardware_profile": "m4_macbook_pro_metal",
-        "description": "llama.cpp mit Apple Metal Performance Shaders (MPS) GPU-Offload. Optimal für MacBook Pro mit M4 Chip. Modell-Ladung aus GGUF, CPU+GPU RAM geteilt.",
+        "description": "llama.cpp mit Apple Metal GPU-Offload. Geeignet für Apple Silicon; Modell-Ladung aus GGUF, CPU und GPU teilen sich den Speicher.",
         "accelerator": "Metal (Apple Silicon GPU)",
         "typical_throughput_tps": 25,
         "memory_bandwidth_gb_s": 300
@@ -482,7 +490,7 @@
         "name": "CUDA (NVIDIA)",
         "vendor_id": "llamacpp",
         "hardware_profile": "dgx_spark_cuda",
-        "description": "llama.cpp mit NVIDIA CUDA GPU-Offload auf DGX Spark. Hoher Token-Durchsatz durch viele CUDA-Cores, ideal für 35B+ Modelle. Modell-Ladung aus GGUF, dedizierter VRAM/RAM.",
+        "description": "llama.cpp mit NVIDIA CUDA GPU-Offload. Geeignet für große GGUF-Modelle; Modell-Ladung aus GGUF, dedizierter VRAM/RAM.",
         "accelerator": "CUDA (NVIDIA GPU)",
         "typical_throughput_tps": 45,
         "memory_bandwidth_gb_s": 400
@@ -492,13 +500,14 @@
       "cloud_act_exposure": false,
       "applicable_law": "N/A (Local Only)",
       "data_residency": "Local (Device)",
-      "gdpr_dpa_available": true,
-      "eu_adequacy_decision": true,
+      "gdpr_dpa_available": false,
+      "eu_adequacy_decision": false,
       "data_retention_days": 0,
       "chinese_nsl_risk": "none"
     },
     "privacy_note": "llama.cpp verarbeitet Eingaben lokal auf dem eigenen Gerät oder in der eigenen Infrastruktur. Dadurch entstehen kein CLOUD-Act-Bezug und kein externer Datenabfluss durch den Inferenzkern selbst. Datenschutzrisiken hängen primär von den verwendeten Modellen, Laufzeitumgebungen und eventuellen externen Diensten ab.",
     "notable_models": [
+      "GGUF",
       "Qwen 3.6 35B-A3B",
       "Qwen 3.5 35B-A3B",
       "Gemma 4 26B"
@@ -506,10 +515,11 @@
     "stats": {},
     "unknown": false,
     "generated_at": "2026-06-04T18:40:00.000000+00:00",
-    "last_verified_at": "2026-06-12",
-    "verification_source": "https://github.com/ggerganov/llama.cpp",
+    "last_verified_at": "2026-06-22",
+    "verification_source": "https://github.com/ggml-org/llama.cpp",
     "profile_verified": true,
-    "profile_verified_at": "2026-06-12",
+    "profile_verified_at": "2026-06-22",
+    "profile_verified_by": "llm:perplexity",
     "description": "llama.cpp ist eine quelloffene Inferenz-Engine für lokale und hybride Ausführung von LLMs. Das Projekt wird von ggml-org gepflegt und konzentriert sich auf minimale Abhängigkeiten, breite Hardware-Unterstützung und On-Device-Nutzung. Für europäische Nutzer entsteht kaum Datenschutzrisiko, weil die Ausführung lokal stattfindet."
   },
   {
@@ -518,8 +528,8 @@
     "company": "Meta Platforms, Inc.",
     "headquarters": "Menlo Park, CA, USA",
     "founding_year": 2004,
-    "pricing_model": "open-source-self-hosted",
-    "api_base_url": "https://llama.meta.com",
+    "pricing_model": "open-weights-self-hosted",
+    "api_base_url": null,
     "api_documentation_url": "https://llama.meta.com/docs",
     "deployment": {
       "cloud_act_exposure": true,
@@ -530,7 +540,7 @@
       "data_retention_days": -1,
       "chinese_nsl_risk": "none"
     },
-    "privacy_note": "Meta betreibt keinen klassischen kommerziellen Inferenz-API-Dienst; Llama-Modelle werden typischerweise über Drittanbieter bereitgestellt, die jeweils eigene Datenschutzbedingungen haben. WICHTIG: Llama-4-Modelle dürfen laut Lizenz NICHT auf europäischen Servern betrieben werden. Nutzung ist ausschließlich über US-Server oder Server im nicht-europäischen Ausland möglich. Dies schränkt die Einsetzbarkeit für europäische Betreiber erheblich ein.",
+    "privacy_note": "Meta betreibt keinen klassischen kommerziellen Inferenz-API-Dienst; Llama-Modelle werden typischerweise über Drittanbieter bereitgestellt, die jeweils eigene Datenschutzbedingungen haben. WICHTIG: Llama-4-Modelle dürfen laut Lizenz nicht von EU-domiciled Personen oder EU-basierten Unternehmen genutzt oder bereitgestellt werden. Nutzung ist daher nur außerhalb der EU-Lizenzrestriktionen möglich.",
     "notable_models": [
       "Llama 4 Scout",
       "Llama 3.3 70B",
@@ -539,11 +549,12 @@
     "stats": {},
     "unknown": false,
     "generated_at": "2026-06-02T21:00:00.000000+00:00",
-    "last_verified_at": "2026-06-12",
+    "last_verified_at": "2026-06-22",
     "verification_source": "https://llama.meta.com/llama4/",
     "profile_verified": true,
-    "profile_verified_at": "2026-06-12",
-    "description": "Meta veröffentlicht die Llama-Modellfamilie als Open-Source-Gewichte und betreibt keinen eigenen kommerziellen Inferenz-Service. Die Modelle werden typischerweise über Drittanbieter oder selbst gehostet. Für europäische Nutzer hängt die Datenschutz-Bewertung damit vom gewählten Hosting-Partner ab, nicht von Meta selbst."
+    "profile_verified_at": "2026-06-22",
+    "profile_verified_by": "llm:perplexity",
+    "description": "Meta veröffentlicht die Llama-Modellfamilie als Open-Weights und betreibt keinen eigenen klassischen kommerziellen Inferenz-Service. Die Modelle werden typischerweise über Drittanbieter oder selbst gehostet. Für europäische Nutzer hängt die Datenschutz-Bewertung damit vom gewählten Hosting-Partner ab; für Llama 4 gelten zudem EU-Lizenzbeschränkungen."
   },
   {
     "vendor_id": "minimax",
@@ -555,15 +566,15 @@
     "api_base_url": "https://api.minimax.chat",
     "api_documentation_url": "https://platform.minimax.io/docs",
     "deployment": {
-      "cloud_act_exposure": false,
+      "cloud_act_exposure": true,
       "applicable_law": "China (PIPL/CSL/DSL)",
-      "data_residency": "China",
+      "data_residency": "China + global MiniMax/OpenRouter partner routes",
       "gdpr_dpa_available": false,
       "eu_adequacy_decision": false,
       "data_retention_days": -1,
       "chinese_nsl_risk": "high"
     },
-    "privacy_note": "MiniMax verarbeitet API-Anfragen in China und bietet nach der geprüften Dokumentation kein DSGVO-taugliches DPA. Für europäische Nutzer besteht damit ein klares Drittlandtransfer-Risiko ohne EU-Angemessenheitsbeschluss. Der Einsatz sollte auf nicht personenbezogene oder streng minimierte Daten beschränkt bleiben.",
+    "privacy_note": "MiniMax verarbeitet API-Anfragen in China und bietet nach der geprüften Dokumentation kein DSGVO-taugliches DPA. Für europäische Nutzer besteht damit ein klares Drittlandtransfer-Risiko ohne EU-Angemessenheitsbeschluss. Der Einsatz sollte auf nicht personenbezogene oder streng minimierte Daten beschränkt bleiben. Bei Nutzung über Partner-Routen kann sich die Datenpfad- und Residenzsituation unterscheiden.",
     "notable_models": [
       "MiniMax-M3",
       "MiniMax-M2.7",
@@ -573,11 +584,12 @@
     "stats": {},
     "unknown": false,
     "generated_at": "2026-06-02T21:00:00.000000+00:00",
-    "last_verified_at": "2026-06-12",
+    "last_verified_at": "2026-06-22",
     "verification_source": "https://platform.minimax.io/docs",
     "profile_verified": true,
-    "profile_verified_at": "2026-06-12",
-    "description": "MiniMax bietet mit seiner API und Modellfamilie eine chinesische Plattform für Text und Multimodalität. Das Unternehmen sitzt in Shanghai und unterliegt chinesischem Datenschutzrecht. Für europäische Nutzer ist die fehlende EU-Angemessenheit entscheidend; die Nutzung mit personenbezogenen Daten bleibt daher besonders sensibel."
+    "profile_verified_at": "2026-06-22",
+    "profile_verified_by": "llm:perplexity",
+    "description": "MiniMax bietet eine chinesische Plattform für Text und multimodale Modelle. Die API wird für agentische, Coding- und Multimodal-Workflows verwendet; für europäische Nutzer sind der China-Datenpfad, fehlende EU-Angemessenheit und die verteilte Partner-Distribution die zentralen Compliance-Themen."
   },
   {
     "vendor_id": "mistral_ai",
@@ -593,11 +605,11 @@
       "applicable_law": "EU (GDPR)",
       "data_residency": "EU",
       "gdpr_dpa_available": true,
-      "eu_adequacy_decision": true,
+      "eu_adequacy_decision": false,
       "data_retention_days": 30,
       "chinese_nsl_risk": "none"
     },
-    "privacy_note": "Mistral AI ist ein französischer Anbieter mit EU-Datenhaltung und bietet für kommerzielle Kunden ein DPA an. Für europäische Nutzer ist das rechtlich günstiger als bei US- oder China-Anbietern; ein CLOUD-Act-Bezug besteht nach der aktuellen Anbieterstruktur nicht. Die öffentliche Aufbewahrungsdauer ist auf 30 Tage für bestimmte Daten angegeben.",
+    "privacy_note": "Mistral AI ist ein französischer Anbieter mit EU-Datenhaltung und bietet für kommerzielle Kunden ein DPA an. Für europäische Nutzer ist das rechtlich günstiger als bei US- oder China-Anbietern; ein CLOUD-Act-Bezug besteht nach der aktuellen Anbieterstruktur nicht. Die öffentliche Aufbewahrungsdauer beträgt für die reguläre API 30 Tage Rolling-Retention, während Zero-Data-Retention für bestimmte Routen verfügbar sein kann.",
     "notable_models": [
       "Mistral Large 2512",
       "Magistral Medium",
@@ -614,10 +626,11 @@
     },
     "unknown": false,
     "generated_at": "2026-06-02T21:00:00.000000+00:00",
-    "last_verified_at": "2026-06-12",
-    "verification_source": "https://www.mistral.ai/terms/",
+    "last_verified_at": "2026-06-22",
+    "verification_source": "https://legal.mistral.ai/terms/privacy-policy",
     "profile_verified": true,
-    "profile_verified_at": "2026-06-12",
+    "profile_verified_at": "2026-06-22",
+    "profile_verified_by": "llm:perplexity",
     "description": "Mistral AI entwickelt eine europäische Modellfamilie mit starker Ausrichtung auf offene Gewichte und kommerzielle API-Nutzung. Das Unternehmen sitzt in Paris, verarbeitet Daten in der EU und stellt für Geschäftskunden einen Data Processing Addendum bereit, was es für europäische Produktteams vergleichsweise gut anschlussfähig macht."
   },
   {
@@ -630,7 +643,7 @@
     "api_base_url": "https://api.moonshot.cn",
     "api_documentation_url": "https://platform.moonshot.cn/docs/intro",
     "deployment": {
-      "cloud_act_exposure": false,
+      "cloud_act_exposure": true,
       "applicable_law": "China (PIPL/CSL/DSL)",
       "data_residency": "China",
       "gdpr_dpa_available": false,
@@ -638,7 +651,7 @@
       "data_retention_days": -1,
       "chinese_nsl_risk": "high"
     },
-    "privacy_note": "Moonshot AI verarbeitet API-Nutzung in China und regelt die Nutzung über chinesische Vertrags- und Datenschutzdokumente. Für europäische Nutzer besteht kein EU-Angemessenheitsbeschluss; ein DSGVO-taugliches DPA ist in der geprüften Dokumentation nicht ersichtlich. Personenbezogene Daten sollten daher nicht unkritisch übertragen werden.",
+    "privacy_note": "Moonshot AI verarbeitet API-Nutzung in China und regelt die Nutzung über chinesische Vertrags- und Datenschutzdokumente. Für europäische Nutzer besteht kein EU-Angemessenheitsbeschluss; ein DSGVO-taugliches DPA ist in der geprüften Dokumentation nicht ersichtlich. Personenbezogene Daten sollten daher nicht unkritisch übertragen werden. Bei Partner-Routen oder Drittanbieter-Distributionen kann der Datenpfad abweichen.",
     "notable_models": [
       "Kimi K2.6",
       "Kimi K2.5",
@@ -648,19 +661,20 @@
     "stats": {},
     "unknown": false,
     "generated_at": "2026-06-02T21:00:00.000000+00:00",
-    "last_verified_at": "2026-06-12",
+    "last_verified_at": "2026-06-22",
     "verification_source": "https://platform.moonshot.cn/docs/agreement",
     "profile_verified": true,
-    "profile_verified_at": "2026-06-12",
+    "profile_verified_at": "2026-06-22",
+    "profile_verified_by": "llm:perplexity",
     "description": "Moonshot AI betreibt die Kimi API und richtet sich mit einer klar dokumentierten Entwicklerplattform an produktive Anwendungsfälle. Das Unternehmen sitzt in Beijing und operiert unter chinesischem Recht. Für europäische Teams ist relevant, dass Daten in China verarbeitet werden und die Nutzung eine strenge Drittlandbewertung verlangt."
   },
   {
     "vendor_id": "mradermacher",
     "card_subtype": "community",
     "display_name": "mradermacher (GGUF/Abliterated)",
-    "company": "mradermacher (Hugging Face Community Contributor) — Basismodelle: Mistral AI SAS",
-    "headquarters": "Community/privat; Mistral AI: Paris, France",
-    "founding_year": 2023,
+    "company": "mradermacher (Hugging Face Community Contributor)",
+    "headquarters": "Unknown",
+    "founding_year": null,
     "pricing_model": "open-source-self-hosted",
     "api_base_url": null,
     "api_documentation_url": "https://huggingface.co/mradermacher",
@@ -676,15 +690,17 @@
     "privacy_note": "Da diese Modelle ausschließlich lokal betrieben werden, findet keine Datenübertragung an externe Server statt. Es besteht kein API-seitiges Datenschutzrisiko – sämtliche Verarbeitung erfolgt auf der eigenen Infrastruktur des Nutzers.",
     "notable_models": [
       "Mistral-7B-Instruct-v0.3 (GGUF, mradermacher)",
-      "Mistral-Small-3.1 Abliterated (GGUF, mradermacher)"
+      "Mistral-Small-Instruct-2409-abliterated (GGUF, mradermacher)",
+      "Mistral-Small-3.1-documentazione-64k (GGUF, mradermacher)"
     ],
     "stats": {},
     "unknown": false,
     "generated_at": "2026-06-02T21:00:00.000000+00:00",
-    "last_verified_at": "2026-06-02",
+    "last_verified_at": "2026-06-22",
     "verification_source": "https://huggingface.co/mradermacher",
     "profile_verified": true,
-    "profile_verified_at": "2026-06-12",
+    "profile_verified_at": "2026-06-22",
+    "profile_verified_by": "llm:perplexity",
     "description": "mradermacher veröffentlicht GGUF- und abliterated Varianten öffentlicher Basismodelle mit Fokus auf lokale Nutzbarkeit und geringere Sicherheitsbeschränkungen. Die Community-Arbeit ist praktisch orientiert und richtet sich an Nutzer, die stabile Offline-Setups oder eigene Server bevorzugen. Privacy ist hier eine Hosting-Frage."
   },
   {
@@ -709,17 +725,18 @@
     "notable_models": [
       "Hermes-4 405B",
       "Hermes-4 70B",
-      "Hermes-4 14B (GGUF)",
+      "Hermes-4 14B",
       "Hermes-3-Llama-3.1-405B",
       "Nous-Capybara-34B"
     ],
     "stats": {},
     "unknown": false,
     "generated_at": "2026-06-02T21:00:00.000000+00:00",
-    "last_verified_at": "2026-06-12",
+    "last_verified_at": "2026-06-22",
     "verification_source": "https://huggingface.co/NousResearch",
     "profile_verified": true,
-    "profile_verified_at": "2026-06-12",
+    "profile_verified_at": "2026-06-22",
+    "profile_verified_by": "llm:perplexity",
     "description": "Nous Research entwickelt offene Sprachmodelle und veröffentlicht sie mit starkem Community-Bezug auf Hugging Face und der eigenen Website. Das Unternehmen sitzt in den USA und betreibt keine klassische öffentliche Inferenz-API. Für europäische Nutzer ist deshalb vor allem das Selbsthosting oder der gewählte Drittanbieter entscheidend."
   },
   {
@@ -728,7 +745,7 @@
     "company": "NVIDIA Corporation",
     "headquarters": "Santa Clara, California, USA",
     "founding_year": 1993,
-    "pricing_model": "open-weights",
+    "pricing_model": "open-weights+pay-per-token",
     "api_base_url": "https://build.nvidia.com",
     "api_documentation_url": "https://docs.api.nvidia.com",
     "deployment": {
@@ -736,22 +753,23 @@
       "applicable_law": "US (CLOUD Act)",
       "data_residency": "USA",
       "gdpr_dpa_available": true,
-      "eu_adequacy_decision": true,
+      "eu_adequacy_decision": false,
       "data_retention_days": -1,
       "chinese_nsl_risk": "none"
     },
-    "privacy_note": "Bei Nutzung der NVIDIA API über build.nvidia.com sind Datenverarbeitung und Zugriffsrisiken an die US-Jurisdiktion gebunden. Ein DPA ist laut aktueller Kartenstruktur verfügbar; zur genauen Aufbewahrungsdauer der API-Anfragen macht die geprüfte Quelle keine klare Angabe. Lokales oder eigenes Hosting reduziert das Risiko deutlich.",
+    "privacy_note": "Bei Nutzung der NVIDIA API über build.nvidia.com sind Datenverarbeitung und Zugriffsrisiken an die US-Jurisdiktion gebunden. Ein DPA ist verfügbar; zur genauen Aufbewahrungsdauer der API-Anfragen macht die geprüfte Quelle keine klare Angabe. Lokales oder eigenes Hosting über NVIDIA NIM reduziert das Risiko deutlich.",
     "notable_models": [
       "Nemotron 3 Ultra 550B-A55B"
     ],
     "stats": {},
     "unknown": false,
     "generated_at": "2026-06-12T08:00:00.000000+00:00",
-    "last_verified_at": "2026-06-12",
-    "verification_source": "https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-software-license-agreement/",
+    "last_verified_at": "2026-06-22",
+    "verification_source": "https://www.nvidia.com/en-us/agreements/data-processing-addendum/nvidia-cloud-services-data-processing-addendum/",
     "profile_verified": true,
-    "profile_verified_at": "2026-06-12",
-    "description": "NVIDIA bietet mit Build und den Nemotron-Modellen eine Plattform für Entwickler, die Modelle lokal, in der eigenen Infrastruktur oder über Cloud-Angebote nutzen möchten. Das Unternehmen sitzt in den USA, wodurch API-Nutzung dem CLOUD Act unterliegen kann. Für europäische Teams ist die Mischung aus Open Weights und US-Hosting entscheidend."
+    "profile_verified_at": "2026-06-22",
+    "profile_verified_by": "llm:perplexity",
+    "description": "NVIDIA bietet mit Build.nvidia.com/NIM und den Nemotron-Modellen eine Plattform für Entwickler, die Modelle lokal, in der eigenen Infrastruktur oder über Cloud-Angebote nutzen möchten. Das Unternehmen sitzt in den USA, wodurch API-Nutzung dem CLOUD Act unterliegen kann. Nemotron 3 Ultra ist als Open-Weights-Frontier-Modell mit 550B Parametern (55B aktiv) verfügbar."
   },
   {
     "vendor_id": "openai",
@@ -767,18 +785,16 @@
       "applicable_law": "US (CLOUD Act)",
       "data_residency": "USA",
       "gdpr_dpa_available": true,
-      "eu_adequacy_decision": true,
+      "eu_adequacy_decision": false,
       "data_retention_days": 30,
       "chinese_nsl_risk": "none"
     },
     "privacy_note": "OpenAI verarbeitet API-Daten unter US-Recht und damit potenziell unter dem CLOUD Act. Für EU-Kunden sind DPA und SCCs verfügbar; die Datenverarbeitung bleibt jedoch in den USA. Laut Privacy Policy gilt für bestimmte API- und Nutzungsdaten eine Aufbewahrung von 30 Tagen, sofern keine anderen Vertragsregeln greifen.",
     "notable_models": [
       "GPT-5.5",
-      "GPT-5.5 Pro",
       "GPT-5.4",
-      "GPT-5.4 Pro",
-      "GPT-5.4 Nano",
-      "GPT-5",
+      "GPT-5.4 mini",
+      "GPT-5.4 nano",
       "o4-mini",
       "GPT-4o"
     ],
@@ -791,37 +807,12 @@
     },
     "unknown": false,
     "generated_at": "2026-06-10T11:00:00.000000+00:00",
-    "last_verified_at": "2026-06-12",
-    "verification_source": "https://openai.com/policies/privacy-policy",
+    "last_verified_at": "2026-06-22",
+    "verification_source": "https://openai.com/policies/data-processing-addendum/",
     "profile_verified": true,
-    "profile_verified_at": "2026-06-12",
+    "profile_verified_at": "2026-06-22",
+    "profile_verified_by": "llm:perplexity",
     "description": "OpenAI betreibt mit GPT und den o-Series-Modellen eine der bekanntesten kommerziellen KI-Plattformen. Das Unternehmen sitzt in San Francisco und verarbeitet API-Daten in den USA. Für europäische Product Engineers sind vor allem der CLOUD-Act-Bezug, die kommerzielle Datenverarbeitung und die verfügbaren Vertragsoptionen relevant."
-  },
-  {
-    "vendor_id": "todo",
-    "display_name": "TODO",
-    "company": "unknown",
-    "headquarters": "unknown",
-    "founding_year": 0,
-    "pricing_model": "free",
-    "api_base_url": null,
-    "api_documentation_url": null,
-    "deployment": {
-      "cloud_act_exposure": false,
-      "applicable_law": "Unknown",
-      "data_residency": "Unknown",
-      "gdpr_dpa_available": "unknown",
-      "eu_adequacy_decision": "unknown",
-      "data_retention_days": -1,
-      "chinese_nsl_risk": "none"
-    },
-    "privacy_note": "Der angegebene Provider ist nicht spezifiziert, daher lassen sich Rechtsraum, Speicherort und behördliche Zugriffsmöglichkeiten nicht verlässlich bewerten. Für EU-Nutzer besteht ohne verifizierte Angaben ein unbekanntes Datenschutz- und Transfer-Risiko.",
-    "notable_models": [],
-    "stats": {},
-    "unknown": true,
-    "generated_at": "2026-06-17T18:03:55.617624+00:00",
-    "last_verified_at": null,
-    "verification_source": null
   },
   {
     "vendor_id": "unknown",
@@ -837,7 +828,7 @@
       "applicable_law": "Unknown",
       "data_residency": "Unknown",
       "gdpr_dpa_available": "unknown",
-      "eu_adequacy_decision": "unknown",
+      "eu_adequacy_decision": false,
       "data_retention_days": -1,
       "chinese_nsl_risk": "none"
     },
@@ -846,7 +837,7 @@
     "stats": {},
     "unknown": true,
     "generated_at": "2026-06-02T21:00:00.000000+00:00",
-    "last_verified_at": "2026-06-02",
+    "last_verified_at": null,
     "verification_source": null,
     "profile_verified": false,
     "profile_verified_at": null
@@ -872,18 +863,19 @@
     },
     "privacy_note": "Unsloth-Modelle werden ausschließlich lokal betrieben. Kein Datentransfer an externe Server. Die Modelle sind GGUF-Quantisierungen öffentlicher Basismodelle (Llama, Qwen, Gemma u.a.) mit Unsloth Dynamic 2.0-Optimierung (per-Layer-Bit-Zuweisung für bessere Qualität bei gleicher Komprimierungsrate).",
     "notable_models": [
-      "gemma-4-12b-it-GGUF (Dynamic 2.0)",
-      "Qwen3-27B-GGUF",
-      "gemma-4-12B-it-qat-GGUF (QAT)",
-      "Llama-3.3-70B-Instruct-GGUF"
+      "Gemma 4 Dynamic 2.0 Quants",
+      "Qwen3 Dynamic 2.0 Quants",
+      "Llama 3.3 Dynamic 2.0 Quants",
+      "Gemma 4 QAT GGUF"
     ],
     "stats": {},
     "unknown": false,
     "generated_at": "2026-06-12T08:00:00+00:00",
-    "last_verified_at": "2026-06-12",
-    "verification_source": "https://huggingface.co/unsloth",
+    "last_verified_at": "2026-06-22",
+    "verification_source": "https://unsloth.ai/docs/basics/unsloth-dynamic-2.0-ggufs",
     "profile_verified": true,
-    "profile_verified_at": "2026-06-12",
+    "profile_verified_at": "2026-06-22",
+    "profile_verified_by": "llm:perplexity",
     "description": "Unsloth kuratiert offene Modellgewichte und legt den Schwerpunkt auf speichereffiziente Quantisierung, QAT und praxisnahe lokale Nutzung. Die Community-Veredelungen zielen auf bessere Qualität pro Bit und auf möglichst robuste GGUF-Deployments. Privacy hängt ausschließlich vom gewählten Hosting ab, nicht von Unsloth selbst."
   },
   {
@@ -900,7 +892,7 @@
       "applicable_law": "US (CLOUD Act)",
       "data_residency": "USA",
       "gdpr_dpa_available": false,
-      "eu_adequacy_decision": true,
+      "eu_adequacy_decision": false,
       "data_retention_days": -1,
       "chinese_nsl_risk": "none"
     },
@@ -913,10 +905,11 @@
     "stats": {},
     "unknown": false,
     "generated_at": "2026-06-02T21:00:00.000000+00:00",
-    "last_verified_at": "2026-06-12",
-    "verification_source": "https://x.ai/legal/privacy-policy",
+    "last_verified_at": "2026-06-22",
+    "verification_source": "https://docs.x.ai/developers/models",
     "profile_verified": true,
-    "profile_verified_at": "2026-06-12",
+    "profile_verified_at": "2026-06-22",
+    "profile_verified_by": "llm:perplexity",
     "description": "xAI betreibt die Grok-Familie und richtet sich mit API, Apps und Unternehmensangeboten an Entwickler und Endnutzer. Der Anbieter sitzt in den USA und veröffentlicht eine eigene Privacy Policy für Grok und verbundene Dienste. Für europäische Teams ist vor allem die US-Jurisdiktion mit CLOUD Act und unklarer DPA-Lage relevant."
   },
   {
@@ -925,19 +918,19 @@
     "company": "Xiaomi Corporation (小米科技有限责任公司)",
     "headquarters": "Beijing, China",
     "founding_year": 2010,
-    "pricing_model": "pay-per-token",
-    "api_base_url": "https://api.openrouter.ai",
+    "pricing_model": "open-weights-self-hosted",
+    "api_base_url": null,
     "api_documentation_url": "https://huggingface.co/XiaomiMiMo",
     "deployment": {
       "cloud_act_exposure": false,
       "applicable_law": "China (PIPL/CSL/DSL)",
-      "data_residency": "China",
+      "data_residency": "N/A (local/self-hosted)",
       "gdpr_dpa_available": false,
       "eu_adequacy_decision": false,
-      "data_retention_days": -1,
+      "data_retention_days": 0,
       "chinese_nsl_risk": "high"
     },
-    "privacy_note": "Xiaomi ist ein chinesisches Unternehmen und unterliegt dem chinesischen Datensicherheitsgesetz (DSG), dem Datenschutzgesetz (PIPL) und dem Nachrichtendienstgesetz (NSG). Die MiMo-Gewichte sind unter MIT-Lizenz öffentlich verfügbar und lokal deploybar, was das API-seitige Datenschutzrisiko reduziert. Bei Nutzung über Cloud-Endpunkte (OpenRouter) besteht weiterhin ein Drittlandtransfer-Risiko.",
+    "privacy_note": "Xiaomi ist ein chinesisches Unternehmen und unterliegt dem chinesischen Datensicherheitsgesetz (DSG), dem Datenschutzgesetz (PIPL) und dem Nachrichtendienstgesetz (NSG). Die MiMo-Gewichte sind unter MIT-Lizenz öffentlich verfügbar und lokal deploybar, was das API-seitige Datenschutzrisiko reduziert. Bei Nutzung über Cloud-Endpunkte oder Drittanbieter-Routen besteht weiterhin ein Drittlandtransfer-Risiko.",
     "notable_models": [
       "MiMo-V2-Flash",
       "MiMo-V2.5",
@@ -946,11 +939,12 @@
     "stats": {},
     "unknown": false,
     "generated_at": "2026-06-14T21:40:00.000000+00:00",
-    "last_verified_at": "2026-06-14",
+    "last_verified_at": "2026-06-22",
     "verification_source": "https://huggingface.co/XiaomiMiMo",
     "profile_verified": true,
-    "profile_verified_at": "2026-06-14",
-    "description": "Xiaomi Corporation ist primär als Smartphone- und Consumer-Electronics-Hersteller bekannt, betreibt aber seit 2025 ein aktives AI-Lab. Die MiMo-Modellreihe (Mixture-of-Experts, Reasoning-fokussiert) ist unter MIT-Lizenz veröffentlicht und über OpenRouter verfügbar. Alle Modelle unterliegen chinesischer Jurisdiktion (PIPL/CSL/DSG/NSG); für europäische Nutzer ist der fehlende EU-Angemessenheitsbeschluss bei Cloud-Nutzung relevant. Bei lokalem Deployment entfällt das API-seitige Datenschutzrisiko."
+    "profile_verified_at": "2026-06-22",
+    "profile_verified_by": "llm:perplexity",
+    "description": "Xiaomi Corporation ist primär als Consumer-Electronics-Hersteller bekannt, betreibt aber seit 2025 ein aktives AI-Lab. Die MiMo-Modellreihe ist unter MIT-Lizenz veröffentlicht und lokal oder über Drittanbieter nutzbar. Für europäische Nutzer ist der fehlende EU-Angemessenheitsbeschluss bei Cloud-Nutzung relevant; bei lokalem Deployment entfällt das API-seitige Datenschutzrisiko."
   },
   {
     "vendor_id": "zhipu_ai",
@@ -962,7 +956,7 @@
     "api_base_url": "https://open.bigmodel.cn",
     "api_documentation_url": "https://open.bigmodel.cn/dev/howuse/introduction",
     "deployment": {
-      "cloud_act_exposure": false,
+      "cloud_act_exposure": true,
       "applicable_law": "China (PIPL/CSL/DSL)",
       "data_residency": "China",
       "gdpr_dpa_available": false,
@@ -970,7 +964,7 @@
       "data_retention_days": -1,
       "chinese_nsl_risk": "high"
     },
-    "privacy_note": "Zhipu AI verarbeitet API-Anfragen in China und fällt damit unter chinesisches Datenschutzrecht. Ein EU-Angemessenheitsbeschluss liegt nicht vor; ein DSGVO-taugliches DPA ist in den geprüften Quellen nicht ersichtlich. Für europäische Nutzer ist die Nutzung mit personenbezogenen Daten daher nur mit erheblichem Risiko vertretbar.",
+    "privacy_note": "Zhipu AI verarbeitet API-Anfragen in China und fällt damit unter chinesisches Datenschutzrecht. Ein EU-Angemessenheitsbeschluss liegt nicht vor; ein DSGVO-taugliches DPA ist in den geprüften Quellen nicht ersichtlich. Für europäische Nutzer ist die Nutzung mit personenbezogenen Daten daher nur mit erheblichem Risiko vertretbar. Bei Nutzung über externe Provider-Routen kann der Datenpfad abweichen.",
     "notable_models": [
       "GLM-5.1",
       "GLM-5 Turbo",
@@ -981,10 +975,11 @@
     "stats": {},
     "unknown": false,
     "generated_at": "2026-06-02T21:00:00.000000+00:00",
-    "last_verified_at": "2026-06-12",
-    "verification_source": "https://open.bigmodel.cn/dev/howuse/agreement",
+    "last_verified_at": "2026-06-22",
+    "verification_source": "https://open.bigmodel.cn/dev/howuse/introduction",
     "profile_verified": true,
-    "profile_verified_at": "2026-06-12",
-    "description": "Zhipu AI betreibt die BigModel Plattform für die GLM-Familie und weitere generative Dienste. Das Unternehmen sitzt in Beijing und verarbeitet API-Anfragen in China. Für europäische Teams ist die chinesische Jurisdiktion mit PIPL, CSL und DSL der zentrale Compliance-Punkt."
+    "profile_verified_at": "2026-06-22",
+    "profile_verified_by": "llm:perplexity",
+    "description": "Zhipu AI betreibt die BigModel-Plattform für die GLM-Familie und weitere generative Dienste. Das Unternehmen sitzt in Beijing und verarbeitet API-Anfragen in China. Für europäische Teams ist die chinesische Jurisdiktion mit PIPL, CSL und DSL der zentrale Compliance-Punkt."
   }
 ]

@@ -1,6 +1,6 @@
 # CrucibleMark
 
-[![Version](https://img.shields.io/badge/version-4.10.5-blue)](.)
+[![Version](https://img.shields.io/badge/version-4.10.6-blue)](.)
 
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](.)
 [![License](https://img.shields.io/badge/license-MIT-green)](.)
@@ -163,9 +163,9 @@ Tiefergehende Einblicke in die Methodik findest du im `docs/` Verzeichnis:
 
 Die vollständige Versionshistorie steht in [CHANGELOG.md](CHANGELOG.md). Kurzfassung der letzten drei Releases:
 
-- **v4.10.5 (2026-06-21) — Provider-Connector SSoT-Utilities + Judge Token Usage Context:** 3 Reasoning/Thinking-Extraktions-Utilities in `base.py` (`_extract_reasoning_tokens()`, `_extract_think_from_message()`, `ThinkAccumulator`). 9 Provider migriert. Streaming-Bugs in OpenRouter + llamacpp gefixt. LLM-Judge erhält universelle Token-Verbrauchsinformation (tokens_used, reasoning_tokens, token_budget, module_budget, truncated) für JEDE Aufgabe. 822/822 Tests grün.
-- **v4.10.4 (2026-06-21) — CSV-Write-Through Bug Fix: Atomare Schreibvorgänge + Existing-Row-Schutz:** `_write_to_csv()` nutzt `tempfile.mkstemp()` + `os.replace()` statt `"w"` (truncate). 10 Modelle mit 0 CSV-Einträgen identifiziert (Root-Cause: Full-Rewrite-Überschreibung). Bestehende Zeilen werden beim Rewrite NICHT re-validiert. Provider-Config-Cleanup (−17%). 4 neue Tests. 822/822 Tests grün.
-- **v4.10.3 (2026-06-21) — Token-Budget-Refactoring: SSoT `_resolve_request_tokens()` + Provider-Kaskade:** Alle 7 API-Provider nutzen Shared Helper in `base.py`. Zweistufige Provider-Kaskade: Provider-Default `max_tokens` → Per-Model Override `model_max_tokens`. Token-Budget-Optimierung (code_quality 65536→20000, cultural_intelligence 1000→3000, documentation_quality 6000→8000). Design-Constraints dokumentiert. 819/819 Tests grün.
+- **v4.10.6 (2026-06-22) — Anthropic Token-Cap + Benchmark-Cleanup:** Anthropic `max_tokens` 8192→32768 (Claude 4.x unterstützt 128K Output). 144 verfälschte Benchmark-Zeilen entfernt (24× MAX_TOKENS-Truncation + 130× CI@500). 27 Modelle im Leaderboard mit fehlenden Tasks markiert — werden beim nächsten `benchmark_auto` automatisch nachgetestet.
+- **v4.10.5 (2026-06-21) — Provider-Connector SSoT-Utilities + Judge Token Usage Context:** 3 Reasoning/Thinking-Extraktions-Utilities in `base.py`. 9 Provider migriert. Streaming-Bugs gefixt. Judge erhält universelle Token-Verbrauchsinformation für JEDE Aufgabe. 822/822 Tests grün.
+- **v4.10.4 (2026-06-21) — CSV-Write-Through Bug Fix:** Atomare Schreibvorgänge via `tempfile.mkstemp()` + `os.replace()`. 10 Modelle mit 0 CSV-Einträgen identifiziert. 822/822 Tests grün.
 
 ---
 
@@ -173,5 +173,5 @@ Die vollständige Versionshistorie steht in [CHANGELOG.md](CHANGELOG.md). Kurzfa
 
 - **Maintainer:** kbeissert
 - **Repository:** [github.com/kbeissert/cruciblemark](https://github.com/kbeissert/cruciblemark)
-- **Status:** ✅ Production-Ready (v4.10.5)
+- **Status:** ✅ Production-Ready (v4.10.6)
 

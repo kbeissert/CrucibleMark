@@ -1,15 +1,16 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-06-21
-**Current Version:** 4.10.5 — Provider-Connector SSoT-Utilities + Judge Token Usage Context
+**Last Updated:** 2026-06-22
+**Current Version:** 4.10.6 — Provider-Connector SSoT-Utilities + Judge Token Usage Context
 **Status:** ✅ Production-Ready
 
 > **Hinweis:** Die Executive Summary weiter unten historisch auf v4.6.1.
-> Die Sub-Versionen v4.6.2–v4.10.5 sind im CHANGELOG.md vollständig dokumentiert.
+> Die Sub-Versionen v4.6.2–v4.10.6 sind im CHANGELOG.md vollständig dokumentiert.
 > Dieser Header wird bei jedem Phase-Commit nachgezogen,
 > die Executive Summary nur bei Major-Milestones.
 >
-> **Aktueller Stand (v4.10.5):**
+> **Aktueller Stand (v4.10.6):**
+> - **Anthropic Token-Cap + Benchmark-Cleanup** (v4.10.6): Anthropic `max_tokens` 8192→32768. `fallback_max_tokens` entfernt (Dead Config). Per-Model Override für Haiku 4.5 (8192). 144 verfälschte Benchmark-Zeilen entfernt (MAX_TOKENS + CI@500). 27 Modelle mit fehlenden Tasks im Leaderboard. Backup: `.bak_token_cleanup_20260622`.
 > - **Provider-Connector SSoT-Utilities** (v4.10.5): 3 Reasoning/Thinking-Extraktions-Utilities in `utils/providers/base.py`: `_extract_reasoning_tokens()`, `_extract_think_from_message()`, `ThinkAccumulator`. 9 Provider migriert. Streaming-Bugs in OpenRouter + llamacpp gefixt.
 > - **Judge Token Usage Context** (v4.10.5): LLM-Judge erhält universelle Token-Verbrauchsinformation (tokens_used, reasoning_tokens, token_budget, module_budget, truncated) für JEDE Aufgabe. Neue `### TOKEN USAGE ###` Section im Judge-System-Prompt.
 > - **CSV-Write-Through Bug Fix** (v4.10.4): Atomare Schreibvorgänge via `tempfile.mkstemp()` + `os.replace()`. 10 Modelle mit 0 CSV-Einträgen identifiziert (Root-Cause: Full-Rewrite-Überschreibung bei Kill/Crash). Existing Rows werden NICHT re-validiert.

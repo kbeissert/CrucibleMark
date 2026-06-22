@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v4.10.6] - 2026-06-22
+
+**Anthropic Provider-Cap angehoben (8192→32768). 144 verfälschte Benchmark-Zeilen entfernt (MAX_TOKENS + CI@500). Leaderboard aktualisiert.**
+
+### Changed
+
+- **`config/provider_config.yaml` — Anthropic `max_tokens` 8192 → 32768:**
+  Der bisherige Provider-Default von 8192 war zu niedrig für Claude 4.x Modelle (unterstützen bis 128K Output).
+  `code_quality` (Reasoning-Budget 20000) wurde auf 8192 gecappt (−59%), `documentation_quality` (12000) auf 8192 (−32%).
+  Neuer Default 32768 gibt allen Reasoning-Budgets ausreichend Spielraum.
+  Per-Model Override für `claude-haiku-4-5-20251001`: 8192 (Desktop-Klasse, kein Thinking-Tag).
+  `fallback_max_tokens: 4096` entfernt — wurde nirgends im Code gelesen (Dead Config).
+
+### Fixed
+
+- **144 verfälschte Benchmark-Zeilen entfernt aus `commercial_models_benchmark.csv`:**
+  Zwei Kategorien von Token-Limit-Artefakten identifiziert und bereinigt:
+  - **Kategorie A — MAX_TOKENS-Truncation (24 Zeilen, 5 Modelle):** Antworten wurden durch `max_tokens` hart abgeschnitten (`finish_reason: max_tokens`). Betroffen: gemini-3.5-flash (9 Tasks), gemini-2.5-flash (7), gemini-3-flash-preview (5), claude-opus-4-6 (2), claude-opus-4-5 (1).
+  - **Kategorie B — Cultural Intelligence bei 500 Tokens (130 Zeilen, 26 Modelle):** Alle 5 CI-Tasks liefen mit dem uralten Limit von 500 Tokens (April/Mai 2026). Aktuelles Budget: 3000 (Standard) / 4000 (Reasoning). Kein einziges Modell wurde zwischenzeitlich nachgetestet.
+
+  **Auswirkung auf Leaderboard:** 27 Modelle zeigen jetzt fehlende Tasks (34/43 bis 38/43 statt 43/43). CI-Scores auf "Pending". Beim nächsten `benchmark_auto`-Lauf werden genau die 144 betroffenen Tasks automatisch nachgetestet.
+
+  **Backup:** `commercial_models_benchmark.csv.bak_token_cleanup_20260622`
+
 ## [v4.10.5] - 2026-06-21
 
 **Reasoning/Thinking-Extraktion: SSoT-Utilities in `base.py`. Streaming-Bugs in OpenRouter + llamacpp gefixt. Judge erhält universelle Token-Verbrauchsinformation.**

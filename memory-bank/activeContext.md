@@ -12,6 +12,39 @@ to know what reference files exist.
 ---
 
 # Active Context
+## Aktueller Status (2026-06-22)
+
+- **Session 30 abgeschlossen (2026-06-22) — Token-Limit-Audit + Anthropic Provider-Cap + Benchmark-Cleanup (v4.10.6):**
+
+  1. **Token-Limit-Audit aller Provider:**
+     - Systematische Analyse aller 5 API-Provider (OpenAI, Anthropic, Google, xAI, Mistral) auf Token-Limit-Probleme
+     - 27 Modelle identifiziert mit verfälschten Benchmark-Ergebnissen
+     - 2 Kategorien: MAX_TOKENS-Truncation (24 Zeilen, 5 Modelle) + CI@500-Artefakt (130 Zeilen, 26 Modelle)
+     - Gemini 3.5 Flash: 9 MAX_TOKENS (schlimmster Fall) — CI×5 + CT×2 + UX×1 + CQ×1
+     - Gemini 2.5 Flash: 7 MAX_TOKENS durch Thinking-Overhead (sichtbare Tokens 735–2436 bei Limit 8000–12000)
+     - Alle 6 Claude-Modelle: CI bei 500 Tokens (nie nachgetestet, altes Budget)
+     - Alle 7 Grok-Modelle: CI bei 500 Tokens
+
+  2. **Config-Änderung (v4.10.6):**
+     - `provider_config.yaml`: Anthropic `max_tokens` 8192 → 32768
+     - Per-Model Override `claude-haiku-4-5-20251001: 8192` (Desktop-Klasse)
+     - `fallback_max_tokens: 4096` entfernt (Dead Config — nirgends gelesen)
+
+  3. **Benchmark-Cleanup:**
+     - 144 Zeilen aus `commercial_models_benchmark.csv` entfernt
+     - Backup: `.bak_token_cleanup_20260622`
+     - Leaderboard aktualisiert: 27 Modelle mit fehlenden Tasks (34/43 bis 38/43)
+     - CI-Scores auf "Pending" — werden beim nächsten `benchmark_auto` automatisch nachgetestet
+
+  4. **Dokumentation:** CHANGELOG v4.10.6, README Version Badge + Recent Versions, PROJECT_STATUS, REF_TODO, CLAUDE.md (2 neue Pitfalls: Anthropic Cap + CI@500-Artefakt), Memory Bank
+
+  5. **Design-Erkenntnisse (Session 30):**
+     - `max_tokens` sollte Sicherheitsnetz sein (32K+), nicht Bremse
+     - Längensteuerung über Judge (Verbosity Penalty + Golden Standard), nicht über API-Cap
+     - Keine Prompt-Änderung nötig — bestehende Aufgaben beibehalten
+     - Anthropic Extended Thinking (`thinking.budget_tokens`) noch nicht genutzt — separates Thinking-Budget möglich
+     - `fallback_max_tokens` war Dead Config seit mindestens v4.10.3
+
 ## Aktueller Status (2026-06-21)
 
 - **Session 29 abgeschlossen (2026-06-21) — CSV-Write-Through Bug + Provider-Connector SSoT + Judge Token Usage + Provider-Config-Cleanup:**
@@ -286,6 +319,7 @@ Mögliche Anlässe für User-Aktivität (alle aus dem Backlog):
 
 ## Letzte Änderungen
 
+- **2026-06-22 (Session 30):** Token-Limit-Audit (v4.10.6). Anthropic `max_tokens` 8192→32768 + Haiku Override + Dead Config entfernt. 144 verfälschte Zeilen entfernt (24 MAX_TOKENS + 130 CI@500). 27 Modelle mit fehlenden Tasks. Leaderboard aktualisiert.
 - **2026-06-21 (Session 29):** Provider-Connector SSoT (v4.10.5) — 3 Utilities in `base.py` (`_extract_reasoning_tokens`, `_extract_think_from_message`, `ThinkAccumulator`), 9 Provider migriert, Streaming-Bugs gefixt. Judge Token Usage Context (v4.10.5) — universelle Token-Verbrauchsinformation für Judge. CSV-Write-Through Bug Fix (v4.10.4) — atomare Writes via tempfile+replace, 10 Modelle mit 0 CSV identifiziert. `provider_config.yaml`: −17% Cleanup. 822/822 Tests grün.
 - **2026-06-21 (Session 28):** Token-Budget-Refactoring (v4.10.3). `_resolve_request_tokens()` in `base.py`, 7 Provider migriert, Provider-Kaskade `max_tokens`, Token-Budget-Optimierung, Design-Constraints dokumentiert. Commit `d5f3a85`.
 - **2026-06-20 (Session 27):** Provider-Connector Thinking/Reasoning-Fix (v4.10.1). Alle 7 Provider-Connectors gefixt. Anthropic Streaming komplett neu. 2 pre-existing Test-Failures behoben. 819/819 Tests grün.

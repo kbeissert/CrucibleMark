@@ -1,6 +1,45 @@
 # Progress
 
-Letzte Releases + aktueller Stand. Vollständige Historie: `reference/decisions-log.md`.
+Letzte Releases + aktueller Stand.
+### 2026-06-22 (Session 30) — Token-Limit-Audit + Anthropic Provider-Cap + Benchmark-Cleanup (v4.10.6)
+
+**Auslöser:** User fragte ob Token-Limits bei allen Providern korrekt gesetzt sind. Systematische Analyse aller 5 API-Provider ergab: 27 Modelle mit verfälschten Benchmark-Ergebnissen durch Token-Limit-Artefakte.
+
+**Änderungen:**
+
+1. **`config/provider_config.yaml` — Anthropic Provider-Cap:**
+   - `max_tokens`: 8192 → 32768 (Claude 4.x unterstützt bis 128K Output)
+   - `fallback_max_tokens: 4096` entfernt (Dead Config — nirgends im Code gelesen)
+   - Per-Model Override: `claude-haiku-4-5-20251001: 8192` (Desktop-Klasse, kein Thinking)
+
+2. **Benchmark-Cleanup — 144 Zeilen entfernt:**
+   - Kategorie A (MAX_TOKENS): 24 Zeilen, 5 Modelle — finish_reason=max_tokens
+     - gemini-3.5-flash: 9 Tasks (CI×5 + CT×2 + UX×1 + CQ×1)
+     - gemini-2.5-flash: 7 Tasks (DQ×2 + UX×2 + CQ×2 + R×1) — Thinking-Overhead
+     - gemini-3-flash-preview: 5 Tasks (CI×5)
+     - claude-opus-4-6: 2 Tasks (CT_004 + DQ_004)
+     - claude-opus-4-5: 1 Task (CT_004)
+   - Kategorie B (CI@500): 130 Zeilen, 26 Modelle — cultural_intelligence bei 500 Tokens
+   - Backup: `commercial_models_benchmark.csv.bak_token_cleanup_20260622`
+
+3. **Leaderboard aktualisiert:**
+   - 27 Modelle zeigen jetzt fehlende Tasks (34/43 bis 38/43)
+   - CI-Scores auf "Pending" — werden beim nächsten `benchmark_auto` nachgetestet
+
+4. **Dokumentation:** CHANGELOG v4.10.6, README, PROJECT_STATUS, REF_TODO, CLAUDE.md (2 Pitfalls)
+
+**Design-Erkenntnisse:**
+- `max_tokens` sollte Sicherheitsnetz (32K+) sein, nicht Bremse (8192)
+- Längensteuerung über Judge (Verbosity Penalty + Golden Standard), nicht API-Cap
+- Keine Prompt-Änderung nötig — bestehende Aufgaben beibehalten
+- Anthropic Extended Thinking (`thinking.budget_tokens`) noch nicht implementiert
+- Alle 5 Provider analysiert: OpenAI (OK), xAI (OK), Mistral (OK), Google (Thinking-Overhead bei 2.5 Flash), Anthropic (Cap zu niedrig)
+
+**Verifikation:** 130/130 Token/Config/Provider-Tests grün.
+
+---
+
+ Vollständige Historie: `reference/decisions-log.md`.
 
 ### 2026-06-21 (Session 29, Runde 2) — Provider-Connector SSoT + Judge Token Usage Context (v4.10.5)
 

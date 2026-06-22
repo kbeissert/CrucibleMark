@@ -37,6 +37,8 @@ mit einem unabhängigen LLM-Judge (Blind-Evaluierung) und generiert Leaderboards
 - **Sequenzielle Modell-Abarbeitung (Design-Constraint):** Modelle werden einzeln nacheinander getestet, Server wird zwischen Modellen neu gestartet, Cooldown via `AdaptivePauseCalculator`. Das ist KEIN Performance-Bug — es garantiert gleichwertige Testumgebungen. NICHT parallelisieren.
 - **Judge-Reset zwischen Tasks (Design-Constraint):** Jede Judge-Bewertung ist ein frischer API-Call ohne Kontext aus vorherigen Bewertungen. KEIN Judge-Caching einführen — verhindert Kontextmix.
 - **Token-Budget SSoT:** `resolve_token_budget()` in `utils/model_utils.py` — nie inline duplizieren
+- **Anthropic `max_tokens` Provider-Cap (v4.10.6):** Der Provider-Default in `provider_config.yaml` ist 32768 (seit v4.10.6, vorher 8192). `fallback_max_tokens` wurde entfernt (Dead Config). Per-Model Override für `claude-haiku-4-5-20251001: 8192` (Desktop-Klasse). Bei neuen Claude-Modellen prüfen, ob der Default ausreicht — Claude 4.x unterstützt bis 128K Output, aber 32768 deckt alle Reasoning-Budgets ab (max. 20000 bei code_quality).
+- **CI@500-Artefakt (bereinigt v4.10.6):** Cultural Intelligence lief bis April/Mai 2026 mit `token_limit_used=500` (altes Budget). 130 Zeilen (26 Modelle) entfernt. Aktuelles Budget: 3000 (Standard) / 4000 (Reasoning). Achtung: Wenn `token_limit_used` in alten Audit-Logs 500 zeigt, sind diese Runs veraltet.
 - **`token_param_name` per Provider:** aus `benchmark_config.yaml` lesen, nie hardcoden
 
 ---
@@ -120,6 +122,8 @@ KONTEXT-ÜBERGABE:
 - **CSV-Write-Through atomar (v4.10.4):** `_write_to_csv()` nutzt `tempfile.mkstemp()` + `os.replace()` — Originaldatei bleibt intakt bei Kill/Crash. NIEMALS `"w"` (truncate) zum Überschreiben verwenden. Bestehende Zeilen werden beim Full-Rewrite NICHT re-validiert — nur neue Zeilen gehen durch Hard-Fail-Guard. `make backup` → tar (Snapshot) → `consolidate-csv` (Dedup latest-per-key) → bereinigte Live-CSV.
 - **CSV-Daten-Pipeline:** `save_results()` = Upsert (gleiche `(model, asset_id)` wird ersetzt). `data_loader.py` dedupliziert via `drop_duplicates(keep="last")` nach Timestamp. `consolidate_csv.py` reduziert physisch auf 1 Zeile pro Key. Alle drei Schichten sind idempotent.
 - **Token-Budget SSoT:** `resolve_token_budget()` in `utils/model_utils.py` — nie inline duplizieren
+- **Anthropic `max_tokens` Provider-Cap (v4.10.6):** Der Provider-Default in `provider_config.yaml` ist 32768 (seit v4.10.6, vorher 8192). `fallback_max_tokens` wurde entfernt (Dead Config). Per-Model Override für `claude-haiku-4-5-20251001: 8192` (Desktop-Klasse). Bei neuen Claude-Modellen prüfen, ob der Default ausreicht — Claude 4.x unterstützt bis 128K Output, aber 32768 deckt alle Reasoning-Budgets ab (max. 20000 bei code_quality).
+- **CI@500-Artefakt (bereinigt v4.10.6):** Cultural Intelligence lief bis April/Mai 2026 mit `token_limit_used=500` (altes Budget). 130 Zeilen (26 Modelle) entfernt. Aktuelles Budget: 3000 (Standard) / 4000 (Reasoning). Achtung: Wenn `token_limit_used` in alten Audit-Logs 500 zeigt, sind diese Runs veraltet.
 - **`token_param_name` per Provider:** aus `benchmark_config.yaml` lesen, nie hardcoden
 - **ThinkingProbe Signal-C-Verbot:** Response-Länge ist kein CoT-Signal — nur Signal A (`<think>`-Tags) und Signal B (`reasoning_tokens > 0`) verwenden
 - **`_infer_provider()` — `/`-Präsenz-Heuristik:** Nie `"deepseek" in model_id` — lokale Ollama-IDs können Provider-Namen enthalten
