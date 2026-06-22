@@ -64,7 +64,7 @@ class OpenRouterClient(BaseProviderClient):
             )
 
             timeout_config = httpx.Timeout(
-                connect=10.0, read=180.0, write=180.0, pool=180.0
+                connect=10.0, read=600.0, write=600.0, pool=600.0
             )
 
             self._client = OpenAI(

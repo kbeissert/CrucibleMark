@@ -22,7 +22,12 @@ sys.path.insert(0, str(ROOT_DIR))
 
 # Local imports
 # pylint: disable=wrong-import-position
-from utils.model_utils import _safe_name, resolve_canonical_model_id  # noqa: E402
+from utils.model_utils import (  # noqa: E402
+    _safe_name,
+    _find_card,
+    resolve_canonical_model_id,
+    CARD_DIR,
+)
 from utils.module_registry import get_active_modules
 from utils.config_validator import ConfigValidator
 from utils.backup_targets import CSV_FILES  # noqa: E402
@@ -40,6 +45,84 @@ PC_CSV_FILES: tuple[Path, ...] = (
 CLEAN_CSV_FILES: tuple[Path, ...] = (
     tuple(path for path, _ in CSV_FILES) + PC_CSV_FILES
 )
+
+#: Cost-Log (nicht in CSV_FILES, da kein Benchmark-Ergebnis-CSV).
+COST_LOG_PATH: Path = Path("outputs/cost_log.csv")
+
+#: Benchmark-Leaderboards (generiert, nicht in CSV_FILES).
+LEADERBOARD_CSVS: tuple[Path, ...] = (
+    Path("benchmark_scores/benchmark_leaderboard.csv"),
+    Path("benchmark_scores/benchmark_leaderboard_detailed.csv"),
+)
+
+
+def _collect_model_id_variants(model: str) -> set[str]:
+    """Sammt ALLE Schreibweisen einer Model-ID fuer variant-aware Cleanup.
+
+    Beruecksichtigt:
+    - Eingabe selbst
+    - Kanonische Form (via resolve_canonical_model_id / Card-Lookup)
+    - _safe_name-Form (Punkte/Doppelpunkte/Slashes → Underscores)
+    - Punkt-zu-Hyphen-Variante (fuer provider_config-Schreibweise)
+    - Underscore-Form (fuer _safe_name-basierte Dateinamen)
+    - model_id-Feld aus existierenden Cards (fuer Cross-Variant-Discovery)
+
+    Returns set of all non-empty variants.
+    """
+    variants: set[str] = set()
+    if not model:
+        return variants
+
+    # 1. Eingabe selbst
+    variants.add(model)
+
+    # 2. Kanonische Form (Card-Lookup)
+    try:
+        canonical = resolve_canonical_model_id(model)
+        variants.add(canonical)
+    except Exception:  # noqa: BLE001
+        canonical = model
+
+    # 3. _safe_name-Formen fuer alle bisherigen Varianten
+    for v in list(variants):
+        variants.add(_safe_name(v))
+
+    # 4. Punkt-zu-Hyphen-Variante (provider_config nutzt Bindestriche)
+    for v in list(variants):
+        if "." in v:
+            variants.add(v.replace(".", "-"))
+
+    # 5. Cross-Variant-Discovery: Durchsuche existierende Cards nach
+    #    model_id-Feldern, deren _safe_name zu unseren Varianten passt.
+    #    Findet z.B. "grok-4.1-fast-reasoning" in der Card wenn Input
+    #    "grok-4_1-fast-reasoning" war (Underscore ohne Card-Lookup).
+    safe_variants = {_safe_name(v) for v in variants}
+    try:
+        import json as _json
+        for card_file in CARD_DIR.glob("*.json"):
+            try:
+                data = _json.loads(card_file.read_text(encoding="utf-8"))
+                card_mid = data.get("model_id", "")
+                if card_mid and _safe_name(card_mid) in safe_variants:
+                    variants.add(card_mid)
+            except Exception:  # noqa: BLE001
+                continue
+    except Exception:  # noqa: BLE001
+        pass
+
+    # 6. Erneut _safe_name fuer alle neuen Varianten
+    for v in list(variants):
+        variants.add(_safe_name(v))
+        if "." in v:
+            variants.add(v.replace(".", "-"))
+
+    variants.discard("")
+    return variants
+
+
+def _variant_match(text: str, variants: set[str]) -> bool:
+    """Prueft ob text exakt einer der Varianten entspricht (case-sensitive)."""
+    return text in variants
 
 # Setup Logging
 logging.basicConfig(level=logging.INFO, format="%(message)s")
@@ -173,6 +256,37 @@ def clean_tooluse_metrics_jsonl(model: str | None = None, dry_run: bool = False)
         print("   - tooluse_metrics.jsonl: Keine passenden Einträge gefunden.")
 
 
+def clean_cost_log(model: str | None = None, dry_run: bool = False) -> None:
+    """Bereinigt outputs/cost_log.csv.
+
+    model=None  → gesamte Datei leeren.
+    model=<id>  → nur Einträge für dieses Modell entfernen (Spalte: model).
+    """
+    if not COST_LOG_PATH.exists():
+        return
+
+    df = pd.read_csv(COST_LOG_PATH, dtype=str)
+    initial_count = len(df)
+
+    if model is None:
+        df_filtered = df.iloc[0:0]  # nur Header
+    else:
+        variants = _collect_model_id_variants(model)
+        # cost_log hat 'model' als Spalte
+        df_filtered = df[~df["model"].isin(variants)] if "model" in df.columns else df
+
+    removed_count = initial_count - len(df_filtered)
+    if removed_count > 0:
+        print(f"   - cost_log.csv: {removed_count} Einträge entfernen...")
+        if not dry_run:
+            df_filtered.to_csv(COST_LOG_PATH, index=False)
+            print("     ✅ Gespeichert.")
+        else:
+            print("     (Dry Run - keine Änderung)")
+    else:
+        print("   - cost_log.csv: Keine passenden Einträge gefunden.")
+
+
 def _norm_dir(s: str) -> str:
     """Normalisiert Model-ID oder Verzeichnisname zum Vergleich.
 
@@ -185,13 +299,20 @@ def _norm_dir(s: str) -> str:
 
 def clean_model_output_directories(model: str, dry_run: bool = False):
     """Löscht modellspezifische Verzeichnisse aus outputs/ (audit_logs, comparisons, runs)
-    und docs/reviews/."""
+    und docs/reviews/.
+
+    Variant-aware: findet Verzeichnisse unabhängig von der Schreibweise
+    (Underscore, Hyphen, Punkt) durch Abgleich mit _collect_model_id_variants().
+    """
     if not model:
         return
 
-    model_norm = _norm_dir(model)
+    variants = _collect_model_id_variants(model)
+    variants_norm = {_norm_dir(v) for v in variants}
 
     print(f"🧹 Suche Ausgabeverzeichnisse für Modell '{model}'...")
+    if len(variants) > 1:
+        print(f"   Varianten: {', '.join(sorted(variants))}")
 
     for category in ["audit_logs", "comparisons", "runs"]:
         base_dir = ROOT_DIR / "outputs" / category
@@ -203,7 +324,11 @@ def clean_model_output_directories(model: str, dry_run: bool = False):
                 continue
 
             item_norm = _norm_dir(item.name)
-            if item_norm == model_norm or item_norm.endswith(f"_{model_norm}"):
+            # Direkt-Match oder Suffix-Match (fuer prefixierte Verzeichnisse)
+            matched = item_norm in variants_norm or any(
+                item_norm.endswith(f"_{v}") for v in variants_norm
+            )
+            if matched:
                 print(f"   - Lösche {category}/{item.name}")
                 if not dry_run:
                     try:
@@ -217,7 +342,10 @@ def clean_model_output_directories(model: str, dry_run: bool = False):
             if not item.is_dir() or item.name in (".gitkeep", ".DS_Store"):
                 continue
             item_norm = _norm_dir(item.name)
-            if item_norm == model_norm or item_norm.endswith(f"_{model_norm}"):
+            matched = item_norm in variants_norm or any(
+                item_norm.endswith(f"_{v}") for v in variants_norm
+            )
+            if matched:
                 print(f"   - Lösche docs/reviews/{item.name}")
                 if not dry_run:
                     try:
@@ -227,24 +355,69 @@ def clean_model_output_directories(model: str, dry_run: bool = False):
 
 
 def clean_model_card(model: str, dry_run: bool = False):
-    """Löscht die Model Card JSON für das angegebene Modell."""
+    """Löscht ALLE Model-Card-Varianten für das Modell (Underscore, Hyphen, Dot).
+
+    Findet Cards unabhängig der Schreibweise in Dateinamen oder model_id-Feld.
+    """
     if not model:
         return
-    try:
-        from utils.model_utils import _find_card
-        card_path = _find_card(model).resolve()
-        if card_path.exists():
+
+    variants = _collect_model_id_variants(model)
+    # _safe_name-Varianten fuer Dateinamen-Matching
+    safe_variants = {_safe_name(v) for v in variants}
+
+    cards_to_delete: set[Path] = set()
+
+    # 1. Direkte Dateinamen-Matches fuer alle safe-Name-Varianten
+    for sv in safe_variants:
+        p = CARD_DIR / f"{sv}.json"
+        if p.exists():
+            cards_to_delete.add(p.resolve())
+
+    # 2. _find_card fuer jede Variante (beruecksichtigt Prefixed-Pfade)
+    for v in variants:
+        try:
+            p = _find_card(v)
+            if p.exists():
+                cards_to_delete.add(p.resolve())
+        except Exception:  # noqa: BLE001
+            pass
+
+    # 3. Glob-Fallback: Dateien deren Name mit einer safe-Variante beginnt
+    #    (fuer date-suffixed cards wie grok-4-1-fast-reasoning-20260422.json)
+    for sv in safe_variants:
+        for p in CARD_DIR.glob(f"{sv}*.json"):
+            cards_to_delete.add(p.resolve())
+
+    # 4. Dateinamen-Matching: Auch Cards finden, die eine Schreibweise
+    #    des model_id-FELDS enthalten (z.B. Dateiname "grok-4-1-fast-reasoning.json"
+    #    aber model_id="grok-4.1-fast-reasoning" im Inhalt)
+    if not cards_to_delete:
+        for card_file in CARD_DIR.glob("*.json"):
             try:
-                display = card_path.relative_to(ROOT_DIR)
-            except ValueError:
-                display = card_path
-            print(f"   - Lösche model_card: {display}")
-            if not dry_run:
+                import json as _json
+                data = _json.loads(card_file.read_text(encoding="utf-8"))
+                card_mid = data.get("model_id", "")
+                if card_mid and _safe_name(card_mid) in safe_variants:
+                    cards_to_delete.add(card_file.resolve())
+            except Exception:  # noqa: BLE001
+                continue
+
+    if not cards_to_delete:
+        print(f"   - model_card: keine Card für '{model}' gefunden.")
+        return
+
+    for card_path in sorted(cards_to_delete):
+        try:
+            display = card_path.relative_to(ROOT_DIR)
+        except ValueError:
+            display = card_path
+        print(f"   - Lösche model_card: {display}")
+        if not dry_run:
+            try:
                 card_path.unlink()
-        else:
-            print(f"   - model_card: keine Card für '{model}' gefunden.")
-    except Exception as e:
-        print(f"   ⚠️ Fehler bei Card-Suche: {e}")
+            except OSError as e:
+                print(f"     ❌ Fehler beim Löschen: {e}")
 
 def clean_csv(
     file_path: Path,
@@ -254,9 +427,13 @@ def clean_csv(
 ):
     """Löscht Zeilen aus einer CSV basierend auf Filtern.
 
-    Phase 28: Modell-Match via ``resolve_canonical_model_id`` (ID-SSoT),
-    damit ``make clean-model MODEL=qwen3.5-35b`` auch CSV-Zeilen mit
-    Schreibweisenvarianten wie ``qwen_qwen3.5-35b`` findet.
+    Phase 28: Modell-Match via ``resolve_canonical_model_id`` (ID-SSoT).
+    Phase 29: Variant-aware — sammelt alle Schreibweisen (Underscore, Hyphen,
+    Punkt) via ``_collect_model_id_variants`` und matched direkt, damit auch
+    nach Card-Löschung alle Einträge gefunden werden.
+
+    Unterstützt mehrere Spaltennamen fuer Modell-IDs:
+    ``model``, ``Model ID``, ``model_id_raw``.
     """
     if not file_path.exists():
         return
@@ -267,15 +444,25 @@ def clean_csv(
 
         mask = pd.Series([True] * len(df))
 
-        if model and "model" in df.columns:
-            # Phase 28: ID-SSoT — kanonische Normalisierung vor Vergleich.
-            # Wir normalisieren sowohl das Ziel-Modell als auch alle CSV-Zeilen
-            # via resolve_canonical_model_id, damit qwen3.5-35b == qwen_qwen3.5-35b.
+        if model:
+            variants = _collect_model_id_variants(model)
             target_canon = resolve_canonical_model_id(model)
-            df_model_canon = df["model"].apply(
-                lambda v: resolve_canonical_model_id(str(v)) if pd.notna(v) else v
-            )
-            mask = mask & (df_model_canon != target_canon)
+
+            # Alle moeglichen Modell-Spalten pruefen
+            model_cols = [c for c in df.columns if c in ("model", "Model ID", "model_id_raw")]
+
+            for col in model_cols:
+                # Varianten-Direktmatch
+                col_mask_direct = ~df[col].isin(variants)
+
+                # Kanonischer Match (fuer Faelle wie qwen3.5-35b == qwen_qwen3.5-35b)
+                df_model_canon = df[col].apply(
+                    lambda v: resolve_canonical_model_id(str(v)) if pd.notna(v) else v
+                )
+                col_mask_canon = df_model_canon != target_canon
+
+                # Zeile wird entfernt wenn in irgendeiner Spalte ein Match vorliegt
+                mask = mask & (col_mask_direct & col_mask_canon)
 
         if asset_ids and "asset_id" in df.columns:
             # Filter rows where asset_id IS in the list (we want to keep those NOT in list)
@@ -339,6 +526,45 @@ def main():
     _run_clean_logic(args)
 
 
+def _dead_model_info(model: str) -> None:
+    """Zeigt eine Warnung wenn das Modell als tot markiert ist.
+
+    Prüft web_export_blacklist.yaml und provider_config.yaml (auskommentierte Einträge).
+    Rein informativ — löscht nichts.
+    """
+    import re as _re
+
+    variants = _collect_model_id_variants(model)
+
+    # 1. Blacklist prüfen
+    bl_path = ROOT_DIR / "config" / "web_export_blacklist.yaml"
+    if bl_path.exists():
+        try:
+            bl_data = yaml.safe_load(bl_path.read_text(encoding="utf-8"))
+            blacklisted = set()
+            if isinstance(bl_data, dict):
+                for v in (bl_data.get("blacklist") or []):
+                    if isinstance(v, str):
+                        blacklisted.add(v)
+            if blacklisted & variants:
+                print(f"   ⚠️  Modell '{model}' steht in der Web-Export-Blacklist.")
+        except Exception:  # noqa: BLE001
+            pass
+
+    # 2. Provider-Config prüfen (auskommentierte Einträge)
+    pc_path = ROOT_DIR / "config" / "provider_config.yaml"
+    if pc_path.exists():
+        try:
+            content = pc_path.read_text(encoding="utf-8")
+            for v in variants:
+                # Suche nach auskommentierten Einträgen: # - id: <variant>
+                if _re.search(rf"#\s*- id:\s*{_re.escape(v)}\b", content):
+                    print(f"   ⚠️  Modell '{model}' ist in provider_config.yaml auskommentiert.")
+                    return
+        except Exception:  # noqa: BLE001
+            pass
+
+
 def _run_clean_logic(args) -> None:
     """Phase 28: Ausgelagerte Clean-Logik, geteilt zwischen main() und main_with_args()."""
 
@@ -395,6 +621,10 @@ def _run_clean_logic(args) -> None:
     if args.dry_run:
         print("   (DRY RUN - Simulation)")
 
+    # Dead-Model-Check: Info wenn Modell in Blacklist oder Provider-Config markiert
+    if args.model:
+        _dead_model_info(args.model)
+
     # Asset IDs auflösen, falls Modul angegeben
     target_assets = []
     if args.module:
@@ -412,14 +642,20 @@ def _run_clean_logic(args) -> None:
     clean_checkpoints(model=args.model, module_key=args.module, dry_run=args.dry_run)
 
     # Modellspezifische Verzeichnisse löschen (falls Modell angegeben)
+    # (audit_logs, comparisons, runs, reviews — variant-aware)
     if args.model:
         clean_model_output_directories(model=args.model, dry_run=args.dry_run)
-        clean_model_card(model=args.model, dry_run=args.dry_run)
 
-    # Phase 28: CSV-Liste aus SSoT (utils.backup_targets.CSV_FILES)
-    # + PC-CSV-Erweiterung. Vorher waren 6 Pfade hartkodiert.
+    # Phase 29: CSVs ZUERST bereinigen (braucht Cards für resolve_canonical_model_id).
+    # Reihenfolge: Benchmark-CSVs → PC-CSVs → Leaderboards → cost_log.
     for f in CLEAN_CSV_FILES:
         clean_csv(f, model=args.model, asset_ids=target_assets, dry_run=args.dry_run)
+
+    for f in LEADERBOARD_CSVS:
+        clean_csv(f, model=args.model, dry_run=args.dry_run)
+
+    if args.model:
+        clean_cost_log(model=args.model, dry_run=args.dry_run)
 
     # tooluse_metrics.jsonl: model-basiert oder komplett (bei --module tooluse)
     if args.model:
@@ -437,6 +673,11 @@ def _run_clean_logic(args) -> None:
             else:
                 print("     (Dry Run - keine Änderung)")
         clean_tooluse_metrics_jsonl(model=None, dry_run=args.dry_run)
+
+    # Cards ZULETZT löschen (nach CSV-Bereinigung, da resolve_canonical_model_id
+    # die Card fuer die Varianten-Aufloesung braucht).
+    if args.model:
+        clean_model_card(model=args.model, dry_run=args.dry_run)
 
     # Leaderboard Update triggern, wenn nicht dry run
     if not args.dry_run:

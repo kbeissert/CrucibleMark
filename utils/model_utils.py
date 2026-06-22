@@ -501,6 +501,23 @@ def _find_card(model_id: str, card_dir: Path | None = None) -> Path:
             _logging.debug("_find_card: glob fallback matched '%s' for input '%s'", candidates[-1].name, model_id)
             return candidates[-1]
 
+    # Dot-to-hyphen fallback: API model IDs with dots (e.g. "grok-4.1-fast-reasoning")
+    # may have cards named with hyphens (e.g. "grok-4-1-fast-reasoning.json") when the
+    # provider_config entry uses hyphens.  _safe_name converts dots to underscores, so the
+    # primary lookup misses the hyphen-named card.  Try the hyphen variant as a last resort.
+    if not unprefixed.exists() and "." in model_id:
+        hyphen_id = model_id.replace(".", "-")
+        if hyphen_id != model_id:
+            hyphen_safe = _safe_name(hyphen_id)
+            hyphen_path = _cd / f"{hyphen_safe}.json"
+            if hyphen_path.exists():
+                import logging as _logging
+                _logging.debug(
+                    "_find_card: dot→hyphen fallback matched '%s' for input '%s'",
+                    hyphen_path.name, model_id,
+                )
+                return hyphen_path
+
     return unprefixed  # May or may not exist — caller checks
 
 
@@ -904,6 +921,8 @@ def resolve_provider(model_name: str) -> tuple[str, str]:
         return "google", model_name
     if name_lower.startswith("grok-"):
         return "xai", model_name
+    if name_lower.startswith("command-"):
+        return "cohere", model_name
     # "vendor/model" → OpenRouter (incl. ":free" suffix); bare model names → Groq.
     # Heuristik: enthält "/" → OpenRouter-Namespace-Format (nie lokale Ollama-IDs).
     if "/" in name_lower:

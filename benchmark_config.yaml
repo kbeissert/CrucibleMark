@@ -231,9 +231,10 @@ token_budgets_small_models:
 #          Nur kimi-k2.7-code (25K) wird légère Truncation erfahren — Judge
 #          bekommt token_limit_cutoff=True Context.
 token_budgets_reasoning_models:
-  cultural_intelligence: 4000
-  ux_writing: 8000
-  content_transformation: 8000
+  cultural_intelligence: 8000
+  ux_writing: 12000
+  content_transformation: 12000
   documentation_quality: 12000
   code_quality: 20000
   cli_benchmark: 16000
+  tooluse: 20000

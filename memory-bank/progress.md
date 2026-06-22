@@ -1,6 +1,72 @@
 # Progress
 
 Letzte Releases + aktueller Stand.
+### 2026-06-22 (Session 32) — Dead-Model-Cleanup (xAI) + Workflow-Dokumentation
+
+**Auslöser:** Nach Session 31 (ID-Mismatch-Fix) weiterhin `Model not found: grok-4.1-fast-reasoning` beim Benchmark-Lauf. Das Modell existiert schlicht nicht mehr in der xAI API.
+
+**Diagnose:** XAI `/v1/models` abgefragt — 4 von 7 konfigurierten Modellen nicht mehr gelistet:
+- `grok-4-1-fast-reasoning` ❌, `grok-4-fast-non-reasoning` ❌, `grok-3` ❌, `grok-3-mini` ❌
+- `grok-4.20-0309-reasoning` ✅, `grok-4.20-0309-non-reasoning` ✅, `grok-4.3` ✅
+
+**Änderungen:**
+
+1. **`config/provider_config.yaml`:** 4 tote Modelle auskommentiert (Zeilen 142-149) mit `# ❌ XAI API: Model not found (entfernt 2026-06)`.
+
+2. **`config/web_export_blacklist.yaml`:** 3 neue Einträge ergänzt (Zeilen 79-81):
+   - `grok-4-fast-non-reasoning`, `grok-3`, `grok-3-mini`
+   - `grok-4-1-fast-reasoning` war bereits vorhanden (Zeile 78)
+
+3. **`CLAUDE.md` — Dead-Model-Handling Workflow (neu):**
+   - Regel in Architecture Rules: Bei `Model not found` / HTTP 400 → (1) API prüfen, (2) User fragen, (3) Blacklist ergänzen, (4) CSV aufräumen
+   - **Wichtig:** NIEMALS eigenständig auskommentieren — immer den User bestätigen lassen
+   - Grund: API-Ausfälle können temporär sein; Blacklist-Einträge blockieren den Web-Export dauerhaft
+
+**Verifikation:**
+- YAML-Parsing beider Configs ✓
+- 492/493 Tests grün (1 pre-existing: `qwen3_6` Sampling-Keys)
+
+---
+
+### 2026-06-22 (Session 31) — grok-4.1-fast-reasoning Model-ID-Mismatch Fix
+
+**Auslöser:** Benchmark-Lauf für `grok-4.1-fast-reasoning` (Cultural Intelligence) schlug fehl — `Model not found: grok-4_1-fast-reasoning`. Die kanonisierte ID (Unterstriche) wurde an die XAI-API gesendet statt der API-ID (Punkte).
+
+**Root Cause Chain:**
+1. `provider_config.yaml` hat `grok-4-1-fast-reasoning` (Bindestriche)
+2. Model Card `grok-4-1-fast-reasoning.json` hat `model_id: "grok-4.1-fast-reasoning"` (Punkte = echte API-ID)
+3. Eingabe `grok-4.1-fast-reasoning` → `_safe_name()` → `grok-4_1-fast-reasoning` (Punkte→Unterstriche)
+4. Card-Lookup für `grok-4_1-fast-reasoning.json` schlägt fehl (Card heißt `grok-4-1-fast-reasoning.json` mit Bindestrichen)
+5. Fallback: `_safe_name` → `grok-4_1-fast-reasoning` als kanonische ID
+6. XAI-API erhält `grok-4_1-fast-reasoning` → 400 "Model not found"
+7. Placeholder-Card `grok-4_1-fast-reasoning.json` mit falschem `model_id` angelegt
+
+**Änderungen:**
+
+1. **`utils/model_utils.py` — `_find_card()` Dot→Hyphen-Fallback:**
+   - Nach dem primären `_safe_name`-basierten Lookup (Punkte→Unterstriche) und allen anderen Fallbacks:
+   - Wenn `unprefixed` nicht existiert und `model_id` Punkte enthält: Variante mit Bindestrichen probieren
+   - `model_id.replace(".", "-")` → `_safe_name()` → Card-Dateiname → Existenzprüfung
+   - Debug-Logging bei Fallback-Match
+
+2. **`utils/providers/xai.py` — `_XAI_ID_ALIASES` ergänzt:**
+   - `"grok-4_1-fast-reasoning": "grok-4.1-fast-reasoning"` (Defense-in-Depth)
+   - Konsistent mit bestehenden Einträgen für `grok-4_20-0309-*` und `grok-4_3`
+
+3. **Cleanup:**
+   - Broken Placeholder-Card `grok-4_1-fast-reasoning.json` gelöscht
+   - 4 broken CSV-Einträge (`grok-4_1-fast-reasoning`, 0.0-Scores) aus `commercial_models_benchmark.csv` entfernt
+
+**Verifikation:**
+- `resolve_canonical_model_id("grok-4.1-fast-reasoning")` → `"grok-4.1-fast-reasoning"` ✓
+- `_find_card("grok-4.1-fast-reasoning")` → `grok-4-1-fast-reasoning.json` (exists=True) ✓
+- 82 card/canonical/normalize Tests grün
+- 492/493 Gesamttests grün (1 pre-existing: `qwen3_6` Sampling-Keys)
+
+**Pitfall dokumentiert:** `_safe_name()` konvertiert Punkte→Unterstriche, aber Cards, die aus provider_config-IDs mit Bindestrichen erstellt wurden, haben Bindestriche im Dateinamen. Der neue Dot→Hyphen-Fallback in `_find_card()` schließt diese Lücke.
+
+---
+
 ### 2026-06-22 (Session 30) — Token-Limit-Audit + Anthropic Provider-Cap + Benchmark-Cleanup (v4.10.6)
 
 **Auslöser:** User fragte ob Token-Limits bei allen Providern korrekt gesetzt sind. Systematische Analyse aller 5 API-Provider ergab: 27 Modelle mit verfälschten Benchmark-Ergebnissen durch Token-Limit-Artefakte.

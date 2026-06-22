@@ -194,10 +194,8 @@ def _ensure_model_card(
     print(f"  Generiere Model Card für {model_id} ...")
     from utils.card_utils import ensure_card
     from utils.model_utils import _card_path
-    mc_gen = _load_card_module("generate_model_cards")
     card_path_out = _card_path(model_id, for_write=True)
     result_path = ensure_card(model_id, card_path=card_path_out)
-    mc_gen._rebuild_index()  # type: ignore[attr-defined]
     print(f"  Model Card erstellt: {result_path}")
     try:
         return json.loads(result_path.read_text(encoding="utf-8"))

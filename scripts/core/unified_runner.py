@@ -1321,7 +1321,7 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         ]
         avg_tokens = sum(token_rates) / len(token_rates) if token_rates else 0.0
         judge_scores = [
-            r.get("llm_judge_score") for r in valid_results
+            float(r.get("llm_judge_score")) for r in valid_results
             if r.get("llm_judge_score") is not None
         ]
         total_usd = sum(r.get("cost_usd", 0.0) for r in valid_results)

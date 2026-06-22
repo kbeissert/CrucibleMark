@@ -2,7 +2,8 @@
   "architecture_tags": [
     "General",
     "Vision-Capable",
-    "Agentic"
+    "Agentic",
+    "Thinking-Optional"
   ],
   "card_status": "complete",
   "commercial_use_allowed": true,

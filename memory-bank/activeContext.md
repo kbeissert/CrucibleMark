@@ -14,6 +14,41 @@ to know what reference files exist.
 # Active Context
 ## Aktueller Status (2026-06-22)
 
+- **Session 32 abgeschlossen (2026-06-22) — Dead-Model-Cleanup (xAI):**
+
+  1. **Auslöser:** Nach dem ID-Mismatch-Fix (Session 31) weiterhin `Model not found` für `grok-4.1-fast-reasoning`. XAI-API-Check via `/v1/models` ergab: 4 von 7 xAI-Modellen nicht mehr erreichbar.
+
+  2. **Betroffene Modelle:**
+     - `grok-4-1-fast-reasoning` ❌ API: Model not found
+     - `grok-4-fast-non-reasoning` ❌ API: Model not found
+     - `grok-3` ❌ API: Model not found
+     - `grok-3-mini` ❌ API: Model not found
+     - `grok-4.20-0309-reasoning` ✅, `grok-4.20-0309-non-reasoning` ✅, `grok-4.3` ✅
+
+  3. **Änderungen:**
+     - `provider_config.yaml`: 4 tote Modelle auskommentiert (mit `# ❌ XAI API: Model not found (entfernt 2026-06)`)
+     - `web_export_blacklist.yaml`: 3 neue Einträge (`grok-4-fast-non-reasoning`, `grok-3`, `grok-3-mini`) — `grok-4-1-fast-reasoning` war bereits vorhanden
+     - Workflow-Regel in `CLAUDE.md` dokumentiert: Dead-Model-Handling — erst API prüfen, dann User fragen, dann auskommentieren + blacklisten
+
+  4. **Neuer Workflow (in CLAUDE.md):** Bei `Model not found` / HTTP 400: (1) Alle Provider-Modelle gegen API prüfen, (2) User fragen ob auskommentieren, (3) Blacklist ergänzen, (4) CSV-Cleanup. NIEMALS eigenständig auskommentieren.
+
+- **Session 31 abgeschlossen (2026-06-22) — grok-4.1-fast-reasoning Model-ID-Mismatch Fix:**
+
+  1. **Root Cause:** `_find_card()` konnte die Card `grok-4-1-fast-reasoning.json` nicht finden, wenn die Eingabe `grok-4.1-fast-reasoning` (Punkte) war. `_safe_name()` konvertiert Punkte→Unterstriche (`grok-4_1-fast-reasoning`), aber die Card-Datei benutzt Bindestriche (`grok-4-1-fast-reasoning.json`). Dazu fehlte der Eintrag `grok-4_1-fast-reasoning` → `grok-4.1-fast-reasoning` in `_XAI_ID_ALIASES`.
+
+  2. **3 Fixes implementiert:**
+     - **Gelöscht:** Broken Placeholder-Card `grok-4_1-fast-reasoning.json` (falsches `model_id: "grok-4_1-fast-reasoning"`)
+     - **`utils/model_utils.py` `_find_card()`:** Dot→Hyphen-Fallback hinzugefügt. Wenn die `_safe_name`-basierte Lookup fehlschlägt und die Eingabe Punkte enthält, wird die Variante mit Bindestrichen probiert.
+     - **`utils/providers/xai.py` `_XAI_ID_ALIASES`:** `"grok-4_1-fast-reasoning": "grok-4.1-fast-reasoning"` als Defense-in-Depth ergänzt.
+
+  3. **CSV-Cleanup:** 4 broken Einträge (`grok-4_1-fast-reasoning`, alle 0.0 Scores) aus `commercial_models_benchmark.csv` entfernt.
+
+  4. **Verifikation:** `resolve_canonical_model_id("grok-4.1-fast-reasoning")` → `"grok-4.1-fast-reasoning"` (korrekte API-ID). 82 card/canonical/normalize Tests grün.
+
+  5. **Hintergrund:** `provider_config.yaml` hat `grok-4-1-fast-reasoning` (Bindestriche), Card hat `model_id: "grok-4.1-fast-reasoning"` (Punkte = tatsächliche XAI-API-ID). Historisch funktionierte der Aufruf über den provider_config-Eintrag (Bindestriche), aber der direkte Aufruf mit API-ID (Punkte) schlug fehl.
+
+## Aktueller Status (2026-06-22)
+
 - **Session 30 abgeschlossen (2026-06-22) — Token-Limit-Audit + Anthropic Provider-Cap + Benchmark-Cleanup (v4.10.6):**
 
   1. **Token-Limit-Audit aller Provider:**
@@ -319,6 +354,8 @@ Mögliche Anlässe für User-Aktivität (alle aus dem Backlog):
 
 ## Letzte Änderungen
 
+- **2026-06-22 (Session 32):** Dead-Model-Cleanup (xAI). 4 tote Modelle aus `provider_config.yaml` auskommentiert (`grok-4-1-fast-reasoning`, `grok-4-fast-non-reasoning`, `grok-3`, `grok-3-mini`). 3 neue Blacklist-Einträge in `web_export_blacklist.yaml`. Workflow-Regel in CLAUDE.md: Dead-Model-Handling — API prüfen, User fragen, dann auskommentieren + blacklisten.
+- **2026-06-22 (Session 31):** grok-4.1-fast-reasoning Model-ID-Mismatch Fix. `_find_card()` Dot→Hyphen-Fallback in `model_utils.py` + `_XAI_ID_ALIASES`-Ergänzung in `xai.py`. Broken Placeholder-Card + 4 CSV-Einträge entfernt.
 - **2026-06-22 (Session 30):** Token-Limit-Audit (v4.10.6). Anthropic `max_tokens` 8192→32768 + Haiku Override + Dead Config entfernt. 144 verfälschte Zeilen entfernt (24 MAX_TOKENS + 130 CI@500). 27 Modelle mit fehlenden Tasks. Leaderboard aktualisiert.
 - **2026-06-21 (Session 29):** Provider-Connector SSoT (v4.10.5) — 3 Utilities in `base.py` (`_extract_reasoning_tokens`, `_extract_think_from_message`, `ThinkAccumulator`), 9 Provider migriert, Streaming-Bugs gefixt. Judge Token Usage Context (v4.10.5) — universelle Token-Verbrauchsinformation für Judge. CSV-Write-Through Bug Fix (v4.10.4) — atomare Writes via tempfile+replace, 10 Modelle mit 0 CSV identifiziert. `provider_config.yaml`: −17% Cleanup. 822/822 Tests grün.
 - **2026-06-21 (Session 28):** Token-Budget-Refactoring (v4.10.3). `_resolve_request_tokens()` in `base.py`, 7 Provider migriert, Provider-Kaskade `max_tokens`, Token-Budget-Optimierung, Design-Constraints dokumentiert. Commit `d5f3a85`.

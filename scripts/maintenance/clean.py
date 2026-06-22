@@ -160,6 +160,7 @@ def main():
     parser.add_argument("--module", type=str, help="Loesche spezifische Modul-Ergebnisse")
     parser.add_argument("--all", action="store_true", help="Loesche Caches + Alle CSVs")
     parser.add_argument("--force", action="store_true", help="Ohne Nachfragen loeschen")
+    parser.add_argument("--dry-run", action="store_true", help="Zeigt nur an, was geloescht wuerde.")
 
     if len(sys.argv) == 1:
         interactive_wizard()
@@ -203,7 +204,7 @@ def main():
         executed = True
 
     if args.model or args.module:
-        _run_clean_results(model=args.model, module=args.module)
+        _run_clean_results(model=args.model, module=args.module, dry_run=args.dry_run)
         executed = True
 
     if not executed:

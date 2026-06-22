@@ -13,6 +13,7 @@
   "developer": "Z.AI (formerly Zhipu AI)",
   "developer_jurisdiction": "CN",
   "display_name": "GLM-5.1",
+  "vendor": "Z.AI (formerly Zhipu AI)",
   "generated_at": "2026-04-23T22:03:19.200573+00:00",
   "input_price_per_1m": 1.05,
   "judge_context_hint": "Das Modell ist ein Frontier-MoE-Modell (754B/40B aktiv) mit starkem Fokus auf agentic Coding und Long-Horizon-Execution. Thinking ist per API schaltbar (enable_thinking). Bei chinesischsprachigen Aufgaben kann die Leistung leicht variieren; agentic und Coding-Benchmarks sind der primäre Stärkebereich.",

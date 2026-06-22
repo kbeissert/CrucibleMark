@@ -139,14 +139,14 @@ providers:
         name: Grok 4.20 Non-Reasoning (0309)
       - id: grok-4.3
         name: Grok 4.3
-      - id: grok-4-1-fast-reasoning
-        name: Grok 4.1 Fast Reasoning
-      - id: grok-4-fast-non-reasoning
-        name: Grok 4 Fast
-      - id: grok-3
-        name: Grok 3
-      - id: grok-3-mini
-        name: Grok 3 Mini
+      # - id: grok-4-1-fast-reasoning      # ❌ XAI API: Model not found (entfernt 2026-06)
+      #   name: Grok 4.1 Fast Reasoning
+      # - id: grok-4-fast-non-reasoning     # ❌ XAI API: Model not found (entfernt 2026-06)
+      #   name: Grok 4 Fast
+      # - id: grok-3                         # ❌ XAI API: Model not found (entfernt 2026-06)
+      #   name: Grok 3
+      # - id: grok-3-mini                    # ❌ XAI API: Model not found (entfernt 2026-06)
+      #   name: Grok 3 Mini
 
     groq:
       name: Groq Cloud
@@ -191,7 +191,7 @@ providers:
 
       # Xiaomi MiMo Thinking-Modelle — Reasoning-Anteile benötigen höheres Budget
         xiaomi/mimo-v2.5-pro: 20000
-        xiaomi/mimo-v2.5: 16000
+        xiaomi/mimo-v2.5: 24000
       models:
       - id: nvidia/nemotron-3-ultra-550b-a55b
         name: NVIDIA Nemotron 3 Ultra 550B MoE via OpenRouter
@@ -273,6 +273,39 @@ providers:
       - id: qwen/qwen3.5-397b-a17b
         name: Qwen 3.5 (397B) via OpenRouter
         model_type: proprietary_api
+
+    cohere:
+      name: Cohere
+      short_code: API
+      api_type: cohere
+      token_param_name: max_tokens
+      model_type: proprietary_api
+      enabled: true
+      max_tokens: 16384
+      env_var: COHERE_API_KEY
+      # Per-Modell Token-Caps (überschreibt Provider-Default 16384).
+      # Command A+ ist ein Thinking-Modell mit 64K Output-Tokens.
+      # Ohne Override frisst das Reasoning das gesamte Budget (16384) → 0 sichtbarer Output.
+      # 32768 deckt alle Reasoning-Budgets ab (max. 20000 bei code_quality) plus sichtbaren Output.
+      model_max_tokens:
+        command-a-plus-05-2026: 32768
+        command-a-reasoning-08-2025: 32768
+        command-a-03-2025: 8192
+      models:
+      - id: command-a-plus-05-2026
+        name: Command A+ (MoE 218B)
+      - id: command-a-03-2025
+        name: Command A (150B)
+      - id: command-a-reasoning-08-2025
+        name: Command A Reasoning
+      # - id: command-a-vision-07-2025       # Vision-Only, Text-Benchmarks nicht sinnvoll
+      #   name: Command A Vision
+      # - id: command-r7b-12-2024             # 7B, zu klein für Benchmarkvergleich
+      #   name: Command R7B
+      # - id: command-r-plus-08-2024          # Deprecated Sept 2025, alte R-Serie
+      #   name: Command R+ (Aug 2024)
+      # - id: command-r-08-2024               # Deprecated Sept 2025, alte R-Serie
+      #   name: Command R (Aug 2024)
 
     ollama_cloud:
       name: Ollama (Cloud Proxies)

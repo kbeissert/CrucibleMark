@@ -30,6 +30,7 @@ _XAI_ID_ALIASES: dict[str, str] = {
     "grok-4_20-0309-reasoning": "grok-4.20-0309-reasoning",
     "grok-4_20-0309-non-reasoning": "grok-4.20-0309-non-reasoning",
     "grok-4_3": "grok-4.3",
+    "grok-4_1-fast-reasoning": "grok-4.1-fast-reasoning",
 }
 
 from utils.providers.base import BaseProviderClient
