@@ -12,6 +12,56 @@ to know what reference files exist.
 ---
 
 # Active Context
+## Aktueller Status (2026-06-23)
+
+- **Session 34 abgeschlossen (2026-06-23) — Cohere Native ToolUse Connector + command-a-plus-05-2026 supports_tool_use=false (v4.10.8):**
+
+  1. **Auslöser:** Cohere ToolUse-Benchmark für alle 3 Cohere-Modelle (command-a-03-2025, command-a-plus-05-2026, command-a-reasoning-08-2025) lieferte keine live-Ergebnisse. Prompt-basierte JSON-Tool-Schemas kollidierten mit Cohere's Reasoning-Logik → HTTP 422/500.
+
+  2. **Root Cause:** Prompt-basierte Tool-Schemas im System-Prompt verursachten bei Cohere-Reasoning-Modellen (command-a-plus, command-a-reasoning) einen 422-Fehler (`Thinking.type` fehlte). `command-a-plus` bekam zusätzlich persistente 500-Fehler bei nativen Tool-Calls mit komplexeren System-Prompts (Benchmark-Szenarien) — einfache Prompts funktionierten.
+
+  3. **Lösung: Cohere-nativer `tools`-Parameter (v4.10.8):**
+     - `utils/providers/cohere.py` komplett überarbeitet: Extrahiert Tool-Schema aus dem ToolUse-System-Prompt (`_extract_tool_schema()`), konvertiert zu Cohere-nativem `tools`-Format (`_schema_to_cohere_tools()`), extrahiert Tool-Calls aus der nativen Response (`_format_tool_calls_as_text()`).
+     - `_module_key == "tooluse"` triggert den nativen Pfad; andere Module bleiben prompt-basiert.
+     - Reasoning-Modelle: `thinking: {"type": "disabled"}` wird gesetzt wenn Native Tools + Reasoning-Modell → verhindert 422 durch auto-thinking.
+     - 500-Retry: 2 Retries mit exponentiellem Backoff (2s, 4s).
+
+  4. **Ergebnisse nach Fix:**
+     - `command-a-03-2025`: **4/6 live**, P1=85.0, P2=50.0, Combined=43.3 (2× NO_TOOL_CALL 422 auf fetch-Assets — intermittierend)
+     - `command-a-plus-05-2026`: **0/6 mock** (persistente 500 mit Benchmark-System-Prompt, nicht behebbar clientseitig)
+     - `command-a-reasoning-08-2025`: **6/6 live**, P1=90.0, P2=51.7, Combined=70.5 (Halluzination=YES)
+
+  5. **Model-Card-Änderung:** `command-a-plus-05-2026.json`: `supports_tool_use` auf `false` gesetzt + `known_limitations`-Eintrag ergänzt.
+
+  6. **Systematische API-Tests:** Simple Prompts → alle 3 Modelle OK. Kompletter Benchmark-System-Prompt + Native Tools → nur `command-a-plus-05-2026` scheitert mit persistenten 500s. `thinking: disabled` half nicht. Cohere-Statuspage zeigt 100% Uptime (infra-level, nicht modell-spezifisch). `command-a-plus` ist Cohere's erstes MoE-Modell (218B/25B aktiv) — 500s deuten auf unreife serverseitige Tool-Use-Routing-Logik bei komplexen Prompts hin.
+
+  7. **Dokumentation:** CHANGELOG v4.10.8, CLAUDE.md (Cohere Pitfalls), ARCHITECTURE.md (Cohere in Provider-Tabelle), DEVELOPER_GUIDE.md (Cohere-Connector-Sektion), Memory Bank.
+
+## Aktueller Status (2026-06-22)
+
+- **Session 33 abgeschlossen (2026-06-22) — clean-results Variant-Handling + _rebuild_index Fix + Dead-Model grok-4.1-fast-reasoning Cleanup (v4.10.7):**
+
+  1. **Auslöser:** `make clean-model MODEL=grok-4.1-fast-reasoning` bereinigte nur EINE von 3 ID-Varianten. Orphan-Cards, CSV-Zeilen, cost_log-Einträge und Review/Audit-Dirs blieben übrig.
+
+  2. **Root Cause:** `clean_results.py` nutzte nur `_safe_name()` (Punkte→Unterstriche) für die Variant-Auflösung. Drei Schreibweisen existierten parallel: `grok-4_1-fast-reasoning` (Underscore), `grok-4-1-fast-reasoning` (Hyphen, provider_config), `grok-4.1-fast-reasoning` (Dot, API-ID).
+
+  3. **5 Fixes in `clean_results.py`:**
+     - **Fix 1 (`clean_model_card`):** Findet und löscht ALLE Card-Varianten (Dateiname + `_find_card` + Glob + Inhalt-Scan)
+     - **Fix 2 (`clean_csv`):** Matched alle ID-Varianten in CSV-Spalten (`model`, `Model ID`, `model_id_raw`)
+     - **Fix 3 (Reihenfolge):** CSVs werden VOR Cards bereinigt (Card wird für `resolve_canonical_model_id()` gebraucht)
+     - **Fix 4 (`clean_model_output_directories`):** Variant-aware für audit_logs, comparisons, runs, reviews
+     - **Fix 5 (neue Funktionen):** `clean_cost_log()`, `_dead_model_info()`, `LEADERBOARD_CSVS`-Konstante
+
+  4. **Neue SSoT-Funktion `_collect_model_id_variants()`:** Sammelt ALLE Schreibweisen einer Model-ID über `_safe_name()` + Card-Inhalt-Scan.
+
+  5. **`clean.py`:** `--dry-run` Argument ergänzt (fehlte in argparse, wurde aber vom Makefile erwartet).
+
+  6. **`generate_review.py`:** Verwaister `mc_gen._rebuild_index()`-Aufruf + unbenutzter Import entfernt (Zeile 197-200). Crash bei `reviews-auto` Lauf Modell 54/118.
+
+  7. **Dead-Model grok-4.1-fast-reasoning bereinigt:** 49 CSV-Zeilen, 256 cost_log-Einträge, 6 Leaderboard-Einträge, 1 Card, 1 Audit-Log-Dir, 1 Review-Dir.
+
+  8. **Verifikation:** 10/10 clean_results-Tests grün, keine False Positives bei anderen Modellen (Test mit `claude-sonnet-4-5`), Lint ohne neue Warnungen.
+
 ## Aktueller Status (2026-06-22)
 
 - **Session 32 abgeschlossen (2026-06-22) — Dead-Model-Cleanup (xAI):**
@@ -354,6 +404,8 @@ Mögliche Anlässe für User-Aktivität (alle aus dem Backlog):
 
 ## Letzte Änderungen
 
+- **2026-06-23 (Session 34):** Cohere Native ToolUse Connector (v4.10.8). `utils/providers/cohere.py`: nativer `tools`-Parameter statt Prompt-basierte JSON-Schemas. `_extract_tool_schema()`, `_schema_to_cohere_tools()`, `_format_tool_calls_as_text()`. `command-a-plus-05-2026`: `supports_tool_use=false` (persistente serverseitige 500s). 500-Retry (2× mit Backoff). 3 Cohere-Modelle getestet: command-a-03-2025 (4/6 live), command-a-plus-05-2026 (0/6 mock), command-a-reasoning-08-2025 (6/6 live, P1=90, P2=51.7).
+- **2026-06-22 (Session 33):** clean-results Variant-Handling (v4.10.7). 5 Fixes in `clean_results.py`: Variant-aware Card/CSV/Dir/Cost-Log-Cleanup. Neue SSoT `_collect_model_id_variants()`. `--dry-run` in `clean.py`. `_rebuild_index()` Crash in `generate_review.py` gefixt. Dead-Model `grok-4.1-fast-reasoning` vollständig entfernt (49 CSV, 256 cost_log, 6 Leaderboard, 1 Card). 10/10 Tests grün.
 - **2026-06-22 (Session 32):** Dead-Model-Cleanup (xAI). 4 tote Modelle aus `provider_config.yaml` auskommentiert (`grok-4-1-fast-reasoning`, `grok-4-fast-non-reasoning`, `grok-3`, `grok-3-mini`). 3 neue Blacklist-Einträge in `web_export_blacklist.yaml`. Workflow-Regel in CLAUDE.md: Dead-Model-Handling — API prüfen, User fragen, dann auskommentieren + blacklisten.
 - **2026-06-22 (Session 31):** grok-4.1-fast-reasoning Model-ID-Mismatch Fix. `_find_card()` Dot→Hyphen-Fallback in `model_utils.py` + `_XAI_ID_ALIASES`-Ergänzung in `xai.py`. Broken Placeholder-Card + 4 CSV-Einträge entfernt.
 - **2026-06-22 (Session 30):** Token-Limit-Audit (v4.10.6). Anthropic `max_tokens` 8192→32768 + Haiku Override + Dead Config entfernt. 144 verfälschte Zeilen entfernt (24 MAX_TOKENS + 130 CI@500). 27 Modelle mit fehlenden Tasks. Leaderboard aktualisiert.

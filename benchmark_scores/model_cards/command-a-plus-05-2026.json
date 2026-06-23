@@ -33,7 +33,8 @@
     "Weniger publizierte unabhängige Third-Party-Benchmarks als vergleichbare Frontier-Modelle",
     "Thinking verbraucht Output-Tokens aus dem 64K-Budget — bei intensivem Reasoning kann die Antwortlänge entsprechend sinken",
     "W4A4-Quantisierung für Minimalanforderung (2× H100) nötig — BF16 erfordert deutlich mehr Ressourcen",
-    "Trial-API-Key: 20 req/min, 1000 API-Calls/Monat — für Production-Nutzung via Cohere Model Vault oder Self-Hosting"
+    "Trial-API-Key: 20 req/min, 1000 API-Calls/Monat — für Production-Nutzung via Cohere Model Vault oder Self-Hosting",
+    "Tool-Use via API nicht stabil: persistente HTTP 500 (serverseitig) bei nativem tools-Parameter mit komplexeren System-Prompts. Einfache Tool-Calls funktionieren, Benchmark-Szenarien nicht (2026-06). supports_tool_use=false bis Cohere den Bug behebt."
   ],
   "judge_context_hint": "Open-Weight-MoE-Modell (25B aktiv / 218B total) unter Apache 2.0. Nativer Reasoning-Anteil verbraucht Output-Tokens aus dem 64K-Budget. Vision-Input, 48 Sprachen, Agentic Tool-Use. Für lokales Deployment mit vLLM verfügbar. Kanadischer Anbieter.",
   "architecture_tags": [
@@ -52,7 +53,7 @@
   "output_modalities": [
     "text"
   ],
-  "supports_tool_use": true,
+  "supports_tool_use": false,
   "tooluse_tested_at": null,
   "tooluse_score_p1": null,
   "tooluse_score_p2": null,

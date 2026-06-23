@@ -190,11 +190,11 @@ llama.cpp-Modelle mit `--reasoning on` (bzw. `enable_thinking: true`) geben Thin
 
 Alle Provider-Connectors in `utils/providers/` extrahieren seit v4.10.1 konsistent drei Felder in `last_response_metadata`:
 
-| Feld | OpenAI | Anthropic | Google | Mistral | OpenRouter | Ollama | Groq | xAI |
-|------|--------|-----------|--------|---------|------------|--------|------|-----|
-| `reasoning_tokens` | `usage.completion_tokens_details.reasoning_tokens` | `usage.output_tokens_details.reasoning_tokens` | `usage_metadata.thoughts_token_count` | `usage.completion_tokens_details.reasoning_tokens` | `usage.completion_tokens_details.reasoning_tokens` | `eval_count` (wenn Thinking erkannt) | `usage.completion_tokens_details.reasoning_tokens` | `usage.completion_tokens_details.reasoning_tokens` |
-| `think_content` | `msg.reasoning` / `msg.reasoning_content` | `response.content[b].thinking` (type=thinking) | `candidates[0].content.parts[].thinking` | `chunk.thinking` (list-Response) | `msg.reasoning` / `msg.reasoning_content` / `msg.think_content` | `msg.thinking` (Streaming) | `msg.reasoning` / `msg.reasoning_content` | `msg.reasoning` / `msg.reasoning_content` |
-| `usage` | `response.usage` | `response.usage` | `usage_metadata` | `response.usage` | `response.usage` | Dict (synthetisiert) | `response.usage` | `response.usage` |
+| Feld | OpenAI | Anthropic | Google | Mistral | OpenRouter | Ollama | Groq | xAI | Cohere |
+|------|--------|-----------|--------|---------|------------|--------|------|-----|--------|
+| `reasoning_tokens` | `usage.completion_tokens_details.reasoning_tokens` | `usage.output_tokens_details.reasoning_tokens` | `usage_metadata.thoughts_token_count` | `usage.completion_tokens_details.reasoning_tokens` | `usage.completion_tokens_details.reasoning_tokens` | `eval_count` (wenn Thinking erkannt) | `usage.completion_tokens_details.reasoning_tokens` | `usage.completion_tokens_details.reasoning_tokens` | `usage.tokens.output_tokens` (v2 API) |
+| `think_content` | `msg.reasoning` / `msg.reasoning_content` | `response.content[b].thinking` (type=thinking) | `candidates[0].content.parts[].thinking` | `chunk.thinking` (list-Response) | `msg.reasoning` / `msg.reasoning_content` / `msg.think_content` | `msg.thinking` (Streaming) | `msg.reasoning` / `msg.reasoning_content` | `msg.reasoning` / `msg.reasoning_content` | N/A (kein separates Thinking-Feld in v2 API) |
+| `usage` | `response.usage` | `response.usage` | `usage_metadata` | `response.usage` | `response.usage` | Dict (synthetisiert) | `response.usage` | `response.usage` | `response.usage` (Cohere v2) |
 
 **Streaming-Pfade (ab v4.10.1):**
 
@@ -208,6 +208,7 @@ Alle Provider-Connectors in `utils/providers/` extrahieren seit v4.10.1 konsiste
 | xAI | `delta.reasoning` akkumuliert | `chunk.usage` (falls verfügbar) |
 | Ollama | `msg.thinking` akkumuliert | Final-Chunk (`chunk.get("done") == True`) |
 | Mistral | Kein Streaming (Blocking-Only) | Blocking-Only |
+| Cohere | Kein Streaming (Blocking-Only) | Blocking-Only (v2 API: `response.usage`) |
 
 **DRY-Helper `_extract_reasoning_tokens(usage)`:**
 
@@ -240,6 +241,37 @@ if input_tokens == 0 and output_tokens == 0:
 Ohne `usage` in `last_response_metadata` werden Tokens geschätzt (1 Token ≈ 4 Zeichen) statt von der API gezählt. **Bei allen Provider-Fixes muss `usage` mitgespeichert werden**, damit `LLMParser.extract_usage_tokens()` echte Werte liefert.
 
 **Pitfall: Anthropic hat keinen einheitlichen Usage-Schema.** OpenAI-kompatible Provider (`usage.completion_tokens_details.reasoning_tokens`) und Google (`thoughts_token_count`) liefern Reasoning-Tokens direkt im Usage-Objekt. Anthropic hat das in `usage.output_tokens_details.reasoning_tokens` (neue SDK-Versionen). Beide Schemata müssen parallel geprüft werden.
+
+### Cohere Native ToolUse (ab v4.10.8)
+
+Cohere's Reasoning-Modelle (`command-a-plus`, `command-a-reasoning`) kollidieren mit prompt-basierten JSON-Tool-Schemas: das `thinking`-Feld erwartet `{"type": "enabled"|"disabled"}`, was bei prompt-injizierten Schemas fehlt → HTTP 422. Zusätzlich liefern komplexe System-Prompts (Benchmark-Szenarien) bei `command-a-plus` persistente HTTP 500 mit nativen Tools (MoE-Instabilität).
+
+**Architektur-Lösung:**
+
+```
+ToolUse-Modul → system_prompt (mit JSON-Tool-Schema)
+                    │
+                    ▼
+cohere.py: _extract_tool_schema(system_prompt)
+    → extrahiert Tool-Schema via Bracket-Counting
+    → _schema_to_cohere_tools(schema)
+    → Cohere-native `tools`-Parameter
+    → thinking: {"type": "disabled"} (Reasoning-Modelle)
+                    │
+                    ▼
+Cohere API v2: POST /v2/chat (mit `tools`-Parameter)
+                    │
+                    ▼
+cohere.py: _format_tool_calls_as_text(response)
+    → {"tool_call": {"name": ..., "parameters": ...}}
+    → kompatibel mit ToolUse-Modul-Parser
+```
+
+**Module-Key-Dispatch:** `_module_key == "tooluse"` triggert den nativen Pfad. Alle anderen Module bleiben prompt-basiert (unverändert).
+
+**Reasoning-Modell-Erkennung:** `_is_cohere_reasoning_model(model)` prüft auf Substring-Match (`command-a-reasoning`, `command-a-plus`).
+
+**Pitfall:** NIEMALS prompt-basierte Tool-Schemas für Cohere-Reasoning-Modelle verwenden — immer den nativen Pfad. `command-a-plus` hat persistente 500er bei Benchmark-Prompts (MoE-Instabilität, serverseitiger Bug) — `supports_tool_use=false`.
 
 ### Config-Lookup mit ID-Normalisierung (Defense-in-Depth)
 

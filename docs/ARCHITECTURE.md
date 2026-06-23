@@ -259,6 +259,7 @@ llama.cpp-Modelle mit `--reasoning on` geben Thinking-Inhalte im separaten API-F
 | OpenRouter | Bearer token | Modellabhängig | ✅ | Im Wrapper | **Reasoning-Token-Budget** (siehe unten); Free-Tier-Modelle (`vendor/model:free`) nutzen separates Rate-Limit-Profil (`openrouter_free`, 18 RPM); `think_content` aus `msg.reasoning`/`msg.reasoning_content` |
 | xAI | Bearer token | Modellabhängig | ✅ | Im Wrapper | `finish_reason` aus Streaming-Chunks extrahiert; `reasoning_tokens` aus `usage.completion_tokens_details` |
 | Groq | Bearer token | Modellabhängig | ✅ | Im Wrapper | `max_completion_tokens` statt `max_tokens` (config-getrieben); `reasoning_tokens` aus `usage.completion_tokens_details` |
+| Cohere | API key | 128K (Command) | ❌ | 500 → 2× Retry (Backoff) | **Native `tools`-API für ToolUse-Modul** (v4.10.8); Prompt-basierte Tool-Schemas kollidieren mit Reasoning-Modellen; `thinking: {"type": "disabled"}` bei Native Tools; `command-a-plus`: MoE-Instabilität bei komplexen Prompts (HTTP 500) |
 
 **Provider Thinking/Reasoning-Extraktion (ab v4.10.1):**
 
@@ -277,6 +278,7 @@ Alle Provider-Connectors in `utils/providers/` extrahieren seit v4.10.1 konsiste
 - **Google Gemini:** `thoughts_token_count` ist kumulativ — letzter Chunk hält den finalen Wert (nicht addieren).
 - **Ollama:** Keine separate `reasoning_tokens`-API — `eval_count` wird als Reasoning-Count verwendet wenn Thinking erkannt wurde (sonst Output-Token-Count).
 - **Groq/xAI:** Reasoning-Unterstützung in `usage` prüfen — `completion_tokens_details.reasoning_tokens` ist OpenAI-kompatibel und verfügbar.
+- **Cohere (ab v4.10.8):** ToolUse-Modul nutzt Cohere-native `tools`-API statt Prompt-basierte JSON-Schemas. Reasoning-Modelle (`command-a-plus`, `command-a-reasoning`) werden über `_is_cohere_reasoning_model()` erkannt (Substring-Match). `thinking: {"type": "disabled"}` bei Native Tools verhindert 422. `command-a-plus` hat persistente 500er bei Benchmark-Prompts (MoE-Instabilität) — `supports_tool_use=false`.
 
 **Globaler Token-Fallback-Wrapper:**
 Das Framework implementiert einen robusten Ansatz zur Bewältigung harter Output-Token-Limits, zentral im `BaseProviderClient` über `_execute_with_token_fallback`.

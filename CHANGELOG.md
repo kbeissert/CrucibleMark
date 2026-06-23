@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v4.10.8] - 2026-06-23
+
+**Cohere ToolUse-Connector auf native `tools`-API migriert. `command-a-plus-05-2026` als `supports_tool_use=false` markiert (serverseitiger 500-Bug).**
+
+### Changed
+
+- **`utils/providers/cohere.py` — Native ToolUse-Connector:**
+  Prompt-basierte JSON-Tool-Schemas im System-Prompt kollidierten mit Cohere's Reasoning-Modellen (HTTP 422/500). Die Lösung nutzt Cohere-native `tools`-API statt Prompt-Injektion:
+  - **`_extract_tool_schema(system_prompt)`:** Extrahiert das Tool-Schema-JSON aus dem ToolUse-System-Prompt via Bracket-Counting. Erkennt das Marker `"Verfügbares Tool:\n"` und parst das folgende JSON-Objekt.
+  - **`_schema_to_cohere_tools(schema)`:** Konvertiert das CrucibleMark-Tool-Schema ins Cohere-native Format (`{"type": "function", "function": {"name": ..., "parameters": ...}}`).
+  - **`_format_tool_calls_as_text(response_message)`:** Extrahiert Tool-Calls aus Cohere's nativer Response und formatiert sie als JSON-Text (`{"tool_call": {"name": ..., "parameters": ...}}`), kompatibel mit dem ToolUse-Modul-Parser.
+  - **Module-Key-Dispatch:** `_module_key == "tooluse"` triggert den nativen Pfad; alle anderen Module bleiben prompt-basiert (unverändert).
+  - **Reasoning-Modell-Handling:** `_is_cohere_reasoning_model()` erkennt `command-a-reasoning` und `command-a-plus` als Substring-Match. Bei Native Tools + Reasoning-Modell → `thinking: {"type": "disabled"}` gesetzt (verhindert 422 durch auto-thinking).
+  - **500-Retry:** 2 Retries mit exponentiellem Backoff (2s, 4s) für serverseitige 500-Fehler.
+
+### Fixed
+
+- **`command-a-plus-05-2026.json` — `supports_tool_use` auf `false`:**
+  Cohere's erstes MoE-Modell (218B/25B aktiv) zeigt persistente HTTP 500 bei Benchmark-System-Prompts + nativen Tools. Einfache Prompts funktionieren, komplexe Benchmark-Szenarien nicht. Serverseitiger Bug, nicht clientseitig behebbar. `known_limitations`-Eintrag ergänzt.
+
+### Benchmark-Ergebnisse (Cohere, nach Fix)
+
+| Modell | Assets | P1 | P2 | Combined | Status |
+|---|---|---|---|---|---|
+| command-a-03-2025 | 4/6 live | 85.0 | 50.0 | 43.3 | 2× 422 intermittierend (fetch-Assets) |
+| command-a-plus-05-2026 | 0/6 mock | 0.0 | 20.0 | 6.0 | `supports_tool_use=false` |
+| command-a-reasoning-08-2025 | 6/6 live | 90.0 | 51.7 | 70.5 | Halluzination=YES |
+
 ## [v4.10.7] - 2026-06-22
 
 **`clean-results`-Script: Vollständige Varianten-Auflösung für Model-IDs. `grok-4.1-fast-reasoning` vollständig entfernt. `_rebuild_index()`-Crash in `generate_review.py` gefixt.**

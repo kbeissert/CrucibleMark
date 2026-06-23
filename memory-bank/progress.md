@@ -1,6 +1,78 @@
 # Progress
 
 Letzte Releases + aktueller Stand.
+### 2026-06-23 (Session 34) — Cohere Native ToolUse Connector + command-a-plus supports_tool_use=false (v4.10.8)
+
+**Auslöser:** Cohere ToolUse-Benchmark lieferte keine live-Ergebnisse — alle 3 Cohere-Modelle gingen auf Mock. Prompt-basierte JSON-Tool-Schemas kollidierten mit Cohere's Reasoning-Logik (HTTP 422/500).
+
+**Root Cause:** Cohere-Reasoning-Modelle (command-a-plus, command-a-reasoning) erwarten das `thinking`-Feld explizit als `{"type": "enabled"|"disabled"}`. Ohne `type` → 422. Prompt-basierte Tool-Schemas im System-Prompt verursachten zudem HTTP 500 bei `command-a-plus` mit komplexeren Prompts — ein serverseitiger Bug.
+
+**Änderungen:**
+
+1. **`utils/providers/cohere.py` — Komplett-Überarbeitung:**
+   - **Native `tools`-Pfad:** `_extract_tool_schema()` extrahiert Tool-Schema aus dem ToolUse-System-Prompt (Bracket-Counting für verschachteltes JSON). `_schema_to_cohere_tools()` konvertiert zu Cohere-nativem Format. `_format_tool_calls_as_text()` formatiert Response-Tool-Calls zu Text-Output (`{"tool_call": {"name": ..., "parameters": ...}}`), kompatibel mit dem ToolUse-Modul-Parser.
+   - **Module-Key-Dispatch:** `_module_key == "tooluse"` triggert den nativen Pfad; alle anderen Module bleiben prompt-basiert (unverändert).
+   - **Reasoning-Modelle:** `_is_cohere_reasoning_model()` erkennt `command-a-reasoning` und `command-a-plus` als Substring-Match. Bei Native Tools + Reasoning-Modell → `thinking: {"type": "disabled"}` gesetzt (verhindert 422 durch auto-thinking).
+   - **500-Retry:** 2 Retries mit exponentiellem Backoff (2s, 4s) für serverseitige 500-Fehler.
+   - **Docstring** aktualisiert: beschreibt Native-Tools-Architektur und die Kollision mit prompt-basierten Schemas.
+
+2. **`benchmark_scores/model_cards/command-a-plus-05-2026.json`:**
+   - `supports_tool_use`: `true` → `false`
+   - `known_limitations`: Neue Zeile "Tool-Use via API nicht stabil: persistente HTTP 500..."
+
+**Systematische API-Tests:**
+| Szenario | command-a-03-2025 | command-a-plus-05-2026 | command-a-reasoning-08-2025 |
+|---|---|---|---|
+| Simple Prompt | ✅ 200 | ✅ 200 | ✅ 200 |
+| Simple + Native Tools | ✅ 200 | ✅ 200 | ✅ 200 |
+| Benchmark-System-Prompt + Native Tools | ✅ 200 | ❌ 500 (persistent) | ✅ 200 |
+| Benchmark + thinking:disabled | ✅ 200 | ❌ 500 (persistent) | ✅ 200 |
+
+**Benchmark-Ergebnisse (nach Fix):**
+| Modell | Assets | P1 | P2 | Combined | Status |
+|---|---|---|---|---|---|
+| command-a-03-2025 | 4/6 live | 85.0 | 50.0 | 43.3 | 2× 422 intermittierend |
+| command-a-plus-05-2026 | 0/6 mock | 0.0 | 20.0 | 6.0 | `supports_tool_use=false` |
+| command-a-reasoning-08-2025 | 6/6 live | 90.0 | 51.7 | 70.5 | Halluzination=YES |
+
+**Dokumentation:** CHANGELOG v4.10.8, CLAUDE.md (Cohere Pitfalls), ARCHITECTURE.md (Cohere in Provider-Tabelle), DEVELOPER_GUIDE.md (Cohere-Connector), Memory Bank.
+
+---
+
+### 2026-06-22 (Session 33) — clean-results Variant-Handling + _rebuild_index Fix (v4.10.7)
+
+**Auslöser:** `make clean-model MODEL=grok-4.1-fast-reasoning` bereinigte nur EINE von 3 ID-Varianten. Orphan-Cards, CSV-Zeilen, cost_log-Einträge und Review/Audit-Dirs blieben übrig.
+
+**Root Cause:** `clean_results.py` nutzte nur `_safe_name()` (Punkte→Unterstriche). Drei Schreibweisen existierten parallel: `grok-4_1-fast-reasoning` (Underscore), `grok-4-1-fast-reasoning` (Hyphen, provider_config), `grok-4.1-fast-reasoning` (Dot, API-ID).
+
+**Änderungen:**
+
+1. **`scripts/maintenance/clean_results.py` — 5 Fixes:**
+   - `_collect_model_id_variants()` (neue SSoT-Funktion): Sammelt alle Schreibweisen über `_safe_name()` + Card-Inhalt-Scan
+   - `clean_model_card()`: Findet ALLE Card-Dateien (Dateiname + `_find_card` + Glob + Inhalt-Scan)
+   - `clean_csv()`: Matched alle ID-Varianten in CSV-Spalten (`model`, `Model ID`, `model_id_raw`)
+   - `clean_model_output_directories()`: Variant-aware für audit_logs, comparisons, runs, reviews
+   - `clean_cost_log()` (neu): Bereinigt `outputs/cost_log.csv`
+   - `_dead_model_info()` (neu): Warnt wenn Modell in Blacklist/provider_config markiert
+   - Reihenfolge-Fix: CSVs VOR Cards (Card wird für `resolve_canonical_model_id()` gebraucht)
+
+2. **`scripts/maintenance/clean.py`:**
+   - `--dry-run` Argument ergänzt (Makefile erwartete es, argparse lehnte ab)
+
+3. **`scripts/analysis/generate_review.py`:**
+   - Verwaister `mc_gen._rebuild_index()`-Aufruf + unbenutzter `mc_gen`-Import entfernt (Zeile 197-200)
+   - `reviews-auto` Crash bei Modell 54/118 (AttributeError)
+
+4. **Dead-Model grok-4.1-fast-reasoning bereinigt:**
+   - 49 CSV-Zeilen, 256 cost_log-Einträge, 6 Leaderboard-Einträge, 1 Card, 1 Audit-Log-Dir, 1 Review-Dir
+   - Alle 3 Varianten vollständig entfernt
+
+**Dokumentation:** CHANGELOG v4.10.7, CLAUDE.md (2 Pitfalls), activeContext, progress, systemPatterns, DEVELOPER_GUIDE, ARCHITECTURE, README.
+
+**Verifikation:** 10/10 clean_results-Tests grün, keine False Positives (Test mit `claude-sonnet-4-5`), Lint ohne neue Warnungen.
+
+---
+
 ### 2026-06-22 (Session 32) — Dead-Model-Cleanup (xAI) + Workflow-Dokumentation
 
 **Auslöser:** Nach Session 31 (ID-Mismatch-Fix) weiterhin `Model not found: grok-4.1-fast-reasoning` beim Benchmark-Lauf. Das Modell existiert schlicht nicht mehr in der xAI API.
