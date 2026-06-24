@@ -12,6 +12,26 @@ to know what reference files exist.
 ---
 
 # Active Context
+## Aktueller Status (2026-06-24)
+
+- **Session 35 abgeschlossen (2026-06-24) — Benchmark-Maintenance + ToolUse Aggregator Fix:**
+
+  1. **Standby-Einträge entfernt:** Computer ging in Standby während Benchmark-Lauf. 2 CSV-Einträge aus `commercial_models_benchmark.csv` entfernt:
+     - `gpt-5-2025-08-07` / `content_transformation_003` (Connection error, 1107.9s, 0.0%)
+     - `gemini-3.1-pro-preview` / `code_quality_002` (0.0%, 337 Tokens, Judge 0.0/5)
+     - CSV-Validierung: 110 Spalten, 0 Spaltenfehler, Modellcounts konsistent
+
+  2. **Model Card Updates:**
+     - `openai_gpt-oss-20b.json`: `supports_tool_use: true → false` (Modell kann keine Tools nutzen)
+     - `openai_gpt-oss-120b.json`: `supports_tool_use` bleibt `true` (51% ToolUse-Score, Grenzfall)
+
+  3. **ToolUse Aggregator Bug (P1/P2 leer, Combined befüllt):**
+     - **Root Cause:** `_aggregate_asset_rows()` in `tooluse_exporter.py` hatte `total_score`-Fallback nur für `combined_score` (Zeile 499), nicht für `p1_score`/`p2_score`. Lokale Modelle (llamacpp_spark) schreiben nur `total_score` in die CSV, keine separaten P1/P2-Spalten.
+     - **Fix:** Per-Zeile `total_score`-Fallback für P1 und P2 ergänzt. Nutzt `_p1_found`/`_p2_found`-Flags statt globaler Listen-Leer-Prüfung.
+     - 68/68 ToolUse-Tests grün.
+
+  4. **GPT-OSS 20B Thinking-Modell-Analyse:** 17200 Tokens, 0.0%, Judge 0.0/5. Modell produzierte ausschließlich Reasoning-Tokens ohne sichtbaren Content-Output. Token-Budget-Erhöhung würde nichts ändern — Modellversagen auf Groq.
+
 ## Aktueller Status (2026-06-23)
 
 - **Session 34 abgeschlossen (2026-06-23) — Cohere Native ToolUse Connector + command-a-plus-05-2026 supports_tool_use=false (v4.10.8):**

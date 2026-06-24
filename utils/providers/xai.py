@@ -23,15 +23,8 @@ except ImportError:
 # Configure logging
 logger = logging.getLogger(__name__)
 
-# Einige Model-IDs werden intern mit Underscore gespeichert (kanonische ID),
-# die xAI API erwartet jedoch die Punkt-Schreibweise.
-# Wird in query() vor dem API-Call aufgelöst.
-_XAI_ID_ALIASES: dict[str, str] = {
-    "grok-4_20-0309-reasoning": "grok-4.20-0309-reasoning",
-    "grok-4_20-0309-non-reasoning": "grok-4.20-0309-non-reasoning",
-    "grok-4_3": "grok-4.3",
-    "grok-4_1-fast-reasoning": "grok-4.1-fast-reasoning",
-}
+# Configure logging
+logger = logging.getLogger(__name__)
 
 from utils.providers.base import BaseProviderClient
 class XAIClient(BaseProviderClient):
@@ -104,9 +97,9 @@ class XAIClient(BaseProviderClient):
         try:
             import logging
             logger = logging.getLogger(__name__)
+            from utils.model_utils import internal_id_to_config_form
             _system = kwargs.get("system")
-            # Kanonische Underscore-IDs auf die von der API erwartete Punkt-Form mappen
-            api_model = _XAI_ID_ALIASES.get(model, model)
+            api_model = internal_id_to_config_form(model)
             params = {
                 "model": api_model,
                 "messages": (

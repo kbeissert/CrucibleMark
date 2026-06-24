@@ -751,19 +751,19 @@ model_onboarding:
     Du onboardest ein neues Modell in CrucibleMark. Folge exakt —
     Abweichungen erzeugen Datenkonsistenz-Bugs (Dot-Dirs, Lookup-Fehler).
 
-    ## ⚠️ KRITISCHE Namenskonvention: model_id = kanonische API-ID
+    ## ⚠️ KRITISCHE Namenskonvention: Zwei Formen
 
-    `model_id` enthält die kanonische API-ID exakt wie im Leaderboard-CSV.
-    Punkte in Versionsnummern bleiben erhalten.
-    Dateiname = `_safe_name(model_id)`: Slashes/Punkte/Colons → Underscores.
+    **Config-ID** (provider_config.yaml `id`-Feld, API-Call): Originale Schreibweise mit Punkten.
+    **Interne model_id** (Card, CSV, Leaderboard): Underscore-Form via `_safe_name()`.
+    Konvertierung intern→config/API: `internal_id_to_config_form()` (SSoT in `utils/model_utils.py`).
 
-    | API-ID / model_id                          | Dateiname                                       |
-    |--------------------------------------------|-------------------------------------------------|
-    | `xiaomi/mimo-v2.5-pro`                     | `xiaomi_mimo-v2_5-pro.json`                     |
-    | `nvidia/llama-3.3-nemotron-super-49b-v1.5` | `nvidia_llama-3_3-nemotron-super-49b-v1_5.json` |
-    | `qwen/qwen3.5-397b-a17b`                   | `qwen_qwen3_5-397b-a17b.json`                   |
-    | `gemini-2.5-flash`                         | `gemini-2_5-flash.json`                         |
-    | `gpt-oss:120b-cloud`                       | `gpt-oss_120b-cloud.json`                       |
+    | Config-ID / API-ID                          | Intern model_id / Dateiname                   |
+    |---------------------------------------------|------------------------------------------------|
+    | `xiaomi/mimo-v2.5-pro`                      | `xiaomi/mimo-v2_5-pro` / `xiaomi_mimo-v2_5-pro.json` |
+    | `nvidia/llama-3.3-nemotron-super-49b-v1.5`  | `nvidia/llama-3_3-nemotron-super-49b-v1_5` / `nvidia_llama-3_3-nemotron-super-49b-v1_5.json` |
+    | `qwen/qwen3.5-397b-a17b`                    | `qwen/qwen3_5-397b-a17b` / `qwen_qwen3_5-397b-a17b.json` |
+    | `gemini-2.5-flash`                          | `gemini-2_5-flash` / `gemini-2_5-flash.json`  |
+    | `gpt-oss:120b-cloud`                        | `gpt-oss:120b-cloud` / `gpt-oss_120b-cloud.json` |
 
     Ausnahme: Lokale llama.cpp-Modelle ohne echte API-ID → selbstgewählte ID
     ohne Sonderzeichen (z.B. `qwen3_5-35b-a3b-q8`).
@@ -773,7 +773,7 @@ model_onboarding:
     Dateiname: `benchmark_scores/model_cards/{safe_model_id}.json`
     Pflichtfelder aus `config/card_template_model.yaml` vollständig befüllen.
     Besonders wichtig:
-    - `model_id`: Kanonische API-ID (Dots bleiben!)
+    - `model_id`: Interne Underscore-Form (z.B. `gpt-5_5-pro`, `xiaomi/mimo-v2_5-pro`)
     - `display_name`: Lesbarer Name
     - `vendor`: Kanonischer Vendor-Name aus `config/classification_taxonomy.json`
     - `weights_license_tier`: "proprietary" | "restricted-weights" | "open-weights"
@@ -785,8 +785,8 @@ model_onboarding:
 
     Abschnitt: `providers.{provider}.models`
     ```yaml
-    - model: xiaomi/mimo-v2.5-pro    # API-ID mit Punkt (wie im Leaderboard)
-      display_name: "Xiaomi MiMo V2.5 Pro"
+    - id: xiaomi/mimo-v2.5-pro       # Config-ID mit Punkt (API-Form)
+      name: "Xiaomi MiMo V2.5 Pro"
     ```
 
     ## Schritt 3 — Index neu bauen
@@ -802,9 +802,10 @@ model_onboarding:
     `license_url` = null bei proprietären Modellen).
 
     ## Häufige Fehler
-    - ❌ `model_id: "xiaomi/mimo-v2_5-pro"` → Underscore statt Dot (bricht Lookup!)
     - ❌ Dateiname mit Punkt → safe_name verwenden
     - ❌ `card_status: "draft"` bei vollständig ausgefüllter Card
     - ❌ `profile_verified: true` ohne tatsächliche Recherche
-    - ✅ `model_id: "xiaomi/mimo-v2.5-pro"` → API-ID mit Dot erhalten
+    - ✅ `model_id: "xiaomi/mimo-v2_5-pro"` → Underscore-Form (intern)
+    - ✅ Config `id: "xiaomi/mimo-v2.5-pro"` → Punkt-Form (API)
     - ✅ Dateiname `xiaomi_mimo-v2_5-pro.json` → korrekt via _safe_name
+    - ✅ Lookup funktioniert via `internal_id_to_config_form()` automatisch

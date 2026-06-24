@@ -474,24 +474,46 @@ class ToolUseExporter:
                     _status = "success" if str(_tv).lower() == "true" else "parse_error"
                     data_dict["tool_transcript"] = {"status": _status}
 
+            _p1_found = False
             if data_dict.get("p1_score") is not None:
                 try:
                     p1_scores.append(float(data_dict["p1_score"]))
+                    _p1_found = True
                 except (ValueError, TypeError):
                     pass
             elif row.get("p1_score"):
                 try:
                     p1_scores.append(float(row["p1_score"]))
+                    _p1_found = True
                 except (ValueError, TypeError):
                     pass
+            _p2_found = False
             if data_dict.get("p2_score") is not None:
                 try:
                     p2_scores.append(float(data_dict["p2_score"]))
+                    _p2_found = True
                 except (ValueError, TypeError):
                     pass
             elif row.get("p2_score"):
                 try:
                     p2_scores.append(float(row["p2_score"]))
+                    _p2_found = True
+                except (ValueError, TypeError):
+                    pass
+
+            # total_score Fallback für P1/P2: Wenn weder score_contributions noch
+            # flache P1/P2-Spalten vorhanden sind (ältere CSV-Zeilen oder
+            # Aggregation aus Haupt-CSV), total_score als Proxy verwenden.
+            # total_score = combined_score des Tooluse-Moduls → identisch mit
+            # dem Combined-Wert. Ergebnis: P1 ≈ P2 ≈ Combined statt "–".
+            _ts_fallback = row.get("total_score")
+            if _ts_fallback not in (None, ""):
+                try:
+                    _ts_val = float(_ts_fallback)
+                    if not _p1_found:
+                        p1_scores.append(_ts_val)
+                    if not _p2_found:
+                        p2_scores.append(_ts_val)
                 except (ValueError, TypeError):
                     pass
 

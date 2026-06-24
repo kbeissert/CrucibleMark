@@ -14,13 +14,6 @@ except ImportError:
 # Configure logging
 logger = logging.getLogger(__name__)
 
-# Einige Model-IDs werden intern mit Underscore gespeichert (kanonische ID),
-# die Groq-API erwartet jedoch die Punkt-Schreibweise.
-# Wird in query() vor dem API-Call aufgelöst.
-_GROQ_ID_ALIASES: dict[str, str] = {
-    "llama-3_3-70b-versatile": "llama-3.3-70b-versatile",
-}
-
 from utils.providers.base import BaseProviderClient
 
 
@@ -104,8 +97,8 @@ class GroqClient(BaseProviderClient):
         """Query Groq API"""
         try:
             _system = kwargs.get("system")
-            # Kanonische Underscore-IDs auf die von der API erwartete Punkt-Form mappen
-            api_model = _GROQ_ID_ALIASES.get(model, model)
+            from utils.model_utils import internal_id_to_config_form
+            api_model = internal_id_to_config_form(model)
             params = {
                 "model": api_model,
                 "messages": (

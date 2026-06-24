@@ -22,10 +22,9 @@ pytestmark = pytest.mark.uses_real_cards
         # Punkt → Underscore via Card-Lookup (Hauptanwendungsfall)
         ("qwen3.5-35b-a3b-q4", "qwen3_5-35b-a3b-q4", "Q4 dot→underscore via Card-Lookup"),
         ("qwen3.5-35b-a3b-q8", "qwen3_5-35b-a3b-q8", "Q8 dot→underscore via Card-Lookup"),
-        # Punkt bleibt erhalten: Card-Dateiname = Underscore, model_id IN der Card = Punkt-Form
-        # (OpenAI akzeptiert gpt-5_4-nano nicht, aber gpt-5.4-nano → model_id muss Punkt-Form sein)
-        ("gpt-5.4-nano", "gpt-5.4-nano", "gpt-5.4-nano: Card via safe_name, model_id=dot-form"),
-        ("gpt-5_4-nano", "gpt-5.4-nano", "gpt-5_4-nano: Card direkt, model_id=dot-form"),
+        # Punkt bleibt erhalten: Card-Dateiname = Underscore, model_id IN der Card = versioniert
+        ("gpt-5.4-nano", "gpt-5_4-nano-2026-03-17", "gpt-5.4-nano: floating → versioned via Card-Lookup"),
+        ("gpt-5_4-nano", "gpt-5_4-nano-2026-03-17", "gpt-5_4-nano: floating → versioned via Card-Lookup"),
         # qwen3.5-35b-a3b-q6 ist kein aktives Modell (kein Card-Eintrag) →
         # Fallback: _safe_name(base) → Punkte werden zu Underscores (systemweite Konvention).
         ("qwen3.5-35b-a3b-q6", "qwen3_5-35b-a3b-q6", "Q6 kein Card → _safe_name Fallback"),

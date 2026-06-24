@@ -82,7 +82,7 @@ class TestGpt54CardExists:
             Path(__file__).resolve().parent.parent
             / "benchmark_scores"
             / "model_cards"
-            / "gpt-5_4.json"
+            / "gpt-5_4-2026-03-05.json"
         )
         assert card_path.exists(), f"Expected Card file at {card_path}"
 
@@ -95,7 +95,7 @@ class TestGpt54CardExists:
             Path(__file__).resolve().parent.parent
             / "benchmark_scores"
             / "model_cards"
-            / "gpt-5_4.json"
+            / "gpt-5_4-2026-03-05.json"
         )
         data = json.loads(card_path.read_text(encoding="utf-8"))
         for field in ("model_id", "display_name", "card_status", "vendor"):

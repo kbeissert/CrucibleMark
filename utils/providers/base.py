@@ -141,7 +141,7 @@ class BaseProviderClient:
         Returns:
             (token_param_name, effective_tokens)
         """
-        from utils.model_utils import resolve_token_budget
+        from utils.model_utils import resolve_token_budget, internal_id_to_config_form
 
         provider_cfg = self._get_provider_cfg()
         token_param_name = provider_cfg.get("token_param_name", self.DEFAULT_TOKEN_PARAM)
@@ -153,9 +153,14 @@ class BaseProviderClient:
 
         # 2. Zweistufige Token-Kaskade:
         #    Provider-Default → Per-Model Override (überschreibt Default)
+        #    Config-Form normalisieren (Underscore→Dot in Version-Segmenten)
         provider_cap = provider_cfg.get("max_tokens")
         model_limits = provider_cfg.get("model_max_tokens", {})
-        effective_cap = model_limits.get(model, provider_cap)
+        config_form = internal_id_to_config_form(model)
+        model_cap = model_limits.get(model)
+        if model_cap is None:
+            model_cap = model_limits.get(config_form)
+        effective_cap = model_cap if model_cap is not None else provider_cap
 
         if effective_cap is not None:
             req_tokens = min(req_tokens, effective_cap)

@@ -1,6 +1,29 @@
 # Progress
 
 Letzte Releases + aktueller Stand.
+### 2026-06-24 (Session 35) — Benchmark-Maintenance + ToolUse Aggregator Fix
+
+**Auslöser:** Benchmark-Läufe mit Standby-Unterbrechung + fehlende P1/P2-Spalten bei lokalen ToolUse-Modellen.
+
+**Änderungen:**
+
+1. **Standby-Einträge entfernt (`commercial_models_benchmark.csv`):**
+   - `gpt-5-2025-08-07` / `content_transformation_003`: Connection error nach 1107.9s
+   - `gemini-3.1-pro-preview` / `code_quality_002`: 0.0%, 337 Tokens, Judge 0.0/5
+
+2. **Model Card `openai_gpt-oss-20b.json`:** `supports_tool_use: false` (Modell kann keine Tools nutzen)
+
+3. **`scripts/core/tooluse_exporter.py` — P1/P2 `total_score`-Fallback (Bugfix):**
+   - **Root Cause:** `_aggregate_asset_rows()` hatte `total_score`-Fallback nur für `combined_score`, nicht für `p1_score`/`p2_score`. Lokale Modelle (llamacpp_spark) schreiben nur `total_score` in die CSV.
+   - **Fix:** Per-Zeile Fallback mit `_p1_found`/`_p2_found`-Flags. Nutzt `total_score` als Proxy wenn keine P1/P2-Spalten vorhanden.
+   - Ergebnis: P1 ≈ P2 ≈ Combined statt "–" im Leaderboard.
+
+4. **Analyse GPT-OSS 20B Thinking-Failure:** 17200 Reasoning-Tokens, kein Content-Output. Modellversagen, kein Budget-Problem.
+
+**Verifikation:** 68/68 ToolUse-Tests grün, CSV-Validierung OK (110 Spalten, 0 Fehler).
+
+---
+
 ### 2026-06-23 (Session 34) — Cohere Native ToolUse Connector + command-a-plus supports_tool_use=false (v4.10.8)
 
 **Auslöser:** Cohere ToolUse-Benchmark lieferte keine live-Ergebnisse — alle 3 Cohere-Modelle gingen auf Mock. Prompt-basierte JSON-Tool-Schemas kollidierten mit Cohere's Reasoning-Logik (HTTP 422/500).

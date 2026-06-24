@@ -34,17 +34,6 @@ except ImportError:
 # Configure logging
 logger = logging.getLogger(__name__)
 
-# Einige Model-IDs werden intern mit Underscore gespeichert (kanonische ID),
-# die Google Gemini API erwartet jedoch die Punkt-Schreibweise.
-# Wird in query() vor dem API-Call aufgelöst.
-_GOOGLE_ID_ALIASES: dict[str, str] = {
-    "gemini-3_5-flash": "gemini-3.5-flash",
-    "gemini-3_1-pro-preview": "gemini-3.1-pro-preview",
-    "gemini-3_1-flash-lite-preview": "gemini-3.1-flash-lite-preview",
-    "gemini-2_5-flash": "gemini-2.5-flash",
-    "gemini-2_5-pro": "gemini-2.5-pro",
-}
-
 from utils.providers.base import BaseProviderClient
 class GoogleClient(BaseProviderClient):
     """Google Gemini Provider Client"""
@@ -98,8 +87,8 @@ class GoogleClient(BaseProviderClient):
                 generation_config.top_k = kwargs["top_k"]
             # Initialize Model
             _system = kwargs.get("system")
-            # Kanonische Underscore-IDs auf die von der API erwartete Punkt-Form mappen
-            api_model = _GOOGLE_ID_ALIASES.get(model, model)
+            from utils.model_utils import internal_id_to_config_form
+            api_model = internal_id_to_config_form(model)
             gemini_model = genai.GenerativeModel(
                 model_name=api_model,
                 **({"system_instruction": _system} if _system else {}),

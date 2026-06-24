@@ -13,6 +13,9 @@
 #
 blacklist:
 
+  #Gemini
+  - "gemini-3.1-pro-preview"
+
   # GEMMA
   # === gemma-3-12b (4 Varianten) ===
   - "gemma-3-12b-it"           # Gemma 3 12B IT (llama.cpp, Q4_K_M)
@@ -81,3 +84,4 @@ blacklist:
   - "grok-3"                       # xAI Grok 3 — XAI API: Model not found (entfernt 2026-06)
   - "grok-3-mini"                  # xAI Grok 3 Mini — XAI API: Model not found (entfernt 2026-06)
   - "mistral-medium-2312"          # Mistral Medium 1.0 — Legacy/Deprecated, ersetzt durch Mistral Medium 3.5
+  - "gpt-5_5-pro-2026-04-23"       # GPT-5.5 Pro — $30/$180 per 1M tokens, zu teuer für Benchmark-Budget

@@ -134,6 +134,70 @@ def _safe_name(model_id: str) -> str:
     return re.sub(r"[:/. ]", "_", normalize_model_id(model_id))
 
 
+# Version-Segment-Pattern: v + Ziffer + Underscore + Ziffer ODER
+# Bindestrich + Ziffer + Underscore + Ziffer (aber NICHT reine Wort-Underscores)
+_VERSION_UNDERSCORE_RE = re.compile(
+    r"(?<=\d)_(?=\d)"          # digit_digit (z.B. 5_5, 3_3)
+    r"|(?<=v\d)_(?=\d)"        # v + digit_digit (z.B. v2_5)
+)
+
+
+def internal_id_to_config_form(model_id: str) -> str:
+    """Normalisiert interne Underscore-Model-IDs für Config-Lookups.
+
+    Die kanonische interne Form nutzt Underscores statt Punkte
+    (``_safe_name()``-Konvention: ``gpt-5_5-pro``, ``mimo-v2_5-pro``).
+    Config-Einträge in ``provider_config.yaml`` können however Punkte
+    in Versions-Segmenten nutzen (``gpt-5.5-pro``).
+
+    Diese Funktion konvertiert Versions-Underscores zurück zu Punkten,
+    damit Modell-IDs gegen Config-Einträge gematcht werden können.
+
+    Beispiele::
+
+        >>> internal_id_to_config_form("gpt-5_5-pro")
+        'gpt-5.5-pro'
+        >>> internal_id_to_config_form("gpt-5.5-pro")
+        'gpt-5.5-pro'
+        >>> internal_id_to_config_form("mimo-v2_5-pro")
+        'mimo-v2.5-pro'
+        >>> internal_id_to_config_form("grok-4_1-fast")
+        'grok-4.1-fast'
+        >>> internal_id_to_config_form("claude-sonnet-4-5-20250929")
+        'claude-sonnet-4-5-20250929'
+        >>> internal_id_to_config_form("llama-3_3-nemotron")
+        'llama-3.3-nemotron'
+    """
+    base = model_id.rsplit(".json", 1)[0] if model_id.endswith(".json") else model_id
+    return _VERSION_UNDERSCORE_RE.sub(".", base)
+
+
+def find_model_in_provider_cfg(
+    provider_cfg: dict[str, Any],
+    model_id: str,
+) -> dict[str, Any] | None:
+    """Findet einen Model-Eintrag in der Provider-Config (SSoT für Config-Lookups).
+
+    Vergleicht die übergebene ``model_id`` (interne Underscore-Form) gegen
+    Config-Einträge, wobei Versions-SegmenteUnderscore→Dot normalisiert werden.
+
+    Args:
+        provider_cfg: Der Provider-Abschnitt aus ``provider_config.yaml``
+            (z.B. ``config["providers"]["commercial"]["openai"]``).
+        model_id: Die interne Modell-ID (z.B. ``gpt-5_5-pro``).
+
+    Returns:
+        Den Model-Eintrag-Dict wenn gefunden, sonst ``None``.
+    """
+    config_form = internal_id_to_config_form(model_id)
+    for entry in provider_cfg.get("models", []):
+        if isinstance(entry, dict):
+            entry_id = entry.get("id", "")
+            if entry_id == model_id or entry_id == config_form:
+                return entry
+    return None
+
+
 def strip_date_suffix(model_id: str) -> str:
     """Entfernt Datums-/Monatssuffixe am Ende einer Model-ID (SSoT).
 

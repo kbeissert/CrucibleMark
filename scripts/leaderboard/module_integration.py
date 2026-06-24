@@ -283,7 +283,13 @@ def _enrich_from_csv_source(
 
                 if template:
                     data = row.to_dict()
-                    rendered = template.format(**data)
+                    cleaned = {
+                        k: ("" if pd.isna(v) else v)
+                        for k, v in data.items()
+                    }
+                    rendered = template.format(**cleaned)
+                    if not rendered.strip():
+                        return fallback
                     if rendered.strip().startswith("(Shift:"):
                         return fallback
                     return rendered

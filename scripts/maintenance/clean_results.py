@@ -96,6 +96,9 @@ def _collect_model_id_variants(model: str) -> set[str]:
     #    model_id-Feldern, deren _safe_name zu unseren Varianten passt.
     #    Findet z.B. "grok-4.1-fast-reasoning" in der Card wenn Input
     #    "grok-4_1-fast-reasoning" war (Underscore ohne Card-Lookup).
+    #    Scannt AUCH heritage_ids — wenn eine Card umbenannt wurde (z.B.
+    #    gpt-oss:120b-cloud → openai/gpt-oss-120b), steht der alte Name
+    #    nur noch in heritage_ids und muss trotzdem gefunden werden.
     safe_variants = {_safe_name(v) for v in variants}
     try:
         import json as _json
@@ -105,6 +108,14 @@ def _collect_model_id_variants(model: str) -> set[str]:
                 card_mid = data.get("model_id", "")
                 if card_mid and _safe_name(card_mid) in safe_variants:
                     variants.add(card_mid)
+                # heritage_ids: alte kanonische IDs, die auf diese Card zeigen
+                for hid in (data.get("heritage_ids") or []):
+                    if isinstance(hid, str) and (
+                        hid in variants or _safe_name(hid) in safe_variants
+                    ):
+                        if card_mid:
+                            variants.add(card_mid)
+                        variants.add(hid)
             except Exception:  # noqa: BLE001
                 continue
     except Exception:  # noqa: BLE001

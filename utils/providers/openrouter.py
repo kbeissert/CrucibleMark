@@ -14,23 +14,15 @@ except ImportError:
 # Configure logging
 logger = logging.getLogger(__name__)
 
-# Einige Model-IDs werden intern mit Underscore gespeichert (kanonische ID),
-# die OpenRouter API erwartet jedoch die Punkt-Schreibweise.
-# Wird in query() vor dem API-Call aufgelöst.
+# Einige Model-IDs haben Ambiguität zwischen Bindestrich und Underscore
+# (z.B. z-ai/glm_5_2: das _ zwischen glm und 5 war ein Bindestrich).
+# interal_id_to_config_form() löst Versions-Underscores (5_2→5.2), aber
+# nicht Bindestrich-Underscore-Ambiguität. Alias-Dict als Fallback.
 _OPENROUTER_ID_ALIASES: dict[str, str] = {
     "z-ai/glm_5_2": "z-ai/glm-5.2",
     "z-ai/glm_5_1-20260406": "z-ai/glm-5.1-20260406",
     "z-ai/glm_4_7": "z-ai/glm-4.7",
     "z-ai/glm_4_6": "z-ai/glm-4.6",
-    "moonshotai/kimi-k2_7-code": "moonshotai/kimi-k2.7-code",
-    "moonshotai/kimi-k2_6": "moonshotai/kimi-k2.6",
-    "moonshotai/kimi-k2_5-0127": "moonshotai/kimi-k2.5-0127",
-    "deepseek/deepseek-chat-v3_1": "deepseek/deepseek-chat-v3.1",
-    "deepseek/deepseek-v3_2": "deepseek/deepseek-v3.2",
-    "minimax/minimax-m2_7-20260318": "minimax/minimax-m2.7-20260318",
-    "qwen/qwen3_7-max": "qwen/qwen3.7-max",
-    "qwen/qwen3_6-plus": "qwen/qwen3.6-plus",
-    "qwen/qwen3_5-397b-a17b": "qwen/qwen3.5-397b-a17b",
 }
 
 from utils.providers.base import BaseProviderClient
@@ -110,9 +102,9 @@ class OpenRouterClient(BaseProviderClient):
     ) -> str:
         """Query OpenRouter API"""
         try:
+            from utils.model_utils import internal_id_to_config_form
             _system = kwargs.get("system")
-            # Kanonische Underscore-IDs auf die von der API erwartete Punkt-Form mappen
-            api_model = _OPENROUTER_ID_ALIASES.get(model, model)
+            api_model = _OPENROUTER_ID_ALIASES.get(model) or internal_id_to_config_form(model)
             params = {
                 "model": api_model,
                 "messages": (
