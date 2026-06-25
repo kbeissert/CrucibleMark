@@ -17,21 +17,21 @@
   "params_active_b": 12,
   "context_window_k": 256,
   "knowledge_cutoff": "2025-01",
-  "summary": "Gemma 4 12B Instruct (Q8_K_XL, UndiX-Distribution) ist die höchstpräzise GGUF-Variante von Googles encoder-freiem Multimodal-Modell (Release: 3. Juni 2026). Die Q8_K_XL-Quantisierung liefert nahezu FP16-Qualität bei optimiertem Speicherbedarf. Im Benchmark ohne mmproj-Datei geladen – das Modell verhält sich als reines Text-LLM. Multimodalität (Bild, Audio, Video) ist durch Nachladen der separaten mmproj-GGUF aktivierbar, für diesen Benchmark jedoch irrelevant.",
+  "summary": "Gemma 4 12B Instruct als Q8-Quantisierung der Unsloth-Community, die höchstpräzise Variante unter den 12B-Ausführungen. Mit zwölf Milliarden Parametern und 128.000 Tokens Kontextfenster liefert das Modell nahezu FP16-Qualität, ist auf lokalen Betrieb ohne Cloud-Anbindung ausgelegt und unter Apache-2.0-Lizenz voll kommerziell nutzbar.",
   "strengths": [
-    "Q8_K_XL: nahezu FP16-Qualität – höchste Präzision aller UndiX-Gemma-4-12B-Varianten",
-    "Konfigurierbare Thinking-Modi – reasoning_tokens=512 in Probe nachgewiesen",
-    "Apache 2.0: vollständig kommerziell nutzbar, modifizierbar und verteilbar",
-    "Multi-Token-Prediction (MTP) Drafter für schnellere Inferenz",
-    "Encoder-freie Basis: Multimodalität via mmproj nachrüstbar ohne separate Encoder-Gewichte"
+    "Q8-Quantisierung mit nahezu Vollpräzision als höchstpräzise Variante",
+    "Konfigurierbare Thinking-Modi mit nachgewiesenen Reasoning-Tokens",
+    "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit und Modifizierbarkeit",
+    "Multi-Token-Prediction für schnellere Inferenz",
+    "Encoder-freie Basis mit nachrüstbarer Multimodalität"
   ],
   "known_limitations": [
-    "Q8_K_XL erfordert deutlich mehr VRAM als Q4/Q6 – auf M4 Mac (~18 GB UMA) sehr knapp",
-    "Multimodalität externalisiert: Bild/Audio/Video erfordern separate mmproj-GGUF (~wenige MB, via ggml-org/HuggingFace). Im Benchmark ohne mmproj geladen → reine Text-Inferenz.",
-    "Geringere Reasoning-Tiefe gegenüber größeren Gemma-4-Modellen (26B/31B)",
+    "Q8-Quantisierung erfordert deutlich mehr Speicher als Q4- oder Q6-Varianten",
+    "Multimodalität für Bild, Audio und Video erfordert eine separate Multimodal-Projektor-Datei",
+    "Geringere Reasoning-Tiefe gegenüber grösseren Gemma-4-Varianten mit 26 oder 31 Milliarden Parametern",
     "Community-Distribution statt offizieller Google-Verpackung"
   ],
-  "judge_context_hint": "Plattform: Apple M4 Mac (~18 GB Unified Memory, Metal-GPU, lokal — kein Cloud-Provider, kein externer Datentransfer). Gemma 4 12B Q8_K_XL ohne mmproj geladen → reine Text-Inferenz. Konfigurierbare Thinking-Modi (reasoning_tokens=512 nachgewiesen). Höchste Präzision aller 12B-UndiX-Varianten.",
+  "judge_context_hint": "Höchstpräzise Variante der Gemma-4-12B-Reihe in Q8-Quantisierung. Bei der Bewertung nahezu Vollpräzision erwarten. Lokales Deployment ohne externen Datentransfer, Multimodalität nur mit zusätzlicher Projektions-Datei aktivierbar.",
   "architecture_tags": [
     "General",
     "Instruct",

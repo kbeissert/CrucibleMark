@@ -12,13 +12,13 @@
   "display_name": "Gemma 3 12B IT (Q8_0)",
   "generated_at": "2026-05-30T00:00:00.000000+00:00",
   "input_price_per_1m": 0.0,
-  "judge_context_hint": "Plattform: Apple M4 Mac (~18 GB Unified Memory, Metal-GPU, lokal — kein Cloud-Provider, kein externer Datentransfer). Lokale Gemma-3-Variante mit hoher Quantisierungsqualität. Antworten sollten als präzise, kompakte Instruct-Ausgaben bewertet werden.",
+  "judge_context_hint": "Lokale Gemma-3-12B-Variante in Q8-Quantisierung. Bei der Bewertung präzise, kompakte Instruction-Antworten erwarten. Quantisierungsqualität ist hoch, aber nicht identisch zur Originalpräzision. Lokales Deployment ohne externen Datentransfer.",
   "knowledge_cutoff": "2024-12",
   "known_limitations": [
-    "Unterhalb größerer Frontier-Modelle bei komplexem Reasoning",
-    "Keine offizielle Cloud-API dieser Variante",
-    "Kein echter Thinking-Modus – normale Instruct-Ausgaben ohne separaten Reasoning-Kanal",
-    "Google Gemma Terms of Use: kommerzielle Nutzung erlaubt, aber keine Konkurrenz-LLM-Training"
+    "Unterhalb grösserer Frontier-Modelle bei komplexem Reasoning",
+    "Keine offizielle Cloud-API für diese Variante",
+    "Kein echter Thinking-Modus, normales Instruction-Following ohne separaten Reasoning-Kanal",
+    "Google Gemma Terms erlauben kommerzielle Nutzung, aber kein Training konkurrierender LLMs"
   ],
   "license": "Google Gemma Terms of Use",
   "license_url": "https://ai.google.dev/gemma/terms",
@@ -34,12 +34,12 @@
   "primary_focus": "general",
   "size_class": "Desktop",
   "strengths": [
-    "Instruct-optimiert für präzise Textantworten",
-    "Q8_0 mit sehr geringer Qualitätsminderung gegenüber Vollpräzision",
-    "Lokal effizient auf Consumer-Hardware nutzbar (M4 Mac, ~18 GB UMA)",
-    "Solide Mehrsprachigkeit und Vision-Unterstützung (Text + Bild)"
+    "Auf präzise Textantworten und Instruction-Following optimiert",
+    "Q8-Quantisierung mit sehr geringer Qualitätsminderung gegenüber Vollpräzision",
+    "Lokal effizient auf Consumer-Hardware nutzbar",
+    "Solide Mehrsprachigkeit und Vision-Unterstützung für Text und Bilder"
   ],
-  "summary": "Gemma 3 12B ist ein Instruct-Modell von Google DeepMind, das hier in einer hochqualitativen Q8_0-Quantisierung für die lokale Ausführung auf Apple-M4-Hardware bereitgestellt wird. Die Variante ist auf präzise Textantworten und Instruction-Following optimiert. Kein Cloud-Provider, kein externer Datentransfer.",
+  "summary": "Gemma 3 12B Instruct in einer hochqualitativen Q8-Quantisierung für den lokalen Betrieb. Das Modell liefert präzise Text- und Bild-Antworten bei einem Kontextfenster von 128.000 Tokens und ist auf Instruction-Following ausgelegt. Lizenziert unter den Google Gemma Terms of Use, die kommerzielle Nutzung erlauben, jedoch kein Training konkurrierender Sprachmodelle.",
   "supports_tool_use": true,
   "thinking_probe_at": "2026-05-30T00:00:00.000000+00:00",
   "thinking_probe_confidence": "low",

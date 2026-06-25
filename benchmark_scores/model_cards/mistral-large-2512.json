@@ -17,19 +17,24 @@
   "params_active_b": 41,
   "context_window_k": 256,
   "knowledge_cutoff": "2024-12",
-  "summary": "Mistral 3 Large ist Mistrals Frontier-Open-Weights-Modell aus der Mistral-3-Familie mit multimodalen Text-/Bildeingaben, 256K Kontext und einer Sparse-MoE-Architektur mit 675B Gesamtparametern, von denen 41B aktiv sind. Die Gewichte sind unter Apache 2.0 verfügbar, wodurch sowohl lokales Deployment als auch API-Nutzung möglich sind. Das Profil zielt auf leistungsstarke allgemeine Assistenz-, Coding- und Dokument-Workflows mit europäischem Anbieterprofil.",
+  "summary": "Mistral 3 Large ist das offene Frontier-Modell aus Mistral AIs dritter Generation mit nativem Text- und Bildeingang und einem Kontextfenster von 256.000 Tokens. Die Sparse-MoE-Architektur vereint 675 Milliarden Gesamtparameter mit 41 Milliarden aktiven Parametern pro Token. Unter Apache-2.0-Lizenz verfügbar, aus einem europäischen Anbieter-Umfeld mit DSGVO-Konformität.",
   "strengths": [
-    "Open Weights unter Apache 2.0 trotz Frontier-Klasse und multimodaler Fähigkeiten",
-    "Sehr großer 256K-Kontext für umfangreiche Dokument-, Agent- und Analyseaufgaben",
-    "Sparse-MoE-Design mit 675B Gesamt- und 41B aktiven Parametern für hohe Kapazität bei effizienterer Inferenz",
-    "Lokales Deployment und Cloud-Betrieb parallel möglich"
+    [
+      "Open Weights unter Apache-2.0-Lizenz trotz Frontier-Klasse",
+      "Kontextfenster von 256.000 Tokens für umfangreiche Dokument- und Analyseaufgaben",
+      "Sparse-MoE-Architektur mit 41 Milliarden aktiven Parametern bei 675 Milliarden Gesamtparametern",
+      "Lokales Deployment und Cloud-Betrieb parallel möglich",
+      "Multimodaler Eingang für Text und Bilder"
+    ]
   ],
   "known_limitations": [
-    "Großes Frontier-Modell mit entsprechend hohen Infrastruktur-Anforderungen für Self-Hosting",
-    "Tool- und Agent-Workflows hängen in der Praxis stark von Serving-Stack und Parser-Konfiguration ab",
-    "Nicht so kostengünstig oder leichtgewichtig wie die Small- und Medium-Modelle von Mistral"
+    [
+      "Grosses Frontier-Modell mit hohen Infrastruktur-Anforderungen für Self-Hosting",
+      "Tool- und Agent-Workflows abhängig von Serving-Stack und Parser-Konfiguration",
+      "Nicht so kostengünstig oder leichtgewichtig wie die Small- und Medium-Modelle von Mistral"
+    ]
   ],
-  "judge_context_hint": "Mistral 3 Large ist ein offenes Frontier-MoE-Modell von Mistral AI mit 256K Kontext, Text-/Bildinput und starkem Generalistenprofil. Antworten sollten qualitativ hoch sein; zugleich ist das Modell als offen deploybare Alternative zu proprietären Frontier-APIs einzuordnen.",
+  "judge_context_hint": "Offenes Frontier-MoE-Modell von Mistral AI mit 256.000-Token-Kontext und multimodalem Eingang. Bei der Bewertung qualitativ hochwertige Antworten erwarten, zugleich als offen deploybare Alternative zu proprietären Frontier-APIs einordnen.",
   "architecture_tags": [
     "General",
     "Vision-Capable",

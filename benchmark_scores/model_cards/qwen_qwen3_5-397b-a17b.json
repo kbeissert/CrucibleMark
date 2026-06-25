@@ -17,21 +17,25 @@
   "params_active_b": 17,
   "context_window_k": 262,
   "knowledge_cutoff": "2025-12",
-  "summary": "Qwen 3.5 397B A17B ist Alibabas erstes nativ multimodales Open-Weights-Frontier-Modell der Qwen3.5-Familie (Release: Feb 2026). Es kombiniert eine Hybrid-Architektur aus Gated DeltaNet (lineare Attention) und Sparse MoE mit Early-Fusion-Vision-Language-Training auf Text, Bild und Video. Mit 397B Gesamt- und 17B aktiven Parametern bei 256K nativem Kontext übertrifft es Qwen3-Max in Reasoning und Coding und ist 8,6–19× schneller im Decoding-Throughput. Das Modell vereint erstmals in der Qwen-Linie Text und Vision in einem einzigen Open-Weights-Modell unter Apache 2.0.",
+  "summary": "Qwen 3.5 397B A17B ist Alibabas erstes nativ multimodales Open-Weights-Frontier-Modell mit Verarbeitung von Text, Bild und Video in einem einzigen Modell. Die hybride Architektur aus Gated DeltaNet und Sparse MoE aktiviert pro Token nur 17 Milliarden der insgesamt 397 Milliarden Gesamtparameter, das Kontextfenster umfasst 256.000 Tokens. Unter Apache-2.0-Lizenz vollständig kommerziell nutzbar.",
   "strengths": [
-    "Erstes Qwen-Open-Weights-Modell mit nativem Vision-Input (Image + Video) – keine separate VL-Variante mehr",
-    "8,6–19× schnellerer Decoding-Throughput vs. Qwen3-Max bei vergleichbarer Qualität",
-    "Hybrid Gated DeltaNet + Sparse MoE mit Early Fusion – effizient über alle Modalitäten",
-    "256K nativer Kontext, erweiterbar auf 1M Token (Qwen3.5-Plus)",
-    "Konfigurierbares Thinking (ON/OFF) und nativer Agentic Tool-Use ab Werk",
-    "Apache 2.0 – vollständig kommerziell nutzbar, lokales Deployment möglich"
+    [
+      "Erstes Qwen-Open-Weights-Modell mit nativem Vision-Input für Bild und Video",
+      "Hybride Architektur aus Gated DeltaNet und Sparse MoE mit Early-Fusion-Verarbeitung",
+      "Effiziente MoE-Architektur mit nur 17 Milliarden aktiven Parametern pro Token",
+      "Kontextfenster von 256.000 Tokens, erweiterbar auf eine Million Tokens",
+      "Optionaler Thinking-Modus und nativer Tool-Use ab Werk",
+      "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit"
+    ]
   ],
   "known_limitations": [
-    "Chinesische Herkunft: potenzielle Zensur bei politisch sensiblen Themen mit China-Bezug",
-    "Lokale Bereitstellung erfordert erhebliche Hardware-Ressourcen (Multi-GPU, mind. 8× B200 für BF16)",
-    "Alibaba-Cloud-API: NSL-Risikolage analog zu CLOUD Act – Daten verlassen ggf. den EU-Rechtsraum"
+    [
+      "Chinesische Herkunft mit potenzieller Zensur bei politisch sensiblen Themen mit China-Bezug",
+      "Lokale Bereitstellung erfordert erhebliche Hardware-Ressourcen als Multi-GPU-Setup",
+      "Alibaba-Cloud-API unterliegt NSL-Risiko, bei rein lokaler Nutzung entfällt das Risiko"
+    ]
   ],
-  "judge_context_hint": "Qwen 3.5 397B A17B: Nativ multimodal (Text + Image + Video), 397B gesamt / 17B aktiv, 256K Kontext. Thinking-Optional (ON/OFF via /think-/no-think-Prefix oder System-Prompt). Native Tool-Use und Agentic-Capabilities. Apache 2.0. Bei China-bezogenen politischen Themen können eingeschränkte oder ausweichende Antworten auftreten.",
+  "judge_context_hint": "Frontier-Modell mit nativer Multimodalität und effizienter MoE-Architektur. Bei der Bewertung Reasoning, Coding und multimodale Fähigkeiten berücksichtigen. Thinking-Optional mit Parameter-Steuerung.",
   "architecture_tags": [
     "General",
     "Instruct",
@@ -63,7 +67,9 @@
   "thinking_probe_confidence": "high",
   "thinking_probe_at": "2026-06-03T20:49:00.000000+02:00",
   "cot_marker_family": "think-xml",
-  "cot_tags_detected": ["<think>"],
+  "cot_tags_detected": [
+    "<think>"
+  ],
   "top_p": null,
   "top_k": null,
   "repetition_penalty": null,

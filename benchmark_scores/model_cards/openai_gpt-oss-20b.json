@@ -17,20 +17,24 @@
   "params_active_b": 21.0,
   "context_window_k": 131,
   "knowledge_cutoff": "2025-06",
-  "summary": "GPT-OSS 20B ist ein effizientes Open-Weights-Modell von OpenAI mit Dense-Architektur (21B Parameter). Über Groq wird es mit niedriger Latenz bereitgestellt. Das Modell unterstützt konfigurierbares Reasoning (reasoning_effort: low/medium/high) und eignet sich für allgemeine Aufgaben mit Fokus auf Effizienz. Apache-2.0-Lizenz erlaubt uneingeschränkte kommerzielle Nutzung und lokales Deployment.",
+  "summary": "GPT-OSS 20B ist OpenAIs kompaktes Open-Weights-Modell der OSS-Serie mit 21 Milliarden Parametern in dichter Architektur, gehostet über Groq für Cloud-Nutzung und parallel als Download für lokales Deployment. Das Modell unterstützt konfigurierbares Reasoning mit drei Intensitätsstufen und Apache-2.0-Lizenz für vollständige kommerzielle Nutzbarkeit.",
   "strengths": [
-    "Hohe Effizienz bei niedriger Latenz durch Groq-Infrastruktur",
-    "Konfigurierbare Reasoning-Intensität (reasoning_effort: low / medium / high)",
-    "Open Weights unter Apache 2.0 — uneingeschränkt kommerziell nutzbar",
-    "Dense-Architektur: einfaches Fine-Tuning auf Consumer-Hardware möglich",
-    "Native agentic Capabilities: Function Calling, Web Browsing, Python Code Execution"
+    [
+      "Effiziente Dense-Architektur mit 21 Milliarden Parametern",
+      "Konfigurierbares Reasoning mit low, medium und high Intensitätsstufen",
+      "Apache-2.0-Lizenz mit uneingeschränkter kommerzieller Nutzbarkeit",
+      "Lokales Deployment auf Consumer-Hardware möglich",
+      "Niedrige Latenz bei Cloud-Nutzung über Groq-Infrastruktur"
+    ]
   ],
   "known_limitations": [
-    "Geringere Reasoning-Kapazität im Vergleich zum 120B-Modell bei hochkomplexen Aufgaben",
-    "Cloud-API-Nutzung über Groq: US-Jurisdiktion und CLOUD Act beachten",
-    "Erfordert präzise System-Prompts zur Steuerung der Reasoning-Tiefe"
+    [
+      "Geringere Reasoning-Kapazität als die 120B-Variante bei hochkomplexen Aufgaben",
+      "Cloud-API-Nutzung über Groq unterliegt US-Jurisdiktion und CLOUD Act",
+      "Erfordert präzise System-Prompts zur Steuerung der Reasoning-Tiefe"
+    ]
   ],
-  "judge_context_hint": "GPT-OSS 20B: Dense-Modell, 21B Parameter. Open Weights (Apache 2.0). 131K-Kontext. Konfigurierbares Reasoning via reasoning_effort-Parameter (low/medium/high). Effizienter als 120B-Variante, aber weniger Reasoning-Tiefe. Bei der Bewertung die kompakte Architektur berücksichtigen.",
+  "judge_context_hint": "Kompaktes Dense-Modell für effiziente Inferenz. Bei der Bewertung die geringere Kapazität gegenüber der 120B-Variante berücksichtigen und die Reasoning-Stufenwahl in die Bewertung einbeziehen.",
   "architecture_tags": [
     "Thinking-Optional",
     "General"
@@ -76,6 +80,8 @@
   "profile_verified_at": "2026-06-24",
   "profile_verified_by": "human",
   "last_modified_at": "2026-06-24",
-  "heritage_ids": ["gpt-oss:20b-cloud"],
+  "heritage_ids": [
+    "gpt-oss:20b-cloud"
+  ],
   "community": null
 }

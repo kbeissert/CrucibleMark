@@ -17,22 +17,25 @@
   "params_active_b": 55,
   "context_window_k": 1000,
   "knowledge_cutoff": "2026-04",
-  "summary": "NVIDIA Nemotron 3 Ultra ist NVIDIAs Frontier-Reasoning-Modell mit 550B Gesamt- und 55B aktiven Parametern auf einer Hybrid Mamba-Transformer-MoE-Architektur mit LatentMoE-Routing und MTP-Schichten für native speculative decoding. Mit 1M-Token-Kontext, schaltbarem Reasoning (ON/OFF/Low-Effort + Budget-Control) und nativem Tool-Calling ist es primär für Agentic-Orchestrierung, Multi-Step-Reasoning und komplexe Coding-Tasks ausgelegt. Es erzielt 5,9× höheren Durchsatz als GLM-5.1-754B und ist vollständig unter der NVIDIA Open Model License verfügbar.",
+  "summary": "NVIDIA Nemotron 3 Ultra ist NVIDIAs Frontier-Reasoning-Modell mit 550 Milliarden Gesamt- und 55 Milliarden aktiven Parametern auf hybrider Mamba-Transformer-MoE-Architektur mit LatentMoE-Routing und MTP-Schichten. Das Kontextfenster umfasst eine Million Tokens, das Reasoning ist konfigurierbar. Native Tool-Aufrufe und Agentic-Orchestrierung, unter NVIDIA Open Model License als Open-Weights-Modell verfügbar.",
   "strengths": [
-    "5,9× höherer Inferenz-Throughput vs. GLM-5.1-754B-A40B bei vergleichbarer Accuracy",
-    "Konfigurierbares Reasoning: ON / OFF / Low-Effort + Reasoning Budget Control",
-    "LatentMoE + MTP-Schichten für native speculative decoding",
-    "1M-Token-Kontext – State-of-the-Art auf RULER-Benchmark",
-    "Natives Tool-Calling und Agentic-Orchestrierung ab Werk",
-    "Open Weights + Training Data + Recipes unter NVIDIA Open Model License"
+    [
+      "LatentMoE plus MTP-Schichten für effizientes spekulatives Decoding",
+      "Konfigurierbares Reasoning mit ON, OFF und Low-Effort sowie Reasoning-Budget-Steuerung",
+      "Kontextfenster von einer Million Tokens",
+      "Native Tool-Aufrufe und Agentic-Orchestrierung ab Werk",
+      "Open Weights plus Trainingsdaten plus Recipes unter NVIDIA Open Model License"
+    ]
   ],
   "known_limitations": [
-    "Extrem hoher VRAM-Bedarf – Multi-Node-GPU-Setup erforderlich (kein Consumer-Desktop-Deployment)",
-    "NVIDIA Open Model License ist keine OSI-anerkannte Open-Source-Lizenz – Nutzungsbeschränkungen prüfen",
-    "US-Anbieter (NVIDIA) – CLOUD Act bei API-Nutzung über NVIDIA-Infrastruktur relevant",
-    "Text-only: kein nativer Image-/Audio-Input (Multimodal nur in Nano-Omni-Variante)"
+    [
+      "Extrem hoher VRAM-Bedarf, Multi-Node-GPU-Setup erforderlich, kein Consumer-Desktop-Deployment",
+      "NVIDIA Open Model License ist keine OSI-anerkannte Open-Source-Lizenz",
+      "US-Jurisdiktion mit CLOUD-Act-Risiko bei API-Nutzung über NVIDIA-Infrastruktur",
+      "Text-only ohne nativen Bild- oder Audio-Eingang"
+    ]
   ],
-  "judge_context_hint": "NVIDIA Nemotron 3 Ultra 550B A55B: Hybrid Mamba-Transformer MoE, 550B gesamt / 55B aktiv. NVIDIA Open Model License, Open Weights. 1M-Token-Kontext. Thinking-Optional (ON/OFF/Low-Effort + Budget). Native Tool-Calls. Empfohlene Defaults: temperature=1.0, top_p=0.95. Text-only. API-Preise: $0.50/$2.50 pro 1M Tokens.",
+  "judge_context_hint": "Frontier-Hybrid-Modell aus der Nemotron-3-Serie mit Mamba-Transformer-Architektur. Thinking-Optional mit Budget-Steuerung, stark bei agentischer Orchestrierung und Multi-Step-Reasoning.",
   "architecture_tags": [
     "General",
     "Instruct",

@@ -15,12 +15,12 @@
   "display_name": "Claude Opus 4.6",
   "generated_at": "2026-04-23T21:59:06.526308+00:00",
   "input_price_per_1m": 5.0,
-  "judge_context_hint": "Claude Opus 4.6 ist Anthropics Premium-Modell für tiefe agentische Arbeit, lange Kontexte und anspruchsvolle Coding-/Recherche-Workflows. Erwartbar sind sehr starke strukturierte Antworten, aber auch potenziell höhere Ausführlichkeit, Kosten und Latenz.",
+  "judge_context_hint": "Frontier-Modell von Anthropic für tiefe agentische Arbeit, lange Kontexte und anspruchsvolle Coding- und Recherche-Workflows. Antworten können ausführlich ausfallen, höhere Kosten und Latenz als bei Sonnet oder Haiku sind erwartbar. Bewertung sollte strukturelle Qualität und Aufgabenfortschritt gewichten.",
   "knowledge_cutoff": "2025-01",
   "known_limitations": [
-    "Proprietäres Cloud-Modell ohne lokale Gewichte oder Self-Hosting-Möglichkeit",
-    "Premium-Kosten und potenziell höhere Latenz als kleinere Sonnet- oder Haiku-Modelle",
-    "1M-Kontextfenster erfordert expliziten API-Flag – Standard ist 200K"
+    "Proprietäres Cloud-Modell, keine lokalen Gewichte und kein Self-Hosting",
+    "Premium-Preisniveau und potenziell höhere Latenz als die kleineren Sonnet- und Haiku-Klassen",
+    "Das erweiterte Kontextfenster von einer Million Tokens erfordert einen expliziten API-Aufruf, Standard sind 200.000 Tokens"
   ],
   "license": "Proprietary (Anthropic Commercial Terms)",
   "license_url": "https://www.anthropic.com/legal/commercial-terms",
@@ -36,12 +36,12 @@
   "primary_focus": "general",
   "size_class": "Frontier",
   "strengths": [
-    "Sehr stark für agentisches Coding, langfristige Aufgabenplanung und komplexe Wissensarbeit",
-    "Extended Thinking Mode (Adaptive Thinking) für maximale Reasoning-Tiefe",
+    "Hervorragend für agentisches Coding, langfristige Aufgabenplanung und komplexe Wissensarbeit",
+    "Extended Thinking Mode, anpassbar für maximale Reasoning-Tiefe",
     "Verbesserte Code-Review-, Debugging- und Large-Codebase-Fähigkeiten gegenüber Opus 4.5",
-    "1M-Token-Kontextfenster – verfügbar über Claude API, Bedrock und Vertex AI"
+    "Erweiterbares Kontextfenster auf eine Million Tokens, verfügbar über Anthropic-API, Bedrock und Vertex AI"
   ],
-  "summary": "Claude Opus 4.6 ist Anthropics Frontier-Modell (Release: Februar 2026) für komplexe agentische Aufgaben, tiefgreifendes Reasoning und umfangreiche Coding-Workflows. Es bietet Extended Thinking Mode, ein 1M-Token-Kontextfenster und ist über Anthropic API, AWS Bedrock, GCP Vertex AI und Microsoft Foundry verfügbar. Pricing: $5/$25 pro Million Tokens.",
+  "summary": "Anthropics Frontier-Modell für komplexe Agenten-Aufgaben: Claude Opus 4.6 verarbeitet Text- und Bildeingaben bei einem Standard-Kontextfenster von 200.000 Tokens, das sich für lange Workflows auf eine Million Tokens erweitern lässt. Das Modell unterstützt Tool-Aufrufe und Extended Thinking für maximale Reasoning-Tiefe.",
   "supports_tool_use": true,
   "thinking_probe_at": "2026-04-23T13:49:49.092501+00:00",
   "thinking_probe_confidence": "low",

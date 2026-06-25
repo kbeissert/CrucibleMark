@@ -13,13 +13,15 @@
   "display_name": "Grok 4.3",
   "generated_at": "2026-06-05T22:16:00.000000+00:00",
   "input_price_per_1m": 1.25,
-  "judge_context_hint": "Bei der Bewertung sollte der direkte und unzensierte Antwortstil berücksichtigt werden. Das Modell zeigt eine starke Performance bei agentischen Routineaufgaben, ist jedoch bei komplexem Software-Engineering weniger leistungsfähig als spezialisierte Modelle.",
+  "judge_context_hint": "xAI-Flaggschiff mit Echtzeit-X-Zugriff und effizienter MoE-Inferenz. Bei der Bewertung direkten Antwortstil und fehlende sichtbare Reasoning-Tokens berücksichtigen. Stärken bei agentischen Routineaufgaben, Schwächen bei komplexem Software-Engineering.",
   "knowledge_cutoff": "2026-03",
   "known_limitations": [
-    "Kein lokaler Betrieb oder Zugriff auf Gewichte möglich, da nur via API verfügbar",
-    "Geringere Leistung bei komplexem Software-Engineering gegenüber spezialisierten Modellen",
-    "Direkter Antwortstil kann bei sensiblen Themen zu einseitigen Ergebnissen führen",
-    "Geringe Transparenz bezüglich der genauen Modellarchitektur und Parameteranzahl"
+    [
+      "Ausschliesslich über die xAI-API verfügbar, kein lokaler Betrieb",
+      "Geringere Leistung bei komplexem Software-Engineering im Vergleich zu spezialisierten Modellen",
+      "Direkter Antwortstil kann bei sensiblen Themen zu einseitigen Ergebnissen führen",
+      "Geringe Transparenz zur genauen Modellarchitektur und Parameterzahl"
+    ]
   ],
   "license": "Proprietary",
   "license_url": null,
@@ -35,12 +37,15 @@
   "primary_focus": "reasoning",
   "size_class": "Frontier",
   "strengths": [
-    "Nativ multimodale Verarbeitung von Text und Bild",
-    "Grosses Kontextfenster von 1M Token",
-    "Echtzeit-Zugriff auf Daten der X-Plattform",
-    "Hohe Effizienz bei agentischen Routineaufgaben"
+    [
+      "Nativ multimodale Verarbeitung von Text und Bild",
+      "Kontextfenster von einer Million Tokens",
+      "Echtzeit-Zugriff auf Daten der X-Plattform",
+      "Hohe Effizienz bei agentischen Routineaufgaben",
+      "Reasoning-Modus aktiv, allerdings ohne sichtbare Reasoning-Tokens"
+    ]
   ],
-  "summary": "Grok 4.3 ist ein von xAI entwickeltes Flaggschiff-Modell mit einer Mixture-of-Experts Architektur. Es unterstützt Text- und Bildeingaben und bietet ein Kontextfenster von einer Million Token. Das Modell ist für allgemeine Sprachaufgaben, Reasoning und den Zugriff auf Echtzeit-Daten der X-Plattform optimiert. Der Zugriff erfolgt ausschliesslich über die xAI-API, wobei das Modell eine hohe Effizienz bei agentischen Routineaufgaben aufweist.",
+  "summary": "Grok 4.3 ist das aktuelle Flaggschiff von xAI mit nativem Echtzeit-Zugriff auf die X-Plattform und einem Kontextfenster von einer Million Tokens. Die MoE-Architektur erlaubt effiziente Inferenz bei agentischen Routineaufgaben, ist aber bei komplexem Software-Engineering spezialisierten Modellen unterlegen. Verfügbar ausschliesslich über die xAI-API zu einem Preis von 1,25 US-Dollar pro Million Input- und 2,50 US-Dollar pro Million Output-Tokens.",
   "supports_tool_use": true,
   "thinking_probe_detected": true,
   "thinking_probe_evidence": "Reasoning model with always-on reasoning; no visible CoT tags because reasoning is not exposed.",

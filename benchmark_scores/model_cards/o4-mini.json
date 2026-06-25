@@ -17,21 +17,25 @@
   "params_active_b": null,
   "context_window_k": 200,
   "knowledge_cutoff": "2024-06",
-  "summary": "o4-mini ist ein kompaktes Reasoning-Modell von OpenAI, das die o3-mini-Linie mit deutlich besserer Leistung in Coding, Mathematik und STEM-Aufgaben weiterführt. Im Unterschied zu o3-mini unterstützt o4-mini nativ Vision-Inputs über die API – es kann Bilder, Diagramme und Screenshots per Chain-of-Thought analysieren. Mit drei einstellbaren Reasoning-Intensitätsstufen und vollständigem Tool-Use (inkl. parallelem Tool-Calling) ist es das effizienteste Modell der o-series für leichte Agentic-Workflows.",
+  "summary": "o4-mini ist OpenAIs kompaktes Reasoning-Modell mit nativem Vision-Eingang für Bilder, Diagramme und Screenshots. Das Modell verarbeitet Text und Bild, arbeitet mit einem Kontextfenster von 200.000 Tokens und bietet drei einstellbare Reasoning-Stufen für die Balance zwischen Antworttiefe und Latenz. Volles Tool-Use inklusive parallelem Tool-Calling für leichte agentische Workflows.",
   "strengths": [
-    "Native Vision-Unterstützung über die API – Bilder, Diagramme, Screenshots per CoT analysierbar",
-    "Erster effizienter Reasoning-Mini mit vollem Tool-Use inkl. parallelem Tool-Calling",
-    "Drei einstellbare Reasoning-Intensitätsstufen (low, medium, high) für Kosten-Leistungs-Optimierung",
-    "Deutlich schneller und günstiger als o3 und o4",
-    "Geeignet als Reasoning-Layer in leichten Agentic-Architekturen"
+    [
+      "Native Vision-Unterstützung über die API für Bilder, Diagramme und Screenshots",
+      "Volles Tool-Use inklusive parallelem Tool-Calling",
+      "Drei einstellbare Reasoning-Intensitätsstufen für Kosten-Leistungs-Optimierung",
+      "Schneller und günstiger als die grösseren o3- und o4-Modelle",
+      "Geeignet als Reasoning-Layer in leichten Agentic-Architekturen"
+    ]
   ],
   "known_limitations": [
-    "Proprietäre Gewichte – kein lokales Deployment möglich",
-    "US-Anbieter (OpenAI) – CLOUD Act bei API-Nutzung relevant",
-    "Schwächer als o3 und größere Frontier-Modelle bei komplexen mehrstufigen Reasoning-Chains",
-    "Nachfolger GPT-5 mini bereits angekündigt – Lebenszyklus beachten"
+    [
+      "Proprietäre Gewichte, kein lokales Deployment möglich",
+      "Schwächer als o3 und grössere Frontier-Modelle bei komplexen mehrstufigen Reasoning-Chains",
+      "Reasoning-Schritte nicht in der API-Antwort sichtbar",
+      "Nachfolger GPT-5 mini bereits angekündigt, Lebenszyklus beachten"
+    ]
   ],
-  "judge_context_hint": "o4-mini ist ein kompaktes o-series Reasoning-Modell mit internem Chain-of-Thought (nicht im Output sichtbar). Natives Vision-Input über API (Bilder, Diagramme). Volles Tool-Use inkl. parallelem Tool-Calling. Drei Reasoning-Stufen (low/medium/high). Einordnung: effizienter Allrounder für Coding, Math, STEM und leichte Agentic-Workflows.",
+  "judge_context_hint": "Kompaktes o-series Reasoning-Modell mit internem Chain-of-Thought, der nicht in der Antwort sichtbar wird. Natives Vision-Input und paralleles Tool-Calling. Bei der Bewertung Coding, Mathematik und leichte Agentic-Workflows gewichten.",
   "architecture_tags": [
     "General",
     "Instruct",

@@ -17,21 +17,21 @@
   "params_active_b": 31.0,
   "context_window_k": 256,
   "knowledge_cutoff": "2025-01",
-  "summary": "Gemma 4 31B Instruct (Q8_K_XL MTP, Unsloth) ist die hochpräziseste lokale Dense-Variante mit Multi-Token Prediction (MTP) für erhöhte Inferenzgeschwindigkeit. 31B Parameter, 256K Kontextfenster, Apache 2.0. Konfigurierbare Thinking-Modi nachgewiesen (3/3 Probe, medium confidence). Im Benchmark ohne mmproj geladen → reine Text-Inferenz.",
+  "summary": "Gemma 4 31B Instruct als Q8-Quantisierung mit Multi-Token-Prediction von Unsloth, die hochpräziseste lokale Dense-Variante der Familie. Mit 31 Milliarden Parametern und 128.000 Tokens Kontextfenster liefert das Modell nahezu Vollpräzision bei deutlich erhöhter Token-Rate durch Speculative Decoding. Unter Apache-2.0-Lizenz lokal betreibbar ohne externe Cloud-Verbindung.",
   "strengths": [
-    "Q8_K_XL: nahezu F16-Qualität – höchste Präzision aller Unsloth-Gemma-4-31B-Varianten",
-    "Multi-Token Prediction (MTP): signifikant höhere Token-Rate via Speculative Decoding",
-    "Konfigurierbare Thinking-Modi – 3/3 genuine Inline-CoT in Probe nachgewiesen (medium confidence)",
-    "Solides Instruction-Following und strukturierte Antwortgenerierung bei voller 31B-Kapazität",
-    "Apache 2.0: vollständig kommerziell nutzbar und modifizierbar"
+    "Q8-Quantisierung mit nahezu Vollpräzision als hochpräziseste Variante",
+    "Multi-Token-Prediction für signifikant höhere Token-Rate über Speculative Decoding",
+    "Konfigurierbare Thinking-Modi mit nachgewiesenen Reasoning-Spuren",
+    "Solides Instruction-Following bei voller 31-Milliarden-Kapazität",
+    "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit"
   ],
   "known_limitations": [
-    "Sehr hoher VRAM-Bedarf: ~35–40 GB für Q8_K_XL – erfordert Workstation-Hardware (DGX Spark etc.)",
-    "Multimodalität externalisiert: Bild/Audio/Video erfordern separate mmproj-GGUF. Im Benchmark ohne mmproj geladen → reine Text-Inferenz.",
-    "MTP erfordert separates Draft-Modell für optimale Speculative-Decoding-Rate",
+    "Sehr hoher Speicherbedarf durch Q8-Quantisierung, erfordert professionelle Workstation-Hardware",
+    "Multimodalität für Bild, Audio und Video erfordert eine separate Multimodal-Projektor-Datei",
+    "Multi-Token-Prediction benötigt ein separates Draft-Modell für optimale Speculative-Decoding-Rate",
     "Community-Distribution statt offizieller Google-Verpackung"
   ],
-  "judge_context_hint": "Plattform: lokal (DGX Spark oder vergleichbare Workstation) – kein Cloud-Provider, kein externer Datentransfer. Dense 31B, Q8_K_XL (nahezu F16-Qualität), MTP aktiv. Ohne mmproj geladen → reine Text-Inferenz. Konfigurierbare Thinking-Modi aktiv (3/3 Probe-Nachweise, medium confidence). MTP erhöht Token-Rate via Speculative Decoding.",
+  "judge_context_hint": "Hochpräzise Dense-Variante auf Gemma-4-Basis mit Multi-Token-Prediction. Bei der Bewertung nahezu Vollpräzision und erhöhte Token-Rate erwarten. Konfigurierbare Thinking-Modi aktiv. Lokales Deployment ohne externen Datentransfer.",
   "architecture_tags": [
     "General",
     "Instruct",

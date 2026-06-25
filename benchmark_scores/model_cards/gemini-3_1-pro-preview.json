@@ -10,20 +10,20 @@
   "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act; die Modellgewichte sind nicht öffentlich zugänglich.",
   "model_family": "Gemini",
   "primary_focus": "general",
-  "summary": "Gemini 3.1 Pro Preview ist Googles Frontier-Reasoning-Modell mit konfigurierbarem Extended Thinking und verbesserter Token-Effizienz gegenüber Gemini 3 Pro. Optimiert für Software Engineering, agentische Workflows und komplexe multimodale Analyse über Text, Bild, Audio, Video und PDF. Mit 1M-Token-Kontextfenster und starken SWE-Bench-Ergebnissen (80.6%) ist es Googles leistungsstärkstes verfügbares API-Modell.",
+  "summary": "Als Preview-Version veröffentlicht Google das Gemini 3.1 Pro mit verbesserter Token-Effizienz gegenüber dem Vorgänger und konfigurierbarem Extended Thinking. Das Modell arbeitet mit einem Kontextfenster von einer Million Tokens, verarbeitet Text, Bilder, Audio, Video und PDF und ist auf Software Engineering sowie agentische Workflows ausgelegt. Da es sich um eine Preview handelt, sind Änderungen gegenüber der finalen Version möglich.",
   "strengths": [
-    "Herausragendes Reasoning (77.1% ARC-AGI-2, 94.3% GPQA Diamond, 80.6% SWE-Bench Verified)",
-    "Extended Thinking mit konfigurierbarem Medium-Thinking-Level für Kosten-Qualitäts-Tradeoff",
-    "Vollständig multimodal (Text, Bild, Audio, Video, PDF) mit 1M-Token-Kontextfenster",
+    "Extended Thinking mit konfigurierbarem Medium-Thinking-Level für Kosten-Qualitäts-Abwägung",
+    "Vollständig multimodal für Text, Bilder, Audio, Video und PDF",
+    "Kontextfenster von einer Million Tokens",
     "Starke Eignung für agentische Workflows, Coding und mehrstufige Aufgaben"
   ],
   "known_limitations": [
-    "Preview-Status mit möglicher Veränderung",
-    "Nur über die Google-API nutzbar",
-    "Höhere Kosten als Flash-Varianten; Long-Context >200K Token erhöht Preis weiter",
-    "Natives Audio-Output (Live API nicht unterstützt) nicht im Benchmark erfasst – output_modalities spiegelt nur getestete Modalitäten wider."
+    "Preview-Status mit möglichen Veränderungen bis zur finalen Version",
+    "Ausschliesslich über die Google-API nutzbar",
+    "Höhere Kosten als die Flash-Varianten, Long-Context über 200.000 Tokens erhöht den Preis weiter",
+    "Audio-Ausgabe über die Live API im Benchmark nicht erfasst"
   ],
-  "judge_context_hint": "Flaggschiffartige Pro-Preview für anspruchsvolle, multimodale und agentische Aufgaben. Der Fokus sollte auf Robustheit und Aufgabenverständnis liegen.",
+  "judge_context_hint": "Flaggschiff-Preview-Variante für anspruchsvolle, multimodale und agentische Aufgaben. Bei der Bewertung Robustheit und Aufgabenverständnis gewichten. Preview-Status beachten, Verhalten kann sich bis zur finalen Version ändern.",
   "architecture_tags": [
     "General",
     "Thinking-Optional",

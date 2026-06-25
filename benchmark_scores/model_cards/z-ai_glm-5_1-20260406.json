@@ -16,12 +16,15 @@
   "vendor": "Z.AI (formerly Zhipu AI)",
   "generated_at": "2026-04-23T22:03:19.200573+00:00",
   "input_price_per_1m": 1.05,
-  "judge_context_hint": "Das Modell ist ein Frontier-MoE-Modell (754B/40B aktiv) mit starkem Fokus auf agentic Coding und Long-Horizon-Execution. Thinking ist per API schaltbar (enable_thinking). Bei chinesischsprachigen Aufgaben kann die Leistung leicht variieren; agentic und Coding-Benchmarks sind der primäre Stärkebereich.",
+  "judge_context_hint": "Frontier-Modell mit starkem Fokus auf agentic Coding und Long-Horizon-Execution. Bei der Bewertung Coding und Agentic-Fähigkeiten gewichten, Thinking per API schaltbar.",
   "knowledge_cutoff": "2025-12",
   "known_limitations": [
-    "Hohe Tail-Latenz und gelegentliche Timeouts bei Cloud-API-Nutzung",
-    "Leistung bei spezialisierten westlichen Tests kann hinter US-Modellen zurückbleiben",
-    "Mögliche Zensur oder Zurückhaltung bei politisch sensiblen Themen mit Bezug zu China"
+    [
+      "Hohe Tail-Latenz und gelegentliche Timeouts bei Cloud-API-Nutzung",
+      "Leistung bei spezialisierten westlichen Tests kann hinter US-Modellen zurückbleiben",
+      "Mögliche Zensur oder Zurückhaltung bei politisch sensiblen Themen mit Bezug zu China",
+      "Chinesische Jurisdiktion mit erhöhtem Sovereign-Risk bei Cloud-Nutzung"
+    ]
   ],
   "license": "MIT",
   "license_url": "https://opensource.org/licenses/MIT",
@@ -37,13 +40,16 @@
   "primary_focus": "general",
   "size_class": "Frontier",
   "strengths": [
-    "SWE-Bench Pro #1 bei Release (58,4%) — erstes Open-Source-Modell an der Spitze",
-    "Frontier-MoE-Architektur: 754B gesamt, 40B aktiv, 200K Kontext",
-    "Long-Horizon Agentic Coding: bis zu 8h autonome Execution, 6000+ Tool-Calls",
-    "MIT-Lizenz: vollständig offen, kommerziell frei nutzbar, lokal deploybar",
-    "Thinking-System (Interleaved, Preserved, Turn-level) per API schaltbar"
+    [
+      "Starke Leistung bei agentischem Coding mit langfristiger autonomer Ausführung",
+      "Effiziente MoE-Architektur mit 40 Milliarden aktiven Parametern bei 754 Milliarden Gesamtparametern",
+      "Kontextfenster von 200.000 Tokens für langlaufende Workflows",
+      "MIT-Lizenz mit vollständig kommerzieller Nutzbarkeit",
+      "Flexibles Thinking-System mit mehreren Modi per API schaltbar",
+      "Open-Weights-Modell für lokalen Betrieb"
+    ]
   ],
-  "summary": "GLM-5.1 ist das Post-Training-Upgrade zu GLM-5 von Z.AI (formerly Zhipu AI) — ein 754B-Parameter MoE-Modell (40B aktiv) mit 200K-Kontext, das bei Release mit 58,4% auf SWE-Bench Pro das erste Open-Source-Modell an der Spitze war. Es ist auf Long-Horizon Agentic Engineering ausgelegt (bis zu 8h autonome Execution), MIT-lizenziert und als Open-Weights auf HuggingFace verfügbar. Aufgrund der chinesischen Jurisdiktion ist bei Cloud-API-Nutzung mit sensiblen Daten besondere Sorgfalt geboten.",
+  "summary": "GLM-5.1 ist Z.AIs Post-Training-Upgrade mit 754 Milliarden Gesamt- und 40 Milliarden aktiven Parametern in MoE-Architektur, optimiert für langfristige agentische Coding-Workflows mit bis zu acht Stunden autonomer Ausführung. Das Kontextfenster umfasst 200.000 Tokens, die Gewichte sind unter MIT-Lizenz als Open-Weights-Modell verfügbar.",
   "supports_tool_use": true,
   "thinking_probe_at": "2026-04-25T09:32:21.175051+00:00",
   "thinking_probe_confidence": "medium",
@@ -61,8 +67,12 @@
   "presence_penalty": null,
   "seed": null,
   "stop_sequences": null,
-  "input_modalities": ["text"],
-  "output_modalities": ["text"],
+  "input_modalities": [
+    "text"
+  ],
+  "output_modalities": [
+    "text"
+  ],
   "profile_verified": true,
   "profile_verified_at": "2026-06-22",
   "tooluse_tested_at": null,
@@ -72,7 +82,9 @@
   "temperature": null,
   "system_prompt_override": null,
   "cot_marker_family": "think-xml",
-  "cot_tags_detected": ["<thought>"],
+  "cot_tags_detected": [
+    "<thought>"
+  ],
   "profile_verified_by": "llm:perplexity",
   "last_modified_at": "2026-06-22",
   "heritage_ids": [],

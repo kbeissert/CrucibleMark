@@ -17,18 +17,24 @@
   "params_active_b": null,
   "context_window_k": 200,
   "knowledge_cutoff": "2023-10",
-  "summary": "o3-mini ist ein kompaktes Reasoning-Modell von OpenAI, das durch internen Chain-of-Thought spezialisiert auf Mathematik, Coding und STEM-Aufgaben überzeugt. Das Modell akzeptiert ausschließlich Text-Input über die API und bietet drei einstellbare Reasoning-Stufen (low, medium, high) zur Optimierung von Kosten und Latenz. Es ist eine hocheffiziente Lösung für komplexe Denkprozesse via Cloud-API.",
+  "summary": "o3-mini ist OpenAIs kompaktes Reasoning-Modell mit internem Chain-of-Thought, spezialisiert auf Mathematik, Coding und STEM-Aufgaben. Das Modell arbeitet mit einem Kontextfenster von 200.000 Tokens und bietet drei einstellbare Reasoning-Stufen für die Balance zwischen Antworttiefe, Latenz und Kosten. Ausschliesslich über die OpenAI-API verfügbar.",
   "strengths": [
-    "Herausragende Leistung bei mathematischen und wissenschaftlichen Reasoning-Aufgaben",
-    "Drei einstellbare Reasoning-Intensitätsstufen (low, medium, high) für Kosten-Leistungs-Optimierung",
-    "Deutlich schneller und günstiger als o3"
+    [
+      "Herausragende Leistung bei mathematischen und wissenschaftlichen Reasoning-Aufgaben",
+      "Drei einstellbare Reasoning-Intensitätsstufen für Kosten-Leistungs-Optimierung",
+      "Schneller und günstiger als die grösseren o3-Modelle",
+      "Tool-Use-Unterstützung für automatisierte Workflows"
+    ]
   ],
   "known_limitations": [
-    "Kein Image-Input über die API (Vision nur in ChatGPT-App, nicht im API-Endpoint)",
-    "Kann bei extrem komplexen kreativen Schreibaufgaben weniger nuanciert sein als die großen o3-Modelle",
-    "Die Leistung bei sehr langen Reasoning-Ketten kann je nach gewählter Intensitätsstufe variieren"
+    [
+      "Kein Bild-Input über die API, nur Text",
+      "Bei extrem komplexen kreativen Schreibaufgaben weniger nuanciert als die grossen o3-Modelle",
+      "Leistung bei sehr langen Reasoning-Ketten variiert je nach gewählter Intensitätsstufe",
+      "Reasoning-Schritte nicht in der API-Antwort sichtbar"
+    ]
   ],
-  "judge_context_hint": "o3-mini denkt intern via Chain-of-Thought, zeigt diesen Prozess aber nicht im Output – Antworten wirken direkt, sind aber das Ergebnis verdeckten Reasonings; die Reasoning-Stufe beeinflusst Antwortqualität und Latenz erheblich.",
+  "judge_context_hint": "o3-mini denkt intern via Chain-of-Thought, zeigt diesen Prozess aber nicht im Output. Die Reasoning-Stufe beeinflusst Antwortqualität und Latenz erheblich. Bei der Bewertung Reasoning-Tiefe und Stufenwahl berücksichtigen.",
   "architecture_tags": [
     "General",
     "Instruct",

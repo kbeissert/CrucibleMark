@@ -10,20 +10,20 @@
   "weights_provenance_risk_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act; die Modellgewichte sind nicht öffentlich zugänglich.",
   "model_family": "Gemini",
   "primary_focus": "general",
-  "summary": "Gemini 3.5 Flash ist Googles schnellstes Frontier-Modell (GA seit Google I/O 2026), das nahezu Pro-Level-Reasoning bei Flash-Kosten bietet. Mit Dynamic Thinking (Standard: Medium), 1M-Token-Kontextfenster und vollständiger Multimodalität (Text, Bild, Audio, Video, PDF) ist es für agentische Workflows, Coding und High-Volume-Workloads optimiert. Es ist ausschließlich über die Google-API verfügbar.",
+  "summary": "Gemini 3.5 Flash ist Googles schnellste Frontier-Klasse und liefert nahezu Pro-Level-Leistung bei Flash-Preisen. Mit Dynamic Thinking in vier konfigurierbaren Stufen, einem Kontextfenster von einer Million Tokens und vollständiger Multimodalität für Text, Bilder, Audio, Video und PDF eignet sich das Modell für agentische Workflows, Coding und Workloads mit hohem Durchsatz.",
   "strengths": [
-    "Frontier-Level Coding und Reasoning bei Flash-Kosten – übertrifft Gemini 3.1 Pro auf SWE-Bench",
-    "Dynamic Thinking mit konfigurierbaren Levels (minimal/low/medium/high) für Kosten-Qualitäts-Tradeoff",
-    "Vollständig multimodal: Text, Bild, Audio, Video (bis 1h), PDF – natives 1M-Token-Kontextfenster",
-    "~4× schneller als vergleichbare Frontier-Modelle, 59.59 Tokens/s"
+    "Frontier-Level-Leistung bei Flash-Preisen für Coding und agentische Workflows",
+    "Dynamic Thinking mit vier Stufen für Kosten-Qualitäts-Abwägung",
+    "Vollständig multimodal für Text, Bilder, Audio, Video und PDF",
+    "Kontextfenster von einer Million Tokens"
   ],
   "known_limitations": [
-    "Nur über die Google-API nutzbar",
-    "Teurer als Vorgänger (3× Flash 3 Preview, 6× Flash-Lite) – kein Low-Budget-Modell mehr",
-    "Token-Budget-Kollisionen bei komplexen Aufgaben möglich (internes Reasoning erhöht Verbosity)",
-    "Natives Audio-Output nicht im Benchmark erfasst – output_modalities spiegelt nur getestete Modalitäten wider."
+    "Ausschliesslich über die Google-API nutzbar",
+    "Teurer als Vorgängerversionen, kein Low-Budget-Modell mehr",
+    "Token-Budget-Kollisionen bei komplexen Aufgaben möglich, da internes Reasoning die Ausführlichkeit erhöht",
+    "Audio-Ausgabe im Benchmark nicht erfasst"
   ],
-  "judge_context_hint": "Schnelles Flash-Modell mit Dynamic Thinking für Coding und agentische Workloads. Antworten sollten auf Effizienz und Brauchbarkeit geprüft werden, nicht auf maximale Reasoning-Tiefe.",
+  "judge_context_hint": "Schnelles Flash-Modell mit Dynamic Thinking für Coding und agentische Workloads. Bei der Bewertung Effizienz und Brauchbarkeit gewichten, nicht maximale Reasoning-Tiefe. Multimodalität für Text, Bild, Audio und Video nativ verfügbar.",
   "architecture_tags": [
     "General",
     "Thinking-Optional",
@@ -44,7 +44,7 @@
   "vendor": "Google",
   "weights_license_tier": "proprietary",
   "model_version": "3.5-flash",
-  "input_price_per_1m": 1.50,
+  "input_price_per_1m": 1.5,
   "output_price_per_1m": 9.0,
   "use_case_primary": "generalist",
   "parameter_architecture": "moe",

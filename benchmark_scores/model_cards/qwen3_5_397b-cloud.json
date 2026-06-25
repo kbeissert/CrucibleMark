@@ -17,21 +17,25 @@
   "params_active_b": 17.0,
   "context_window_k": 262,
   "knowledge_cutoff": "2025-06",
-  "summary": "Qwen 3.5 397B ist das erste nativ multimodale Open-Weights-Modell der Qwen3.5-Familie von Alibaba (Release: Feb 2026). Mit 397B Gesamt- und 17B aktiven Parametern auf einer Hybrid Mamba-2+Transformer-MoE-Architektur (Early Fusion) verarbeitet es nativ Text, Bilder und Video. Diese Card erfasst einen Provider-Endpoint, der das Modell im text-only / non-thinking-Modus betreibt – der Benchmark-Run reflektiert diese Provider-Konfiguration.",
+  "summary": "Qwen 3.5 397B ist Alibabas Flaggschiff mit nativer Multimodalität für Text, Bild und Video auf einer hybriden Mamba-2-Transformer-MoE-Architektur. Von 397 Milliarden Gesamtparametern sind pro Token nur 17 Milliarden aktiv, das Kontextfenster umfasst 262.000 Tokens. Unter Apache-2.0-Lizenz lokal oder über Cloud-Endpoint verfügbar.",
   "strengths": [
-    "8,6–19× höherer Decoding-Throughput vs. Qwen3-Max bei vergleichbarer Qualität",
-    "Nativ multimodal (Text + Image + Video) mit Early Fusion",
-    "262K nativer Kontext, erweiterbar auf 1M Token via YaRN",
-    "Apache 2.0 – vollständig kommerziell nutzbar, lokales Deployment möglich",
-    "Thinking-Optional: ON/OFF via Prefix oder Parameter (provider-abhängig)"
+    [
+      "Native Multimodalität mit Text-, Bild- und Video-Verarbeitung in Early-Fusion-Architektur",
+      "Effiziente MoE-Architektur mit nur 17 Milliarden aktiven Parametern pro Token",
+      "Kontextfenster von 262.000 Tokens, erweiterbar auf eine Million über YaRN",
+      "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit",
+      "Thinking-Optional mit provider-abhängiger Konfiguration"
+    ]
   ],
   "known_limitations": [
-    "Einschränkungen bei politisch sensiblen Themen mit Bezug zu China",
-    "Hoher Hardwareaufwand für den lokalen Betrieb der 397B-Version (Multi-GPU)",
-    "Cloud-API-Nutzung: NSL-Jurisdiktion beachten",
-    "Provider-abhängig: Thinking-Modus und Vision-Encoder können deaktiviert sein"
+    [
+      "Einschränkungen bei politisch sensiblen Themen mit Bezug zu China",
+      "Hoher Hardwareaufwand für lokalen Betrieb der vollen Variante, Multi-GPU-Setup nötig",
+      "Cloud-API-Nutzung unterliegt chinesischer NSL-Jurisdiktion",
+      "Provider-abhängig können Thinking-Modus und Vision-Encoder deaktiviert sein"
+    ]
   ],
-  "judge_context_hint": "Qwen 3.5 397B: Provider-Endpoint ohne aktiviertes Thinking und ohne Vision-Encoder. Text-only-Inferenz. 397B gesamt / 17B aktiv. 262K Kontext. Apache 2.0. Bei China-bezogenen politischen Themen können eingeschränkte Antworten auftreten.",
+  "judge_context_hint": "Qwen-Flaggschiff mit nativer Multimodalität und effizienter MoE-Architektur. Provider-abhängig in Thinking- und Vision-Aktivierung. Bei China-bezogenen Themen eingeschränkte Antworten möglich.",
   "architecture_tags": [
     "General",
     "Instruct",

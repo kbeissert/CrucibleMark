@@ -10,17 +10,19 @@
   "weights_provenance_risk_rationale": "DeepSeek ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann. Das BSI hat am 04.02.2025 vor dem Einsatz des DeepSeek-Cloud-Dienstes gewarnt; bei ausschließlich lokalem Betrieb der Open-Weights-Variante ohne Datenübertragung nach China ist das cloud-spezifische Risikoszenario reduziert.",
   "model_family": "DeepSeek",
   "primary_focus": "general",
-  "summary": "DeepSeek V3.2 ist ein hocheffizientes Frontier-Modell von DeepSeek, das auf Sprach-, Code- und Reasoning-Aufgaben optimiert wurde. Es nutzt eine Mixture-of-Experts-Architektur und bietet eine Open-Weights-Lizenz. Das Modell ist sowohl für den lokalen Einsatz als auch über kostengünstige Cloud-Schnittstellen verfügbar und setzt neue Standards in der Effizienz.",
+  "summary": "DeepSeek V3.2 ist als Frontier-Modell auf Sprache, Code und Reasoning ausgelegt und nutzt die gleiche MoE-Architektur wie sein Vorgänger mit 671 Milliarden Gesamt- und 37 Milliarden aktiven Parametern. Das Modell arbeitet mit einem 128.000-Token-Kontextfenster, ist als Open-Weights-Variante lokal betreibbar und über die Cloud-API zu niedrigen Preisen verfügbar. Die chinesische Jurisdiktion macht eine Bewertung des Cloud-Einsatzes erforderlich.",
   "strengths": [
-    "Starke Leistung bei Coding- und Mathematikaufgaben",
-    "Sehr gutes Preis-Leistungs-Verhältnis im Vergleich zu Konkurrenzmodellen",
-    "Breites Allgemeinwissen mit guter mehrsprachiger Kompetenz"
+    "Hohe Leistung bei Coding- und Mathematikaufgaben",
+    "MoE-Architektur mit 37 Milliarden aktiven Parametern bei 671 Milliarden Gesamtparametern",
+    "Breites Allgemeinwissen mit guter mehrsprachiger Kompetenz",
+    "Kostengünstige Nutzung über die Cloud-API oder lokaler Betrieb mit offenen Gewichten"
   ],
   "known_limitations": [
-    "Unterliegt chinesischer Zensur bei politisch sensiblen Themen (z.B. Tiananmen, Taiwan)",
-    "Als V3.2 möglicherweise noch nicht vollständig dokumentiert – Architekturdetails gegenüber V3 unklar"
+    "Chinesisches nationales Sicherheitsgesetz: bei Cloud-Nutzung kann staatlicher Zugriff auf Daten bestehen",
+    "Bei politisch sensiblen Themen mit China-Bezug zensierte oder ausweichende Antworten",
+    "Architekturdetails gegenüber dem V3-Vorgänger noch nicht vollständig dokumentiert"
   ],
-  "judge_context_hint": "Das Modell kann bei politisch sensiblen Themen mit China-Bezug ausweichen oder verweigern; bei sachlichen und technischen Aufgaben ist die Leistung jedoch mit westlichen Top-Modellen vergleichbar.",
+  "judge_context_hint": "Frontier-Modell von DeepSeek aus chinesischer Jurisdiktion. Bei politisch sensiblen Themen mit China-Bezug können Antworten ausweichen oder verweigert werden. Bei sachlichen und technischen Aufgaben vergleichbare Leistung wie westliche Top-Modelle. Lokaler Betrieb reduziert das Datentransfer-Risiko erheblich.",
   "architecture_tags": [
     "General",
     "Coder"

@@ -17,26 +17,22 @@
   "params_active_b": 25,
   "context_window_k": 128,
   "knowledge_cutoff": "2025-12",
-  "summary": "Command A+ ist Coheres erstes Open-Weight-MoE-Modell (25B aktiv / 218B total) unter Apache 2.0, publiziert Mai 2026. Es vereint Reasoning, Vision-Input, Agentic-Workflows und 48-Sprachen-Unterstützung. Läuft auf 2× H100 (W4A4) oder 1× B200 und liefert bis zu 63% höheren Throughput gegenüber Command A Reasoning.",
+  "summary": "Coheres erstes offenes MoE-Modell kombiniert Frontier-Leistung mit Selbst-Hosting: Von 218 Milliarden Gesamtparametern sind pro Token nur 25 Milliarden aktiv, das Kontextfenster umfasst 128.000 Tokens und das Modell verarbeitet Text- und Bildeingaben. Unter Apache-2.0-Lizenz aus Kanada veröffentlicht, ohne Vendor-Lock-in und ohne proprietäre Gewichte.",
   "strengths": [
-    "Apache-2.0-Lizenz: Open Weight, selbst hostbar, kein Vendor-Lock-in",
-    "MoE-Architektur: nur 25B aktive Parameter bei 218B total — Frontier-Performance bei niedrigem Compute-Overhead",
-    "Bis zu 63% höherer Output-Throughput (TOPS) gegenüber Command A Reasoning bei gleicher Quantisierung",
-    "Vision-Input: Text und Bilder nativ kombinierbar (MMMU 75.1%, MathVista 80.6%)",
-    "48 Sprachen inkl. aller EU-Amtssprachen sowie verbesserter Tokenizer für Arabisch (+20%), Koreanisch (+16%), Japanisch (+18%)",
-    "64K maximale Output-Tokens — deutlich mehr als Command A mit 8K",
-    "Speculative Decoding: 1.5–1.6× zusätzliche Inferenzbeschleunigung",
-    "Hardware: 2× H100 (W4A4) oder 1× B200 — kein Multi-Node-Setup erforderlich",
-    "Nativer Support für vLLM und Hugging Face Transformers"
+    "Apache-2.0-Lizenz mit offenen Gewichten, ohne Vendor-Lock-in selbst hostbar",
+    "MoE-Architektur mit 25 Milliarden aktiven Parametern bei 218 Milliarden gesamt",
+    "Native Verarbeitung von Text und Bildern",
+    "Unterstützung für 48 Sprachen, einschliesslich aller EU-Amtssprachen",
+    "Bis zu 64.000 Tokens maximale Ausgabe",
+    "Native Integration mit vLLM und Hugging Face Transformers"
   ],
   "known_limitations": [
-    "Weniger publizierte unabhängige Third-Party-Benchmarks als vergleichbare Frontier-Modelle",
-    "Thinking verbraucht Output-Tokens aus dem 64K-Budget — bei intensivem Reasoning kann die Antwortlänge entsprechend sinken",
-    "W4A4-Quantisierung für Minimalanforderung (2× H100) nötig — BF16 erfordert deutlich mehr Ressourcen",
-    "Trial-API-Key: 20 req/min, 1000 API-Calls/Monat — für Production-Nutzung via Cohere Model Vault oder Self-Hosting",
-    "Tool-Use via API nicht stabil: persistente HTTP 500 (serverseitig) bei nativem tools-Parameter mit komplexeren System-Prompts. Einfache Tool-Calls funktionieren, Benchmark-Szenarien nicht (2026-06). supports_tool_use=false bis Cohere den Bug behebt."
+    "Weniger unabhängig publizierte Drittbenchmarks als vergleichbare Frontier-Modelle",
+    "Thinking verbraucht Output-Tokens aus dem 64.000-Token-Budget",
+    "Quantisierung für lokales Self-Hosting mit vertretbarem Ressourcenbedarf nötig",
+    "Tool-Use über die Cohere-API derzeit nicht stabil für komplexe Benchmark-Szenarien"
   ],
-  "judge_context_hint": "Open-Weight-MoE-Modell (25B aktiv / 218B total) unter Apache 2.0. Nativer Reasoning-Anteil verbraucht Output-Tokens aus dem 64K-Budget. Vision-Input, 48 Sprachen, Agentic Tool-Use. Für lokales Deployment mit vLLM verfügbar. Kanadischer Anbieter.",
+  "judge_context_hint": "Offenes MoE-Modell von Cohere aus Kanada unter Apache-2.0-Lizenz. Reasoning-Anteil verbraucht Output-Tokens aus dem 64.000-Token-Budget, was bei intensivem Reasoning die Antwortlänge begrenzt. Vision-Input, 48 Sprachen und Agentic-Tool-Use sind Kernfähigkeiten. Lokales Deployment über vLLM möglich.",
   "architecture_tags": [
     "Thinking",
     "MoE",

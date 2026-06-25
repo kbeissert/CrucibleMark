@@ -14,12 +14,14 @@
   "display_name": "Mistral Medium 3.5",
   "generated_at": "2026-06-10T18:28:14.916569+00:00",
   "input_price_per_1m": 1.5,
-  "judge_context_hint": "Mistral Medium 3.5 ist auf agentische Workflows und Coding spezialisiert; bei rein kreativen oder allgemeinen Reasoning-Aufgaben kann die Performance von reinen General-Purpose-Modellen abweichen.",
+  "judge_context_hint": "Frontier-Modell mit Schwerpunkt auf agentische Workflows und Coding. Bei der Bewertung Performance in diesen Bereichen gewichten. Bei rein kreativen oder allgemeinen Reasoning-Aufgaben kann die Leistung von reinen General-Purpose-Modellen abweichen.",
   "knowledge_cutoff": "2025-12",
   "known_limitations": [
-    "Noch begrenzte Community-Erfahrungen aufgrund des jungen Veröffentlichungszeitpunkts",
-    "Hohe Hardwareanforderungen für den lokalen Einsatz der Frontier-Modellklasse",
-    "Mögliche Nuancen in der Performance bei rein narrativen oder hochkreativen Aufgaben"
+    [
+      "Begrenzte Community-Erfahrung aufgrund des jungen Veröffentlichungszeitpunkts",
+      "Hohe Hardware-Anforderungen für den lokalen Einsatz der Modellklasse",
+      "Mögliche Nuancen in der Performance bei rein narrativen oder hochkreativen Aufgaben"
+    ]
   ],
   "license": "Modified MIT",
   "license_url": "https://huggingface.co/mistralai/Mistral-Medium-3.5-128B/blob/main/LICENSE",
@@ -35,12 +37,15 @@
   "primary_focus": "general",
   "size_class": "Server",
   "strengths": [
-    "Kommerzielle Nutzung durch Modified MIT Lizenz mit Revenue-Schwelle",
-    "Hohe Performance bei agentischen Aufgaben und Programmierung",
-    "Großes Kontextfenster von 256k sowie multimodale Fähigkeiten",
-    "Geringes regulatorisches Risiko durch Entwicklung in der EU"
+    [
+      "Modified-MIT-Lizenz mit kommerzieller Nutzbarkeit unter Revenue-Schwelle",
+      "Hohe Leistung bei agentischen Aufgaben und Programmierung",
+      "Kontextfenster von 256.000 Tokens mit multimodalen Fähigkeiten für Text und Bild",
+      "Geringes regulatorisches Risiko durch EU-Entwicklung",
+      "Tool-Use-Unterstützung für Workflow-Automatisierung"
+    ]
   ],
-  "summary": "Mistral Medium 3.5 ist ein leistungsstarkes Frontier-Modell von Mistral AI aus Frankreich, das speziell für agentische Workflows und Coding-Aufgaben optimiert wurde. Es ist als Open-Weights-Modell unter Modified MIT verfügbar und kann lokal oder via API genutzt werden. Das Modell bietet ein Kontextfenster von 256k und multimodale Fähigkeiten.",
+  "summary": "Mistral Medium 3.5 ist Mistral AIs Frontier-Modell mit Fokus auf agentische Workflows und Coding. Mit 128 Milliarden Parametern arbeitet das Modell bei einem Kontextfenster von 256.000 Tokens und unterstützt multimodale Eingaben für Text und Bild. Als Open-Weights-Modell unter Modified-MIT-Lizenz lokal oder über die Cloud-API nutzbar, aus einem europäischen Anbieter-Umfeld mit DSGVO-Konformität.",
   "supports_tool_use": true,
   "thinking_probe_detected": false,
   "thinking_probe_evidence": "No CoT signals found; reasoning traces are not exposed in the public output.",

@@ -12,13 +12,15 @@
   "display_name": "Gemma 4 31B (Cloud API)",
   "generated_at": "2026-04-23T22:05:37.243642+00:00",
   "input_price_per_1m": 0.14,
-  "judge_context_hint": "Cloud-API-Variante von Gemma 4 31B (google/gemma-4-31b-it) – kein Thinking-Modus nachgewiesen (thinking_probe_detected=false, Manual Override). Bewertung sollte API-spezifische Konfiguration berücksichtigen. Multimodal: Text + Bild nativ (kein mmproj benötigt). Kein lokaler Betrieb.",
+  "judge_context_hint": "Cloud-API-Variante von Gemma 4 31B ohne nachgewiesenen Thinking-Modus. Bei der Bewertung API-spezifische Konfiguration berücksichtigen. Multimodalität für Text und Bild nativ verfügbar, Audio und Video je nach Provider-Konfiguration. Kein lokaler Betrieb in dieser Variante.",
   "knowledge_cutoff": "2025-06",
   "known_limitations": [
-    "Kein Thinking-Modus nachgewiesen (Manual Override – cloud-seitige Konfiguration unterdrückt möglicherweise CoT)",
-    "Kontextfenster in Cloud-API je nach Provider-Konfiguration auf 128K limitiert",
-    "Cloud-Abhängigkeit: Daten verlassen das lokale Netzwerk – CLOUD Act relevant (US-Jurisdiktion)",
-    "Keine offizielle Garantie auf Parität mit lokalen GGUF-Varianten"
+    [
+      "Kein nachweisbarer Thinking-Modus in der Cloud-Konfiguration",
+      "Kontextfenster je nach Provider-Konfiguration auf 128.000 Tokens limitiert",
+      "Cloud-Abhängigkeit mit Datenübertragung in die USA, CLOUD Act ist relevant",
+      "Keine Garantie auf Parität mit lokalen GGUF-Varianten"
+    ]
   ],
   "license": "Apache 2.0",
   "license_url": "https://opensource.org/licenses/Apache-2.0",
@@ -34,13 +36,14 @@
   "primary_focus": "general",
   "size_class": "Workstation",
   "strengths": [
-    "Cloud-API-Zugang ohne lokale Hardware-Anforderungen",
-    "Nativ multimodal: Text + Bild + Audio + Video via API (31B Dense)",
-    "Apache 2.0: Gewichte frei verfügbar für lokalen Betrieb parallel zur Cloud-Nutzung",
-    "Hohe Präzision bei Instruction-Following und strukturierter Textgenerierung",
-    "Knowledge Cutoff Juni 2025 – aktueller als lokale GGUF-Varianten"
+    [
+      "Cloud-API-Zugang ohne lokale Hardware-Anforderungen",
+      "Nativ multimodal für Text, Bild, Audio und Video",
+      "Apache-2.0-Lizenz mit offenen Gewichten für parallelen lokalen Betrieb",
+      "Hohe Präzision bei Instruction-Following und strukturierter Textgenerierung"
+    ]
   ],
-  "summary": "Gemma 4 31B (Cloud API) ist die API-seitig gehostete Variante von Googles Dense-Frontier-Modell mit 31B Parametern. Unter Apache 2.0 sind die Gewichte auch lokal verfügbar – diese Card beschreibt jedoch die Cloud-API-Nutzung (google/gemma-4-31b-it). Kein Thinking-Modus nachgewiesen (Manual Override). Pricing: $0.14/$0.40 pro Million Tokens.",
+  "summary": "Gemma 4 31B als Cloud-API-Variante von Google DeepMind, mit nativem Zugang zu Text-, Bild-, Audio- und Video-Eingaben ohne lokale Hardware-Anforderungen. Unter Apache-2.0-Lizenz stehen die Gewichte auch für lokales Deployment zur Verfügung, diese Variante beschreibt jedoch die Cloud-Nutzung mit einem Kontextfenster von 128.000 Tokens.",
   "supports_tool_use": true,
   "thinking_probe_at": "2026-05-16T18:47:56.692725+00:00",
   "thinking_probe_confidence": "medium",

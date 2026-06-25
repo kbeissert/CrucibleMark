@@ -12,12 +12,14 @@
   "display_name": "GPT-OSS 120B via Groq",
   "generated_at": "2026-04-23T22:05:27.589226+00:00",
   "input_price_per_1m": 0.15,
-  "judge_context_hint": "Großes Modell mit Fokus auf Reasoning und Agentic-Fähigkeiten. Bei der Bewertung sollten die hohe Kapazität und der entsprechende Ressourcenbedarf sowie die Flexibilität des Deployments berücksichtigt werden.",
+  "judge_context_hint": "Open-Weights-Modell mit Fokus auf Reasoning und agentische Workflows. Bei der Bewertung hohe Kapazität und Ressourcenbedarf sowie Deployment-Flexibilität berücksichtigen.",
   "knowledge_cutoff": "2025-06",
   "known_limitations": [
-    "Hoher Ressourcenbedarf bei lokaler Ausführung",
-    "Keine spezialisierte Leichtgewicht-Variante",
-    "Lizenzbedingungen sollten bei kommerzieller Nutzung genau geprüft werden"
+    [
+      "Hoher Ressourcenbedarf bei lokaler Ausführung",
+      "Keine spezialisierte Leichtgewicht-Variante",
+      "Cloud-Variante über Groq unterliegt dem Drittanbieter-Recht bei Datenverarbeitung"
+    ]
   ],
   "license": "Apache 2.0",
   "license_url": "https://opensource.org/licenses/Apache-2.0",
@@ -34,11 +36,15 @@
   "primary_focus": "general",
   "size_class": "Frontier",
   "strengths": [
-    "Offene Gewichte und hohe Flexibilität beim Deployment",
-    "Hohe Kapazität für komplexe Generalist-Aufgaben",
-    "Optimiert für Reasoning und agentische Workflows"
+    [
+      "Offene Gewichte und hohe Flexibilität beim Deployment",
+      "MoE-Architektur mit 5,1 Milliarden aktiven Parametern bei 117 Milliarden Gesamtparametern",
+      "Hohe Kapazität für komplexe Reasoning-Aufgaben und agentische Workflows",
+      "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit",
+      "Optionaler Thinking-Modus konfigurierbar über System-Prompt"
+    ]
   ],
-  "summary": "GPT-OSS 120B ist ein leistungsstarkes Open-Weights-Modell der OpenAI OSS-Serie, das für Cloud- und lokale Deployments optimiert ist. Mit 120 Milliarden Parametern bietet es eine hohe Kapazität für komplexe Reasoning-Aufgaben und agentische Workflows. Trotz seiner Flexibilität erfordert das Modell aufgrund seiner Größe erhebliche Rechenressourcen.",
+  "summary": "GPT-OSS 120B ist OpenAIs leistungsstarkes Open-Weights-Modell der OSS-Serie, gehostet über Groq für Cloud-Nutzung und parallel als Download für lokales Deployment verfügbar. Die MoE-Architektur aktiviert pro Token nur 5,1 Milliarden der insgesamt 117 Milliarden Gesamtparameter, das Kontextfenster umfasst 131.000 Tokens. Unter Apache-2.0-Lizenz mit Fokus auf Reasoning und agentische Workflows.",
   "supports_tool_use": true,
   "thinking_probe_detected": false,
   "thinking_probe_evidence": "No CoT signals found; configurable reasoning effort is system-prompt controllable.",
@@ -69,6 +75,8 @@
   "cot_tags_detected": null,
   "profile_verified_by": "llm:perplexity",
   "last_modified_at": "2026-06-24",
-  "heritage_ids": ["gpt-oss:120b-cloud"],
+  "heritage_ids": [
+    "gpt-oss:120b-cloud"
+  ],
   "community": null
 }

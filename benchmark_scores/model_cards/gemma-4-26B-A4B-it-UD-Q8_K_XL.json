@@ -17,21 +17,25 @@
   "params_active_b": 3.8,
   "context_window_k": 256,
   "knowledge_cutoff": "2025-01",
-  "summary": "Gemma 4 26B-A4B Instruct (Dynamic Q8_K_XL, Unsloth) ist die hochpräziseste lokale Variante dieser MoE-Familie – nahezu F16-Qualität bei 25,2B Gesamtparametern und ~3,8B aktiv pro Token. Apache 2.0, 256K Kontextfenster. Im Benchmark ohne mmproj geladen → reine Text-Inferenz. Kein MTP-Drafter (langsamer als Q5_K_XL MTP-Variante, aber maximale Genauigkeit).",
+  "summary": "Gemma 4 26B-A4B Instruct als hochpräzise Q8-Quantisierung von Unsloth, die hochwertigste Variante der MoE-Familie mit nahezu Vollpräzision. Von 25,2 Milliarden Gesamtparametern sind pro Token nur 3,8 Milliarden aktiv, das Kontextfenster umfasst 128.000 Tokens. Unter Apache-2.0-Lizenz lokal betreibbar ohne externe Cloud-Verbindung.",
   "strengths": [
-    "Q8_K_XL: nahezu F16-Qualität – höchste Präzision aller Unsloth-Gemma-4-26B-Varianten",
-    "MoE-Architektur: ~3,8B aktive Parameter pro Token – Frontier-Qualität bei Workstation-Kosten",
-    "Konfigurierbare Thinking-Modi – 3/3 genuine Inline-CoT in Probe nachgewiesen (medium confidence)",
-    "256K Kontextfenster für große Codebasen und Dokumente",
-    "Apache 2.0: vollständig kommerziell nutzbar und modifizierbar"
+    [
+      "Q8-Quantisierung mit nahezu Vollpräzision als hochwertigste Variante",
+      "MoE-Architektur mit nur 3,8 Milliarden aktiven Parametern bei 25,2 Milliarden Gesamtparametern",
+      "Konfigurierbare Thinking-Modi mit nachgewiesenen Reasoning-Spuren",
+      "Kontextfenster von 128.000 Tokens für grosse Codebasen und Dokumente",
+      "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit"
+    ]
   ],
   "known_limitations": [
-    "Kein MTP-Drafter: langsamer als Q5_K_XL MTP-Variante bei vergleichbarer Aufgabe",
-    "Multimodalität externalisiert: Bild/Audio/Video erfordern separate mmproj-GGUF. Im Benchmark ohne mmproj geladen → reine Text-Inferenz.",
-    "Hoher VRAM-Bedarf: ~30–35 GB für Q8_K_XL – erfordert Workstation-Hardware (DGX Spark, RTX 5090 etc.)",
-    "Community-Distribution statt offizieller Google-Verpackung"
+    [
+      "Kein Multi-Token-Prediction-Drafter, daher langsamer als die Q5-MTP-Variante",
+      "Multimodalität für Bild, Audio und Video erfordert eine separate Multimodal-Projektor-Datei",
+      "Hoher Speicherbedarf durch die Q8-Quantisierung, erfordert professionelle Workstation-Hardware",
+      "Community-Distribution statt offizieller Google-Verpackung"
+    ]
   ],
-  "judge_context_hint": "Plattform: lokal (DGX Spark oder vergleichbare Workstation) – kein Cloud-Provider, kein externer Datentransfer. MoE-Modell (25,2B total / 3,8B aktiv), Q8_K_XL (nahezu F16-Qualität). Ohne mmproj geladen → reine Text-Inferenz. Konfigurierbare Thinking-Modi aktiv (3/3 Probe-Nachweise). Kein MTP-Drafter – Inferenz langsamer als MTP-Variante.",
+  "judge_context_hint": "Hochpräzise Variante der Gemma-4-26B-Reihe in Q8-Quantisierung ohne Multi-Token-Prediction. Bei der Bewertung nahezu Vollpräzision erwarten, jedoch langsamere Inferenz als die MTP-Variante. Konfigurierbare Thinking-Modi aktiv. Lokales Deployment ohne externen Datentransfer.",
   "architecture_tags": [
     "General",
     "Instruct",

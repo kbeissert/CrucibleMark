@@ -17,19 +17,23 @@
   "params_active_b": null,
   "context_window_k": 400,
   "knowledge_cutoff": "2024-09",
-  "summary": "GPT-5 ist OpenAIs früheres Kernmodell für Coding-, Reasoning- und agentische Aufgaben über die API. Offiziell dokumentiert sind 400K Kontext, 128K maximale Ausgabe, Text-/Bildeingaben sowie konfigurierbarer Reasoning-Aufwand über reasoning.effort. Das Modell ist proprietär und cloud-only, wurde aber in der Produktlinie inzwischen durch GPT-5.5 als empfohlene Standardwahl abgelöst.",
+  "summary": "GPT-5 ist OpenAIs Kernmodell für Coding, Reasoning und agentische Aufgaben mit einem Kontextfenster von 400.000 Tokens und bis zu 128.000 Tokens Ausgabe. Das Modell unterstützt Text- und Bildeingaben sowie konfigurierbaren Reasoning-Aufwand für Kosten-, Latenz- und Qualitätssteuerung. Proprietär und ausschliesslich über die OpenAI-API verfügbar.",
   "strengths": [
-    "Stark für Coding, agentische Workflows und komplexe domänenübergreifende Aufgaben",
-    "400K Kontextfenster mit 128K maximaler Ausgabe",
-    "Konfigurierbarer Reasoning-Aufwand für Kosten-, Latenz- und Qualitätssteuerung",
-    "Unterstützt Function Calling und Structured Outputs über die OpenAI-API"
+    [
+      "Stark für Coding, agentische Workflows und komplexe domänenübergreifende Aufgaben",
+      "Kontextfenster von 400.000 Tokens mit bis zu 128.000 Tokens Ausgabe",
+      "Konfigurierbarer Reasoning-Aufwand für Kosten-, Latenz- und Qualitätssteuerung",
+      "Unterstützung für Function Calling und Structured Outputs über die OpenAI-API"
+    ]
   ],
   "known_limitations": [
-    "Proprietäres API-Modell ohne lokale Gewichte oder Self-Hosting-Option",
-    "Laut OpenAI nicht mehr die aktuell empfohlene Standardwahl, da GPT-5.5 nachgerückt ist",
-    "Architektur- und Parameterdetails sind öffentlich nicht dokumentiert"
+    [
+      "Proprietäres API-Modell ohne lokale Gewichte oder Self-Hosting-Option",
+      "Im OpenAI-Portfolio durch neuere Modelle abgelöst, nicht mehr die empfohlene Standardwahl",
+      "Architektur- und Parameterdetails sind öffentlich nicht dokumentiert"
+    ]
   ],
-  "judge_context_hint": "GPT-5 ist ein proprietäres OpenAI-Generalistenmodell mit optionalem Reasoning-Aufwand, 400K Kontext und multimodalem Text-/Bildinput. Es bleibt leistungsstark, ist aber im OpenAI-Portfolio nicht mehr das neueste empfohlene Flaggschiff.",
+  "judge_context_hint": "Proprietäres OpenAI-Generalistenmodell mit optionalem Reasoning-Aufwand und 400.000-Token-Kontext. Multimodal für Text- und Bildeingaben. Leistungsstark, aber im Portfolio nicht mehr das neueste empfohlene Flaggschiff.",
   "architecture_tags": [
     "General",
     "Thinking-Optional",

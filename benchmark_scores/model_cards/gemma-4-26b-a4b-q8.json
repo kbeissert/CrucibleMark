@@ -17,21 +17,21 @@
   "params_active_b": 4.0,
   "context_window_k": 256,
   "knowledge_cutoff": "2025-01",
-  "summary": "Gemma 4 26B-A4B Instruct (Q8_K_XL) ist eine offizielle Google-DeepMind-Quantisierung ohne Community-Modifikation. MoE-Architektur mit 25,2B Gesamtparametern, ~4B aktiv pro Token, 256K Kontextfenster, Apache 2.0. Im Benchmark ohne mmproj geladen → reine Text-Inferenz. Multimodalität via mmproj nachrüstbar, für diesen Benchmark irrelevant. Q8_K_XL bietet nahezu F16-Qualität.",
+  "summary": "Gemma 4 26B-A4B Instruct in der offiziellen Q8-Quantisierung von Google DeepMind, ohne Community-Modifikationen. Das MoE-Modell vereint 25,2 Milliarden Gesamtparameter mit etwa 4 Milliarden aktiven Parametern pro Token, das Kontextfenster umfasst 128.000 Tokens. Unter Apache-2.0-Lizenz lokal betreibbar ohne externe Cloud-Verbindung, nahezu Vollpräzision durch die Q8-Stufe.",
   "strengths": [
-    "Q8_K_XL: nahezu F16-Qualität – höchste Präzision ohne Community-Modifikation",
-    "MoE-Architektur: ~4B aktive Parameter pro Token – Frontier-Qualität bei Workstation-Kosten",
-    "Konfigurierbare Thinking-Modi – reasoning_tokens in Probe nachgewiesen",
-    "256K Kontextfenster für große Codebasen und Dokumente",
-    "Apache 2.0: vollständig kommerziell nutzbar und modifizierbar",
-    "Offizielle Google-Distribution – keine Community-Modifikationen"
+    "Q8-Quantisierung mit nahezu Vollpräzision ohne Community-Modifikationen",
+    "MoE-Architektur mit etwa 4 Milliarden aktiven Parametern bei 25,2 Milliarden Gesamtparametern",
+    "Konfigurierbare Thinking-Modi mit nachgewiesenen Reasoning-Spuren",
+    "Kontextfenster von 128.000 Tokens",
+    "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit",
+    "Offizielle Google-Distribution ohne Drittmodifikationen"
   ],
   "known_limitations": [
-    "Hoher VRAM-Bedarf: ~30–35 GB für Q8_K_XL – erfordert Workstation-Hardware (DGX Spark etc.)",
-    "Multimodalität externalisiert: Bild/Audio/Video erfordern separate mmproj-GGUF. Im Benchmark ohne mmproj geladen → reine Text-Inferenz.",
-    "Kein MTP-Drafter: langsamer als Unsloth-MTP-Variante bei vergleichbarer Aufgabe"
+    "Hoher Speicherbedarf durch die Q8-Quantisierung, erfordert Workstation-Hardware",
+    "Multimodalität für Bild, Audio und Video erfordert eine separate Multimodal-Projektor-Datei",
+    "Kein Multi-Token-Prediction-Drafter, daher langsamer als entsprechende MTP-Variante"
   ],
-  "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, 128 GB Unified Memory, davon ~120 GB für Modell + Kontext nutzbar; Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). Offizielle Google-DeepMind-Quantisierung (keine Community-Modifikation). Ohne mmproj geladen → reine Text-Inferenz. Konfigurierbare Thinking-Modi aktiv (reasoning_tokens nachgewiesen).",
+  "judge_context_hint": "Offizielle Google-DeepMind-Quantisierung der Gemma-4-26B-Reihe ohne Community-Modifikationen. Bei der Bewertung nahezu Vollpräzision erwarten. Konfigurierbare Thinking-Modi aktiv. Lokales Deployment ohne externen Datentransfer.",
   "architecture_tags": [
     "General",
     "Instruct",

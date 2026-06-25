@@ -13,12 +13,12 @@
   "display_name": "Gemini 2.5 Pro",
   "generated_at": "2026-04-23T22:01:57.694473+00:00",
   "input_price_per_1m": 1.25,
-  "judge_context_hint": "Berücksichtigen Sie bei der Bewertung, dass der Thinking-Modus die Qualität bei komplexen Problemen steigert, bei trivialen Aufgaben jedoch zu unnötiger Ausführlichkeit führen kann.",
+  "judge_context_hint": "Frontier-Modell von Google DeepMind mit Extended Thinking. Bei der Bewertung die Qualitätssteigerung durch Thinking bei komplexen Problemen berücksichtigen, bei trivialen Aufgaben kann Overreasoning auftreten. Multimodalität für Text, Bild, Audio und Video nativ verfügbar.",
   "knowledge_cutoff": "2025-01",
   "known_limitations": [
-    "Keine lokale Ausführung möglich, da der Zugriff ausschließlich über die Google Cloud API erfolgt",
-    "Erhöhte Latenzzeiten bei Nutzung des Thinking-Modus, was bei einfachen Aufgaben zu Overreasoning führen kann",
-    "Natives Audio-Output (Live API) nicht im Benchmark erfasst – output_modalities spiegelt nur getestete Modalitäten wider."
+    "Keine lokale Ausführung, der Zugriff erfolgt ausschliesslich über die Google Cloud API",
+    "Erhöhte Latenzzeiten bei Nutzung des Thinking-Modus, was bei einfachen Aufgaben zu unnötiger Ausführlichkeit führen kann",
+    "Audio-Ausgabe über die Live API im Benchmark nicht erfasst"
   ],
   "license": "Proprietary",
   "license_url": null,
@@ -35,10 +35,11 @@
   "size_class": "Frontier",
   "strengths": [
     "Herausragendes mathematisches und wissenschaftliches Reasoning durch optionales Extended Thinking",
-    "Sehr großes Kontextfenster zur Verarbeitung umfangreicher Dokumente und langer Konversationen",
-    "Exzellente Fähigkeiten im Bereich Coding, insbesondere bei komplexen Projekten und Debugging-Aufgaben"
+    "Kontextfenster von einer Million Tokens für umfangreiche Dokumente und lange Konversationen",
+    "Starke Coding-Fähigkeiten bei komplexen Projekten und Debugging-Aufgaben",
+    "Native Multimodalität für Text, Bilder, Audio und Video"
   ],
-  "summary": "Gemini 2.5 Pro ist Googles führendes Reasoning-Modell mit Sparse-MoE-Architektur und konfigurierbarem Extended Thinking. Spezialisiert auf komplexes Reasoning, Coding und die Analyse sehr langer Kontexte (1M Token). Das Modell unterstützt nativ Text, Bilder, Audio und Video-Input und ist exklusiv über die Google Cloud API zugänglich.",
+  "summary": "Googles Frontier-Reasoning-Modell mit Sparse-MoE-Architektur und konfigurierbarem Extended Thinking. Gemini 2.5 Pro arbeitet mit einem Kontextfenster von einer Million Tokens, verarbeitet nativ Text, Bilder, Audio und Video und ist exklusiv über die Google Cloud API zugänglich. Der Fokus liegt auf komplexem Reasoning und anspruchsvollen Coding-Aufgaben.",
   "supports_tool_use": true,
   "thinking_probe_at": "2026-04-23T13:50:26.117380+00:00",
   "thinking_probe_confidence": "low",

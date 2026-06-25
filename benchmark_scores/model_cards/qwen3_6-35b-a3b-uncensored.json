@@ -17,23 +17,27 @@
   "params_active_b": 3.0,
   "context_window_k": 262,
   "knowledge_cutoff": "2025-06",
-  "summary": "Qwen 3.6 35B-A3B Uncensored HauhauCS Aggressive ist eine Community-Fine-Tune-Variante des Qwen 3.6 35B-A3B. Das Modell basiert auf einer effizienten MoE-Architektur mit 35 Milliarden Gesamtparametern und 3 Milliarden aktiven Parametern. Es unterstützt ein Kontextfenster von 262K Token und ist auf direkte, ungefilterte Antworten ohne Refusals ausgelegt. Die Q8_K_P-Quantisierung bietet dabei hohe Präzision bei lokalem Einsatz.",
+  "summary": "Diese Community-Fine-Tune-Variante von Qwen 3.6 35B-A3B entfernt die Sicherheitsfilter und liefert ungefilterte Antworten ohne Refusals. Von 35 Milliarden Gesamtparametern der MoE-Architektur sind pro Token nur 3 Milliarden aktiv, das Kontextfenster umfasst 262.000 Tokens. Mit Q8-Quantisierung nahezu voller Qualität lokal betreibbar unter Apache-2.0-Lizenz, mit multimodaler Verarbeitung für Text, Bild und Video.",
   "strengths": [
-    "Q8_K_P-Quantisierung: hohe Präzision nahe der Vollpräzision",
-    "Ungefilterte Antworten ohne Safety-Refusals",
-    "Aggressives Fine-Tuning für direkte, knappe Ausgaben",
-    "Effiziente MoE-Architektur mit hohem Durchsatz",
-    "Multimodale Fähigkeiten für Text, Bild und Video",
-    "Kommerzielle Nutzbarkeit auf Basis der Apache-2.0-Lizenz"
+    [
+      "Ungefilterte Antworten ohne Safety-Refusals",
+      "Aggressives Fine-Tuning für direkte und knappe Ausgaben",
+      "Effiziente MoE-Architektur mit hohem Durchsatz",
+      "Multimodale Fähigkeiten für Text, Bild und Video",
+      "Kommerzielle Nutzbarkeit auf Basis der Apache-2.0-Lizenz",
+      "Q8-Quantisierung mit hoher Präzision nahe Vollpräzision"
+    ]
   ],
   "known_limitations": [
-    "Uncensored: keine Inhaltsfilterung, daher erhöhtes Risiko problematischer Ausgaben",
-    "Community-Modell: keine offizielle Garantie für Qualität oder Sicherheit",
-    "Chinesische Jurisdiktion mit potenziellen Compliance-Risiken",
-    "Hohe Anforderungen an Speicherbandbreite durch die MoE-Architektur",
-    "Keine offizielle Wartung durch Alibaba"
+    [
+      "Uncensored-Variante ohne Inhaltsfilterung, daher erhöhtes Risiko problematischer Ausgaben",
+      "Community-Modell ohne offizielle Garantie für Qualität oder Sicherheit",
+      "Chinesische Jurisdiktion mit potenziellen Compliance-Risiken",
+      "Hohe Anforderungen an Speicherbandbreite durch die MoE-Architektur",
+      "Keine offizielle Wartung durch Alibaba"
+    ]
   ],
-  "judge_context_hint": "Qwen 3.6 35B-A3B Uncensored HauhauCS Aggressive Q8_K_P: lokale Ausführung ohne externen Datentransfer. Das Modell ist eine Uncensored-Community-Fine-Tune-Variante mit entfernten Refusals. Die Q8_K_P-Quantisierung minimiert Qualitätsverluste und eignet sich für direkte, ungefilterte Antworten. Bei der Bewertung sollten die fehlenden Safety-Refusals und die lokale Hardware-Effizienz berücksichtigt werden.",
+  "judge_context_hint": "Qwen 3.6 35B-A3B Uncensored als Community-Fine-Tune-Variante mit entfernten Refusals. Bei der Bewertung die fehlenden Safety-Refusals und die lokale Hardware-Effizienz berücksichtigen.",
   "architecture_tags": [
     "General",
     "Instruct",

@@ -17,24 +17,27 @@
   "params_active_b": 27.0,
   "context_window_k": 32,
   "knowledge_cutoff": "2025-06",
-  "summary": "Qwopus-3.6-27B-Coder ist ein spezialisiertes Agentic Coding-Modell, das auf Qwopus3.6-27B-v2 mit Coder-Feinabstimmung trainiert wurde. Die MTP-Q8_0-Quantisierung nutzt Multi-Token Prediction (draft=2) für beschleunigte Inferenz. Das Modell wurde auf SWE-bench Verified mit 67,0 % (335/500) in Thinking-off-Modus bewertet, was 27B-Modelle in Reichweite von Frontiers wie GPT-5.4-Nano (34,8 %) und unter Claude 4.0 Opus (67,6 %) positioniert. Stark auf scikit-learn (84 %), xarray (82 %), Django (72 %), requests (75 %).",
+  "summary": "Qwopus-3.6-27B-Coder ist ein coding-spezialisiertes Agentic-Modell auf Basis von Qwen 3.6 27B mit Multi-Token-Prediction für beschleunigte Inferenz. Das Modell wurde mit Trace-Inversion-Daten und agentic-Reasoning-Traces feinabgestimmt, ist auf lokales Single-GPU-Deployment ausgelegt und arbeitet mit einem Kontextfenster von 32.000 Tokens. Unter Apache-2.0-Lizenz voll kommerziell nutzbar.",
   "strengths": [
-    "Spezialisiertes Training auf Agentic Coding, Tool-Use, Repository-Level-Debugging und Patch-Generation",
-    "lambda/hermes-agent-reasoning-traces (NousResearch/Hermes-Schema) mit realen Multi-Turn-Tool-Ausführungssignaturen",
-    "SWE-bench Verified 67,0 % (thinking-off) — unter 27B-Modellen führend",
-    "Multi-Token Prediction für 1.66x–2x Beschleunigung im Speculative Decoding",
-    "Starke Repository-Level-Leistung: scikit-learn (84 %), xarray (82 %), Django (72 %)",
-    "Effiziente Inferenz auf Single-GPU mit ~119 t/s Generation (RTX 4090/5090, MTP)"
+    [
+      "Spezialisiertes Training auf agentische Coding-Workflows, Tool-Use und Repository-Level-Debugging",
+      "Multi-Token-Prediction für beschleunigte Inferenz im Speculative Decoding",
+      "Effiziente Inferenz auf einer einzelnen leistungsfähigen GPU",
+      "Starke Repository-Level-Leistung mit nativem Thinking-Modus",
+      "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit",
+      "Coding-Feinabstimmung mit echten Multi-Turn-Tool-Ausführungsdaten"
+    ]
   ],
   "known_limitations": [
-    "Spezialisierter Coder-Fokus — Leistung in Nicht-Coding-Aufgaben nicht bewertet",
-    "Tool-Use-Verhalten hängt stark vom Prompt-Format und Tool-Schema-Consistency ab",
-    "Community-Modell ohne offizielle Sicherheitsbewertung",
-    "Langtext-Leistung über 32K kann RoPE/YaRN-Skalierung erfordern",
-    "Denkblock-Ausgabe in <think>/</think>-Tags — Frontend-Anwendungen müssen diese parsen/verstecken",
-    "Thinking-off-Modus für SWE-bench-Benchmark — keine Garantie für Thinking-on-Performance"
+    [
+      "Spezialisierter Coding-Fokus, Leistung in Nicht-Coding-Aufgaben nicht bewertet",
+      "Tool-Use-Verhalten abhängig vom Prompt-Format und Tool-Schema-Konsistenz",
+      "Community-Modell ohne offizielle Sicherheitsbewertung",
+      "Kontextfenster von 32.000 Tokens ist kleiner als bei vergleichbaren Frontier-Modellen",
+      "Thinking-Block-Ausgabe in <think>-Tags erfordert Frontend-Anpassungen"
+    ]
   ],
-  "judge_context_hint": "Bewertung des Qwopus-3.6-27B-Coder MTP Q8_0 sollte den spezialisierten Coding-Fokus, die Coder-SFT-Feinabstimmung, die MTP-Beschleunigung und die Agentic-Coding-Herkunft (lambda/hermes-agent-reasoning-traces) berücksichtigen. Das Modell wurde in dieser Konfiguration mit Thinking-Block (enable_thinking: true, temp=0.7, top_p=0.8) bereitgestellt. Die SWE-bench-Performance von 67,0 % in Thinking-off-Modus zeigt starkes Repository-Verständnis auch ohne explizite Chain-of-Thought. Die Bewertung sollte primär Coding-Qualität, Debugging-Effektivität und Tool-Use-Stabilität fokussieren.",
+  "judge_context_hint": "Coding-spezialisiertes Modell mit Multi-Token-Prediction für effiziente Inferenz. Bei der Bewertung Coding-Qualität, Debugging-Effektivität und Tool-Use-Stabilität gewichten.",
   "architecture_tags": [
     "Thinking-Optional",
     "Coder",

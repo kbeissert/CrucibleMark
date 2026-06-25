@@ -12,13 +12,13 @@
   "display_name": "Claude Haiku 4.5",
   "generated_at": "2026-04-23T21:59:37.123523+00:00",
   "input_price_per_1m": 1.0,
-  "judge_context_hint": "Kompaktes Schnellmodell für Echtzeit- und Assistenzszenarien. Der Fokus sollte auf Geschwindigkeit, Stabilität und präzisem Instruction-Following liegen.",
+  "judge_context_hint": "Schnellmodell von Anthropic für Echtzeit- und Assistenz-Szenarien. Bewertung sollte Geschwindigkeit, Antwortzeit und präzises Instruction-Following gewichten, nicht Tiefe bei komplexen Aufgaben. Verfügbar nur über Anthropic-API, AWS Bedrock und Google Vertex AI.",
   "knowledge_cutoff": "2025-01",
   "known_limitations": [
-    "Weniger tief als Sonnet- und Opus-Modelle",
-    "Nur über die Anthropic-API (und Bedrock / Vertex) verfügbar",
-    "Bei langen, komplexen Dokumenten weniger stark",
-    "Retirement geplant: 15. Oktober 2026"
+    "Geringere Kapazität als die Sonnet- und Opus-Klassen bei komplexen Aufgaben",
+    "Verfügbar nur über die Anthropic-API, AWS Bedrock und Google Vertex AI",
+    "Bei langen und komplexen Dokumenten weniger stark",
+    "Retirement laut Anthropic am 15. Oktober 2026"
   ],
   "license": "Proprietary (Anthropic Commercial Terms)",
   "license_url": "https://www.anthropic.com/legal/commercial-terms",
@@ -34,12 +34,12 @@
   "primary_focus": "instruction-following",
   "size_class": "Desktop",
   "strengths": [
-    "Sehr schnelle Inferenz – ideal für Echtzeit-Interaktionen und High-Volume-Pipelines",
-    "Kosteneffizient: $1/$5 pro Million Tokens",
-    "Gut für einfache Agentenaufgaben und strukturiertes Instruction-Following",
-    "Multimodal: Text- und Bildeingaben bei kompakter Größe"
+    "Schnelle Inferenz mit niedriger Latenz für Echtzeit-Interaktionen und API-Pipelines",
+    "Kostengünstige Input- und Output-Preise für hohe Volumen",
+    "Geeignet für einfache Agentenaufgaben und strukturiertes Instruction-Following",
+    "Verarbeitet Text- und Bildeingaben"
   ],
-  "summary": "Claude Haiku 4.5 (Release: Oktober 2025) ist Anthropics kompaktes Low-Latency-Modell für Echtzeit-Interaktionen, High-Volume-Pipelines und einfache Agentenaufgaben. Pricing: $1/$5 pro Million Tokens. Retirement geplant Oktober 2026.",
+  "summary": "Auf Geschwindigkeit getrimmt: Claude Haiku 4.5 ist Anthropics kompaktes Modell für Echtzeit-Interaktionen und API-Pipelines mit hohem Durchsatz. Es verarbeitet Text- und Bildeingaben bei einem Kontextfenster von 200.000 Tokens, unterstützt Tool-Aufrufe und liefert Antworten zu einem Preis von 1 US-Dollar pro Million Input- und 5 US-Dollar pro Million Output-Tokens. Anthropic hat das Retirement für den 15. Oktober 2026 angekündigt.",
   "supports_tool_use": true,
   "thinking_probe_at": "2026-04-23T13:55:05.513501+00:00",
   "thinking_probe_confidence": "low",

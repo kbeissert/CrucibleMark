@@ -10,17 +10,25 @@
   "weights_provenance_rationale": "Moonshot AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten ermöglichen kann. Das BSI hat im Februar 2025 explizit vor der Nutzung chinesischer KI-Cloud-Dienste gewarnt; diese Risikoeinschätzung gilt konservativ auch hier.",
   "model_family": "Kimi",
   "primary_focus": "reasoning",
-  "summary": "Kimi K2.5 ist ein leistungsstarkes Modell von Moonshot AI aus China mit spezialisiertem Fokus auf agentische Aufgaben, Coding und komplexes Reasoning. Das Modell ist über Cloud-Schnittstellen verfügbar und als Open-Weights-Modell auch lokal nutzbar. Aufgrund der chinesischen Herkunft und der rechtlichen Rahmenbedingungen vor Ort sind bei der Nutzung sensible Aspekte des Datenschutzes zu berücksichtigen.",
+  "summary": "Kimi K2.5 ist Moonshot AIs Flaggschiff mit aktivem Chain-of-Thought-Reasoning, multimodalem Eingang für Text und Bild sowie Fokus auf Reasoning und agentische Aufgaben. Die MoE-Architektur aktiviert pro Token nur 32 Milliarden der insgesamt eine Billion Gesamtparameter, das Kontextfenster umfasst 128.000 Tokens. Als Open-Weights-Variante lokal oder über die Cloud verfügbar, mit chinesischer Jurisdiktion als Cloud-Risikofaktor.",
   "strengths": [
-    "Starke mehrstufige Reasoning-Fähigkeiten bei Mathematik und Logik",
-    "Gute Performance bei agentenbasierten und Tool-Use-Szenarien",
-    "Solide Coding-Kompetenz kombiniert mit analytischem Denken"
+    [
+      "Starke mehrstufige Reasoning-Fähigkeiten bei Mathematik und Logik",
+      "Gute Performance bei agentenbasierten und Tool-Use-Szenarien",
+      "Solide Coding-Kompetenz kombiniert mit analytischem Denken",
+      "Multimodaler Eingang für Text und Bild",
+      "Aktives Chain-of-Thought-Reasoning standardmässig"
+    ]
   ],
   "known_limitations": [
-    "Thinking-Prozess erhöht Latenz und Token-Verbrauch erheblich",
-    "Mögliche Zensur oder Einschränkungen bei politisch sensiblen Themen mit China-Bezug"
+    [
+      "Thinking-Prozess erhöht Latenz und Token-Verbrauch erheblich",
+      "Mögliche Zensur oder Einschränkungen bei politisch sensiblen Themen mit China-Bezug",
+      "Chinesisches nationales Sicherheitsgesetz: bei Cloud-Nutzung kann staatlicher Zugriff auf Daten bestehen",
+      "Hoher Ressourcenbedarf für lokales Deployment"
+    ]
   ],
-  "judge_context_hint": "Das Modell nutzt aktives Chain-of-Thought-Reasoning; sichtbare Thinking-Blöcke sind Teil der Ausgabe und sollten bei der Bewertung von der eigentlichen Antwort getrennt betrachtet werden.",
+  "judge_context_hint": "Modell mit aktivem Chain-of-Thought-Reasoning. Sichtbare Thinking-Blöcke sind Teil der Ausgabe und sollten bei der Bewertung von der eigentlichen Antwort getrennt betrachtet werden.",
   "architecture_tags": [
     "Thinking",
     "Agentic-Orchestrator",

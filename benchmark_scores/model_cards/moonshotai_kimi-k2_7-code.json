@@ -17,24 +17,28 @@
   "params_active_b": 32.0,
   "context_window_k": 256,
   "knowledge_cutoff": "2025-10",
-  "summary": "Kimi K2.7 Code ist das auf Programmierung spezialisierte Agenten-Modell von Moonshot AI aus der K2-Familie. Es wurde am 12. Juni 2026 veröffentlicht und ist für langfristige Software-Engineering-Workflows optimiert. Das Modell nutzt eine MoE-Architektur mit 32B aktiven Parametern aus insgesamt 1T Parametern. Mit einem Kontext von 256K Token und einem permanenten Thinking-Modus eignet es sich ideal für komplexe Code-Aufgaben und Agentic-Frameworks.",
+  "summary": "Kimi K2.7 Code ist das coding-spezialisierte Agenten-Modell von Moonshot AI aus der K2-Familie, optimiert für langfristige Software-Engineering-Workflows. Die MoE-Architektur aktiviert pro Token nur 32 Milliarden der insgesamt eine Billion Gesamtparameter, das Kontextfenster umfasst 256.000 Tokens. Multimodaler Eingang für Text, Bild und Video, Always-on-Thinking-Modus und Tool-Use-Unterstützung. Unter Modified-MIT-Lizenz als Open-Weights-Modell verfügbar.",
   "strengths": [
-    "Codingfokussiertes Agent-Modell mit starken Leistungen auf realen End-to-End-Engineering-Tasks",
-    "Nativ multimodales MoE-Modell mit Text-, Bild- und Video-Input für multimodale Code-Aufgaben",
-    "Always-on Thinking-Modus mit preserve_thinking erhält Reasoning-Content über Multi-Turn-Dialoge hinweg",
-    "Großer 256K-Token-Kontext für langlaufende Coding-Workflows und Tool-Ketten",
-    "Open Weights unter Modified MIT License für lokales Deployment und kommerzielle Nutzung",
-    "Effizienzsteigerung gegenüber K2.6: etwa 30 Prozent weniger Thinking-Tokens bei vergleichbarer Qualität",
-    "Starke Tool-Use-Leistung"
+    [
+      "Coding-fokussiertes Agenten-Modell mit starken Leistungen auf realen End-to-End-Engineering-Aufgaben",
+      "Multimodaler Eingang für Text, Bild und Video",
+      "Always-on Thinking-Modus mit erhaltenen Reasoning-Inhalten über mehrere Dialog-Runden hinweg",
+      "Kontextfenster von 256.000 Tokens für langlaufende Coding-Workflows",
+      "Open Weights unter Modified-MIT-Lizenz für lokales Deployment und kommerzielle Nutzung",
+      "Verbesserte Effizienz mit weniger Thinking-Tokens bei vergleichbarer Qualität",
+      "Starke Tool-Use-Leistung"
+    ]
   ],
   "known_limitations": [
-    "Chinesischer Anbieter mit erhöhtem Sovereign-Risk (NSL) und möglicher politischer Einflussnahme auf Outputs",
-    "Hoher Hardware-Bedarf für lokales Deployment",
-    "Thinking-Modus ist erzwungen und kann nicht deaktiviert werden, was Latenz und Token-Kosten erhöht",
-    "Instant Mode wird nicht unterstützt, was Latenz für Echtzeit-Anwendungen erhöht",
-    "Video-Input ist experimentell und nur über die offizielle Moonshot-API verfügbar"
+    [
+      "Chinesisches nationales Sicherheitsgesetz: bei Cloud-Nutzung kann staatlicher Zugriff auf Daten bestehen",
+      "Hoher Hardware-Bedarf für lokales Deployment",
+      "Thinking-Modus erzwungen und nicht deaktivierbar, was Latenz und Token-Kosten erhöht",
+      "Kein Instant-Mode für Echtzeit-Anwendungen",
+      "Video-Eingabe experimentell und nur über die Moonshot-API verfügbar"
+    ]
   ],
-  "judge_context_hint": "Codingfokussiertes Agentic-Modell aus Moonshot AIs K2-Familie (veröffentlicht 12. Juni 2026). MoE mit 1T Gesamt- und 32B aktiven Parametern, 256K Kontext, always-on Thinking mit preserve_thinking. Modalitäten: Text, Bild und Video Input, Text Output. Lizenz: Modified MIT (kommerziell nutzbar). Bei der Bewertung sollten Coding-Qualität, Tool-Use und langfristige Agent-Workflows höher gewichtet werden als narrative Qualität. Sovereign-Risk: hoch (chinesischer Anbieter, NSL).",
+  "judge_context_hint": "Coding-fokussiertes Agentic-Modell aus Moonshot AIs K2-Familie. MoE-Architektur mit immer aktivem Thinking-Modus und erhaltenem Reasoning über mehrere Dialog-Runden. Bei der Bewertung Coding-Qualität, Tool-Use und langfristige Agent-Workflows höher gewichten als narrative Qualität.",
   "architecture_tags": [
     "Thinking",
     "MoE",
@@ -60,8 +64,6 @@
   "model_version": "2.7-code",
   "input_price_per_1m": 0.74,
   "output_price_per_1m": 3.5,
-  "use_case_primary": "coding",
-  "context_window_k": 256,
   "input_modalities": [
     "text",
     "image",

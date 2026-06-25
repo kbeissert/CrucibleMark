@@ -4,7 +4,7 @@
 # (kein models/{slug}/data.json, kein Eintrag in leaderboard.json).
 #
 # Match-Modus: Exakte model_id (Leaderboard-Spalte "Model ID").
-# Gruppierung nach Modellfamilie + Parametergröße. Alle Quantisierungen und
+# Gruppierung nach Provider + Modellfamilie. Alle Quantisierungen und
 # Server-Varianten eines Modells sind zusammengefasst.
 #
 # Verwendung: Standardmäßig stehen ALLE Varianten in der Blacklist. Um ein
@@ -13,75 +13,85 @@
 #
 blacklist:
 
-  #Gemini
+  # DeepSeek
+  - "deepseek_deepseek-chat-v3_1"
+
+  # Google
+  # === Gemini ===
   - "gemini-3.1-pro-preview"
 
-  # GEMMA
-  # === gemma-3-12b (4 Varianten) ===
-  - "gemma-3-12b-it"           # Gemma 3 12B IT (llama.cpp, Q4_K_M)
-  - "gemma-3-12b-it-q8"        # Gemma 3 12B IT (llama.cpp, Q8_0)
-  - "gemma-3-12b-it-q8-spark"  # Gemma 3 12B IT (llama.cpp, Q8_0) [Spark]
-  # - "gemma-3-12b-it-spark"     # Gemma 3 12B IT (llama.cpp, Q4_K_M) [Spark]
+  # === Gemma ===
+  # --- gemma-3-12b ---
+  - "gemma-3-12b-it"
+  - "gemma-3-12b-it-q8"
+  - "gemma-3-12b-it-q8-spark"       # [Spark]
+  # - "gemma-3-12b-it-spark"         # [Spark]
 
-  # === gemma-4-12b (3 Varianten) ===
-  - "gemma-4-12b-it-ud-q4_k_xl"  # Gemma 4 12B Instruct Q4_K_XL (GGUF, UndiX-Derivative)
-  - "gemma-4-12b-it-ud-q6_k_xl"  # Gemma 4 12B Instruct Q6_K_XL (GGUF, UndiX-Derivative)
-  # - "gemma-4-12b-it-ud-q8_k_xl"  # Gemma 4 12B Instruct Q8_K_XL (GGUF, UndiX-Derivative)
+  # --- gemma-4-12b ---
+  - "gemma-4-12b-it-ud-q4_k_xl"     # UndiX-Derivat
+  - "gemma-4-12b-it-ud-q6_k_xl"     # UndiX-Derivat
+  # - "gemma-4-12b-it-ud-q8_k_xl"    # UndiX-Derivat
 
-  # === gemma-4-26b (2 Varianten) ===
-  # - "gemma-4-26B-A4B-it-UD-Q5_K_XL-mtp"  # Gemma 4 26B-A4B Instruct (UD-Q5_K_XL, MTP) [Spark]
-  - "gemma-4-26B-A4B-it-qat-ud-q4"  # Gemma 4 26B-A4B Instruct (QAT, UD-Q4) [Spark]
-  - "gemma-4-26b-a4b-q8"            # Gemma 4 26B-A4B Instruct Q8_K_XL (GGUF)
-  - "gemma-4-26B-A4B-it-UD-Q8_K_XL"  # Gemma 4 26B-A4B Instruct (UD-Q8_K_XL) [Spark]
+  # --- gemma-4-26b ---
+  # - "gemma-4-26B-A4B-it-UD-Q5_K_XL-mtp"  # UD-Q5_K_XL, MTP [Spark]
+  - "gemma-4-26B-A4B-it-qat-ud-q4"   # QAT, UD-Q4 [Spark]
+  - "gemma-4-26b-a4b-q8"
+  - "gemma-4-26B-A4B-it-UD-Q8_K_XL"  # UD-Q8_K_XL [Spark]
 
-  # === gemma-4-31b (2 Varianten) ===
-  - "gemma-4-31B-it-qat-ud-q4"      # Gemma 4 31B Instruct (QAT, UD-Q4) [Spark]
-  # - "gemma-4-31B-it-UD-Q8_K_XL-mtp" # Gemma 4 31B Instruct (UD-Q8_K_XL, MTP)
-  # - "google/gemma-4-31b-it"         # Gemma 4 31B
-  - "gemma-4-31b-it-creative-wordsmith-q8"  # Gemma 4 31B Creative Wordsmith Uncensored Q8_0 (GGUF)
+  # --- gemma-4-31b ---
+  - "gemma-4-31B-it-qat-ud-q4"       # QAT, UD-Q4 [Spark]
+  # - "gemma-4-31B-it-UD-Q8_K_XL-mtp" # UD-Q8_K_XL, MTP
+  # - "google/gemma-4-31b-it"         # API-Modell
+  - "gemma-4-31b-it-creative-wordsmith-q8"  # uncensored
 
-  # QWEN
-  # === qwen3_5-35b (2 Varianten) ===
-  # - "qwen3_5-35b-a3b-q4"            # Qwen 3.5 35B-A3B Q4_K_XL (GGUF)
-  - "qwen3_5-35b-a3b-q8"            # Qwen 3.5 35B-A3B Q8_K_XL (GGUF)
-
-
-  # === qwen3.5-397b (2 Varianten) ===
-  # - "qwen/qwen3.5-397b-a17b"    # Qwen 3.5 397B-A17B (Open Router, Q4_K_XL)
-  - "qwen3.5:397b-cloud"          # Qwen 3.5 397B (Ollama Cloud, Q4_K_XL)
-
-    # === qwen3_5-4b (3 Varianten) ===
-  - "qwen3_5-4b-q4"        # Qwen 3.5 4B (llama.cpp, UD-Q4_K_XL)
-  # - "qwen3_5-4b-q6"        # Qwen 3.5 4B (llama.cpp, UD-Q6_K_XL)
-  - "qwen3_5-4b-q8"        # Qwen 3.5 4B (llama.cpp, UD-Q8_K_XL)
-
-    # === qwen3_6-35b (2 Varianten) ===
-  - "qwen3_6-35b-a3b-mtp-ud-q4"  # Qwen 3.6 35B-A3B MTP UD-Q4
-  - "qwen3_6-35b-a3b-q8"
-  # - "qwen3_6-35b-a3b-mtp-ud-q8"  # Qwen 3.6 35B-A3B MTP UD-Q8
-
-  # === qwen3-coder-next (2 Variante) ===
-  # - qwen3-coder-next-q4        # Qwen3-Coder-Next (llama.cpp, Q4_K_XL)
-  - "qwen3-coder-next-q8"      # Qwen3-Coder-Next (llama.cpp, Q8_K_XL)
-
-  # GLM
+  # GLM (Zhipu AI)
   - "z-ai/glm-5.2"
-
-  # Moonshot AI
-  - "moonshotai/kimi-k2.7-code"
 
   # Mistral AI
   - "codestral-2405"
   - "mistral-small-2503"
+  - "mistral-medium-2312"             # Legacy, ersetzt durch Medium 3.5
 
-  # Deepseek
-  - "deepseek_deepseek-chat-v3_1"
+  # Moonshot AI
+  - "moonshotai/kimi-k2.7-code"
 
-  # Deprecated (API-seitig nicht mehr verfügbar oder mit Migrationsfrist)
-  - "xiaomi/mimo-v2-flash"         # Xiaomi MiMo V2 Flash — deprecated auf OpenRouter (HTTP 404, Redirect auf V2.5)
-  - "grok-4-1-fast-reasoning"      # xAI Grok 4.1 Fast Reasoning — XAI API: Model not found (entfernt 2026-06)
-  - "grok-4-fast-non-reasoning"    # xAI Grok 4 Fast — XAI API: Model not found (entfernt 2026-06)
-  - "grok-3"                       # xAI Grok 3 — XAI API: Model not found (entfernt 2026-06)
-  - "grok-3-mini"                  # xAI Grok 3 Mini — XAI API: Model not found (entfernt 2026-06)
-  - "mistral-medium-2312"          # Mistral Medium 1.0 — Legacy/Deprecated, ersetzt durch Mistral Medium 3.5
-  - "gpt-5_5-pro-2026-04-23"       # GPT-5.5 Pro — $30/$180 per 1M tokens, zu teuer für Benchmark-Budget
+  # Ollama / Hermes
+  - "NousResearch_Hermes-4-14B-GGUF:Q4_K_M"
+
+  # Qwen (Alibaba)
+  # --- qwen3_5-35b ---
+  - "qwen3_5-35b-a3b-q8"
+  - "qwen3_5-35b-a3b-q4"              # [Spark]
+  - "qwen3_5-35b-a3b-q8"              # [Spark]
+
+  # --- qwen3.5-397b ---
+  # - "qwen/qwen3.5-397b-a17b"         # OpenRouter
+  - "qwen3.5:397b-cloud"              # Ollama Cloud
+
+  # --- qwen3_5-4b ---
+  - "qwen3_5-4b-q4"
+  # - "qwen3_5-4b-q6"
+  - "qwen3_5-4b-q8"
+
+  # --- qwen3_6-35b ---
+  - "qwen3_6-35b-a3b-mtp-ud-q4"       # MTP, UD-Q4 [Spark]
+  - "qwen3_6-35b-a3b-q8"              # [Spark]
+  - "qwen3_6-35b-a3b-uncensored"      # [Spark]
+  # - "qwen3_6-35b-a3b-mtp-ud-q8"      # MTP, UD-Q8
+
+  # --- qwen3-coder-next ---
+  # - "qwen3-coder-next-q4"
+  - "qwen3-coder-next-q8"
+
+  # --- qwen3-coder-30b ---
+  - "qwen3-coder-30b-a3b-q8"          # [Spark]
+
+  # xAI
+  - "grok-4-1-fast-reasoning"         # XAI API: entfernt 2026-06
+  - "grok-4-fast-non-reasoning"       # XAI API: entfernt 2026-06
+  - "grok-3"                          # XAI API: entfernt 2026-06
+  - "grok-3-mini"                     # XAI API: entfernt 2026-06
+
+  # Deprecated
+  - "xiaomi/mimo-v2-flash"            # OpenRouter: deprecated, HTTP 404
+  - "gpt-5_5-pro-2026-04-23"          # $30/$180 per 1M tokens, zu teuer

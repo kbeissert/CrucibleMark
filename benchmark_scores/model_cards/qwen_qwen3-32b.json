@@ -17,19 +17,25 @@
   "params_active_b": 32.0,
   "context_window_k": 128,
   "knowledge_cutoff": "2024-09",
-  "summary": "Qwen 3 32B ist ein leistungsstarkes Open-Weights-Modell von Alibaba, das auf allgemeine Aufgaben, Reasoning und Coding spezialisiert ist. Das Modell bietet eine hohe Effizienz bei der Verarbeitung komplexer Anfragen und ist über verschiedene Cloud-Schnittstellen zugänglich. Aufgrund der Herkunft aus China sollten bei der Nutzung regulatorische Rahmenbedingungen und Datensicherheitsaspekte berücksichtigt werden.",
+  "summary": "Qwen 3 32B ist Alibabas Open-Weights-Modell für allgemeine Aufgaben, Reasoning und Coding. Mit 32 Milliarden Parametern und optionalem Thinking-Modus arbeitet das Modell mit einem Kontextfenster von 128.000 Tokens und bietet eine ausgewogene Balance zwischen Leistung und Effizienz. Unter Apache-2.0-Lizenz lokal oder über Cloud-Provider verfügbar.",
   "strengths": [
-    "Herausragende Performance in multilingualen Szenarien, besonders Chinesisch und Englisch",
-    "Konfigurierbares Thinking (ON/OFF) für fortgeschrittene logische Schlussfolgerungen",
-    "Optimale Kombination aus Parameteranzahl und Recheneffizienz",
-    "Apache 2.0 – vollständig kommerziell nutzbar, lokales Deployment möglich"
+    [
+      "Herausragende Performance in multilingualen Szenarien, besonders Chinesisch und Englisch",
+      "Optionaler Thinking-Modus für fortgeschrittene logische Schlussfolgerungen",
+      "Optimale Kombination aus Parameteranzahl und Recheneffizienz",
+      "Native Tool-Use-Unterstützung",
+      "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit"
+    ]
   ],
   "known_limitations": [
-    "Erhöhte Latenzzeiten bei Nutzung des Reasoning-Modus",
-    "Mögliche Einschränkungen bei der Beantwortung politisch sensibler Themen mit China-Bezug",
-    "Cloud-API-Nutzung: NSL-Jurisdiktion beachten"
+    [
+      "Erhöhte Latenzzeiten bei Nutzung des Reasoning-Modus",
+      "Mögliche Einschränkungen bei der Beantwortung politisch sensibler Themen mit China-Bezug",
+      "Cloud-API-Nutzung unterliegt NSL-Jurisdiktion",
+      "Bei rein lokaler Nutzung entfällt das Cloud-Risiko"
+    ]
   ],
-  "judge_context_hint": "Qwen 3 32B: Dense-Modell, 32B Parameter. Open Weights (Apache 2.0). 128K-Token-Kontext. Thinking-Optional (ON/OFF via /think-/no-think-Prefix oder enable_thinking-Parameter). Native Tool-Use. Bei China-bezogenen politischen Themen können eingeschränkte Antworten auftreten.",
+  "judge_context_hint": "Mittelgrosses Qwen-Modell mit optionalem Thinking-Modus und nativer Tool-Use-Unterstützung. Bei der Bewertung Coding und multilinguale Fähigkeiten gewichten. Bei China-bezogenen Themen eingeschränkte Antworten möglich.",
   "architecture_tags": [
     "General",
     "Instruct",
@@ -58,7 +64,9 @@
   "thinking_probe_confidence": "high",
   "thinking_probe_at": "2026-04-25T09:31:50.465081+00:00",
   "cot_marker_family": "think-xml",
-  "cot_tags_detected": ["<think>"],
+  "cot_tags_detected": [
+    "<think>"
+  ],
   "top_p": null,
   "top_k": null,
   "repetition_penalty": null,

@@ -12,13 +12,14 @@
   "display_name": "Gemma 3 12B IT (Q4_K_M)",
   "generated_at": "2026-05-30T15:30:22.206663+00:00",
   "input_price_per_1m": 0.0,
-  "judge_context_hint": "Plattform: Apple M4 Mac (~18 GB Unified Memory, Metal-GPU, lokal — kein Cloud-Provider, kein externer Datentransfer). Gemma 3 12B IT ist ein Instruct-optimiertes Modell mittlerer Größe, hier als Q4_K_M via llama.cpp betrieben – Antworten sind tendenziell präzise und kompakt, können aber bei sehr komplexen Reasoning-Ketten an Tiefe verlieren. Die Q4_K_M-Quantisierung kann minimale Qualitätsunterschiede gegenüber der Vollpräzision zeigen.",
+  "judge_context_hint": "Lokales Gemma-3-12B-Instruct-Modell in Q4-Quantisierung. Bei der Bewertung präzise und kompakte Antworten erwarten, die bei sehr komplexen Reasoning-Ketten an Tiefe verlieren können. Lokales Deployment ohne externen Datentransfer.",
   "knowledge_cutoff": "2024-12",
   "known_limitations": [
-    "Kontextfenster und Reasoning-Tiefe hinter größeren Frontier-Modellen zurück",
+    "Kontextfenster und Reasoning-Tiefe hinter grösseren Frontier-Modellen",
     "Neigt bei komplexen mehrstufigen Aufgaben zu Vereinfachungen oder Auslassungen",
-    "Q4_K_M bringt sichtbar mehr Qualitätsverlust als Q8-Varianten",
-    "Kein echter Thinking-Modus – normale Instruct-Ausgaben ohne separaten Reasoning-Kanal"
+    "Q4-Quantisierung bringt mehr Qualitätsverlust als Q8-Varianten",
+    "Kein echter Thinking-Modus, normales Instruction-Following ohne separaten Reasoning-Kanal",
+    "Google Gemma Terms erlauben kommerzielle Nutzung, aber kein Training konkurrierender LLMs"
   ],
   "license": "Google Gemma Terms of Use",
   "license_url": "https://ai.google.dev/gemma/terms",
@@ -34,12 +35,13 @@
   "primary_focus": "general",
   "size_class": "Desktop",
   "strengths": [
-    "Starkes Instruction-Following durch gezieltes Fine-Tuning (Gemma-IT-Variante)",
-    "Effizient lokal betreibbar – läuft auf M4 Mac (~18 GB UMA) ohne Cloud-Abhängigkeit",
-    "Solide Mehrsprachigkeit und gutes Textverstehen über diverse Domänen hinweg",
-    "Vision-Unterstützung: Text + Bild als Input"
+    "Starkes Instruction-Following durch gezieltes Fine-Tuning",
+    "Effizient lokal betreibbar ohne Cloud-Abhängigkeit",
+    "Solide Mehrsprachigkeit und gutes Textverstehen über diverse Domänen",
+    "Vision-Unterstützung für Text- und Bildeingaben",
+    "Q4-Quantisierung reduziert den Speicherbedarf deutlich"
   ],
-  "summary": "Gemma 3 12B IT ist ein von Google DeepMind entwickeltes Modell mit 12 Milliarden Parametern. Diese Version nutzt die Q4_K_M-Quantisierung für den lokalen Einsatz auf Apple-M4-Hardware via llama.cpp. Sie bietet einen guten Kompromiss zwischen Speicherbedarf und Leistung für Instruction-Following und mehrsprachige Aufgaben – ohne Cloud-Provider, ohne externen Datentransfer.",
+  "summary": "Gemma 3 12B Instruct als Q4-Quantisierung für den lokalen Betrieb. Das Modell bietet einen guten Kompromiss zwischen Speicherbedarf und Leistung für Instruction-Following und mehrsprachige Aufgaben, verarbeitet Text- und Bildeingaben bei einem Kontextfenster von 128.000 Tokens und arbeitet ohne externe Cloud-Verbindung. Lizenziert unter den Google Gemma Terms of Use, die kommerzielle Nutzung erlauben.",
   "supports_tool_use": true,
   "thinking_probe_at": "2026-05-30T15:30:22.206384+00:00",
   "thinking_probe_confidence": "low",

@@ -14,11 +14,14 @@
   "display_name": "MiniMax M3",
   "generated_at": "2026-06-01T00:00:00.000000+00:00",
   "input_price_per_1m": 0.3,
-  "judge_context_hint": "Bewerten Sie primär die Präzision bei komplexen Coding-Aufgaben, die Robustheit in extrem langen Kontexten (1M Token) und die Fähigkeit zur autonomen Tool-Nutzung/Browsing, da das Modell hier überdurchschnittlich performt.",
+  "judge_context_hint": "Frontier-Modell mit agentischem Schwerpunkt. Bei der Bewertung Präzision bei komplexen Coding-Aufgaben, Robustheit in langen Kontexten und Fähigkeit zur autonomen Tool-Nutzung gewichten.",
   "knowledge_cutoff": "2026-05",
   "known_limitations": [
-    "Inhaltliche Restriktionen: Mögliche Zensur oder eingeschränkte Antworten bei politisch sensiblen Themen (chinesische Herkunft)",
-    "Verfügbarkeit: Gewichte (Weights) sind erst kurz nach dem API-Launch verfügbar"
+    [
+      "Chinesisches nationales Sicherheitsgesetz: bei Cloud-Nutzung kann staatlicher Zugriff auf Daten bestehen",
+      "Bei politisch sensiblen Themen mit China-Bezug mögliche Zensur oder ausweichende Antworten",
+      "Gewichte waren erst kurz nach dem API-Launch verfügbar"
+    ]
   ],
   "license": "MiniMax Community License",
   "license_url": "https://huggingface.co/MiniMaxAI/MiniMax-M3/blob/main/LICENSE",
@@ -34,11 +37,15 @@
   "primary_focus": "agentic",
   "size_class": "Frontier",
   "strengths": [
-    "Herausragendes Coding & Agentic Reasoning: Führende Benchmarks (SWE-Bench Pro: 59%, BrowseComp: 83.5)",
-    "Effiziente Multimodalität: Native Verarbeitung von Text, Bild und Video",
-    "Extreme Skalierbarkeit: 1M Token Kontext mit massiver Geschwindigkeitssteigerung (MSA-Architektur)"
+    [
+      "Stark bei Coding und agentischen Workflows",
+      "Native multimodale Verarbeitung von Text, Bild und Video",
+      "Kontextfenster von einer Million Tokens mit hoher Prefill- und Decoding-Geschwindigkeit",
+      "Open-Weights-Modell mit agentischer Grundausrichtung",
+      "Tool-Use und autonome Workflow-Unterstützung"
+    ]
   ],
-  "summary": "MiniMax M3 ist ein multimodales MoE-Modell mit einem Kontextfenster von einer Million Token. Es verarbeitet Text, Bild und Video als Input und liefert Text als Output. Dank der MSA-Architektur bietet das Modell ein extrem schnelles Prefill sowie Decoding. Die Schwerpunkte liegen auf agentischen Workflows, Coding und Tool-Use. Das Modell stammt aus China und wurde als Open-Weights-Modell veröffentlicht, wobei die Gewichte kurz nach dem API-Launch verfügbar wurden.",
+  "summary": "MiniMax M3 ist ein multimodales MoE-Modell mit einem Kontextfenster von einer Million Tokens und Fokus auf agentische Workflows, Coding und Tool-Use. Von 428 Milliarden Gesamtparametern sind pro Token nur 23 Milliarden aktiv, das Modell verarbeitet Text, Bild und Video als Input. Die chinesische Herkunft erfordert bei Cloud-Nutzung eine separate Bewertung des Datenschutz-Risikos.",
   "supports_tool_use": true,
   "thinking_probe_detected": true,
   "thinking_probe_evidence": "MiniMax M3 is a reasoning-capable chat model with toggleable thinking mode rather than explicit visible CoT tags.",

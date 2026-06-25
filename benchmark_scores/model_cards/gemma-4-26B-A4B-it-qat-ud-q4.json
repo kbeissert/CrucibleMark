@@ -17,21 +17,21 @@
   "params_active_b": 4.0,
   "context_window_k": 256,
   "knowledge_cutoff": "2025-01",
-  "summary": "Gemma 4 26B-A4B Instruct (QAT UD-Q4) ist eine quantisierungsbewusst trainierte MoE-Variante von Googles Gemma 4, betrieben via llama.cpp auf DGX Spark. QAT (Quantization-Aware Training) liefert höhere Q4-Präzision als Standard-Post-Training-Quantisierung. Die MoE-Architektur aktiviert nur ~4B von 25,2B Parametern pro Token. Im Benchmark ohne mmproj geladen → reine Text-Inferenz. Multimodalität via mmproj nachrüstbar, für diesen Benchmark irrelevant.",
+  "summary": "Gemma 4 26B-A4B Instruct als quantisierungsbewusst trainierte Q4-Variante von Unsloth, die präzisere Q4-Ergebnisse liefert als Standard-Post-Training-Quantisierung. Von 25,2 Milliarden Gesamtparametern sind pro Token etwa 4 Milliarden aktiv, das Kontextfenster umfasst 128.000 Tokens. Unter Apache-2.0-Lizenz lokal betreibbar ohne externe Cloud-Verbindung.",
   "strengths": [
-    "MoE-Architektur: ~4B aktive Parameter pro Token – Frontier-Qualität bei Desktop-Inferenzkosten",
-    "QAT-Optimierung: präzisere Q4-Variante gegenüber Standard-Post-Training-Quantisierung",
-    "Konfigurierbare Thinking-Modi – reasoning_tokens in math-Probe nachgewiesen",
-    "Tool Use: P1=88.33%, P2=63.33% – Empfehlung PRODUCTION",
-    "Apache 2.0: vollständig kommerziell nutzbar und modifizierbar"
+    "MoE-Architektur mit etwa 4 Milliarden aktiven Parametern bei 25,2 Milliarden Gesamtparametern",
+    "Quantization-Aware Training für präzisere Q4-Variante",
+    "Konfigurierbare Thinking-Modi mit nachgewiesenen Reasoning-Spuren",
+    "Tool-Use-Fähigkeit mit Produktions-Empfehlung im internen Test",
+    "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit"
   ],
   "known_limitations": [
-    "Q4-Variante zeigt bei hochkomplexen Aufgaben leichte Einbussen gegenüber Q8/Q6",
-    "Multimodalität externalisiert: Bild/Audio/Video erfordern separate mmproj-GGUF. Im Benchmark ohne mmproj geladen → reine Text-Inferenz.",
-    "Thinking-Probe teilweise Cold-Start-bedingt: code/decision-Probe lieferten reasoning_tokens=512 ohne sichtbaren Output – Wiederholung bei warmem Server empfohlen",
+    "Q4-Variante zeigt bei hochkomplexen Aufgaben leichte Einbussen gegenüber Q6 oder Q8",
+    "Multimodalität für Bild, Audio und Video erfordert eine separate Multimodal-Projektor-Datei",
+    "Thinking-Nachweis in Code- und Decision-Proben war cold-startbedingt, Wiederholung empfohlen",
     "Community-Distribution statt offizieller Google-Verpackung"
   ],
-  "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, 128 GB Unified Memory; Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). MoE-Modell (25,2B total / 4B aktiv) mit QAT-Optimierung. Ohne mmproj geladen → reine Text-Inferenz. Thinking-Modi aktiv (reasoning_tokens intern, nicht zwingend sichtbar im Output).",
+  "judge_context_hint": "MoE-Variante auf Gemma-4-Basis mit Quantization-Aware-Training. Bei der Bewertung Frontier-Qualität bei moderater Speicherlast erwarten. Konfigurierbare Thinking-Modi aktiv, Tool-Use-Fähigkeit im Test bestätigt. Lokales Deployment ohne externen Datentransfer.",
   "architecture_tags": [
     "General",
     "Thinking-Optional",

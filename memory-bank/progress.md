@@ -1,6 +1,17 @@
 # Progress
 
 Letzte Releases + aktueller Stand.
+### 2026-06-25 (Session 37) — Gemini 2.5 Pro Card + Gemini 3.1 Pro Preview Card + Claude Sonnet 4.5 Card Bereinigung
+
+- `gemini-2_5-pro.json`: `parameter_architecture`: MoE → dense (Google hat nie MoE bestätigt, kein Whitepaper für 2.5-Serie)
+- Summary: Marketing-Formulierungen ("führendes"), fälschliche MoE-Behauptung, Pricing entfernt
+- Strengths: 7→3 Einträge — Pricing-Einträge entfernt, externe Benchmark-Zahlen entfernt (SWE-bench 78% falsch/real 63.8%, MMLU/GPQA unpubliziert), 64K Output-Tokens nach bekannter Einschränkung verschoben
+- Known Limitations: Pricing-Eintrag entfernt, 64K Output-Cap hinzugefügt
+- judge_context_hint: "MoE" → "proprietär", Pricing entfernt
+- architecture_tags: "MoE" entfernt
+- `gemini-3_1-pro-preview.json`: Summary "Frontier-", Parens, Pricing, Benchmark-Parens entfernt; Strengths 8→4 (Benchmarks/Pricing entfernt); Limitations Pricing entfernt; judge_context_hint konditioniert
+- `claude-sonnet-4-5-20250929.json`: "High-End" → "modernes"; Strengths Parens "(30h-...)" entfernt; "Retirement" → "Abschaltung" (CLAUDE.md Regel); profile_verified_by "llm:perplexity" → "Perplexity"; Strength-Duplikat "lange Aufgabenketten" entfernt
+- CrucibleMark-Prinzip: Keine externen Benchmark-Referenzen in Strengths
 ### 2026-06-24 (Session 35) — Benchmark-Maintenance + ToolUse Aggregator Fix
 
 **Auslöser:** Benchmark-Läufe mit Standby-Unterbrechung + fehlende P1/P2-Spalten bei lokalen ToolUse-Modellen.

@@ -388,6 +388,18 @@ to know what reference files exist.
 
 ## Fokus für nächste Session
 
+- Weiter mit Modell-Card-Reviews: nächste in Bearbeitung (Stand 2026-06-25, Session 37)
+
+**Session 37 abgeschlossen (2026-06-25) — Gemini 2.5 Pro Card Bereinigung:**
+
+- `parameter_architecture`: MoE → dense (Google never confirmed MoE, no whitepaper published for 2.5 series; blog says "enhanced base model + improved post-training")
+- Summary: "führendes" (Marketing), "Sparse-MoE-Architektur", Pricing entfernt
+- Strengths: 7→3 Einträge — Pricing-Einträge entfernt, externe Benchmark-Zahlen entfernt (SWE-bench 78% falsch/63.8%, MMLU 90% unpubliziert, GPQA 84.4% unpubliziert), 64K Output-Tokens → known_limitations verschoben
+- Known Limitations: Pricing-Eintrag entfernt, 64K Output Cap als neuer Eintrag hinzugefügt
+- judge_context_hint: "MoE" → "proprietär", Pricing entfernt
+- architecture_tags: "MoE" entfernt
+- CrucibleMark-Prinzip: externe Benchmark-Referenzen in Strengths entfernt
+
 Falls keine neue User-Direktive: **stabile Codebasis pflegen, keine proaktiven Änderungen.**
 
 Mögliche Anlässe für User-Aktivität (alle aus dem Backlog):
@@ -423,6 +435,18 @@ Mögliche Anlässe für User-Aktivität (alle aus dem Backlog):
 - Reasoning-Aware-Benchmark (BACKLOG) — Re-Aktivierungs-Bedingung dokumentiert
 
 ## Letzte Änderungen
+
+- **2026-06-25 (Session 36) — Model Card Summary-Überarbeitung + Schreibrichtlinie:**
+  - **Summary-Regeln:** (1) Keine Pricing-Angaben — Pricing wird separat auf der Seite dargestellt. (2) Kein "Mid-Tier" oder "Mittier" — Marketing-Sprache, wertend negativ. Stattdessen "Allzweck-Modell" oder fokussierte Beschreibung. (3) Keine "Rückzug" — "Abschaltung geplant für September 2026" statt "Rückzug" (nicht menschlich). (4) Keine Gedankenstriche oder Klammern — fließender Text. (5) Technische Begriffe statt menschlicher Vergleiche — "erhöhte Bildauflösung" statt "Sehvermögen". (6) Zeichenziel: 240–480. (7) `size_class` prüfen: API-only-Modelle mit unbekannter Parameterzahl bekommen `Frontier`, nicht manuell "Desktop"/"Server" (Taxonomie: Desktop=10–22B lokal, Server=36–75B lokal).
+  - **size_class-Korrektur:** `claude-sonnet-4-5-20250929.json`: `Server` → `Frontier` (fehlerhafte manuelle Setzung). `claude-haiku-4-5-20251001.json`: `Desktop` → `Frontier` (fehlerhafte manuelle Setzung — cloud-only, kein lokaler Deploy).
+  - **License-Konsistenz:** `claude-sonnet-4-5-20250929.json`: `Proprietary` → `Proprietary (Anthropic Commercial Terms)` (vereinheitlicht für alle Anthropic-Modelle).
+  - **Updated Cards:** Haiku 4.5 (Summary), Opus 4.6 (Summary), Opus 4.7 (Summary), Sonnet 4.5 (Summary + size_class + license), Sonnet 4.6 (Summary), Codestral (Summary + license + license_url + weights_license_tier + context_window_k).
+  - **Auditor-Analyse Codestral (wichtige Erkenntnisse — 2026-06-25):**
+    - `weights_license_tier: "restricted-weights"` + `weights_provenance_risk: "low"` = korrekte Kombination für EU-proprietäre Modelle. `proprietary` wäre für US-Closed-Source-Modelle (wie GPT-5.5).
+    - "Premier" = Mistral-internes API-Tier, kein CrucibleMark-Feld. Keine 1:1-Entsprechung zu `size_class`.
+    - `context_window_k` muss von offizieller Model-Card-Quelle (docs.mistral.ai) stammen — nicht von Sekundärquellen wie ai-tldr oder OpenRouter. Mistral Docs zeigt 128K (nicht 256K wie ai-tldr fälschlicherweise behauptete).
+    - `license: "Mistral Codestral License"` mit spezifischer URL. `commercial_use_allowed: true` bleibt korrekt, aber MCSL hat < 1 Mrd. USD Umsatzgrenze (in known_limitations dokumentieren).
+    - Card-Checker-Ironie: Auditor merkte Fehler, die seine eigenen IDE hatten — Source-Verifizierung immer vornehmen.
 
 - **2026-06-23 (Session 34):** Cohere Native ToolUse Connector (v4.10.8). `utils/providers/cohere.py`: nativer `tools`-Parameter statt Prompt-basierte JSON-Schemas. `_extract_tool_schema()`, `_schema_to_cohere_tools()`, `_format_tool_calls_as_text()`. `command-a-plus-05-2026`: `supports_tool_use=false` (persistente serverseitige 500s). 500-Retry (2× mit Backoff). 3 Cohere-Modelle getestet: command-a-03-2025 (4/6 live), command-a-plus-05-2026 (0/6 mock), command-a-reasoning-08-2025 (6/6 live, P1=90, P2=51.7).
 - **2026-06-22 (Session 33):** clean-results Variant-Handling (v4.10.7). 5 Fixes in `clean_results.py`: Variant-aware Card/CSV/Dir/Cost-Log-Cleanup. Neue SSoT `_collect_model_id_variants()`. `--dry-run` in `clean.py`. `_rebuild_index()` Crash in `generate_review.py` gefixt. Dead-Model `grok-4.1-fast-reasoning` vollständig entfernt (49 CSV, 256 cost_log, 6 Leaderboard, 1 Card). 10/10 Tests grün.

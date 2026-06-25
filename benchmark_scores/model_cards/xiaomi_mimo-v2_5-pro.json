@@ -17,23 +17,26 @@
   "params_active_b": 42.0,
   "context_window_k": 1024,
   "knowledge_cutoff": "2025-05",
-  "summary": "Xiaomi MiMo V2.5 Pro ist Xiaomis Flaggschiff-Reasoning- und Agent-Modell (Release: 22. April 2026) mit 1,02 Billionen Gesamt- und 42 Milliarden aktiven Parametern. Hybride Attention (SWA+GA im 6:1-Verhältnis) reduziert den KV-Cache-Speicher um Faktor 7; drei native MTP-Module verdreifachen den Inferenz-Throughput. Das Modell verarbeitet Text, Bild, Video und Audio nativ, unterstützt ein stabiles 1M-Token-Kontextfenster und ist für langlaufende Agentic-Workflows mit Tausenden von Tool-Calls ausgelegt.",
+  "summary": "Xiaomi MiMo V2.5 Pro ist Xiaomis Flaggschiff mit 1,02 Billionen Gesamt- und 42 Milliarden aktiven Parametern für Frontier-Reasoning und agentische Workflows. Die hybride Attention-Architektur reduziert den KV-Cache-Speicher deutlich, das Kontextfenster umfasst eine Million Tokens. Nativ omnimodal für Text, Bild, Video und Audio, unter MIT-Lizenz voll kommerziell nutzbar.",
   "strengths": [
-    "Frontier-Reasoning und Agentic-Fähigkeit: 42B aktive Parameter aus 1,02T Gesamtparametern",
-    "1M-Token-Kontextfenster für langlaufende Agentic-Workflows mit Tausenden von Tool-Calls",
-    "Hybride Attention (SWA+GA, 6:1): KV-Cache-Speicher um Faktor 7 reduziert",
-    "3 native MTP-Module verdreifachen den Inferenz-Throughput via Speculative Decoding",
-    "Native Omnimodalität: Text, Bild, Video und Audio",
-    "MIT-Lizenz: vollständig kommerziell nutzbar, lokales Deployment möglich",
-    "SWE-bench Pro 49,5 · Terminal-Bench 51,5 · MMLU-Pro 85,2 · GPQA 86,0"
+    [
+      "Frontier-Reasoning und starke Agentic-Fähigkeiten mit 42 Milliarden aktiven Parametern",
+      "Kontextfenster von einer Million Tokens für langlaufende Workflows mit Tausenden Tool-Aufrufen",
+      "Hybride Attention mit deutlich reduziertem KV-Cache-Speicher",
+      "Multi-Token-Prediction-Module für beschleunigte Inferenz",
+      "Native Omnimodalität für Text, Bild, Video und Audio",
+      "MIT-Lizenz mit vollständig kommerzieller Nutzbarkeit"
+    ]
   ],
   "known_limitations": [
-    "Chinesischer Anbieter: Cloud-Nutzung erfordert Vertrauen in Xiaomi-Infrastruktur (DSG/NSG)",
-    "Knowledge Cutoff Mai 2025 – kein aktuelles Weltwissen nach diesem Datum",
-    "Lokales Deployment: FP8-Gewichte erfordern mindestens 16 H200-GPUs in empfohlener SGLang-Konfiguration",
-    "FP8-Gewichte nicht direkt mit allen Inferenz-Engines kompatibel"
+    [
+      "Chinesischer Anbieter, Cloud-Nutzung erfordert Vertrauen in Xiaomi-Infrastruktur",
+      "Knowledge-Cutoff im Mai 2025, kein aktuelleres Weltwissen verfügbar",
+      "Lokales FP8-Deployment erfordert erhebliche Multi-GPU-Ressourcen",
+      "FP8-Gewichte nicht direkt mit allen Inferenz-Engines kompatibel"
+    ]
   ],
-  "judge_context_hint": "Xiaomi MiMo V2.5 Pro: Release 22. April 2026. MoE, 1020B gesamt / 42B aktiv. 1M-Token-Kontext. Thinking-Optional (ON/OFF via enable_thinking). CoT-Schema: think-xml (<think>-Tags). Tool-Use unterstützt. MIT-Lizenz. Preis: $0,435 Input / $0,87 Output pro 1M Token. Reasoning-Tiefe und Agentic-Performance höher gewichten als Single-Turn-Qualität.",
+  "judge_context_hint": "Frontier-Reasoning-Modell mit nativer Omnimodalität und starker Agentic-Leistung. Bei der Bewertung Reasoning-Tiefe und Agentic-Performance stärker gewichten als Single-Turn-Antwortqualität.",
   "architecture_tags": [
     "General",
     "Instruct",
@@ -68,7 +71,9 @@
   "thinking_probe_confidence": "high",
   "thinking_probe_at": "2026-06-19T22:44:09.687077+00:00",
   "cot_marker_family": "think-xml",
-  "cot_tags_detected": ["<think>"],
+  "cot_tags_detected": [
+    "<think>"
+  ],
   "top_p": null,
   "top_k": null,
   "repetition_penalty": null,

@@ -17,21 +17,21 @@
   "params_active_b": 31.0,
   "context_window_k": 256,
   "knowledge_cutoff": "2025-01",
-  "summary": "Gemma 4 31B Instruct (QAT UD-Q4, Unsloth) ist eine quantisierungsbewusst trainierte Dense-Variante mit 31B Parametern, betrieben via llama.cpp auf DGX Spark. QAT liefert signifikant bessere Q4-Qualität als Post-Training-Quantisierung. Kein Thinking-Modus nachgewiesen (thinking_probe_detected=false). Tool Use: P1=90%, P2=56.67% – PRODUCTION. Im Benchmark ohne mmproj geladen → reine Text-Inferenz.",
+  "summary": "Gemma 4 31B Instruct als quantisierungsbewusst trainierte Q4-Variante von Unsloth, die für 31-Milliarden-Parameter-Modelle ungewöhnlich kompakt betreibbar ist. Die quantisierungsbewusste Trainingsmethode liefert deutlich höhere Q4-Qualität als Standard-Post-Training-Quantisierung. Unter Apache-2.0-Lizenz lokal betreibbar ohne externe Cloud-Verbindung.",
   "strengths": [
-    "QAT: präzisere Q4-Variante als Post-Training-Quantisierung – Gewichte quantisierungsbewusst trainiert",
-    "UD-Q4 (Unsloth Dynamic): Mixed-Precision mit per-Layer-Entscheidung",
-    "Tool Use: P1=90%, P2=56.67% – Empfehlung PRODUCTION",
-    "Solides Instruction-Following bei 31B Dense-Kapazität",
-    "Apache 2.0: vollständig kommerziell nutzbar und modifizierbar"
+    "Quantization-Aware Training für höhere Q4-Präzision als Post-Training-Quantisierung",
+    "Unsloth Dynamic Quantization mit Per-Layer-Präzisionsentscheidungen",
+    "Tool-Use-Fähigkeit mit Produktions-Empfehlung im internen Test",
+    "Solides Instruction-Following bei voller 31-Milliarden-Dense-Kapazität",
+    "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit"
   ],
   "known_limitations": [
     "Q4-Quantisierung zeigt gegenüber Q8 messbare Qualitätsunterschiede bei komplexen Reasoning-Aufgaben",
-    "Kein Thinking-Modus (thinking_probe_detected=false – kein Signal A/B, nur Signal C als falsch-positiv korrigiert)",
-    "Sehr niedrige Inferenzgeschwindigkeit (~7,67 t/s auf DGX Spark) – nicht geeignet für interaktive Echtzeit-Anwendungen",
-    "Multimodalität externalisiert: Bild/Audio/Video erfordern separate mmproj-GGUF. Im Benchmark ohne mmproj geladen → reine Text-Inferenz."
+    "Kein nachweisbarer Thinking-Modus",
+    "Sehr niedrige Inferenzgeschwindigkeit, nicht für interaktive Echtzeit-Anwendungen geeignet",
+    "Multimodalität für Bild, Audio und Video erfordert eine separate Multimodal-Projektor-Datei"
   ],
-  "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, 128 GB Unified Memory, davon ~120 GB für Modell + Kontext nutzbar; Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). Dense 31B, QAT UD-Q4. Kein Thinking-Modus (thinking_probe_detected=false). Ohne mmproj geladen → reine Text-Inferenz. Langsame Inferenz (~8 t/s) berücksichtigen. Tool Use: P1=90%, P2=56.67% – PRODUCTION.",
+  "judge_context_hint": "Dense-Variante auf Gemma-4-Basis mit Quantization-Aware-Training in Q4-Quantisierung. Bei der Bewertung solide Qualität bei deutlichen Einbussen durch Q4 erwarten. Kein Thinking-Modus nachgewiesen, niedrige Inferenz-Geschwindigkeit berücksichtigen. Lokales Deployment ohne externen Datentransfer.",
   "architecture_tags": [
     "General",
     "Instruct",

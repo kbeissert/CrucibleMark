@@ -17,22 +17,22 @@
   "params_active_b": 4.0,
   "context_window_k": 256,
   "knowledge_cutoff": "2025-01",
-  "summary": "Gemma 4 ARA 26B-A4B Q5_K_M ist eine Community-Variante von Googles MoE-Modell, bei der via Adaptive Refusal Abliteration (ARA, 2-Pass) Sicherheitsfilter entfernt wurden. 25,2B Gesamtparameter, ~4B aktiv pro Token, 256K Kontextfenster, Apache 2.0. Im Benchmark ohne mmproj geladen → reine Text-Inferenz. Thinking-Probe steht aus (Probe-Logik war zum Zeitpunkt des Tests noch ohne Inline-CoT-Heuristik).",
+  "summary": "Gemma 4 ARA 26B-A4B als Q5-Quantisierung der ARA-APEX-Community, eine Variante mit Adaptive Refusal Abliteration zur Entfernung der Sicherheitsfilter. Von 25,2 Milliarden Gesamtparametern sind pro Token etwa 4 Milliarden aktiv, das Kontextfenster umfasst 128.000 Tokens. Unter Apache-2.0-Lizenz lokal betreibbar ohne externe Cloud-Verbindung, mit unklarer Thinking-Funktion.",
   "strengths": [
-    "MoE-Architektur: ~4B aktive Parameter pro Token – Frontier-Qualität bei Workstation-Kosten",
-    "Q5_K_M: guter Kompromiss zwischen Präzision und Speicherbedarf",
-    "ARA-Abliteration: reduzierte Refusal-Rate bei dokumentierter 2-Pass-Methode",
-    "256K Kontextfenster für lange Aufgaben",
-    "Apache 2.0: vollständig kommerziell nutzbar und modifizierbar"
+    "MoE-Architektur mit etwa 4 Milliarden aktiven Parametern bei 25,2 Milliarden Gesamtparametern",
+    "Q5-Quantisierung als Kompromiss zwischen Präzision und Speicherbedarf",
+    "Abliterierte Variante mit reduzierten Sicherheitsfiltern und dokumentierter Zwei-Pass-Methode",
+    "Kontextfenster von 128.000 Tokens",
+    "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit"
   ],
   "known_limitations": [
-    "Keine Sicherheitsfilter (ARA-abliteriert) – kann unzensierte Inhalte generieren",
+    "Keine Sicherheitsfilter durch die Abliteration",
     "ARA-APEX-Modifikationen nicht offiziell durch Google dokumentiert",
-    "Multimodalität externalisiert: Bild/Audio/Video erfordern separate mmproj-GGUF. Im Benchmark ohne mmproj geladen → reine Text-Inferenz.",
-    "Thinking-Probe-Status unklar: Probe wurde vor Einführung von Signal-C-Heuristik durchgeführt – Wiederholung steht aus",
-    "Q5_K_M zeigt bei hochkomplexen Reasoning-Aufgaben messbare Einbussen gegenüber Q8"
+    "Multimodalität für Bild, Audio und Video erfordert eine separate Multimodal-Projektor-Datei",
+    "Thinking-Status unklar, eine neue Probe steht aus",
+    "Q5-Quantisierung zeigt bei hochkomplexen Reasoning-Aufgaben Einbussen gegenüber Q8"
   ],
-  "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, 128 GB Unified Memory; Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). MoE-Modell (25,2B total / 4B aktiv), ARA-abliteriert (2-Pass), Q5_K_M. Ohne mmproj geladen → reine Text-Inferenz. Thinking-Probe steht aus – Thinking-Status unbekannt. Kein Abzug für fehlende explizite Reasoning-Schritte.",
+  "judge_context_hint": "MoE-Variante auf Gemma-4-Basis mit ARA-Abliteration zur Filterentfernung. Thinking-Status aktuell unklar, keine Annahmen über Reasoning-Fähigkeit treffen. Lokales Deployment ohne externen Datentransfer.",
   "architecture_tags": [
     "General",
     "Instruct",

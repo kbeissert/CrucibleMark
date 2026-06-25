@@ -13,12 +13,14 @@
   "display_name": "Kimi K2 Thinking",
   "generated_at": "2026-04-24T10:34:25.015803+00:00",
   "input_price_per_1m": 0.6,
-  "judge_context_hint": "Thinking-Modell mit starker Tool- und Reasoning-Ausrichtung. Antworten sollten im Kontext langer, schrittweiser Aufgaben bewertet werden; die sichtbare Begründung ist nicht immer vollständig repräsentativ für den internen Prozess.",
+  "judge_context_hint": "Thinking-Modell mit starker Tool- und Reasoning-Ausrichtung. Bei der Bewertung im Kontext langer, schrittweiser Aufgaben bewerten. Die sichtbare Begründung ist nicht immer vollständig repräsentativ für den internen Prozess.",
   "knowledge_cutoff": "2025-06",
   "known_limitations": [
-    "Chinesischer Anbieter mit erhöhtem Sovereign-Risk",
-    "Internes Reasoning ist nicht in jeder API-Integration sichtbar",
-    "Text-only; keine Bild- oder Videoinput-Unterstützung"
+    [
+      "Chinesisches nationales Sicherheitsgesetz: bei Cloud-Nutzung kann staatlicher Zugriff auf Daten bestehen",
+      "Internes Reasoning nicht in jeder API-Integration sichtbar",
+      "Text-only, keine Bild- oder Video-Eingabe"
+    ]
   ],
   "license": "Modified MIT",
   "license_url": "https://huggingface.co/moonshotai/Kimi-K2-Thinking",
@@ -34,11 +36,14 @@
   "primary_focus": "reasoning",
   "size_class": "Frontier",
   "strengths": [
-    "Stark für Reasoning, Agenten und komplexe Tool-Ketten",
-    "Effiziente MoE-Architektur für hohe Rechenleistung",
-    "Native Kombination von Denken und Tool Use"
+    [
+      "Stark für Reasoning, agentische Workflows und komplexe Tool-Ketten",
+      "MoE-Architektur für hohe Rechenleistung bei moderater Inferenz-Last",
+      "Native Kombination von sichtbarem Denken und Tool-Aufrufen",
+      "Open-Weights-Modell unter Modified-MIT-Lizenz"
+    ]
   ],
-  "summary": "Kimi K2 Thinking ist das Reasoning-Modell von Moonshot AI aus China, das schrittweises Denken mit Tool-Calls kombiniert. Es nutzt eine MoE-Architektur mit 1T Gesamtparametern und 32B aktivierten Parametern. Mit einem Kontextfenster von 256K ist das Modell auf komplexe, agentische Aufgaben und lange Reasoning-Ketten optimiert und über Cloud-Schnittstellen verfügbar.",
+  "summary": "Kimi K2 Thinking ist das Reasoning-Modell von Moonshot AI, das schrittweises Denken mit Tool-Aufrufen kombiniert. Die MoE-Architektur vereint eine Billion Gesamtparameter mit 32 Milliarden aktiven Parametern pro Token, das Kontextfenster umfasst 256.000 Tokens. Das Modell ist auf komplexe agentische Aufgaben und lange Reasoning-Ketten ausgelegt, als Text-only-Variante verfügbar. Die chinesische Hersteller-Jurisdiktion erfordert bei Cloud-Nutzung eine separate Bewertung.",
   "supports_tool_use": true,
   "thinking_probe_detected": true,
   "thinking_probe_evidence": "explicit thinking model with forced thinking according to Moonshot docs; provider metadata contains reasoning tokens",

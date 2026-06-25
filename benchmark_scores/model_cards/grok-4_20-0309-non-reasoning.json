@@ -12,11 +12,13 @@
   "display_name": "Grok 4 (Non-Reasoning)",
   "generated_at": "2026-05-04T17:56:59.089113+00:00",
   "input_price_per_1m": 1.25,
-  "judge_context_hint": "Das Modell ist die Non-Reasoning-Variante von Grok 4 und liefert direkte Antworten ohne sichtbare Denkschritte; Bewertungen sollten die fehlende explizite Reasoning-Kette berücksichtigen.",
+  "judge_context_hint": "Non-Reasoning-Variante von Grok 4 mit direkten Antworten ohne sichtbare Denkschritte. Bei der Bewertung die fehlende explizite Reasoning-Kette berücksichtigen.",
   "knowledge_cutoff": "2025-01",
   "known_limitations": [
-    "Schwächere Leistung bei komplexen mehrstufigen Schlussfolgerungsaufgaben im Vergleich zur Reasoning-Variante",
-    "Nur über xAI-Cloud-API verfügbar, kein lokaler Betrieb möglich"
+    [
+      "Schwächere Leistung bei komplexen mehrstufigen Schlussfolgerungsaufgaben im Vergleich zur Reasoning-Variante",
+      "Ausschliesslich über die xAI-Cloud-API verfügbar, kein lokaler Betrieb möglich"
+    ]
   ],
   "license": "Proprietary",
   "license_url": null,
@@ -32,11 +34,13 @@
   "primary_focus": "general",
   "size_class": "Frontier",
   "strengths": [
-    "Niedrige Latenz durch deaktiviertes Chain-of-Thought-Reasoning",
-    "Breite Allround-Fähigkeiten für Konversation und Textaufgaben",
-    "Unterstützung von Tool Use / Function Calling für Agentenanwendungen"
+    [
+      "Niedrige Latenz durch deaktiviertes Chain-of-Thought-Reasoning",
+      "Breite Allround-Fähigkeiten für Konversation und Textaufgaben",
+      "Tool-Use- und Function-Calling-Unterstützung für agentische Anwendungen"
+    ]
   ],
-  "summary": "Grok 4 (2025-03-09, non-reasoning) ist die Standard-Variante der Grok-4-Generation von xAI aus den USA – ohne aktives Chain-of-Thought, ausgelegt auf schnelle direkte Antworten. Das Modell ist ausschließlich über die xAI-API verfügbar und bietet Tool-Use-Unterstützung für agentische Workflows.",
+  "summary": "Grok 4 (Non-Reasoning) ist die Standard-Variante der Grok-4-Generation von xAI ohne aktives Chain-of-Thought, ausgelegt auf schnelle direkte Antworten. Das Modell arbeitet mit einem Kontextfenster von einer Million Tokens, ist ausschliesslich über die xAI-API verfügbar und richtet sich an Konversations-und Textaufgaben ohne explizite Reasoning-Schritte.",
   "supports_tool_use": true,
   "thinking_probe_detected": false,
   "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 554 chars",

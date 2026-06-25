@@ -17,22 +17,26 @@
   "params_active_b": null,
   "context_window_k": 1000,
   "knowledge_cutoff": "2026-01",
-  "summary": "Qwen 3.7 Max ist Alibabas proprietäres Flagship-Modell der Qwen 3.7-Serie (Release: Mai 2026) und das leistungsstärkste Modell der \"Agent Frontier\"-Positionierung. Es ist ausschließlich über Alibaba Cloud Model Studio und kompatible APIs verfügbar. Das Modell erreicht 60,6 % auf SWE-bench Pro, 76,4 % auf MCP Atlas und unterstützt autonome Betriebsdauer von bis zu 35 Stunden. Mit 1M-Token-Kontext, konfigurierbarem Thinking (ON/OFF) und Deep Research-Fähigkeiten übertrifft es Claude Opus 4.6 auf Apex Math Reasoning. Open-Weights-Varianten der 3.7-Serie (z. B. Qwen3.7-35B-A3B) sind separat verfügbar.",
+  "summary": "Qwen 3.7 Max ist Alibabas proprietäres Flagship-Modell der Qwen-3.7-Serie mit Fokus auf agentische Coding-Workflows und autonome Betriebsdauer von bis zu 35 Stunden. Das Modell arbeitet mit einem Kontextfenster von einer Million Tokens, konfigurierbarem Thinking-Modus und nativer Tool-Use-Unterstützung. Ausschliesslich über Cloud-APIs verfügbar, die chinesische Jurisdiktion ist zu beachten.",
   "strengths": [
-    "60,6 % SWE-bench Pro, 76,4 % MCP Atlas – State-of-the-Art Agentic Coding",
-    "Bis zu 35 Stunden autonome Betriebsdauer ohne menschlichen Eingriff",
-    "1M-Token-Kontext – Verarbeitung ganzer Codebasen und komplexer Multi-Turn-Workflows",
-    "Konfigurierbares Reasoning: Thinking ON/OFF + Thinking Budget Control",
-    "Native Anthropic API Protocol Compatibility – verwendbar mit Claude Code und Cline",
-    "Deep Research-Fähigkeiten für mehrstufige Informationsrecherche und Analyse"
+    [
+      "Starke Agentic-Coding-Fähigkeiten für Repository-Level-Engineering",
+      "Bis zu 35 Stunden autonome Betriebsdauer ohne menschlichen Eingriff",
+      "Kontextfenster von einer Million Tokens",
+      "Konfigurierbarer Reasoning-Modus mit Thinking ON, OFF und Budget-Steuerung",
+      "Native Tool-Use-Unterstützung",
+      "Deep-Research-Fähigkeiten für mehrstufige Informationsrecherche und Analyse"
+    ]
   ],
   "known_limitations": [
-    "Proprietäres Cloud-Only-Modell – kein lokales Deployment, vollständig API-abhängig",
-    "Chinesische Jurisdiktion (NSL): Datenschutz bei sensiblen Inhalten über die API kritisch prüfen",
-    "Chinesische Herkunft: potenzielle inhaltliche Einschränkungen bei politisch sensiblen Themen",
-    "Text-only: kein nativer Image- oder Video-Input (anders als Qwen 3.6 Plus)"
+    [
+      "Proprietäres Cloud-Only-Modell ohne lokales Deployment",
+      "Chinesische Jurisdiktion mit NSL-Risiko bei sensiblen Inhalten über die API",
+      "Potenzielle inhaltliche Einschränkungen bei politisch sensiblen Themen mit China-Bezug",
+      "Text-only ohne nativen Bild- oder Video-Eingang"
+    ]
   ],
-  "judge_context_hint": "Qwen 3.7 Max: Proprietäres Cloud-Only-Modell von Alibaba (Mai 2026). MoE-Architektur, Parameter nicht öffentlich. 1M-Token-Kontext. Text-only. Thinking-Optional (ON/OFF + Budget Control). Native Tool-Use und Agentic-Coding auf Frontier-Niveau (60,6 % SWE-bench Pro). NSL-Jurisdiktion beachten.",
+  "judge_context_hint": "Frontier-Agentic-Modell mit langer autonomer Betriebsdauer. Bei der Bewertung Coding und Agentic-Fähigkeiten gewichten. NSL-Jurisdiktion beachten.",
   "architecture_tags": [
     "General",
     "Instruct",
@@ -62,7 +66,9 @@
   "thinking_probe_confidence": "medium",
   "thinking_probe_at": "2026-06-01T00:00:00.000000+00:00",
   "cot_marker_family": "think-xml",
-  "cot_tags_detected": ["<think>"],
+  "cot_tags_detected": [
+    "<think>"
+  ],
   "top_p": null,
   "top_k": null,
   "repetition_penalty": null,

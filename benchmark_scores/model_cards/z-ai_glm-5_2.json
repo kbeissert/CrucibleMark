@@ -17,31 +17,39 @@
   "params_active_b": 40.0,
   "context_window_k": 1000,
   "knowledge_cutoff": "2025-12",
-  "summary": "GLM-5.2 ist das Flaggschiff-Modell von Z.AI (formerly Zhipu AI) fuer komplexe Engineering-Workflows und langlaufende Aufgaben. Es bietet ein stabiles Kontextfenster von 1M Token und nutzt die neue IndexShare-Architektur zur effizienten Verarbeitung langer Sequenzen (Faktor 2,9 weniger FLOPs). Durch eine optimierte MTP-Schicht wird Speculative Decoding verbessert. Das Modell zeigt Frontier-Leistungen in den Bereichen Coding und Agentic-Tasks. Die Gewichte sind unter der MIT-Lizenz auf Hugging Face verfügbar.",
+  "summary": "GLM-5.2 ist Z.AIs aktuelles Flaggschiff mit 744 Milliarden Gesamt- und 40 Milliarden aktiven Parametern in MoE-Architektur, optimiert für komplexe Engineering-Workflows und langlaufende Coding-Aufgaben. Das Kontextfenster umfasst eine Million Tokens, die Gewichte sind unter MIT-Lizenz als Open-Weights-Modell verfügbar.",
   "strengths": [
-    "Solides 1M-Token-Kontextfenster für projektweite Engineering-Aufgaben und langlaufende Agent-Workflows",
-    "Verbesserte IndexShare-Architektur reduziert per-Token-FLOPs um Faktor 2,9 bei langen Kontexten",
-    "Optimierte MTP-Schicht für Speculative Decoding mit bis zu 20 Prozent höherer Acceptance Length",
-    "Starke Coding-Leistung: SWE-bench Pro 62.1, Terminal Bench 2.1 81.0, FrontierSWE 74.4",
-    "Starke Agentic-Leistung: MCP-Atlas 76.8, Tool-Decathlon 48.2",
-    "Reine Open-Source-MIT-Lizenz ohne regionale Einschränkungen, kommerzielle Nutzung erlaubt",
-    "Flexible Thinking Effort Levels (high/max/disabled) zur Balance zwischen Performance und Latenz"
+    [
+      "Stabiles Kontextfenster von einer Million Tokens für projektweite Engineering-Aufgaben",
+      "Verbesserte IndexShare-Architektur reduziert Rechenaufwand bei langen Kontexten deutlich",
+      "Optimierte Multi-Token-Prediction für Speculative Decoding",
+      "Starke Coding-Leistung auf Frontier-Niveau",
+      "Starke Agentic-Fähigkeiten mit Tool-Use und langen Workflows",
+      "Open-Source-MIT-Lizenz ohne regionale Einschränkungen",
+      "Flexibel konfigurierbare Thinking-Stufen"
+    ]
   ],
   "known_limitations": [
-    "Chinesische Herkunft (Z.AI / Zhipu AI) mit Compliance-Risiken (NSL) und potenzieller politischer Einflussnahme bei Cloud-API-Nutzung",
-    "Hoher Hardware-Bedarf fuer lokales Deployment (744B Parameter, mehrere High-End-GPUs erforderlich)",
-    "Aktive Parameterzahl pro Token nicht offiziell von Z.AI spezifiziert (~40B laut Community-Quellen)",
-    "Erhoehte Latenz bei voller 1M-Kontextauslastung ohne IndexShare-Optimierung in manchen Backends"
+    [
+      "Chinesische Herkunft mit Compliance-Risiken bei Cloud-API-Nutzung",
+      "Hoher Hardware-Bedarf für lokales Deployment, mehrere High-End-GPUs erforderlich",
+      "Erhöhte Latenz bei voller Kontextauslastung ohne IndexShare-Optimierung in manchen Backends",
+      "Bei rein lokaler Nutzung entfällt das Cloud-Risiko"
+    ]
   ],
-  "judge_context_hint": "GLM-5.2 ist ein MoE-Modell (744B gesamt, ~40B aktiv) mit 1M Kontext und Fokus auf Coding/Agentic-Tasks. Thinking ist per API schaltbar (reasoning_effort: high/max/disabled). Bei der Bewertung sollten Coding-Qualitaet in langen Kontexten und Tool-Use priorisiert werden. Sovereign-Risk ist hoch bei Cloud-API-Nutzung aufgrund chinesischer Jurisdiktion.",
+  "judge_context_hint": "Frontier-Coding-Modell mit langem Kontext und starken Agentic-Fähigkeiten. Bei der Bewertung Coding-Qualität in langen Kontexten und Tool-Use priorisieren. Thinking per API schaltbar.",
   "architecture_tags": [
     "Instruct",
     "Coder",
     "Agentic-Orchestrator",
     "Thinking-Optional"
   ],
-  "input_modalities": ["text"],
-  "output_modalities": ["text"],
+  "input_modalities": [
+    "text"
+  ],
+  "output_modalities": [
+    "text"
+  ],
   "supports_tool_use": true,
   "license": "MIT",
   "license_url": "https://opensource.org/licenses/MIT",
@@ -74,7 +82,9 @@
   "tooluse_recommendation": null,
   "system_prompt_override": null,
   "cot_marker_family": "think-xml",
-  "cot_tags_detected": ["<thought>"],
+  "cot_tags_detected": [
+    "<thought>"
+  ],
   "profile_verified_by": "llm:perplexity",
   "last_modified_at": "2026-06-22",
   "heritage_ids": [],

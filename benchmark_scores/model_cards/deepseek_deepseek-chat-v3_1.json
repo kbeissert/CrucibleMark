@@ -10,19 +10,19 @@
   "weights_provenance_risk_rationale": "DeepSeek ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten und Modelle ermöglichen kann. Das BSI hat am 04.02.2025 vor dem Einsatz des DeepSeek-Cloud-Dienstes gewarnt; bei ausschließlich lokalem Betrieb der Open-Weights-Variante ohne Datenübertragung nach China ist das cloud-spezifische Risikoszenario reduziert.",
   "model_family": "DeepSeek",
   "primary_focus": "general",
-  "summary": "DeepSeek-V3.1 ist ein leistungsstarkes MoE-Modell von DeepSeek mit insgesamt 671 Milliarden Parametern, von denen pro Token nur 37 Milliarden aktiv sind. Diese Architektur ermöglicht eine hohe Effizienz bei gleichzeitig exzellenter Performance in den Bereichen Reasoning und Coding. Das Modell unterstützt ein Kontextfenster von 128K Token. Aufgrund der regulatorischen Rahmenbedingungen in China ist bei der Nutzung der Cloud-API Vorsicht geboten.",
+  "summary": "Von 671 Milliarden Gesamtparametern sind bei DeepSeek V3.1 nur 37 Milliarden pro Token aktiv, was die MoE-Architektur bei gleichzeitig hoher Reasoning- und Coding-Leistung effizient betreibbar macht. Das Modell arbeitet mit einem 128.000-Token-Kontextfenster und ist wahlweise lokal oder über die Cloud-API verfügbar, wobei die chinesische Jurisdiktion und das nationale Sicherheitsgesetz bei der Cloud-Nutzung zu beachten sind.",
   "strengths": [
-    "Starke Coding-Leistung für ein MoE-Modell mit hoher Präzision",
-    "MoE-Architektur: 671B Gesamtparameter, nur 37B aktiv – hoher Durchsatz bei geringem Inferenz-Overhead",
-    "Hohe Kosteneffizienz im Training",
-    "Unterstützung eines 128K-Token-Kontextfensters"
+    "MoE-Architektur mit 37 Milliarden aktiven Parametern bei 671 Milliarden Gesamtparametern",
+    "Hohe Leistung in den Bereichen Reasoning und Coding",
+    "Kontextfenster von 128.000 Tokens",
+    "Wahlweise lokaler Betrieb oder Nutzung über die DeepSeek-Cloud-API"
   ],
   "known_limitations": [
-    "Chinesisches Nationales Sicherheitsgesetz (NSL): bei Cloud-Nutzung kann staatlicher Zugriff auf Daten bestehen; BSI-Warnung vom 04.02.2025",
-    "Lokaler Betrieb der vollen 671B-Variante erfordert erhebliche GPU-Infrastruktur (mehrere High-End-GPUs, z. B. A100/H100)",
-    "Kann bei politisch sensiblen Themen mit China-Bezug zensierte oder ausweichende Antworten liefern"
+    "Chinesisches nationales Sicherheitsgesetz: bei Cloud-Nutzung kann staatlicher Zugriff auf Daten bestehen, BSI hat im Februar 2025 vor dem Cloud-Dienst gewarnt",
+    "Lokaler Betrieb der vollen Variante erfordert erhebliche GPU-Infrastruktur",
+    "Bei politisch sensiblen Themen mit China-Bezug gelegentlich zensierte oder ausweichende Antworten"
   ],
-  "judge_context_hint": "DeepSeek-V3.1 ist ein 671B-Parameter MoE-Modell (37B aktiv). Chinesisches NSL: Cloud-Nutzung birgt Datenrisiko, lokaler Betrieb reduziert dieses.",
+  "judge_context_hint": "DeepSeek V3.1 ist ein MoE-Modell mit 671 Milliarden Gesamt- und 37 Milliarden aktiven Parametern. Bei der Bewertung die chinesische Jurisdiktion berücksichtigen, insbesondere beim Cloud-Einsatz. Lokaler Betrieb reduziert das Datentransfer-Risiko erheblich.",
   "architecture_tags": [
     "General",
     "Instruct"

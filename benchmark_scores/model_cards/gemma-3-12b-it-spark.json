@@ -17,20 +17,22 @@
   "params_active_b": 12.0,
   "context_window_k": 128,
   "knowledge_cutoff": "2024-12",
-  "summary": "Gemma 3 12B IT wird in dieser Version als Q4_K_M-Quantisierung für die Spark-Plattform bereitgestellt. Die Instruct-Variante ist auf direkte Aufgabenstellung optimiert. Durch die Quantisierung wird der Speicherbedarf signifikant reduziert, was den Einsatz auf Hardware mit begrenzten Ressourcen ermöglicht, während die Effizienz der Inferenz gesteigert wird.",
+  "summary": "Gemma 3 12B Instruct als Q4-Quantisierung, optimiert für lokale Inferenz auf ressourcenbeschränkter Hardware. Das Modell verarbeitet Text-und Bildeingaben bei einem Kontextfenster von 128.000 Tokens, ist auf direkte Aufgabenbearbeitung ausgelegt und arbeitet ohne externe Cloud-Verbindung. Lizenziert unter den Google Gemma Terms of Use, die kommerzielle Nutzung erlauben.",
   "strengths": [
-    "Instruct-optimiert für direkte Aufgabenbearbeitung",
-    "Deutlich geringerer Speicherbedarf durch Q4_K_M-Quantisierung",
-    "Lokal auf Spark-Hardware betreibbar – kein Cloud-Provider, kein externer Datentransfer",
-    "Geeignet für effiziente On-Device-Inferenz"
+    "Auf direkte Aufgabenbearbeitung optimiert",
+    "Deutlich reduzierter Speicherbedarf durch Q4-Quantisierung",
+    "Lokaler Betrieb ohne Cloud-Provider und ohne externen Datentransfer",
+    "Geeignet für effiziente Inferenz auf ressourcenbeschränkter Hardware",
+    "Verarbeitung von Text- und Bildeingaben"
   ],
   "known_limitations": [
-    "Q4_K_M bringt sichtbar mehr Qualitätsverlust als Q8-Varianten",
-    "Kein offizielles Cloud-Produkt, sondern lokal verpackte Variante",
-    "Bei komplexen Aufgaben geringere Tiefe als größere Frontier-Modelle",
-    "Kein echter Thinking-Modus – Probe-Ergebnis spiegelt ausführliches Instruct-Verhalten wider, keinen separaten Reasoning-Kanal"
+    "Q4-Quantisierung bringt sichtbar mehr Qualitätsverlust als Q8-Varianten",
+    "Lokale Verpackung, kein offizielles Cloud-Produkt",
+    "Bei komplexen Aufgaben geringere Tiefe als grössere Frontier-Modelle",
+    "Kein echter Thinking-Modus, normales Instruction-Following ohne separaten Reasoning-Kanal",
+    "Google Gemma Terms erlauben kommerzielle Nutzung, aber kein Training konkurrierender LLMs"
   ],
-  "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, 128 GB Unified Memory, davon ~120 GB für Modell + Kontext nutzbar; Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). Lokale Variante von Gemma 3 12B IT. Die Q4_K_M-Quantisierung priorisiert Laufzeit und Speicherbedarf vor Präzision; Antworten können daher etwas knapper und weniger stabil ausfallen als bei Q8.",
+  "judge_context_hint": "Lokale Gemma-3-12B-Variante in Q4-Quantisierung, optimiert für Workstation-Hardware. Bei der Bewertung knappere und möglicherweise weniger stabile Antworten als bei Q8-Varianten einplanen. Lokales Deployment ohne externen Datentransfer.",
   "architecture_tags": [
     "General",
     "Instruct"

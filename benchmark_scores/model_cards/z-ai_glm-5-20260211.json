@@ -17,30 +17,37 @@
   "params_active_b": 40.0,
   "context_window_k": 202,
   "knowledge_cutoff": "2025-12",
-  "summary": "GLM-5 ist das Flaggschiff-Modell von Z.AI (formerly Zhipu AI), das am 11. Februar 2026 veröffentlicht wurde. Mit 744B Gesamtparametern (40B aktiv, 256-Experten-MoE) und einem 202K-Token-Kontextfenster ist es auf komplexe System-Design-Aufgaben und langlaufende Agenten-Workflows ausgelegt. Das Modell bietet produktionsreife Leistung bei großskaligen Programmieraufgaben und ist mit führenden Closed-Source-Modellen vergleichbar. Die Gewichte sind unter MIT-Lizenz auf Hugging Face verfügbar.",
+  "summary": "GLM-5 ist das Flaggschiff-Modell von Z.AI mit 744 Milliarden Gesamt- und 40 Milliarden aktiven Parametern in einer 256-Experten-MoE-Architektur, optimiert für komplexe System-Design-Aufgaben und langlaufende Agent-Workflows. Das Kontextfenster umfasst 202.000 Tokens, die Gewichte sind unter MIT-Lizenz verfügbar.",
   "strengths": [
-    "Open Weights (MIT): vollständig offen für lokales Deployment und kommerzielle Nutzung",
-    "744B MoE-Architektur mit 256 Experten (DeepSeek Sparse Attention) für effiziente Inferenz",
-    "Frontier-Coding-Leistung — vergleichbar mit führenden Closed-Source-Modellen bei Release",
-    "Optimiert für komplexe System-Design- und Agent-Workflows",
-    "202K-Token-Kontextfenster für langlaufende Aufgaben",
-    "Token-ökonomisch: kein Modul überschreitet den Fleet-Median-Verbosity-Rahmen"
+    [
+      "Open Weights unter MIT-Lizenz für vollständig offenes Deployment",
+      "Effiziente MoE-Architektur mit 256 Experten für hohe Kapazität bei moderater Inferenz-Last",
+      "Starke Coding-Leistung auf Frontier-Niveau",
+      "Optimiert für komplexe System-Design- und Agent-Workflows",
+      "Kontextfenster von 202.000 Tokens für langlaufende Aufgaben"
+    ]
   ],
   "known_limitations": [
-    "Chinesische Herkunft (Z.AI / Zhipu AI) mit Compliance-Risiken (NSL) bei Cloud-API-Nutzung",
-    "Hohe Tail-Latenz und Timeout-Anfälligkeit (P95: ~142s, 5/43 Timeouts im Benchmark) — ungeeignet für zeitkritische Prozesse",
-    "Im Vergleich zu GLM-5.1 (April 2026) und GLM-5.2 (Juni 2026) bereits von Nachfolgern überholt",
-    "Detailed architecture specs: 40B aktive Parameter nicht offiziell von Z.AI publiziert, aber durch technischen Report und Community-Quellen bestätigt"
+    [
+      "Chinesische Herkunft mit Compliance-Risiken bei Cloud-API-Nutzung",
+      "Hohe Tail-Latenz und Timeout-Anfälligkeit, ungeeignet für zeitkritische Prozesse",
+      "Im Vergleich zu GLM-5.1 und GLM-5.2 bereits von Nachfolgern überholt",
+      "Bei rein lokaler Inferenz entfällt das Cloud-Risiko"
+    ]
   ],
-  "judge_context_hint": "GLM-5 (veröffentlicht 11. Februar 2026) ist das Flaggschiff von Z.AI mit Open Weights (MIT) und MoE-Architektur (744B total, 40B aktiv, 256 Experten). 202K Kontext, Coding- und Agent-Workflow-Fokus. API-Preise: 1.00/3.20 pro 1M Tokens (Z.AI API). Thinking schaltbar, nutzt <thought>-Tags.",
+  "judge_context_hint": "Frontier-Coding-Modell mit hoher Kapazität für komplexe Software-Engineering-Aufgaben. Bei der Bewertung Coding-Fähigkeiten gewichten, aber hohe Tail-Latenz berücksichtigen.",
   "architecture_tags": [
     "Instruct",
     "Coder",
     "Agentic-Orchestrator",
     "Thinking-Optional"
   ],
-  "input_modalities": ["text"],
-  "output_modalities": ["text"],
+  "input_modalities": [
+    "text"
+  ],
+  "output_modalities": [
+    "text"
+  ],
   "supports_tool_use": true,
   "license": "MIT",
   "license_url": "https://opensource.org/licenses/MIT",
@@ -73,7 +80,9 @@
   "temperature": null,
   "system_prompt_override": null,
   "cot_marker_family": "think-xml",
-  "cot_tags_detected": ["<thought>"],
+  "cot_tags_detected": [
+    "<thought>"
+  ],
   "profile_verified_by": "llm:perplexity",
   "last_modified_at": "2026-06-22",
   "heritage_ids": [],

@@ -17,19 +17,19 @@
   "params_active_b": null,
   "context_window_k": 1000,
   "knowledge_cutoff": "2025-08",
-  "summary": "Claude Sonnet 4.6 ist Anthropics Mid-Tier-Modell (Release: 17. Feb 2026) mit nahezu Opus-Level-Performance bei Coding, Computer Use und agentischen Workflows. Es bietet Adaptive Thinking mit konfigurierbaren Effort-Levels (low/medium/high), ein 1M-Token-Kontextfenster (GA seit 13. März 2026) und 79.6% auf SWE-bench Verified – alles zum Sonnet-Preisniveau von $3/$15.",
+  "summary": "Wo die Opus-Klasse zu teuer ist, springt Claude Sonnet 4.6 ein: Coding, Computer Use und agentische Workflows auf annäherndem Opus-Niveau, zum niedrigeren Sonnet-Preis. Das Modell arbeitet mit adaptivem Thinking in drei Effort-Stufen, verarbeitet Text, Bilder und PDF-Dokumente und bietet ein seit März 2026 allgemein verfügbares Kontextfenster von einer Million Tokens.",
   "strengths": [
-    "79.6% SWE-bench Verified – übertrifft Opus 4.5 in real-world Coding-Tests (~59% User-Präferenz)",
-    "Adaptive Thinking mit konfigurierbaren Effort-Levels (low/medium/high)",
-    "1M-Token-Kontextfenster (GA seit 13. März 2026) für Full-Repo-Agenten",
-    "Multimodal: Text, Bild und PDF als Input"
+    "Adaptive Thinking mit drei konfigurierbaren Effort-Stufen",
+    "Erweiterbares Kontextfenster auf eine Million Tokens, seit März 2026 allgemein verfügbar",
+    "Verarbeitet Text, Bilder und PDF-Dokumente als Eingabe",
+    "Stärken bei Coding und Agentic-Workflows zu einem Preis unterhalb der Opus-Klasse"
   ],
   "known_limitations": [
-    "Keine lokalen Gewichte verfügbar (Proprietär)",
-    "Standard-Kontextfenster ist 200K – 1M erfordert expliziten API-Flag",
-    "Geringere Kapazitäten bei extrem anspruchsvollen Aufgaben im Vergleich zur Opus-Modellklasse"
+    "Proprietäre Gewichte, keine offene Veröffentlichung",
+    "Standard sind 200.000 Tokens, das erweiterte Kontextfenster von einer Million Tokens erfordert einen expliziten API-Aufruf",
+    "Bei extrem anspruchsvollen Aufgaben geringere Kapazität als die Opus-Klasse"
   ],
-  "judge_context_hint": "Modell mit Fokus auf Coding und Agentic-Workflows. Adaptive Thinking mit konfigurierbaren Effort-Levels. Das 1M-Kontextfenster (GA) und multimodale Fähigkeiten (Text, Bild, PDF) bei der Bewertung von Planung und Tool-Use berücksichtigen.",
+  "judge_context_hint": "Sonnet-Klasse mit Fokus auf Coding und Agentic-Workflows. Adaptive Thinking mit drei Effort-Stufen, multimodale Eingabe für Text, Bilder und PDF. Bei der Bewertung Planungsqualität und Tool-Use stärker gewichten als Antwortlänge.",
   "architecture_tags": [
     "Thinking",
     "Vision-Capable",

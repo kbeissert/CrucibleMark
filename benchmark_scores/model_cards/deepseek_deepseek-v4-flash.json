@@ -13,12 +13,12 @@
   "display_name": "DeepSeek V4 Flash",
   "generated_at": "2026-05-03T18:34:58.651272+00:00",
   "input_price_per_1m": 0.14,
-  "judge_context_hint": "Schnelle Reasoning-Variante aus der DeepSeek-V4-Familie mit konfigurierbaren Thinking-Modi (Non-Think / Think High / Think Max). Antworten sollten auf Nutzwert und Argumentationsqualität geprüft werden, nicht auf lokale Betriebsfähigkeit.",
+  "judge_context_hint": "Effizienzoptimierte Variante aus der DeepSeek-V4-Familie mit konfigurierbaren Thinking-Modi. Antworten sollten auf Nutzwert und Argumentationsqualität geprüft werden. Chinesische Jurisdiktion macht eine gesonderte Bewertung des Cloud-Einsatzes erforderlich.",
   "knowledge_cutoff": "2025-05",
   "known_limitations": [
-    "Chinesischer Anbieter mit erhöhtem Sovereign-Risk – BSI-Warnung vom 04.02.2025 gilt für Cloud-API-Nutzung",
-    "Schwächer als V4 Pro bei komplexen Agent-Tasks und reinem Faktenwissen",
-    "Für sensible Themen potenziell restriktive Antworten"
+    "Chinesisches nationales Sicherheitsgesetz: bei Cloud-Nutzung kann staatlicher Zugriff auf Daten bestehen, BSI hat im Februar 2025 vor dem Cloud-Dienst gewarnt",
+    "Schwächer als die V4-Pro-Variante bei komplexen Agent-Tasks und reinem Faktenwissen",
+    "Bei sensiblen Themen potenziell restriktive Antworten"
   ],
   "license": "MIT",
   "license_url": "https://github.com/deepseek-ai/DeepSeek-V4/blob/main/LICENSE",
@@ -34,12 +34,13 @@
   "primary_focus": "reasoning",
   "size_class": "Frontier",
   "strengths": [
-    "284B/13B Hybrid-Attention-MoE – auf RTX 5090 (INT4) lokal ausführbar",
-    "Drei Reasoning-Modi: Non-Think, Think High, Think Max – konfigurierbar per API",
-    "1M-Token-Kontextfenster mit ~18× günstigerem Input-Preis als GPT-5.5",
-    "MIT-Lizenz: vollständig kommerziell nutzbar und fine-tunable"
+    "MoE-Architektur mit nur 13 Milliarden aktiven Parametern bei 284 Milliarden Gesamtparametern",
+    "Drei konfigurierbare Reasoning-Modi: Non-Think, Think High und Think Max",
+    "Kontextfenster von einer Million Tokens",
+    "MIT-Lizenz mit offenen Gewichten und vollständig kommerzieller Nutzbarkeit",
+    "Schnelle Inferenz bei wettbewerbsfähigen Kosten"
   ],
-  "summary": "DeepSeek V4 Flash ist DeepSeeks effizienzoptimiertes Frontier-Modell (284B Parameter, 13B aktiv) mit Hybrid-Attention-MoE-Architektur und 1M-Token-Kontextfenster. Es unterstützt drei Reasoning-Modi (Non-Think / Think High / Think Max) und ist unter MIT-Lizenz als Open-Weight-Modell verfügbar. Optimiert für hohen Durchsatz und schnelle Inferenz bei wettbewerbsfähigen Kosten – mit identischer Contextkonstellation wie V4 Pro.",
+  "summary": "DeepSeek V4 Flash ist die effizienzoptimierte Variante aus der V4-Familie: Hybrid-Attention-MoE mit 284 Milliarden Gesamtparametern, von denen pro Token nur 13 Milliarden aktiv sind. Das Modell arbeitet mit einem Kontextfenster von einer Million Tokens, unterstützt drei Reasoning-Modi und ist unter MIT-Lizenz als Open-Weight-Modell lokal betreibbar. Die chinesische Hersteller-Jurisdiktion erfordert bei Cloud-Nutzung eine separate Bewertung.",
   "supports_tool_use": true,
   "thinking_probe_at": "2026-05-03T18:34:58.651262+00:00",
   "thinking_probe_confidence": "medium",
@@ -65,7 +66,7 @@
     "text"
   ],
   "profile_verified": true,
-"profile_verified_at": "2026-06-20",
+  "profile_verified_at": "2026-06-20",
   "profile_verified_by": "llm:perplexity",
   "last_modified_at": "2026-06-20",
   "tooluse_tested_at": null,

@@ -17,22 +17,22 @@
   "params_active_b": 12,
   "context_window_k": 256,
   "knowledge_cutoff": "2025-01",
-  "summary": "Gemma 4 12B Instruct (Q6_K_XL, UndiX-Distribution) ist eine 6-Bit-Quantisierung von Googles encoder-freiem Multimodal-Modell (Release: 3. Juni 2026). Q6_K_XL bietet hohe Modellqualität bei moderatem Speicherbedarf und unterstützt Text, Bild, Audio und Video nativ ohne separate Encoder. Apache-2.0-Lizenz erlaubt uneingeschränkte kommerzielle Nutzung. Konfigurierbare Thinking-Modi (reasoning_tokens nachgewiesen). Im Benchmark ohne mmproj-Datei geladen – das Modell verhält sich als reines Text-LLM. Multimodalität ist durch Nachladen der separaten mmproj-GGUF (verfügbar via ggml-org/HuggingFace) aktivierbar.",
+  "summary": "Gemma 4 12B Instruct als Q6-Quantisierung der Unsloth-Community, basierend auf Googles encoder-freiem Multimodal-Modell. Mit zwölf Milliarden Parametern und 128.000 Tokens Kontextfenster arbeitet das Modell lokal ohne Cloud-Anbindung und ist unter Apache-2.0-Lizenz voll kommerziell nutzbar. Die Q6-Stufe bietet höhere Präzision als Q4 bei moderatem Mehrspeicher.",
   "strengths": [
-    "Q6_K_XL: höhere Präzision als Q4 bei ~20–25% mehr Speicherbedarf",
-    "Encoder-freie Multimodal-Architektur: Text, Bild, Audio und Video nativ",
-    "Konfigurierbare Thinking-Modi – reasoning_tokens in Probe nachgewiesen",
-    "Apache 2.0: vollständig kommerziell nutzbar, modifizierbar und verteilbar",
-    "Multi-Token-Prediction (MTP) Drafter für schnellere Inferenz"
+    "Q6-Quantisierung mit höherer Präzision als Q4 bei moderatem Mehrspeicher",
+    "Encoder-freie Multimodal-Architektur mit Text, Bild, Audio und Video nativ",
+    "Konfigurierbare Thinking-Modi mit nachgewiesenen Reasoning-Tokens",
+    "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit",
+    "Multi-Token-Prediction für schnellere Inferenz"
   ],
   "known_limitations": [
-    "Höherer VRAM-Bedarf als Q4-Varianten – M4 Mac (~18 GB UMA) ausreichend, aber knapper",
-    "Reduzierte Reasoning-Tiefe gegenüber größeren Gemma-4-Modellen (26B/31B)",
-    "Audio-Input in GGUF/llama.cpp-Deployment je nach Pipeline-Unterstützung eingeschränkt",
+    "Höherer Speicherbedarf als Q4-Varianten",
+    "Reduzierte Reasoning-Tiefe gegenüber grösseren Gemma-4-Varianten mit 26 oder 31 Milliarden Parametern",
+    "Audio-Eingabe je nach Pipeline-Unterstützung eingeschränkt",
     "Community-Distribution statt offizieller Google-Verpackung",
-	"Multimodalität externalisiert: Bild/Audio/Video erfordern eine separate mmproj-GGUF-Datei (~wenige MB bis ~1 GB). Die Unsloth-Variante nutzt keine separaten Encoder-Gewichte (encoder-frei), aber spezifische Projektions-Tensoren werden über mmproj bereitgestellt. Im Benchmark ohne mmproj geladen → reine Text-Inferenz."
+    "Multimodalität für Bild, Audio und Video erfordert eine separate Multimodal-Projektor-Datei"
   ],
-  "judge_context_hint": "Plattform: Apple M4 Mac (~18 GB Unified Memory, Metal-GPU, lokal — kein Cloud-Provider, kein externer Datentransfer). Encoder-freie Multimodal-Variante (Text, Bild, Audio, Video) mit konfigurierbaren Thinking-Modi (reasoning_tokens=512 nachgewiesen). Q6_K_XL bietet höhere Präzision als Q4 bei moderatem Mehrspeicher.",
+  "judge_context_hint": "Encoder-freie Multimodal-Variante auf Gemma-4-Basis mit konfigurierbaren Thinking-Modi. Bei der Bewertung die höhere Präzision durch Q6 berücksichtigen. Lokales Deployment ohne externen Datentransfer.",
   "architecture_tags": [
     "General",
     "Instruct",

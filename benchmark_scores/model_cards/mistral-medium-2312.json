@@ -12,13 +12,15 @@
   "display_name": "Mistral Medium 1.0",
   "generated_at": "2026-04-23T21:58:09.428713+00:00",
   "input_price_per_1m": null,
-  "judge_context_hint": "Proprietäres API-Modell für allgemeine Aufgaben. Bei der Bewertung sollte berücksichtigt werden, dass es sich um ein etabliertes Mittelklasse-Modell handelt, das im Vergleich zu neuesten Modellen weniger komplexen Reasoning-Fähigkeiten besitzt.",
+  "judge_context_hint": "Proprietäres API-Modell für allgemeine Aufgaben. Etabliertes Mittelklasse-Modell mit weniger komplexen Reasoning-Fähigkeiten als neuere Modelle. Modell ist seit Juni 2025 retired.",
   "knowledge_cutoff": "2023-12",
   "known_limitations": [
-    "Kein lokales Deployment der Gewichte möglich",
-    "Modell ist ein Vorgängermodell aktuellerer Mistral-Generationen",
-    "Kontextfenster ist im Vergleich zu aktuellen Frontier-Modellen begrenzt",
-    "Retired; nicht mehr als aktives Produktmodell führen"
+    [
+      "Retired seit dem 16. Juni 2025, nicht mehr als aktives Produktmodell geführt",
+      "Kein lokales Deployment der Gewichte möglich",
+      "Vorgängermodell aktuellerer Mistral-Generationen mit weniger komplexen Reasoning-Fähigkeiten",
+      "Kontextfenster im Vergleich zu aktuellen Frontier-Modellen begrenzt"
+    ]
   ],
   "license": "Proprietary",
   "license_url": null,
@@ -34,11 +36,13 @@
   "primary_focus": "general",
   "size_class": "Server",
   "strengths": [
-    "Optimale Balance zwischen Antwortqualität, Latenz und Kosten",
-    "Gute Leistung bei multilingualen Standardaufgaben",
-    "Einfache Integration über die offizielle Mistral-API"
+    [
+      "Ausgewogene Balance zwischen Antwortqualität, Latenz und Kosten",
+      "Gute Leistung bei multilingualen Standardaufgaben",
+      "Einfache Integration über die offizielle Mistral-API"
+    ]
   ],
-  "summary": "Mistral Medium 1.0 ist ein proprietäres API-Modell von Mistral AI, das für allgemeine produktive Anwendungen konzipiert wurde. Es bietet ein Kontextfenster von 32K Token und ist auf eine ausgewogene Balance zwischen Antwortqualität und Effizienz optimiert. Das Modell ist ausschließlich über die Mistral-API zugänglich und wurde am 16. Juni 2025 retired.",
+  "summary": "Mistral Medium 1.0 ist ein proprietäres API-Modell von Mistral AI für allgemeine produktive Anwendungen. Das Modell arbeitet mit einem Kontextfenster von 32.000 Tokens und ist auf eine ausgewogene Balance zwischen Antwortqualität und Effizienz ausgelegt. Mistral AI hat das Modell am 16. Juni 2025 eingestellt, es ist ausschliesslich über die Mistral-API zugänglich und wird nicht mehr als aktives Produktmodell geführt.",
   "supports_tool_use": true,
   "thinking_probe_detected": false,
   "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 519 chars",

@@ -14,12 +14,12 @@
   "display_name": "DeepSeek V4 Pro",
   "generated_at": "2026-05-03T19:31:34.837029+00:00",
   "input_price_per_1m": 0.435,
-  "judge_context_hint": "Flaggschiff-Reasoning-Modell der DeepSeek-V4-Linie mit konfigurierbarem Thinking-Modus (Non-Thinking / Thinking / Think Max). Der Fokus sollte auf Argumentationsqualität und Aufgabenlösung liegen, nicht auf lokaler Betriebsfähigkeit.",
+  "judge_context_hint": "Flaggschiff-Reasoning-Modell der DeepSeek-V4-Linie mit konfigurierbarem Thinking-Modus. Bei der Bewertung Argumentationsqualität und Aufgabenlösung gewichten, nicht lokale Betriebsfähigkeit. Chinesische Jurisdiktion macht eine gesonderte Bewertung des Cloud-Einsatzes erforderlich.",
   "knowledge_cutoff": "2025-05",
   "known_limitations": [
-    "Chinesischer Anbieter mit erhöhtem Sovereign-Risk – BSI-Warnung vom 04.02.2025 gilt für Cloud-API-Nutzung",
-    "Höhere Latenz und Kosten als V4-Flash bei gleicher Kontextgröße",
-    "Open-Weights-Betrieb lokal unpraktisch (1.6T Parameter erfordern extreme Hardware-Kapazität)"
+    "Chinesisches nationales Sicherheitsgesetz: bei Cloud-Nutzung kann staatlicher Zugriff auf Daten bestehen, BSI hat im Februar 2025 vor dem Cloud-Dienst gewarnt",
+    "Höhere Latenz und Kosten als die V4-Flash-Variante bei gleicher Kontextgrösse",
+    "Lokaler Betrieb der vollen Variante erfordert extreme Hardware-Kapazität"
   ],
   "license": "MIT",
   "license_url": "https://github.com/deepseek-ai/DeepSeek-V4/blob/main/LICENSE",
@@ -35,12 +35,13 @@
   "primary_focus": "reasoning",
   "size_class": "Frontier",
   "strengths": [
-    "1.6T/49B Hybrid-Attention-MoE – größtes Open-Weight-Modell (SWE-bench 80.6%, Codeforces 3206)",
-    "Drei Reasoning-Modi: Non-Thinking, Thinking, Think Max – konfigurierbar per API",
-    "1M-Token-Kontextfenster mit nur 27% der FLOPs und 10% KV-Cache von V3.2",
-    "Wettbewerbsfähiges Pricing (~1/7 des Preises vergleichbarer Frontier-Modelle)"
+    "MoE-Architektur mit 49 Milliarden aktiven Parametern bei insgesamt 1,6 Billionen Gesamtparametern",
+    "Drei konfigurierbare Reasoning-Modi: Non-Thinking, Thinking und Think Max",
+    "Kontextfenster von einer Million Tokens mit effizienter Architektur-Ausnutzung",
+    "MIT-Lizenz mit offenen Gewichten und vollständig kommerzieller Nutzbarkeit",
+    "Preislich deutlich unterhalb vergleichbarer Frontier-Modelle"
   ],
-  "summary": "DeepSeek V4 Pro ist DeepSeeks Flaggschiff-Open-Weight-Modell (1.6T Parameter, 49B aktiv) mit Hybrid-Attention-MoE-Architektur (CSA + HCA). Es unterstützt drei Reasoning-Modi (Non-Thinking / Thinking / Think Max) und ein 1M-Token-Kontextfenster. Optimiert für komplexe Coding-, Reasoning- und agentische Aufgaben – bei Frontier-Niveau und wettbewerbsfähigem Preis. Aufgrund chinesischer Jurisdiktion gilt für API-Nutzung erhöhtes Sovereign-Risk.",
+  "summary": "DeepSeek V4 Pro ist das Flaggschiff der V4-Linie und auf Reasoning, Coding und agentische Workflows ausgelegt. Die Hybrid-Attention-MoE-Architektur vereint 1,6 Billionen Gesamtparameter mit 49 Milliarden aktiven Parametern pro Token und einem Kontextfenster von einer Million Tokens. Das Modell ist unter MIT-Lizenz als Open-Weight-Modell verfügbar, wobei die chinesische Jurisdiktion bei Cloud-Nutzung eine separate Datenschutz-Bewertung erforderlich macht.",
   "supports_tool_use": true,
   "thinking_probe_at": "2026-05-03T19:31:34.837023+00:00",
   "thinking_probe_confidence": "medium",

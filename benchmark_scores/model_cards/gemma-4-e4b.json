@@ -14,13 +14,13 @@
   "display_name": "Gemma 4 E4B",
   "generated_at": "2026-05-30T15:54:49.249742+00:00",
   "input_price_per_1m": 0.0,
-  "judge_context_hint": "Plattform: Apple M4 Mac (~18 GB Unified Memory, Metal-GPU, lokal — kein Cloud-Provider, kein externer Datentransfer). Edge-Modell mit nativ integriertem Audio-Encoder (USM-style conformer, max. 30s) und Vision-Encoder – kein mmproj erforderlich. Konfigurierbare Thinking-Modi über reasoning_content API-Feld. Bewertung sollte Effizienz und brauchbares Instruction-Following betonen.",
+  "judge_context_hint": "Edge-Modell mit hybrider Per-Layer-Embedding-Architektur und nativer Vier-Modalitäten-Verarbeitung. Lokal betreibbar mit moderatem Speicherbedarf. Thinking-Modus über Reasoning-Token-Feld gesteuert. Bei der Bewertung Effizienz und Modalitäten-Abdeckung gegen die reduzierte Kapazität gewichten.",
   "knowledge_cutoff": "2025-01",
   "known_limitations": [
-    "Leistung hinter deutlich größeren Modellen (26B/31B) der Gemma-4-Familie",
-    "Audio-Input auf max. 30 Sekunden begrenzt",
-    "Video-Input: max. 60 Sekunden bei 1 fps – keine Audio-Spur bei Video",
-    "Thinking-Modus triggert nicht bei einfachen Tasks – nur bei komplexen Aufgaben aktiv"
+    "Leistung fällt deutlich hinter die grösseren 26B- und 31B-Varianten der Gemma-4-Familie zurück",
+    "Audio-Eingabe auf maximal 30 Sekunden begrenzt",
+    "Video-Eingabe maximal 60 Sekunden bei einem Bild pro Sekunde, ohne Audio-Spur",
+    "Thinking-Modus springt nur bei komplexen Aufgaben an, nicht bei einfachen Tasks"
   ],
   "license": "Apache 2.0",
   "license_url": "https://opensource.org/licenses/Apache-2.0",
@@ -36,13 +36,13 @@
   "primary_focus": "general",
   "size_class": "Edge",
   "strengths": [
-    "Einzige offene Edge-Modellgröße mit nativem Text + Bild + Audio + Video in einem Gewichtspaket",
-    "Per-Layer Embeddings (PLE): höhere Qualität pro Parameter als klassische Dense-Architektur",
-    "Konfigurierbare Thinking-Modi – reasoning_content API-Feld nachgewiesen (high confidence)",
-    "Sehr geringer VRAM-Bedarf (~5 GB bei Q4) – läuft auf M4 Mac, Smartphone, Edge-Hardware",
-    "Apache 2.0: vollständig kommerziell nutzbar und modifizierbar"
+    "Nativ alle vier Modalitäten in einem Gewichtspaket, ohne separate Multimodal-Projektor-Datei",
+    "Per-Layer-Embeddings für höhere Qualität pro Parameter als klassische Dense-Architektur",
+    "Konfigurierbare Thinking-Modi mit nachgewiesenem Reasoning-Token-Feld",
+    "Sehr geringer Speicherbedarf bei Q4-Quantisierung",
+    "Kommerziell nutzbar und modifizierbar unter Apache-2.0-Lizenz"
   ],
-  "summary": "Gemma 4 E4B ist Googles Edge-Modell mit nativ integriertem Audio- (USM-style conformer, max. 30s) und Vision-Encoder. Als einzige Größe in der Gemma-4-Familie unterstützt E4B alle vier Modalitäten (Text, Bild, Video, Audio) in einem Gewichtspaket ohne externen mmproj. 4,5B effektive Parameter via Per-Layer Embeddings (PLE), 128K Kontext, konfigurierbare Thinking-Modi, Apache 2.0.",
+  "summary": "Was die meisten Edge-Modelle nicht können: Text, Bild, Audio und Video in einem einzigen Gewichtspaket verarbeiten, ohne separate Multimodal-Projektor-Datei. Gemma 4 E4B nutzt Per-Layer-Embeddings für 4,5 Milliarden effektive Parameter und läuft mit rund 5 Gigabyte VRAM auf Edge-Hardware. Konfigurierbare Thinking-Modi und 128.000-Token-Kontext unter Apache-2.0-Lizenz runden das Profil ab.",
   "supports_tool_use": true,
   "thinking_probe_at": "2026-05-30T16:33:18.488908+00:00",
   "thinking_probe_confidence": "high",

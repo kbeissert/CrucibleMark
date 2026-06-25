@@ -12,11 +12,14 @@
   "display_name": "GPT-4o Mini",
   "generated_at": "2026-06-10T18:28:14.912446+00:00",
   "input_price_per_1m": 0.15,
-  "judge_context_hint": "GPT-4o Mini ist auf Effizienz optimiert und kann bei komplexen mehrstufigen Aufgaben oder tiefem Reasoning hinter größeren Modellen zurückbleiben – Antworten sollten auf Vollständigkeit und Präzision geprüft werden.",
+  "judge_context_hint": "Kompaktes OpenAI-Modell auf Effizienz optimiert. Bei komplexen mehrstufigen Aufgaben oder tiefem Reasoning kann GPT-4o Mini hinter grösseren Modellen zurückbleiben. Bei der Bewertung Vollständigkeit und Präzision prüfen.",
   "knowledge_cutoff": "2023-10",
   "known_limitations": [
-    "Deutlich schwächer als GPT-4o bei komplexen Reasoning-, Mathematik- und Coding-Aufgaben",
-    "Kein lokaler Betrieb möglich – vollständige Abhängigkeit von OpenAIs Cloud-Infrastruktur"
+    [
+      "Deutlich schwächer als GPT-4o bei komplexen Reasoning-, Mathematik- und Coding-Aufgaben",
+      "Kein lokaler Betrieb möglich, vollständige Abhängigkeit von OpenAIs Cloud-Infrastruktur",
+      "Kein nachweisbarer Thinking-Modus"
+    ]
   ],
   "license": "Proprietary",
   "license_url": null,
@@ -32,11 +35,14 @@
   "primary_focus": "general",
   "size_class": "Server",
   "strengths": [
-    "Sehr kosteneffizient bei guter Antwortqualität für Standardaufgaben",
-    "Schnelle Inferenz mit niedrigen Latenzen, geeignet für Echtzeit-Anwendungen",
-    "Solides Instruction-Following und Mehrsprachigkeit über viele Sprachen hinweg"
+    [
+      "Sehr kosteneffizient bei guter Antwortqualität für Standardaufgaben",
+      "Schnelle Inferenz mit niedrigen Latenzen für Echtzeit-Anwendungen",
+      "Solides Instruction-Following und Mehrsprachigkeit über viele Sprachen",
+      "Verarbeitung von Text- und Bildeingaben"
+    ]
   ],
-  "summary": "GPT-4o Mini ist OpenAIs kompaktes Einstiegsmodell der GPT-4o-Familie – ausgelegt auf niedrige Kosten und schnelle Antwortzeiten. Es ist ausschließlich über die OpenAI-API verfügbar und eignet sich für alltägliche Aufgaben wie Klassifikation, einfache Textgenerierung und kosteneffiziente Automatisierungen.",
+  "summary": "GPT-4o Mini ist OpenAIs kompaktes Einstiegsmodell der GPT-4o-Familie, ausgelegt auf niedrige Kosten und schnelle Antwortzeiten. Mit einem Kontextfenster von 128.000 Tokens verarbeitet das Modell Text- und Bildeingaben, ist ausschliesslich über die OpenAI-API verfügbar und eignet sich für alltägliche Aufgaben wie Klassifikation, einfache Textgenerierung und kosteneffiziente Automatisierung.",
   "supports_tool_use": true,
   "thinking_probe_at": "2026-04-23T13:55:59.170160+00:00",
   "thinking_probe_confidence": "low",

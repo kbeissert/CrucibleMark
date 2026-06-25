@@ -17,17 +17,24 @@
   "params_active_b": null,
   "context_window_k": 200,
   "knowledge_cutoff": "2023-10",
-  "summary": "OpenAI o1 ist OpenAIs erstes dediziertes Reasoning-Modell – trainiert auf internem Chain-of-Thought und ausgelegt auf komplexe Mathematik-, Logik- und Wissenschaftsaufgaben. Es ist ausschließlich über die OpenAI-API verfügbar und eignet sich besonders dort, wo gründliches mehrstufiges Schlussfolgern wichtiger ist als niedrige Latenz.",
+  "summary": "OpenAI o1 ist OpenAIs erstes dediziertes Reasoning-Modell, trainiert auf internem Chain-of-Thought und ausgelegt auf komplexe Mathematik-, Logik- und Wissenschafts-aufgaben. Das Modell arbeitet mit einem Kontextfenster von 200.000 Tokens, ist ausschliesslich über die OpenAI-API verfügbar und eignet sich besonders dort, wo gründliches mehrstufiges Schlussfolgern wichtiger ist als niedrige Latenz.",
   "strengths": [
-    "Herausragende Leistung bei komplexen mathematischen und logischen Aufgaben",
-    "Robustes mehrstufiges Schlussfolgern durch internen Chain-of-Thought",
-    "Starke Leistung bei wissenschaftlichen und programmiertechnischen Problemstellungen"
+    [
+      "Herausragende Leistung bei komplexen mathematischen und logischen Aufgaben",
+      "Robustes mehrstufiges Schlussfolgern durch internen Chain-of-Thought",
+      "Starke Leistung bei wissenschaftlichen und programmiertechnischen Problemstellungen",
+      "Konfigurierbares Reasoning für ausführliche oder fokussierte Antworten"
+    ]
   ],
   "known_limitations": [
-    "Deutlich langsamer und teurer als GPT-4o durch internen Reasoning-Overhead",
-    "Kein Zugriff auf Echtzeit-Informationen; Wissensstand auf Trainings-Cutoff begrenzt"
+    [
+      "Deutlich langsamer und teurer als GPT-4o durch internen Reasoning-Overhead",
+      "Kein Zugriff auf Echtzeit-Informationen, Wissensstand auf Trainings-Cutoff begrenzt",
+      "Reasoning-Schritte nicht in der API-Antwort sichtbar",
+      "Bei einfachen Aufgaben gelegentlich zur Überanalyse neigend"
+    ]
   ],
-  "judge_context_hint": "o1 denkt intern länger nach und liefert oft präzisere, aber auch ausführlichere Antworten – bei einfachen Aufgaben kann es zur Überanalyse neigen.",
+  "judge_context_hint": "Reasoning-Modell mit internem Chain-of-Thought. Liefert oft präzisere, aber auch ausführlichere Antworten. Bei einfachen Aufgaben kann es zur Überanalyse neigen. Bei der Bewertung Reasoning-Tiefe gegenüber Latenz abwägen.",
   "architecture_tags": [
     "General",
     "Instruct",

@@ -13,12 +13,12 @@
   "display_name": "Devstral 2",
   "generated_at": "2026-05-26T02:14:04.591440+00:00",
   "input_price_per_1m": 0.4,
-  "judge_context_hint": "Code-Agent-Modell mit Fokus auf Projektarbeit und Debugging. Bewertet werden sollten praktische Codefortschritte und Robustheit in Multi-File-Workflows.",
+  "judge_context_hint": "Code-Agent-Modell mit Fokus auf Projektarbeit und Debugging. Bei der Bewertung praktische Code-Fortschritte und Robustheit in Multi-File-Workflows gewichten. Europäischer Anbieter unter DSGVO und AI Act, niedriges Sovereign-Risk.",
   "knowledge_cutoff": "2024-12",
   "known_limitations": [
-    "Weniger geeignet für allgemeine Dialogaufgaben",
+    "Weniger geeignet für allgemeine Dialogaufgaben ausserhalb des Code-Kontexts",
     "Tool- und Parser-Fehler können in komplexen Workflows auftreten",
-    "Kein Thinking-Modus – reines Instruction-Following-Modell"
+    "Kein Thinking-Modus, reines Instruction-Following-Modell"
   ],
   "license": "modified-MIT",
   "license_url": "https://huggingface.co/mistralai/Devstral-2-123B-Instruct-2512",
@@ -34,12 +34,12 @@
   "primary_focus": "coding",
   "size_class": "Frontier",
   "strengths": [
-    "Stark für agentisches Software-Engineering (Codebasis-Exploration, Multi-File-Änderungen, Bug-Fixing)",
-    "Native Vision-Unterstützung für Bild-Inputs (Code-Screenshots, Diagramme)",
-    "256K Kontextfenster für komplexe Projekte und große Codebasen",
-    "Open-Weights unter modified-MIT – fine-tunable für spezifische Sprachen und Enterprise-Codebasen"
+    "Stark für agentisches Software-Engineering wie Codebasis-Exploration, Multi-File-Änderungen und Bug-Fixing",
+    "Native Vision-Unterstützung für Bild-Eingaben wie Code-Screenshots und Diagramme",
+    "Kontextfenster von 256.000 Tokens für komplexe Projekte und grosse Codebasen",
+    "modified-MIT-Lizenz mit offenen Gewichten, fine-tunable für spezifische Sprachen und Enterprise-Codebasen"
   ],
-  "summary": "Devstral 2 ist Mistral AIs Frontier-Code-Agent-Modell (123B Dense Transformer) für agentisches Software-Engineering. Optimiert für Codebasis-Exploration, Multi-File-Änderungen, Debugging und Legacy-Modernisierung mit 256K Kontextfenster und nativer Vision-Unterstützung. Das Modell steht als Open-Weights-Modell unter modified-MIT-Lizenz zur Verfügung und ist auch über die Mistral API abrufbar.",
+  "summary": "Devstral 2 ist Mistral AIs Code-Agent für anspruchsvolle Software-Engineering-Aufgaben. Mit 123 Milliarden Parametern arbeitet das Modell auf Codebasis-Exploration, Multi-File-Änderungen, Debugging und Legacy-Modernisierung, unterstützt ein Kontextfenster von 256.000 Tokens und verarbeitet neben Text auch Bildeingaben. Als Open-Weights-Modell unter modified-MIT-Lizenz verfügbar, aus einem europäischen Anbieter-Umfeld mit DSGVO-Konformität.",
   "supports_tool_use": true,
   "thinking_probe_at": "2026-05-26T02:14:04.591427+00:00",
   "thinking_probe_confidence": "low",
@@ -74,7 +74,7 @@
   "system_prompt_override": null,
   "cot_marker_family": null,
   "cot_tags_detected": null,
-"profile_verified_at": "2026-06-20",
+  "profile_verified_at": "2026-06-20",
   "profile_verified_by": "llm:perplexity",
   "last_modified_at": "2026-06-20",
   "heritage_ids": [],

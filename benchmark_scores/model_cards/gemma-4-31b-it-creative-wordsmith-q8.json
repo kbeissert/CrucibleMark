@@ -17,23 +17,22 @@
   "params_active_b": null,
   "context_window_k": 256,
   "knowledge_cutoff": "2025-01",
-  "summary": "Gemma 4 31B Creative Wordsmith Uncensored Q8_0 ist eine vierstufige Community-Derivat-Kette: Google Gemma 4 31B IT → ConicCat Garnet-V2 Fine-Tune (Prosa/Kreativschreiben) → llmfan46 Heretic-v1.2.0 ARA-Abliteration (Sicherheitsfilter entfernt) → mradermacher Q8_0 GGUF (32,6 GB). Im Benchmark ohne mmproj geladen → reine Text-Inferenz. Q8_0 bietet nahezu F16-Qualität. Primär für kreatives Schreiben, Rollenspiel und Übersetzung optimiert.",
+  "summary": "Vierstufige Community-Derivat-Kette auf Gemma-4-31B-Basis: Google DeepMind als Ursprung, dann ConicCat-Fine-Tune für kreative Prosa, eine Abliteration durch llmfan46 zur Entfernung der Sicherheitsfilter und schliesslich eine Q8-Quantisierung von mradermacher. Das uncensored-Modell ist auf kreatives Schreiben, Rollenspiel und Übersetzung optimiert, arbeitet mit 128.000 Tokens Kontextfenster und ist unter Apache-2.0-Lizenz lokal betreibbar.",
   "strengths": [
-    "Q8_0: nahezu F16-Qualität – 32,6 GB GGUF, sehr geringer Quantisierungsverlust",
-    "Optimierte Prosa: höhere sprachliche Dichte und Ausdrucksstärke als Basismodell (Garnet-V2 Fine-Tune)",
-    "ARA-Abliteration (Arbitrary-Rank Ablation): Refusal-Verhalten entfernt bei minimalen Qualitätseinbussen",
-    "Konfigurierbare Thinking-Modi – 3/3 genuine Inline-CoT in Probe nachgewiesen (medium confidence)",
-    "256K Kontextfenster für lange kreative Aufgaben und Rollenspiel-Sessions"
+    "Q8-Quantisierung mit nahezu Vollpräzision",
+    "Auf kreative Prosa optimierte Variante mit höherer sprachlicher Dichte als das Basismodell",
+    "Abliterierte Variante mit entfernten Sicherheitsfiltern",
+    "Konfigurierbare Thinking-Modi mit nachgewiesenen Reasoning-Spuren",
+    "Kontextfenster von 128.000 Tokens für lange kreative Aufgaben"
   ],
   "known_limitations": [
-    "Mehrstufige Modifikationskette (4 Stufen) – vollständige Nachvollziehbarkeit eingeschränkt",
-    "Keine Sicherheitsfilter (abliteriert) – kann unzensierte Inhalte generieren",
-    "Multimodalität externalisiert: Bild/Audio/Video erfordern separate mmproj-GGUF (~0,9 GB). Im Benchmark ohne mmproj geladen → reine Text-Inferenz.",
-    "Hoher VRAM-Bedarf: ~32–35 GB für Q8_0 – erfordert Workstation-Hardware (DGX Spark etc.)",
-    "Keine offizielle Validierung oder Support durch Google DeepMind",
-    "Kein MTP-Drafter verfügbar – Gemma 4 31B MTP erfordert separates Assistant-Modell"
+    "Vierstufige Modifikationskette schränkt die vollständige Nachvollziehbarkeit ein",
+    "Keine Sicherheitsfilter durch die Abliteration",
+    "Multimodalität für Bild, Audio und Video erfordert eine separate Multimodal-Projektor-Datei",
+    "Hoher Speicherbedarf durch Q8-Quantisierung, erfordert Workstation-Hardware",
+    "Keine offizielle Validierung oder Unterstützung durch Google DeepMind"
   ],
-  "judge_context_hint": "Plattform: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, 128 GB Unified Memory; Intranet-lokal — kein Cloud-Provider, kein externer Datentransfer). Vierstufige Community-Derivat-Kette auf Gemma-4-31B-Basis. Ohne mmproj geladen → reine Text-Inferenz. Konfigurierbare Thinking-Modi aktiv (3/3 Probe). Fokus auf kreative Prosaqualität – Sicherheitsfilter abliteriert.",
+  "judge_context_hint": "Vierstufiges Community-Derivat auf Gemma-4-31B-Basis. Fokus auf kreative Prosa und Rollenspiel mit entfernten Sicherheitsfiltern. Bei der Bewertung sprachliche Qualität erwarten. Konfigurierbare Thinking-Modi aktiv. Lokales Deployment ohne externen Datentransfer.",
   "architecture_tags": [
     "General",
     "Instruct",

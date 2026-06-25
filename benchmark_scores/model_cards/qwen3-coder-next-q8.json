@@ -17,19 +17,25 @@
   "params_active_b": 3.0,
   "context_window_k": 262,
   "knowledge_cutoff": "2025-05",
-  "summary": "Qwen3-Coder-Next ist ein sparsames Open-Weights-MoE-Modell von Alibaba mit 80B Gesamt- und 3B aktiven Parametern. Es wurde speziell für Coding-Agents, Tool-Use und große Codebasen entwickelt und unterstützt ein natives Kontextfenster von 262K Token. Die Q8_K_XL-Quantisierung bietet hohe Textqualität bei effizientem lokalem Betrieb auf leistungsstarker Hardware.",
+  "summary": "Qwen 3 Coder Next ist ein Coding-spezialisiertes Open-Weights-MoE-Modell von Alibaba mit 80 Milliarden Gesamt- und 3 Milliarden aktiven Parametern. Die Q8-Quantisierung bietet hohe Qualität nahe am Original für lokales Deployment, das Kontextfenster umfasst 262.000 Tokens für grosse Codebasen. Unter Apache-2.0-Lizenz auf Workstation-Hardware lokal betreibbar, optimiert für Coding-Agents und Tool-Use.",
   "strengths": [
-    "Starke Ausrichtung auf Coding-Agents, Tool Use und IDE-Workflows",
-    "262K Kontextfenster für große Codebasen und lange Sitzungen",
-    "Q8_K_XL-Quantisierung mit sehr hoher Annäherung an die Originalqualität",
-    "Effiziente MoE-Architektur mit nur 3B aktiven Parametern pro Token"
+    [
+      "Auf Coding-Agents, Tool-Use und IDE-Workflows ausgerichtet",
+      "Kontextfenster von 262.000 Tokens für grosse Codebasen und lange Sitzungen",
+      "Q8-Quantisierung mit sehr hoher Annäherung an die Originalqualität",
+      "Effiziente MoE-Architektur mit nur 3 Milliarden aktiven Parametern pro Token",
+      "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit"
+    ]
   ],
   "known_limitations": [
-    "Keine offizielle Cloud-API verfügbar",
-    "Chinesische Herkunft erfordert Compliance-Bewertung",
-    "Spezialisierung auf Coding kann bei allgemeinen Dialogaufgaben zu Lasten der Generalisierung gehen"
+    [
+      "Keine offizielle Cloud-API verfügbar",
+      "Chinesische Herkunft erfordert Compliance-Bewertung bei Cloud-Nutzung",
+      "Spezialisierung auf Coding kann bei allgemeinen Dialogaufgaben zu Lasten der Generalisierung gehen",
+      "Kein Thinking-Modus, keine sichtbaren CoT-Blöcke"
+    ]
   ],
-  "judge_context_hint": "Lokale Q8-Variante für Coding-Workloads auf NVIDIA DGX Spark. Das Modell ist für Coding-Agents und Tool Use optimiert, arbeitet im Non-Thinking-Mode und sollte auf logische Korrektheit sowie praktische Codeunterstützung geprüft werden.",
+  "judge_context_hint": "Lokale Q8-Variante für Coding-Workloads mit Workstation-Hardware. Bei der Bewertung logische Korrektheit sowie praktische Codeunterstützung prüfen. Non-Thinking-Mode, kein sichtbares Reasoning.",
   "architecture_tags": [
     "Coder",
     "Agentic-Orchestrator"

@@ -131,8 +131,6 @@ providers:
         name: Qwen 3 (32B) via Groq
       - id: openai/gpt-oss-120b
         name: GPT-OSS 120B via Groq
-      - id: openai/gpt-oss-20b
-        name: GPT-OSS 20B via Groq
 
     cohere:
       name: Cohere

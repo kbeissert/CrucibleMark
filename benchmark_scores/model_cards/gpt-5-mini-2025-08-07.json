@@ -17,18 +17,23 @@
   "params_active_b": null,
   "context_window_k": 400,
   "knowledge_cutoff": "2024-05",
-  "summary": "GPT-5 Mini ist OpenAIs kleinere GPT-5-Variante für allgemeine, kosten- und latenzsensitive Workloads. Es eignet sich für klar definierte Aufgaben, strukturierte Ausgaben und multimodale Eingaben über die OpenAI-API. Die Variante ist auf Effizienz ausgelegt und bleibt hinter den größeren GPT-5-Modellen in Tiefe und Breite zurück.",
+  "summary": "GPT-5 Mini ist die kompakte GPT-5-Variante für kosten- und latenzsensitive Workloads. Trotz der Nano-Klasse bietet das Modell ein Kontextfenster von 400.000 Tokens und unterstützt multimodale Eingaben für Text und Bild. Verfügbar ausschliesslich über die OpenAI-API, eignet es sich für klar definierte Aufgaben, strukturierte Ausgaben und hohe Volumen.",
   "strengths": [
-    "Gute Balance aus Geschwindigkeit und Qualität",
-    "Geeignet für klar definierte Aufgaben",
-    "Unterstützt strukturierte Ausgaben und Function Calling"
+    [
+      "Gute Balance aus Geschwindigkeit und Antwortqualität für hohe Volumen",
+      "Kontextfenster von 400.000 Tokens in der Nano-Klasse ungewöhnlich grosszügig",
+      "Verarbeitung von Text- und Bildeingaben",
+      "Unterstützung für strukturierte Ausgaben und Function Calling"
+    ]
   ],
   "known_limitations": [
-    "Deutlich kleinere Variante als GPT-5",
-    "Nur über die OpenAI-API nutzbar",
-    "Weniger stark bei tiefem Reasoning"
+    [
+      "Deutlich kleiner als die grösseren GPT-5-Varianten, weniger Tiefe und Breite",
+      "Ausschliesslich über die OpenAI-API nutzbar",
+      "Weniger stark bei tiefem Reasoning als die grösseren GPT-5-Modelle"
+    ]
   ],
-  "judge_context_hint": "Kompakte GPT-5-Variante für hohe Volumina. Der Fokus sollte auf Präzision und Reaktionsgeschwindigkeit liegen, nicht auf maximaler Reasoning-Tiefe.",
+  "judge_context_hint": "Kompakte GPT-5-Variante für hohe Volumen mit ungewöhnlich grosszügigem Kontextfenster für die Nano-Klasse. Bei der Bewertung Präzision und Reaktionsgeschwindigkeit gewichten, nicht maximale Reasoning-Tiefe.",
   "architecture_tags": [
     "General",
     "Instruct",

@@ -10,17 +10,19 @@
   "weights_provenance_risk_rationale": "Meta ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act, der staatlichen Zugriff auf Daten bei API-Nutzung ermöglichen kann. Die Gewichte sind öffentlich verfügbar. Die Llama 4 Community License schließt multimodale Llama-4-Modelle für EU-Domizilierte bei Selbstbetrieb/Deployment aus; Endkundennutzung über Drittanbieter-APIs bleibt davon getrennt zu bewerten.",
   "model_family": "Llama",
   "primary_focus": "vision-language",
-  "summary": "Llama 4 Scout ist ein multimodales Modell der vierten Llama-Generation von Meta. Es kombiniert allgemeine Sprachverarbeitung mit Bildverständnis in einer effizienten Mixture-of-Experts-Architektur mit 109 Milliarden Parametern (17 Milliarden aktiv). Das Modell bietet ein Kontextfenster von 128K Token und ist für Cloud-Deployments optimiert.",
+  "summary": "Llama 4 Scout ist Metas multimodales Modell der vierten Llama-Generation, das allgemeine Sprachverarbeitung mit Bildverständnis in einer effizienten MoE-Architektur kombiniert. Von 109 Milliarden Gesamtparametern sind pro Token nur 17 Milliarden aktiv, das Kontextfenster umfasst 128.000 Tokens. Unter der Llama-4-Community-Lizenz verfügbar, die für EU-Domizilierte bei Self-Hosting und Deployment Einschränkungen enthält.",
   "strengths": [
-    "Effiziente MoE-Architektur: hohe Leistung bei vergleichsweise geringem Rechenaufwand",
-    "Multimodale Fähigkeiten: Unterstützung von Text- und Bild-Inputs",
-    "Optimiert für allgemeine Sprachaufgaben und visuelle Analyse"
+    "Effiziente MoE-Architektur mit hoher Leistung bei vergleichsweise geringem Rechenaufwand",
+    "Multimodale Fähigkeiten für Text- und Bild-Eingaben",
+    "Optimiert für allgemeine Sprachaufgaben und visuelle Analyse",
+    "Open Weights mit lokaler Betriebsfähigkeit"
   ],
   "known_limitations": [
-    "Als MoE-Modell höherer Speicherbedarf für alle Expertengewichte trotz geringer aktiver Parameter",
-    "Multimodale Ausgabe (Bildgenerierung) nicht unterstützt – nur Textausgabe"
+    "MoE-Architektur erfordert Speicher für alle Expertengewichte trotz geringer aktiver Parameter",
+    "Keine Bildausgabe, nur Textausgabe",
+    "Llama-4-Community-Lizenz schränkt EU-Domizilierte bei Selbstbetrieb ein"
   ],
-  "judge_context_hint": "Das Modell nutzt eine Mixture-of-Experts-Architektur. Es ist auf effiziente Verarbeitung ausgelegt, kann jedoch bei sehr kurzen Aufgaben tendenziell ausschweifender antworten als reine Dense-Modelle.",
+  "judge_context_hint": "Metas multimodales MoE-Modell auf effiziente Verarbeitung ausgelegt. Bei der Bewertung Sprachverarbeitung und Bildverständnis gewichten. Bei sehr kurzen Aufgaben gelegentlich ausschweifender als reine Dense-Modelle.",
   "architecture_tags": [
     "General",
     "Instruct",

@@ -17,23 +17,26 @@
   "params_active_b": 3.2,
   "context_window_k": 1000,
   "knowledge_cutoff": "2026-04",
-  "summary": "NVIDIA Nemotron 3 Nano 30B A3B ist ein effizientes Hybrid-MoE-Modell (Mamba-2 + Transformer) der Nemotron-3-Serie. Mit 31,6 Milliarden Gesamtparametern und nur 3,2 Milliarden aktiven Parametern pro Forward-Pass bietet es 3,3× höheren Durchsatz als Qwen3-30B-A3B bei vergleichbarer Genauigkeit. Das Modell unterstützt bis zu 1M-Token-Kontext, konfigurierbares Reasoning (Thinking on/off, Thinking Budget) und native Tool-Calls – ausgelegt für Agentic AI, Coding und Long-Context-Tasks.",
+  "summary": "NVIDIA Nemotron 3 Nano 30B A3B ist ein effizientes Hybrid-Modell aus der Nemotron-3-Serie, das Mamba-2 mit Transformer-Schichten kombiniert. Bei 31,6 Milliarden Gesamtparametern aktiviert das Modell nur 3,2 Milliarden pro Token, das Kontextfenster umfasst bis zu eine Million Tokens. Optionaler Thinking-Modus mit konfigurierbarem Budget, native Tool-Aufrufe und Agentic-Fähigkeiten ab Werk. Unter NVIDIA Open Model License als Open-Weights-Modell verfügbar.",
   "strengths": [
-    "Open Weights (NVIDIA Open Model License) – vollständig lokal deploybar",
-    "Nur 3,2B aktive Parameter – 3,3× höherer Durchsatz als Qwen3-30B-A3B bei gleicher Genauigkeit",
-    "Bis zu 1M-Token-Kontext – state-of-the-art auf RULER Long-Context-Benchmark",
-    "Konfigurierbares Reasoning: Thinking on/off + Thinking Budget für vorhersagbare Inferenzkosten",
-    "Native Tool-Use und Agentic-Capabilities ab Werk",
-    "Hybrid Mamba-2 + Transformer MoE – effizientes Long-Context-Handling ohne Standard-Transformer-Overhead"
+    [
+      "Open Weights unter NVIDIA Open Model License, vollständig lokal deploybar",
+      "Nur 3,2 Milliarden aktive Parameter pro Token für effiziente Inferenz",
+      "Kontextfenster von bis zu einer Million Tokens",
+      "Konfigurierbares Reasoning mit Thinking-Budget-Steuerung",
+      "Native Tool-Use und Agentic-Fähigkeiten",
+      "Hybrid-Mamba-2-plus-Transformer-Architektur für effizientes Long-Context-Handling"
+    ]
   ],
   "known_limitations": [
-    "NVIDIA Open Model License ist keine OSI-anerkannte Open-Source-Lizenz – kommerzielle Nutzung mit Einschränkungen prüfen",
-    "US-Anbieter (NVIDIA) – CLOUD Act bei API-Nutzung über NVIDIA-Infrastruktur relevant",
-    "Hybrid Mamba-Architektur weniger breit in Production-Tooling verankert als reine Transformer-Modelle",
-    "Schwächere Performance auf Standard-MMLU-Varianten im Vergleich zu schwereren Benchmarks",
-    "FP8: mind. 32 GB VRAM; BF16: mind. 60 GB VRAM erforderlich"
+    [
+      "NVIDIA Open Model License ist keine OSI-anerkannte Open-Source-Lizenz, kommerzielle Nutzung mit Einschränkungen prüfen",
+      "US-Jurisdiktion mit CLOUD-Act-Risiko bei API-Nutzung über NVIDIA-Infrastruktur",
+      "Hybrid-Mamba-Architektur weniger breit im Production-Tooling verankert als reine Transformer-Modelle",
+      "FP8 benötigt mindestens 32 GB VRAM, BF16 mindestens 60 GB"
+    ]
   ],
-  "judge_context_hint": "NVIDIA Nemotron 3 Nano 30B A3B: Hybrid MoE (Mamba-2 + Transformer), 31,6B gesamt / 3,2B aktiv. NVIDIA Open Model License, Open Weights. 1M-Token-Kontext. Konfigurierbares Reasoning (Thinking on/off, Budget-Control). Native Tool-Use. OpenRouter: $0.05/$0.20 pro 1M Tokens. Stark bei Coding, Agentic und Long-Context-Tasks.",
+  "judge_context_hint": "Hybrid-MoE mit Mamba-2- und Transformer-Schichten, konfigurierbares Reasoning über Thinking-Budget. Stark bei Coding, agentischen und Long-Context-Aufgaben.",
   "architecture_tags": [
     "General",
     "Instruct",

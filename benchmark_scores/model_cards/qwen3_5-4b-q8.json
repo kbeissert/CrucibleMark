@@ -17,19 +17,24 @@
   "params_active_b": 4.0,
   "context_window_k": 128,
   "knowledge_cutoff": "2025-06",
-  "summary": "Qwen 3.5 4B ist ein kompaktes Open-Weights-Modell von Alibaba mit Thinking-Optional-Architektur. Diese Version liegt als UD-Q8_K_XL-GGUF vor, quantisiert durch Unsloth Dynamic mit XL-Wichtigkeitsmatrix. Q8_K_XL bietet nahezu BF16-Präzision und eignet sich als qualitative Referenzvariante innerhalb der 4B-Modellreihe für interne Vergleiche.",
+  "summary": "Qwen 3.5 4B ist ein kompaktes Open-Weights-Modell von Alibaba mit Thinking-Optional-Architektur und Unsloth-Dynamic-Quantisierung in Q8. Die Q8-Stufe bietet nahezu Vollpräzision als qualitative Referenz der 4B-Reihe, das Kontextfenster umfasst 128.000 Tokens. Unter Apache-2.0-Lizenz auf ressourcenbeschränkter Hardware lokal betreibbar.",
   "strengths": [
-    "Thinking-Optional: zuschaltbarer Reasoning-Modus für komplexere Aufgaben",
-    "UD-Q8_K_XL: nahezu BF16-Präzision – höchste Qualitätstreue der 4B-Unsloth-Reihe",
-    "Optimale Referenzvariante für Quantisierungsvergleiche innerhalb der 4B-Familie",
-    "Apache 2.0 – vollständig kommerziell nutzbar, kein Cloud-Zwang"
+    [
+      "Thinking-Optional für zuschaltbares Reasoning bei komplexeren Aufgaben",
+      "Q8-Quantisierung mit nahezu Vollpräzision als hochwertigste Variante der 4B-Reihe",
+      "Optimale Referenzvariante für Quantisierungsvergleiche",
+      "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit",
+      "Lokaler Betrieb ohne Cloud-Zwang"
+    ]
   ],
   "known_limitations": [
-    "Höherer VRAM-Bedarf im Vergleich zu niedriger quantisierten 4B-Varianten (Q4, Q6)",
-    "Begrenzte Reasoning-Kapazität bei hochkomplexen Aufgaben im Vergleich zu größeren Modellen",
-    "Thinking-Modus nicht aktiv geprobt – Probe-Confidence low"
+    [
+      "Höherer VRAM-Bedarf als bei niedriger quantisierten 4B-Varianten",
+      "Begrenzte Reasoning-Kapazität bei hochkomplexen Aufgaben",
+      "Mögliche zensierte oder ausweichende Antworten bei sensiblen Themen mit China-Bezug"
+    ]
   ],
-  "judge_context_hint": "Qwen 3.5 4B UD-Q8_K_XL: Lokale GGUF-Ausführung (kein Cloud-Endpoint), Unsloth Dynamic Quant. Dense, 4B Parameter. 128K-Token-Kontext. Thinking-Optional (nicht aktiv geprobt). Höchste Qualitätsstufe der 4B-Unsloth-Reihe – nahezu BF16-Äquivalent. Bei China-bezogenen politischen Themen können eingeschränkte Antworten auftreten.",
+  "judge_context_hint": "Kompaktes Qwen-3.5-Modell für ressourcen-beschränkte Hardware mit höchster Quantisierungsqualität. Bei der Bewertung die 4-Milliarden-Architektur berücksichtigen.",
   "architecture_tags": [
     "General",
     "Instruct",

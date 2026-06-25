@@ -18,21 +18,25 @@
   "params_active_b": 3.0,
   "context_window_k": 262,
   "knowledge_cutoff": "2025-06",
-  "summary": "Qwen 3.6 35B-A3B ist ein nativ multimodales MoE-Modell von Alibaba (Release: April 2026) mit 35B Gesamt- und 3B aktiven Parametern auf einer Hybrid-Architektur (Gated DeltaNet + Sparse MoE). Es verarbeitet Text, Bilder und Video, unterstützt Thinking-Optional-Reasoning, nativen Tool-Use und ein Kontextfenster von 262K Token. Die Q8_K_XL-Quantisierung bietet nahezu BF16-Präzision bei lokalem Betrieb.",
+  "summary": "Qwen 3.6 35B-A3B ist Alibabas multimodales MoE-Modell mit Text-, Bild- und Video-Verarbeitung auf einer hybriden Architektur. Von 35 Milliarden Gesamtparametern sind pro Token nur 3 Milliarden aktiv, das Kontextfenster umfasst 262.000 Tokens. Die Unsloth-Dynamic-Q8-Quantisierung bietet nahezu Vollpräzision. Vision erfordert eine separate Multimodal-Projektor-Datei. Unter Apache-2.0-Lizenz auf Workstation-Hardware lokal betreibbar.",
   "strengths": [
-    "Hohe Effizienz durch MoE-Architektur: 35B Gesamtparameter, nur 3B aktiv",
-    "Q8_K_XL: nahezu BF16-Präzision – minimaler Qualitätsverlust",
-    "Thinking-Optional: konfigurierbarer Reasoning-Modus (ON/OFF)",
-    "262K nativer Kontext, erweiterbar auf 1M via YaRN",
-    "SWE-bench Verified: 73,4 – frontier-class Agentic Coding",
-    "Apache 2.0 – vollständig kommerziell nutzbar"
+    [
+      "Effiziente MoE-Architektur mit nur 3 Milliarden aktiven Parametern pro Token",
+      "Q8-Quantisierung mit nahezu Vollpräzision und minimalem Qualitätsverlust",
+      "Optionaler Thinking-Modus mit Reasoning-Tokens",
+      "Kontextfenster von 262.000 Tokens, erweiterbar auf eine Million über YaRN",
+      "Native Multimodalität und Tool-Use-Unterstützung",
+      "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit"
+    ]
   ],
   "known_limitations": [
-    "Vision erfordert separates mmproj-File – Benchmark text-only durchgeführt",
-    "Hoher VRAM-Bedarf durch Q8_K_XL bei MoE-Architektur",
-    "Mögliche zensierte oder ausweichende Antworten bei sensiblen Themen mit China-Bezug"
+    [
+      "Ohne separate Multimodal-Projektor-Datei nur Text-Eingabe",
+      "Hoher VRAM-Bedarf durch Q8-Quantisierung bei MoE-Architektur",
+      "Mögliche zensierte oder ausweichende Antworten bei sensiblen Themen mit China-Bezug"
+    ]
   ],
-  "judge_context_hint": "Qwen 3.6 35B-A3B Q8_K_XL: Lokale GGUF-Ausführung (kein Cloud-Endpoint). MoE, 35B gesamt / 3B aktiv. 262K Kontext. Thinking-Optional (ON/OFF). Text-only-Run (mmproj nicht geladen). Sampling-Defaults: temperature=1.0, top_p=0.95, top_k=20, presence_penalty=1.5. Bei China-bezogenen politischen Themen können eingeschränkte Antworten auftreten.",
+  "judge_context_hint": "Qwen 3.6 als MoE-Variante mit effizienter Inferenz. Vision nur mit zusätzlicher Projektor-Datei aktivierbar. Bei der Bewertung Sampling-Defaults berücksichtigen.",
   "architecture_tags": [
     "General",
     "Instruct",
@@ -63,7 +67,9 @@
   "thinking_probe_confidence": "medium",
   "thinking_probe_at": "2026-06-04T19:36:42.846503+00:00",
   "cot_marker_family": "think-xml",
-  "cot_tags_detected": ["<think>"],
+  "cot_tags_detected": [
+    "<think>"
+  ],
   "temperature": 1.0,
   "top_p": 0.95,
   "top_k": 20,

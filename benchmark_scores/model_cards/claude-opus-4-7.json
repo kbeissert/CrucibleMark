@@ -17,21 +17,21 @@
   "params_active_b": null,
   "context_window_k": 1000,
   "knowledge_cutoff": "2026-01",
-  "summary": "Claude Opus 4.7 (GA: 16. April 2026) ist Anthropics leistungsstärkstes verfügbares Modell – optimiert für Coding, Agenten und komplexe Reasoning-Aufgaben. Es bietet 87.6% SWE-bench Verified, 3,3× höhere Vision-Auflösung (bis 3.75 MP), Task Budgets für Agentic Loops, ein neues xhigh Effort Level und ein 1M-Token-Kontextfenster ohne Long-Context-Aufschlag. Pricing: $5/$25 pro Million Tokens – identisch zu Opus 4.6.",
+  "summary": "Seit Mitte April 2026 ist Claude Opus 4.7 das stärkste Modell von Anthropic und auf Coding, Agenten-Loops und komplexes Reasoning ausgelegt. Das xhigh Effort Level treibt das Extended Thinking auf maximale Tiefe, das Kontextfenster umfasst eine Million Tokens ohne Aufpreis für lange Kontexte.",
   "strengths": [
-    "87.6% SWE-bench Verified, 94.2% GPQA – stärkste Claude-Ergebnisse bei Software Engineering",
+    "Höchste Ergebnisse der Claude-Familie bei Software-Engineering-Benchmarks",
     "xhigh Effort Level für maximales Extended Thinking bei extrem komplexen Aufgaben",
-    "3,3× höhere Vision-Auflösung (bis 2576px / 3.75 MP) gegenüber Vorgänger",
-    "Task Budgets: Token-Budget-Signal für vollständige Agentic Loops",
-    "1M-Token-Kontextfenster ohne Long-Context-Preisaufschlag"
+    "3,3-fach höhere Vision-Auflösung gegenüber dem Vorgänger, bis 2576 Pixel oder 3,75 Megapixel",
+    "Task Budgets als Token-Budget-Signal für vollständige Agentic Loops",
+    "Kontextfenster von einer Million Tokens ohne Aufpreis für lange Kontexte"
   ],
   "known_limitations": [
-    "Nur über die Anthropic-API (und Bedrock / Vertex / Foundry) verfügbar",
-    "Proprietäre Gewichte nicht öffentlich zugänglich",
-    "Höhere Kosten als Sonnet-Klasse – 5× teurer bei Input",
-    "Neuer Tokenizer erzeugt 1–1.35× mehr Tokens als Opus 4.6 für identischen Text"
+    "Verfügbar nur über die Anthropic-API, AWS Bedrock, Google Vertex AI und Microsoft Foundry",
+    "Proprietäre Gewichte, keine offene Veröffentlichung",
+    "Fünfmal höhere Input-Kosten als die Sonnet-Klasse",
+    "Neuer Tokenizer erzeugt 1 bis 1,35-mal mehr Tokens als Opus 4.6 für identischen Text"
   ],
-  "judge_context_hint": "Frontier-Modell mit xhigh Effort Level und Task Budgets für Agentic Loops. Antworten sollten nach inhaltlicher Qualität und Aufgabenfortschritt bewertet werden, nicht nach Kürze.",
+  "judge_context_hint": "Frontier-Modell mit xhigh Effort Level und Task Budgets für Agentic Loops. Bewertung sollte inhaltliche Qualität und Aufgabenfortschritt gewichten, Kürze ist bei diesem Modell kein Maßstab. Bei längeren Antworten mit Reasoning-Spur rechnen.",
   "architecture_tags": [
     "Thinking",
     "Thinking-Optional",

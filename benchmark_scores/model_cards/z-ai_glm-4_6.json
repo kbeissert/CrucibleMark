@@ -12,12 +12,15 @@
   "display_name": "GLM 4.6",
   "generated_at": "2026-05-02T16:15:41.301702+00:00",
   "input_price_per_1m": 0.39,
-  "judge_context_hint": "Allround-Modell mit starkem Fokus auf chinesische und englische Aufgaben. Antworten sollten im Kontext der Sprache und des politischen Umfelds bewertet werden.",
+  "judge_context_hint": "Allround-Modell mit starkem Fokus auf chinesische und englische Aufgaben. Bei der Bewertung Sprachqualität in diesen Hauptsprachen gewichten.",
   "knowledge_cutoff": "2025-06",
   "known_limitations": [
-    "Schwächer in weniger verbreiteten Sprachen",
-    "Bei China-sensiblen Themen potenziell ausweichend",
-    "Chinesischer Anbieter mit erhöhtem Sovereign-Risk"
+    [
+      "Schwächer in weniger verbreiteten Sprachen",
+      "Bei China-sensiblen Themen potenziell ausweichende Antworten",
+      "Chinesischer Anbieter mit erhöhtem Sovereign-Risk bei Cloud-Nutzung",
+      "Kommerzielle Nutzung unterliegt Lizenz-Einschränkungen"
+    ]
   ],
   "license": "GLM-4 License",
   "license_url": "https://huggingface.co/THUDM/glm-4-9b/blob/main/LICENSE",
@@ -33,11 +36,14 @@
   "primary_focus": "general",
   "size_class": "Frontier",
   "strengths": [
-    "Starke Chinesisch- und Englischkompetenz",
-    "Geeignet für allgemeine Sprach- und Reasoning-Aufgaben",
-    "Tool-Use und lokaler Betrieb möglich"
+    [
+      "Starke Kompetenz in chinesischer und englischer Sprache",
+      "Geeignet für allgemeine Sprach- und Reasoning-Aufgaben",
+      "Tool-Use und lokaler Betrieb möglich",
+      "Optionaler Thinking-Modus mit nachgewiesenen Reasoning-Tokens"
+    ]
   ],
-  "summary": "GLM-4.6 ist ein leistungsfähiges Sprachmodell von Zhipu AI, das für allgemeine Sprach- und Reasoning-Aufgaben optimiert wurde. Der Fokus liegt dabei auf einer exzellenten Kompetenz in chinesischer und englischer Sprache. Das Modell unterstützt Tool-Use und bietet ein grosses Kontextfenster für komplexe Aufgabenstellungen. Aufgrund der chinesischen Herkunft und der damit verbundenen regulatorischen Rahmenbedingungen ist das Sovereign-Risk als hoch einzustufen.",
+  "summary": "GLM-4.6 ist Zhipu AIs Frontier-Sprachmodell mit Schwerpunkt auf chinesischer und englischer Sprach-kompetenz. Das Modell arbeitet mit einem Kontextfenster von 128.000 Tokens und unterstützt Tool-Use für agentische Workflows. Aufgrund der chinesischen Hersteller-Jurisdiktion ist eine gesonderte Datenschutz-Bewertung erforderlich, die kommerzielle Nutzung unterliegt Einschränkungen.",
   "supports_tool_use": true,
   "thinking_probe_at": "2026-05-02T17:28:34.654933+00:00",
   "thinking_probe_confidence": "medium",

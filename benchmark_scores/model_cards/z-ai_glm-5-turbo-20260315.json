@@ -13,12 +13,14 @@
   "display_name": "GLM-5 Turbo",
   "generated_at": "2026-04-23T22:03:36.991556+00:00",
   "input_price_per_1m": 1.2,
-  "judge_context_hint": "GLM-5 Turbo ist als schnelle proprietäre GLM-5-Variante für allgemeine Textaufgaben einzuordnen. Die Karte sollte konservativ gelesen werden: solide Alltags- und Business-Nutzung, aber weniger transparent dokumentiert als westliche API-Modelle und mit erhöhtem Compliance-Risiko.",
+  "judge_context_hint": "Schnelle Cloud-Variante für allgemeine Textaufgaben. Bei der Bewertung Alltags- und Business-Nutzung gewichten, nicht mit komplexen Reasoning-Modellen vergleichen.",
   "knowledge_cutoff": "2025-12",
   "known_limitations": [
-    "Keine offenen Gewichte und kein lokales Deployment; vollständige Bindung an Z.AI-Infrastruktur",
-    "Öffentlich zugängliche englische Herstellerdokumentation ist für dieses konkrete Snapshot-Modell begrenzt",
-    "Chinesische Jurisdiktion kann für politisch sensible oder regulierte Daten problematisch sein"
+    [
+      "Keine offenen Gewichte und kein lokales Deployment, vollständig API-abhängig",
+      "Begrenzte öffentlich zugängliche englische Herstellerdokumentation",
+      "Chinesische Jurisdiktion für politisch sensible oder regulierte Daten problematisch"
+    ]
   ],
   "license": "Proprietary",
   "license_url": null,
@@ -34,11 +36,14 @@
   "primary_focus": "general",
   "size_class": "Frontier",
   "strengths": [
-    "Auf schnellere und günstigere Inferenz als größere GLM-5-Varianten ausgelegt",
-    "Für allgemeine Text- und Business-Workflows mit API-Nutzung geeignet",
-    "Tool-Aufrufe sind in der bestehenden GLM-5-Turbo-Einordnung vorgesehen"
+    [
+      "Schnellere und günstigere Inferenz als grössere GLM-5-Varianten",
+      "Geeignet für allgemeine Text- und Business-Workflows",
+      "Tool-Aufrufe unterstützt",
+      "Stabile Cloud-Verfügbarkeit"
+    ]
   ],
-  "summary": "GLM-5 Turbo ist eine effiziente, cloudbasierte Variante der GLM-5-Modellreihe von Z.AI (formerly Zhipu AI), die speziell für schnelle Textgenerierung und allgemeine Aufgaben optimiert wurde. Das Modell unterstützt Tool-Use und bietet ein Kontextfenster von 128K Token. Aufgrund der proprietären Bereitstellung über chinesische Infrastruktur und der damit verbundenen regulatorischen Rahmenbedingungen ist bei der Verarbeitung sensibler Daten ein erhöhtes Risikoprofil zu berücksichtigen.",
+  "summary": "GLM-5 Turbo ist die schnelle Cloud-Variante der GLM-5-Modellreihe von Z.AI, optimiert für schnelle Textgenerierung und allgemeine Geschäfts-Workflows. Das Modell arbeitet mit einem Kontextfenster von 128.000 Tokens und unterstützt Tool-Aufrufe. Ausschliesslich über Z.AI-Infrastruktur verfügbar, mit chinesischer Jurisdiktion als Cloud-Risikofaktor.",
   "supports_tool_use": true,
   "thinking_probe_at": "2026-05-16T18:49:05.342822+00:00",
   "thinking_probe_confidence": "medium",
@@ -57,8 +62,12 @@
   "presence_penalty": null,
   "seed": null,
   "stop_sequences": null,
-  "input_modalities": ["text"],
-  "output_modalities": ["text"],
+  "input_modalities": [
+    "text"
+  ],
+  "output_modalities": [
+    "text"
+  ],
   "profile_verified": true,
   "profile_verified_at": "2026-06-22",
   "tooluse_tested_at": null,

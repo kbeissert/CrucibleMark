@@ -11,18 +11,24 @@
   "weights_provenance_rationale": "Moonshot AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL). Das BSI hat im Februar 2025 vor chinesischen KI-Cloud-Diensten gewarnt; bei lokalem Betrieb der Open-Weights-Variante ohne Datenübertragung nach China ist das cloud-spezifische Risikoszenario reduziert.",
   "model_family": "Kimi",
   "primary_focus": "agentic",
-  "summary": "Kimi K2 ist das Flaggschiff-Modell von Moonshot AI aus China mit einer Open-Weights-Lizenz und Fokus auf agentische Aufgaben, Coding sowie mehrstufiges Reasoning. Es kann lokal betrieben werden und ist über Cloud-Provider kostengünstig nutzbar. Die chinesische Herkunft und das nationale Sicherheitsgesetz sind bei der Einschätzung des Datenrisikos zu berücksichtigen.",
+  "summary": "Kimi K2 ist das Flaggschiff-Modell von Moonshot AI mit Open-Weights-Lizenz und Fokus auf agentische Aufgaben, Coding und mehrstufiges Reasoning. Die MoE-Architektur aktiviert pro Token nur 32 Milliarden der insgesamt eine Billion Gesamtparameter, das Kontextfenster umfasst 128.000 Tokens. Als Text-only-Variante lokal oder über Cloud-Provider nutzbar, bei Cloud-Nutzung erfordert die chinesische Jurisdiktion eine separate Bewertung.",
   "strengths": [
-    "Starke Leistung bei agentischen Aufgaben und mehrstufiger Werkzeugnutzung",
-    "Hohe Coding-Kompetenz über mehrere Programmiersprachen hinweg",
-    "Gutes Instruction-Following bei komplexen, mehrteiligen Aufgaben"
+    [
+      "Starke Leistung bei agentischen Aufgaben und mehrstufiger Werkzeugnutzung",
+      "Hohe Coding-Kompetenz über mehrere Programmiersprachen hinweg",
+      "Gutes Instruction-Following bei komplexen, mehrteiligen Aufgaben",
+      "Open-Weights-Modell mit Modified-MIT-Lizenz"
+    ]
   ],
   "known_limitations": [
-    "Als sehr großes MoE-Modell hoher Ressourcenbedarf für lokales Deployment",
-    "Mögliche Einschränkungen bei politisch sensiblen Themen mit China-Bezug",
-    "Text-only; keine Bild- oder Videoinput-Unterstützung"
+    [
+      "Sehr grosses MoE-Modell mit hohem Ressourcenbedarf für lokales Deployment",
+      "Mögliche Einschränkungen bei politisch sensiblen Themen mit China-Bezug",
+      "Text-only, keine Bild- oder Video-Eingabe",
+      "Chinesisches nationales Sicherheitsgesetz: bei Cloud-Nutzung kann staatlicher Zugriff auf Daten bestehen"
+    ]
   ],
-  "judge_context_hint": "Kimi K2 ist auf agentische Workflows optimiert und zeigt besondere Stärken bei Tool-Use und mehrstufigen Planungsaufgaben – reine Konversationsantworten können knapper ausfallen als bei generalistischen Modellen.",
+  "judge_context_hint": "Agentisches Modell mit besonderen Stärken bei Tool-Use und mehrstufigen Planungsaufgaben. Reine Konversationsantworten können knapper ausfallen als bei generalistischen Modellen.",
   "architecture_tags": [
     "Agentic-Orchestrator",
     "Coder"

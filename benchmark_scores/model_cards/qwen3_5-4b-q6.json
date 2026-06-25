@@ -17,19 +17,24 @@
   "params_active_b": 4.0,
   "context_window_k": 128,
   "knowledge_cutoff": "2025-06",
-  "summary": "Qwen 3.5 4B ist ein kompaktes Open-Weights-Modell von Alibaba mit Thinking-Optional-Architektur. Diese Version liegt als UD-Q6_K_XL-GGUF vor, quantisiert durch Unsloth Dynamic mit XL-Wichtigkeitsmatrix. Q6_K_XL bietet gegenüber Q4_K_XL höhere Qualitätstreue bei moderatem Mehraufwand im VRAM. Das Modell ist für lokale Inferenz auf ressourcenbeschränkter Hardware optimiert.",
+  "summary": "Qwen 3.5 4B ist ein kompaktes Open-Weights-Modell von Alibaba mit Thinking-Optional-Architektur und Unsloth-Dynamic-Quantisierung in Q6. Die Q6-Stufe bietet höhere Qualitätstreue als die Q4-Variante bei moderatem Mehraufwand im VRAM, das Kontextfenster umfasst 128.000 Tokens. Unter Apache-2.0-Lizenz auf ressourcenbeschränkter Hardware lokal betreibbar.",
   "strengths": [
-    "Thinking-Optional: zuschaltbarer Reasoning-Modus für komplexere Aufgaben",
-    "UD-Q6_K_XL: höhere Qualitätstreue als Q4-Variante bei kompaktem Footprint",
-    "Minimaler VRAM-Bedarf durch kompakte 4B-Parameterstruktur",
-    "Apache 2.0 – vollständig kommerziell nutzbar, kein Cloud-Zwang"
+    [
+      "Thinking-Optional für zuschaltbares Reasoning bei komplexeren Aufgaben",
+      "Unsloth Dynamic Quantisierung mit höherer Qualitätstreue als Q4",
+      "Minimaler VRAM-Bedarf durch kompakte 4-Milliarden-Parameterstruktur",
+      "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit",
+      "Lokaler Betrieb ohne Cloud-Zwang"
+    ]
   ],
   "known_limitations": [
-    "Begrenzte Reasoning-Tiefe aufgrund der geringen Parameteranzahl",
-    "Mögliche zensierte oder ausweichende Antworten bei sensiblen Themen mit China-Bezug",
-    "Thinking-Modus nicht aktiv geprobt – Probe-Confidence low"
+    [
+      "Begrenzte Reasoning-Tiefe aufgrund der geringen Parameteranzahl",
+      "Mögliche zensierte oder ausweichende Antworten bei sensiblen Themen mit China-Bezug",
+      "Thinking-Modus-Aktivierung provider- und konfigurationsabhängig"
+    ]
   ],
-  "judge_context_hint": "Qwen 3.5 4B UD-Q6_K_XL: Lokale GGUF-Ausführung (kein Cloud-Endpoint), Unsloth Dynamic Quant. Dense, 4B Parameter. 128K-Token-Kontext. Thinking-Optional (nicht aktiv geprobt). Bei China-bezogenen politischen Themen können eingeschränkte Antworten auftreten.",
+  "judge_context_hint": "Kompaktes Qwen-3.5-Modell für ressourcen-beschränkte Hardware mit Thinking-Optional. Bei der Bewertung die geringe Kapazität berücksichtigen.",
   "architecture_tags": [
     "General",
     "Instruct",

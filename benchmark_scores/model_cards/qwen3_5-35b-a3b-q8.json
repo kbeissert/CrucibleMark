@@ -17,20 +17,25 @@
   "params_active_b": 3.0,
   "context_window_k": 262,
   "knowledge_cutoff": "2025-06",
-  "summary": "Qwen 3.5 35B-A3B ist ein nativ multimodales MoE-Modell von Alibaba mit 35B Gesamt- und 3B aktiven Parametern. Diese Card beschreibt die Unsloth Q8_K_XL-GGUF-Quantisierung ohne mmproj – der Benchmark wurde text-only durchgeführt. Q8_K_XL bietet nahezu BF16-Präzision und ist die qualitativ hochwertigste lokale Variante der 35B-A3B-Reihe. Vision erfordert eine separate mmproj-Datei.",
+  "summary": "Qwen 3.5 35B-A3B ist ein multimodales MoE-Modell von Alibaba mit 35 Milliarden Gesamt- und 3 Milliarden aktiven Parametern. Die Q8-Quantisierung von Unsloth bietet nahezu Vollpräzision für lokales Deployment, das Kontextfenster umfasst 262.000 Tokens. Mit optionalem Thinking-Modus und nativem Tool-Use. Vision erfordert eine separate Multimodal-Projektor-Datei.",
   "strengths": [
-    "Hohe Effizienz durch MoE-Architektur: 35B Gesamtparameter, nur 3B aktiv",
-    "Q8_K_XL: nahezu BF16-Präzision – höchste Qualitätsstufe der GGUF-Varianten",
-    "Thinking-Optional: konfigurierbarer Reasoning-Modus (ON/OFF)",
-    "262K nativer Kontext, erweiterbar auf 1M via YaRN",
-    "Apache 2.0 – vollständig kommerziell nutzbar"
+    [
+      "Effiziente MoE-Architektur mit nur 3 Milliarden aktiven Parametern pro Token",
+      "Q8-Quantisierung mit nahezu Vollpräzision als hochwertigste GGUF-Variante",
+      "Optionaler Thinking-Modus mit nachgewiesenem Reasoning",
+      "Natives Kontextfenster von 262.000 Tokens, erweiterbar auf eine Million",
+      "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit",
+      "Native Tool-Use-Unterstützung"
+    ]
   ],
   "known_limitations": [
-    "GGUF ohne mmproj: Vision deaktiviert – Benchmark text-only durchgeführt",
-    "Hoher VRAM-Bedarf durch Q8_K_XL bei MoE-Architektur",
-    "Mögliche zensierte oder ausweichende Antworten bei sensiblen Themen mit China-Bezug"
+    [
+      "Ohne separate Multimodal-Projektor-Datei nur Text-Eingabe",
+      "Hoher VRAM-Bedarf durch Q8-Quantisierung bei MoE-Architektur",
+      "Mögliche zensierte oder ausweichende Antworten bei sensiblen Themen mit China-Bezug"
+    ]
   ],
-  "judge_context_hint": "Qwen 3.5 35B-A3B Q8_K_XL: Lokale GGUF-Ausführung ohne mmproj (text-only). Unsloth Dynamic Quant. MoE, 35B gesamt / 3B aktiv. 262K Kontext. Thinking-Optional (ON/OFF). Inline-CoT detektiert (kein think-xml). Bei China-bezogenen politischen Themen können eingeschränkte Antworten auftreten.",
+  "judge_context_hint": "Hochpräzise MoE-Variante mit effizienter Inferenz. Bei der Bewertung Sampling-Defaults berücksichtigen. Vision nur mit zusätzlicher Projektor-Datei aktivierbar.",
   "architecture_tags": [
     "General",
     "Instruct",

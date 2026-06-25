@@ -12,11 +12,14 @@
   "display_name": "Llama 3.3 70B Versatile",
   "generated_at": "2026-04-23T22:03:02.103122+00:00",
   "input_price_per_1m": 0.59,
-  "judge_context_hint": "Das Modell ist auf allgemeine Vielseitigkeit optimiert. Bei hochspezialisierten Aufgaben wie tiefem mathematischem Reasoning sollte der Judge die Bewertungsskalierung entsprechend anpassen.",
+  "judge_context_hint": "Metas 70-Milliarden-Allround-Modell. Bei der Bewertung Vielseitigkeit gewichten, bei hochspezialisierten Aufgaben wie tiefem mathematischem Reasoning entsprechende Skalierung vornehmen.",
   "knowledge_cutoff": "2024-12",
   "known_limitations": [
-    "Leistung bei extrem langen Kontexten kann hinter spezialisierten Modellen zurückfallen",
-    "Bei hochkomplexen, mehrstufigen logischen Schlussfolgerungen sind dedizierte Reasoning-Modelle überlegen"
+    [
+      "Leistung bei extrem langen Kontexten kann hinter spezialisierten Modellen zurückfallen",
+      "Bei hochkomplexen, mehrstufigen logischen Schlussfolgerungen sind dedizierte Reasoning-Modelle überlegen",
+      "Llama-3.3-Community-Lizenz mit kommerziellen Nutzungsbedingungen"
+    ]
   ],
   "license": "Llama 3.3 Community License",
   "license_url": "https://www.llama.com/llama3/license/",
@@ -32,11 +35,14 @@
   "primary_focus": "general",
   "size_class": "Server",
   "strengths": [
-    "Starkes Instruction-Following über eine breite Palette von Aufgabentypen",
-    "Ausgewogene Reasoning- und Analysefähigkeiten für die 70B-Klasse",
-    "Offene Gewichte ermöglichen den flexiblen lokalen Einsatz für maximale Datensouveränität"
+    [
+      "Starkes Instruction-Following über eine breite Palette von Aufgabentypen",
+      "Ausgewogene Reasoning- und Analysefähigkeiten für die 70-Milliarden-Klasse",
+      "Offene Gewichte für flexiblen lokalen Einsatz und Datensouveränität",
+      "Tool-Use-Unterstützung für agentische Workflows"
+    ]
   ],
-  "summary": "Llama 3.3 70B Versatile ist ein Modell von Meta mit 70 Milliarden Parametern aus der Llama-3.3-Generation. Es wird unter der Llama 3.3 Community License bereitgestellt und bietet eine hohe Vielseitigkeit. Das Modell ist über Cloud-Anbieter verfügbar, kann aber aufgrund der offenen Gewichte auch lokal betrieben werden.",
+  "summary": "Llama 3.3 70B Versatile ist Metas Allround-Modell der 70-Milliarden-Klasse mit ausgewogenen Stärken über ein breites Aufgabenspektrum. Mit 128.000 Tokens Kontextfenster und offenen Gewichten unter der Llama-3.3-Community-Lizenz ist das Modell wahlweise lokal für maximale Datensouveränität oder über Cloud-Anbieter verfügbar.",
   "supports_tool_use": true,
   "thinking_probe_detected": false,
   "thinking_probe_evidence": "No CoT signals found (text-only instruction-tuned model).",

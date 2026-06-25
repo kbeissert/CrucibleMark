@@ -15,12 +15,14 @@
   "display_name": "Mistral Small 4",
   "generated_at": "2026-05-21T00:00:00.000000+00:00",
   "input_price_per_1m": 0.1,
-  "judge_context_hint": "Kompaktes Open-Weights-Modell mit Fokus auf Effizienz und allgemeine Produktivaufgaben. Antworten sollten als pragmatische Allround-Ausgaben eingeordnet werden.",
+  "judge_context_hint": "Kompaktes Open-Weights-Modell mit Fokus auf Effizienz und allgemeine Produktivaufgaben. Antworten als pragmatische Allround-Ausgaben einordnen.",
   "knowledge_cutoff": "2026-01",
   "known_limitations": [
-    "Schwächer als größere Modelle bei sehr komplexem Reasoning",
-    "Begrenzteres Kontextfenster als Frontier-Modelle",
-    "Tool-Use folgt dem Mistral-spezifischen Format"
+    [
+      "Schwächer als grössere Modelle bei sehr komplexem Reasoning",
+      "Kontextfenster kleiner als bei Frontier-Modellen",
+      "Tool-Use folgt dem Mistral-spezifischen Format"
+    ]
   ],
   "license": "Apache 2.0",
   "license_url": "https://docs.mistral.ai/models/model-cards/mistral-small-4-0-26-03",
@@ -36,12 +38,14 @@
   "primary_focus": "general",
   "size_class": "Workstation",
   "strengths": [
-    "Open Weights mit Apache-2.0-Lizenz",
-    "Lokal betreibbar und zugleich über die Mistral-API verfügbar",
-    "Gutes Preis-Leistungs-Verhältnis für Alltagsaufgaben",
-    "Multimodal, langkontextfähig und agentic-tauglich"
+    [
+      "Open Weights mit Apache-2.0-Lizenz",
+      "Lokal betreibbar und zugleich über die Mistral-API verfügbar",
+      "Gutes Preis-Leistungs-Verhältnis für Alltagsaufgaben",
+      "Multimodal, langkontextfähig und für agentische Workflows geeignet"
+    ]
   ],
-  "summary": "Mistral Small 4 ist Mistral AIs kompaktes Open-Weights-Modell für allgemeine und agentische Aufgaben. Es verbindet lokale Nutzbarkeit mit einer Apache-2.0-Lizenz und richtet sich an produktive Standardanwendungen, bei denen Effizienz, Vision und gute Instruktionsqualität wichtiger sind als maximale Modellgröße.",
+  "summary": "Mistral Small 4 ist das kompakte Open-Weights-Modell von Mistral AI für allgemeine und agentische Aufgaben. Die MoE-Architektur aktiviert pro Token nur 6,5 Milliarden der insgesamt 119 Milliarden Parameter, das Kontextfenster umfasst 256.000 Tokens und das Modell verarbeitet Text- und Bildeingaben. Unter Apache-2.0-Lizenz lokal oder über die Mistral-API nutzbar, aus einem europäischen Anbieter-Umfeld.",
   "supports_tool_use": true,
   "thinking_probe_detected": false,
   "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 556 chars",

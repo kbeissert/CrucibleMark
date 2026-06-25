@@ -12,12 +12,12 @@
   "display_name": "MiniMax M2.7",
   "generated_at": "2026-04-23T22:04:04.739773+00:00",
   "input_price_per_1m": 0.3,
-  "judge_context_hint": "Großes chinesisches Generalist-Modell mit langem Kontext. Antworten sollten auf Praktikabilität und Sprachqualität geprüft werden, nicht auf westliche Safety-Standards kalibriert sein.",
+  "judge_context_hint": "Grosses chinesisches Generalist-Modell mit langem Kontext. Bei der Bewertung Praktikabilität und Sprachqualität prüfen, nicht auf westliche Safety-Standards kalibriert.",
   "knowledge_cutoff": "2025-12",
   "known_limitations": [
-    "Chinesischer Anbieter mit erhöhtem Sovereign-Risk",
-    "Lokale Ausführung nur mit hohem Hardwareaufwand",
-    "Bei politisch sensiblen Themen potenziell zensiert"
+    "Chinesisches nationales Sicherheitsgesetz: bei Cloud-Nutzung kann staatlicher Zugriff auf Daten bestehen",
+    "Lokale Ausführung erfordert erheblichen Hardwareaufwand",
+    "Bei politisch sensiblen Themen mit China-Bezug potenziell zensierte oder ausweichende Antworten"
   ],
   "license": "MiniMax Terms of Service",
   "license_url": null,
@@ -33,11 +33,12 @@
   "primary_focus": "general",
   "size_class": "Frontier",
   "strengths": [
-    "Großes Kontextfenster für lange Dokumente",
-    "Mehrsprachig und für allgemeine Aufgaben geeignet",
-    "Cloud-basiert mit agentischer Grundausrichtung"
+    "Kontextfenster von 205.000 Tokens für lange Dokumente",
+    "Mehrsprachig und für allgemeine produktive Aufgaben geeignet",
+    "Cloud-basierte Variante mit agentischer Grundausrichtung",
+    "Tool-Use-Unterstützung für automatisierte Workflows"
   ],
-  "summary": "MiniMax M2.7 ist ein leistungsstarkes chinesisches Modell, das für allgemeine Sprach- und Reasoning-Aufgaben optimiert wurde. Es bietet Cloud-Verfügbarkeit sowie ein grosses Kontextfenster für die Verarbeitung umfangreicher Dokumente. Das Modell ist auf mehrsprachige, produktive Anwendungen ausgelegt, weist jedoch aufgrund der chinesischen Jurisdiktion ein erhöhtes Sovereign-Risk auf.",
+  "summary": "MiniMax M2.7 ist ein chinesisches Frontier-Generalist-Modell mit einem Kontextfenster von 205.000 Tokens für umfangreiche Dokumente und mehrsprachige Anwendungen. Die MoE-Architektur liefert hohe Leistung für allgemeine Sprach- und Reasoning-Aufgaben, das Modell ist als Cloud-Variante verfügbar und auf produktive Anwendungen ausgelegt. Bei Cloud-Nutzung greift die chinesische Jurisdiktion mit den entsprechenden Datenschutzimplikationen.",
   "supports_tool_use": true,
   "thinking_probe_detected": false,
   "thinking_probe_evidence": "Manual override: MiniMax M2.7 is a standard chat/reasoning model without explicit thinking-tag output.",

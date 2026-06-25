@@ -17,19 +17,23 @@
   "params_active_b": 49.0,
   "context_window_k": 131,
   "knowledge_cutoff": "2024-12",
-  "summary": "NVIDIA Nemotron Super 49B v1.5 ist eine durch Pruning und Destillation optimierte Version von Meta Llama 3.3 70B. Das Modell reduziert die Parameteranzahl auf 49 Milliarden, behält jedoch hohe Reasoning-Fähigkeiten bei. Es unterstützt einen Thinking-Optional-Modus über System-Prompt-Steuerung und bietet 131K Kontext. Die Version 1.5 bietet verbesserte Ergebnisse beim Instruction-Following und Reasoning.",
+  "summary": "NVIDIA Llama 3.3 Nemotron Super 49B v1.5 ist eine durch Pruning und Destillation optimierte Variante von Metas Llama 3.3 70B mit 49 Milliarden Parametern. Das Modell bietet hohe Reasoning-Leistung bei geringerem Ressourcenbedarf, ein Kontextfenster von 131.000 Tokens und optionalen Thinking-Modus über System-Prompt-Steuerung. Unter NVIDIA Open Model License als Open-Weights-Variante lokal oder über Cloud-Anbieter verfügbar.",
   "strengths": [
-    "Effiziente 49B-Parameter-Architektur – hohe Reasoning-Leistung bei geringerem Ressourcenbedarf als 70B-Modelle",
-    "Optimiert durch NVIDIAs Pruning- und Destillationsverfahren (NAS/Puzzle)",
-    "Hervorragendes Preis-Leistungs-Verhältnis bei Reasoning-Aufgaben",
-    "Thinking-Optional-Modus via 'detailed thinking on/off' im System-Prompt"
+    [
+      "Effiziente 49-Milliarden-Parameter-Architektur mit hoher Reasoning-Leistung",
+      "Durch NVIDIAs Pruning- und Destillationsverfahren optimiert",
+      "Hervorragendes Preis-Leistungs-Verhältnis bei Reasoning-Aufgaben",
+      "Thinking-Optional-Modus über System-Prompt aktivierbar"
+    ]
   ],
   "known_limitations": [
-    "US-Jurisdiktion (NVIDIA) – CLOUD Act Risiko bei Cloud-API-Nutzung",
-    "131K Kontextfenster – im Vergleich zu spezialisierten Long-Context-Modellen limitiert",
-    "Knowledge Cutoff Dezember 2024"
+    [
+      "US-Jurisdiktion mit CLOUD-Act-Risiko bei Cloud-API-Nutzung",
+      "Kontextfenster von 131.000 Tokens limitiert für spezialisierte Long-Context-Aufgaben",
+      "Knowledge-Cutoff im Dezember 2024"
+    ]
   ],
-  "judge_context_hint": "NVIDIA Nemotron Super 49B v1.5 ist ein durch Pruning optimiertes Modell auf Basis von Llama 3.3 70B. Unterstützt Thinking-Optional über 'detailed thinking on' im System-Prompt. 131K Kontext. Fokus: Reasoning und effiziente Inferenz.",
+  "judge_context_hint": "Durch Pruning optimierte Variante auf Llama-3.3-70B-Basis. Thinking-Optional über System-Prompt aktivierbar. Fokus auf Reasoning und effiziente Inferenz.",
   "architecture_tags": [
     "Thinking-Optional",
     "Instruct",

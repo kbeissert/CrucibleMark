@@ -19,13 +19,13 @@
     "text"
   ],
   "input_price_per_1m": 0.2,
-  "judge_context_hint": "Code-Modell v25.08 (Aug 2025). Die Bewertung sollte Codequalität, Vollständigkeit und Praxistauglichkeit stärker gewichten als allgemeines Wissen.",
+  "judge_context_hint": "Spezialisiertes Code-Modell von Mistral AI für Programmieraufgaben. Bei der Bewertung Codequalität, Vollständigkeit und Praxistauglichkeit stärker gewichten als allgemeines Weltwissen. Fill-in-the-Middle und breite Sprachabdeckung als Stärken erwartbar.",
   "knowledge_cutoff": "2025-07",
   "known_limitations": [
-    "Weniger stark bei allgemeinem Reasoning ausserhalb des Code-Kontexts",
-    "Restriktive Lizenzbedingungen",
-    "Kein Allround-Modell",
-    "128k Kontext-Window erfordert API-Upgrade"
+    "Ausserhalb des Code-Kontexts schwächer bei allgemeinem Reasoning",
+    "Restriktive Lizenz mit eingeschränkter kommerzieller Nutzung",
+    "Kein Allround-Modell, ausschliesslich für Coding optimiert",
+    "Das volle Kontextfenster von 128.000 Tokens erfordert einen API-Upgrade"
   ],
   "last_modified_at": "2026-06-20",
   "license": "Mistral Codestral License",
@@ -52,12 +52,12 @@
   "size_class": "Desktop",
   "stop_sequences": null,
   "strengths": [
-    "Spezialisiert für Code-FIM (Fill-in-the-middle)",
+    "Spezialisiert auf Code mit Fill-in-the-Middle-Fähigkeit",
     "Breite Sprachabdeckung für viele Programmiersprachen",
-    "128k Kontext-Window für grössere Codebasen",
-    "Lokal betreibbar und API-verfügbar"
+    "Kontextfenster von 128.000 Tokens für umfangreichere Codebasen",
+    "Wahlweise lokaler Betrieb oder Nutzung über die Mistral-API"
   ],
-  "summary": "Codestral 25.08 ist Mistral AIs spezialisiertes Code-Modell (August 2025). Es unterstützt FIM, hat ein 128k Token Kontext-Window und ist auf viele Programmiersprachen trainiert.",
+  "summary": "Für Code-Aufgaben trainiert und nicht für Allgemeines: Codestral 25.08 ist Mistral AIs spezialisiertes Entwickler-Modell aus dem August 2025, optimiert auf Fill-in-the-Middle und eine breite Palette an Programmiersprachen. Mit 22 Milliarden Parametern unterstützt es 128.000 Tokens Kontext, läuft wahlweise lokal oder über die Mistral-API, unterliegt allerdings einer restriktiven Lizenz mit eingeschränkter kommerzieller Nutzung.",
   "supports_tool_use": true,
   "system_prompt_override": null,
   "temperature": null,
