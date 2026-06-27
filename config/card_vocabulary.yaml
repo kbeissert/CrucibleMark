@@ -116,10 +116,17 @@ reserved_tags:
 
   - slug: Instruct
     label: "Instruction-Tuned"
-    description: "Modell wurde explizit auf Instruction-Following finegetuned."
+    description: "Modell wurde explizt auf Instruction-Following finegetuned."
     consumers: [web_export_filter]
     programmatic_effect: "Web-Export-Filter 'Instruction-Tuned'."
     since: v4.4.0
+
+  - slug: Open-Weight
+    label: "Open-Weight (Gewichte oeffentlich verfuegbar)"
+    description: "Modellgewichte sind unter einer offenen Lizenz (Apache-2.0, MIT, etc.) frei herunterladbar und selbst hostbar. Redundant mit weights_license_tier='open-weights', aber als Web-Export-Filter nuetzlich."
+    consumers: [web_export_filter]
+    programmatic_effect: "Web-Export-Filter 'Open-Weight'."
+    since: v4.10.11
 
 # ---------------------------------------------------------------------------
 # 3. Informational Tags (redaktionell, Web-Export-Filter, kein Code-Effekt)
