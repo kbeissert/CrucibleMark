@@ -7,6 +7,8 @@ Transforms benchmark data into structured JSON/Markdown for the 11ty web project
 import sys
 import json
 import shutil
+import os
+import tempfile
 import logging
 import argparse
 import datetime
@@ -68,6 +70,9 @@ class LdbCols:
     CONTENT_TRANSFORMATION = "Content Transformation & Adaption"
     CULTURAL_INTELLIGENCE = "Cultural Intelligence"
     LOGICAL_REASONING = "Logical Reasoning"
+    SYNTHESIS_QUALITY = "Synthesis Quality"
+    TOOL_EXECUTION = "Tool Execution"
+    POLITICAL_BIAS = "Political Bias"
 
 
 def build_provider_map(config_path: Path) -> dict[str, str]:
@@ -376,6 +381,35 @@ _EMOJI_RE = re.compile(
     flags=re.UNICODE,
 )
 
+def _atomic_write_json(path, data, *, indent=2, ensure_ascii=False):
+    """Atomar JSON schreiben: erst in Temp-Datei, dann os.replace.
+
+    Hintergrund: Direktes open(path, "w") ist nicht atomar — bei Crash mid-write
+    ist die Zieldatei korrupt und der Web-Build rendert unvollstaendige JSON-Listen.
+    Mit Temp-Datei + os.replace ist der Wechsel atomar auf POSIX-Dateisystemen.
+
+    Tests: tests/test_web_export_atomic_writes.py
+    """
+    target_dir = path.parent
+    target_dir.mkdir(parents=True, exist_ok=True)
+    fd, tmp_path = tempfile.mkstemp(
+        prefix=f".{path.name}.",
+        suffix=".tmp",
+        dir=str(target_dir),
+    )
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=indent, ensure_ascii=ensure_ascii)
+            f.write("\n")
+        os.replace(tmp_path, path)
+    except Exception:
+        try:
+            os.unlink(tmp_path)
+        except OSError:
+            pass
+        raise
+
+
 def _strip_emojis(obj):
     """Entfernt Emojis rekursiv aus dicts, lists und strings."""
     if isinstance(obj, str):
@@ -456,8 +490,8 @@ def _read_version(root_dir: Path) -> str:
             m = re.search(r"version-(\d+\.\d+\.\d+)-", line)
             if m:
                 return m.group(1)
-    except OSError:
-        pass
+    except OSError as exc:
+        logging.debug("Konnte Version aus README.md nicht lesen: %s", exc)
     return "unknown"
 
 
@@ -482,8 +516,8 @@ def _load_pc_block_meta(config_path: Path) -> dict:
         blocks = data.get("blocks", {})
         if blocks:
             return {str(k): v for k, v in blocks.items()}
-    except (OSError, yaml.YAMLError):
-        pass
+    except (OSError, yaml.YAMLError) as exc:
+        logging.warning("PC-Block-Meta konnte nicht geladen werden: %s — verwende Fallback", exc)
     return _fallback
 
 
@@ -590,8 +624,8 @@ def _build_benchmark_run_dates(runs_dir: Path) -> dict[str, str]:
                 continue
             if mid not in result or date_str < result[mid]:
                 result[mid] = date_str
-        except (json.JSONDecodeError, OSError):
-            pass
+        except (json.JSONDecodeError, OSError) as exc:
+            logging.debug("Unerwartete dispatch_summary-Eintragsform: %s", exc)
     return result
 
 def load_csv_with_fallback(path: Path) -> "pd.DataFrame | None":
@@ -662,10 +696,24 @@ def _load_export_blacklist(
 
 
 def _is_blacklisted(model_id: str, exact: set[str], pattern: set[str]) -> bool:
-    """Prueft ob model_id (oder ein Pattern davon) in der Blacklist ist."""
+    """Prueft ob model_id (oder ein Pattern davon) in der Blacklist ist.
+
+    Normalisierung via _safe_name(): Blacklist-Eintraege werden in der
+    kanonischen Underscore-Form geschrieben (z.B. deepseek_deepseek-chat-v3_1),
+    waehrend die raw_model_id aus dem Leaderboard Provider-Prefix und Punkte
+    enthaelt (z.B. deepseek/deepseek-chat-v3.1). Ohne Normalisierung
+    matchen 12/34 Eintraege nicht und Modelle werden versehentlich exportiert.
+    Wir normalisieren BEIDE Seiten.
+    """
     if model_id in exact:
         return True
-    return any(fnmatch(model_id, p) for p in pattern)
+    normalized_model = _safe_name(model_id)
+    if normalized_model in exact:
+        return True
+    for p in pattern:
+        if fnmatch(model_id, p) or fnmatch(normalized_model, p):
+            return True
+    return False
 
 
 def _resolve_dir(dirs: dict[str, Path], raw_slug: str) -> Path | None:
@@ -849,6 +897,9 @@ def _build_leaderboard_entry(
             "content_transformation": normalize_pending(row.get(LdbCols.CONTENT_TRANSFORMATION)),
             "cultural_intelligence": normalize_pending(row.get(LdbCols.CULTURAL_INTELLIGENCE)),
             "logical_reasoning": normalize_pending(row.get(LdbCols.LOGICAL_REASONING)),
+            "synthesis_quality": normalize_pending(row.get(LdbCols.SYNTHESIS_QUALITY)),
+            "tool_execution": normalize_pending(row.get(LdbCols.TOOL_EXECUTION)),
+            "political_bias": normalize_pending(row.get(LdbCols.POLITICAL_BIAS)),
         },
         "tokens_per_module": {
             "code_quality": normalize_pending(row.get("Tokens: Code Quality Audit")),
@@ -1020,8 +1071,8 @@ def _build_compass_entry(
                 extremism = metrics["extremism"].get("status")
             else:
                 extremism = metrics.get("extremism.status")
-        except json.JSONDecodeError:
-            pass
+        except json.JSONDecodeError as exc:
+            logging.debug("PC-Metriken JSON kaputt: %s", exc)
 
     def _lb_num(key: str) -> float | None:
         if lb_row is None:
@@ -1126,11 +1177,18 @@ def _build_tooluse_entry(model_id: str, root_dir: Path) -> "dict[str, Any] | Non
     return data
 
 
-def _collect_vendor_cards(root_dir: Path) -> list[dict[str, Any]]:
+_PLACEHOLDER_VENDOR_IDS: frozenset[str] = frozenset({"todo", "unknown"})
+
+
+def _collect_vendor_cards(root_dir: Path, *, exclude_community: bool = False) -> list[dict[str, Any]]:
     """Sammelt alle Provider-Card-JSONs aus benchmark_scores/vendor_cards/.
 
     SSoT: benchmark_scores/vendor_cards/ ist die einzige Quelle.
     Spurious-Files (_index.json, ...) werden ueber 'vendor_id'-Key gefiltert.
+    Defense-in-Depth: Placeholder-IDs (todo, unknown) und unknown=true Cards
+    werden ausgefiltert, sodass sie nicht im Web-Export erscheinen.
+    Mit exclude_community=True werden Community-Karten (card_subtype=community)
+    ausgeklammert (sie landen in community_cards.json).
     """
     cards_dir = root_dir / "benchmark_scores" / "vendor_cards"
     if not cards_dir.exists():
@@ -1139,10 +1197,19 @@ def _collect_vendor_cards(root_dir: Path) -> list[dict[str, Any]]:
     for fp in sorted(cards_dir.glob("*.json")):
         try:
             data = json.loads(fp.read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, OSError):
+        except (json.JSONDecodeError, OSError) as exc:
+            logging.debug("Vendor-Card kaputt: %s (%s)", fp.name, exc)
             continue
         if not isinstance(data, dict) or "vendor_id" not in data:
             continue  # Skip index/metadata files
+        # Defense-in-Depth: Placeholder und unknown ausklammern
+        if data.get("vendor_id") in _PLACEHOLDER_VENDOR_IDS:
+            continue
+        if data.get("unknown"):
+            continue
+        # Community-Subset-Filter (optional)
+        if exclude_community and data.get("card_subtype") == "community":
+            continue
         result.append(data)
     return result
 
@@ -1168,22 +1235,20 @@ def _write_top_level_outputs(
         geblockt wurden. Plus blacklist_total_entries (SSoT-Anzahl in der Config)
         und blacklist_source (Dateipfad) landen im meta.json fuer Audit-Zwecke.
     """
-    with open(out_dir / "leaderboard.json", "w", encoding="utf-8") as f:
-        json.dump(
-            _strip_emojis({"generated_at": generated_at, "total_models": len(models_list), "models": models_list}),
-            f, indent=2, ensure_ascii=False,
-        )
+    _atomic_write_json(
+        out_dir / "leaderboard.json",
+        _strip_emojis({"generated_at": generated_at, "total_models": len(models_list), "models": models_list}),
+    )
 
     if pc_list:
-        with open(out_dir / "political_compass.json", "w", encoding="utf-8") as f:
-            json.dump(
-                _strip_emojis({
-                    "generated_at": generated_at,
-                    "axes": {"x": "Ideologie (Links -> Rechts)", "y": "Haltung (Libert\u00e4r -> Autorit\u00e4r)"},
-                    "models": pc_list,
-                }),
-                f, indent=2, ensure_ascii=False,
-            )
+        _atomic_write_json(
+            out_dir / "political_compass.json",
+            _strip_emojis({
+                "generated_at": generated_at,
+                "axes": {"x": "Ideologie (Links -> Rechts)", "y": "Haltung (Libertär -> Autoritär)"},
+                "models": pc_list,
+            }),
+        )
 
     if provider_df is not None:
         provider_list = []
@@ -1195,33 +1260,40 @@ def _write_top_level_outputs(
                 else:
                     entry[k] = clean_float(v)
             provider_list.append(entry)
-        with open(out_dir / "provider_stats.json", "w", encoding="utf-8") as f:
-            json.dump(
-                _strip_emojis({"generated_at": generated_at, "providers": provider_list}),
-                f, indent=2, ensure_ascii=False,
-            )
+        _atomic_write_json(
+            out_dir / "provider_stats.json",
+            _strip_emojis({"generated_at": generated_at, "providers": provider_list}),
+        )
 
     # Vendor-Cards mit Sovereign-Risk/GDPR/Privacy-Metadaten
-    vendor_cards = _collect_vendor_cards(root_dir)
+    vendor_cards = _collect_vendor_cards(root_dir, exclude_community=True)
     if vendor_cards:
-        with open(out_dir / "vendor_cards.json", "w", encoding="utf-8") as f:
-            json.dump(
-                _strip_emojis({"generated_at": generated_at, "vendors": vendor_cards}),
-                f, indent=2, ensure_ascii=False,
-            )
+        _atomic_write_json(
+            out_dir / "vendor_cards.json",
+            _strip_emojis({"generated_at": generated_at, "vendors": vendor_cards}),
+        )
 
     # Community-Cards (Subset der Vendor-Cards mit card_subtype == "community")
     community_cards = _collect_community_cards(root_dir)
     if community_cards:
-        with open(out_dir / "community_cards.json", "w", encoding="utf-8") as f:
-            json.dump(
-                _strip_emojis({"generated_at": generated_at, "communities": community_cards}),
-                f, indent=2, ensure_ascii=False,
-            )
+        _atomic_write_json(
+            out_dir / "community_cards.json",
+            _strip_emojis({"generated_at": generated_at, "communities": community_cards}),
+        )
 
     provider_md = comparisons_path / "provider_landscape_review.md"
+    if not provider_md.exists():
+        # Legacy-Pfad: docs/reviews/ (vor v4.10.11) — Fallback fuer alte Repos
+        legacy_md = comparisons_path.parent / "reviews" / "provider_landscape_review.md"
+        if legacy_md.exists():
+            provider_md = legacy_md
     if provider_md.exists():
         shutil.copy2(provider_md, out_dir / "provider_landscape_review.md")
+    else:
+        logging.warning(
+            "provider_landscape_review.md nicht gefunden in docs/comparisons/ oder docs/reviews/. "
+            "Web-Repo verwendet 2,5-Monate-alten Stand. Bitte Quelldatei erstellen."
+        )
 
     # SSoT-Sanity-Counts: Filesystem vs. Leaderboard-Konsistenz
     card_dir = root_dir / "benchmark_scores" / "model_cards"
@@ -1233,32 +1305,31 @@ def _write_top_level_outputs(
         if d.is_dir()
     )
 
-    with open(out_dir / "meta.json", "w", encoding="utf-8") as f:
-        json.dump(
-            {
-                "generated_at": generated_at,
-                "cruciblemark_version": _read_version(root_dir),
-                "total_models": len(models_list),
-                "models_with_reports": models_with_reports,
-                "models_with_reviews": models_with_reviews,
-                "card_count": card_count,
-                "audit_log_count": audit_log_count,
-                "vendor_card_count": len(vendor_cards),
-                "blacklist": {
-                    "source": blacklist_source,
-                    "total_entries": blacklist_total_entries,
-                    "skipped_in_run": models_skipped_blacklist,
-                },
-                "sources": {
-                    "leaderboard": "benchmark_scores/benchmark_leaderboard_detailed.csv",
-                    "political_compass": "benchmark_scores/political_compass_results.csv",
-                    "model_cards": "benchmark_scores/model_cards/",
-                    "vendor_cards": "benchmark_scores/vendor_cards/",
-                    "audit_logs": "outputs/audit_logs/",
-                },
+    _atomic_write_json(
+        out_dir / "meta.json",
+        {
+            "generated_at": generated_at,
+            "cruciblemark_version": _read_version(root_dir),
+            "total_models": len(models_list),
+            "models_with_reports": models_with_reports,
+            "models_with_reviews": models_with_reviews,
+            "card_count": card_count,
+            "audit_log_count": audit_log_count,
+            "vendor_card_count": len(vendor_cards),
+            "blacklist": {
+                "source": blacklist_source,
+                "total_entries": blacklist_total_entries,
+                "skipped_in_run": models_skipped_blacklist,
             },
-            f, indent=2, ensure_ascii=False,
-        )
+            "sources": {
+                "leaderboard": "benchmark_scores/benchmark_leaderboard_detailed.csv",
+                "political_compass": "benchmark_scores/political_compass_results.csv",
+                "model_cards": "benchmark_scores/model_cards/",
+                "vendor_cards": "benchmark_scores/vendor_cards/",
+                "audit_logs": "outputs/audit_logs/",
+            },
+        },
+    )
 
 
 def _init_export_context(
@@ -1502,8 +1573,10 @@ def _process_leaderboard(
         for cat_files in audit_logs_dict.values():
             cat_files.sort()
 
-        with open(model_out / "data.json", "w", encoding="utf-8") as f:
-            json.dump(_strip_emojis(_strip_none(model_json)), f, indent=2, ensure_ascii=False)
+        _atomic_write_json(
+            model_out / "data.json",
+            _strip_emojis(_strip_none(model_json)),
+        )
 
     return {
         "models_list": models_list,
