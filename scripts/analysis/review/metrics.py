@@ -16,6 +16,18 @@ from utils.model_utils import _find_card
 from utils.scoring_utils import normalize_model_name
 
 
+def _flatten_strings(items: object) -> list[str]:
+    """Toleriert flache Listen und versehentlich verschachtelte Wrapper-Schichten
+    (z. B. ``[["a", "b"]]`` statt ``["a", "b"]``). Nicht-String-Einträge werden
+    stillschweigend übersprungen.
+    """
+    if not isinstance(items, list):
+        return []
+    if len(items) == 1 and isinstance(items[0], list):
+        return [s for s in items[0] if isinstance(s, str)]
+    return [s for s in items if isinstance(s, str)]
+
+
 def get_model_metrics(model_name: str) -> dict:
     """Read model stats from benchmark_leaderboard_detailed.csv."""
     detailed_csv = ROOT_DIR / "benchmark_scores" / "benchmark_leaderboard_detailed.csv"
@@ -58,8 +70,8 @@ def get_model_card_context(model_id: str) -> str:
     if card.get("unknown"):
         return ""
 
-    strengths = ", ".join(card.get("strengths", []))
-    limitations = ", ".join(card.get("known_limitations", []))
+    strengths = ", ".join(_flatten_strings(card.get("strengths", [])))
+    limitations = ", ".join(_flatten_strings(card.get("known_limitations", [])))
     hint = card.get("judge_context_hint", "")
 
     arch = card.get("parameter_architecture", "")

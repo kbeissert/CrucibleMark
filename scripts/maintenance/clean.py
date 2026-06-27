@@ -42,8 +42,8 @@ def clean_pycache():
 
 def clean_comparisons_and_audit():
     """Loescht generierte Ausgaben unter outputs (inklusive aller Runs!)."""
-    print("🧹 Bereinige generierte Reports und Runs (Comparisons, Audit, Runs)...")
-    for dir_name in ["comparisons", "audit_logs", "runs"]:
+    print("🧹 Bereinige generierte Reports und Runs (Comparisons, Audit, Runs, WebExport-Check)...")
+    for dir_name in ["comparisons", "audit_logs", "runs", "web_export_check"]:
         target_dir = ROOT_DIR / "outputs" / dir_name
         if target_dir.exists():
             for p in target_dir.iterdir():

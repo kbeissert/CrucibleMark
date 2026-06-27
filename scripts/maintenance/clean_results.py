@@ -9,6 +9,7 @@ import shutil
 import sys
 import argparse
 import logging
+import re
 from pathlib import Path
 from typing import List
 
@@ -41,9 +42,20 @@ PC_CSV_FILES: tuple[Path, ...] = (
     Path("benchmark_scores/political_compass_leaderboard.csv"),
 )
 
-#: Konsolidierte Clean-Liste: Benchmark-CSVs aus SSoT + PC-CSVs.
+#: Sub-Family-Leaderboards (generiert, model-bezogen).
+#: NICHT in ``CSV_FILES`` weil sie eine andere Spaltenstruktur haben
+#: und nach Modell-Familie aggregiert sind (gemma/qwen), bzw. nach Provider.
+#: Muessen beim Model-Cleanup mit bereinigt werden, sonst bleiben stale
+#: Modell-Eintraege sichtbar.
+SUB_FAMILY_LEADERBOARD_CSVS: tuple[Path, ...] = (
+    Path("benchmark_scores/gemma_leaderboard.csv"),
+    Path("benchmark_scores/qwen_leaderboard.csv"),
+    Path("benchmark_scores/provider_leaderboard.csv"),
+)
+
+#: Konsolidierte Clean-Liste: Benchmark-CSVs aus SSoT + PC-CSVs + Sub-Family-LBs.
 CLEAN_CSV_FILES: tuple[Path, ...] = (
-    tuple(path for path, _ in CSV_FILES) + PC_CSV_FILES
+    tuple(path for path, _ in CSV_FILES) + PC_CSV_FILES + SUB_FAMILY_LEADERBOARD_CSVS
 )
 
 #: Cost-Log (nicht in CSV_FILES, da kein Benchmark-Ergebnis-CSV).
@@ -308,9 +320,64 @@ def _norm_dir(s: str) -> str:
     return _safe_name(s).lower()
 
 
+def _extract_model_from_dispatch_summary(stem: str) -> str | None:
+    """Extrahiert den Modell-Anteil aus einem dispatch_summaries-Dateinamen.
+
+    Bekannte Datei-Formate:
+      - ``political_compass_<model>``
+      - ``tooluse_<model>``
+      - ``tooluse_backlog_<model>``
+      - ``score_<module>_<provider>_<model>``  (z.B. score_cli_benchmark_anthropic_claude-haiku-4-5)
+      - ``score_<module>_<model>``              (z.B. score_cultural_intelligence_claude-haiku-4-5)
+
+    Returns:
+        Der Modell-Slug (ohne Suffix), oder None wenn nicht erkannt.
+    """
+    # Bekannte Modul-Keys (SSoT aus benchmark_modules/)
+    _MODULE_KEYS = {
+        "cli_benchmark", "code_quality", "content_transformation",
+        "cultural_intelligence", "documentation_quality", "political_compass",
+        "reasoning_logic", "tooluse", "ux_writing",
+    }
+    # Bekannte Provider-Praefixe
+    _PROVIDER_KEYS = {
+        "anthropic", "openai", "google", "xai", "mistral", "deepseek", "qwen",
+        "nousresearch", "moonshotai", "nvidia", "xiaomi", "minimax", "groq",
+        "z-ai", "z_ai", "openrouter",
+    }
+
+    if stem.startswith("political_compass_"):
+        return stem[len("political_compass_"):]
+    if stem.startswith("tooluse_backlog_"):
+        return stem[len("tooluse_backlog_"):]
+    if stem.startswith("tooluse_"):
+        return stem[len("tooluse_"):]
+    if stem.startswith("score_"):
+        rest = stem[len("score_"):]
+        # Skip Modul-Key (kann mehrere Segmente haben, z.B. cultural_intelligence)
+        for mod_key in sorted(_MODULE_KEYS, key=len, reverse=True):
+            if rest == mod_key or rest.startswith(mod_key + "_"):
+                rest = rest[len(mod_key):].lstrip("_")
+                break
+        # Skip Provider-Praefix wenn vorhanden
+        if "_" in rest:
+            first_seg = rest.split("_", 1)[0]
+            if first_seg in _PROVIDER_KEYS:
+                rest = rest.split("_", 1)[1]
+        return rest
+    return None
+
+
 def clean_model_output_directories(model: str, dry_run: bool = False):
     """Löscht modellspezifische Verzeichnisse aus outputs/ (audit_logs, comparisons, runs)
     und docs/reviews/.
+
+    Zusätzlich werden modell-spezifische Dateien in ``outputs/runs/`` und
+    ``outputs/runs/dispatch_summaries/`` aufgeräumt:
+      - ``results_<model>_<date>.json`` (PC-Run-Ergebnisse)
+      - ``political_compass_<model>.json`` (PC-Dispatch-Summary)
+      - ``tooluse_<model>.json`` (ToolUse-Dispatch-Summary)
+      - ``score_<module>_<model>.json`` (Score-Dispatch-Summary je Modul)
 
     Variant-aware: findet Verzeichnisse unabhängig von der Schreibweise
     (Underscore, Hyphen, Punkt) durch Abgleich mit _collect_model_id_variants().
@@ -325,27 +392,73 @@ def clean_model_output_directories(model: str, dry_run: bool = False):
     if len(variants) > 1:
         print(f"   Varianten: {', '.join(sorted(variants))}")
 
+    def _matches(item_name: str) -> bool:
+        """Prueft ob ein Verzeichnis-/Dateiname zum Modell passt (variant-aware)."""
+        item_norm = _norm_dir(item_name)
+        return item_norm in variants_norm or any(
+            item_norm.endswith(f"_{v}") for v in variants_norm
+        )
+
     for category in ["audit_logs", "comparisons", "runs"]:
         base_dir = ROOT_DIR / "outputs" / category
         if not base_dir.exists():
             continue
 
+        # 1. Sub-Directories (z.B. outputs/audit_logs/<model>/)
         for item in base_dir.iterdir():
             if not item.is_dir() or item.name in (".gitkeep", ".DS_Store"):
                 continue
-
-            item_norm = _norm_dir(item.name)
-            # Direkt-Match oder Suffix-Match (fuer prefixierte Verzeichnisse)
-            matched = item_norm in variants_norm or any(
-                item_norm.endswith(f"_{v}") for v in variants_norm
-            )
-            if matched:
+            if _matches(item.name):
                 print(f"   - Lösche {category}/{item.name}")
                 if not dry_run:
                     try:
                         shutil.rmtree(item)
                     except OSError as e:
                         print(f"     ❌ Fehler beim Löschen von {item.name}: {e}")
+
+        # 2. Files in outputs/runs/ (results_<model>_<date>.json)
+        if category == "runs":
+            for item in base_dir.iterdir():
+                if not item.is_file():
+                    continue
+                if item.name in (".gitkeep",):
+                    continue
+                # results_*.json haben Format: results_<model>_<YYYYMMDD>_<HHMMSS>.json
+                # Wir muessen den model-Teil extrahieren
+                if item.name.startswith("results_"):
+                    # Schneide 'results_' Praefix und Datums-Suffix ab
+                    rest = item.name[len("results_"):]
+                    # Datums-Suffix: _YYYYMMDD_HHMMSS.json
+                    date_match = re.search(r"_\d{8}_\d{6}\.json$", rest)
+                    if date_match:
+                        model_part = rest[:date_match.start()]
+                    else:
+                        model_part = rest.replace(".json", "")
+                    if _norm_dir(model_part) in variants_norm:
+                        print(f"   - Lösche {category}/{item.name}")
+                        if not dry_run:
+                            try:
+                                item.unlink()
+                            except OSError as e:
+                                print(f"     ❌ Fehler beim Löschen von {item.name}: {e}")
+
+            # 3. dispatch_summaries/ Subdir
+            ds_dir = base_dir / "dispatch_summaries"
+            if ds_dir.exists():
+                for item in ds_dir.iterdir():
+                    if not item.is_file():
+                        continue
+                    # Extrahiere Modell-Anteil (variant-aware über _extract_model_from_dispatch_summary)
+                    model_part = _extract_model_from_dispatch_summary(item.stem)
+                    if model_part is None:
+                        continue
+                    if _norm_dir(model_part) in variants_norm:
+                        print(f"   - Lösche {category}/dispatch_summaries/{item.name}")
+                        if not dry_run:
+                            try:
+                                item.unlink()
+                            except OSError as e:
+                                print(f"     ❌ Fehler beim Löschen von {item.name}: {e}")
 
     reviews_dir = ROOT_DIR / "docs" / "reviews"
     if reviews_dir.exists():
@@ -689,6 +802,22 @@ def _run_clean_logic(args) -> None:
     # die Card fuer die Varianten-Aufloesung braucht).
     if args.model:
         clean_model_card(model=args.model, dry_run=args.dry_run)
+
+    # Card-Index rebuilden (model und vendor), damit _index.json keine
+    # stale Eintraege auf geloeschte Cards enthaelt.
+    if not args.dry_run and args.model:
+        try:
+            from utils.card_template import rebuild_card_index
+            model_count = rebuild_card_index("model")
+            print(f"   - model_cards/_index.json: rebuild ({model_count} Eintraege)")
+        except Exception as e:
+            print(f"   ⚠️ Card-Index-Rebuild (model) fehlgeschlagen: {e}")
+        try:
+            from utils.vendor_card_template import rebuild_provider_index
+            vendor_count = rebuild_provider_index()
+            print(f"   - vendor_cards/_index.json: rebuild ({vendor_count} Eintraege)")
+        except Exception as e:
+            print(f"   ⚠️ Card-Index-Rebuild (vendor) fehlgeschlagen: {e}")
 
     # Leaderboard Update triggern, wenn nicht dry run
     if not args.dry_run:
