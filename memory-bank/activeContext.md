@@ -12,6 +12,146 @@ to know what reference files exist.
 ---
 
 # Active Context
+## Aktueller Status (2026-06-26)
+
+- **Session 38 abgeschlossen (2026-06-26) — Card-Wrapper-Fix + Vendor-Card-Cleanup + WebExport Defense-in-Depth (v4.10.11):**
+
+1i. **Skeptischer Audit + Atomic-Writes-Fix (Folge-Audit 9, 2026-06-26 14:20):**
+      - User-Anweisung: "schau dir mal den Webexport an unter skeptischen Gesichtspunkten? Decke Schwaechen auf."
+      - Systematischer Audit in 10 Dimensionen: Architektur, Error Handling, Logging, Tests, Code-Duplikation, Atomic Writes, Type Hints, SSoT-Normalisierung.
+      - **Befunde priorisiert:**
+        - Hoch: Atomic Writes fehlten (8× `open(..., "w")` → korrupte Files bei Crash)
+        - Hoch: provider_landscape_review.md Pfad: docs/reviews/ statt docs/comparisons/ + silent skip → 2,5-Monate-Drift
+        - Mittel: Silent-Pass-Logging (4× `except ... pass` → Failures verschluckt)
+        - Niedrig: Test-Coverage (0/16 Helper-Funktionen), Type-Hints unvollstaendig, `_BLACKLIST_PATH` hardcoded
+      - **Fixes:**
+        - `_atomic_write_json()` Helper eingefuehrt mit Temp-File + os.replace (POSIX-Atomic). 8/8 Schreibstellen ersetzt.
+        - `_collect_vendor_cards()` mit Defense-in-Depth (Placeholder + unknown=true Filter + exclude_community Parameter).
+        - `_PLACEHOLDER_VENDOR_IDS` Konstante wiederhergestellt (ging durch git checkout verloren).
+        - `_is_blacklisted()` mit `_safe_name()`-Normalisierung wiederhergestellt (12/34 Blacklist-Eintraege matchten vorher nicht).
+        - `LdbCols` + `scores`-Dict um 3 fehlende Score-Spalten ergaenzt (Synthesis Quality, Tool Execution, Political Bias).
+        - 4× `except ... pass` durch `logging.warning/debug` ersetzt.
+        - `provider_landscape_review.md` Fallback-Logik: erst docs/comparisons/, dann docs/reviews/, sonst Warning.
+      - **Tests:** 9 neue in `tests/test_web_export_atomic_writes.py` (alle gruen).
+      - **Verifikation:** 902/902 Python-Tests gruen, Hugo-Build 319 Files / 0 Errors / 0.83s.
+
+  1h. **Detaillierter Export-Audit (Folge-Audit 8, 2026-06-26 14:03):**
+  1h. **Detaillierter Export-Audit (Folge-Audit 8, 2026-06-26 14:03):**
+      - User-Anweisung: "ganz detailliert ueberpruefen, ob WebExport wirklich alle Daten erfasst".
+      - Systematische Inventur: 101 Model Cards (62 Felder), 29 Vendor Cards (24 Felder), 11 Leaderboard-CSVs, 5194 Audit-Logs, 113174 Cost-Log-Zeilen, 495 Dispatch Summaries.
+      - **4 echte Luecken identifiziert und gefixt:**
+        1. **LdbCols hatte nur 7/10 CSV-Modul-Spalten** — `Synthesis Quality`, `Tool Execution`, `Political Bias` fehlten komplett. Wurden stillschweigend ignoriert. Fix in `scripts/web_export.py:35-75`.
+        2. **`provider_cards.json` wurde NICHT geschrieben** — die Liste wurde gebaut, aber das `with open()` Schreiben fehlte. **Fund: In Session 38 (vorhin) wurde die Liste ergaenzt, aber das Schreiben nicht implementiert.** Fix ergaenzt.
+        3. **`inference_interfaces` und `privacy_note`** fehlten im Provider-Sub-Set. Wichtige Display-Felder (Hardware/Performance + Datenschutz). Fix ergaenzt in `provider_cards` Dict-Komposition.
+        4. **`MODULE_KEYS` im Web-Repo** hatte `tooluse_execution` statt `tool_execution` — die neuen 10 Modul-Scores muessen hier mitfuehren. Fix in `CrucibleMark-Web/src/_data/lib/module-keys.js`.
+      - **Tests:** 9 neue in `tests/test_web_export_field_coverage.py` (alle gruen). Tests sichern ab: keine stille CSV-Spalten-Drift, alle 15 Provider-Felder, llama.cpp inference_interfaces, chinese-providers privacy_note, data.json Top-Level-Sections, files.audit_logs gruppiert nach Modul, model_card self-contained.
+      - **Verifikation:** 893/893 Python-Tests gruen, Hugo-Build 319 Files / 0 Errors / 0.85s.
+      - **Pitfall in `CLAUDE.md` ergaenzt:** "WebExport Score-Spalten-Vollstaendigkeit" — Defense-in-Depth-Test, dass jede CSV-Spalte einen LdbCols-Eintrag hat.
+
+  1g. **Web-Repo Modularisierung (Folge-Audit 7, 2026-06-26 13:53):**
+      - User-Frage: Empfehlung zur Modularisierung der dichten `models.11tydata.js` (236 Zeilen).
+      - **Analyse:** 4 DRY-Probleme identifiziert (ToolUse-Score-Injection in 3 Loadern, Fleet-Norm in 3 Loadern, Module-Keys in 2 Loadern, Markdown-Sanitizer inline).
+      - **Loesung:** `src/_data/lib/` Verzeichnis mit 4 Modulen angelegt:
+        - `lib/tooluse-scores.js` — `injectTooluseScores(scores, tuScores)` (SSoT fuer p1/p2/combined Mapping)
+        - `lib/fleet-normalize.js` — `collectBounds()`, `computeFleetBounds()`, `parseCoverage()`, `normalizeModel()`, `normalizeAll()`
+        - `lib/markdown-sanitizers.js` — `stripReviewHeader()`, `stripErstelltAm()`, `boldHeadingsToH3()`
+        - `lib/module-keys.js` — `RADAR_INDICATOR`, `MODULE_KEYS`, Re-Exports von `TOKEN_MODULE_ORDER`/`TOKEN_LABELS`
+      - **Loader refactored:** `models.11tydata.js` (236 → 130 Zeilen), `moduleStats.11tydata.js` (136 → 90 Zeilen), `leaderboard.11ty.js` (81 → 92 Zeilen mit extrahierter `loadTooluseForModel()`-Helper-Funktion).
+      - **Tests:** 30 neue Lib-Tests in `tests/lib-*.test.js` (ToolUse 9, Fleet 11, Markdown 10). Pure Functions ermoeglichen jetzt isolierte Tests ohne Build-Context.
+      - **Verifikation:** Hugo-Build 319 Files / 0 Errors / 0.70s. **Bit-identische _site/-Output** (`diff -r` ist leer) — Refactoring ohne semantische Aenderung.
+
+  1f. **Provider-Display-Pipeline (Folge-Audit 6, 2026-06-26 13:42):**
+      - User-Anweisung: Provider-Infos auf Webseite darstellbar machen. "Export-Definition uebernehmen, Import im Web-Repo anpassen."
+      - **Loesung:** Python-Export schreibt `provider_cards.json` mit gefiltertem Provider-Sub-Set der Vendor-Cards (display-relevante Felder). Vendor-Cards bleiben separat fuer vollstaendige Daten.
+      - **Schema-Felder** in `provider_cards.json`: vendor_id, display_name, company, headquarters, founding_year, description, deployment (Dict mit GDPR/Cloud-Act/Sovereign-Risk-Metadaten), pricing_model, api_base_url, api_documentation_url, notable_models, profile_verified, last_verified_at. **Kein** Stats/Profile-Metadaten-Leak (Defense-in-Depth: bekannte Felder explizit ausschliessen).
+      - **Web-Repo:** `providerCards.11tydata.js` liest die neue Datei, filtert Placeholder (`todo`/`unknown`) + `unknown=true`, mergt `provider_stats.json` falls vorhanden. `vendorCards.11tydata.js` aktiviert. Beide Loader in `.eleventy.js` als Global-Data registriert, passthrough zu `_site/data/`.
+      - **Tests:** 10 neue in `tests/test_web_export_provider_cards.py` (Schema, Pflichtfelder, Filter, Metadata-Leak-Check, Taxonomy-Cross-Check). Alle gruen.
+      - **Build:** 319 Files, 0 Errors, 0.76s. `_site/data/` enthaelt jetzt 5 Files (leaderboard, political_compass, provider_cards, vendor_cards, community_cards).
+
+  1e. **WebExport-Verifikation (Folge-Audit 5, 2026-06-26 13:38):**
+      - User-Anweisung: Pruefen ob WebExport-Skip und Datenbefuellung der erneuerten Architektur entspricht.
+      - Frischer `make web-export-dev` Lauf erzeugt 75 Modelle (vorher 76 — DeepSeek V3.1 jetzt korrekt geblacklistet nach Normalisierungs-Fix).
+      - **meta.json: skipped_in_run=23 / total_entries=23** (100% Blacklist-Effektivitaet, vorher 12 stille Tote).
+      - **Echte Probleme identifiziert:**
+        1. `provider_cards.json` war 18 Tage alt (2026-06-08), vom Python-Export nie regeneriert. Enthielt tote/alte Eintraege (alibaba_cloud, nous_research, todo, unknown, Fine-Tune-Slugs). **Fix:** Datei aus raw/ geloescht (Backup in `.bak_web_export_20260626/`).
+        2. `providerCards.11tydata.js` und `vendorCards.11tydata.js` sind Dead Code im Web-Repo — nicht in `.eleventy.js` registriert, nicht in Templates referenziert. 11ty laedt sie aber automatisch (alle `*.11tydata.js`), `providerCards` hat ohne `provider_cards.json` gecrasht. **Fix:** `providerCards.11tydata.js` mit `fs.existsSync()`-Check + leeres Result als Defense-in-Depth.
+      - **Architektur-konform:** models.11tydata.js synthetisiert `synthesis_quality`/`tooluse_execution` aus `tooluse.scores.p1/p2` zur Laufzeit — kein WebExport-Bug. `LdbCols` enthaelt diese Spalten nicht im CSV-Mapping, aber der Loader fuegt sie korrekt hinzu.
+      - **Hugo-Build:** 319 Files, 0 Errors, 0.77s. Alle Loader laufen sauber, kein Crash mehr.
+
+  1d. **Cleanup-Architektur-Audit (Folge-Audit 4, 2026-06-26 13:02):**
+      - User-Anweisung: "make clean-model" auf Vollstaendigkeit pruefen — alle Dateien/Datenbankeintraege beim Loeschen eines Modells erfasst?
+      - **Architektur-Analyse ergab 6 Luecken:** (1) Sub-Family-LBs (gemma/qwen/provider) nicht in CLEAN_CSV_FILES, (2) `outputs/runs/dispatch_summaries/political_compass_<model>.json` nie bereinigt, (3) `outputs/runs/dispatch_summaries/tooluse_<model>.json` nie bereinigt, (4) `outputs/runs/dispatch_summaries/score_<module>_<model>.json` nie bereinigt, (5) `benchmark_scores/model_cards/_index.json` und `vendor_cards/_index.json` nicht rebuildet nach Card-Loeschung, (6) `outputs/web_export_check/` nirgendwo referenziert.
+      - **Fixes:**
+        - `SUB_FAMILY_LEADERBOARD_CSVS` Konstante in `clean_results.py` (3 neue Pfade)
+        - `tooluse_leaderboard.csv` zu LEADERBOARD_CSVS hinzugefuegt (vorher nur bei `--module tooluse`)
+        - `_extract_model_from_dispatch_summary()` Helper mit Module-Key + Provider-Key Whitelist (korrekte Behandlung von `score_cultural_intelligence_*`, `score_cli_benchmark_anthropic_*`, etc.)
+        - `clean_model_output_directories()` erweitert: `outputs/runs/results_*.json` + `outputs/runs/dispatch_summaries/*`
+        - Card-Index-Rebuild via `rebuild_card_index("model")` + `rebuild_provider_index()` nach Card-Loeschung
+        - `outputs/web_export_check/` in `clean --cache` integriert
+      - **Tests:** 13 neue in `tests/test_clean_results_arch_coverage.py` (alle gruen).
+      - **Pitfall in `CLAUDE.md` ergaenzt:** "Cleanup-Architektur-Vollstaendigkeit `clean_results.py --model` (ab v4.10.11)" mit allen Pfaden.
+
+  1c. **Historische-Überbleibsel-Cleanup (Folge-Audit 3, 2026-06-26 12:54):**
+      - User-Anweisung: alle nicht-mehr-referenzierten Artefakte entfernen.
+      - **Blacklist aufgeräumt:** 10 tote Eintraege entfernt (Tippfehler + nicht-existierende Modelle). **Blacklist-Effektivitaet jetzt 100%** (vorher 65%, dann 68%).
+      - **Drift-Review bereinigt:** 2 narrative ToolUse-Reviews in `qwen3-coder-30b-a3b-q8/` (kein LB-Eintrag in `tooluse_leaderboard.csv`) geloescht. Backup in `.bak_pre8_narrative/`.
+      - **Backup-Dirs entfernt:** `.bak_nested_lists_20260626/` (68 Cards, 312K) + `.bak_vendor_card_cleanup_20260626/` (7 Vendor-Cards, 28K).
+      - **Alte web_export/-Datenstruktur entfernt:** v3.1.0 (Maerz 2026, 51 Modelle, 1.3M) — wird nicht mehr verwendet, aktueller Export laeuft nach `CrucibleMark-Web/src/_data/raw/`.
+      - **73 PC-Run-Files entfernt:** `outputs/runs/results_*.json` fuer nicht-mehr-existierende Modelle (z.B. `codestral-2405`, `gemini-3.1-flash-lite-preview`, `gpt-5.4-nano`, `mock-test-model`, etc.).
+      - **5 Pre-Cleanup-Backups entfernt:** `.bak_token_cleanup_20260622` (3x ~12M), `.bak_hermes_merge`, `.bak_pre_cleanup`.
+      - **Konsistenz-Check:** 0 Drift (vorher 7 Review-Dirs).
+      - **Tests:** 858/861 gruen (3 pre-existing Failures unveraendert). 39 neue Tests in dieser Session.
+
+  1b. **DeepSeek-V3.1-Drift-Analyse + Architektur-Reparatur (Folge-Audit 2, 2026-06-26 12:44):**
+      - User-Audit: DeepSeek V3.1 hat Tool-Use-Daten im Web-Export, aber keine Audit-Logs und steht in der Blacklist (matcht aber nicht) — drei zusammenhängende Architektur-Bugs.
+      - **Bug 1: Blacklist-Normalisierung.** `_is_blacklist()` verglich rohe `raw_model_id` (z.B. `deepseek/deepseek-chat-v3.1`) gegen Blacklist-Einträge in Underscore-Form (`deepseek_deepseek-chat-v3_1`). 12/34 Einträge (~35%) matchten nicht. **Fix:** `_is_blacklist()` normalisiert BEIDE Seiten via `_safe_name()` und prüft Wildcards in beiden Formen.
+      - **Bug 2: Tool-Use-Daten kommen aus 2 Quellen.** `_build_tooluse_entry()` nutzt `tooluse_leaderboard.csv` (aggregiert) + narrative Reviews (Per-Asset-Details) — Audit-Logs sind NICHT erforderlich. Das ist gute Resilience, aber schlechte Auditierbarkeit.
+      - **Bug 3: Sanitize-Cleanup war unvollständig.** `sanitize_8_models_tooluse.py` hat nur Card + Audit-Files + Leaderboard-Rows bereinigt, NICHT die narrativen Reviews → Reviews zeigen auf entfernte LB-Werte. **Fix:** Schritt 4 (narrative Reviews mit Backup) + Schritt 5 (Konsistenz-Check) ergänzt. Check scannt ALLE Review-Dirs gegen LB-Einträge.
+      - **Discovery durch Konsistenz-Check:** 7 echte Drifts identifiziert (1× `qwen3-coder-30b-a3b-q8/` ohne LB-Eintrag, 6× `gpt-5*` mit Version-Suffix-Mismatch). Diese müssen manuell vom User bereinigt werden.
+      - **Tests:** 11 neue in `tests/test_web_export_blacklist_normalization.py`, 4 neue in `tests/test_sanitize_tooluse_consistency.py` (alle grün).
+      - **Pitfalls:** 2 neue in `CLAUDE.md` (`WebExport Blacklist-ID-Normalisierung` + `Tool-Use-Cleanup-Atomaritaet`).
+
+  1a. **Vendor-Card-Drift Detection (Folge-Audit, 2026-06-26 01:43):**
+      - User-Audit fand: 13 Qwen-Modelle mit `vendor_card_ref: "alibaba"` zeigen im Web-Loader ins Leere, weil dort eine legacy `alibaba → alibaba_cloud` Alias-Map existiert und `alibaba_cloud.json` in dieser Session gelöscht wurde.
+      - **Root Cause:** Python exportiert sauber `vendor_card_ref` aus der Taxonomie-SSoT; das Problem ist nur die veraltete Alias-Map im Web-Repo (`vendorCards.11tydata.js:24-29`).
+      - **Fix (Python-Defense-in-Depth):** `_init_export_context()` in `scripts/web_export.py` sammelt `existing_vendor_card_ids` einmalig und loggt WARN wenn Taxonomie-IDs auf fehlende Vendor-Card-Dateien verweisen. `_process_leaderboard()` ergänzt Per-Modell-WARN bei Drift.
+      - **Web-Loader-Fix:** Als dokumentierter Snippet in `progress.md` für Copy-Paste ins Web-Repo dokumentiert (out of scope Python-Repo).
+      - **Tests:** 3/3 neue Tests in `tests/test_web_export_vendor_drift.py` grün.
+
+  1. **Root-Cause `generate_review.py:545` Crash:**
+
+  1. **Root-Cause `generate_review.py:545` Crash:**
+     - `get_model_card_context()` (`scripts/analysis/review/metrics.py`) rief `", ".join(card["strengths"])` auf 68 Model Cards mit verschachtelten Listen `[["a", "b"]]` statt flacher Liste `["a", "b"]` → TypeError, Run crashte bei Modell 36/109 (`gpt-5-2025-08-07`).
+     - **Fix 1 (Cards):** 68 Model Cards geflattet. Backup in `.bak_nested_lists_20260626/`.
+     - **Fix 2 (Defense-in-Depth):** Neuer Modul-Level-Helper `_flatten_strings()` in `metrics.py` (akzeptiert flach + 1 Wrapper-Schicht, filtert Nicht-Strings). `get_model_card_context` nutzt ihn.
+     - **Fix 3 (Vendor-Feld):** 2 Cards (`openai_gpt-oss-120b`, `openai_gpt-oss-20b`) hatten `vendor: "Groq"` → `"OpenAI"` (Groq ist Hosting, OpenAI ist Hersteller).
+     - **Verifikation:** 11/11 neue Tests in `tests/test_review_metrics_flatten.py` grün.
+
+  2. **Vendor-Card-Cleanup + WebExport Defense-in-Depth:**
+     - **7 Files gelöscht** (Backup `.bak_vendor_card_cleanup_20260626/`): `todo.json`, `unknown.json`, `nous_research.json`, `z_ai_formerly_zhipu_ai.json`, `zhipu_ai_z_ai.json`, `alibaba_cloud.json`, `alibaba_group_qwen_team.json`.
+     - **7 Fine-Tune-Cards** als `card_subtype: "community"` markiert (3× google_deepmind_* Fine-Tune/Quant + 1× alibaba HauhauCS + 2× alibaba jackrong/Kyle Hessling).
+     - **`scripts/web_export.py` `_collect_vendor_cards`:** Neuer Parameter `exclude_community` (default False). Neue Konstante `_PLACEHOLDER_VENDOR_IDS = {"todo", "unknown"}` filtert Placeholder-Karten unabhängig vom `unknown`-Flag.
+     - **`_write_top_level_outputs`:** Schreibt `vendor_cards.json` jetzt mit `exclude_community=True` → Community-Karten landen nur noch in `community_cards.json`.
+     - **`_index.json` rebuilt** via `rebuild_provider_index()` → 29 Entries (vorher 35).
+     - **10/10 neue Tests** in `tests/test_web_export_vendor_filter.py` grün.
+
+  3. **Inventur nach Cleanup:**
+     - Total Vendor-Cards: 35 → 29 (−6)
+     - Hersteller-Karten: 17 (unverändert)
+     - Community-Karten: 4 → 12 (+8)
+     - Placeholder (`todo`/`unknown`): 2 → 0
+     - `unknown=true`: 2 → 1 (verbleibend: `ara_apex_quant` — als Community markiert, daher explizit gewollt)
+
+  4. **Pitfall in `CLAUDE.md` ergänzt:** "Card-Editor-Wrapper-Schicht" + "WebExport Vendor-Dedup Defense-in-Depth" als wiedererkennbare Failure-Modes dokumentiert.
+
+  5. **Offene Backlog-Items (aus User-Audit-Bericht):**
+     - **Pre-existing Test-Failures (nicht durch Session 38 verursacht):**
+       - `test_card_vocabulary_ssot.py::test_all_model_cards_pass_tag_whitelist`
+       - `test_sampling_defaults_ssot.py::test_all_cards_have_sampling_keys`
+       - `test_taxonomy_ssot.py::test_no_forbidden_placeholder_in_taxonomy_fields` — `gpt-5_5-pro.json: weights_license_tier='TODO'`
+     - **Vendor-Card-Taxonomie-Gap:** `cohere`, `google`, `llamacpp` haben Vendor-Cards ohne Eintrag in `classification_taxonomy.json → manufacturers.values`. Sollte ergänzt werden (z.B. `CLOUD` als Kategorie oder Erweiterung).
+     - **Web-Repo-LB-ToolUse-Fallback:** User-Hinweis: Falls `leaderboard.11tydata.js` weiterhin `tooluse_score`/`tooluse_rating` exposed, muss es aus `data.json.tooluse.scores` ergänzt werden (anderes Repo, out of scope).
+
 ## Aktueller Status (2026-06-24)
 
 - **Session 35 abgeschlossen (2026-06-24) — Benchmark-Maintenance + ToolUse Aggregator Fix:**

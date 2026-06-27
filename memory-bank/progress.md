@@ -1,6 +1,117 @@
 # Progress
 
 Letzte Releases + aktueller Stand.
+### 2026-06-26 (Session 38) — Card-Wrapper-Fix + Vendor-Card-Cleanup + WebExport Defense-in-Depth (v4.10.11)
+
+**Folge-Audit 2 (2026-06-26 12:44) — DeepSeek-V3.1 Architektur-Reparatur:**
+
+Drei zusammenhängende Bugs, die DeepSeek V3.1 als sichtbares Symptom hatten:
+
+1. **Blacklist-Mismatch (kritischster Bug):** `config/web_export_blacklist.yaml` enthält Einträge in Underscore-Form (`deepseek_deepseek-chat-v3_1`), CSV-IDs sind slash/punkt-getrennt (`deepseek/deepseek-chat-v3.1`). 12/34 Einträge (~35%) matchten nicht. DeepSeek V3.1 wurde trotz Blacklist-Eintrag 4 Monate lang exportiert.
+
+2. **Tool-Use-Daten-Layering:** `_build_tooluse_entry()` nutzt zwei Quellen (aggregiertes LB + narrative Reviews) — Audit-Logs sind redundant. Das ist gut für Resilience, aber wenn Cleanup-Skripte nur Audit-Files löschen, bleibt der Web-Export-Drift unsichtbar.
+
+3. **Sanitize-Cleanup unvollständig:** `sanitize_8_models_tooluse.py` hat 3 Schritte (Card/Audit/LB), aber narrative Reviews nicht bereinigt → Review-Dirs zeigen auf entfernte LB-Werte.
+
+**Fixes:**
+
+- **`scripts/web_export.py:_is_blacklist()`:** Normalisiert BEIDE Seiten via `_safe_name()`. Patterns werden in beiden Formen geprüft (roh + normalisiert).
+- **`scripts/maintenance/sanitize_8_models_tooluse.py`:** Schritt 4 (narrative Reviews mit `.bak_pre8_narrative`-Backup) + Schritt 5 (Konsistenz-Check über ALLE Review-Dirs gegen Leaderboard-Einträge) ergänzt. Version-Suffix-Mapping (`gpt-5_5-2026-04-23` ↔ `gpt-5_5/`) berücksichtigt.
+- **Tests:** `tests/test_web_export_blacklist_normalization.py` (11 Tests) + `tests/test_sanitize_tooluse_consistency.py` (4 Tests).
+
+**Discovery durch Konsistenz-Check:**
+
+7 Review-Dirs mit Drift identifiziert (manuell vom User zu bereinigen):
+- `qwen3-coder-30b-a3b-q8/` (2 narrative Reviews ohne LB-Eintrag)
+- `gpt-5/`, `gpt-5-mini/`, `gpt-5_4/`, `gpt-5_4-mini/`, `gpt-5_4-nano/`, `gpt-5_5/` (Version-Suffix-Mismatch, durch neues Mapping korrekt als „versioniert" erkannt)
+
+**Verifikation:** 858/861 Gesamttests grün (3 pre-existing Failures unverändert: `gpt-5_5-pro` Placeholder etc.).
+
+---
+
+### 2026-06-26 (Session 38) — Card-Wrapper-Fix + Vendor-Card-Cleanup + WebExport Defense-in-Depth (v4.10.11)
+
+**Auslöser:** `make reviews-auto` crashte bei Modell 36/109 (`gpt-5-2025-08-07`) mit TypeError in `generate_review.py:545`. User-Audit des Web-Exports offenbarte zusätzlich Vendor-Card-Duplikate und fehlende Filter.
+
+**Folge-Audit (2026-06-26 01:43):** 13 Qwen-Modelle mit `vendor_card_ref: "alibaba"` zeigen im Web-Loader ins Leere, weil dort eine legacy `alibaba → alibaba_cloud` Alias-Map existiert und `alibaba_cloud.json` in dieser Session gelöscht wurde. **Python-Defense-in-Depth:** `_init_export_context()` sammelt `existing_vendor_card_ids` und loggt WARN bei Drift; `_process_leaderboard()` ergänzt Per-Modell-WARN. **Web-Loader-Fix:** Bidirektionale Alias-Map — Snippet unten zum Copy-Paste ins Web-Repo.
+
+```js
+// In vendorCards.11tydata.js: nach dem .filter(card_subtype !== 'community')
+const aliasToCanonical = new Map([
+  ['alibaba', 'alibaba_cloud'],
+  // weitere Legacy-Aliase hier ergänzen
+]);
+
+// Beim Map-Build: jedes Alias-Pärchen zeigt auf dieselbe Card
+all.forEach(card => {
+  const id = card.vendor_id;
+  const canonical = aliasToCanonical.get(id) || id;
+  const cardToUse = all.find(c => c.vendor_id === canonical) || card;
+  map[id] = cardToUse;          // self-ref
+  map[canonical] = cardToUse;   // canonical-ref
+  // Reverse: alle Aliase auf denselben Inhalt zeigen lassen
+  for (const [alias, target] of aliasToCanonical) {
+    if (target === canonical) map[alias] = cardToUse;
+  }
+});
+```
+
+**Änderungen:**
+
+1. **`scripts/analysis/review/metrics.py` — Defense-in-Depth Card-Liste-Flattener:**
+   - Neuer Modul-Level-Helper `_flatten_strings()`: akzeptiert flache Listen + einzelne Wrapper-Schicht `[[...]]`, filtert Nicht-Strings.
+   - `get_model_card_context()` nutzt den Helper für `strengths` und `known_limitations`.
+   - Pitfall-Doku ergänzt: Card-Editor kann bei manchen Feldern eine zusätzliche Wrapper-Liste einführen.
+
+2. **68 Model Cards bereinigt (verschachtelte → flache Listen):**
+   - Backup: `.bak_nested_lists_20260626/`
+   - Konsistente Struktur: jede Card hat exakt `[[...]]` → `[...]`-Pattern. Doppelte Verschachtelung defensiv als leer behandelt.
+
+3. **2 Model-Card-Vendor-Fixes:**
+   - `openai_gpt-oss-120b.json`, `openai_gpt-oss-20b.json`: `vendor: "Groq"` → `"OpenAI"`. Groq ist nur Hosting-Provider, OpenAI ist Hersteller.
+
+4. **Vendor-Card-Cleanup:**
+   - **7 Files gelöscht** (Backup `.bak_vendor_card_cleanup_20260626/`):
+     - Placeholder: `todo.json`, `unknown.json`
+     - Duplikate: `nous_research.json`, `z_ai_formerly_zhipu_ai.json`, `zhipu_ai_z_ai.json`, `alibaba_cloud.json`, `alibaba_group_qwen_team.json`
+   - **7 Fine-Tune/Community-Cards markiert** (`card_subtype: "community"`):
+     - `google_deepmind_base_ara_apex_abliteration_quantisierung`
+     - `google_deepmind_base_llmfan46_fine_tune_mradermacher_gguf_quant`
+     - `google_deepmind_base_undix_community_distribution`
+     - `google_deepmind_base_unsloth_community_distribution`
+     - `alibaba_group_qwen_team_hauhaucs_community_fine_tune`
+     - `alibaba_damo_academy_base_qwen3_6_27b_jackrong_fine_tune_...` (2× Kyle Hessling)
+   - **`_index.json` rebuilt** via `rebuild_provider_index()` (29 Entries, vorher 35).
+
+5. **`scripts/web_export.py` — Vendor-Filter Defense-in-Depth:**
+   - Neue Konstante `_PLACEHOLDER_VENDOR_IDS = frozenset({"todo", "unknown"})`
+   - `_collect_vendor_cards()` neuer Parameter `exclude_community: bool = False`. Filtert jetzt `unknown=true` UND `_PLACEHOLDER_VENDOR_IDS` immer.
+   - `_write_top_level_outputs()` schreibt `vendor_cards.json` mit `exclude_community=True` → Community-Karten landen nur in `community_cards.json`.
+   - `_collect_community_cards()` unverändert (default + eigener Filter).
+
+6. **Neue Tests (21 total):**
+   - `tests/test_review_metrics_flatten.py` (NEU) — 11 Tests für `_flatten_strings` + `get_model_card_context` (unit + end-to-end mit synthetischer Nested-Card).
+   - `tests/test_web_export_vendor_filter.py` (NEU) — 10 Tests für Vendor-Filter (Placeholder, exclude_community, community-Subset, Robustheit gegen defekte JSON + Index-Files).
+
+**Verifikation:**
+- 10/10 neue Vendor-Filter-Tests grün
+- 11/11 neue Metrics-Flatten-Tests grün
+- Keine Regression: 840/843 Gesamttests grün, 3 pre-existing Failures (siehe unten)
+
+**Pre-existing Failures (nicht durch Session 38 verursacht):**
+- `test_card_vocabulary_ssot.py::test_all_model_cards_pass_tag_whitelist`
+- `test_sampling_defaults_ssot.py::test_all_cards_have_sampling_keys`
+- `test_taxonomy_ssot.py::test_no_forbidden_placeholder_in_taxonomy_fields` — `gpt-5_5-pro.json: weights_license_tier='TODO'`
+
+**Dokumentation:** CLAUDE.md (2 neue Pitfalls), activeContext.md, progress.md.
+
+**Backlog (aus User-Audit):**
+- Vendor-Card-Taxonomie-Gap: `cohere`, `google`, `llamacpp` haben Cards ohne Eintrag in `manufacturers.values`. Sollte ergänzt werden.
+- Web-Repo-LB-ToolUse-Fallback (anderes Repo, out of scope).
+- 3 pre-existing Test-Failures bereinigen (gpt-5_5-pro.json TODO-Placeholder etc.).
+
+---
+
 ### 2026-06-25 (Session 37) — Gemini 2.5 Pro Card + Gemini 3.1 Pro Preview Card + Claude Sonnet 4.5 Card Bereinigung
 
 - `gemini-2_5-pro.json`: `parameter_architecture`: MoE → dense (Google hat nie MoE bestätigt, kein Whitepaper für 2.5-Serie)
