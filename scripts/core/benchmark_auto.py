@@ -58,6 +58,7 @@ from utils.model_utils import (  # noqa: E402
 )
 
 # Gemeinsame llama.cpp-Batch-Orchestrierung
+from scripts.core.runner_contract import update_leaderboard  # noqa: E402
 from scripts.core.llamacpp_batch import (  # noqa: E402
     canonical_lookup_keys,
     get_enabled_llamacpp_providers,
@@ -483,6 +484,12 @@ def _run_module_for_model(
         results = runner.run_benchmark(provider=provider, model=model, benchmark_info=module, assets=assets_todo)
         if results:
             runner.save_results(results)
+            # Leaderboard-Update nach jedem Modul (Design-Constraint:
+            # "am Ende eines jeden Moduls eine Aktualisierung des Leaderboards").
+            # Pfad 1 (Score-Delegate) und Pfad 2 (Delegate-Script) rufen
+            # update_leaderboard() in ihren Sub-Workern auf. Pfad 3 (in-process
+            # für llama.cpp) muss das selbst tun (v4.10.12).
+            update_leaderboard(ROOT_DIR)
             return "ran"
         # Run wurde versucht, hat aber keine Ergebnisse produziert
         return "failed"

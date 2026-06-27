@@ -14,7 +14,7 @@ import subprocess
 import sys
 import unittest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 # Pfad-Setup: scripts/core/benchmark_auto.py liegt 2 Ebenen tiefer
 ROOT = Path(__file__).resolve().parents[1]
@@ -506,6 +506,45 @@ class TestRunModuleForModelTristate(unittest.TestCase):
         self.assertIn("--summary-json", cmd)
         self.assertIn("--force", cmd)
         self.assertIn("--silent", cmd)
+
+    def test_inprocess_path_updates_leaderboard(self):
+        """Regression v4.10.12: Pfad 3 (in-process, llama.cpp) muss
+        update_leaderboard() nach save_results() aufrufen. Vorher wurde
+        das Leaderboard fuer llama.cpp-Modelle nicht aktualisiert."""
+        module = {
+            "key": "ux_writing",
+            "name": "UX Writing",
+            "path": "unused",
+            # KEIN delegate_script → Pfad 3 (in-process)
+        }
+
+        # Mock runner mit run_benchmark + save_results
+        mock_runner = MagicMock()
+        mock_runner.run_benchmark.return_value = [{"asset_id": "ux_writing_001", "status": "success"}]
+
+        with patch.object(benchmark_auto, "get_startable_assets", return_value=[Path("x.yaml")]):
+            with patch.object(benchmark_auto, "update_leaderboard", return_value=True) as mock_lb:
+                with patch.object(benchmark_auto, "_run_score_delegate_for_model") as score_del:
+                    with patch.object(benchmark_auto, "_run_delegate_for_model") as generic_del:
+                        result = benchmark_auto._run_module_for_model(
+                            runner=mock_runner,
+                            model="gemma-4-12b-it-ud-q6-k-xl",
+                            module=module,
+                            existing_tests=set(),
+                            force=False,
+                            audit=False,
+                            provider="llamacpp",
+                        )
+
+        self.assertEqual(result, "ran")
+        # Pfad 3 wurde genutzt (nicht Score-Delegate, nicht generic Delegate)
+        score_del.assert_not_called()
+        generic_del.assert_not_called()
+        # runner.run_benchmark + save_results wurden aufgerufen
+        mock_runner.run_benchmark.assert_called_once()
+        mock_runner.save_results.assert_called_once()
+        # KRITISCH: update_leaderboard wurde aufgerufen
+        mock_lb.assert_called_once()
 
 
 if __name__ == "__main__":
