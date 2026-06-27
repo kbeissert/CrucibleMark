@@ -46,7 +46,8 @@ class TestResolveModelDirsAndCard:
         )
         assert card == {"id": "GPT-5"}
 
-    def test_card_missing_warns(self, caplog):
+    def test_card_missing_no_warning(self, caplog):
+        """BUG 2 Fix: Card fehlt -> KEIN Warning im Helper (nur im Caller nach Skip)."""
         def lookup(mid):
             return None
 
@@ -63,7 +64,7 @@ class TestResolveModelDirsAndCard:
             total=10,
         )
         assert card is None
-        assert any("keine Model Card gefunden" in r.message for r in caplog.records)
+        assert not any("keine Model Card gefunden" in r.message for r in caplog.records)
 
     def test_audit_dir_via_dir_slug(self):
         audit_path = Path("/tmp/audit_logs/gpt-5")

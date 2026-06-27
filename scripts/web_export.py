@@ -414,6 +414,62 @@ def _atomic_write_json(path: Path, data: Any, *, indent: int = 2, ensure_ascii: 
         raise
 
 
+def _atomic_write_text(path: Path, content: str, *, encoding: str = "utf-8") -> None:
+    """Atomar Text schreiben (analog _atomic_write_json, aber fuer Markdown/Text).
+
+    Hintergrund: write_text() ist nicht atomar — bei Crash mid-write ist die
+    Zieldatei korrupt (z.B. halber Audit-Log). Mit Temp-Datei + os.replace
+    ist der Wechsel atomar auf POSIX-Dateisystemen.
+    """
+    target_dir = path.parent
+    target_dir.mkdir(parents=True, exist_ok=True)
+    fd, tmp_path = tempfile.mkstemp(
+        prefix=f".{path.name}.",
+        suffix=".tmp",
+        dir=str(target_dir),
+    )
+    try:
+        with os.fdopen(fd, "w", encoding=encoding) as f:
+            f.write(content)
+        os.replace(tmp_path, path)
+    except Exception:
+        try:
+            os.unlink(tmp_path)
+        except OSError:
+            pass
+        raise
+
+
+def _atomic_copy(src: Path, dst: Path) -> None:
+    """Atomar Datei kopieren (analog shutil.copy2, aber atomic auf Ziel-Seite).
+
+    shutil.copy2 schreibt direkt in die Zieldatei — bei Crash mid-copy ist
+    die Zieldatei korrupt. Diese Funktion kopiert erst in eine Temp-Datei
+    im Zielverzeichnis und ersetzt dann atomar via os.replace.
+    Erhält File-Mode (wie copy2) via shutil.copymode nach dem Replace.
+    """
+    target_dir = dst.parent
+    target_dir.mkdir(parents=True, exist_ok=True)
+    fd, tmp_path = tempfile.mkstemp(
+        prefix=f".{dst.name}.",
+        suffix=".tmp",
+        dir=str(target_dir),
+    )
+    try:
+        with os.fdopen(fd, "wb") as f_out:
+            with open(src, "rb") as f_in:
+                shutil.copyfileobj(f_in, f_out)
+        os.replace(tmp_path, dst)
+        # copy2-Verhalten: Permissions vom Source uebernehmen
+        shutil.copymode(src, dst)
+    except Exception:
+        try:
+            os.unlink(tmp_path)
+        except OSError:
+            pass
+        raise
+
+
 def _strip_emojis(obj: Any) -> Any:
     """Entfernt Emojis rekursiv aus dicts, lists und strings."""
     if isinstance(obj, str):
@@ -636,7 +692,7 @@ def load_csv_with_fallback(path: Path) -> "pd.DataFrame | None":
     try:
         return pd.read_csv(path)
     except (OSError, pd.errors.ParserError) as e:
-        logging.warning(f"  [WARN] Could not load {path.name}: {e}")
+        logging.warning("  [WARN] Could not load %s: %s", path.name, e)
         return None
 
 
@@ -676,7 +732,7 @@ def _load_export_blacklist(
     try:
         data = yaml.safe_load(path.read_text(encoding="utf-8"))
     except (OSError, yaml.YAMLError) as exc:
-        logging.warning(f"  [WARN] Web-Export-Blacklist nicht lesbar ({path}): {exc}")
+        logging.warning("  [WARN] Web-Export-Blacklist nicht lesbar (%s): %s", path, exc)
         return set(), set(), 0, False
 
     # Leere Datei: yaml.safe_load gibt None -> als leeres Dict behandeln,
@@ -685,12 +741,12 @@ def _load_export_blacklist(
         return set(), set(), 0, True
 
     if not isinstance(data, dict):
-        logging.warning(f"  [WARN] Web-Export-Blacklist hat ungueltiges Format (kein dict): {path}")
+        logging.warning("  [WARN] Web-Export-Blacklist hat ungueltiges Format (kein dict): %s", path)
         return set(), set(), 0, False
 
     raw_entries = data.get("blacklist", [])
     if not isinstance(raw_entries, list):
-        logging.warning(f"  [WARN] Web-Export-Blacklist 'blacklist' ist keine Liste: {path}")
+        logging.warning("  [WARN] Web-Export-Blacklist 'blacklist' ist keine Liste: %s", path)
         return set(), set(), 0, False
 
     exact: set[str] = set()
@@ -823,7 +879,7 @@ def _export_model_files(
         out_audit.mkdir(exist_ok=True)
         for f in audit_src.glob("*.md"):
             sanitized = sanitize_audit_log(f.read_text(encoding="utf-8"))
-            (out_audit / f.name).write_text(sanitized, encoding="utf-8")
+            _atomic_write_text(out_audit / f.name, sanitized)
             audit_files.append(f.name)
 
     comp_files_dict: dict[str, Optional[str]] = {"review": None, "bias_review": None}
@@ -833,10 +889,10 @@ def _export_model_files(
         latest_review = find_latest_markdown(comp_src, prefix="review_")
         latest_bias = find_latest_markdown(comp_src, prefix="bias_review_")
         if latest_review:
-            shutil.copy2(latest_review, out_comp / latest_review.name)
+            _atomic_copy(latest_review, out_comp / latest_review.name)
             comp_files_dict["review"] = latest_review.name
         if latest_bias:
-            shutil.copy2(latest_bias, out_comp / latest_bias.name)
+            _atomic_copy(latest_bias, out_comp / latest_bias.name)
             comp_files_dict["bias_review"] = latest_bias.name
 
     return audit_files, comp_files_dict
@@ -1276,34 +1332,35 @@ def _write_top_level_outputs(
             _strip_emojis({"generated_at": generated_at, "providers": provider_list}),
         )
 
-    # Vendor-Cards mit Sovereign-Risk/GDPR/Privacy-Metadaten
-    vendor_cards = _collect_vendor_cards(root_dir, exclude_community=True)
+    # BEFUND 4 Fix: Alle Vendor-Cards EINMAL lesen, dann in Memory splitten.
+    # Vorher: _collect_vendor_cards(exclude_community=True) + _collect_community_cards()
+    # lasen beide das gesamte Verzeichnis (54 File-Reads statt 27).
+    all_vendor_cards = _collect_vendor_cards(root_dir)
+    vendor_cards = [c for c in all_vendor_cards if c.get("card_subtype") != "community"]
+    community_cards = [c for c in all_vendor_cards if c.get("card_subtype") == "community"]
     if vendor_cards:
         _atomic_write_json(
             out_dir / "vendor_cards.json",
             _strip_emojis({"generated_at": generated_at, "vendors": vendor_cards}),
         )
-
-    # Community-Cards (Subset der Vendor-Cards mit card_subtype == "community")
-    community_cards = _collect_community_cards(root_dir)
     if community_cards:
         _atomic_write_json(
             out_dir / "community_cards.json",
             _strip_emojis({"generated_at": generated_at, "communities": community_cards}),
         )
 
-    provider_md = comparisons_path / "provider_landscape_review.md"
-    if not provider_md.exists():
-        # Legacy-Pfad: docs/reviews/ (vor v4.10.11) — Fallback fuer alte Repos
-        legacy_md = comparisons_path.parent / "reviews" / "provider_landscape_review.md"
-        if legacy_md.exists():
-            provider_md = legacy_md
-    if provider_md.exists():
-        shutil.copy2(provider_md, out_dir / "provider_landscape_review.md")
+    # Primary: docs/comparisons/ (v4.10.11+). Legacy: docs/reviews/ (vor v4.10.11).
+    # Beide Pfade werden unabhaengig von comparisons_path geprueft, weil
+    # comparisons_path selbst bereits docs/reviews/ ist (Legacy-Pfad).
+    primary_md = root_dir / "docs" / "comparisons" / "provider_landscape_review.md"
+    legacy_md = root_dir / "docs" / "reviews" / "provider_landscape_review.md"
+    provider_md = primary_md if primary_md.exists() else (legacy_md if legacy_md.exists() else None)
+    if provider_md is not None:
+        _atomic_copy(provider_md, out_dir / "provider_landscape_review.md")
     else:
         logging.warning(
             "provider_landscape_review.md nicht gefunden in docs/comparisons/ oder docs/reviews/. "
-            "Web-Repo verwendet 2,5-Monate-alten Stand. Bitte Quelldatei erstellen."
+            "Web-Repo verwendet veralteten Stand. Bitte Quelldatei erstellen."
         )
 
     # SSoT-Sanity-Counts: Filesystem vs. Leaderboard-Konsistenz
@@ -1430,12 +1487,12 @@ def _should_skip_model(
     _csv_total = str(row.get(LdbCols.TOTAL_SCORE, "")).strip()
     _csv_has_benchmark = _csv_total not in ("", "Pending", "—", "nan") and not pd.isna(row.get(LdbCols.TOTAL_SCORE, float("nan")))
     if not _audit_has_benchmark and not _csv_has_benchmark:
-        logging.debug(f"  [{count}/{total}] {model_name} -> SKIP (nur PC-Daten, kein Benchmark)")
+        logging.debug("  [%s/%s] %s -> SKIP (nur PC-Daten, kein Benchmark)", count, total, model_name)
         return "no_benchmark"
 
     # Skip 2: Web-Export-Blacklist
     if has_raw and _is_blacklisted(raw_model_id, bl_exact, bl_pattern):
-        logging.info(f"  [{count}/{total}] {model_name} -> SKIP (blacklisted: {raw_model_id})")
+        logging.info("  [%s/%s] %s -> SKIP (blacklisted: %s)", count, total, model_name, raw_model_id)
         return "blacklisted"
 
     return None
@@ -1470,14 +1527,8 @@ def _resolve_model_dirs_and_card(
     if card is None:
         card = card_lookup(model_name)
 
-    if card is None and (has_raw or model_name):
-        logging.warning(
-            f"  ⚠️  [{count}/{total}] {model_name} "
-            f"(raw_model_id={raw_model_id or '?'}): keine Model Card gefunden. "
-            f"Web-Export liefert model_card=null. Bitte Card manuell anlegen "
-            f"oder scripts/maintenance/create_model_card.py ausfuehren."
-        )
-
+    # Warning fuer fehlende Card wird im Caller (_process_leaderboard) NACH
+    # der Skip-Pruefung geloggt — sonst spammen geskippte Modelle das Log.
     # Audit/Comp-Dir via dir_slug
     model_audit_src = _resolve_dir(audit_dirs, dir_slug)
     model_comp_src = _resolve_dir(comp_dirs, dir_slug)
@@ -1574,7 +1625,16 @@ def _process_leaderboard(
             models_skipped_blacklist += 1
             continue
 
-        logging.info(f"  [{count}/{total}] {model_name} -> OK")
+        # BUG 2 Fix: Card-Warning erst nach Skip-Pruefung — sonst spammen
+        # geskippte Modelle (no_benchmark / blacklisted) das Log mit WARNINGS.
+        if card is None:
+            logging.warning(
+                "  [WARN] [%s/%s] %s (raw_model_id=%s): keine Model Card gefunden. "
+                "Web-Export liefert model_card=null.",
+                count, total, model_name, raw_model_id or "?",
+            )
+
+        logging.info("  [%s/%s] %s -> OK", count, total, model_name)
         model_out = models_dir / slug
         model_out.mkdir(exist_ok=True)
 
@@ -1713,7 +1773,7 @@ def main() -> None:
         blacklist_total_entries=ctx["bl_total"],
         blacklist_source="config/web_export_blacklist.yaml",
     )
-    logging.info(f"✅ Export completed to -> {out_dir}")
+    logging.info("✅ Export completed to -> %s", out_dir)
 def _normalize_export_tags(tags: list[str]) -> list[str]:
     """Filtert deprecated Tags aus architecture_tags für den Web-Export.
     
