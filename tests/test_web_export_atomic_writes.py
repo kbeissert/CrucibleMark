@@ -66,9 +66,9 @@ class TestNoSilentPass:
         web_export = ROOT / "scripts" / "web_export.py"
         text = web_export.read_text()
 
-        # Extrahiere _atomic_write_json-Funktion
+        # Extrahiere _atomic_write_json-Funktion (Multi-Line-Args tolerant)
         atomic_match = re.search(
-            r'def _atomic_write_json\([^)]*\):.*?(?=\ndef |\nclass )',
+            r'def _atomic_write_json\b.*?(?=\ndef |\nclass )',
             text, re.DOTALL
         )
         atomic_body = atomic_match.group(0) if atomic_match else ""

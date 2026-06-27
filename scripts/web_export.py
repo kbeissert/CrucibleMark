@@ -300,7 +300,7 @@ def _normalize_community(community: str | None, alias_map: dict[str, str]) -> st
     return community
 
 
-def _collect_community_cards(root_dir: Path) -> list[dict]:
+def _collect_community_cards(root_dir: Path) -> list[dict[str, Any]]:
     """Gibt alle Vendor-Cards mit card_subtype == 'community' zurück."""
     return [c for c in _collect_vendor_cards(root_dir) if c.get("card_subtype") == "community"]
 
@@ -326,7 +326,7 @@ def parse_tests_run(val) -> dict | None:
     if match: return {"completed": int(match.group(1)), "total": int(match.group(2))}
     return None
 
-def normalize_pending(val):
+def normalize_pending(val: Any) -> str | None:
     if pd.isna(val): return None
     val_str = str(val).strip()
     if val_str in ("Pending", "—", ""): return None
@@ -357,7 +357,7 @@ def extract_version(val) -> str | None:
     v = str(val).strip()
     return None if not v or v == "unknown" else v
 
-def clean_float(val):
+def clean_float(val: Any) -> float | None:
     v = normalize_pending(val)
     return float(v) if v is not None else None
 
@@ -381,7 +381,7 @@ _EMOJI_RE = re.compile(
     flags=re.UNICODE,
 )
 
-def _atomic_write_json(path, data, *, indent=2, ensure_ascii=False):
+def _atomic_write_json(path: Path, data: Any, *, indent: int = 2, ensure_ascii: bool = False) -> None:
     """Atomar JSON schreiben: erst in Temp-Datei, dann os.replace.
 
     Hintergrund: Direktes open(path, "w") ist nicht atomar — bei Crash mid-write
@@ -410,7 +410,7 @@ def _atomic_write_json(path, data, *, indent=2, ensure_ascii=False):
         raise
 
 
-def _strip_emojis(obj):
+def _strip_emojis(obj: Any) -> Any:
     """Entfernt Emojis rekursiv aus dicts, lists und strings."""
     if isinstance(obj, str):
         cleaned = _EMOJI_RE.sub("", obj).strip()
