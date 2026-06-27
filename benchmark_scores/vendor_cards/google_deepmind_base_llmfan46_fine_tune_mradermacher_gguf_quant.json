@@ -29,5 +29,7 @@
   "profile_verified": true,
   "profile_verified_at": "2026-06-22",
   "profile_verified_by": "llm:perplexity",
-  "description": "Diese Karte beschreibt Google-DeepMind-Gemma-Basismodelle, die von llmfan46 weiterverarbeitet und von mradermacher als GGUF quantisiert wurden. Da die Modelle lokal betrieben werden, entstehen keine API-seitigen Datenschutzrisiken. Die Privacy-Bewertung hängt vollständig vom gewählten Host und dessen Logging/Transfer-Konfiguration ab."
+  "description": "Diese Karte beschreibt Google-DeepMind-Gemma-Basismodelle, die von llmfan46 weiterverarbeitet und von mradermacher als GGUF quantisiert wurden. Da die Modelle lokal betrieben werden, entstehen keine API-seitigen Datenschutzrisiken. Die Privacy-Bewertung hängt vollständig vom gewählten Host und dessen Logging/Transfer-Konfiguration ab.",
+  "card_subtype": "community",
+  "last_modified_at": "2026-06-25T23:35:05Z"
 }

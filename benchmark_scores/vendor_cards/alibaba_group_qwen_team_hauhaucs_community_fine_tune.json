@@ -30,5 +30,6 @@
   "profile_verified": true,
   "profile_verified_at": "2026-06-22",
   "profile_verified_by": "llm:perplexity",
-  "last_modified_at": "2026-06-22"
+  "last_modified_at": "2026-06-25T23:35:05Z",
+  "card_subtype": "community"
 }

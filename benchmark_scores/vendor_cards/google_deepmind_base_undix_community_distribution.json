@@ -31,5 +31,7 @@
   "profile_verified": true,
   "profile_verified_at": "2026-06-22",
   "profile_verified_by": "llm:perplexity",
-  "description": "Diese Karte beschreibt Community-Distributionen von Gemma-Basismodellen für lokale Inferenz. Die Modelle basieren auf den offenen Gemma-Gewichten von Google DeepMind und werden lokal betrieben. Datenschutzrisiken entstehen primär durch das gewählte Hosting, nicht durch die Modelldistribution selbst."
+  "description": "Diese Karte beschreibt Community-Distributionen von Gemma-Basismodellen für lokale Inferenz. Die Modelle basieren auf den offenen Gemma-Gewichten von Google DeepMind und werden lokal betrieben. Datenschutzrisiken entstehen primär durch das gewählte Hosting, nicht durch die Modelldistribution selbst.",
+  "card_subtype": "community",
+  "last_modified_at": "2026-06-25T23:35:05Z"
 }

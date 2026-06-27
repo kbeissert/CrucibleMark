@@ -35,42 +35,6 @@
     "description": "Alibaba Cloud betreibt mit DashScope die API für Qwen-Modelle und weitere KI-Dienste. Der Anbieter sitzt in Hangzhou und agiert unter chinesischem Datenschutzrecht. Für europäische Nutzer ist vor allem relevant, dass Datenverarbeitung in China stattfindet und kein EU-Angemessenheitsbeschluss vorliegt. Bei globaler Alibaba-Cloud-Nutzung ist zusätzliches CLOUD-Act-Exposure nicht auszuschließen."
   },
   {
-    "vendor_id": "alibaba_cloud",
-    "display_name": "Alibaba Cloud",
-    "company": "Alibaba Cloud Computing Ltd.",
-    "headquarters": "Hangzhou, China",
-    "founding_year": 2009,
-    "pricing_model": "free-tier+pay-per-token",
-    "api_base_url": "https://dashscope.aliyuncs.com",
-    "api_documentation_url": "https://help.aliyun.com/zh/model-studio/developer-reference/api-details",
-    "deployment": {
-      "cloud_act_exposure": true,
-      "applicable_law": "China (PIPL/CSL/DSL)",
-      "data_residency": "China + global Alibaba Cloud regions",
-      "gdpr_dpa_available": true,
-      "eu_adequacy_decision": false,
-      "data_retention_days": -1,
-      "chinese_nsl_risk": "high"
-    },
-    "privacy_note": "Für europäische Nutzer besteht ein erhöhtes Datenschutzrisiko, da Alibaba Cloud ein chinesischer Anbieter ist und API-Daten chinesischem Datenschutz- und Sicherheitsrecht unterliegen können. Bei grenzüberschreitender Verarbeitung außerhalb der EU ist ohne EU-Angemessenheitsbeschluss regelmäßig mit zusätzlichen Transfer-Risiken zu rechnen. Aufgrund der US-Börsennotierung und globaler Infrastruktur-Präsenz besteht zudem potenzielles CLOUD-Act-Exposure.",
-    "notable_models": [
-      "Qwen3-235B-A22B",
-      "Qwen3-32B",
-      "Qwen3-Coder-480B",
-      "Qwen3.7-Max"
-    ],
-    "stats": {},
-    "unknown": false,
-    "generated_at": "2026-06-12T16:39:04.144936+00:00",
-    "last_verified_at": "2026-06-22",
-    "verification_source": "https://www.alibabacloud.com/help/en/model-studio/getting-started/what-is-model-studio",
-    "description": "Alibaba Cloud (Aliyun) stellt über die Model Studio API Qwen-Modelle und weitere KI-Dienste bereit. Das Unternehmen operiert unter chinesischem Recht (PIPL/CSL/DSL) und verarbeitet Daten primär in China. Aufgrund der US-Börsennotierung und globaler Infrastruktur-Präsenz ist zusätzliches CLOUD-Act-Exposure nicht auszuschließen. Für europäische Nutzer besteht erhöhtes Datenschutzrisiko ohne EU-Angemessenheitsbeschluss.",
-    "profile_verified": true,
-    "profile_verified_at": "2026-06-22",
-    "profile_verified_by": "llm:perplexity",
-    "last_modified_at": "2026-06-22"
-  },
-  {
     "vendor_id": "alibaba_damo_academy_base_qwen3_6_27b_jackrong_fine_tune_trace_inversion_sft_hermes_agent_sft_kyle_hessling_evaluation",
     "display_name": "Alibaba DAMO Academy / Jackrong / Kyle Hessling",
     "company": "Alibaba Group Holding Limited",
@@ -97,7 +61,9 @@
     "unknown": false,
     "generated_at": "2026-06-22T19:25:05.915076+00:00",
     "last_verified_at": null,
-    "verification_source": "https://www.alibabagroup.com/en/global/home"
+    "verification_source": "https://www.alibabagroup.com/en/global/home",
+    "card_subtype": "community",
+    "last_modified_at": "2026-06-25T23:35:05Z"
   },
   {
     "vendor_id": "alibaba_damo_academy_base_qwen3_6_27b_jackrong_fine_tune_trace_inversion_sft_kyle_hessling_trace_inversion_methodology",
@@ -126,42 +92,9 @@
     "unknown": false,
     "generated_at": "2026-06-22T19:26:03.541493+00:00",
     "last_verified_at": null,
-    "verification_source": "https://github.com/QwenLM/Qwen"
-  },
-  {
-    "vendor_id": "alibaba_group_qwen_team",
-    "display_name": "Alibaba Cloud (Qwen Team)",
-    "company": "Alibaba Cloud Computing Ltd.",
-    "headquarters": "Hangzhou, China",
-    "founding_year": 2009,
-    "pricing_model": "free-tier+pay-per-token",
-    "api_base_url": "https://dashscope.aliyuncs.com",
-    "api_documentation_url": "https://www.alibabacloud.com/help/en/model-studio/",
-    "deployment": {
-      "cloud_act_exposure": true,
-      "applicable_law": "China (PIPL/CSL/DSL)",
-      "data_residency": "China + global Alibaba Cloud regions",
-      "gdpr_dpa_available": true,
-      "eu_adequacy_decision": false,
-      "data_retention_days": -1,
-      "chinese_nsl_risk": "high"
-    },
-    "privacy_note": "Für EU-Nutzer besteht ein erhöhtes Datenschutzrisiko, da API-Daten voraussichtlich unter chinesischem Datenschutz- und Sicherheitsrecht verarbeitet werden. Es gibt keinen EU-Angemessenheitsbeschluss für China, sodass internationale Datentransfers zusätzliche Compliance-Risiken verursachen können. Bei Nutzung von Alibaba-Cloud-Diensten ist zudem ein mögliches CLOUD-Act-Exposure zu berücksichtigen.",
-    "notable_models": [
-      "Qwen3.7-Max",
-      "Qwen3.6-Plus",
-      "Qwen3-32B",
-      "Qwen3-Coder"
-    ],
-    "stats": {},
-    "unknown": false,
-    "generated_at": "2026-06-12T16:42:01.327061+00:00",
-    "last_verified_at": "2026-06-22",
-    "verification_source": "https://www.alibabacloud.com/help/en/model-studio/",
-    "description": "Das Qwen-Team von Alibaba Cloud entwickelt die Qwen-Modellfamilie und stellt diese über DashScope und Cloud-Partner bereit. Die Modelle sind teilweise als Open Weights verfügbar. Datenverarbeitung erfolgt unter chinesischem Recht; für europäische Nutzer besteht erhöhtes Compliance-Risiko. Für die proprietären Qwen-Cloud-Modelle ist zusätzliches CLOUD-Act-Exposure nicht auszuschließen.",
-    "profile_verified": true,
-    "profile_verified_at": "2026-06-22",
-    "profile_verified_by": "llm:perplexity"
+    "verification_source": "https://github.com/QwenLM/Qwen",
+    "card_subtype": "community",
+    "last_modified_at": "2026-06-25T23:35:05Z"
   },
   {
     "vendor_id": "alibaba_group_qwen_team_hauhaucs_community_fine_tune",
@@ -195,7 +128,8 @@
     "profile_verified": true,
     "profile_verified_at": "2026-06-22",
     "profile_verified_by": "llm:perplexity",
-    "last_modified_at": "2026-06-22"
+    "last_modified_at": "2026-06-25T23:35:05Z",
+    "card_subtype": "community"
   },
   {
     "vendor_id": "anthropic",
@@ -485,7 +419,9 @@
     "unknown": false,
     "generated_at": "2026-06-22T18:36:15.821297+00:00",
     "last_verified_at": null,
-    "verification_source": "https://deepmind.google/"
+    "verification_source": "https://deepmind.google/",
+    "card_subtype": "community",
+    "last_modified_at": "2026-06-25T23:35:05Z"
   },
   {
     "vendor_id": "google_deepmind_base_llmfan46_fine_tune_mradermacher_gguf_quant",
@@ -518,7 +454,9 @@
     "profile_verified": true,
     "profile_verified_at": "2026-06-22",
     "profile_verified_by": "llm:perplexity",
-    "description": "Diese Karte beschreibt Google-DeepMind-Gemma-Basismodelle, die von llmfan46 weiterverarbeitet und von mradermacher als GGUF quantisiert wurden. Da die Modelle lokal betrieben werden, entstehen keine API-seitigen Datenschutzrisiken. Die Privacy-Bewertung hängt vollständig vom gewählten Host und dessen Logging/Transfer-Konfiguration ab."
+    "description": "Diese Karte beschreibt Google-DeepMind-Gemma-Basismodelle, die von llmfan46 weiterverarbeitet und von mradermacher als GGUF quantisiert wurden. Da die Modelle lokal betrieben werden, entstehen keine API-seitigen Datenschutzrisiken. Die Privacy-Bewertung hängt vollständig vom gewählten Host und dessen Logging/Transfer-Konfiguration ab.",
+    "card_subtype": "community",
+    "last_modified_at": "2026-06-25T23:35:05Z"
   },
   {
     "vendor_id": "google_deepmind_base_undix_community_distribution",
@@ -553,7 +491,9 @@
     "profile_verified": true,
     "profile_verified_at": "2026-06-22",
     "profile_verified_by": "llm:perplexity",
-    "description": "Diese Karte beschreibt Community-Distributionen von Gemma-Basismodellen für lokale Inferenz. Die Modelle basieren auf den offenen Gemma-Gewichten von Google DeepMind und werden lokal betrieben. Datenschutzrisiken entstehen primär durch das gewählte Hosting, nicht durch die Modelldistribution selbst."
+    "description": "Diese Karte beschreibt Community-Distributionen von Gemma-Basismodellen für lokale Inferenz. Die Modelle basieren auf den offenen Gemma-Gewichten von Google DeepMind und werden lokal betrieben. Datenschutzrisiken entstehen primär durch das gewählte Hosting, nicht durch die Modelldistribution selbst.",
+    "card_subtype": "community",
+    "last_modified_at": "2026-06-25T23:35:05Z"
   },
   {
     "vendor_id": "google_deepmind_base_unsloth_community_distribution",
@@ -582,7 +522,9 @@
     "unknown": false,
     "generated_at": "2026-06-22T18:34:33.106663+00:00",
     "last_verified_at": null,
-    "verification_source": "https://docs.unsloth.ai"
+    "verification_source": "https://docs.unsloth.ai",
+    "card_subtype": "community",
+    "last_modified_at": "2026-06-25T23:35:05Z"
   },
   {
     "vendor_id": "hauhaucs",
@@ -858,36 +800,6 @@
     "description": "mradermacher veröffentlicht GGUF- und abliterated Varianten öffentlicher Basismodelle mit Fokus auf lokale Nutzbarkeit und geringere Sicherheitsbeschränkungen. Die Community-Arbeit ist praktisch orientiert und richtet sich an Nutzer, die stabile Offline-Setups oder eigene Server bevorzugen. Privacy ist hier eine Hosting-Frage."
   },
   {
-    "vendor_id": "nous_research",
-    "display_name": "Nous Research",
-    "company": "Nous Research",
-    "headquarters": "New York, NY, USA",
-    "founding_year": 2023,
-    "pricing_model": "open-source-self-hosted",
-    "api_base_url": null,
-    "api_documentation_url": null,
-    "deployment": {
-      "cloud_act_exposure": true,
-      "applicable_law": "US (CLOUD Act)",
-      "data_residency": "N/A (lokal only)",
-      "gdpr_dpa_available": "unknown",
-      "eu_adequacy_decision": "unknown",
-      "data_retention_days": 0,
-      "chinese_nsl_risk": "none"
-    },
-    "privacy_note": "Nous Research ist primär als US-basierter Open-Source-Modellentwickler bekannt, nicht als klassischer gehosteter API-Provider. Bei lokaler Nutzung besteht kein zentrales Provider-Hosting-Risiko; bei Nutzung über Drittplattformen gelten jedoch deren jeweilige Datenschutz- und Transferregeln.",
-    "notable_models": [
-      "Hermes 2",
-      "Hermes 3",
-      "Nous Capybara"
-    ],
-    "stats": {},
-    "unknown": false,
-    "generated_at": "2026-06-22T19:16:33.498389+00:00",
-    "last_verified_at": null,
-    "verification_source": "https://nousresearch.com"
-  },
-  {
     "vendor_id": "nousresearch",
     "display_name": "Nous Research",
     "company": "Nous Research Inc.",
@@ -999,34 +911,6 @@
     "description": "OpenAI betreibt mit GPT und den o-Series-Modellen eine der bekanntesten kommerziellen KI-Plattformen. Das Unternehmen sitzt in San Francisco und verarbeitet API-Daten in den USA. Für europäische Product Engineers sind vor allem der CLOUD-Act-Bezug, die kommerzielle Datenverarbeitung und die verfügbaren Vertragsoptionen relevant."
   },
   {
-    "vendor_id": "unknown",
-    "display_name": "Unknown",
-    "company": "Unknown",
-    "headquarters": "Unknown",
-    "founding_year": null,
-    "pricing_model": "unknown",
-    "api_base_url": null,
-    "api_documentation_url": null,
-    "deployment": {
-      "cloud_act_exposure": false,
-      "applicable_law": "Unknown",
-      "data_residency": "Unknown",
-      "gdpr_dpa_available": "unknown",
-      "eu_adequacy_decision": false,
-      "data_retention_days": -1,
-      "chinese_nsl_risk": "none"
-    },
-    "privacy_note": "Zu diesem Provider liegen keine gesicherten Informationen vor. Herkunft, Unternehmensstruktur, Geschäftsmodell und Datenschutzpraktiken sind unbekannt. Eine verlässliche Einschätzung hinsichtlich Compliance, Datenschutz oder technischer Leistungsfähigkeit ist derzeit nicht möglich.",
-    "notable_models": [],
-    "stats": {},
-    "unknown": true,
-    "generated_at": "2026-06-02T21:00:00.000000+00:00",
-    "last_verified_at": null,
-    "verification_source": null,
-    "profile_verified": false,
-    "profile_verified_at": null
-  },
-  {
     "vendor_id": "unsloth",
     "card_subtype": "community",
     "display_name": "Unsloth",
@@ -1131,35 +1015,6 @@
     "description": "Xiaomi Corporation ist primär als Consumer-Electronics-Hersteller bekannt, betreibt aber seit 2025 ein aktives AI-Lab. Die MiMo-Modellreihe ist unter MIT-Lizenz veröffentlicht und lokal oder über Drittanbieter nutzbar. Für europäische Nutzer ist der fehlende EU-Angemessenheitsbeschluss bei Cloud-Nutzung relevant; bei lokalem Deployment entfällt das API-seitige Datenschutzrisiko."
   },
   {
-    "vendor_id": "z_ai_formerly_zhipu_ai",
-    "display_name": "Z.AI",
-    "company": "Beijing Zhipu Huazhang Technology Co., Ltd.",
-    "headquarters": "Beijing, China",
-    "founding_year": 2019,
-    "pricing_model": "free-tier+pay-per-token",
-    "api_base_url": "https://open.bigmodel.cn/api/paas/v4",
-    "api_documentation_url": "https://open.bigmodel.cn/dev/api",
-    "deployment": {
-      "cloud_act_exposure": false,
-      "applicable_law": "China (PIPL/CSL/DSL)",
-      "data_residency": "China",
-      "gdpr_dpa_available": "unknown",
-      "eu_adequacy_decision": false,
-      "data_retention_days": -1,
-      "chinese_nsl_risk": "high"
-    },
-    "privacy_note": "Bei API-Nutzung ist von Verarbeitung unter chinesischem Datenschutz- und Cybersicherheitsrecht auszugehen. Für EU-Nutzer bestehen erhöhte Risiken bei internationalem Datentransfer, behördlichem Zugriff und fehlender klarer EU-Transfergrundlage.",
-    "notable_models": [
-      "GLM-4",
-      "GLM-4-Flash"
-    ],
-    "stats": {},
-    "unknown": false,
-    "generated_at": "2026-06-22T19:30:16.973733+00:00",
-    "last_verified_at": null,
-    "verification_source": "https://open.bigmodel.cn/"
-  },
-  {
     "vendor_id": "zhipu_ai",
     "display_name": "Zhipu AI",
     "company": "Beijing Zhipu Huazhang Technology Co., Ltd.",
@@ -1194,34 +1049,5 @@
     "profile_verified_at": "2026-06-22",
     "profile_verified_by": "llm:perplexity",
     "description": "Zhipu AI betreibt die BigModel-Plattform für die GLM-Familie und weitere generative Dienste. Das Unternehmen sitzt in Beijing und verarbeitet API-Anfragen in China. Für europäische Teams ist die chinesische Jurisdiktion mit PIPL, CSL und DSL der zentrale Compliance-Punkt."
-  },
-  {
-    "vendor_id": "zhipu_ai_z_ai",
-    "display_name": "Zhipu AI",
-    "company": "Beijing Zhipu Huazhang Technology Co., Ltd.",
-    "headquarters": "Beijing, China",
-    "founding_year": 2019,
-    "pricing_model": "free-tier+pay-per-token",
-    "api_base_url": "https://open.bigmodel.cn/api/paas/v4",
-    "api_documentation_url": "https://open.bigmodel.cn/dev/howuse/introduction",
-    "deployment": {
-      "cloud_act_exposure": false,
-      "applicable_law": "China (PIPL/CSL/DSL)",
-      "data_residency": "China",
-      "gdpr_dpa_available": "unknown",
-      "eu_adequacy_decision": false,
-      "data_retention_days": -1,
-      "chinese_nsl_risk": "high"
-    },
-    "privacy_note": "Zhipu AI ist ein chinesischer Anbieter; API-Daten unterliegen daher primär chinesischem Datenschutz- und Cybersicherheitsrecht. Für EU-Nutzer besteht ein erhöhtes Risiko bei internationalen Datentransfers, da kein EU-Angemessenheitsbeschluss für China besteht und behördliche Zugriffsanforderungen nach chinesischem Recht möglich sind.",
-    "notable_models": [
-      "GLM-4",
-      "CogView"
-    ],
-    "stats": {},
-    "unknown": false,
-    "generated_at": "2026-06-22T19:29:24.944575+00:00",
-    "last_verified_at": null,
-    "verification_source": "https://open.bigmodel.cn/dev/howuse/introduction"
   }
 ]
