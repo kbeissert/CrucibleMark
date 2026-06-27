@@ -19,20 +19,16 @@
   "knowledge_cutoff": "2025-06",
   "summary": "Qwen 3.5 35B-A3B ist ein multimodales MoE-Modell von Alibaba mit 35 Milliarden Gesamt- und 3 Milliarden aktiven Parametern auf einer hybriden Architektur. Diese Q4-Quantisierung von Unsloth ermöglicht effizienten lokalen Betrieb, das Kontextfenster umfasst 262.000 Tokens. Mit optionalem Thinking-Modus, nativem Tool-Use und Vision-Fähigkeit über separate Multimodal-Projektor-Datei.",
   "strengths": [
-    [
-      "Effiziente MoE-Architektur mit nur 3 Milliarden aktiven Parametern pro Token",
-      "Optionaler Thinking-Modus mit Reasoning-Tags",
-      "Natives Kontextfenster von 262.000 Tokens, erweiterbar auf eine Million über YaRN",
-      "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit",
-      "Native Tool-Use-Unterstützung und multimodale Eingabefähigkeit"
-    ]
+    "Effiziente MoE-Architektur mit nur 3 Milliarden aktiven Parametern pro Token",
+    "Optionaler Thinking-Modus mit Reasoning-Tags",
+    "Natives Kontextfenster von 262.000 Tokens, erweiterbar auf eine Million über YaRN",
+    "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit",
+    "Native Tool-Use-Unterstützung und multimodale Eingabefähigkeit"
   ],
   "known_limitations": [
-    [
-      "Ohne separate Multimodal-Projektor-Datei nur Text-Eingabe",
-      "Leichter Qualitätsverlust durch Q4-Quantisierung im Vergleich zu Q6 oder Q8",
-      "Mögliche zensierte oder ausweichende Antworten bei sensiblen Themen mit China-Bezug"
-    ]
+    "Ohne separate Multimodal-Projektor-Datei nur Text-Eingabe",
+    "Leichter Qualitätsverlust durch Q4-Quantisierung im Vergleich zu Q6 oder Q8",
+    "Mögliche zensierte oder ausweichende Antworten bei sensiblen Themen mit China-Bezug"
   ],
   "judge_context_hint": "Qwen 3.5 35B-A3B als MoE-Variante mit effizienter Inferenz und optionalem Thinking. Bei der Bewertung die Sampling-Defaults berücksichtigen. Vision nur mit zusätzlicher Projektor-Datei aktivierbar.",
   "architecture_tags": [

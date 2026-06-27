@@ -19,22 +19,18 @@
   "knowledge_cutoff": "2026-01",
   "summary": "Qwen 3.7 Max ist Alibabas proprietäres Flagship-Modell der Qwen-3.7-Serie mit Fokus auf agentische Coding-Workflows und autonome Betriebsdauer von bis zu 35 Stunden. Das Modell arbeitet mit einem Kontextfenster von einer Million Tokens, konfigurierbarem Thinking-Modus und nativer Tool-Use-Unterstützung. Ausschliesslich über Cloud-APIs verfügbar, die chinesische Jurisdiktion ist zu beachten.",
   "strengths": [
-    [
-      "Starke Agentic-Coding-Fähigkeiten für Repository-Level-Engineering",
-      "Bis zu 35 Stunden autonome Betriebsdauer ohne menschlichen Eingriff",
-      "Kontextfenster von einer Million Tokens",
-      "Konfigurierbarer Reasoning-Modus mit Thinking ON, OFF und Budget-Steuerung",
-      "Native Tool-Use-Unterstützung",
-      "Deep-Research-Fähigkeiten für mehrstufige Informationsrecherche und Analyse"
-    ]
+    "Starke Agentic-Coding-Fähigkeiten für Repository-Level-Engineering",
+    "Bis zu 35 Stunden autonome Betriebsdauer ohne menschlichen Eingriff",
+    "Kontextfenster von einer Million Tokens",
+    "Konfigurierbarer Reasoning-Modus mit Thinking ON, OFF und Budget-Steuerung",
+    "Native Tool-Use-Unterstützung",
+    "Deep-Research-Fähigkeiten für mehrstufige Informationsrecherche und Analyse"
   ],
   "known_limitations": [
-    [
-      "Proprietäres Cloud-Only-Modell ohne lokales Deployment",
-      "Chinesische Jurisdiktion mit NSL-Risiko bei sensiblen Inhalten über die API",
-      "Potenzielle inhaltliche Einschränkungen bei politisch sensiblen Themen mit China-Bezug",
-      "Text-only ohne nativen Bild- oder Video-Eingang"
-    ]
+    "Proprietäres Cloud-Only-Modell ohne lokales Deployment",
+    "Chinesische Jurisdiktion mit NSL-Risiko bei sensiblen Inhalten über die API",
+    "Potenzielle inhaltliche Einschränkungen bei politisch sensiblen Themen mit China-Bezug",
+    "Text-only ohne nativen Bild- oder Video-Eingang"
   ],
   "judge_context_hint": "Frontier-Agentic-Modell mit langer autonomer Betriebsdauer. Bei der Bewertung Coding und Agentic-Fähigkeiten gewichten. NSL-Jurisdiktion beachten.",
   "architecture_tags": [

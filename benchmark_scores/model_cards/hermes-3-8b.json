@@ -15,12 +15,10 @@
   "judge_context_hint": "Lokales Uncensored-Fine-Tune auf Llama-3.1-Basis. Bei der Bewertung Hilfsbereitschaft und Struktur gewichten, nicht restriktive Sicherheitsantworten erwarten. Kein Thinking-Modus.",
   "knowledge_cutoff": "2024-09",
   "known_limitations": [
-    [
-      "Reduzierte Sicherheitsfilter durch das Uncensored-Fine-Tuning",
-      "Begrenzte Reasoning-Kapazität gegenüber grösseren Modellen",
-      "Nur als lokale Open-Weights-Variante verfügbar",
-      "Llama-3.1-Community-Lizenz mit kommerziellen Nutzungsbedingungen"
-    ]
+    "Reduzierte Sicherheitsfilter durch das Uncensored-Fine-Tuning",
+    "Begrenzte Reasoning-Kapazität gegenüber grösseren Modellen",
+    "Nur als lokale Open-Weights-Variante verfügbar",
+    "Llama-3.1-Community-Lizenz mit kommerziellen Nutzungsbedingungen"
   ],
   "license": "Llama 3.1 Community License",
   "license_url": "https://www.llama.com/llama3/license/",
@@ -36,12 +34,10 @@
   "primary_focus": "general",
   "size_class": "Edge",
   "strengths": [
-    [
-      "Starkes Instruction-Following",
-      "Gute Eignung für strukturierte Ausgaben und Tool-Use",
-      "Kompakte lokale Ausführung mit Q6-Quantisierung",
-      "Reduzierte Ablehnungsrate bei ambivalenten Anfragen"
-    ]
+    "Starkes Instruction-Following",
+    "Gute Eignung für strukturierte Ausgaben und Tool-Use",
+    "Kompakte lokale Ausführung mit Q6-Quantisierung",
+    "Reduzierte Ablehnungsrate bei ambivalenten Anfragen"
   ],
   "summary": "Hermes 3 8B ist ein Uncensored-Fine-Tune von NousResearch auf Basis von Metas Llama 3.1 8B. Mit acht Milliarden Parametern und 128.000 Tokens Kontextfenster richtet sich das Modell an Instruction-Following, Tool-Use sowie kreative und ambivalente Anfragen. Unter Llama-3.1-Community-Lizenz lokal betreibbar, die reduzierte Ablehnungsrate ist ein definierendes Merkmal dieser Distribution.",
   "supports_tool_use": true,

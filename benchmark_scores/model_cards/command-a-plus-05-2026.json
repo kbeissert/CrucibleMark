@@ -68,7 +68,7 @@
   "license": "Apache-2.0",
   "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
   "commercial_use_allowed": true,
-  "weights_license_tier": "open",
+  "weights_license_tier": "open-weights",
   "model_version": "05-2026",
   "input_price_per_1m": null,
   "output_price_per_1m": null,
@@ -84,7 +84,7 @@
   "profile_verified": false,
   "profile_verified_at": null,
   "profile_verified_by": null,
-  "last_modified_at": "2026-06-22",
+  "last_modified_at": "2026-06-26T11:20:43Z",
   "heritage_ids": [
     "command-a-03-2025"
   ],

@@ -19,22 +19,18 @@
   "knowledge_cutoff": "2026-04",
   "summary": "NVIDIA Nemotron 3 Nano 30B A3B ist ein effizientes Hybrid-Modell aus der Nemotron-3-Serie, das Mamba-2 mit Transformer-Schichten kombiniert. Bei 31,6 Milliarden Gesamtparametern aktiviert das Modell nur 3,2 Milliarden pro Token, das Kontextfenster umfasst bis zu eine Million Tokens. Optionaler Thinking-Modus mit konfigurierbarem Budget, native Tool-Aufrufe und Agentic-Fähigkeiten ab Werk. Unter NVIDIA Open Model License als Open-Weights-Modell verfügbar.",
   "strengths": [
-    [
-      "Open Weights unter NVIDIA Open Model License, vollständig lokal deploybar",
-      "Nur 3,2 Milliarden aktive Parameter pro Token für effiziente Inferenz",
-      "Kontextfenster von bis zu einer Million Tokens",
-      "Konfigurierbares Reasoning mit Thinking-Budget-Steuerung",
-      "Native Tool-Use und Agentic-Fähigkeiten",
-      "Hybrid-Mamba-2-plus-Transformer-Architektur für effizientes Long-Context-Handling"
-    ]
+    "Open Weights unter NVIDIA Open Model License, vollständig lokal deploybar",
+    "Nur 3,2 Milliarden aktive Parameter pro Token für effiziente Inferenz",
+    "Kontextfenster von bis zu einer Million Tokens",
+    "Konfigurierbares Reasoning mit Thinking-Budget-Steuerung",
+    "Native Tool-Use und Agentic-Fähigkeiten",
+    "Hybrid-Mamba-2-plus-Transformer-Architektur für effizientes Long-Context-Handling"
   ],
   "known_limitations": [
-    [
-      "NVIDIA Open Model License ist keine OSI-anerkannte Open-Source-Lizenz, kommerzielle Nutzung mit Einschränkungen prüfen",
-      "US-Jurisdiktion mit CLOUD-Act-Risiko bei API-Nutzung über NVIDIA-Infrastruktur",
-      "Hybrid-Mamba-Architektur weniger breit im Production-Tooling verankert als reine Transformer-Modelle",
-      "FP8 benötigt mindestens 32 GB VRAM, BF16 mindestens 60 GB"
-    ]
+    "NVIDIA Open Model License ist keine OSI-anerkannte Open-Source-Lizenz, kommerzielle Nutzung mit Einschränkungen prüfen",
+    "US-Jurisdiktion mit CLOUD-Act-Risiko bei API-Nutzung über NVIDIA-Infrastruktur",
+    "Hybrid-Mamba-Architektur weniger breit im Production-Tooling verankert als reine Transformer-Modelle",
+    "FP8 benötigt mindestens 32 GB VRAM, BF16 mindestens 60 GB"
   ],
   "judge_context_hint": "Hybrid-MoE mit Mamba-2- und Transformer-Schichten, konfigurierbares Reasoning über Thinking-Budget. Stark bei Coding, agentischen und Long-Context-Aufgaben.",
   "architecture_tags": [

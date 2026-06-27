@@ -19,22 +19,18 @@
   "knowledge_cutoff": "2025-05",
   "summary": "Xiaomi MiMo V2.5 Pro ist Xiaomis Flaggschiff mit 1,02 Billionen Gesamt- und 42 Milliarden aktiven Parametern für Frontier-Reasoning und agentische Workflows. Die hybride Attention-Architektur reduziert den KV-Cache-Speicher deutlich, das Kontextfenster umfasst eine Million Tokens. Nativ omnimodal für Text, Bild, Video und Audio, unter MIT-Lizenz voll kommerziell nutzbar.",
   "strengths": [
-    [
-      "Frontier-Reasoning und starke Agentic-Fähigkeiten mit 42 Milliarden aktiven Parametern",
-      "Kontextfenster von einer Million Tokens für langlaufende Workflows mit Tausenden Tool-Aufrufen",
-      "Hybride Attention mit deutlich reduziertem KV-Cache-Speicher",
-      "Multi-Token-Prediction-Module für beschleunigte Inferenz",
-      "Native Omnimodalität für Text, Bild, Video und Audio",
-      "MIT-Lizenz mit vollständig kommerzieller Nutzbarkeit"
-    ]
+    "Frontier-Reasoning und starke Agentic-Fähigkeiten mit 42 Milliarden aktiven Parametern",
+    "Kontextfenster von einer Million Tokens für langlaufende Workflows mit Tausenden Tool-Aufrufen",
+    "Hybride Attention mit deutlich reduziertem KV-Cache-Speicher",
+    "Multi-Token-Prediction-Module für beschleunigte Inferenz",
+    "Native Omnimodalität für Text, Bild, Video und Audio",
+    "MIT-Lizenz mit vollständig kommerzieller Nutzbarkeit"
   ],
   "known_limitations": [
-    [
-      "Chinesischer Anbieter, Cloud-Nutzung erfordert Vertrauen in Xiaomi-Infrastruktur",
-      "Knowledge-Cutoff im Mai 2025, kein aktuelleres Weltwissen verfügbar",
-      "Lokales FP8-Deployment erfordert erhebliche Multi-GPU-Ressourcen",
-      "FP8-Gewichte nicht direkt mit allen Inferenz-Engines kompatibel"
-    ]
+    "Chinesischer Anbieter, Cloud-Nutzung erfordert Vertrauen in Xiaomi-Infrastruktur",
+    "Knowledge-Cutoff im Mai 2025, kein aktuelleres Weltwissen verfügbar",
+    "Lokales FP8-Deployment erfordert erhebliche Multi-GPU-Ressourcen",
+    "FP8-Gewichte nicht direkt mit allen Inferenz-Engines kompatibel"
   ],
   "judge_context_hint": "Frontier-Reasoning-Modell mit nativer Omnimodalität und starker Agentic-Leistung. Bei der Bewertung Reasoning-Tiefe und Agentic-Performance stärker gewichten als Single-Turn-Antwortqualität.",
   "architecture_tags": [

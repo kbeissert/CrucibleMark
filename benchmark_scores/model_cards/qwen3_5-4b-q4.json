@@ -19,20 +19,16 @@
   "knowledge_cutoff": "2025-06",
   "summary": "Qwen 3.5 4B ist ein kompaktes Open-Weights-Modell von Alibaba mit Thinking-Optional-Architektur und Unsloth-Dynamic-Quantisierung. Die Q4-Stufe mit gemischter Bittiefenverteilung pro Schicht reduziert den VRAM-Bedarf deutlich, das Kontextfenster umfasst 128.000 Tokens. Unter Apache-2.0-Lizenz auf ressourcenbeschränkter Hardware lokal betreibbar, geeignet für allgemeine Aufgaben mit optionalem Reasoning.",
   "strengths": [
-    [
-      "Thinking-Optional für zuschaltbares Reasoning bei komplexeren Aufgaben",
-      "Unsloth Dynamic Quantisierung mit gemischter Bittiefenverteilung pro Schicht",
-      "Minimaler VRAM-Bedarf durch kompakte 4-Milliarden-Parameterstruktur",
-      "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit",
-      "Lokaler Betrieb ohne Cloud-Zwang"
-    ]
+    "Thinking-Optional für zuschaltbares Reasoning bei komplexeren Aufgaben",
+    "Unsloth Dynamic Quantisierung mit gemischter Bittiefenverteilung pro Schicht",
+    "Minimaler VRAM-Bedarf durch kompakte 4-Milliarden-Parameterstruktur",
+    "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit",
+    "Lokaler Betrieb ohne Cloud-Zwang"
   ],
   "known_limitations": [
-    [
-      "Q4-Quantisierung kann bei sehr langen Kontexten und komplexem Reasoning Qualitätseinbussen gegenüber Q8 zeigen",
-      "Mögliche zensierte oder ausweichende Antworten bei sensiblen Themen mit China-Bezug",
-      "Thinking-Modus-Aktivierung provider- und konfigurationsabhängig"
-    ]
+    "Q4-Quantisierung kann bei sehr langen Kontexten und komplexem Reasoning Qualitätseinbussen gegenüber Q8 zeigen",
+    "Mögliche zensierte oder ausweichende Antworten bei sensiblen Themen mit China-Bezug",
+    "Thinking-Modus-Aktivierung provider- und konfigurationsabhängig"
   ],
   "judge_context_hint": "Kompaktes Qwen-3.5-Modell für ressourcen-beschränkte Hardware mit Thinking-Optional. Bei der Bewertung die kompakte 4-Milliarden-Architektur berücksichtigen, nicht mit grösseren Modellen vergleichen.",
   "architecture_tags": [

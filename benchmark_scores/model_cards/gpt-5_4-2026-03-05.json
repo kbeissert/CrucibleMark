@@ -19,19 +19,15 @@
   "knowledge_cutoff": "2025-08",
   "summary": "GPT-5.4 ist die grössere Variante aus OpenAIs 5.4-Generation für anspruchsvolle Workloads mit höherer Antwortqualität als die Mini-Versionen. Das Modell arbeitet mit einem Kontextfenster von 272.000 Tokens, verarbeitet Text- und Bildeingaben und ist ausschliesslich über die OpenAI-API verfügbar. Proprietär und auf produktive, komplexe Aufgaben ausgelegt.",
   "strengths": [
-    [
-      "Stärker als die Mini-Varianten bei komplexen Aufgaben",
-      "Kontextfenster von 272.000 Tokens",
-      "Multimodale Eingabe für Text und Bild",
-      "Geeignet für produktive, anspruchsvolle Workflows"
-    ]
+    "Stärker als die Mini-Varianten bei komplexen Aufgaben",
+    "Kontextfenster von 272.000 Tokens",
+    "Multimodale Eingabe für Text und Bild",
+    "Geeignet für produktive, anspruchsvolle Workflows"
   ],
   "known_limitations": [
-    [
-      "Ausschliesslich über die OpenAI-API verfügbar",
-      "Proprietäre Gewichte nicht zugänglich",
-      "Kosten und Latenz höher als bei kleineren Varianten"
-    ]
+    "Ausschliesslich über die OpenAI-API verfügbar",
+    "Proprietäre Gewichte nicht zugänglich",
+    "Kosten und Latenz höher als bei kleineren Varianten"
   ],
   "judge_context_hint": "Grössere GPT-5.4-Variante mit Fokus auf Qualität und komplexere Standard-Workloads. Bei der Bewertung Breite und Antworttiefe berücksichtigen.",
   "architecture_tags": [

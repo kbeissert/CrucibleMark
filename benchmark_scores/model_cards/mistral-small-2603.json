@@ -18,11 +18,9 @@
   "judge_context_hint": "Kompaktes Open-Weights-Modell mit Fokus auf Effizienz und allgemeine Produktivaufgaben. Antworten als pragmatische Allround-Ausgaben einordnen.",
   "knowledge_cutoff": "2026-01",
   "known_limitations": [
-    [
-      "Schwächer als grössere Modelle bei sehr komplexem Reasoning",
-      "Kontextfenster kleiner als bei Frontier-Modellen",
-      "Tool-Use folgt dem Mistral-spezifischen Format"
-    ]
+    "Schwächer als grössere Modelle bei sehr komplexem Reasoning",
+    "Kontextfenster kleiner als bei Frontier-Modellen",
+    "Tool-Use folgt dem Mistral-spezifischen Format"
   ],
   "license": "Apache 2.0",
   "license_url": "https://docs.mistral.ai/models/model-cards/mistral-small-4-0-26-03",
@@ -38,12 +36,10 @@
   "primary_focus": "general",
   "size_class": "Workstation",
   "strengths": [
-    [
-      "Open Weights mit Apache-2.0-Lizenz",
-      "Lokal betreibbar und zugleich über die Mistral-API verfügbar",
-      "Gutes Preis-Leistungs-Verhältnis für Alltagsaufgaben",
-      "Multimodal, langkontextfähig und für agentische Workflows geeignet"
-    ]
+    "Open Weights mit Apache-2.0-Lizenz",
+    "Lokal betreibbar und zugleich über die Mistral-API verfügbar",
+    "Gutes Preis-Leistungs-Verhältnis für Alltagsaufgaben",
+    "Multimodal, langkontextfähig und für agentische Workflows geeignet"
   ],
   "summary": "Mistral Small 4 ist das kompakte Open-Weights-Modell von Mistral AI für allgemeine und agentische Aufgaben. Die MoE-Architektur aktiviert pro Token nur 6,5 Milliarden der insgesamt 119 Milliarden Parameter, das Kontextfenster umfasst 256.000 Tokens und das Modell verarbeitet Text- und Bildeingaben. Unter Apache-2.0-Lizenz lokal oder über die Mistral-API nutzbar, aus einem europäischen Anbieter-Umfeld.",
   "supports_tool_use": true,

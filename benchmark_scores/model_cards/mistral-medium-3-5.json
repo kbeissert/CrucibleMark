@@ -17,11 +17,9 @@
   "judge_context_hint": "Frontier-Modell mit Schwerpunkt auf agentische Workflows und Coding. Bei der Bewertung Performance in diesen Bereichen gewichten. Bei rein kreativen oder allgemeinen Reasoning-Aufgaben kann die Leistung von reinen General-Purpose-Modellen abweichen.",
   "knowledge_cutoff": "2025-12",
   "known_limitations": [
-    [
-      "Begrenzte Community-Erfahrung aufgrund des jungen Veröffentlichungszeitpunkts",
-      "Hohe Hardware-Anforderungen für den lokalen Einsatz der Modellklasse",
-      "Mögliche Nuancen in der Performance bei rein narrativen oder hochkreativen Aufgaben"
-    ]
+    "Begrenzte Community-Erfahrung aufgrund des jungen Veröffentlichungszeitpunkts",
+    "Hohe Hardware-Anforderungen für den lokalen Einsatz der Modellklasse",
+    "Mögliche Nuancen in der Performance bei rein narrativen oder hochkreativen Aufgaben"
   ],
   "license": "Modified MIT",
   "license_url": "https://huggingface.co/mistralai/Mistral-Medium-3.5-128B/blob/main/LICENSE",
@@ -37,13 +35,11 @@
   "primary_focus": "general",
   "size_class": "Server",
   "strengths": [
-    [
-      "Modified-MIT-Lizenz mit kommerzieller Nutzbarkeit unter Revenue-Schwelle",
-      "Hohe Leistung bei agentischen Aufgaben und Programmierung",
-      "Kontextfenster von 256.000 Tokens mit multimodalen Fähigkeiten für Text und Bild",
-      "Geringes regulatorisches Risiko durch EU-Entwicklung",
-      "Tool-Use-Unterstützung für Workflow-Automatisierung"
-    ]
+    "Modified-MIT-Lizenz mit kommerzieller Nutzbarkeit unter Revenue-Schwelle",
+    "Hohe Leistung bei agentischen Aufgaben und Programmierung",
+    "Kontextfenster von 256.000 Tokens mit multimodalen Fähigkeiten für Text und Bild",
+    "Geringes regulatorisches Risiko durch EU-Entwicklung",
+    "Tool-Use-Unterstützung für Workflow-Automatisierung"
   ],
   "summary": "Mistral Medium 3.5 ist Mistral AIs Frontier-Modell mit Fokus auf agentische Workflows und Coding. Mit 128 Milliarden Parametern arbeitet das Modell bei einem Kontextfenster von 256.000 Tokens und unterstützt multimodale Eingaben für Text und Bild. Als Open-Weights-Modell unter Modified-MIT-Lizenz lokal oder über die Cloud-API nutzbar, aus einem europäischen Anbieter-Umfeld mit DSGVO-Konformität.",
   "supports_tool_use": true,

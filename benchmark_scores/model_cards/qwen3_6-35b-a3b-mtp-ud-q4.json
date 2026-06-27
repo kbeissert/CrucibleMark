@@ -19,21 +19,17 @@
   "knowledge_cutoff": "2025-06",
   "summary": "Qwen 3.6 35B-A3B MTP ist Alibabas multimodales MoE-Modell mit Multi-Token-Prediction-Heads für spekulatives Decoding. Von 35 Milliarden Gesamtparametern sind pro Token nur 3 Milliarden aktiv, das Kontextfenster umfasst 262.000 Tokens. Die Unsloth-Dynamic-Q4-Quantisierung ermöglicht effiziente lokale Inferenz, mit optionalem Thinking-Modus und Tool-Use. Vision erfordert eine separate Multimodal-Projektor-Datei.",
   "strengths": [
-    [
-      "Multi-Token-Prediction für spekulatives Decoding mit Beschleunigung ohne Qualitätsverlust",
-      "Effiziente MoE-Architektur mit nur 3 Milliarden aktiven Parametern pro Token",
-      "Optionaler Thinking-Modus mit nachgewiesenen Reasoning-Tokens",
-      "Kontextfenster von 262.000 Tokens, erweiterbar auf eine Million über YaRN",
-      "Native Tool-Use-Unterstützung und multimodale Eingabefähigkeit",
-      "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit"
-    ]
+    "Multi-Token-Prediction für spekulatives Decoding mit Beschleunigung ohne Qualitätsverlust",
+    "Effiziente MoE-Architektur mit nur 3 Milliarden aktiven Parametern pro Token",
+    "Optionaler Thinking-Modus mit nachgewiesenen Reasoning-Tokens",
+    "Kontextfenster von 262.000 Tokens, erweiterbar auf eine Million über YaRN",
+    "Native Tool-Use-Unterstützung und multimodale Eingabefähigkeit",
+    "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit"
   ],
   "known_limitations": [
-    [
-      "MTP-Speculative-Decoding erfordert aktuelle llama.cpp-Versionen",
-      "Ohne separate Multimodal-Projektor-Datei nur Text-Eingabe",
-      "Mögliche zensierte oder ausweichende Antworten bei sensiblen Themen mit China-Bezug"
-    ]
+    "MTP-Speculative-Decoding erfordert aktuelle llama.cpp-Versionen",
+    "Ohne separate Multimodal-Projektor-Datei nur Text-Eingabe",
+    "Mögliche zensierte oder ausweichende Antworten bei sensiblen Themen mit China-Bezug"
   ],
   "judge_context_hint": "Qwen 3.6 mit MTP-Beschleunigung für effiziente Inferenz. Vision nur mit zusätzlicher Projektor-Datei aktivierbar. Bei der Bewertung Sampling-Defaults berücksichtigen.",
   "architecture_tags": [

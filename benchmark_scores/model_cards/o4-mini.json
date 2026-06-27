@@ -19,21 +19,17 @@
   "knowledge_cutoff": "2024-06",
   "summary": "o4-mini ist OpenAIs kompaktes Reasoning-Modell mit nativem Vision-Eingang für Bilder, Diagramme und Screenshots. Das Modell verarbeitet Text und Bild, arbeitet mit einem Kontextfenster von 200.000 Tokens und bietet drei einstellbare Reasoning-Stufen für die Balance zwischen Antworttiefe und Latenz. Volles Tool-Use inklusive parallelem Tool-Calling für leichte agentische Workflows.",
   "strengths": [
-    [
-      "Native Vision-Unterstützung über die API für Bilder, Diagramme und Screenshots",
-      "Volles Tool-Use inklusive parallelem Tool-Calling",
-      "Drei einstellbare Reasoning-Intensitätsstufen für Kosten-Leistungs-Optimierung",
-      "Schneller und günstiger als die grösseren o3- und o4-Modelle",
-      "Geeignet als Reasoning-Layer in leichten Agentic-Architekturen"
-    ]
+    "Native Vision-Unterstützung über die API für Bilder, Diagramme und Screenshots",
+    "Volles Tool-Use inklusive parallelem Tool-Calling",
+    "Drei einstellbare Reasoning-Intensitätsstufen für Kosten-Leistungs-Optimierung",
+    "Schneller und günstiger als die grösseren o3- und o4-Modelle",
+    "Geeignet als Reasoning-Layer in leichten Agentic-Architekturen"
   ],
   "known_limitations": [
-    [
-      "Proprietäre Gewichte, kein lokales Deployment möglich",
-      "Schwächer als o3 und grössere Frontier-Modelle bei komplexen mehrstufigen Reasoning-Chains",
-      "Reasoning-Schritte nicht in der API-Antwort sichtbar",
-      "Nachfolger GPT-5 mini bereits angekündigt, Lebenszyklus beachten"
-    ]
+    "Proprietäre Gewichte, kein lokales Deployment möglich",
+    "Schwächer als o3 und grössere Frontier-Modelle bei komplexen mehrstufigen Reasoning-Chains",
+    "Reasoning-Schritte nicht in der API-Antwort sichtbar",
+    "Nachfolger GPT-5 mini bereits angekündigt, Lebenszyklus beachten"
   ],
   "judge_context_hint": "Kompaktes o-series Reasoning-Modell mit internem Chain-of-Thought, der nicht in der Antwort sichtbar wird. Natives Vision-Input und paralleles Tool-Calling. Bei der Bewertung Coding, Mathematik und leichte Agentic-Workflows gewichten.",
   "architecture_tags": [

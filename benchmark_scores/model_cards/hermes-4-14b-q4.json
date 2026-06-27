@@ -15,11 +15,9 @@
   "judge_context_hint": "Q4-Variante für lokale Assistenz mit effizienter Speichernutzung. Bei der Bewertung Effizienz und brauchbare Struktur gewichten, nicht maximale Tiefenleistung. Hybride Thinking-Modi verfügbar.",
   "knowledge_cutoff": "2024-09",
   "known_limitations": [
-    [
-      "Q4-Variante bringt stärkere Qualitätsverluste als Q6- oder Q8-Varianten",
-      "Begrenzte Reasoning-Tiefe im Vergleich zu grösseren Modellen",
-      "Bei sensiblen Themen möglicherweise reduzierte Sicherheitsantworten"
-    ]
+    "Q4-Variante bringt stärkere Qualitätsverluste als Q6- oder Q8-Varianten",
+    "Begrenzte Reasoning-Tiefe im Vergleich zu grösseren Modellen",
+    "Bei sensiblen Themen möglicherweise reduzierte Sicherheitsantworten"
   ],
   "license": "Apache 2.0",
   "license_url": "https://opensource.org/licenses/Apache-2.0",
@@ -35,12 +33,10 @@
   "primary_focus": "general",
   "size_class": "Desktop",
   "strengths": [
-    [
-      "Lokale Ausführung mit geringem Speicherbedarf durch Q4-Quantisierung",
-      "Stark für strukturierte Assistenz und Tool-Use",
-      "Hybride Denkmodi mit Thinking-Aktivierung bei komplexen Aufgaben",
-      "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit"
-    ]
+    "Lokale Ausführung mit geringem Speicherbedarf durch Q4-Quantisierung",
+    "Stark für strukturierte Assistenz und Tool-Use",
+    "Hybride Denkmodi mit Thinking-Aktivierung bei komplexen Aufgaben",
+    "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit"
   ],
   "summary": "Hermes 4 14B als Q4-Quantisierung der NousResearch-Distribution auf Qwen-3-Basis, optimiert für lokale Assistenz und agentische Aufgaben. Mit 14 Milliarden Parametern und 128.000 Tokens Kontextfenster läuft das Modell auf ressourcenbeschränkter Hardware und unterstützt hybride Denkmodi. Unter Apache-2.0-Lizenz voll kommerziell nutzbar.",
   "supports_tool_use": true,

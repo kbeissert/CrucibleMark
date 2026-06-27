@@ -15,17 +15,15 @@
   "judge_context_hint": "Open-Weights-Modell mit Fokus auf Reasoning und agentische Workflows. Bei der Bewertung hohe Kapazität und Ressourcenbedarf sowie Deployment-Flexibilität berücksichtigen.",
   "knowledge_cutoff": "2025-06",
   "known_limitations": [
-    [
-      "Hoher Ressourcenbedarf bei lokaler Ausführung",
-      "Keine spezialisierte Leichtgewicht-Variante",
-      "Cloud-Variante über Groq unterliegt dem Drittanbieter-Recht bei Datenverarbeitung"
-    ]
+    "Hoher Ressourcenbedarf bei lokaler Ausführung",
+    "Keine spezialisierte Leichtgewicht-Variante",
+    "Cloud-Variante über Groq unterliegt dem Drittanbieter-Recht bei Datenverarbeitung"
   ],
   "license": "Apache 2.0",
   "license_url": "https://opensource.org/licenses/Apache-2.0",
   "local_deployment_possible": true,
   "model_family": "GPT OSS",
-  "vendor": "Groq",
+  "vendor": "OpenAI",
   "model_id": "openai/gpt-oss-120b",
   "model_version": "120b",
   "origin_country": "USA",
@@ -36,13 +34,11 @@
   "primary_focus": "general",
   "size_class": "Frontier",
   "strengths": [
-    [
-      "Offene Gewichte und hohe Flexibilität beim Deployment",
-      "MoE-Architektur mit 5,1 Milliarden aktiven Parametern bei 117 Milliarden Gesamtparametern",
-      "Hohe Kapazität für komplexe Reasoning-Aufgaben und agentische Workflows",
-      "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit",
-      "Optionaler Thinking-Modus konfigurierbar über System-Prompt"
-    ]
+    "Offene Gewichte und hohe Flexibilität beim Deployment",
+    "MoE-Architektur mit 5,1 Milliarden aktiven Parametern bei 117 Milliarden Gesamtparametern",
+    "Hohe Kapazität für komplexe Reasoning-Aufgaben und agentische Workflows",
+    "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit",
+    "Optionaler Thinking-Modus konfigurierbar über System-Prompt"
   ],
   "summary": "GPT-OSS 120B ist OpenAIs leistungsstarkes Open-Weights-Modell der OSS-Serie, gehostet über Groq für Cloud-Nutzung und parallel als Download für lokales Deployment verfügbar. Die MoE-Architektur aktiviert pro Token nur 5,1 Milliarden der insgesamt 117 Milliarden Gesamtparameter, das Kontextfenster umfasst 131.000 Tokens. Unter Apache-2.0-Lizenz mit Fokus auf Reasoning und agentische Workflows.",
   "supports_tool_use": true,
@@ -74,7 +70,7 @@
   "cot_marker_family": null,
   "cot_tags_detected": null,
   "profile_verified_by": "llm:perplexity",
-  "last_modified_at": "2026-06-24",
+  "last_modified_at": "2026-06-25T23:24:34Z",
   "heritage_ids": [
     "gpt-oss:120b-cloud"
   ],

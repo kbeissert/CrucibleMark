@@ -19,21 +19,17 @@
   "knowledge_cutoff": "2025-06",
   "summary": "Qwen 3.5 397B ist Alibabas Flaggschiff mit nativer Multimodalität für Text, Bild und Video auf einer hybriden Mamba-2-Transformer-MoE-Architektur. Von 397 Milliarden Gesamtparametern sind pro Token nur 17 Milliarden aktiv, das Kontextfenster umfasst 262.000 Tokens. Unter Apache-2.0-Lizenz lokal oder über Cloud-Endpoint verfügbar.",
   "strengths": [
-    [
-      "Native Multimodalität mit Text-, Bild- und Video-Verarbeitung in Early-Fusion-Architektur",
-      "Effiziente MoE-Architektur mit nur 17 Milliarden aktiven Parametern pro Token",
-      "Kontextfenster von 262.000 Tokens, erweiterbar auf eine Million über YaRN",
-      "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit",
-      "Thinking-Optional mit provider-abhängiger Konfiguration"
-    ]
+    "Native Multimodalität mit Text-, Bild- und Video-Verarbeitung in Early-Fusion-Architektur",
+    "Effiziente MoE-Architektur mit nur 17 Milliarden aktiven Parametern pro Token",
+    "Kontextfenster von 262.000 Tokens, erweiterbar auf eine Million über YaRN",
+    "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit",
+    "Thinking-Optional mit provider-abhängiger Konfiguration"
   ],
   "known_limitations": [
-    [
-      "Einschränkungen bei politisch sensiblen Themen mit Bezug zu China",
-      "Hoher Hardwareaufwand für lokalen Betrieb der vollen Variante, Multi-GPU-Setup nötig",
-      "Cloud-API-Nutzung unterliegt chinesischer NSL-Jurisdiktion",
-      "Provider-abhängig können Thinking-Modus und Vision-Encoder deaktiviert sein"
-    ]
+    "Einschränkungen bei politisch sensiblen Themen mit Bezug zu China",
+    "Hoher Hardwareaufwand für lokalen Betrieb der vollen Variante, Multi-GPU-Setup nötig",
+    "Cloud-API-Nutzung unterliegt chinesischer NSL-Jurisdiktion",
+    "Provider-abhängig können Thinking-Modus und Vision-Encoder deaktiviert sein"
   ],
   "judge_context_hint": "Qwen-Flaggschiff mit nativer Multimodalität und effizienter MoE-Architektur. Provider-abhängig in Thinking- und Vision-Aktivierung. Bei China-bezogenen Themen eingeschränkte Antworten möglich.",
   "architecture_tags": [
@@ -85,5 +81,6 @@
   "profile_verified_by": "llm:perplexity",
   "last_modified_at": "2026-06-21",
   "heritage_ids": [],
-  "community": null
+  "community": null,
+  "presence_penalty": null
 }

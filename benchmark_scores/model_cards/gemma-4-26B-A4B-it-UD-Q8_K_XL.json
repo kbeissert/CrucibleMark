@@ -19,21 +19,17 @@
   "knowledge_cutoff": "2025-01",
   "summary": "Gemma 4 26B-A4B Instruct als hochpräzise Q8-Quantisierung von Unsloth, die hochwertigste Variante der MoE-Familie mit nahezu Vollpräzision. Von 25,2 Milliarden Gesamtparametern sind pro Token nur 3,8 Milliarden aktiv, das Kontextfenster umfasst 128.000 Tokens. Unter Apache-2.0-Lizenz lokal betreibbar ohne externe Cloud-Verbindung.",
   "strengths": [
-    [
-      "Q8-Quantisierung mit nahezu Vollpräzision als hochwertigste Variante",
-      "MoE-Architektur mit nur 3,8 Milliarden aktiven Parametern bei 25,2 Milliarden Gesamtparametern",
-      "Konfigurierbare Thinking-Modi mit nachgewiesenen Reasoning-Spuren",
-      "Kontextfenster von 128.000 Tokens für grosse Codebasen und Dokumente",
-      "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit"
-    ]
+    "Q8-Quantisierung mit nahezu Vollpräzision als hochwertigste Variante",
+    "MoE-Architektur mit nur 3,8 Milliarden aktiven Parametern bei 25,2 Milliarden Gesamtparametern",
+    "Konfigurierbare Thinking-Modi mit nachgewiesenen Reasoning-Spuren",
+    "Kontextfenster von 128.000 Tokens für grosse Codebasen und Dokumente",
+    "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit"
   ],
   "known_limitations": [
-    [
-      "Kein Multi-Token-Prediction-Drafter, daher langsamer als die Q5-MTP-Variante",
-      "Multimodalität für Bild, Audio und Video erfordert eine separate Multimodal-Projektor-Datei",
-      "Hoher Speicherbedarf durch die Q8-Quantisierung, erfordert professionelle Workstation-Hardware",
-      "Community-Distribution statt offizieller Google-Verpackung"
-    ]
+    "Kein Multi-Token-Prediction-Drafter, daher langsamer als die Q5-MTP-Variante",
+    "Multimodalität für Bild, Audio und Video erfordert eine separate Multimodal-Projektor-Datei",
+    "Hoher Speicherbedarf durch die Q8-Quantisierung, erfordert professionelle Workstation-Hardware",
+    "Community-Distribution statt offizieller Google-Verpackung"
   ],
   "judge_context_hint": "Hochpräzise Variante der Gemma-4-26B-Reihe in Q8-Quantisierung ohne Multi-Token-Prediction. Bei der Bewertung nahezu Vollpräzision erwarten, jedoch langsamere Inferenz als die MTP-Variante. Konfigurierbare Thinking-Modi aktiv. Lokales Deployment ohne externen Datentransfer.",
   "architecture_tags": [

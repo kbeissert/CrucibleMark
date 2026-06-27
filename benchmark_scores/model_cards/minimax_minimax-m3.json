@@ -17,11 +17,9 @@
   "judge_context_hint": "Frontier-Modell mit agentischem Schwerpunkt. Bei der Bewertung Präzision bei komplexen Coding-Aufgaben, Robustheit in langen Kontexten und Fähigkeit zur autonomen Tool-Nutzung gewichten.",
   "knowledge_cutoff": "2026-05",
   "known_limitations": [
-    [
-      "Chinesisches nationales Sicherheitsgesetz: bei Cloud-Nutzung kann staatlicher Zugriff auf Daten bestehen",
-      "Bei politisch sensiblen Themen mit China-Bezug mögliche Zensur oder ausweichende Antworten",
-      "Gewichte waren erst kurz nach dem API-Launch verfügbar"
-    ]
+    "Chinesisches nationales Sicherheitsgesetz: bei Cloud-Nutzung kann staatlicher Zugriff auf Daten bestehen",
+    "Bei politisch sensiblen Themen mit China-Bezug mögliche Zensur oder ausweichende Antworten",
+    "Gewichte waren erst kurz nach dem API-Launch verfügbar"
   ],
   "license": "MiniMax Community License",
   "license_url": "https://huggingface.co/MiniMaxAI/MiniMax-M3/blob/main/LICENSE",
@@ -37,13 +35,11 @@
   "primary_focus": "agentic",
   "size_class": "Frontier",
   "strengths": [
-    [
-      "Stark bei Coding und agentischen Workflows",
-      "Native multimodale Verarbeitung von Text, Bild und Video",
-      "Kontextfenster von einer Million Tokens mit hoher Prefill- und Decoding-Geschwindigkeit",
-      "Open-Weights-Modell mit agentischer Grundausrichtung",
-      "Tool-Use und autonome Workflow-Unterstützung"
-    ]
+    "Stark bei Coding und agentischen Workflows",
+    "Native multimodale Verarbeitung von Text, Bild und Video",
+    "Kontextfenster von einer Million Tokens mit hoher Prefill- und Decoding-Geschwindigkeit",
+    "Open-Weights-Modell mit agentischer Grundausrichtung",
+    "Tool-Use und autonome Workflow-Unterstützung"
   ],
   "summary": "MiniMax M3 ist ein multimodales MoE-Modell mit einem Kontextfenster von einer Million Tokens und Fokus auf agentische Workflows, Coding und Tool-Use. Von 428 Milliarden Gesamtparametern sind pro Token nur 23 Milliarden aktiv, das Modell verarbeitet Text, Bild und Video als Input. Die chinesische Herkunft erfordert bei Cloud-Nutzung eine separate Bewertung des Datenschutz-Risikos.",
   "supports_tool_use": true,

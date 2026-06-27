@@ -12,19 +12,15 @@
   "primary_focus": "agentic",
   "summary": "Kimi K2.6 ist Moonshot AIs multimodales Modell für agentische Aufgaben, Coding und toolgestützte Workflows mit nativem Eingang für Text, Bild und Video. Die MoE-Architektur aktiviert pro Token nur 32 Milliarden der insgesamt eine Billion Gesamtparameter, das Kontextfenster umfasst 256.000 Tokens. Als Open-Weights-Modell lokal oder über Cloud-API verfügbar, mit chinesischer Jurisdiktion als wesentlichem Cloud-Risikofaktor.",
   "strengths": [
-    [
-      "Nativ multimodaler Eingang für Text, Bild und Video",
-      "Starke Performance bei Coding und agentischen Workflows",
-      "Geeignet für lange, toolgestützte Aufgabenketten",
-      "Open-Weights-Modell mit optionalem Thinking-Modus"
-    ]
+    "Nativ multimodaler Eingang für Text, Bild und Video",
+    "Starke Performance bei Coding und agentischen Workflows",
+    "Geeignet für lange, toolgestützte Aufgabenketten",
+    "Open-Weights-Modell mit optionalem Thinking-Modus"
   ],
   "known_limitations": [
-    [
-      "Chinesisches nationales Sicherheitsgesetz: bei Cloud-Nutzung kann staatlicher Zugriff auf Daten bestehen",
-      "Hoher Ressourcenbedarf für lokale Nutzung",
-      "Bei politisch sensiblen Themen mit China-Bezug potenziell eingeschränkte Antworten"
-    ]
+    "Chinesisches nationales Sicherheitsgesetz: bei Cloud-Nutzung kann staatlicher Zugriff auf Daten bestehen",
+    "Hoher Ressourcenbedarf für lokale Nutzung",
+    "Bei politisch sensiblen Themen mit China-Bezug potenziell eingeschränkte Antworten"
   ],
   "judge_context_hint": "Agentisches multimodales Modell aus der K2-Familie. Bei der Bewertung Tool-Use und Aufgabenorientierung höher gewichten als narrative Antworten.",
   "architecture_tags": [

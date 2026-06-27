@@ -19,21 +19,17 @@
   "knowledge_cutoff": "2025-05",
   "summary": "Qwen 3 Coder Next ist ein Coding-spezialisiertes Open-Weights-MoE-Modell von Alibaba mit 80 Milliarden Gesamt- und 3 Milliarden aktiven Parametern. Die Q4-Quantisierung reduziert den Speicherbedarf für lokale Inferenz deutlich, das Kontextfenster umfasst 262.000 Tokens. Unter Apache-2.0-Lizenz auf Workstation-Hardware lokal betreibbar, optimiert für Coding-Agents und grosse Codebasen.",
   "strengths": [
-    [
-      "Auf Coding-Agents und IDE-Workflows ausgerichtet",
-      "Kontextfenster von 262.000 Tokens für lange Code- und Tool-Sitzungen",
-      "Q4-Quantisierung ermöglicht Einsatz auf Workstation-Hardware",
-      "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit",
-      "Ultra-sparse MoE-Architektur für effiziente Inferenz"
-    ]
+    "Auf Coding-Agents und IDE-Workflows ausgerichtet",
+    "Kontextfenster von 262.000 Tokens für lange Code- und Tool-Sitzungen",
+    "Q4-Quantisierung ermöglicht Einsatz auf Workstation-Hardware",
+    "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit",
+    "Ultra-sparse MoE-Architektur für effiziente Inferenz"
   ],
   "known_limitations": [
-    [
-      "Höherer Qualitätsverlust im Vergleich zu Q8-Varianten",
-      "Keine offizielle Cloud-API verfügbar",
-      "Geringere Performance bei allgemeinen Dialogaufgaben",
-      "Mögliche zensierte oder ausweichende Antworten bei sensiblen Themen mit China-Bezug"
-    ]
+    "Höherer Qualitätsverlust im Vergleich zu Q8-Varianten",
+    "Keine offizielle Cloud-API verfügbar",
+    "Geringere Performance bei allgemeinen Dialogaufgaben",
+    "Mögliche zensierte oder ausweichende Antworten bei sensiblen Themen mit China-Bezug"
   ],
   "judge_context_hint": "Lokale Q4-Variante für Coding-Workloads mit Workstation-Hardware. Bei der Bewertung den Speichergewinn gegen die erwartbaren Qualitätsverluste der stärkeren Kompression abwägen.",
   "architecture_tags": [

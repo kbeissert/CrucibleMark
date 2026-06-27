@@ -19,22 +19,18 @@
   "knowledge_cutoff": "2025-06",
   "summary": "Qwen 3.6 35B-A3B MTP ist Alibabas multimodales MoE-Modell mit Multi-Token-Prediction für spekulatives Decoding. Die Unsloth-Dynamic-Q8-Quantisierung bietet nahezu Vollpräzision als qualitative Referenz der Familie, von 35 Milliarden Gesamtparametern sind pro Token nur 3 Milliarden aktiv, das Kontextfenster umfasst 262.000 Tokens. Vision erfordert eine separate Multimodal-Projektor-Datei.",
   "strengths": [
-    [
-      "Multi-Token-Prediction für spekulatives Decoding mit Beschleunigung ohne Qualitätsverlust",
-      "Q8-Quantisierung mit nahezu Vollpräzision als qualitative Referenzvariante",
-      "Effiziente MoE-Architektur mit nur 3 Milliarden aktiven Parametern pro Token",
-      "Optionaler Thinking-Modus mit Reasoning-Tokens",
-      "Kontextfenster von 262.000 Tokens, erweiterbar auf eine Million über YaRN",
-      "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit"
-    ]
+    "Multi-Token-Prediction für spekulatives Decoding mit Beschleunigung ohne Qualitätsverlust",
+    "Q8-Quantisierung mit nahezu Vollpräzision als qualitative Referenzvariante",
+    "Effiziente MoE-Architektur mit nur 3 Milliarden aktiven Parametern pro Token",
+    "Optionaler Thinking-Modus mit Reasoning-Tokens",
+    "Kontextfenster von 262.000 Tokens, erweiterbar auf eine Million über YaRN",
+    "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit"
   ],
   "known_limitations": [
-    [
-      "MTP-Speculative-Decoding erfordert aktuelle llama.cpp-Versionen",
-      "Hoher VRAM-Bedarf durch Q8-Quantisierung bei MoE-Architektur",
-      "Ohne separate Multimodal-Projektor-Datei nur Text-Eingabe",
-      "Mögliche zensierte oder ausweichende Antworten bei sensiblen Themen mit China-Bezug"
-    ]
+    "MTP-Speculative-Decoding erfordert aktuelle llama.cpp-Versionen",
+    "Hoher VRAM-Bedarf durch Q8-Quantisierung bei MoE-Architektur",
+    "Ohne separate Multimodal-Projektor-Datei nur Text-Eingabe",
+    "Mögliche zensierte oder ausweichende Antworten bei sensiblen Themen mit China-Bezug"
   ],
   "judge_context_hint": "Qwen 3.6 MTP in Q8-Quantisierung als qualitative Referenz der Familie. Bei der Bewertung die Sampling-Defaults und die fehlende Vision berücksichtigen.",
   "architecture_tags": [

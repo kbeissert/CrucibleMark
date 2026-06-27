@@ -19,23 +19,19 @@
   "knowledge_cutoff": "2025-12",
   "summary": "GLM-5.2 ist Z.AIs aktuelles Flaggschiff mit 744 Milliarden Gesamt- und 40 Milliarden aktiven Parametern in MoE-Architektur, optimiert für komplexe Engineering-Workflows und langlaufende Coding-Aufgaben. Das Kontextfenster umfasst eine Million Tokens, die Gewichte sind unter MIT-Lizenz als Open-Weights-Modell verfügbar.",
   "strengths": [
-    [
-      "Stabiles Kontextfenster von einer Million Tokens für projektweite Engineering-Aufgaben",
-      "Verbesserte IndexShare-Architektur reduziert Rechenaufwand bei langen Kontexten deutlich",
-      "Optimierte Multi-Token-Prediction für Speculative Decoding",
-      "Starke Coding-Leistung auf Frontier-Niveau",
-      "Starke Agentic-Fähigkeiten mit Tool-Use und langen Workflows",
-      "Open-Source-MIT-Lizenz ohne regionale Einschränkungen",
-      "Flexibel konfigurierbare Thinking-Stufen"
-    ]
+    "Stabiles Kontextfenster von einer Million Tokens für projektweite Engineering-Aufgaben",
+    "Verbesserte IndexShare-Architektur reduziert Rechenaufwand bei langen Kontexten deutlich",
+    "Optimierte Multi-Token-Prediction für Speculative Decoding",
+    "Starke Coding-Leistung auf Frontier-Niveau",
+    "Starke Agentic-Fähigkeiten mit Tool-Use und langen Workflows",
+    "Open-Source-MIT-Lizenz ohne regionale Einschränkungen",
+    "Flexibel konfigurierbare Thinking-Stufen"
   ],
   "known_limitations": [
-    [
-      "Chinesische Herkunft mit Compliance-Risiken bei Cloud-API-Nutzung",
-      "Hoher Hardware-Bedarf für lokales Deployment, mehrere High-End-GPUs erforderlich",
-      "Erhöhte Latenz bei voller Kontextauslastung ohne IndexShare-Optimierung in manchen Backends",
-      "Bei rein lokaler Nutzung entfällt das Cloud-Risiko"
-    ]
+    "Chinesische Herkunft mit Compliance-Risiken bei Cloud-API-Nutzung",
+    "Hoher Hardware-Bedarf für lokales Deployment, mehrere High-End-GPUs erforderlich",
+    "Erhöhte Latenz bei voller Kontextauslastung ohne IndexShare-Optimierung in manchen Backends",
+    "Bei rein lokaler Nutzung entfällt das Cloud-Risiko"
   ],
   "judge_context_hint": "Frontier-Coding-Modell mit langem Kontext und starken Agentic-Fähigkeiten. Bei der Bewertung Coding-Qualität in langen Kontexten und Tool-Use priorisieren. Thinking per API schaltbar.",
   "architecture_tags": [

@@ -19,20 +19,16 @@
   "knowledge_cutoff": "2024-09",
   "summary": "Qwen 2.5 Coder 7B ist ein kompaktes Open-Weights-Coding-Modell von Alibaba, optimiert für Code-Generierung, Debugging und Reparatur. Die Q6-Quantisierung ermöglicht lokalen Betrieb auf ressourcenschonender Hardware bei minimalem Qualitätsverlust, das Kontextfenster umfasst 128.000 Tokens für komplexe Codebasen. Unter Apache-2.0-Lizenz voll kommerziell nutzbar.",
   "strengths": [
-    [
-      "Spezialisierte Leistung in Code-Generierung, Debugging und Reparatur",
-      "Kompakte 7-Milliarden-Architektur für effiziente lokale Ausführung",
-      "Kontextfenster von 128.000 Tokens für komplexe Codebasen",
-      "Q6-Quantisierung mit minimalem Qualitätsverlust und reduziertem VRAM-Bedarf",
-      "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit"
-    ]
+    "Spezialisierte Leistung in Code-Generierung, Debugging und Reparatur",
+    "Kompakte 7-Milliarden-Architektur für effiziente lokale Ausführung",
+    "Kontextfenster von 128.000 Tokens für komplexe Codebasen",
+    "Q6-Quantisierung mit minimalem Qualitätsverlust und reduziertem VRAM-Bedarf",
+    "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit"
   ],
   "known_limitations": [
-    [
-      "Geringere Reasoning-Kapazität als deutlich grössere Modelle",
-      "Eingeschränkte Leistung bei allgemeinen Chat- und Dialogaufgaben ausserhalb des Coding-Kontexts",
-      "Minimale Informationsverluste durch Q6-Quantisierung im Vergleich zum BF16-Original"
-    ]
+    "Geringere Reasoning-Kapazität als deutlich grössere Modelle",
+    "Eingeschränkte Leistung bei allgemeinen Chat- und Dialogaufgaben ausserhalb des Coding-Kontexts",
+    "Minimale Informationsverluste durch Q6-Quantisierung im Vergleich zum BF16-Original"
   ],
   "judge_context_hint": "Kompaktes Coding-Modell mit lokaler GGUF-Ausführung. Spezialisiert auf Code-Generierung, Debugging und Reparatur. Bei der Bewertung Coding-Fähigkeiten gewichten, nicht mit allgemeinen Reasoning-Modellen vergleichen.",
   "architecture_tags": [

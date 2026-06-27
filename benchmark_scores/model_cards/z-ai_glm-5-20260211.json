@@ -19,21 +19,17 @@
   "knowledge_cutoff": "2025-12",
   "summary": "GLM-5 ist das Flaggschiff-Modell von Z.AI mit 744 Milliarden Gesamt- und 40 Milliarden aktiven Parametern in einer 256-Experten-MoE-Architektur, optimiert für komplexe System-Design-Aufgaben und langlaufende Agent-Workflows. Das Kontextfenster umfasst 202.000 Tokens, die Gewichte sind unter MIT-Lizenz verfügbar.",
   "strengths": [
-    [
-      "Open Weights unter MIT-Lizenz für vollständig offenes Deployment",
-      "Effiziente MoE-Architektur mit 256 Experten für hohe Kapazität bei moderater Inferenz-Last",
-      "Starke Coding-Leistung auf Frontier-Niveau",
-      "Optimiert für komplexe System-Design- und Agent-Workflows",
-      "Kontextfenster von 202.000 Tokens für langlaufende Aufgaben"
-    ]
+    "Open Weights unter MIT-Lizenz für vollständig offenes Deployment",
+    "Effiziente MoE-Architektur mit 256 Experten für hohe Kapazität bei moderater Inferenz-Last",
+    "Starke Coding-Leistung auf Frontier-Niveau",
+    "Optimiert für komplexe System-Design- und Agent-Workflows",
+    "Kontextfenster von 202.000 Tokens für langlaufende Aufgaben"
   ],
   "known_limitations": [
-    [
-      "Chinesische Herkunft mit Compliance-Risiken bei Cloud-API-Nutzung",
-      "Hohe Tail-Latenz und Timeout-Anfälligkeit, ungeeignet für zeitkritische Prozesse",
-      "Im Vergleich zu GLM-5.1 und GLM-5.2 bereits von Nachfolgern überholt",
-      "Bei rein lokaler Inferenz entfällt das Cloud-Risiko"
-    ]
+    "Chinesische Herkunft mit Compliance-Risiken bei Cloud-API-Nutzung",
+    "Hohe Tail-Latenz und Timeout-Anfälligkeit, ungeeignet für zeitkritische Prozesse",
+    "Im Vergleich zu GLM-5.1 und GLM-5.2 bereits von Nachfolgern überholt",
+    "Bei rein lokaler Inferenz entfällt das Cloud-Risiko"
   ],
   "judge_context_hint": "Frontier-Coding-Modell mit hoher Kapazität für komplexe Software-Engineering-Aufgaben. Bei der Bewertung Coding-Fähigkeiten gewichten, aber hohe Tail-Latenz berücksichtigen.",
   "architecture_tags": [

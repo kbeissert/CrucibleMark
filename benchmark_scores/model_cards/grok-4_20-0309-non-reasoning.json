@@ -15,10 +15,8 @@
   "judge_context_hint": "Non-Reasoning-Variante von Grok 4 mit direkten Antworten ohne sichtbare Denkschritte. Bei der Bewertung die fehlende explizite Reasoning-Kette berücksichtigen.",
   "knowledge_cutoff": "2025-01",
   "known_limitations": [
-    [
-      "Schwächere Leistung bei komplexen mehrstufigen Schlussfolgerungsaufgaben im Vergleich zur Reasoning-Variante",
-      "Ausschliesslich über die xAI-Cloud-API verfügbar, kein lokaler Betrieb möglich"
-    ]
+    "Schwächere Leistung bei komplexen mehrstufigen Schlussfolgerungsaufgaben im Vergleich zur Reasoning-Variante",
+    "Ausschliesslich über die xAI-Cloud-API verfügbar, kein lokaler Betrieb möglich"
   ],
   "license": "Proprietary",
   "license_url": null,
@@ -34,11 +32,9 @@
   "primary_focus": "general",
   "size_class": "Frontier",
   "strengths": [
-    [
-      "Niedrige Latenz durch deaktiviertes Chain-of-Thought-Reasoning",
-      "Breite Allround-Fähigkeiten für Konversation und Textaufgaben",
-      "Tool-Use- und Function-Calling-Unterstützung für agentische Anwendungen"
-    ]
+    "Niedrige Latenz durch deaktiviertes Chain-of-Thought-Reasoning",
+    "Breite Allround-Fähigkeiten für Konversation und Textaufgaben",
+    "Tool-Use- und Function-Calling-Unterstützung für agentische Anwendungen"
   ],
   "summary": "Grok 4 (Non-Reasoning) ist die Standard-Variante der Grok-4-Generation von xAI ohne aktives Chain-of-Thought, ausgelegt auf schnelle direkte Antworten. Das Modell arbeitet mit einem Kontextfenster von einer Million Tokens, ist ausschliesslich über die xAI-API verfügbar und richtet sich an Konversations-und Textaufgaben ohne explizite Reasoning-Schritte.",
   "supports_tool_use": true,

@@ -16,12 +16,10 @@
   "judge_context_hint": "xAI-Flaggschiff mit Echtzeit-X-Zugriff und effizienter MoE-Inferenz. Bei der Bewertung direkten Antwortstil und fehlende sichtbare Reasoning-Tokens berücksichtigen. Stärken bei agentischen Routineaufgaben, Schwächen bei komplexem Software-Engineering.",
   "knowledge_cutoff": "2026-03",
   "known_limitations": [
-    [
-      "Ausschliesslich über die xAI-API verfügbar, kein lokaler Betrieb",
-      "Geringere Leistung bei komplexem Software-Engineering im Vergleich zu spezialisierten Modellen",
-      "Direkter Antwortstil kann bei sensiblen Themen zu einseitigen Ergebnissen führen",
-      "Geringe Transparenz zur genauen Modellarchitektur und Parameterzahl"
-    ]
+    "Ausschliesslich über die xAI-API verfügbar, kein lokaler Betrieb",
+    "Geringere Leistung bei komplexem Software-Engineering im Vergleich zu spezialisierten Modellen",
+    "Direkter Antwortstil kann bei sensiblen Themen zu einseitigen Ergebnissen führen",
+    "Geringe Transparenz zur genauen Modellarchitektur und Parameterzahl"
   ],
   "license": "Proprietary",
   "license_url": null,
@@ -37,13 +35,11 @@
   "primary_focus": "reasoning",
   "size_class": "Frontier",
   "strengths": [
-    [
-      "Nativ multimodale Verarbeitung von Text und Bild",
-      "Kontextfenster von einer Million Tokens",
-      "Echtzeit-Zugriff auf Daten der X-Plattform",
-      "Hohe Effizienz bei agentischen Routineaufgaben",
-      "Reasoning-Modus aktiv, allerdings ohne sichtbare Reasoning-Tokens"
-    ]
+    "Nativ multimodale Verarbeitung von Text und Bild",
+    "Kontextfenster von einer Million Tokens",
+    "Echtzeit-Zugriff auf Daten der X-Plattform",
+    "Hohe Effizienz bei agentischen Routineaufgaben",
+    "Reasoning-Modus aktiv, allerdings ohne sichtbare Reasoning-Tokens"
   ],
   "summary": "Grok 4.3 ist das aktuelle Flaggschiff von xAI mit nativem Echtzeit-Zugriff auf die X-Plattform und einem Kontextfenster von einer Million Tokens. Die MoE-Architektur erlaubt effiziente Inferenz bei agentischen Routineaufgaben, ist aber bei komplexem Software-Engineering spezialisierten Modellen unterlegen. Verfügbar ausschliesslich über die xAI-API zu einem Preis von 1,25 US-Dollar pro Million Input- und 2,50 US-Dollar pro Million Output-Tokens.",
   "supports_tool_use": true,

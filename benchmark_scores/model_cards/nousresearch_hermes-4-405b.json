@@ -15,12 +15,10 @@
   "judge_context_hint": "Grosses offenes Instruct-Modell mit optionalem Thinking. Bei Bewertungen Tool-Use, strukturierte Ausgabe und Direktheit stärker gewichten als konservative Safety-Standards. Modell ist auf hohe Steuerbarkeit und reduzierte Refusal-Raten trainiert.",
   "knowledge_cutoff": "2025-01",
   "known_limitations": [
-    [
-      "Hoher Ressourcenbedarf für lokale Ausführung",
-      "Reduzierte Sicherheitsfilter im Vergleich zu Standard-Modellen",
-      "Llama-Lizenzbedingungen für Gewichtszugriff",
-      "Auf Steuerbarkeit und niedrige Refusal-Raten optimiert, sicherheitskritische Szenarien erfordern zusätzliche Policy-Prüfung"
-    ]
+    "Hoher Ressourcenbedarf für lokale Ausführung",
+    "Reduzierte Sicherheitsfilter im Vergleich zu Standard-Modellen",
+    "Llama-Lizenzbedingungen für Gewichtszugriff",
+    "Auf Steuerbarkeit und niedrige Refusal-Raten optimiert, sicherheitskritische Szenarien erfordern zusätzliche Policy-Prüfung"
   ],
   "license": "Meta Llama Community License",
   "license_url": "https://opensource.org/licenses/other",
@@ -36,13 +34,11 @@
   "primary_focus": "reasoning",
   "size_class": "Frontier",
   "strengths": [
-    [
-      "Sehr leistungsfähig bei Tool-Aufrufen und strukturierten Ausgaben",
-      "Grosse offene Gewichtsvariante für anspruchsvolle Workloads",
-      "Geeignet für agentische und kreative Anwendungen",
-      "Hohe Steuerbarkeit bei gleichzeitig reduzierten Refusal-Raten",
-      "Präzise Instruktionsbefolgung bei JSON und strukturierten Formaten"
-    ]
+    "Sehr leistungsfähig bei Tool-Aufrufen und strukturierten Ausgaben",
+    "Grosse offene Gewichtsvariante für anspruchsvolle Workloads",
+    "Geeignet für agentische und kreative Anwendungen",
+    "Hohe Steuerbarkeit bei gleichzeitig reduzierten Refusal-Raten",
+    "Präzise Instruktionsbefolgung bei JSON und strukturierten Formaten"
   ],
   "summary": "Hermes 4 405B ist ein leistungsstarkes Instruct- und Reasoning-Modell von Nous Research mit 405 Milliarden Parametern, konzipiert für komplexe Reasoning-Aufgaben und agentische Workflows. Das Modell unterstützt optionales Thinking, präzise Tool-Aufrufe und strukturierte Ausgaben. Trainiert auf hohe Steuerbarkeit und reduzierte Refusal-Raten. Unter Meta-Llama-Community-Lizenz als Open-Weights-Modell verfügbar.",
   "supports_tool_use": true,

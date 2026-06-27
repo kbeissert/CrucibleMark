@@ -19,20 +19,16 @@
   "knowledge_cutoff": "2025-06",
   "summary": "Qwen 3.5 9B ist ein Open-Weights-Modell von Alibaba für allgemeine Sprach- und Reasoning-Aufgaben mit Thinking-Optional-Architektur. Die Unsloth-Dynamic-Q6-Quantisierung bietet nahezu verlustfreie Qualität bei deutlich reduziertem VRAM-Bedarf, das Kontextfenster umfasst 128.000 Tokens. Unter Apache-2.0-Lizenz auf lokaler Hardware ohne Cloud-Zwang betreibbar.",
   "strengths": [
-    [
-      "Thinking-Optional für zuschaltbares Reasoning bei anspruchsvollen Aufgaben",
-      "Q6-Quantisierung mit nahezu verlustfreier Qualität bei effizientem VRAM-Footprint",
-      "Gutes Verhältnis von Modellgrösse zu Leistung im mittleren Segment",
-      "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit",
-      "Lokaler Betrieb ohne Cloud-Zwang"
-    ]
+    "Thinking-Optional für zuschaltbares Reasoning bei anspruchsvollen Aufgaben",
+    "Q6-Quantisierung mit nahezu verlustfreier Qualität bei effizientem VRAM-Footprint",
+    "Gutes Verhältnis von Modellgrösse zu Leistung im mittleren Segment",
+    "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit",
+    "Lokaler Betrieb ohne Cloud-Zwang"
   ],
   "known_limitations": [
-    [
-      "Kann bei komplexen langen Reasoning-Ketten ohne aktiviertes Thinking an Grenzen stossen",
-      "Mögliche zensierte oder ausweichende Antworten bei sensiblen Themen mit China-Bezug",
-      "Thinking-Modus-Aktivierung provider- und konfigurationsabhängig"
-    ]
+    "Kann bei komplexen langen Reasoning-Ketten ohne aktiviertes Thinking an Grenzen stossen",
+    "Mögliche zensierte oder ausweichende Antworten bei sensiblen Themen mit China-Bezug",
+    "Thinking-Modus-Aktivierung provider- und konfigurationsabhängig"
   ],
   "judge_context_hint": "Mittelgrosses Qwen-3.5-Modell für lokale Inferenz mit Thinking-Optional. Bei der Bewertung das Verhältnis von Grösse und Leistung im Segment berücksichtigen.",
   "architecture_tags": [

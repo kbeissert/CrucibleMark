@@ -19,12 +19,10 @@
   "judge_context_hint": "Frontier-Modell mit starkem Fokus auf agentic Coding und Long-Horizon-Execution. Bei der Bewertung Coding und Agentic-Fähigkeiten gewichten, Thinking per API schaltbar.",
   "knowledge_cutoff": "2025-12",
   "known_limitations": [
-    [
-      "Hohe Tail-Latenz und gelegentliche Timeouts bei Cloud-API-Nutzung",
-      "Leistung bei spezialisierten westlichen Tests kann hinter US-Modellen zurückbleiben",
-      "Mögliche Zensur oder Zurückhaltung bei politisch sensiblen Themen mit Bezug zu China",
-      "Chinesische Jurisdiktion mit erhöhtem Sovereign-Risk bei Cloud-Nutzung"
-    ]
+    "Hohe Tail-Latenz und gelegentliche Timeouts bei Cloud-API-Nutzung",
+    "Leistung bei spezialisierten westlichen Tests kann hinter US-Modellen zurückbleiben",
+    "Mögliche Zensur oder Zurückhaltung bei politisch sensiblen Themen mit Bezug zu China",
+    "Chinesische Jurisdiktion mit erhöhtem Sovereign-Risk bei Cloud-Nutzung"
   ],
   "license": "MIT",
   "license_url": "https://opensource.org/licenses/MIT",
@@ -40,14 +38,12 @@
   "primary_focus": "general",
   "size_class": "Frontier",
   "strengths": [
-    [
-      "Starke Leistung bei agentischem Coding mit langfristiger autonomer Ausführung",
-      "Effiziente MoE-Architektur mit 40 Milliarden aktiven Parametern bei 754 Milliarden Gesamtparametern",
-      "Kontextfenster von 200.000 Tokens für langlaufende Workflows",
-      "MIT-Lizenz mit vollständig kommerzieller Nutzbarkeit",
-      "Flexibles Thinking-System mit mehreren Modi per API schaltbar",
-      "Open-Weights-Modell für lokalen Betrieb"
-    ]
+    "Starke Leistung bei agentischem Coding mit langfristiger autonomer Ausführung",
+    "Effiziente MoE-Architektur mit 40 Milliarden aktiven Parametern bei 754 Milliarden Gesamtparametern",
+    "Kontextfenster von 200.000 Tokens für langlaufende Workflows",
+    "MIT-Lizenz mit vollständig kommerzieller Nutzbarkeit",
+    "Flexibles Thinking-System mit mehreren Modi per API schaltbar",
+    "Open-Weights-Modell für lokalen Betrieb"
   ],
   "summary": "GLM-5.1 ist Z.AIs Post-Training-Upgrade mit 754 Milliarden Gesamt- und 40 Milliarden aktiven Parametern in MoE-Architektur, optimiert für langfristige agentische Coding-Workflows mit bis zu acht Stunden autonomer Ausführung. Das Kontextfenster umfasst 200.000 Tokens, die Gewichte sind unter MIT-Lizenz als Open-Weights-Modell verfügbar.",
   "supports_tool_use": true,

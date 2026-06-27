@@ -19,21 +19,17 @@
   "knowledge_cutoff": "2025-05",
   "summary": "Qwen 3 Coder Next ist ein Coding-spezialisiertes Open-Weights-MoE-Modell von Alibaba mit 80 Milliarden Gesamt- und 3 Milliarden aktiven Parametern. Die Q8-Quantisierung bietet hohe Qualität nahe am Original für lokales Deployment, das Kontextfenster umfasst 262.000 Tokens für grosse Codebasen. Unter Apache-2.0-Lizenz auf Workstation-Hardware lokal betreibbar, optimiert für Coding-Agents und Tool-Use.",
   "strengths": [
-    [
-      "Auf Coding-Agents, Tool-Use und IDE-Workflows ausgerichtet",
-      "Kontextfenster von 262.000 Tokens für grosse Codebasen und lange Sitzungen",
-      "Q8-Quantisierung mit sehr hoher Annäherung an die Originalqualität",
-      "Effiziente MoE-Architektur mit nur 3 Milliarden aktiven Parametern pro Token",
-      "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit"
-    ]
+    "Auf Coding-Agents, Tool-Use und IDE-Workflows ausgerichtet",
+    "Kontextfenster von 262.000 Tokens für grosse Codebasen und lange Sitzungen",
+    "Q8-Quantisierung mit sehr hoher Annäherung an die Originalqualität",
+    "Effiziente MoE-Architektur mit nur 3 Milliarden aktiven Parametern pro Token",
+    "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit"
   ],
   "known_limitations": [
-    [
-      "Keine offizielle Cloud-API verfügbar",
-      "Chinesische Herkunft erfordert Compliance-Bewertung bei Cloud-Nutzung",
-      "Spezialisierung auf Coding kann bei allgemeinen Dialogaufgaben zu Lasten der Generalisierung gehen",
-      "Kein Thinking-Modus, keine sichtbaren CoT-Blöcke"
-    ]
+    "Keine offizielle Cloud-API verfügbar",
+    "Chinesische Herkunft erfordert Compliance-Bewertung bei Cloud-Nutzung",
+    "Spezialisierung auf Coding kann bei allgemeinen Dialogaufgaben zu Lasten der Generalisierung gehen",
+    "Kein Thinking-Modus, keine sichtbaren CoT-Blöcke"
   ],
   "judge_context_hint": "Lokale Q8-Variante für Coding-Workloads mit Workstation-Hardware. Bei der Bewertung logische Korrektheit sowie praktische Codeunterstützung prüfen. Non-Thinking-Mode, kein sichtbares Reasoning.",
   "architecture_tags": [

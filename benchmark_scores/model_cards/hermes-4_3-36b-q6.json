@@ -19,20 +19,16 @@
   "knowledge_cutoff": "2025-01",
   "summary": "Hermes 4.3 36B ist ein Open-Weights-Modell von NousResearch auf Basis von ByteDance Seed-OSS-36B-Base. Mit 36 Milliarden Parametern und einem Kontextfenster von 512.000 Tokens kombiniert das Modell präzises Instruction-Following mit hybrider Thinking-Unterstützung und Tool-Use. Als Q6-Quantisierung lokal betreibbar unter Apache-2.0-Lizenz.",
   "strengths": [
-    [
-      "Starkes Instruction-Following mit optionalem Thinking-Modus",
-      "Gute Tool-Use- und JSON-Adhärenz",
-      "Q6-Quantisierung mit effizienter lokaler Ausführung bei hoher Qualität",
-      "Kontextfenster von 512.000 Tokens für lange lokale Aufgaben",
-      "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit"
-    ]
+    "Starkes Instruction-Following mit optionalem Thinking-Modus",
+    "Gute Tool-Use- und JSON-Adhärenz",
+    "Q6-Quantisierung mit effizienter lokaler Ausführung bei hoher Qualität",
+    "Kontextfenster von 512.000 Tokens für lange lokale Aufgaben",
+    "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit"
   ],
   "known_limitations": [
-    [
-      "Hybrides Verhalten kann zwischen Thinking- und Non-Thinking-Modus variieren",
-      "Bei sehr komplexem Reasoning unterlegen gegenüber grösseren Frontier-Modellen",
-      "Lokale Quantisierung kann das exakte Verhalten der BF16-Version verändern"
-    ]
+    "Hybrides Verhalten kann zwischen Thinking- und Non-Thinking-Modus variieren",
+    "Bei sehr komplexem Reasoning unterlegen gegenüber grösseren Frontier-Modellen",
+    "Lokale Quantisierung kann das exakte Verhalten der BF16-Version verändern"
   ],
   "judge_context_hint": "Hybrides Open-Weights-Modell mit optionaler Denkphase. Bei der Bewertung Tool-Use, Struktur und Reasoning-Stabilität getrennt betrachten. Lokales Deployment ohne externen Datentransfer.",
   "architecture_tags": [

@@ -19,23 +19,19 @@
   "knowledge_cutoff": "2025-06",
   "summary": "Qwopus-3.6-27B-Coder ist ein coding-spezialisiertes Agentic-Modell auf Basis von Qwen 3.6 27B mit Multi-Token-Prediction für beschleunigte Inferenz. Das Modell wurde mit Trace-Inversion-Daten und agentic-Reasoning-Traces feinabgestimmt, ist auf lokales Single-GPU-Deployment ausgelegt und arbeitet mit einem Kontextfenster von 32.000 Tokens. Unter Apache-2.0-Lizenz voll kommerziell nutzbar.",
   "strengths": [
-    [
-      "Spezialisiertes Training auf agentische Coding-Workflows, Tool-Use und Repository-Level-Debugging",
-      "Multi-Token-Prediction für beschleunigte Inferenz im Speculative Decoding",
-      "Effiziente Inferenz auf einer einzelnen leistungsfähigen GPU",
-      "Starke Repository-Level-Leistung mit nativem Thinking-Modus",
-      "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit",
-      "Coding-Feinabstimmung mit echten Multi-Turn-Tool-Ausführungsdaten"
-    ]
+    "Spezialisiertes Training auf agentische Coding-Workflows, Tool-Use und Repository-Level-Debugging",
+    "Multi-Token-Prediction für beschleunigte Inferenz im Speculative Decoding",
+    "Effiziente Inferenz auf einer einzelnen leistungsfähigen GPU",
+    "Starke Repository-Level-Leistung mit nativem Thinking-Modus",
+    "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit",
+    "Coding-Feinabstimmung mit echten Multi-Turn-Tool-Ausführungsdaten"
   ],
   "known_limitations": [
-    [
-      "Spezialisierter Coding-Fokus, Leistung in Nicht-Coding-Aufgaben nicht bewertet",
-      "Tool-Use-Verhalten abhängig vom Prompt-Format und Tool-Schema-Konsistenz",
-      "Community-Modell ohne offizielle Sicherheitsbewertung",
-      "Kontextfenster von 32.000 Tokens ist kleiner als bei vergleichbaren Frontier-Modellen",
-      "Thinking-Block-Ausgabe in <think>-Tags erfordert Frontend-Anpassungen"
-    ]
+    "Spezialisierter Coding-Fokus, Leistung in Nicht-Coding-Aufgaben nicht bewertet",
+    "Tool-Use-Verhalten abhängig vom Prompt-Format und Tool-Schema-Konsistenz",
+    "Community-Modell ohne offizielle Sicherheitsbewertung",
+    "Kontextfenster von 32.000 Tokens ist kleiner als bei vergleichbaren Frontier-Modellen",
+    "Thinking-Block-Ausgabe in <think>-Tags erfordert Frontend-Anpassungen"
   ],
   "judge_context_hint": "Coding-spezialisiertes Modell mit Multi-Token-Prediction für effiziente Inferenz. Bei der Bewertung Coding-Qualität, Debugging-Effektivität und Tool-Use-Stabilität gewichten.",
   "architecture_tags": [

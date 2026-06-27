@@ -19,19 +19,15 @@
   "knowledge_cutoff": "2024-12",
   "summary": "NVIDIA Llama 3.3 Nemotron Super 49B v1.5 ist eine durch Pruning und Destillation optimierte Variante von Metas Llama 3.3 70B mit 49 Milliarden Parametern. Das Modell bietet hohe Reasoning-Leistung bei geringerem Ressourcenbedarf, ein Kontextfenster von 131.000 Tokens und optionalen Thinking-Modus über System-Prompt-Steuerung. Unter NVIDIA Open Model License als Open-Weights-Variante lokal oder über Cloud-Anbieter verfügbar.",
   "strengths": [
-    [
-      "Effiziente 49-Milliarden-Parameter-Architektur mit hoher Reasoning-Leistung",
-      "Durch NVIDIAs Pruning- und Destillationsverfahren optimiert",
-      "Hervorragendes Preis-Leistungs-Verhältnis bei Reasoning-Aufgaben",
-      "Thinking-Optional-Modus über System-Prompt aktivierbar"
-    ]
+    "Effiziente 49-Milliarden-Parameter-Architektur mit hoher Reasoning-Leistung",
+    "Durch NVIDIAs Pruning- und Destillationsverfahren optimiert",
+    "Hervorragendes Preis-Leistungs-Verhältnis bei Reasoning-Aufgaben",
+    "Thinking-Optional-Modus über System-Prompt aktivierbar"
   ],
   "known_limitations": [
-    [
-      "US-Jurisdiktion mit CLOUD-Act-Risiko bei Cloud-API-Nutzung",
-      "Kontextfenster von 131.000 Tokens limitiert für spezialisierte Long-Context-Aufgaben",
-      "Knowledge-Cutoff im Dezember 2024"
-    ]
+    "US-Jurisdiktion mit CLOUD-Act-Risiko bei Cloud-API-Nutzung",
+    "Kontextfenster von 131.000 Tokens limitiert für spezialisierte Long-Context-Aufgaben",
+    "Knowledge-Cutoff im Dezember 2024"
   ],
   "judge_context_hint": "Durch Pruning optimierte Variante auf Llama-3.3-70B-Basis. Thinking-Optional über System-Prompt aktivierbar. Fokus auf Reasoning und effiziente Inferenz.",
   "architecture_tags": [

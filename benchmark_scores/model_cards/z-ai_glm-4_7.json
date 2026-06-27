@@ -17,12 +17,10 @@
   "judge_context_hint": "Bilingual optimiertes Modell mit Frontier-Coding-Fähigkeiten. Bei der Bewertung chinesisch-englische Bilingualität und Agentic-Coding-Aufgaben gewichten. Thinking-Modus per API schaltbar.",
   "knowledge_cutoff": "2025-12",
   "known_limitations": [
-    [
-      "Kann bei westlich-kulturellen Kontexten oder nicht-chinesischen Sprachen schwächer abschneiden",
-      "Mögliche Zensur oder Zurückhaltung bei politisch sensiblen Themen mit Bezug zu China",
-      "Chinesischer Anbieter mit erhöhtem Sovereign-Risk bei Cloud-Nutzung",
-      "Bei rein lokaler Inferenz entfällt das Cloud-Act-äquivalente Risiko"
-    ]
+    "Kann bei westlich-kulturellen Kontexten oder nicht-chinesischen Sprachen schwächer abschneiden",
+    "Mögliche Zensur oder Zurückhaltung bei politisch sensiblen Themen mit Bezug zu China",
+    "Chinesischer Anbieter mit erhöhtem Sovereign-Risk bei Cloud-Nutzung",
+    "Bei rein lokaler Inferenz entfällt das Cloud-Act-äquivalente Risiko"
   ],
   "license": "GLM-4 License",
   "license_url": "https://huggingface.co/zai-org/glm-4-9b/blob/main/LICENSE",
@@ -38,13 +36,11 @@
   "primary_focus": "general",
   "size_class": "Frontier",
   "strengths": [
-    [
-      "Starke Leistung in chinesisch-englischen bilingualen Aufgaben",
-      "Frontier-Coding-Fähigkeiten für anspruchsvolle Software-Engineering-Aufgaben",
-      "Flexibles Thinking-System mit mehreren Modi pro API schaltbar",
-      "Open-Weights-Verfügbarkeit für lokalen Betrieb ohne Cloud-Abhängigkeit",
-      "Effiziente MoE-Architektur mit nur 32 Milliarden aktiven Parametern pro Token"
-    ]
+    "Starke Leistung in chinesisch-englischen bilingualen Aufgaben",
+    "Frontier-Coding-Fähigkeiten für anspruchsvolle Software-Engineering-Aufgaben",
+    "Flexibles Thinking-System mit mehreren Modi pro API schaltbar",
+    "Open-Weights-Verfügbarkeit für lokalen Betrieb ohne Cloud-Abhängigkeit",
+    "Effiziente MoE-Architektur mit nur 32 Milliarden aktiven Parametern pro Token"
   ],
   "summary": "GLM-4.7 ist das Flagship-Modell von Zhipu AI mit 355 Milliarden Gesamt- und 32 Milliarden aktiven Parametern in MoE-Architektur, optimiert für agentisches Coding, Reasoning und bilinguale Aufgaben in Chinesisch und Englisch. Das Modell unterstützt schaltbares Thinking-System und ist als Open-Weights-Variante lokal oder über Cloud-Schnittstellen einsetzbar.",
   "supports_tool_use": true,

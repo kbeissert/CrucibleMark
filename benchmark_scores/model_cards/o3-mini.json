@@ -19,20 +19,16 @@
   "knowledge_cutoff": "2023-10",
   "summary": "o3-mini ist OpenAIs kompaktes Reasoning-Modell mit internem Chain-of-Thought, spezialisiert auf Mathematik, Coding und STEM-Aufgaben. Das Modell arbeitet mit einem Kontextfenster von 200.000 Tokens und bietet drei einstellbare Reasoning-Stufen für die Balance zwischen Antworttiefe, Latenz und Kosten. Ausschliesslich über die OpenAI-API verfügbar.",
   "strengths": [
-    [
-      "Herausragende Leistung bei mathematischen und wissenschaftlichen Reasoning-Aufgaben",
-      "Drei einstellbare Reasoning-Intensitätsstufen für Kosten-Leistungs-Optimierung",
-      "Schneller und günstiger als die grösseren o3-Modelle",
-      "Tool-Use-Unterstützung für automatisierte Workflows"
-    ]
+    "Herausragende Leistung bei mathematischen und wissenschaftlichen Reasoning-Aufgaben",
+    "Drei einstellbare Reasoning-Intensitätsstufen für Kosten-Leistungs-Optimierung",
+    "Schneller und günstiger als die grösseren o3-Modelle",
+    "Tool-Use-Unterstützung für automatisierte Workflows"
   ],
   "known_limitations": [
-    [
-      "Kein Bild-Input über die API, nur Text",
-      "Bei extrem komplexen kreativen Schreibaufgaben weniger nuanciert als die grossen o3-Modelle",
-      "Leistung bei sehr langen Reasoning-Ketten variiert je nach gewählter Intensitätsstufe",
-      "Reasoning-Schritte nicht in der API-Antwort sichtbar"
-    ]
+    "Kein Bild-Input über die API, nur Text",
+    "Bei extrem komplexen kreativen Schreibaufgaben weniger nuanciert als die grossen o3-Modelle",
+    "Leistung bei sehr langen Reasoning-Ketten variiert je nach gewählter Intensitätsstufe",
+    "Reasoning-Schritte nicht in der API-Antwort sichtbar"
   ],
   "judge_context_hint": "o3-mini denkt intern via Chain-of-Thought, zeigt diesen Prozess aber nicht im Output. Die Reasoning-Stufe beeinflusst Antwortqualität und Latenz erheblich. Bei der Bewertung Reasoning-Tiefe und Stufenwahl berücksichtigen.",
   "architecture_tags": [

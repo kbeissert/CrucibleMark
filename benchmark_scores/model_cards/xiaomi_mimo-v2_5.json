@@ -19,22 +19,18 @@
   "knowledge_cutoff": "2025-05",
   "summary": "Xiaomi MiMo V2.5 ist ein nativ omnimodales MoE-Modell mit 310 Milliarden Gesamt- und 15 Milliarden aktiven Parametern. Das Modell verarbeitet Text, Bild, Video und Audio in einer einzigen Architektur, das Kontextfenster umfasst bis zu eine Million Tokens. Unter MIT-Lizenz voll kommerziell nutzbar, aus chinesischer Hersteller-Jurisdiktion mit entsprechender Bewertung bei Cloud-Nutzung.",
   "strengths": [
-    [
-      "Native Omnimodalität für Text, Bild, Video und Audio in einer Architektur",
-      "Kontextfenster von bis zu einer Million Tokens",
-      "Effiziente MoE-Architektur mit hohem Durchsatz",
-      "MIT-Lizenz mit vollständig kommerzieller Nutzbarkeit",
-      "Optionaler Thinking-Modus mit nachgewiesenen Reasoning-Tokens",
-      "Native Tool-Use-Unterstützung für agentische Workflows"
-    ]
+    "Native Omnimodalität für Text, Bild, Video und Audio in einer Architektur",
+    "Kontextfenster von bis zu einer Million Tokens",
+    "Effiziente MoE-Architektur mit hohem Durchsatz",
+    "MIT-Lizenz mit vollständig kommerzieller Nutzbarkeit",
+    "Optionaler Thinking-Modus mit nachgewiesenen Reasoning-Tokens",
+    "Native Tool-Use-Unterstützung für agentische Workflows"
   ],
   "known_limitations": [
-    [
-      "Chinesischer Anbieter, Cloud-Nutzung erfordert Vertrauen in Xiaomi-Infrastruktur",
-      "Knowledge-Cutoff im Mai 2025, kein aktuelleres Weltwissen verfügbar",
-      "Geringere Reasoning-Tiefe bei hochkomplexen Aufgaben im Vergleich zur Pro-Variante",
-      "Bei rein lokaler Nutzung entfällt das Cloud-Risiko"
-    ]
+    "Chinesischer Anbieter, Cloud-Nutzung erfordert Vertrauen in Xiaomi-Infrastruktur",
+    "Knowledge-Cutoff im Mai 2025, kein aktuelleres Weltwissen verfügbar",
+    "Geringere Reasoning-Tiefe bei hochkomplexen Aufgaben im Vergleich zur Pro-Variante",
+    "Bei rein lokaler Nutzung entfällt das Cloud-Risiko"
   ],
   "judge_context_hint": "Omnimodales MoE-Modell mit Text-, Bild-, Video- und Audio-Verarbeitung. Bei der Bewertung Modalitäten-Abdeckung und Agentic-Fähigkeiten gewichten.",
   "architecture_tags": [

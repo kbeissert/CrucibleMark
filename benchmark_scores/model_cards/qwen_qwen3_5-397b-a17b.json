@@ -19,21 +19,17 @@
   "knowledge_cutoff": "2025-12",
   "summary": "Qwen 3.5 397B A17B ist Alibabas erstes nativ multimodales Open-Weights-Frontier-Modell mit Verarbeitung von Text, Bild und Video in einem einzigen Modell. Die hybride Architektur aus Gated DeltaNet und Sparse MoE aktiviert pro Token nur 17 Milliarden der insgesamt 397 Milliarden Gesamtparameter, das Kontextfenster umfasst 256.000 Tokens. Unter Apache-2.0-Lizenz vollständig kommerziell nutzbar.",
   "strengths": [
-    [
-      "Erstes Qwen-Open-Weights-Modell mit nativem Vision-Input für Bild und Video",
-      "Hybride Architektur aus Gated DeltaNet und Sparse MoE mit Early-Fusion-Verarbeitung",
-      "Effiziente MoE-Architektur mit nur 17 Milliarden aktiven Parametern pro Token",
-      "Kontextfenster von 256.000 Tokens, erweiterbar auf eine Million Tokens",
-      "Optionaler Thinking-Modus und nativer Tool-Use ab Werk",
-      "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit"
-    ]
+    "Erstes Qwen-Open-Weights-Modell mit nativem Vision-Input für Bild und Video",
+    "Hybride Architektur aus Gated DeltaNet und Sparse MoE mit Early-Fusion-Verarbeitung",
+    "Effiziente MoE-Architektur mit nur 17 Milliarden aktiven Parametern pro Token",
+    "Kontextfenster von 256.000 Tokens, erweiterbar auf eine Million Tokens",
+    "Optionaler Thinking-Modus und nativer Tool-Use ab Werk",
+    "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit"
   ],
   "known_limitations": [
-    [
-      "Chinesische Herkunft mit potenzieller Zensur bei politisch sensiblen Themen mit China-Bezug",
-      "Lokale Bereitstellung erfordert erhebliche Hardware-Ressourcen als Multi-GPU-Setup",
-      "Alibaba-Cloud-API unterliegt NSL-Risiko, bei rein lokaler Nutzung entfällt das Risiko"
-    ]
+    "Chinesische Herkunft mit potenzieller Zensur bei politisch sensiblen Themen mit China-Bezug",
+    "Lokale Bereitstellung erfordert erhebliche Hardware-Ressourcen als Multi-GPU-Setup",
+    "Alibaba-Cloud-API unterliegt NSL-Risiko, bei rein lokaler Nutzung entfällt das Risiko"
   ],
   "judge_context_hint": "Frontier-Modell mit nativer Multimodalität und effizienter MoE-Architektur. Bei der Bewertung Reasoning, Coding und multimodale Fähigkeiten berücksichtigen. Thinking-Optional mit Parameter-Steuerung.",
   "architecture_tags": [

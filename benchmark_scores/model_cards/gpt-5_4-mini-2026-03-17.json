@@ -16,11 +16,9 @@
   "judge_context_hint": "Kompakte API-Variante für Standardaufgaben. Bei der Bewertung Effizienz und klare Struktur berücksichtigen, Frontier-Tiefe nicht erwarten.",
   "knowledge_cutoff": "2025-09",
   "known_limitations": [
-    [
-      "Ausschliesslich über die OpenAI-API verfügbar",
-      "Als Mini-Variante weniger stark bei tiefem Reasoning",
-      "Proprietäre Gewichte nicht zugänglich"
-    ]
+    "Ausschliesslich über die OpenAI-API verfügbar",
+    "Als Mini-Variante weniger stark bei tiefem Reasoning",
+    "Proprietäre Gewichte nicht zugänglich"
   ],
   "license": "Proprietary",
   "license_url": null,
@@ -36,12 +34,10 @@
   "primary_focus": "general",
   "size_class": "Nano",
   "strengths": [
-    [
-      "Schnelle Inferenz und niedrige Kosten",
-      "Solide Strukturierung und Instruction-Following",
-      "Verarbeitung von Text- und Bildeingaben",
-      "Kontextfenster von 272.000 Tokens in der Nano-Klasse"
-    ]
+    "Schnelle Inferenz und niedrige Kosten",
+    "Solide Strukturierung und Instruction-Following",
+    "Verarbeitung von Text- und Bildeingaben",
+    "Kontextfenster von 272.000 Tokens in der Nano-Klasse"
   ],
   "summary": "GPT-5.4 Mini ist die kompakte GPT-5.4-Variante für schnelle und kosteneffiziente Alltagsaufgaben. Mit einem Kontextfenster von 272.000 Tokens und multimodaler Eingabe für Text und Bild richtet sich das Modell an Anwendungen mit niedriger Latenz bei solider Ausgabequalität. Ausschliesslich über die OpenAI-API verfügbar.",
   "supports_tool_use": true,

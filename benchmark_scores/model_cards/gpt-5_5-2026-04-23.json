@@ -19,20 +19,16 @@
   "knowledge_cutoff": "2025-12",
   "summary": "GPT-5.5 ist OpenAIs Frontier-Modell für komplexe professionelle Workloads und agentisches Coding mit einem Kontextfenster von 1,05 Millionen Tokens. Das Modell arbeitet mit internem Chain-of-Thought-Reasoning, das nicht in der API-Antwort sichtbar wird, und ist auf Forschung, Coding und anspruchsvolle Produktivität ausgelegt. Verfügbar ausschliesslich über die OpenAI-API.",
   "strengths": [
-    [
-      "Stark bei agentischem Coding und professionellen Workloads",
-      "Kontextfenster von 1,05 Millionen Tokens für sehr lange Aufgabenketten",
-      "Multimodale Eingabe für Text und Bild",
-      "Internes Chain-of-Thought-Reasoning für tiefere Problemlösung"
-    ]
+    "Stark bei agentischem Coding und professionellen Workloads",
+    "Kontextfenster von 1,05 Millionen Tokens für sehr lange Aufgabenketten",
+    "Multimodale Eingabe für Text und Bild",
+    "Internes Chain-of-Thought-Reasoning für tiefere Problemlösung"
   ],
   "known_limitations": [
-    [
-      "Ausschliesslich über die OpenAI-API verfügbar",
-      "Proprietäre Gewichte nicht öffentlich zugänglich",
-      "Hohe Kosten im Vergleich zu kleineren Varianten",
-      "Reasoning-Schritte werden nicht in der Antwort sichtbar"
-    ]
+    "Ausschliesslich über die OpenAI-API verfügbar",
+    "Proprietäre Gewichte nicht öffentlich zugänglich",
+    "Hohe Kosten im Vergleich zu kleineren Varianten",
+    "Reasoning-Schritte werden nicht in der Antwort sichtbar"
   ],
   "judge_context_hint": "Frontier-Modell mit internem Reasoning und Fokus auf komplexe Aufgaben. Sichtbare Begründung ist nicht zwingend ein Qualitätsindikator, da das Reasoning intern bleibt.",
   "architecture_tags": [

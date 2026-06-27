@@ -19,23 +19,19 @@
   "knowledge_cutoff": "2025-06",
   "summary": "Diese Community-Fine-Tune-Variante von Qwen 3.6 35B-A3B entfernt die Sicherheitsfilter und liefert ungefilterte Antworten ohne Refusals. Von 35 Milliarden Gesamtparametern der MoE-Architektur sind pro Token nur 3 Milliarden aktiv, das Kontextfenster umfasst 262.000 Tokens. Mit Q8-Quantisierung nahezu voller Qualität lokal betreibbar unter Apache-2.0-Lizenz, mit multimodaler Verarbeitung für Text, Bild und Video.",
   "strengths": [
-    [
-      "Ungefilterte Antworten ohne Safety-Refusals",
-      "Aggressives Fine-Tuning für direkte und knappe Ausgaben",
-      "Effiziente MoE-Architektur mit hohem Durchsatz",
-      "Multimodale Fähigkeiten für Text, Bild und Video",
-      "Kommerzielle Nutzbarkeit auf Basis der Apache-2.0-Lizenz",
-      "Q8-Quantisierung mit hoher Präzision nahe Vollpräzision"
-    ]
+    "Ungefilterte Antworten ohne Safety-Refusals",
+    "Aggressives Fine-Tuning für direkte und knappe Ausgaben",
+    "Effiziente MoE-Architektur mit hohem Durchsatz",
+    "Multimodale Fähigkeiten für Text, Bild und Video",
+    "Kommerzielle Nutzbarkeit auf Basis der Apache-2.0-Lizenz",
+    "Q8-Quantisierung mit hoher Präzision nahe Vollpräzision"
   ],
   "known_limitations": [
-    [
-      "Uncensored-Variante ohne Inhaltsfilterung, daher erhöhtes Risiko problematischer Ausgaben",
-      "Community-Modell ohne offizielle Garantie für Qualität oder Sicherheit",
-      "Chinesische Jurisdiktion mit potenziellen Compliance-Risiken",
-      "Hohe Anforderungen an Speicherbandbreite durch die MoE-Architektur",
-      "Keine offizielle Wartung durch Alibaba"
-    ]
+    "Uncensored-Variante ohne Inhaltsfilterung, daher erhöhtes Risiko problematischer Ausgaben",
+    "Community-Modell ohne offizielle Garantie für Qualität oder Sicherheit",
+    "Chinesische Jurisdiktion mit potenziellen Compliance-Risiken",
+    "Hohe Anforderungen an Speicherbandbreite durch die MoE-Architektur",
+    "Keine offizielle Wartung durch Alibaba"
   ],
   "judge_context_hint": "Qwen 3.6 35B-A3B Uncensored als Community-Fine-Tune-Variante mit entfernten Refusals. Bei der Bewertung die fehlenden Safety-Refusals und die lokale Hardware-Effizienz berücksichtigen.",
   "architecture_tags": [
@@ -82,5 +78,12 @@
   "temperature": null,
   "system_prompt_override": null,
   "last_modified_at": "2026-06-21",
-  "heritage_ids": []
+  "heritage_ids": [],
+  "top_p": null,
+  "top_k": null,
+  "repetition_penalty": null,
+  "frequency_penalty": null,
+  "presence_penalty": null,
+  "seed": null,
+  "stop_sequences": null
 }

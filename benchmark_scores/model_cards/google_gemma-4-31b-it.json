@@ -15,12 +15,10 @@
   "judge_context_hint": "Cloud-API-Variante von Gemma 4 31B ohne nachgewiesenen Thinking-Modus. Bei der Bewertung API-spezifische Konfiguration berücksichtigen. Multimodalität für Text und Bild nativ verfügbar, Audio und Video je nach Provider-Konfiguration. Kein lokaler Betrieb in dieser Variante.",
   "knowledge_cutoff": "2025-06",
   "known_limitations": [
-    [
-      "Kein nachweisbarer Thinking-Modus in der Cloud-Konfiguration",
-      "Kontextfenster je nach Provider-Konfiguration auf 128.000 Tokens limitiert",
-      "Cloud-Abhängigkeit mit Datenübertragung in die USA, CLOUD Act ist relevant",
-      "Keine Garantie auf Parität mit lokalen GGUF-Varianten"
-    ]
+    "Kein nachweisbarer Thinking-Modus in der Cloud-Konfiguration",
+    "Kontextfenster je nach Provider-Konfiguration auf 128.000 Tokens limitiert",
+    "Cloud-Abhängigkeit mit Datenübertragung in die USA, CLOUD Act ist relevant",
+    "Keine Garantie auf Parität mit lokalen GGUF-Varianten"
   ],
   "license": "Apache 2.0",
   "license_url": "https://opensource.org/licenses/Apache-2.0",
@@ -36,12 +34,10 @@
   "primary_focus": "general",
   "size_class": "Workstation",
   "strengths": [
-    [
-      "Cloud-API-Zugang ohne lokale Hardware-Anforderungen",
-      "Nativ multimodal für Text, Bild, Audio und Video",
-      "Apache-2.0-Lizenz mit offenen Gewichten für parallelen lokalen Betrieb",
-      "Hohe Präzision bei Instruction-Following und strukturierter Textgenerierung"
-    ]
+    "Cloud-API-Zugang ohne lokale Hardware-Anforderungen",
+    "Nativ multimodal für Text, Bild, Audio und Video",
+    "Apache-2.0-Lizenz mit offenen Gewichten für parallelen lokalen Betrieb",
+    "Hohe Präzision bei Instruction-Following und strukturierter Textgenerierung"
   ],
   "summary": "Gemma 4 31B als Cloud-API-Variante von Google DeepMind, mit nativem Zugang zu Text-, Bild-, Audio- und Video-Eingaben ohne lokale Hardware-Anforderungen. Unter Apache-2.0-Lizenz stehen die Gewichte auch für lokales Deployment zur Verfügung, diese Variante beschreibt jedoch die Cloud-Nutzung mit einem Kontextfenster von 128.000 Tokens.",
   "supports_tool_use": true,

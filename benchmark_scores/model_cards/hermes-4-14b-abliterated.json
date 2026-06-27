@@ -16,12 +16,10 @@
   "judge_context_hint": "Abliterierte Variante mit entfernten Schutzmechanismen auf Qwen-3-Basis. Bei der Bewertung die offene, ungebremste Antwortweise explizit berücksichtigen. Tool-Use-Fähigkeit bestätigt. Kein produktions-konservatives Profil.",
   "knowledge_cutoff": "2024-09",
   "known_limitations": [
-    [
-      "Sicherheitsmechanismen wurden bewusst entfernt",
-      "Kann bei sensiblen Themen problematische oder ungebremste Antworten liefern",
-      "Nicht als konservativ oder produktionssicher einzustufen",
-      "Trotz Qwen-Basis unter US-Jurisdiktion, da NousResearch der Fine-Tuner ist"
-    ]
+    "Sicherheitsmechanismen wurden bewusst entfernt",
+    "Kann bei sensiblen Themen problematische oder ungebremste Antworten liefern",
+    "Nicht als konservativ oder produktionssicher einzustufen",
+    "Trotz Qwen-Basis unter US-Jurisdiktion, da NousResearch der Fine-Tuner ist"
   ],
   "license": "Apache 2.0",
   "license_url": "https://opensource.org/licenses/Apache-2.0",
@@ -37,13 +35,11 @@
   "primary_focus": "general",
   "size_class": "Desktop",
   "strengths": [
-    [
-      "Starkes Instruction-Following",
-      "Sehr offene Antworttendenz durch Abliteration",
-      "Geeignet für kreative und unzensierte Nutzungsszenarien",
-      "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit",
-      "Tool-Use-Fähigkeit im internen Test bestätigt"
-    ]
+    "Starkes Instruction-Following",
+    "Sehr offene Antworttendenz durch Abliteration",
+    "Geeignet für kreative und unzensierte Nutzungsszenarien",
+    "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit",
+    "Tool-Use-Fähigkeit im internen Test bestätigt"
   ],
   "summary": "Hermes 4 14B Abliterated ist eine lokal betreibbare Open-Weights-Variante von NousResearch auf Basis von Qwen 3 14B, bei der Sicherheitsmechanismen gezielt entfernt wurden. Mit 14 Milliarden Parametern und 128.000 Tokens Kontextfenster richtet sich das Modell an ungefilterte Antwortweise, kreative Schreibprozesse und Szenarien, die maximale Offenheit erfordern. Unter Apache-2.0-Lizenz voll kommerziell nutzbar.",
   "supports_tool_use": true,

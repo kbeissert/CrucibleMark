@@ -19,21 +19,17 @@
   "knowledge_cutoff": "2026-04",
   "summary": "NVIDIA Nemotron 3 Ultra ist NVIDIAs Frontier-Reasoning-Modell mit 550 Milliarden Gesamt- und 55 Milliarden aktiven Parametern auf hybrider Mamba-Transformer-MoE-Architektur mit LatentMoE-Routing und MTP-Schichten. Das Kontextfenster umfasst eine Million Tokens, das Reasoning ist konfigurierbar. Native Tool-Aufrufe und Agentic-Orchestrierung, unter NVIDIA Open Model License als Open-Weights-Modell verfügbar.",
   "strengths": [
-    [
-      "LatentMoE plus MTP-Schichten für effizientes spekulatives Decoding",
-      "Konfigurierbares Reasoning mit ON, OFF und Low-Effort sowie Reasoning-Budget-Steuerung",
-      "Kontextfenster von einer Million Tokens",
-      "Native Tool-Aufrufe und Agentic-Orchestrierung ab Werk",
-      "Open Weights plus Trainingsdaten plus Recipes unter NVIDIA Open Model License"
-    ]
+    "LatentMoE plus MTP-Schichten für effizientes spekulatives Decoding",
+    "Konfigurierbares Reasoning mit ON, OFF und Low-Effort sowie Reasoning-Budget-Steuerung",
+    "Kontextfenster von einer Million Tokens",
+    "Native Tool-Aufrufe und Agentic-Orchestrierung ab Werk",
+    "Open Weights plus Trainingsdaten plus Recipes unter NVIDIA Open Model License"
   ],
   "known_limitations": [
-    [
-      "Extrem hoher VRAM-Bedarf, Multi-Node-GPU-Setup erforderlich, kein Consumer-Desktop-Deployment",
-      "NVIDIA Open Model License ist keine OSI-anerkannte Open-Source-Lizenz",
-      "US-Jurisdiktion mit CLOUD-Act-Risiko bei API-Nutzung über NVIDIA-Infrastruktur",
-      "Text-only ohne nativen Bild- oder Audio-Eingang"
-    ]
+    "Extrem hoher VRAM-Bedarf, Multi-Node-GPU-Setup erforderlich, kein Consumer-Desktop-Deployment",
+    "NVIDIA Open Model License ist keine OSI-anerkannte Open-Source-Lizenz",
+    "US-Jurisdiktion mit CLOUD-Act-Risiko bei API-Nutzung über NVIDIA-Infrastruktur",
+    "Text-only ohne nativen Bild- oder Audio-Eingang"
   ],
   "judge_context_hint": "Frontier-Hybrid-Modell aus der Nemotron-3-Serie mit Mamba-Transformer-Architektur. Thinking-Optional mit Budget-Steuerung, stark bei agentischer Orchestrierung und Multi-Step-Reasoning.",
   "architecture_tags": [

@@ -15,11 +15,9 @@
   "judge_context_hint": "Lokal betriebenes 4-Milliarden-Parameter-Modell ohne multimodale Erweiterungen. Bei der Bewertung Wissenstiefe und Reasoning gegen die reduzierte Kapazität gewichten.",
   "knowledge_cutoff": "2024-09",
   "known_limitations": [
-    [
-      "Bei komplexen Reasoning- und Wissensaufgaben deutlich schwächer als grössere Modelle",
-      "Bei politisch sensiblen Themen mit China-Bezug gelegentlich zensierte oder ausweichende Antworten",
-      "Reines Textmodell ohne multimodale Eingaben"
-    ]
+    "Bei komplexen Reasoning- und Wissensaufgaben deutlich schwächer als grössere Modelle",
+    "Bei politisch sensiblen Themen mit China-Bezug gelegentlich zensierte oder ausweichende Antworten",
+    "Reines Textmodell ohne multimodale Eingaben"
   ],
   "license": "Apache 2.0",
   "license_url": "https://opensource.org/licenses/Apache-2.0",
@@ -38,13 +36,11 @@
   "primary_focus": "general",
   "size_class": "Nano",
   "strengths": [
-    [
-      "Vier Milliarden Parameter, ressourceneffizient für mobile Anwendungen und Edge-Hardware",
-      "Optionaler Thinking-Modus für komplexere Aufgaben",
-      "Q6-Quantisierung mit starker Qualität bei effizientem Betrieb",
-      "Kommerziell nutzbar unter Apache-2.0-Lizenz",
-      "Kontextfenster von 128.000 Tokens für ein Nano-Modell grosszügig"
-    ]
+    "Vier Milliarden Parameter, ressourceneffizient für mobile Anwendungen und Edge-Hardware",
+    "Optionaler Thinking-Modus für komplexere Aufgaben",
+    "Q6-Quantisierung mit starker Qualität bei effizientem Betrieb",
+    "Kommerziell nutzbar unter Apache-2.0-Lizenz",
+    "Kontextfenster von 128.000 Tokens für ein Nano-Modell grosszügig"
   ],
   "summary": "Vier Milliarden Parameter, Apache-2.0-Lizenz und ein optionaler Thinking-Modus: Qwen 3 4B ist für mobile Anwendungen und Edge-Setups gedacht, wo jedes Watt zählt. Lokal betreibbar unter Q6-Quantisierung, mit 128.000 Tokens Kontextfenster für ein Nano-Modell dieser Klasse grosszügig dimensioniert. Die Hersteller-Jurisdiktion China bringt bei politisch sensiblen Themen gelegentlich zensierte oder ausweichende Antworten mit sich.",
   "supports_tool_use": false,

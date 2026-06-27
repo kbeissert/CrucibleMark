@@ -15,12 +15,10 @@
   "judge_context_hint": "Hermes ist auf hohe Steuerbarkeit, präzise Instruktionsbefolgung und reduzierte Refusal-Raten trainiert. Bei Bewertung Direktheit, strukturierte Ausgaben und Tool-Use-Effizienz stärker gewichten als konservative Safety-Vorsicht.",
   "knowledge_cutoff": "2025-01",
   "known_limitations": [
-    [
-      "Hoher Ressourcenbedarf im Vergleich zu kleineren Modellvarianten",
-      "Fokus liegt nicht primär auf extrem konservativen Safety-Einstellungen",
-      "Leichte Performance-Einbussen bei hochkomplexen Reasoning-Aufgaben im Vergleich zu spezialisierten Frontier-Modellen",
-      "Auf Steuerbarkeit optimiert, sicherheitskritische Szenarien erfordern zusätzliche Policy-Prüfung"
-    ]
+    "Hoher Ressourcenbedarf im Vergleich zu kleineren Modellvarianten",
+    "Fokus liegt nicht primär auf extrem konservativen Safety-Einstellungen",
+    "Leichte Performance-Einbussen bei hochkomplexen Reasoning-Aufgaben im Vergleich zu spezialisierten Frontier-Modellen",
+    "Auf Steuerbarkeit optimiert, sicherheitskritische Szenarien erfordern zusätzliche Policy-Prüfung"
   ],
   "license": "Modified MIT",
   "license_url": "https://opensource.org/licenses/MIT",
@@ -36,13 +34,11 @@
   "primary_focus": "reasoning",
   "size_class": "Server",
   "strengths": [
-    [
-      "Herausragendes Instruction-Following",
-      "Optionales Thinking und fortgeschrittener Tool-Use",
-      "Hohe Flexibilität durch Open-Weights-Verfügbarkeit",
-      "Hohe Steuerbarkeit bei reduzierten Refusal-Raten",
-      "Präzise strukturierte Ausgaben"
-    ]
+    "Herausragendes Instruction-Following",
+    "Optionales Thinking und fortgeschrittener Tool-Use",
+    "Hohe Flexibilität durch Open-Weights-Verfügbarkeit",
+    "Hohe Steuerbarkeit bei reduzierten Refusal-Raten",
+    "Präzise strukturierte Ausgaben"
   ],
   "summary": "Hermes 4 70B ist ein offenes Instruct- und Reasoning-Modell von Nous Research aus der Hermes-4-Familie mit 70 Milliarden Parametern. Das Modell kombiniert optionales Thinking mit fortgeschrittenem Tool-Use und strukturierten Ausgaben, trainiert auf hohe Steuerbarkeit und reduzierte Refusal-Raten. Als Open-Weights-Modell unter Modified-MIT-Lizenz lokal oder serverseitig einsetzbar.",
   "supports_tool_use": true,

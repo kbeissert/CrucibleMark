@@ -15,11 +15,9 @@
   "judge_context_hint": "Lokal betriebenes Qwen-3-Modell mit optionalem Thinking-Modus. Bei der Bewertung Antwortqualität und Token-Verbrauch je nach Thinking-Modus berücksichtigen.",
   "knowledge_cutoff": "2024-09",
   "known_limitations": [
-    [
-      "Thinking-Modus erhöht Latenz und Token-Verbrauch",
-      "Potenzielle Ausweichreaktionen bei geopolitisch sensiblen Themen mit China-Bezug",
-      "Chinesische Hersteller-Jurisdiktion bei Cloud-Nutzung relevant"
-    ]
+    "Thinking-Modus erhöht Latenz und Token-Verbrauch",
+    "Potenzielle Ausweichreaktionen bei geopolitisch sensiblen Themen mit China-Bezug",
+    "Chinesische Hersteller-Jurisdiktion bei Cloud-Nutzung relevant"
   ],
   "license": "Apache 2.0",
   "license_url": "https://opensource.org/licenses/Apache-2.0",
@@ -35,13 +33,11 @@
   "primary_focus": "general",
   "size_class": "Desktop",
   "strengths": [
-    [
-      "Optionaler Thinking-Modus für komplexe Reasoning-Aufgaben",
-      "Effiziente Balance zwischen Modellgrösse und Leistungsfähigkeit",
-      "Q6-Quantisierung mit hoher Qualität bei effizientem lokalen Betrieb",
-      "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit",
-      "Lokaler Betrieb ohne Cloud-Verbindung und externen Datentransfer"
-    ]
+    "Optionaler Thinking-Modus für komplexe Reasoning-Aufgaben",
+    "Effiziente Balance zwischen Modellgrösse und Leistungsfähigkeit",
+    "Q6-Quantisierung mit hoher Qualität bei effizientem lokalen Betrieb",
+    "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit",
+    "Lokaler Betrieb ohne Cloud-Verbindung und externen Datentransfer"
   ],
   "summary": "Qwen 3 14B ist Alibabas Open-Weights-Modell für allgemeine Sprachaufgaben und Reasoning mit optionalem Thinking-Modus. Die Q6-Quantisierung ist für effizienten lokalen Betrieb ohne Cloud-Verbindung ausgelegt, das Kontextfenster umfasst 128.000 Tokens. Unter Apache-2.0-Lizenz voll kommerziell nutzbar.",
   "supports_tool_use": false,
