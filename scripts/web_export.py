@@ -639,7 +639,7 @@ def load_csv_with_fallback(path: Path) -> "pd.DataFrame | None":
 # SSoT-Pfad fuer die Web-Export-Blacklist. Konfigurations-Datei im config/-Ordner,
 # die Modelle (per model_id) vom Web-Export ausschliesst. Wildcards via fnmatch
 # (z.B. "qwen3.5-35b-a3b-*" sperrt alle Quantisierungen einer Familie).
-_BLACKLIST_PATH = Path("config/web_export_blacklist.yaml")
+_BLACKLIST_PATH = _ROOT_DIR / "config" / "web_export_blacklist.yaml"
 
 
 def _load_export_blacklist(
