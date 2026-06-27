@@ -223,6 +223,9 @@ def _run_model(model_id: str, force: bool = False, silent: bool = False) -> bool
         model_id = canonical_id
 
     # Cache-Check: Überspringe wenn Modell bereits im ToolUse-Leaderboard
+    # UND Per-Asset-Detailzeilen in Benchmark-CSVs vorhanden sind (v4.10.12).
+    # Vorher wurde nur das Leaderboard geprüft — Modelle mit fehlenden
+    # Detailzeilen (Legacy-Pfad A) wurden fälschlich übersprungen.
     if not force:
         try:
             from scripts.core.tooluse_exporter import ToolUseExporter
@@ -230,8 +233,13 @@ def _run_model(model_id: str, force: bool = False, silent: bool = False) -> bool
             config = ConfigValidator().config
             exporter = ToolUseExporter(config)
             if exporter.model_has_results(model_id):
-                print(f"  ⏩ Überspringe {model_id} — bereits im ToolUse-Leaderboard vorhanden")
-                return True  # Als Erfolg werten, da Ergebnis bereits existiert
+                if exporter.has_detail_rows(model_id):
+                    print(f"  ⏩ Überspringe {model_id} — bereits im ToolUse-Leaderboard + Benchmark-CSVs vorhanden")
+                    return True  # Als Erfolg werten, da Ergebnis vollständig existiert
+                else:
+                    print(f"  ⚠ Leaderboard-Eintrag für {model_id} existiert, aber Per-Asset-Detailzeilen fehlen in Benchmark-CSVs")
+                    print(f"    → Führe Benchmark aus, um Detailzeilen zu ergänzen (Cache-Check erweitert v4.10.12)")
+            # else: kein Leaderboard-Eintrag → Benchmark ausführen
         except Exception:
             # Bei Fehler im Cache-Check defensiv weitermachen (Benchmark ausführen)
             pass

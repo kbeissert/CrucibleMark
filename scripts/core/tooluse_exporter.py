@@ -60,11 +60,30 @@ class ToolUseExporter:
     # ------------------------------------------------------------------
 
     def export_result(self, result: BenchmarkResult, model_id: str) -> None:
-        """Buffer per-asset result. Call finalize_model() to write the CSV row."""
+        """Buffer per-asset result. Call finalize_model() to write the CSV row.
+
+        .. deprecated:: v4.10.12
+            Dieser Pfad (Pfad A) schreibt NUR in ``tooluse_leaderboard.csv``,
+            nicht in die Benchmark-CSVs. Die Per-Asset-Detailzeilen gehen verloren
+            und der Web-Export kann sie nicht anzeigen.
+            **SSoT ist Pfad B:** ``unified_runner._handle_single_asset()`` →
+            ``ResultManager.save_results()`` → Benchmark-CSVs, gefolgt von
+            ``aggregate_from_benchmark_csvs()`` fuer das Leaderboard.
+            Pfad A wird nur noch von Legacy-Code verwendet.
+        """
+        logger.warning(
+            "ToolUseExporter.export_result() ist deprecated (Pfad A). "
+            "Verwende stattdessen unified_runner + aggregate_from_benchmark_csvs(). "
+            "Detailzeilen fehlen in Benchmark-CSVs bei diesem Pfad."
+        )
         self._buffer.setdefault(model_id, []).append(result)
 
     def finalize_model(self, model_id: str) -> None:
-        """Aggregate all buffered assets for model_id, write one CSV row."""
+        """Aggregate all buffered assets for model_id, write one CSV row.
+
+        .. deprecated:: v4.10.12
+            Siehe :meth:`export_result` — Pfad A ist deprecated.
+        """
         results = self._buffer.pop(model_id, [])
         if not results:
             return
@@ -658,6 +677,47 @@ class ToolUseExporter:
         for row in rows:
             if resolve_canonical_model_id(row.get("model", "")) == normalized_id:
                 return True
+        return False
+
+    _BENCHMARK_CSV_PATHS: tuple[str, ...] = (
+        "benchmark_scores/local_models_benchmark.csv",
+        "benchmark_scores/cloud_models_benchmark.csv",
+        "benchmark_scores/commercial_models_benchmark.csv",
+    )
+
+    def has_detail_rows(self, model_id: str, *, min_assets: int = 1) -> bool:
+        """Prüft ob Per-Asset-Detailzeilen (tooluse*) in Benchmark-CSVs existieren.
+
+        Design-Constraint (v4.10.12): Das ToolUse-Leaderboard wird aus den
+        Benchmark-CSVs aggregiert (``aggregate_from_benchmark_csvs()``). Wenn nur
+        das Leaderboard existiert, aber die Detailzeilen fehlen (Legacy-Pfad A),
+        ist der Cache-Check unvollständig und das Modell muss neu getestet werden.
+
+        Args:
+            model_id: Die Modell-ID (wird durch resolve_canonical_model_id() kanonisiert)
+            min_assets: Mindestanzahl an tooluse*-Zeilen, die vorhanden sein müssen
+
+        Returns:
+            True wenn mindestens ``min_assets`` tooluse*-Zeilen fuer das Modell
+            in einer der drei Benchmark-CSVs existieren.
+        """
+        normalized_id = resolve_canonical_model_id(model_id)
+        count = 0
+        for csv_rel in self._BENCHMARK_CSV_PATHS:
+            csv_path = Path(csv_rel)
+            if not csv_path.exists():
+                continue
+            try:
+                with csv_path.open("r", newline="", encoding="utf-8") as f:
+                    for row in csv.DictReader(f):
+                        if not str(row.get("asset_id", "")).startswith("tooluse"):
+                            continue
+                        if resolve_canonical_model_id(row.get("model", "")) == normalized_id:
+                            count += 1
+                            if count >= min_assets:
+                                return True
+            except (OSError, csv.Error):
+                continue
         return False
 
     def _write_rows(self, rows: list[dict[str, Any]]) -> None:
