@@ -3,6 +3,8 @@
 **Zielgruppe:** Entwickler, die Änderungen am Scoring-System oder der Architektur nachvollziehen wollen.
 **Inhalt:** Changelog-Einträge für Bugfixes, Architektur-Entscheidungen und Verhaltensänderungen
 
+> **Hinweis (Stand 2026-06-27):** Dieses Dokument enthält detaillierte technische Einträge pro Engineering-Session bis v4.10.0 (2026-06-18). Für die kompakten Release-Notes ab v4.10.1 siehe [CHANGELOG.md](../CHANGELOG.md) im Projekt-Root. Die hier dokumentierten Sessions bleiben als historischer Audit-Trail vollständig erhalten.
+
 ---
 
 

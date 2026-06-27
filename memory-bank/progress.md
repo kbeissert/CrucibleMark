@@ -1,6 +1,83 @@
 # Progress
 
 Letzte Releases + aktueller Stand.
+### 2026-06-27 (Session 39) — web_export.py Skeptischer Audit + 5-Phasen Refactoring + 3 Bug-Fixes (v4.10.12)
+
+**Ausloeser:** User-Auftrag "schau dir mal den Webexport an unter skeptischen Gesichtspunkten". Constraint: NIEMALS `python3 << EOF`-Skript fuer Refactoring (hat frueher 417 Zeilen geloescht, inkl. `_process_leaderboard`). Manuell + pro Schritt + Test-Validation.
+
+**5-Phasen Refactoring (6 Commits, 902 → 981 Tests):**
+
+- **Phase 1** (`2c4fa59`): 3 SSoT-Wrapper in `utils/model_utils.py`:
+  - `safe_name_for_filesystem()` — ersetzt `.` und `:` durch `_` (Dateisystem-Safe)
+  - `safe_slugify()` — Lowercase + `[^a-z0-9]+` → `-` (URL-Slugs)
+  - `normalize_for_comparison()` — Lowercase + `[:/. ]` → `_` (Vergleich)
+  - 9 Tests in `tests/test_model_utils_wrappers.py`
+
+- **Phase 2** (`1d56412`): 5 Type-Hints ergaenzt (`_atomic_write_json`, `_collect_community_cards`, `normalize_pending`, `clean_float`, `_strip_emojis`). `Callable` zu typing import. Multi-Line-Regex-Fix in `TestNoSilentPass`.
+
+- **Phase 3** (`cbe5312`): `_BLACKLIST_PATH = _ROOT_DIR / "config" / "web_export_blacklist.yaml"`. Vorher hardcoded String-Literal. 3 Tests in `tests/test_blacklist_path_resolution.py`.
+
+- **Phase 4** (`9e0af28`): 48 Tests fuer 12 Helper-Funktionen in `tests/test_web_export_helpers.py`. Vorher 0 direkte Tests.
+
+- **Phase 5** (`e1e7b5f`): `_process_leaderboard` 195→166 Zeilen. 2 Helper extrahiert:
+  - `_resolve_model_dirs_and_card()` (~76 Zeilen, mit `Callable` DI fuer `safe_name_for_filesystem`-Testbarkeit)
+  - `_should_skip_model()` (~40 Zeilen, Returns `None|"no_benchmark"|"blacklisted"`)
+  - 10 Tests in `tests/test_process_leaderboard_helpers.py`
+
+- **Struktur-Audit** (`fd7876d`): `_load_export_blacklist(root_dir=root_dir)` Parameter-Pattern (vorher `_BLACKLIST_PATH` direkt). `slugify(s: str)` Param-Name fix (AST false-positive auf `model_name` substring-match `model_id`). `slugify` vs `safe_slugify` Konsolidierung RUECKGAENGIG gemacht — Verhaltensdivergenz: alter `slugify` macht `vendor_old-model-v1` → `vendor-old-model-v1`, `safe_slugify` wuerde `vendor_old-model-v1` lassen (Underscore nicht im `[:/. ]` Pattern). Beide behalten mit klarer Docstring-Trennung.
+
+**Post-Refactor-Audit (15 Befunde, 3 Hoch / 6 Mittel / 6 Niedrig):**
+Audit-Doc: `docs/reviews/_audits/web_export_audit_v4.10.11_post_refactor.md`.
+
+**3 Hochpriorisierte Bug-Fixes** (Commit `5222db2`):
+
+1. **BUG 1 — `provider_landscape_review.md` Fallback war No-Op:**
+   - Vorher: `comparisons_path.parent / "reviews"` war identisch zu `comparisons_path` (weil `comparisons_path = docs/reviews/`). Warning immer getriggert, Fallback nie erreicht.
+   - Fix: Beide Pfade unabhaengig von `root_dir` pruefen — `root_dir / "docs" / "comparisons"` (primary) + `root_dir / "docs" / "reviews"` (legacy). `root_dir` ist bereits Funktions-Parameter.
+   - 3 Tests: legacy, primary, neither.
+
+2. **BUG 2 — Warning-Spam fuer geskippte Modelle:**
+   - Vorher: `_resolve_model_dirs_and_card` loggte Card-Warning VOR Skip-Pruefung. Bei 30+ geskippten Modellen mit fehlender Card → 30+ irrelevante WARNINGS.
+   - Fix: Warning aus Helper entfernt, in `_process_leaderboard` NACH Skip-Pruefung eingefuegt (nur fuer Modelle die tatsaechlich exportiert werden).
+   - Test angepasst: `test_card_missing_no_warning`.
+
+3. **BUG 3 — Non-atomic Markdown writes (4 Stellen):**
+   - Vorher: `Path.write_text()` und `shutil.copy2()` ohne Atomic-Write-Pattern. Bei Crash mid-write → korrupte Audit-Logs/Reviews/Provider-Landscape.
+   - Fix: `_atomic_write_text()` + `_atomic_copy()` Helper eingefuehrt (analog `_atomic_write_json` mit `tempfile.mkstemp` + `os.replace`). 4 Aufrufstellen ersetzt: `_export_model_files` (3×) + `_write_top_level_outputs` (1×).
+   - 8 neue Tests (4 Text + 4 Copy). `TestNoSilentPass` exempted alle 3 Atomic-Helper.
+
+**2 Mittelpriorisierte Befunde** (gleicher Commit `5222db2`):
+
+4. **BEFUND 4 — `_collect_vendor_cards` doppeltes Lesen:**
+   - Vorher: `_write_top_level_outputs` Z.1336+1344 rief `_collect_vendor_cards(exclude_community=True)` + `_collect_community_cards()` → 54 File-Reads (27×2).
+   - Fix: Einmal `_collect_vendor_cards(root_dir)` lesen, in Memory splitten via `card_subtype` (`"community"` vs andere).
+
+7. **BEFUND 7 — Logging f-string → lazy %-formatting (7 Stellen):**
+   - Vorher: `logging.info(f"...")` formatiert immer, auch bei disabled Log-Level.
+   - Fix: Alle 7 f-string-Logs zu `logging.info("...", arg1, arg2)` migriert. 0 f-string-Logs uebrig.
+
+**Tests:** 981/981 gruen (+79 neu). Verteilung:
+- `test_model_utils_wrappers.py` (9)
+- `test_web_export_helpers.py` (48)
+- `test_process_leaderboard_helpers.py` (10)
+- `test_blacklist_path_resolution.py` (3)
+- `test_web_export_atomic_writes.py` (8 neu, 18 total)
+
+**Verifikation:**
+- Real-Export: 75 Models, 17 Providers, 0 Errors.
+- Hugo-Build: 319 Files, 0.79s.
+- 7 Commits ahead of `origin/main`.
+
+**Out-of-Scope (BEFUND 10-15, dokumentiert im Audit-Doc):**
+- SSoT-Wrapper-Migration: Production-Caller fuer `safe_name_for_filesystem`/`safe_slugify`/`normalize_for_comparison` existieren noch nicht.
+- DRY `_build_vendor_alias_map` / `_build_community_alias_map` (beide aehnlich).
+- Test-Coverage fuer 11 ungetestete Funktionen (Audit identifizierte, keine direkten Tests).
+- Type-Hints fuer `val: Any` Parameter (`parse_tests_run`, `extract_badge_tier`, `extract_version`, `compute_is_retest`).
+
+**Dokumentation:** CLAUDE.md Pitfalls (BUG 1-3 + BEFUND 4+7 indirekt ueber Atomic-Write-Pitfall abgedeckt). activeContext.md, progress.md.
+
+---
+
 ### 2026-06-26 (Session 38) — Card-Wrapper-Fix + Vendor-Card-Cleanup + WebExport Defense-in-Depth (v4.10.11)
 
 **Folge-Audit 2 (2026-06-26 12:44) — DeepSeek-V3.1 Architektur-Reparatur:**

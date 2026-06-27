@@ -3,11 +3,16 @@
 **Zielgruppe:** Alle, die CrucibleMark erstmalig einrichten oder die zentrale Konfiguration anpassen wollen.
 **Inhalt:** Hardware-Profil, Provider & API-Keys, LLM-Judge-Konfiguration, Modul-Auswahl
 
-> **Voraussetzung:** Installation abgeschlossen (`make install` ausgeführt).
+> **Voraussetzung:** Python 3.10+ und venv eingerichtet (siehe README):
+> ```bash
+> python3 -m venv .venv
+> source .venv/bin/activate
+> pip install -r requirements.txt
+> ```
 
 Diese Anleitung beschreibt, wie CrucibleMark nach der Installation exakt auf die eigene Hardware und spezifische Anforderungen (Provider, Module, Modelle) zugeschnitten wird.
 
-Nach `make install` kopiert das System die Vorlage `benchmark_config.example.yaml` automatisch zu `benchmark_config.yaml` – vorausgesetzt, sie existierte noch nicht. **Diese Datei ist der zentrale Steuerungshebel für Laufzeit- und Benchmark-Parameter. Sie steht in `.gitignore` und landet nicht im Repository.**
+Wenn `benchmark_config.yaml` noch nicht existiert, kopiere die Vorlage manuell: `cp benchmark_config.example.yaml benchmark_config.yaml`. **Diese Datei ist der zentrale Steuerungshebel für Laufzeit- und Benchmark-Parameter. Sie steht in `.gitignore` und landet nicht im Repository.**
 
 Die **Provider-Konfiguration** (Modell-Listen, API-Keys-Env-Vars, Provider-Flags) liegt getrennt in `config/provider_config.yaml`. `ConfigValidator` merged beide Dateien beim Start transparent — alle Scripts sehen ein einheitliches Config-Objekt. Beim Merge prüft das System automatisch auf doppelte Modell-IDs und gibt eine `WARNING` aus, falls eine ID in mehreren Providern auftaucht (First-Win-Semantik).
 

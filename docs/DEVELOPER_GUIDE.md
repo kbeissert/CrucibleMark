@@ -29,26 +29,22 @@ Vor dem Schreiben eines neuen Moduls oder dem Erweitern von bestehendem Code **m
 
 ## Quick Start: Neues Modul erstellen
 
-### Option 1: Generator (empfohlen)
+### Option 1: Template kopieren (empfohlen)
+
+Der einfachste Weg ist das Kopieren eines bestehenden Moduls als Template:
 
 ```bash
-make create-module
+# Existierendes Modul als Vorlage kopieren
+cp -r benchmark_modules/ux_writing benchmark_modules/your_module
 ```
 
-**Der Wizard fragt:**
+Anschließend anpassen:
+1. **Modul-ID umbenennen** in `config.yaml → metadata.id` und im Verzeichnisnamen
+2. **Anzeigename + Beschreibung** in `config.yaml → metadata.name` / `description`
+3. **Scoring-Logik** in `core/evaluators.py` ersetzen
+4. **Test-Assets** in `assets/*.yaml` definieren
 
-1. Modul-ID (z. B. `api_design`)
-2. Score Group (`routine`, `reasoning`, `info`)
-3. Anzeigename (z. B. "API Design Review")
-
-**Output:**
-
-- Vollständige Ordnerstruktur
-- Template `test.py` mit Basis-Code
-- `config.yaml` vorkonfiguriert
-- Dummy-Assets zum Testen
-
-**Zeit:** ca. zwei Minuten bis zum ersten Test-Run
+Für ein vollständig neues Modul siehe [ARCHITECTURE.md](ARCHITECTURE.md) → "Eigenes Benchmark-Modul erstellen".
 
 ---
 
@@ -1498,5 +1494,5 @@ python run_benchmark.py --debug-responses
 
 ---
 
-**Dokumenten-Version:** 3.8.1 (Überarbeitung Mai 2026)\
+**Dokumenten-Version:** 4.10.8 (Ueberarbeitung 2026-06)\
 **Kompatibel mit:** CrucibleMark v3.8.2+

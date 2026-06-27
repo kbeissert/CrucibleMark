@@ -12,6 +12,68 @@ to know what reference files exist.
 ---
 
 # Active Context
+## Aktueller Status (2026-06-27)
+
+- **Session 40 abgeschlossen (2026-06-27) — Doku-Stempel-Check + Drift-Refactor:**
+
+  User-Auftrag: "setze das um" (Doku-Stempel-Check aus vorangegangenem Audit) + Memory-Bank-Doku.
+
+  **Befund aus vorangegangenem Audit:**
+  5 Docs hatten `Dokumenten-Version:`-Stempel, die teils massiv hinter der Code-Version hinterherhinkten:
+  - `USER_GUIDE.md`: v3.1.0 (Überarbeitung März 2026)
+  - `ARCHITECTURE.md`: v3.8.1 (Überarbeitung Mai 2026)
+  - `DEVELOPER_GUIDE.md`: v3.8.1 (Überarbeitung Mai 2026)
+  - `BACKUP_STRATEGY.md`: v3.2.0 (Phase 27, 2026-06-08)
+  - `MODEL_CLASSIFICATION.md`: v3.0.0 (Überarbeitung Mai 2026)
+  Tatsächliche Code-Version laut `CHANGELOG.md`: v4.10.8.
+
+  **Makefile-Targets (ab Zeile 539):**
+  - `make docs-version-check` — liest aktuelle Version aus `CHANGELOG.md`, scannt alle `docs/*.md` nach `Dokumenten-Version:`-Stempeln, meldet Drift mit Exit-Code 1 wenn welche gefunden werden.
+  - `make docs-version-sync` — Update-Target mit `YES=1`-Flag (sonst Bestätigungs-Prompt). Nutzt `sed -i.bak` für atomare Bearbeitung mit Backup.
+  - Beide in `.PHONY` aufgenommen.
+
+  **Workflow-Regel (in CLAUDE.md, "Doku-Stempel-Drift-Schutz"):** Pro Session/Commit `make docs-version-check` ausführen. Beim Anlegen eines neuen CHANGELOG-Eintrags IMMER beide Targets laufen lassen — verhindert dieselbe Drift, die 5 Docs gleichzeitig betraf.
+
+  **Verifikation:** `make docs-version-check` zeigt jetzt 5 OK / 0 DRIFT / 18 ohne Stempel (Inventory-/Snapshot-Docs brauchen keinen Stempel).
+
+- **Session 39 abgeschlossen (2026-06-27) — web_export.py Skeptischer Audit + 5-Phasen Refactoring + 3 Bug-Fixes (v4.10.12):**
+
+  User-Auftrag: Skeptischer Audit + Refactoring (5 Phasen) + Bug-Fixing von `scripts/web_export.py`. Sequenzielle Commits, Test-Validation pro Schritt. Constraint: NIEMALS `python3 << EOF`-Skript fuer Refactoring verwenden (hat frueher 417 Zeilen geloescht, inkl. `_process_leaderboard`).
+
+  **5-Phasen Refactoring (6 Commits, 902 → 981 Tests):**
+
+  - **Phase 1** (`2c4fa59`): 3 SSoT-Wrapper in `utils/model_utils.py`: `safe_name_for_filesystem()`, `safe_slugify()`, `normalize_for_comparison()`. 9 Tests in `tests/test_model_utils_wrappers.py`.
+  - **Phase 2** (`1d56412`): 5 Type-Hints ergaenzt (`_atomic_write_json`, `_collect_community_cards`, `normalize_pending`, `clean_float`, `_strip_emojis`). `Callable` zu typing import. Multi-Line-Regex-Fix in `TestNoSilentPass`.
+  - **Phase 3** (`cbe5312`): `_BLACKLIST_PATH = _ROOT_DIR / "config" / "web_export_blacklist.yaml"`. 3 Tests in `tests/test_blacklist_path_resolution.py`.
+  - **Phase 4** (`9e0af28`): 48 Tests fuer 12 Helper-Funktionen in `tests/test_web_export_helpers.py`.
+  - **Phase 5** (`e1e7b5f`): `_process_leaderboard` 195→166 Zeilen. 2 Helper extrahiert: `_resolve_model_dirs_and_card()` (~76 Zeilen, mit `Callable` DI) + `_should_skip_model()` (~40 Zeilen, Returns `None|"no_benchmark"|"blacklisted"`). 10 Tests in `tests/test_process_leaderboard_helpers.py`.
+  - **Struktur-Audit** (`fd7876d`): `_load_export_blacklist(root_dir=root_dir)` Parameter-Pattern. `slugify(s: str)` Param-Name fix (AST false-positive). `slugify` vs `safe_slugify` Konsolidierung RUECKGAENGIG gemacht (Verhaltensdivergenz: `[^a-z0-9]+` vs `[:/. ]` Pattern).
+
+  **Post-Refactor-Audit (15 Befunde):** Audit-Doc `docs/reviews/_audits/web_export_audit_v4.10.11_post_refactor.md` (3 Hoch, 6 Mittel, 6 Niedrig).
+
+  **3 Hochpriorisierte Bug-Fixes** (Commit `5222db2`, v4.10.12):
+
+  - **BUG 1 — `provider_landscape_review.md` Fallback war No-Op** (Z.1295-1307): `comparisons_path.parent / "reviews"` war identisch zu `comparisons_path` (weil `comparisons_path = docs/reviews/`). Warning immer getriggert. **Fix:** Beide Pfade unabhaengig von `root_dir` pruefen (`docs/comparisons/` primary, `docs/reviews/` legacy). `root_dir` ist bereits Funktions-Parameter.
+  - **BUG 2 — Warning-Spam fuer geskippte Modelle** (`_resolve_model_dirs_and_card`): Card-Warning VOR Skip-Pruefung geloggt → 30+ irrelevante WARNINGS bei geskippten Modellen. **Fix:** Warning aus Helper entfernt, in `_process_leaderboard` NACH Skip-Pruefung eingefuegt (nur fuer Modelle die tatsaechlich exportiert werden).
+  - **BUG 3 — Non-atomic Markdown writes** (4 Stellen): `write_text()` + `shutil.copy2()` ohne Atomic-Write-Pattern → korrupte Audit-Logs/Reviews/Provider-Landscape bei Crash. **Fix:** `_atomic_write_text()` + `_atomic_copy()` Helper eingefuehrt (analog `_atomic_write_json` mit `tempfile.mkstemp` + `os.replace`). 4 Aufrufstellen ersetzt (`_export_model_files` 3× + `_write_top_level_outputs` 1×).
+
+  **2 Mittelpriorisierte Befunde** (gleicher Commit):
+
+  - **BEFUND 4 — `_collect_vendor_cards` doppeltes Lesen** (Z.1336+1344): `_collect_vendor_cards(exclude_community=True)` las 27 Karten, `_collect_community_cards()` las nochmal 27 (54 Reads). **Fix:** Einmal `_collect_vendor_cards(root_dir)` lesen, in Memory splitten via `card_subtype`.
+  - **BEFUND 7 — Logging f-string → lazy %-formatting** (7 Stellen): `logging.info(f"...")` formatiert immer, auch bei disabled Log-Level. **Fix:** Alle 7 Logs zu `logging.info("...", arg1, arg2)` migriert.
+
+  **Tests:** 981/981 gruen (+79 neu in 8 Test-Files). 8 neue Tests fuer `_atomic_write_text` (4) + `_atomic_copy` (4). `TestNoSilentPass` exempted alle 3 Atomic-Helper (vorher nur `_atomic_write_json`).
+
+  **Verifikation:** Real-Export 75 Models / 17 Providers / 0 Errors. Hugo-Build 319 Files / 0 Errors / 0.79s.
+
+  **Out-of-Scope fuer diesen Sprint (BEFUND 10-15, dokumentiert im Audit-Doc):**
+  - SSoT-Wrapper-Migration (Production-Caller fuer `safe_name_for_filesystem`/`safe_slugify`/`normalize_for_comparison`)
+  - DRY `_build_vendor_alias_map` / `_build_community_alias_map`
+  - Test-Coverage fuer 11 ungetestete Funktionen
+  - Type-Hints fuer `val: Any` Parameter (`parse_tests_run`, `extract_badge_tier`, `extract_version`, `compute_is_retest`)
+
+  **Commits (Session 39):** `2c4fa59`, `1d56412`, `cbe5312`, `9e0af28`, `e1e7b5f`, `fd7876d`, `5222db2` = 7 Commits ahead of `origin/main`.
+
 ## Aktueller Status (2026-06-26)
 
 - **Session 38 abgeschlossen (2026-06-26) — Card-Wrapper-Fix + Vendor-Card-Cleanup + WebExport Defense-in-Depth (v4.10.11):**
@@ -528,6 +590,7 @@ to know what reference files exist.
 
 ## Fokus für nächste Session
 
+- **web_export.py weitererücken:** BEFUND 10-15 aus Post-Refactor-Audit (`docs/reviews/_audits/web_export_audit_v4.10.11_post_refactor.md`) — SSoT-Wrapper-Migration, DRY Alias-Maps, Test-Coverage fuer 11 ungetestete Funktionen, Type-Hints fuer `val: Any` Parameter.
 - Weiter mit Modell-Card-Reviews: nächste in Bearbeitung (Stand 2026-06-25, Session 37)
 
 **Session 37 abgeschlossen (2026-06-25) — Gemini 2.5 Pro Card Bereinigung:**
@@ -576,6 +639,8 @@ Mögliche Anlässe für User-Aktivität (alle aus dem Backlog):
 
 ## Letzte Änderungen
 
+- **2026-06-27 (Session 40) — Doku-Stempel-Check Makefile-Targets:** Zwei neue Makefile-Targets (`docs-version-check` + `docs-version-sync`) verhindern Drift zwischen `CHANGELOG.md` (Code-Version, SSoT) und `**Dokumenten-Version:**`-Stempeln in `docs/*.md`. 5 alte Stempel korrigiert (USER_GUIDE v3.1.0 → v4.10.8, ARCHITECTURE/DEVELOPER_GUIDE v3.8.1 → v4.10.8, BACKUP_STRATEGY v3.2.0 → v4.10.8, MODEL_CLASSIFICATION v3.0.0 → v4.10.8). Workflow-Regel in `CLAUDE.md` ergänzt.
+- **2026-06-27 (Session 39) — web_export.py 5-Phasen Refactoring + 3 Bug-Fixes (v4.10.12):** Skeptischer Audit + Refactoring von `scripts/web_export.py` in 5 Phasen (6 Commits) + Post-Refactor-Audit (15 Befunde) + 3 Hoch-Bugs + 2 Mittel-Befunde gefixt in Commit `5222db2`. `_process_leaderboard` 195→166 Zeilen. 3 SSoT-Wrapper in `utils/model_utils.py`. 3 Atomic-Helper (`_atomic_write_json`, `_atomic_write_text`, `_atomic_copy`). `_BLACKLIST_PATH` SSoT. Tests 902→981 (+79). Real-Export 75 Models/0 Errors, Hugo 319 Files/0.79s. Out-of-Scope: BEFUND 10-15 dokumentiert.
 - **2026-06-25 (Session 36) — Model Card Summary-Überarbeitung + Schreibrichtlinie:**
   - **Summary-Regeln:** (1) Keine Pricing-Angaben — Pricing wird separat auf der Seite dargestellt. (2) Kein "Mid-Tier" oder "Mittier" — Marketing-Sprache, wertend negativ. Stattdessen "Allzweck-Modell" oder fokussierte Beschreibung. (3) Keine "Rückzug" — "Abschaltung geplant für September 2026" statt "Rückzug" (nicht menschlich). (4) Keine Gedankenstriche oder Klammern — fließender Text. (5) Technische Begriffe statt menschlicher Vergleiche — "erhöhte Bildauflösung" statt "Sehvermögen". (6) Zeichenziel: 240–480. (7) `size_class` prüfen: API-only-Modelle mit unbekannter Parameterzahl bekommen `Frontier`, nicht manuell "Desktop"/"Server" (Taxonomie: Desktop=10–22B lokal, Server=36–75B lokal).
   - **size_class-Korrektur:** `claude-sonnet-4-5-20250929.json`: `Server` → `Frontier` (fehlerhafte manuelle Setzung). `claude-haiku-4-5-20251001.json`: `Desktop` → `Frontier` (fehlerhafte manuelle Setzung — cloud-only, kein lokaler Deploy).

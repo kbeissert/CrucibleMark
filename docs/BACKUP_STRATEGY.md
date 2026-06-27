@@ -412,5 +412,5 @@ rsync -avz backups/ /mnt/external-drive/cruciblemark-backups/
 
 ---
 
-**Dokumenten-Version:** 3.2.0 (Phase 27, 2026-06-08)\
+**Dokumenten-Version:** 4.10.8 (Ueberarbeitung 2026-06)\
 **Kompatibel mit:** CrucibleMark v4.4.3+

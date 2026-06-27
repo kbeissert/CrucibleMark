@@ -21,21 +21,19 @@ Badges reflektieren die **Gesamt-Performance** über alle Module hinweg. Die kan
 
 ### Klassifizierung nach Total Score
 
-| Badge | Score Range | Beschreibung | Beispiele (Feb 2026) |
+| Badge | Score Range | Beschreibung | Beispiele (Jun 2026, Auszug) |
 |-------|-------------|--------------|----------------------|
 | 💎 **Platinum** | ≥ 95,0 | SOTA Elite – unerreichter Maßstab | *(noch nicht erreicht)* |
-| 🏆 **Gold** | ≥ 80,0 | Exzellente Gesamtleistung | Mistral Medium (81,3) |
-| 🥈 **Silver** | 65,0–79,9 | Production-ready, gute Balance | Mistral Large (78,8), Ministral-3:14b (77,6), Cogito:14b (72,5) |
+| 🏆 **Gold** | ≥ 80,0 | Exzellente Gesamtleistung | *(abhängig vom aktuellen Leaderboard)* |
+| 🥈 **Silver** | 65,0–79,9 | Production-ready, gute Balance | *(abhängig vom aktuellen Leaderboard)* |
 | 🥉 **Bronze** | 50,0–64,9 | Solide Basis, spezialisiert | *(abhängig vom aktuellen Leaderboard)* |
-| ⚖️ **Standard** | < 50,0 | Entwicklungs-Stadium, limitiert | Dolphin-Llama3:8b (44,4) |
+| ⚖️ **Standard** | < 50,0 | Entwicklungs-Stadium, limitiert | *(abhängig vom aktuellen Leaderboard)* |
 
-**Aktuelle Verteilung (16 Modelle):**
+**Aktuelle Verteilung (Stand Juni 2026, ~75 Modelle):**
 
 - Platinum: 0
-- Gold: 1 (Mistral Medium, 6 %)
-- Silver: ca. 10 (63 %)
-- Bronze: ca. 4 (25 %)
-- Standard: 1 (6 %)
+- Gold: variabel nach aktuellem Leaderboard (siehe `benchmark_scores/benchmark_leaderboard.csv`)
+- Silver / Bronze / Standard: dynamisch — siehe aktuelle Verteilung in `benchmark_scores/benchmark_leaderboard.csv`
 
 ---
 
@@ -470,5 +468,5 @@ make probe-all-thinking
 
 ---
 
-**Dokumenten-Version:** 3.0.0 (Überarbeitung Mai 2026)\
+**Dokumenten-Version:** 4.10.8 (Ueberarbeitung 2026-06)\
 **Kompatibel mit:** CrucibleMark v3.8+

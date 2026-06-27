@@ -9,11 +9,16 @@
 - Auswertung & Leaderboard
 - Fehlerbehebung
 
-> **Voraussetzung:** Installation abgeschlossen (`make install` ausgeführt).
+> **Voraussetzung:** Python 3.10+ und venv eingerichtet (siehe README):
+> ```bash
+> python3 -m venv .venv
+> source .venv/bin/activate
+> pip install -r requirements.txt
+> ```
 
 ## Besonderheit für Windows/Linux mit NVIDIA GPU (CUDA)
 
-Für maximale Geschwindigkeit im Semantic Mode vor `make install` die native PyTorch-Variante für CUDA installieren, andernfalls nutzt PyTorch als Fallback die langsamere CPU.
+Für maximale Geschwindigkeit im Semantic Mode vor `pip install -r requirements.txt` die native PyTorch-Variante für CUDA installieren, andernfalls nutzt PyTorch als Fallback die langsamere CPU.
 
 ```bash
 # Beispiel für CUDA 12.1 (Windows/Linux)
@@ -274,7 +279,7 @@ Standard-Module nutzen eine Mischung aus **40 % Keyword-Matching** und **60 % Se
 > **ℹ️ Info zur Semantic Similarity:** CrucibleMark nutzt das lokale KI-Modell **`all-MiniLM-L6-v2`** (via `sentence-transformers`), um die inhaltliche Bedeutung der Antworten mit der Musterlösung zu vergleichen.
 >
 > - **Vorteil:** Antwortet das Modell korrekt, aber mit anderen Worten als die Musterlösung, erkennt das System das.
-> - **Setup:** Das Modell (~80 MB) lädt `make install` einmalig herunter und cached es lokal.
+> - **Setup:** Das Modell (~80 MB) lädt beim ersten Lauf einmalig herunter und cached es lokal.
 
 ### 3. Audit-Logs & Protokolle
 
@@ -610,8 +615,8 @@ make validate
 
 **Für Fortgeschrittene:**
 
-- Eigene Module erstellen (siehe `DEVELOPER_GUIDE.md`)
-- Neues Modul initialisieren (`make create-module`)
+- Eigene Module erstellen (siehe `DEVELOPER_GUIDE.md` → "Eigenes Benchmark-Modul erstellen")
+- Neues Modul initialisieren: kopiere ein bestehendes Modul-Verzeichnis als Template (siehe `DEVELOPER_GUIDE.md`)
 - Custom Scoring-Logik implementieren
 
 ---
@@ -650,5 +655,5 @@ make benchmark MODEL=your-test-model
 
 ---
 
-**Dokumenten-Version:** 3.1.0 (Überarbeitung März 2026)\
-**Kompatibel mit:** CrucibleMark v3.4.3+
+**Dokumenten-Version:** 4.10.8 (Ueberarbeitung 2026-06)\
+**Kompatibel mit:** CrucibleMark v4.10.x

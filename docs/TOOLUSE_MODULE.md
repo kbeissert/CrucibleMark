@@ -336,15 +336,23 @@ Erlaubte Domains werden in `cruciblemark-mcp/config/mcp_config.yaml` konfigurier
 
 ### Gewichtung
 
+Die Default-Gewichtung ist **50/50** (P1 Tool Execution + P2 Synthesis), aber pro Asset kann das Verhältnis überschrieben werden, wenn der Schwerpunkt der Aufgabe es verlangt:
+
 ```yaml
 config:
-  phase1_weight: 0.5     # Phase 1: 50 %
-  phase2_weight: 0.5     # Phase 2: 50 %
+  phase1_weight: 0.5     # Phase 1 Default: 50 %
+  phase2_weight: 0.5     # Phase 2 Default: 50 %
   hallucination_penalty: 100
   tool_call_bonus: 10
   semantic_threshold: 0.72
   keyword_threshold: 0.4
+  # Per-Asset Overrides (Auswahl):
+  # - tooluse_001 (URL-Inferenz):     P1=0.40, P2=0.60  (Synthese wichtiger)
+  # - tooluse_004 (404-Failure):      P1=0.65, P2=0.35  (Tool-Robustheit im Fokus)
+  # - tooluse_005 (Tool-Selection):   P1=0.55, P2=0.45  (Tool-Entscheidung priorisiert)
 ```
+
+Die Begründung steht jeweils als Inline-Kommentar in `benchmark_modules/tooluse/config.yaml`.
 
 ### Phase 1 — Tool Execution (0–100 Punkte)
 

@@ -1,6 +1,21 @@
 # REF_TODO.md – Refactoring & Future Development
 
+## Backlog (Phase 2)
+- [ ] **`content_transformation_005` — Body-Word-Parser:** `keyword_presence`-Check für 300-Wort-Limit des Email-Bodys durch echten Wort-Count ersetzen. Benötigt Section-Parser der Analyse-Teil von Newsletter-Body trennt. Aufwand: ~30 LOC in `__init__.py` + Issue-Umstellung in `asset_005_newsletter_adaptation.yaml`. Risiko: Modelle formatieren Body uneinheitlich — falsche Penalties bei ~20% der Antworten möglich. Wert: 2.4 Pkt. Nicht zeitkritisch.
+
 ## Abgeschlossen
+
+### Doku-Stempel-Check + Drift-Refactor (v4.10.8 – 27.06.26, Session 40)
+
+User-Audit fand: 5 von 23 Docs hatten veraltete `Dokumenten-Version:`-Stempel, teils Monate hinter der Code-Version (USER_GUIDE v3.1.0, ARCHITECTURE/DEVELOPER_GUIDE v3.8.1, BACKUP_STRATEGY v3.2.0, MODEL_CLASSIFICATION v3.0.0 — alle sollten v4.10.8 sein). Codebase war der Doku ~11 Releases voraus.
+
+- [x] **Skeptischer Doku-Audit (18 Docs, ~10k Zeilen)** — Phantom-Make-Targets (`make install`, `make create-module`, `make benchmark-audit`), Token-Budgets aus CI@500-Ära, Tool-Use-Phase-Gewichtung halb dokumentiert, Operator-Liste halluziniert (15 statt 6), Political-Compass-Nummerierungs-Kollaps.
+- [x] **`Makefile` — Zwei neue Targets (`docs-version-check` + `docs-version-sync`)** — Check liest aktuelle Version aus `CHANGELOG.md` (SSoT), scannt `docs/*.md` nach Stempeln, meldet Drift mit Exit 1. Sync nutzt `sed -i.bak` für atomare Updates mit Backup. `YES=1` für non-interactive Modus.
+- [x] **5 Doku-Stempel korrigiert** — alle auf v4.10.8 angeglichen. Inventory-/Snapshot-Docs brauchen keinen Stempel (Lauf-Artefakte).
+- [x] **`CLAUDE.md` — Workflow-Regel „Doku-Stempel-Drift-Schutz"** — pro Session/Commit `make docs-version-check` ausführen; bei neuem CHANGELOG-Eintrag IMMER beide Targets laufen lassen.
+- [x] **`memory-bank/activeContext.md`** — Session-40-Block ergänzt.
+
+
 
 ### clean-results Variant-Handling + _rebuild_index Fix (v4.10.7 – 22.06.26)
 - [x] **`clean_results.py` — 5 Fixes:** `_collect_model_id_variants()` (SSoT), `clean_model_card()` (alle Varianten), `clean_csv()` (alle ID-Varianten in allen Spalten), `clean_model_output_directories()` (variant-aware), `clean_cost_log()` + `_dead_model_info()` (neu).
@@ -130,11 +145,6 @@
   - Mypy: **0 Issues in 5 source files**
 - [x] **Dokumentation** — README.md (Versionsbadge, Recent-Versions-Sektion, Status), PROJECT_STATUS.md (Header v4.7.0 + Phase-30-Block), CHANGELOG.md (v4.7.0-Eintrag), memory-bank/progress.md (Phase-4-Block).
 - [x] **Erkenntnisse** — Ruff `SIM103` mit `--unsafe-fixes` ist zu aggressiv (`if not is_batch: return False` lässt sich nicht 1:1 umkehren bei `or`-Bedingung; idiomatische Lösung: `return not any(...)`). `_is_batch_module_done` und `_is_asset_uncached` hatten das identische Anti-Pattern. `pandas.isna()` braucht expliziten None-Check vor `str(val).strip()`.
-
-## Backlog (Phase 2)
-- [ ] **`content_transformation_005` — Body-Word-Parser:** `keyword_presence`-Check für 300-Wort-Limit des Email-Bodys durch echten Wort-Count ersetzen. Benötigt Section-Parser der Analyse-Teil von Newsletter-Body trennt. Aufwand: ~30 LOC in `__init__.py` + Issue-Umstellung in `asset_005_newsletter_adaptation.yaml`. Risiko: Modelle formatieren Body uneinheitlich — falsche Penalties bei ~20% der Antworten möglich. Wert: 2.4 Pkt. Nicht zeitkritisch.
-
-## Abgeschlossen
 
 ### CSV-Hygiene Defense-in-Depth (v4.6.1 – 08.06.26)
 - [x] **`utils/result_manager.py::_validate_row_for_write()`** (NEU) — Hard-Fail-Guard: validiert JEDE Zeile (neu + bestehend) gegen die Sanitizer-Heuristiken. Wirft `ValueError` bei Header-Repeat, narrativer Asset-ID oder ungültigem Modell. Caller fängt ab und überspringt resilient.

@@ -104,17 +104,18 @@ _THINK_TAGS = (
 
 ```python
 _INLINE_COT_LENGTH_THRESHOLD = 200   # chars
-_INLINE_COT_MIN_OPS = 2              # Berechnungs-Operatoren (math/code)
+_INLINE_COT_MIN_OPS = 2              # Berechnungs-Operatoren
+_INLINE_COT_OPS = (" = ", " * ", " / ", "**", " + ", " - ")  # 6 mathematische Operatoren
 ```
 
 **Triggert, wenn Antwort:**
 
-1. `len(content) > 200` UND
-2. Mindestens 2 der folgenden Operatoren/Tokens im Text: `=`, `+`, `-`, `*`, `/`, `step`, `then`, `because`, `therefore`, `thus`, `first`, `next`, `finally`, `algorithm`, `complexity`
+1. `len(content) > _INLINE_COT_LENGTH_THRESHOLD` (= 200 Zeichen) UND
+2. Mindestens 2 Treffer aus den 6 Berechnungs-Operatoren (` = `, ` * `, ` / `, `**`, ` + `, ` - `) im Text
 
-**Heuristik-Begründung:** Alle 9 Discovery-Modelle zeigten 400-4619 chars Chain-of-Thought. Schwelle 200 chars + ≥2 Ops verhindert False-Positives bei kurzen, direkten Antworten (z. B. "80 km/h").
+**Heuristik-Begründung:** Alle 9 Discovery-Modelle zeigten 400-4619 chars Chain-of-Thought. Schwelle 200 chars + ≥2 mathematische Operatoren verhindert False-Positives bei kurzen, direkten Antworten (z. B. „80 km/h") und bei langen Prosa-Antworten ohne Berechnungen.
 
-**Vor v3.5.8 war die Heuristik Response-Länge-basiert allein** — das verursachte False-Positives bei Instruction-Following-Modellen, die auf Reasoning-Prompts ebenfalls lange Antworten produzieren. Ab v3.5.8 wurde Length-Signal gestrichen. Inline-CoT wurde in v4.7.x als **legitimes** Signal C rehabilitiert, weil es mit Operator-Token-Kombination deutlich präziser ist.
+**Versions-Historie:** Vor v3.5.8 war die Heuristik rein Response-Länge-basiert — das verursachte False-Positives bei Instruction-Following-Modellen, die auf Reasoning-Prompts ebenfalls lange Antworten produzieren. v3.5.8 strich das reine Length-Signal. Ab v4.7.x wurde Inline-CoT als **legitimes** Signal C rehabilitiert, weil die Operator-Kombination die False-Positive-Rate drastisch senkt. Die aktuelle Implementierung (ab v4.10.1) verwendet ausschließlich die 6 Berechnungs-Operatoren — linguistische Marker (`step`, `then`, `because` etc.) wurden verworfen, weil sie bei langen Antworten zu permissiv sind.
 
 ---
 

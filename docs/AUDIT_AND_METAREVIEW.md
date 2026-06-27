@@ -61,11 +61,7 @@ docs/
 
 ### 1. Kompletten Audit-Lauf durchführen
 
-```bash
-make benchmark-audit MODEL="mistral-medium-latest"
-```
-
-Dieser Befehl stoppt nicht bei der Score-Ermittlung, sondern schließt den Prozess automatisch mit dem generierten Redaktionsartikel in `docs/reviews/` ab.
+Audit-Logs werden automatisch bei jedem `make benchmark` (oder `make benchmark-auto`) erzeugt — keine separate Aktion nötig. Für den anschließenden Review-Artikel siehe Schritt 2 unten.
 
 ### 2. Automatischer Batch-Review (`reviews-auto`)
 

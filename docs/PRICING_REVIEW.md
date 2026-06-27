@@ -2,6 +2,8 @@
 
 Geprüft am: 02.06.2026 22:25 Uhr
 
+> **Snapshot-Dokument.** Diese Seite ist ein Audit-Trail der damaligen Recherche. Die aktuelle, maschinenlesbare Pricing-SSoT lebt in `benchmark_scores/model_cards/*.json` (`input_price_per_1m`, `output_price_per_1m`). Für automatisierte Updates siehe `scripts/update_model_pricing.py`.
+
 ## Übersicht aller API-Preise
 
 Alle Preise in USD pro 1 Million Tokens (Input/Output).

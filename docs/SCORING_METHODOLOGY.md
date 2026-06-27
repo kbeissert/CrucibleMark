@@ -67,14 +67,28 @@ CLI ist als leichtgewichtiges Supplement konzipiert (Syntax-Recall-Test, kein ti
 Ab v3.4.0 setzt `base_runner.py` für definierte Module einen direkten `max_tokens`-API-Parameter, um Provider-übergreifende Vergleichbarkeit sicherzustellen. Das Budget wird aus `benchmark_config.yaml → token_budgets` gelesen — nur wenn ein Wert gesetzt ist (`None` wird nicht weitergegeben).
 
 ```text
-Kalibrierte Werte (2× Modul-Median):
-  cultural_intelligence:   500 Tokens
+Kalibrierte Werte (2× Modul-Median, Stand v4.10.3):
+  cultural_intelligence:   3000 Tokens  (war 500 → 1000 → 3000; CI@500-Artefakt bereinigt)
   ux_writing:             3500 Tokens
   content_transformation: 3500 Tokens
-  documentation_quality:  6000 Tokens
+  documentation_quality:  8000 Tokens  (war 6000)
   code_quality:           6000 Tokens
-  cli_benchmark:          kein Limit (not set)
+  cli_benchmark:          4000 Tokens
   reasoning_logic:        kein Limit (by design)
+
+Reasoning-Modelle (Kimi K2, GLM-Reasoning, o-Series, DeepSeek R1, Qwen-Reasoning, MiniMax-Reasoning) erhalten
+ein erhöhtes Budget aus `token_budgets_reasoning_models`:
+  cultural_intelligence:  8000 Tokens
+  ux_writing:            12000 Tokens
+  content_transformation:12000 Tokens
+  documentation_quality: 12000 Tokens
+  code_quality:          20000 Tokens  (war 65536; v4.10.3 Reduktion auf 20000 nach p99-Analyse)
+  cli_benchmark:         16000 Tokens
+  tooluse:               20000 Tokens
+
+Kleine lokale Modelle (Nano/Edge/Desktop/Workstation GGUFs) erhalten `token_budgets_small_models`:
+  documentation_quality: 8000 Tokens
+  ux_writing:            5000 Tokens
 ```
 
 Wenn ein Modell das Budget vollständig ausschöpft (`finish_reason: length`), wird `token_limit_cutoff=True` im `BenchmarkResult` gesetzt und ein `[!NOTE]`-Block ins Audit-Log injiziert.

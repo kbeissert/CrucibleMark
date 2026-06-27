@@ -44,8 +44,10 @@ _THINK_TAGS = ['<think>', '<thinking>', '<thought>', '<|thinking|>', '<|reasonin
 4. **Konsequenz für die Probe-Logik:**
    - Signal A (Tags) hat sich als **wenig zuverlässig** erwiesen bei `enable_thinking: false` Konfiguration
    - Signal B (reasoning_tokens) ist **nur bei OpenRouter** verfügbar (OpenAI-kompatible Metadaten)
-   - Signal C (Inline-CoT) ist die **einzige robuste Erkennung** über alle Provider hinweg
+   - Signal C (Inline-CoT) ist die **einzige robuste Erkennung** über alle Provider hinweg — Heuristik kombiniert Response-Länge (>200 Zeichen) UND Operator-Dichte (≥2 Berechnungs-Operatoren), um reine Längen-False-Positives bei Instruction-Following-Modellen zu vermeiden (siehe `utils/model_utils._has_inline_cot`)
    - Empfehlung: Inline-CoT als primärer Trigger für `thinking_probe_detected` verwenden, Tags/Metadaten als Verstärkung
+
+> **Wichtig (ab v4.10.1):** Reine Response-Länge ist KEIN CoT-Signal — die Inline-CoT-Heuristik kombiniert Länge mit Operator-Dichte. Das aktuelle Probe-Verfahren in `_has_inline_cot()` nutzt diese kombinierte Heuristik (`_INLINE_COT_LENGTH_THRESHOLD = 200` + `_INLINE_COT_MIN_OPS = 2` Berechnungs-Operatoren).
 
 ## Konsolidierte Pro-Ergebnis-Tabelle
 

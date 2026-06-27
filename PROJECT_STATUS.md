@@ -1,15 +1,19 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-06-22
-**Current Version:** 4.10.7 — clean-results Variant-Handling + _rebuild_index Fix
+**Last Updated:** 2026-06-27
+**Current Version:** 4.10.8 — Cohere Native ToolUse + Doku-Stempel-Check
 **Status:** ✅ Production-Ready
 
 > **Hinweis:** Die Executive Summary weiter unten historisch auf v4.6.1.
-> Die Sub-Versionen v4.6.2–v4.10.7 sind im CHANGELOG.md vollständig dokumentiert.
+> Die Sub-Versionen v4.6.2–v4.10.8 sind im CHANGELOG.md vollständig dokumentiert.
 > Dieser Header wird bei jedem Phase-Commit nachgezogen,
 > die Executive Summary nur bei Major-Milestones.
 >
-> **Aktueller Stand (v4.10.7):**
+> **Aktueller Stand (v4.10.8, 2026-06-23):**
+> - **Cohere Native ToolUse Connector**: `utils/providers/cohere.py` umgestellt auf nativen `tools`-API-Parameter (statt Prompt-basierter JSON-Schemas). `command-a-reasoning` 6/6 live (P1=90.0, P2=51.7), `command-a-03-2025` 4/6 live. `command-a-plus-05-2026` MoE-Instabilität (HTTP 500 bei Benchmark-Prompts) → `supports_tool_use=false` markiert.
+> - **Doku-Stempel-Drift-Schutz (Session 40)**: Zwei neue Makefile-Targets `docs-version-check` + `docs-version-sync` verhindern Drift zwischen `CHANGELOG.md` und `**Dokumenten-Version:**`-Stempeln. 5 veraltete Stempel angeglichen (USER_GUIDE v3.1.0, ARCHITECTURE/DEVELOPER_GUIDE v3.8.1, BACKUP_STRATEGY v3.2.0, MODEL_CLASSIFICATION v3.0.0 → alle v4.10.8). Workflow-Regel in `CLAUDE.md` ergänzt.
+>
+> **Aktueller Stand (v4.10.7, 2026-06-22):**
 > - **clean-results Variant-Handling** (v4.10.7): `clean_results.py` bereinigt jetzt ALLE ID-Varianten (Underscore, Hyphen, Punkt). Neue SSoT `_collect_model_id_variants()`. `--dry-run` in `clean.py` ergänzt. Dead-Model `grok-4.1-fast-reasoning` vollständig entfernt.
 > - **`_rebuild_index()` Fix** (v4.10.7): Verwaister `mc_gen._rebuild_index()`-Aufruf + unbenutzter Import in `generate_review.py` entfernt. `reviews-auto` Crash bei Modell 54/118 behoben.
 >
@@ -444,20 +448,21 @@ CrucibleMark v2.5.0 schließt die SSOT-Migration ab. Die alte, dynamische "Golde
 
 ## Modul-Status
 
-### Production-Ready Modules (8/8) ✅
+### Production-Ready Modules (9/9) ✅
 
 | # | Module | Version | Pylint | Status | Assets | Features |
 |---|--------|---------|--------|--------|--------|----------|
-| 1 | **Code Quality Audit** | v2.0.1 | 9.2/10 | ✅ Prod | 25 files | 3 tiers, pattern scoring |
-| 2 | **CLI Operations** | v1.0 | 9.0/10 | ✅ Prod | 6 files | Fast-Fail Batch Mode |
-| 3 | **UX Writing & Microcopy** | v2.0 | 8.8/10 | ✅ Prod | 20 scenarios | Tone analysis, keyword checks |
-| 4 | **Documentation Quality** | v2.0 | 9.0/10 | ✅ Prod | 15 tasks | Completeness metrics |
-| 5 | **Content Transformation** | v2.0.1 | 8.9/10 | ✅ Prod | 12 pieces | Tone adaptation, format conversion |
-| 6 | **Cultural Intelligence** | v2.0 | 9.1/10 | ✅ Prod | 18 scenarios | Idiom understanding, cultural context |
-| 7 | **Logical Reasoning** | v1.0 | 9.0/10 | ✅ Prod | 11 scenarios | Paradox detection, Metacognition |
-| 8 | **Political Compass** | v3.1.0 | 9.85/10 | ✅ Prod | 74 questions | Batch mode, 3 runs, variance analysis |
+| 1 | **Code Quality Audit** | v0.2.0-beta | 9.2/10 | ✅ Prod | 25 files | 3 tiers, pattern scoring |
+| 2 | **CLI Operations** | v1.0.0 | 9.0/10 | ✅ Prod | 6 files | Fast-Fail Batch Mode |
+| 3 | **UX Writing & Microcopy** | v1.0.0 | 8.8/10 | ✅ Prod | 20 scenarios | Tone analysis, keyword checks |
+| 4 | **Documentation Quality** | v2.0.0 | 9.0/10 | ✅ Prod | 15 tasks | Completeness metrics |
+| 5 | **Content Transformation** | v1.0.0 | 8.9/10 | ✅ Prod | 12 pieces | Tone adaptation, format conversion |
+| 6 | **Cultural Intelligence** | v2.0.0 | 9.1/10 | ✅ Prod | 18 scenarios | Idiom understanding, cultural context |
+| 7 | **Logical Reasoning** | v2.2.0 | 9.0/10 | ✅ Prod | 11 scenarios | Paradox detection, Metacognition |
+| 8 | **Political Compass** | v2.0 | 9.85/10 | ✅ Prod | 79 questions | Batch mode, 3 runs, variance analysis |
+| 9 | **Tool Use & Assistenz** | v3.13.0 | 9.0/10 | ✅ Prod | 6 assets | Native MCP integration, P1/P2 scoring, Content Verification |
 
-**Average Code Quality:** 9.15/10 (Elite-Level) 🏆
+**Average Code Quality:** 9.10/10 (Elite-Level) 🏆
 
 ---
 

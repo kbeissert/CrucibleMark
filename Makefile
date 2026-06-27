@@ -11,7 +11,8 @@
 	tooluse-leaderboard tooluse-run tooluse-report tooluse-report-summary tooluse-report-json \
 	benchmark-tooluse benchmark-tooluse-local benchmark-tooluse-force \
 	clean clean-csv clean-model clean-module clean-all clean-runs consolidate-csv prune-orphans clean-bak clean-reviews \
-	backup backup-prep
+	backup backup-prep \
+	docs-version-check docs-version-sync
 
 # Python-Interpreter aus .venv verwenden
 PYTHON := .venv/bin/python
@@ -532,3 +533,65 @@ validate-csv:
 	@echo ""
 	@echo "Tipp: Mit FIX=1 wird der Sanitizer mit --apply ausgefuehrt (Backup vorher anlegen):"
 	@echo "      make backup && make validate-csv FIX=1"
+
+# Doku-Stempel-Check (ab Session 40, 2026-06-27):
+# Verhindert Version-Drift zwischen Code (CHANGELOG.md) und Doku-Stempeln.
+# Stempel-Format in Docs: "**Dokumenten-Version:** X.Y.Z (Überarbeitung ...)"
+# Workflow pro Session/Commit: docs-version-check ausfuehren, Stempel angleichen.
+# Verwandte Targets: docs-version-sync (auto-update mit Bestaetigung).
+docs-version-check:
+	@CURRENT=$$(grep -m1 "^## \[v" CHANGELOG.md | sed -E 's/^## \[v([^]]*)\].*/\1/'); \
+	if [ -z "$$CURRENT" ]; then \
+	  echo "FEHLER: Keine Version in CHANGELOG.md gefunden."; exit 1; \
+	fi; \
+	echo "Aktuelle Code-Version (laut CHANGELOG.md): $$CURRENT"; \
+	echo ""; \
+	echo "=== Dokumenten-Version-Stempel ==="; \
+	DRIFT=0; OK=0; STALE=0; \
+	for doc in docs/*.md; do \
+	  stamp=$$(grep -m1 "Dokumenten-Version:" "$$doc" 2>/dev/null | sed -E 's/.*\*\*Dokumenten-Version:\*\*[[:space:]]+//' | sed -E 's/[[:space:]].*//'); \
+	  if [ -n "$$stamp" ]; then \
+	    if [ "$$stamp" = "$$CURRENT" ]; then \
+	      printf "  \033[32mOK\033[0m      %s -> %s\n" "$$(basename $$doc)" "$$stamp"; \
+	      OK=$$((OK+1)); \
+	    else \
+	      printf "  \033[31mDRIFT\033[0m   %s -> %s (erwartet: %s)\n" "$$(basename $$doc)" "$$stamp" "$$CURRENT"; \
+	      DRIFT=$$((DRIFT+1)); \
+	    fi; \
+	  else \
+	    printf "  \033[33mKEIN\033[0m    %s (kein Stempel)\n" "$$(basename $$doc)"; \
+	    STALE=$$((STALE+1)); \
+	  fi; \
+	done; \
+	echo ""; \
+	echo "Zusammenfassung: $$OK aktuell, $$DRIFT drift, $$STALE ohne Stempel"; \
+	if [ "$$DRIFT" -gt 0 ]; then \
+	  echo ""; \
+	  echo "Tipp: 'make docs-version-sync' aktualisiert alle Stempel automatisch."; \
+	  exit 1; \
+	fi
+
+# Auto-Update der Doku-Stempel auf aktuelle CHANGELOG-Version.
+# Bestaetigung erforderlich (Enter), ausser YES=1.
+docs-version-sync:
+	@CURRENT=$$(grep -m1 "^## \[v" CHANGELOG.md | sed -E 's/^## \[v([^]]*)\].*/\1/'); \
+	if [ -z "$$CURRENT" ]; then \
+	  echo "FEHLER: Keine Version in CHANGELOG.md gefunden."; exit 1; \
+	fi; \
+	if [ -z "$$YES" ]; then \
+	  printf "Wirklich alle Doku-Stempel auf v%s aktualisieren? [y/N] " "$$CURRENT"; \
+	  read -r ans; \
+	  case "$$ans" in [yY]|[yY][eE][sS]) ;; *) echo "Abgebrochen."; exit 0 ;; esac; \
+	fi; \
+	COUNT=0; \
+	for doc in docs/*.md; do \
+	  if grep -q "Dokumenten-Version:" "$$doc" 2>/dev/null; then \
+	    DATE=$$(date +%Y-%m); \
+	    sed -i.bak -E "s/(\*\*Dokumenten-Version:\*\* )v?[0-9]+\.[0-9]+\.[0-9]+ \([^)]*\)/\1$$CURRENT (Ueberarbeitung $$DATE)/" "$$doc"; \
+	    rm -f "$$doc.bak"; \
+	    COUNT=$$((COUNT+1)); \
+	    echo "  Aktualisiert: $$(basename $$doc)"; \
+	  fi; \
+	done; \
+	echo ""; \
+	echo "$$COUNT Docs aktualisiert auf v$$CURRENT."
