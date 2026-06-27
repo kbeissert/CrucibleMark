@@ -336,13 +336,32 @@ class TestRunModuleForModelTristate(unittest.TestCase):
     Modell wurden übersprungen.
     """
 
-    def test_leaderboard_cache_returns_skipped(self):
-        """Wenn der Leaderboard-Cache einen Score hat, returnt die Funktion 'skipped'."""
+    def test_leaderboard_score_does_not_skip_when_assets_missing(self):
+        """Regression v4.10.12: Leaderboard-Score darf Modul NICHT überspringen
+        wenn Assets fehlen. Vorher übersprang der Leaderboard-Cache-Check das
+        gesamte Modul, weil das Leaderboard einen Score aus partiellen Daten hatte.
+        Jetzt ist get_startable_assets() die alleinige Autorität."""
         module = {"key": "code_quality", "name": "Code Quality", "path": "unused"}
 
-        with patch.object(benchmark_auto, "get_leaderboard_scored_modules", return_value={
-            ("hermes-4_3-36b-q6", "code_quality"),
-        }):
+        with patch.object(benchmark_auto, "get_startable_assets", return_value=[Path("x.yaml")]):
+            with patch.object(benchmark_auto, "_run_score_delegate_for_model", return_value=True) as score_del:
+                result = benchmark_auto._run_module_for_model(
+                    runner=object(),
+                    model="gemma-4-12b-it-ud-q6-k-xl",
+                    module=module,
+                    existing_tests=set(),
+                    force=False,
+                    audit=False,
+                )
+
+        self.assertEqual(result, "ran")
+        score_del.assert_called_once()
+
+    def test_no_assets_returns_skipped(self):
+        """Wenn keine Assets zu testen sind, returnt die Funktion 'skipped'."""
+        module = {"key": "code_quality", "name": "Code Quality", "path": "unused"}
+
+        with patch.object(benchmark_auto, "get_startable_assets", return_value=[]):
             with patch.object(benchmark_auto, "_run_score_delegate_for_model") as score_del:
                 with patch.object(benchmark_auto, "_run_delegate_for_model") as generic_del:
                     result = benchmark_auto._run_module_for_model(
@@ -355,28 +374,6 @@ class TestRunModuleForModelTristate(unittest.TestCase):
                     )
 
         self.assertEqual(result, "skipped")
-        # Wichtig: KEIN Delegate-Aufruf bei Leaderboard-Skip
-        score_del.assert_not_called()
-        generic_del.assert_not_called()
-
-    def test_no_assets_returns_skipped(self):
-        """Wenn keine Assets zu testen sind, returnt die Funktion 'skipped'."""
-        module = {"key": "code_quality", "name": "Code Quality", "path": "unused"}
-
-        with patch.object(benchmark_auto, "get_leaderboard_scored_modules", return_value=set()):
-            with patch.object(benchmark_auto, "get_startable_assets", return_value=[]):
-                with patch.object(benchmark_auto, "_run_score_delegate_for_model") as score_del:
-                    with patch.object(benchmark_auto, "_run_delegate_for_model") as generic_del:
-                        result = benchmark_auto._run_module_for_model(
-                            runner=object(),
-                            model="hermes-4.3-36b-q6",
-                            module=module,
-                            existing_tests=set(),
-                            force=False,
-                            audit=False,
-                        )
-
-        self.assertEqual(result, "skipped")
         score_del.assert_not_called()
         generic_del.assert_not_called()
 
@@ -384,17 +381,16 @@ class TestRunModuleForModelTristate(unittest.TestCase):
         """Wenn der Score-Delegate erfolgreich ist, returnt die Funktion 'ran'."""
         module = {"key": "code_quality", "name": "Code Quality", "path": "unused"}
 
-        with patch.object(benchmark_auto, "get_leaderboard_scored_modules", return_value=set()):
-            with patch.object(benchmark_auto, "get_startable_assets", return_value=[Path("x.yaml")]):
-                with patch.object(benchmark_auto, "_run_score_delegate_for_model", return_value=True) as score_del:
-                    result = benchmark_auto._run_module_for_model(
-                        runner=object(),
-                        model="gemma-3-12b-it",
-                        module=module,
-                        existing_tests=set(),
-                        force=True,
-                        audit=False,
-                    )
+        with patch.object(benchmark_auto, "get_startable_assets", return_value=[Path("x.yaml")]):
+            with patch.object(benchmark_auto, "_run_score_delegate_for_model", return_value=True) as score_del:
+                result = benchmark_auto._run_module_for_model(
+                    runner=object(),
+                    model="gemma-3-12b-it",
+                    module=module,
+                    existing_tests=set(),
+                    force=True,
+                    audit=False,
+                )
 
         self.assertEqual(result, "ran")
         score_del.assert_called_once()
@@ -403,39 +399,35 @@ class TestRunModuleForModelTristate(unittest.TestCase):
         """Wenn der Score-Delegate fehlschlägt, returnt die Funktion 'failed'."""
         module = {"key": "code_quality", "name": "Code Quality", "path": "unused"}
 
-        with patch.object(benchmark_auto, "get_leaderboard_scored_modules", return_value=set()):
-            with patch.object(benchmark_auto, "get_startable_assets", return_value=[Path("x.yaml")]):
-                with patch.object(benchmark_auto, "_run_score_delegate_for_model", return_value=False):
-                    result = benchmark_auto._run_module_for_model(
-                        runner=object(),
-                        model="gemma-3-12b-it",
-                        module=module,
-                        existing_tests=set(),
-                        force=True,
-                        audit=False,
-                    )
+        with patch.object(benchmark_auto, "get_startable_assets", return_value=[Path("x.yaml")]):
+            with patch.object(benchmark_auto, "_run_score_delegate_for_model", return_value=False):
+                result = benchmark_auto._run_module_for_model(
+                    runner=object(),
+                    model="gemma-3-12b-it",
+                    module=module,
+                    existing_tests=set(),
+                    force=True,
+                    audit=False,
+                )
 
         self.assertEqual(result, "failed")
 
-    def test_force_bypasses_leaderboard_cache(self):
-        """Mit force=True wird der Leaderboard-Cache ignoriert und Assets werden geprüft."""
+    def test_force_with_no_assets_returns_skipped(self):
+        """Mit force=True und keine offenen Assets → skipped."""
         module = {"key": "code_quality", "name": "Code Quality", "path": "unused"}
 
-        with patch.object(benchmark_auto, "get_leaderboard_scored_modules") as cache_mock:
-            with patch.object(benchmark_auto, "get_startable_assets", return_value=[]):
-                with patch.object(benchmark_auto, "_run_score_delegate_for_model") as score_del:
-                    result = benchmark_auto._run_module_for_model(
-                        runner=object(),
-                        model="gemma-3-12b-it",
-                        module=module,
-                        existing_tests=set(),
-                        force=True,
-                        audit=False,
-                    )
+        with patch.object(benchmark_auto, "get_startable_assets", return_value=[]):
+            with patch.object(benchmark_auto, "_run_score_delegate_for_model") as score_del:
+                result = benchmark_auto._run_module_for_model(
+                    runner=object(),
+                    model="gemma-3-12b-it",
+                    module=module,
+                    existing_tests=set(),
+                    force=True,
+                    audit=False,
+                )
 
         self.assertEqual(result, "skipped")
-        # WICHTIG: Bei force=True darf der Leaderboard-Cache NICHT konsultiert werden
-        cache_mock.assert_not_called()
         score_del.assert_not_called()
 
     def test_llamacpp_provider_skips_score_delegate(self):
@@ -447,19 +439,18 @@ class TestRunModuleForModelTristate(unittest.TestCase):
             "delegate_script": "scripts/run_benchmark.py",
         }
 
-        with patch.object(benchmark_auto, "get_leaderboard_scored_modules", return_value=set()):
-            with patch.object(benchmark_auto, "get_startable_assets", return_value=[Path("x.yaml")]):
-                with patch.object(benchmark_auto, "_run_score_delegate_for_model") as score_del:
-                    with patch.object(benchmark_auto, "_run_delegate_for_model", return_value=True) as generic_del:
-                        result = benchmark_auto._run_module_for_model(
-                            runner=object(),
-                            model="hermes-4.3-36b-q6",
-                            module=module,
-                            existing_tests=set(),
-                            force=True,
-                            audit=False,
-                            provider="llamacpp_spark",
-                        )
+        with patch.object(benchmark_auto, "get_startable_assets", return_value=[Path("x.yaml")]):
+            with patch.object(benchmark_auto, "_run_score_delegate_for_model") as score_del:
+                with patch.object(benchmark_auto, "_run_delegate_for_model", return_value=True) as generic_del:
+                    result = benchmark_auto._run_module_for_model(
+                        runner=object(),
+                        model="hermes-4.3-36b-q6",
+                        module=module,
+                        existing_tests=set(),
+                        force=True,
+                        audit=False,
+                        provider="llamacpp_spark",
+                    )
 
         # llama.cpp → KEIN Score-Delegate, stattdessen generischer Delegate
         self.assertEqual(result, "ran")
@@ -478,17 +469,16 @@ class TestRunModuleForModelTristate(unittest.TestCase):
             "delegate_script": "scripts/run_tooluse_benchmark.py",
         }
 
-        with patch.object(benchmark_auto, "get_leaderboard_scored_modules", return_value=set()):
-            with patch.object(benchmark_auto, "get_startable_assets", return_value=[Path("x.yaml")]):
-                with patch.object(benchmark_auto, "_run_delegate_for_model", return_value=False):
-                    result = benchmark_auto._run_module_for_model(
-                        runner=object(),
-                        model="gemma-3-12b-it",
-                        module=module,
-                        existing_tests=set(),
-                        force=True,
-                        audit=False,
-                    )
+        with patch.object(benchmark_auto, "get_startable_assets", return_value=[Path("x.yaml")]):
+            with patch.object(benchmark_auto, "_run_delegate_for_model", return_value=False):
+                result = benchmark_auto._run_module_for_model(
+                    runner=object(),
+                    model="gemma-3-12b-it",
+                    module=module,
+                    existing_tests=set(),
+                    force=True,
+                    audit=False,
+                )
 
         self.assertEqual(result, "failed")
 

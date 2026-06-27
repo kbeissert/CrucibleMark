@@ -62,7 +62,6 @@ from scripts.core.llamacpp_batch import (  # noqa: E402
     canonical_lookup_keys,
     get_enabled_llamacpp_providers,
     get_existing_results,
-    get_leaderboard_scored_modules,
     get_startable_assets,
     is_llamacpp_provider,
     set_llamacpp_provider_context,
@@ -446,24 +445,12 @@ def _run_module_for_model(
     """
     module_key = module.get("key")
 
-    # Zweite Verteidigungslinie: Leaderboard-Cache (Score-Aggregat).
-    # Wenn das Leaderboard für (model, module_key) bereits einen gültigen
-    # non-Pending Score zeigt, kein Subprozess — auch wenn die Detail-CSV
-    # Lücken hätte. Multi-Key-Lookup: alle kanonischen Varianten des
-    # Modellnamens werden geprüft (Punkt/Underscore/Suffix-Mismatch).
-    # Defensiv: bei Lese-Fehlern wird der Check übersprungen.
-    if not force and module_key:
-        try:
-            leaderboard_scored = get_leaderboard_scored_modules(force=False)
-            if any(
-                (variant, module_key) in leaderboard_scored
-                for variant in canonical_lookup_keys(model)
-            ):
-                print(f"   ✓ Bench: {module['name']} (Leaderboard-Score vorhanden — übersprungen)")
-                return "skipped"
-        except Exception as exc:  # pylint: disable=broad-exception-caught
-            logger.warning("Leaderboard-Cache-Check fehlgeschlagen: %s", exc)
-
+    # Autoritative Per-Asset-Pruefung: get_startable_assets() liest die
+    # Detail-CSVs und ermittelt welche Assets fehlen. Ein Leaderboard-Score
+    # ist ein Aggregat aus partiellen Daten und KEIN Beweis fuer Per-Asset-
+    # Vollstaendigkeit (v4.10.12: Leaderboard-Cache-Check entfernt — er hat
+    # Modelle mit fehlenden Assets uebersprungen, weil das Leaderboard einen
+    # Score aus unvollstaendigen Daten hatte).
     assets_todo = get_startable_assets(
         module=module, model=model, existing_tests=existing_tests
     )
