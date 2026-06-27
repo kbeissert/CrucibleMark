@@ -10,8 +10,9 @@
 	mcp-start mcp-stop mcp-health mcp-mock \
 	tooluse-leaderboard tooluse-run tooluse-report tooluse-report-summary tooluse-report-json \
 	benchmark-tooluse benchmark-tooluse-local benchmark-tooluse-force \
-	clean clean-csv clean-model clean-module clean-all clean-runs consolidate-csv prune-orphans clean-bak clean-reviews \
+	clean clean-csv clean-model clean-module clean-all clean-runs clean-wizard consolidate-csv prune-orphans clean-bak clean-reviews \
 	backup backup-prep \
+	audit-markdown vendor-cards-status validate-csv \
 	docs-version-check docs-version-sync
 
 # Python-Interpreter aus .venv verwenden
@@ -21,6 +22,26 @@ PYTHON := .venv/bin/python
 # Spiegelung von utils.backup_targets.RUNS_KEEP_DEFAULT (SSoT).
 # Ueberschreibbar via  make clean-runs RUNS_KEEP=10
 RUNS_KEEP ?= 5
+
+
+# === INSTALLATION ===
+
+# Framework installieren (Runtime-Dependencies aus requirements.txt)
+install:
+	@echo "Installing runtime dependencies from requirements.txt..."
+	@if [ ! -d ".venv" ]; then \
+	  echo "FEHLER: Kein .venv gefunden. Bitte vorher anlegen: python3.12 -m venv .venv"; \
+	  exit 1; \
+	fi
+	$(PYTHON) -m pip install -r requirements.txt
+	@echo "Runtime-Install fertig."
+
+# Development-Tools installieren (pytest, ruff, mypy).
+# Setzt voraus, dass 'make install' bereits gelaufen ist.
+install-dev: install
+	@echo "Installing development dependencies from requirements-dev.txt..."
+	$(PYTHON) -m pip install -r requirements-dev.txt
+	@echo "Dev-Install fertig."
 
 
 help:
@@ -39,7 +60,7 @@ help:
 	@printf "\033[1;32mBenchmarking (Standard, Auto, Cross, Human)\033[0m\n"
 	@printf "  %-25s %s\n" "benchmark"       "Standard-Benchmark"
 	@printf "  %-25s %s\n" "benchmark-auto"  "Full-Auto-Benchmark (Smart Autofill)"
-	@printf "  %-25s %s\n" "benchmark-cross" "Module vs ALL LLMs"
+	@printf "  %-25s %s\n" "benchmark-cross-model" "Module vs ALL LLMs"
 	@printf "  %-25s %s\n" "benchmark-human" "Human Baseline Test (PC)"
 	@printf "\n"
 	@printf "\033[1;32mTool-Use (Benchmarking, Leaderboard, Reporting)\033[0m\n"
@@ -76,6 +97,14 @@ help:
 	@printf "  %-25s %s\n" "clean-csv"       "CSV korrigieren/bereinigen"
 	@printf "  %-25s %s\n" "clean-runs"      "Run-Zeitraum bereinigen (standard: 5 behalten)"
 	@printf "  %-25s %s\n" "clean-reviews"   "Reviews bereinigen"
+	@printf "\n"
+	@printf "\033[1;32mDoku-Stempel (Drift-Schutz, ab v4.10.8)\033[0m\n"
+	@printf "  %-25s %s\n" "docs-version-check" "Stempel vs CHANGELOG (exit 1 bei Drift)"
+	@printf "  %-25s %s\n" "docs-version-sync"  "Stempel angleichen (YES=1 fuer Auto)"
+	@printf "\n"
+	@printf "\033[1;32mInstallation\033[0m\n"
+	@printf "  %-25s %s\n" "install"      "Runtime-Deps installieren (.venv erforderlich)"
+	@printf "  %-25s %s\n" "install-dev"  "Dev-Tools (pytest, ruff, mypy) zusaetzlich"
 
 
 # === BENCHMARKING ===
