@@ -134,6 +134,51 @@ def _safe_name(model_id: str) -> str:
     return re.sub(r"[:/. ]", "_", normalize_model_id(model_id))
 
 
+# --- Public SSoT-Wrapper (Phase 1) ------------------------------------------------
+# Thin wrappers over _safe_name/slugify for use cases that have semantically distinct
+# intents but currently spread the _safe_name() call across 5+ files.
+# The wrappers make intent explicit at the call site and centralize any future change.
+
+
+def safe_name_for_filesystem(model_id: str) -> str:
+    """SSoT-Wrapper: _safe_name() für Filesystem-Pfade.
+
+    Verwendungszweck: Card-Files, Audit-Log-Dirs, Review-Ordner — überall wo
+    ein Model-ID als Filesystem-Pfad-Komponente genutzt wird.
+    Zentralisiert die Normalisierung an einer Stelle, sodass zukünftige
+    Änderungen an der Normalisierung (z.B. neue Zeichen) nur hier gemacht werden.
+    """
+    return _safe_name(model_id)
+
+
+def safe_slugify(model_id: str) -> str:
+    """SSoT-Wrapper: slugify(_safe_name(...)) für URL- und Review-Ordner-Slugs.
+
+    Konvertiert einen Model-ID in einen URL-/Ordner-Slug (lowercase, Bindestriche,
+    keine Sonderzeichen). Wird in web_export.py für Review-Dir-Auflösung und in
+    Hugo-Linking-Logik verwendet.
+    """
+    # Inline-Implementation statt Import aus scripts.web_export, um Zirkular-Imports
+    # zu vermeiden (scripts/ hängt bereits von utils/ ab).
+    name = str(model_id).rsplit("/", maxsplit=1)[-1].lower()
+    slug = re.sub(r"[:/. ]", "-", name)
+    return re.sub(r"-+", "-", slug).strip("-")
+
+
+def normalize_for_comparison(model_id: str) -> str:
+    """SSoT-Wrapper: Normalisierung für Cross-List-Vergleiche.
+
+    Verwendungszweck: Blacklist-Matching, Set-Lookups, Deduplizierung über
+    mehrere Datenquellen hinweg. Lowercase + _safe_name() damit
+    ``deepseek/deepseek-chat-v3.1`` und ``DeepSeek-DeepSeek-Chat-V3_1``
+    als gleichwertig erkannt werden.
+    """
+    return _safe_name(model_id).lower()
+
+
+# --- End SSoT-Wrapper ----------------------------------------------------------------
+
+
 # Version-Segment-Pattern: v + Ziffer + Underscore + Ziffer ODER
 # Bindestrich + Ziffer + Underscore + Ziffer (aber NICHT reine Wort-Underscores)
 _VERSION_UNDERSCORE_RE = re.compile(
