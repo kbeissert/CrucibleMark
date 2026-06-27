@@ -146,9 +146,13 @@ def resolve_inference_provider(model_name: str, provider_map: dict[str, str]) ->
     return fallbacks.get(api_type)
 
 
-def slugify(model_name: str) -> str:
-    """Normalizes model names to URL-safe slugs."""
-    name = str(model_name).rsplit('/', maxsplit=1)[-1].lower()
+def slugify(s: str) -> str:
+    """URL-safe slug fuer Strings (kein SSoT fuer sicheres File-Naming).
+
+    Verwendungszweck: Hugo-Web-URL-Pfade. Bindestriche aus Sonderzeichen,
+    Slash-Suffix wird abgeschnitten (rsplit auf letztes Segment).
+    """
+    name = str(s).rsplit('/', maxsplit=1)[-1].lower()
     return re.sub(r'[^a-z0-9]+', '-', name).strip('-')
 
 
@@ -644,6 +648,8 @@ _BLACKLIST_PATH = _ROOT_DIR / "config" / "web_export_blacklist.yaml"
 
 def _load_export_blacklist(
     config_path: Path | None = None,
+    *,
+    root_dir: Path | None = None,
 ) -> tuple[set[str], set[str], int, bool]:
     """Liest die Web-Export-Blacklist und splittet in exakte + Pattern-Eintraege.
 
@@ -658,7 +664,12 @@ def _load_export_blacklist(
     Parse-Error:    WARNING-Log + (set(), set(), 0, False) — nicht fatal.
     Leere Datei:    (set(), set(), 0, True)  — geladen, aber leer.
     """
-    path = config_path if config_path is not None else _BLACKLIST_PATH
+    if config_path is not None:
+        path = config_path
+    elif root_dir is not None:
+        path = root_dir / "config" / "web_export_blacklist.yaml"
+    else:
+        path = _BLACKLIST_PATH
     if not path.exists():
         return set(), set(), 0, False
 
@@ -1357,9 +1368,7 @@ def _init_export_context(
     audit_dirs = {slugify(d.name): d for d in audit_logs_path.iterdir() if d.is_dir()} if audit_logs_path.exists() else {}
     comp_dirs = {slugify(d.name): d for d in comparisons_path.iterdir() if d.is_dir()} if comparisons_path.exists() else {}
 
-    _bl_exact, _bl_pattern, _bl_total, _bl_loaded = _load_export_blacklist(
-        root_dir / "config" / "web_export_blacklist.yaml"
-    )
+    _bl_exact, _bl_pattern, _bl_total, _bl_loaded = _load_export_blacklist(root_dir=root_dir)
     if _bl_loaded and _bl_total:
         logging.info(
             f"  Blacklist: {_bl_total} Eintra(e)ge geladen "
