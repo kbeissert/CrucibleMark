@@ -16,7 +16,7 @@ import math
 import re
 from fnmatch import fnmatch
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Callable, Optional
 
 # Setup import path so that 'utils' and other root-level packages are importable
 # regardless of how the script is invoked (make, direct call, IDE).
@@ -1392,6 +1392,110 @@ def _init_export_context(
     }
 
 
+def _should_skip_model(
+    *,
+    model_name: str,
+    raw_model_id: str,
+    row: Any,
+    model_audit_src: Path | None,
+    count: int,
+    total: int,
+    bl_exact: set[str],
+    bl_pattern: set[str],
+) -> str | None:
+    """Entscheidet ob ein Model in der Leaderboard-Iteration uebersprungen wird.
+
+    Returns:
+        None     — Model wird verarbeitet
+        "no_benchmark" — weder Audit-Log noch CSV-Score vorhanden
+        "blacklisted"   — raw_model_id matcht Web-Export-Blacklist
+    """
+    has_raw = bool(raw_model_id) and raw_model_id != "nan"
+
+    # Skip 1: kein Benchmark (weder Audit-Log noch CSV-Score)
+    _audit_has_benchmark = (
+        model_audit_src is not None
+        and model_audit_src.exists()
+        and any(f.name != "00_bias_report.md" for f in model_audit_src.glob("*.md"))
+    )
+    _csv_total = str(row.get(LdbCols.TOTAL_SCORE, "")).strip()
+    _csv_has_benchmark = _csv_total not in ("", "Pending", "—", "nan") and not pd.isna(row.get(LdbCols.TOTAL_SCORE, float("nan")))
+    if not _audit_has_benchmark and not _csv_has_benchmark:
+        logging.debug(f"  [{count}/{total}] {model_name} -> SKIP (nur PC-Daten, kein Benchmark)")
+        return "no_benchmark"
+
+    # Skip 2: Web-Export-Blacklist
+    if has_raw and _is_blacklisted(raw_model_id, bl_exact, bl_pattern):
+        logging.info(f"  [{count}/{total}] {model_name} -> SKIP (blacklisted: {raw_model_id})")
+        return "blacklisted"
+
+    return None
+
+
+def _resolve_model_dirs_and_card(
+    *,
+    model_name: str,
+    raw_model_id: str,
+    slug: str,
+    card_lookup: Callable[[str], dict | None],
+    audit_dirs: dict[str, Path],
+    comp_dirs: dict[str, Path],
+    count: int,
+    total: int,
+) -> tuple[dict | None, Path | None, Path | None]:
+    """Loest Model-Card und Audit-/Comparison-Verzeichnisse auf.
+
+    Reihenfolge:
+    1. Card-Lookup mit raw_model_id, fallback model_name.
+    2. Audit-Dir via dir_slug (slugify(raw_model_id) oder slug).
+    3. Audit-Dir via _safe_name(raw_model_id) (Card-Konvention).
+    4. Audit-Dir via heritage_ids aus Card (Mehrfach-Versuche bis Treffer).
+
+    Returns: (card, model_audit_src, model_comp_src) — jedes None wenn nicht aufgeloest.
+    """
+    has_raw = bool(raw_model_id) and raw_model_id != "nan"
+    dir_slug = slugify(raw_model_id) if has_raw else slug
+
+    # Card-Resolution: raw_model_id zuerst, fallback model_name
+    card = card_lookup(raw_model_id) if has_raw else None
+    if card is None:
+        card = card_lookup(model_name)
+
+    if card is None and (has_raw or model_name):
+        logging.warning(
+            f"  ⚠️  [{count}/{total}] {model_name} "
+            f"(raw_model_id={raw_model_id or '?'}): keine Model Card gefunden. "
+            f"Web-Export liefert model_card=null. Bitte Card manuell anlegen "
+            f"oder scripts/maintenance/create_model_card.py ausfuehren."
+        )
+
+    # Audit/Comp-Dir via dir_slug
+    model_audit_src = _resolve_dir(audit_dirs, dir_slug)
+    model_comp_src = _resolve_dir(comp_dirs, dir_slug)
+
+    # Fallback: _safe_name(raw_model_id) (Card-Konvention)
+    if has_raw:
+        safe_dir_slug = slugify(_safe_name(raw_model_id))
+        if safe_dir_slug != dir_slug:
+            if model_audit_src is None:
+                model_audit_src = _resolve_dir(audit_dirs, safe_dir_slug)
+            if model_comp_src is None:
+                model_comp_src = _resolve_dir(comp_dirs, safe_dir_slug)
+
+    # Fallback: heritage_ids aus Card
+    if card:
+        for h_id in card.get("heritage_ids", []):
+            for h_slug in dict.fromkeys([slugify(h_id), slugify(_safe_name(h_id))]):
+                if model_audit_src is None:
+                    model_audit_src = _resolve_dir(audit_dirs, h_slug)
+                if model_comp_src is None:
+                    model_comp_src = _resolve_dir(comp_dirs, h_slug)
+            if model_audit_src is not None and model_comp_src is not None:
+                break
+
+    return card, model_audit_src, model_comp_src
+
+
 def _process_leaderboard(
     ctx: dict[str, Any],
     filter_slug: str | None,
@@ -1434,59 +1538,30 @@ def _process_leaderboard(
             continue
 
         raw_model_id = str(row.get(LdbCols.MODEL_ID, row.get("model_id_raw", row.get("model_id", "")))).strip()
-        dir_slug = slugify(raw_model_id) if raw_model_id and raw_model_id != "nan" else slug
-
-        if raw_model_id and raw_model_id != "nan":
-            card = load_model_card(raw_model_id, root_dir)
-            if card is None:
-                card = load_model_card(model_name, root_dir)
-        else:
-            card = load_model_card(model_name, root_dir)
-
-        if card is None and (
-            (raw_model_id and raw_model_id != "nan") or model_name
-        ):
-            logging.warning(
-                f"  ⚠️  [{count}/{total}] {model_name} "
-                f"(raw_model_id={raw_model_id or '?'}): keine Model Card gefunden. "
-                f"Web-Export liefert model_card=null. Bitte Card manuell anlegen "
-                f"oder scripts/maintenance/create_model_card.py ausfuehren."
-            )
-
-        model_audit_src = _resolve_dir(audit_dirs, dir_slug)
-        model_comp_src = _resolve_dir(comp_dirs, dir_slug)
-
-        if raw_model_id and raw_model_id != "nan":
-            _safe_dir_slug = slugify(_safe_name(raw_model_id))
-            if _safe_dir_slug != dir_slug:
-                if model_audit_src is None:
-                    model_audit_src = _resolve_dir(audit_dirs, _safe_dir_slug)
-                if model_comp_src is None:
-                    model_comp_src  = _resolve_dir(comp_dirs, _safe_dir_slug)
-
-        if card:
-            for _h_id in card.get("heritage_ids", []):
-                for _h_slug in dict.fromkeys([slugify(_h_id), slugify(_safe_name(_h_id))]):
-                    if model_audit_src is None:
-                        model_audit_src = _resolve_dir(audit_dirs, _h_slug)
-                    if model_comp_src is None:
-                        model_comp_src = _resolve_dir(comp_dirs, _h_slug)
-                if model_audit_src is not None and model_comp_src is not None:
-                    break
-
-        _audit_has_benchmark = (
-            model_audit_src is not None
-            and model_audit_src.exists()
-            and any(f.name != "00_bias_report.md" for f in model_audit_src.glob("*.md"))
+        card, model_audit_src, model_comp_src = _resolve_model_dirs_and_card(
+            model_name=model_name,
+            raw_model_id=raw_model_id,
+            slug=slug,
+            card_lookup=lambda mid: load_model_card(mid, root_dir),
+            audit_dirs=audit_dirs,
+            comp_dirs=comp_dirs,
+            count=count,
+            total=total,
         )
-        _csv_total = str(row.get(LdbCols.TOTAL_SCORE, "")).strip()
-        _csv_has_benchmark = _csv_total not in ("", "Pending", "—", "nan") and not pd.isna(row.get(LdbCols.TOTAL_SCORE, float("nan")))
-        if not _audit_has_benchmark and not _csv_has_benchmark:
-            logging.debug(f"  [{count}/{total}] {model_name} -> SKIP (nur PC-Daten, kein Benchmark)")
-            continue
 
-        if raw_model_id and raw_model_id != "nan" and _is_blacklisted(raw_model_id, bl_exact, bl_pattern):
-            logging.info(f"  [{count}/{total}] {model_name} -> SKIP (blacklisted: {raw_model_id})")
+        skip_reason = _should_skip_model(
+            model_name=model_name,
+            raw_model_id=raw_model_id,
+            row=row,
+            model_audit_src=model_audit_src,
+            count=count,
+            total=total,
+            bl_exact=bl_exact,
+            bl_pattern=bl_pattern,
+        )
+        if skip_reason == "no_benchmark":
+            continue
+        if skip_reason == "blacklisted":
             models_skipped_blacklist += 1
             continue
 
