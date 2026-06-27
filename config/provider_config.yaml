@@ -129,8 +129,9 @@ providers:
         name: Llama 3.3 (70B) Versatile
       - id: qwen/qwen3-32b
         name: Qwen 3 (32B) via Groq
-      - id: openai/gpt-oss-120b
-        name: GPT-OSS 120B via Groq
+      # REMOVED 2026-06-27: GPT-OSS 120B via Groq — Modell gelöscht (clean-model)
+      # - id: openai/gpt-oss-120b
+      #   name: GPT-OSS 120B via Groq
 
     cohere:
       name: Cohere
