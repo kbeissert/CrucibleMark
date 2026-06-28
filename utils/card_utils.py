@@ -196,6 +196,43 @@ def get_reasoning_triggers() -> list[str]:
         return []
 
 
+def get_tag_display_roles() -> dict[str, str]:
+    """Gibt ein Mapping {tag_slug: display_role} zurück.
+
+    display_role (seit v4.10.12):
+      - 'category': Tag ist Filter-Facette mit dediziertem Exportfeld
+        (thinking_mode, use_case_primary, input_modalities, weights_license_tier).
+        Wird im Web-Export NICHT als Badge gerendert.
+      - 'badge': Tag ist additives Display-Highlight ohne dediziertes Feld.
+        Wird auf der Modell-Detailseite als Badge gerendert.
+    Tags ohne explizites display_role (ältere Einträge) defaulten zu 'badge'.
+    """
+    try:
+        vocab = load_vocabulary()
+        roles: dict[str, str] = {}
+        for section in ("reserved_tags", "informational_tags"):
+            for t in vocab.get(section, []):
+                roles[t["slug"]] = t.get("display_role", "badge")
+        return roles
+    except (FileNotFoundError, KeyError) as exc:
+        logger.warning("Vokabular-Registry für display_roles nicht ladbar: %s", exc)
+        return {}
+
+
+def get_tag_labels() -> dict[str, str]:
+    """Gibt ein Mapping {tag_slug: label} zurück (für Web-Export-Badges)."""
+    try:
+        vocab = load_vocabulary()
+        labels: dict[str, str] = {}
+        for section in ("reserved_tags", "informational_tags"):
+            for t in vocab.get(section, []):
+                labels[t["slug"]] = t.get("label", t["slug"])
+        return labels
+    except (FileNotFoundError, KeyError) as exc:
+        logger.warning("Vokabular-Registry für labels nicht ladbar: %s", exc)
+        return {}
+
+
 def normalize_tags(tags: list[str]) -> tuple[list[str], list[tuple[str, str | None, str]]]:
     """Normalisiert eine Tag-Liste gemäß Vokabular-Registry.
 

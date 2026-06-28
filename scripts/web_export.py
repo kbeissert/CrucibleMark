@@ -28,7 +28,7 @@ import pandas as pd
 import yaml
 from utils.config_validator import ConfigValidator
 from utils.model_utils import _find_card, _safe_name, WEIGHTS_TIER_DISPLAY
-from utils.card_utils import normalize_tags
+from utils.card_utils import normalize_tags, get_tag_display_roles, get_tag_labels
 
 
 # ------------------------------------------------------------------
@@ -898,6 +898,129 @@ def _export_model_files(
     return audit_files, comp_files_dict
 
 
+# ---------------------------------------------------------------------------
+# Characteristics (seit v4.10.12): konsolidiertes, rollen-gekennzeichnetes
+# Objekt für die Modell-Darstellung auf der Webseite.
+#
+# Trennt Filter-Facetten (categories) von Display-Highlights (features):
+#   - categories: Werte aus dedizierten Card-Feldern (thinking_mode,
+#     use_case_primary, parameter_architecture, weights_license_tier,
+#     input_modalities). Niedrige Kardinalität, je 1 Wert pro Modell.
+#   - features: Tags aus architecture_tags mit display_role='badge'
+#     (laut config/card_vocabulary.yaml). Additiv, beliebig viele.
+#
+# Tags mit display_role='category' (Thinking, Thinking-Optional, Multimodal,
+# Agentic, Coder, General, Open-Weight) erscheinen NICHT in features — sie
+# sind bereits über categories abgedeckt. Damit verschwindet das Doppel-Badge.
+# architecture_tags (flach) bleibt als Roh-Provenienz in model_card erhalten.
+# ---------------------------------------------------------------------------
+
+_THINKING_LABELS: dict[str, str] = {
+    "thinking": "Thinking",
+    "partial": "Adaptive Thinking",
+    "standard": "Standard",
+}
+
+_USE_CASE_LABELS: dict[str, str] = {
+    "generalist": "Generalist",
+    "coding": "Coder",
+    "reasoning": "Reasoning",
+    "vision-language": "Vision-Language",
+    "agentic": "Agentic",
+}
+
+_PARAM_ARCH_LABELS: dict[str, str] = {
+    "dense": "Dense",
+    "moe": "MoE",
+    "hybrid": "Hybrid",
+}
+
+
+_MODALITY_LABELS: dict[str, str] = {
+    "text": "Text",
+    "image": "Vision",
+    "audio": "Audio",
+    "video": "Video",
+}
+
+
+def _build_characteristics(
+    card: dict | None,
+    thinking_mode: str,
+    architecture_tags: list[str],
+) -> dict[str, Any]:
+    """Baut das rollen-gekennzeichnete characteristics-Objekt.
+
+    Args:
+        card: Model Card Dict (oder None wenn keine Card gefunden).
+        thinking_mode: Bereits abgeleiteter thinking_mode-Wert
+            ('standard' | 'thinking' | 'partial').
+        architecture_tags: Bereits normalisierte Tag-Liste aus der Card.
+
+    Returns:
+        Dict mit 'categories' (Filter-Facetten) und 'features' (Badges).
+        Leere features-Liste wenn keine Badges vorhanden.
+    """
+    display_roles = get_tag_display_roles()
+    tag_labels = get_tag_labels()
+
+    # ── categories: Filter-Facetten aus dedizierten Card-Feldern ──
+    categories: dict[str, Any] = {}
+
+    thinking_value = thinking_mode or "standard"
+    categories["thinking"] = _strip_none({
+        "value": thinking_value,
+        "label": _THINKING_LABELS.get(thinking_value, thinking_value.title()),
+    })
+
+    if card:
+        use_case = card.get("use_case_primary")
+        if use_case:
+            categories["use_case"] = _strip_none({
+                "value": use_case,
+                "label": _USE_CASE_LABELS.get(use_case, use_case.title()),
+            })
+
+        param_arch = card.get("parameter_architecture")
+        if param_arch:
+            categories["architecture"] = _strip_none({
+                "value": param_arch,
+                "label": _PARAM_ARCH_LABELS.get(param_arch, param_arch.title()),
+            })
+
+        license_tier = card.get("weights_license_tier")
+        if license_tier:
+            categories["license"] = _strip_none({
+                "value": license_tier,
+                "label": WEIGHTS_TIER_DISPLAY.get(license_tier, license_tier.title()),
+            })
+
+        modalities = card.get("input_modalities")
+        if isinstance(modalities, list) and modalities:
+            mod_items = [
+                {"slug": m, "label": _MODALITY_LABELS[m]}
+                for m in modalities
+                if m in _MODALITY_LABELS
+            ]
+            if mod_items:
+                categories["modalities"] = mod_items
+
+    # ── features: Display-Badges aus architecture_tags (nur display_role=badge) ──
+    features: list[dict[str, str]] = []
+    for tag in architecture_tags:
+        role = display_roles.get(tag, "badge")
+        if role == "badge":
+            features.append({
+                "slug": tag,
+                "label": tag_labels.get(tag, tag),
+            })
+
+    return {
+        "categories": categories,
+        "features": features,
+    }
+
+
 def _build_leaderboard_entry(
     row: "pd.Series",
     card: dict | None,
@@ -919,6 +1042,8 @@ def _build_leaderboard_entry(
     _card_version = extract_version(card.get("model_version")) if card else None
     _csv_version = extract_version(row.get(LdbCols.VERSION))
     _raw_model_id = str(row.get(LdbCols.MODEL_ID, row.get("model_id_raw", row.get("model_id", "")))).strip()
+    _normalized_tags = _normalize_export_tags(card.get("architecture_tags") or []) if card else []
+    _characteristics = _build_characteristics(card, thinking_mode, _normalized_tags)
     return _strip_none({
         "slug": slug,
         "model_id": (card.get("model_id") if card else None) or (_raw_model_id or None),
@@ -937,6 +1062,7 @@ def _build_leaderboard_entry(
         "performance_tier": str(row.get(LdbCols.PERFORMANCE_TIER, "")) or None,
         "type": model_type,
         "thinking_mode": thinking_mode,
+        "characteristics": _characteristics,
         "deployment_type": card.get("deployment_type") if card else None,
         "weights_license_tier": card.get("weights_license_tier") if card else None,
         "inference_provider": inference_provider,
@@ -1004,7 +1130,7 @@ def _build_leaderboard_entry(
             # Normalisierter Hersteller-Name (SSoT: kanonischer Name aus classification_taxonomy.json,
             # identisch mit Top-Level vendor-Feld — kein Raw-Wert aus der Card).
             "vendor": vendor,
-            "architecture_tags": _normalize_export_tags(card.get("architecture_tags") or []),
+            "architecture_tags": _normalized_tags,
             "primary_focus": card.get("primary_focus"),
             "thinking_probe_detected": card.get("thinking_probe_detected"),
             "thinking_probe_confidence": card.get("thinking_probe_confidence"),

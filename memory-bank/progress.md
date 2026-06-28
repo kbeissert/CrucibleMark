@@ -1,6 +1,75 @@
 # Progress
 
 Letzte Releases + aktueller Stand.
+### 2026-06-28 (Session 43) — Characteristics-Modalitäten als Einzel-Badges (v4.10.12)
+
+**Ausloeser:** Modalitäten als kombiniertes String-Label ("Text + Vision + Audio + Video") erzeugt riesige Badges bei multimodalen Modellen (z.B. xiaomi/mimo-v2.5-pro mit 4 Modi). User-Anweisung: einzelne Badges pro Modus.
+
+**Umsetzung:**
+- `_modalities_label()` (String-Kombinator) entfernt — Dead Code beseitigt (gleichzeitig Code-Review-Finding 1 gelöst).
+- `categories.modalities` ist jetzt eine Liste von `{"slug", "label"}`-Objekten (z.B. `[{"slug":"text","label":"Text"},{"slug":"image","label":"Vision"}]`), analog zur `features`-Struktur.
+- `_MODALITY_LABELS` Mapping bleibt als SSoT für slug→Label.
+- `model-header.njk`: iteriert über `characteristics.categories.modalities` → einzelne `cm-badge--neutral cm-badge--truncate` Badges.
+- 3 Tests aktualisiert (assert auf Listen-Struktur statt `value`/`label`-Dict).
+- Code-Review-Finding 2 (fehlende Label-Assertion in `test_thinking_mode_thinking`): ergänzt.
+
+**Verifikation:**
+- 1016/1016 Python-Tests grün. Eleventy-Build 315 Files, 0 Errors.
+- Export: 74/74 Modelle mit `characteristics.categories.modalities` als Objektliste. Mimo-v2.5-pro → 4 Einzel-Badges.
+- Gebautes HTML verifiziert: einzelne `<li class="badge cm-badge--neutral cm-badge--truncate">` pro Modus.
+
+**Status:** UNCOMMITTED (Python + Web).
+
+---
+
+### 2026-06-27 (Session 42) — ToolUse Persistenz-Gap Backfill + benchmark_auto Skip-Bug (v4.10.12)
+
+**Ausloeser 1:** User-Report Web-Export zeigt `tooluse.assets: []` fuer 28/75 Modelle. User-Anweisung: "Loese das Problem, so dass es zukuenftig keine fehler mehr gibt. Die Designentscheidung sagen eigentlich, dass am ende eines jeden MOduls eine aktualisiserung des Leaderboards stattfindet."
+
+**Diagnose ToolUse-Gap:**
+- 39 Modelle in `tooluse_leaderboard.csv` ohne Per-Asset-Detailzeilen (`tooluse001`-`tooluse006`) in Benchmark-CSVs.
+- Root Cause: Aeltere Runner-Version nutzte Pfad A (`ToolUseExporter.export_result()` + `finalize_model()`), der nur in `tooluse_leaderboard.csv` schreibt, nicht in die Benchmark-CSVs. Audit-Logs fuer alle 6 Assets existierten aber — Modelle waren vollstaendig getestet.
+- Zwei Pfade im ToolUseExporter: Pfad A (nur Leaderboard) vs. Pfad B (Benchmark-CSVs + `aggregate_from_benchmark_csvs()`). SSoT ist Pfad B.
+
+**Option 3 — Runner-Fix (Zukunftssicherung, Commit `5222db2`):**
+- `ToolUseExporter.has_detail_rows(model_id, min_assets=1)`: neue Methode prueft ob `tooluse*`-Zeilen in den 3 Benchmark-CSVs existieren (kanonische ID-Aufloesung, Multi-CSV-Aggregation, korrupte CSVs werden uebersprungen).
+- `_run_model()` Cache-Check in `run_tooluse_benchmark.py` erweitert: Ueberspringt nur wenn BEIDES vorhanden — Leaderboard-Eintrag UND Detailzeilen. Bei fehlenden Detailzeilen → Warning + Benchmark ausfuehren (nicht ueberspringen).
+- Pfad A (`export_result` + `finalize_model`) als deprecated markiert mit `logger.warning()`.
+- 8 Tests in `tests/test_tooluse_detail_rows_cache.py` (7 fuer `has_detail_rows` + 1 fuer Deprecation-Warning).
+
+**Option 1 — Backfill (29/39 Modelle geheilt, Commit `5222db2`):**
+- `scripts/maintenance/backfill_tooluse_csv_rows.py`: liest Audit-Logs (`outputs/audit_logs/<model>/tooluse00*.md`), extrahiert Raw JSON (score_contributions Dict), schreibt Per-Asset-Zeilen via `ResultManager.save_results()` (atomarer Upsert) in Benchmark-CSVs.
+- Danach: `aggregate_from_benchmark_csvs()` re-aggregiert das Leaderboard automatisch.
+- 174 Zeilen fuer 29 Modelle geschrieben.
+- 10 Modelle nicht backfillbar: 3 ohne ToolUse-Audit-Logs (deepseek-chat-v3.1, deepseek-v3.2, nvidia-nemotron-3-ultra), 7 mit ID-Aufloesungsproblemen (Ollama-IDs: gemma3_12b, gemma3_4b, gemma4_E4B, gemma4_e2b, ministral-3_14b, ministral-3_8b, qwen_qwen3_6-plus_free).
+
+**Verifikation ToolUse-Fix:**
+- Web-Export: `tooluse.assets` gefuellt fuer 73/75 Modelle (vorher 47). Nur 2 Modelle mit leeren assets (deepseek-v3-2, nvidia-nemotron-3-ultra — keine Audit-Logs vorhanden).
+- 988/989 Tests gruen (+8 neu, 1 pre-existing).
+- Hugo-Build: 319 Files, 0 Errors.
+
+**Ausloeser 2:** User-Report `make benchmark-auto` ueberspringt 3 lokale Modelle (gemma-4-12b-it-ud-q4/q6/q8_k_xl) obwohl Tests fehlen. Tests Run: 38/43, 41/43, 42/43 — aber kein Feedback vom Automatic-Benchmark.
+
+**Diagnose benchmark_auto Skip-Bug:**
+- `benchmark_auto.py:449-465` — der "Leaderboard-Cache" Check lief VOR `get_startable_assets()` und uebersprang das gesamte Modul, sobald das Leaderboard irgendeinen numerischen Score hatte.
+- Ein aggregierter Leaderboard-Score ist aber kein Beweis fuer Per-Asset-Vollstaendigkeit: 4/5 ux_writing-Assets ergeben trotzdem einen Score, aber das 5. Asset fehlt.
+- Betroffen: q4_k_xl (doc_quality 4/5, 42/43), q6_k_xl (ux_writing 1/5!, doc_quality 4/5, 38/43), q8_k_xl (ux_writing 4/5, doc_quality 4/5, 41/43).
+
+**Fix (Commit `3879c67`):**
+- Leaderboard-Cache-Check komplett entfernt. `get_startable_assets()` ist die alleinige Autoritaet — sie liest die Detail-CSVs und prueft per-Asset welche Tests fehlen.
+- Commercial-Pfad (Z.1058) nutzte bereits ausschliesslich `get_startable_assets()` ohne Cache-Check. Jetzt sind beide Pfade konsistent.
+- Import von `get_leaderboard_scored_modules` aus `benchmark_auto.py` entfernt (Funktion bleibt in `llamacpp_batch.py` fuer Reporting-Zwecke).
+- 7 Tests in `test_benchmark_auto_untested_tooluse.py` aktualisiert — alle `get_leaderboard_scored_modules`-Mocks entfernt. Neuer Regressionstest: `test_leaderboard_score_does_not_skip_when_assets_missing`.
+
+**Verifikation Skip-Bug-Fix:**
+- 989/989 Tests gruen.
+- Leaderboard via `make leaderboard` regeneriert — die 3 Modelle zeigen korrekt ihre Tests-Run-Werte (38/43, 41/43, 42/43).
+- Beim naechsten `make benchmark-auto` werden die fehlenden Assets korrekt erkannt und nachgetestet.
+
+**Dokumentation:** activeContext.md, progress.md. CLAUDE.md Pitfalls (ToolUse-Cache-Check indirekt ueber Backfill-Doku abgedeckt).
+
+---
+
 ### 2026-06-27 (Session 39) — web_export.py Skeptischer Audit + 5-Phasen Refactoring + 3 Bug-Fixes (v4.10.12)
 
 **Ausloeser:** User-Auftrag "schau dir mal den Webexport an unter skeptischen Gesichtspunkten". Constraint: NIEMALS `python3 << EOF`-Skript fuer Refactoring (hat frueher 417 Zeilen geloescht, inkl. `_process_leaderboard`). Manuell + pro Schritt + Test-Validation.

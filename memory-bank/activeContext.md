@@ -12,7 +12,68 @@ to know what reference files exist.
 ---
 
 # Active Context
-## Aktueller Status (2026-06-27)
+## Aktueller Status (2026-06-28)
+
+- **Session 43 (2026-06-28, in Arbeit) — Characteristics-Modalitäten als Einzel-Badges (v4.10.12):**
+
+  User-Auftrag: Modalitäten (Text/Vision/Audio/Video) als einzelne Badges rendern statt als kombiniertes Label, damit Badges bei multimodalen Modellen (z.B. mimo-v2.5-pro mit 4 Modi) nicht riesig werden.
+
+  **Umsetzung:**
+  - `_modalities_label()` (String-Kombinator "Text + Vision + Audio") entfernt.
+  - `_MODALITY_LABELS` Mapping (text→Text, image→Vision, audio→Audio, video→Video) bleibt als SSoT für Labels.
+  - `categories.modalities` ist jetzt eine Liste von `{"slug", "label"}`-Objekten (analog zu `features`), kein Dict mit `value`/`label` mehr.
+  - `model-header.njk`: iteriert über `characteristics.categories.modalities` als einzelne `cm-badge--neutral cm-badge--truncate` Badges.
+  - 3 Tests in `test_web_export_characteristics.py` aktualisiert (assert auf Listen-Struktur).
+
+  **Code-Review-Findings (diese Session):**
+  - Finding 1 (dead code in `_modalities_label`): GELÖST durch Entfernen der Funktion.
+  - Finding 2 (fehlende Label-Assertion in `test_thinking_mode_thinking`): GELÖST.
+
+  **Verifikation:**
+  - 1016/1016 Python-Tests grün. Eleventy-Build 315 Files, 0 Errors.
+  - Export-Check: 74/74 Modelle mit `characteristics.categories.modalities` als Objektliste. Mimo-v2.5-pro → 4 Einzel-Badges (Text/Vision/Video/Audio) statt eines langen kombinierten.
+  - Gebautes HTML verifiziert: einzelne `<li class="badge cm-badge--neutral cm-badge--truncate">` pro Modus.
+
+  **Status:** UNCOMMITTED (Python: `web_export.py`, `test_web_export_characteristics.py`; Web: `model-header.njk`).
+
+  **Offen (aus Session 42):**
+  - 10 verbleibende ToolUse-Backfill-Modelle (3 ohne Audit-Logs, 7 Ollama-ID-Auflösung).
+  - hermes-4.3-36b-q6: 37/43 Tests — DGX Spark offline.
+  - `tooluse-scores.js:35`: p2→synthesis_quality Überschreibung prüfen.
+
+- **Session 42 abgeschlossen (2026-06-27) — ToolUse Persistenz-Gap Backfill + benchmark_auto Skip-Bug (v4.10.12):**
+
+  User-Report 1: Web-Export zeigt `tooluse.assets: []` für 28/75 Modelle. User-Anweisung: "Löse das Problem, so dass es zukünftig keine fehler mehr gibt. Die Designentscheidung sagen eigentlich, dass am ende eines jeden MOduls eine aktualisiserung des Leaderboards stattfindet."
+
+  **Diagnose ToolUse-Gap:**
+  - 39 Modelle in `tooluse_leaderboard.csv` ohne Per-Asset-Detailzeilen (`tooluse001`-`tooluse006`) in Benchmark-CSVs.
+  - Root Cause: Ältere Runner-Version nutzte Pfad A (`ToolUseExporter.export_result()` + `finalize_model()`), der nur in `tooluse_leaderboard.csv` schreibt, nicht in die Benchmark-CSVs. Audit-Logs für alle 6 Assets existierten aber — Modelle waren vollständig getestet.
+
+  **Option 3 — Runner-Fix (Zukunftssicherung, Commit `5222db2`):**
+  - `ToolUseExporter.has_detail_rows()`: neue Methode prüft ob `tooluse*`-Zeilen in Benchmark-CSVs existieren.
+  - `_run_model()` Cache-Check erweitert: Überspringt nur wenn BEIDES vorhanden — Leaderboard-Eintrag UND Detailzeilen. Bei fehlenden Detailzeilen → Warning + Benchmark ausführen.
+  - Pfad A (`export_result` + `finalize_model`) als deprecated markiert mit `logger.warning()`.
+
+  **Option 1 — Backfill (29/39 Modelle geheilt, Commit `5222db2`):**
+  - `scripts/maintenance/backfill_tooluse_csv_rows.py`: liest Audit-Logs, extrahiert Raw JSON (score_contributions Dict), schreibt Per-Asset-Zeilen via `ResultManager.save_results()` (atomarer Upsert) in Benchmark-CSVs.
+  - 174 Zeilen für 29 Modelle geschrieben. Leaderboard re-aggregiert.
+  - 10 Modelle nicht backfillbar: 3 ohne ToolUse-Audit-Logs (deepseek-chat-v3.1, deepseek-v3.2, nvidia-nemotron-3-ultra), 7 mit ID-Auflösungsproblemen (Ollama-IDs).
+  - Verifikation: Web-Export `tooluse.assets` gefüllt für 73/75 Modelle (vorher 47).
+
+  User-Report 2: `make benchmark-auto` überspringt 3 lokale Modelle (gemma-4-12b-it-ud-q4/q6/q8_k_xl) obwohl Tests fehlen. Tests Run: 38/43, 41/43, 42/43 — aber kein Feedback.
+
+  **Diagnose benchmark_auto Skip-Bug:**
+  - `benchmark_auto.py:449-465` — der "Leaderboard-Cache" Check lief VOR `get_startable_assets()` und übersprang das gesamte Modul, sobald das Leaderboard irgendeinen numerischen Score hatte.
+  - Ein aggregierter Leaderboard-Score ist aber kein Beweis für Per-Asset-Vollständigkeit: 4/5 ux_writing-Assets ergeben trotzdem einen Score, aber das 5. Asset fehlt.
+  - Betroffen: q4_k_xl (doc_quality 4/5), q6_k_xl (ux_writing 1/5!, doc_quality 4/5), q8_k_xl (ux_writing 4/5, doc_quality 4/5).
+
+  **Fix (Commit `3879c67`):**
+  - Leaderboard-Cache-Check komplett entfernt. `get_startable_assets()` ist die alleinige Autorität — sie liest die Detail-CSVs und prüft per-Asset welche Tests fehlen.
+  - Commercial-Pfad nutzte bereits ausschließlich `get_startable_assets()` ohne Cache-Check. Jetzt sind beide Pfade konsistent.
+  - 7 Tests aktualisiert, neuer Regressionstest `test_leaderboard_score_does_not_skip_when_assets_missing`.
+  - Verifikation: 989/989 Tests grün. Leaderboard via `make leaderboard` regeneriert.
+
+  **Commits (Session 42):** `5222db2` (Backfill + Runner-Fix), `3879c67` (Skip-Bug Fix).
 
 - **Session 40 abgeschlossen (2026-06-27) — Doku-Stempel-Check + Drift-Refactor:**
 
@@ -590,6 +651,8 @@ to know what reference files exist.
 
 ## Fokus für nächste Session
 
+- **`make benchmark-auto` Re-Run:** Die 3 betroffenen Modelle (gemma-4-12b-it-ud-q4/q6/q8_k_xl) haben jetzt korrekt erkannte Lücken. Auto-Benchmark wird die fehlenden Assets nachtesten.
+- **10 verbleibende ToolUse-Backfill-Modelle:** 3 ohne Audit-Logs (deepseek-chat-v3.1, deepseek-v3.2, nvidia-nemotron-3-ultra) und 7 Ollama-ID-Auflösungsprobleme — Re-Test via `make benchmark-tooluse MODEL=X --force` nötig.
 - **web_export.py weitererücken:** BEFUND 10-15 aus Post-Refactor-Audit (`docs/reviews/_audits/web_export_audit_v4.10.11_post_refactor.md`) — SSoT-Wrapper-Migration, DRY Alias-Maps, Test-Coverage fuer 11 ungetestete Funktionen, Type-Hints fuer `val: Any` Parameter.
 - Weiter mit Modell-Card-Reviews: nächste in Bearbeitung (Stand 2026-06-25, Session 37)
 

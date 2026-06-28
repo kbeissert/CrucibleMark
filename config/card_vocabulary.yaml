@@ -56,6 +56,15 @@ controlled_fields:
 # ---------------------------------------------------------------------------
 # Diese Tags werden vom Code aktiv ausgewertet. Sie sind eine Whitelist:
 # unbekannte Tags lösen eine Warnung aus. Schreibweise ist case-sensitive.
+#
+# display_role (seit v4.10.12):
+#   category - Tag dient als Filter-Facette; hat bereits ein dediziertes
+#              Exportfeld (thinking_mode, use_case_primary, input_modalities,
+#              weights_license_tier). Wird NICHT als Badge gerendert.
+#   badge     - Tag ist ein additives Display-Highlight ohne dediziertes Feld.
+#              Wird als Badge auf der Modell-Detailseite gerendert.
+#   hidden    - Tag ist intern (deprecated/normalisiert), taucht im Export
+#              nicht auf. (deprecated_tags hat eigenes display_role.)
 reserved_tags:
 
   - slug: Thinking
@@ -63,6 +72,7 @@ reserved_tags:
     description: "Modell führt sichtbares/unsichtbares Chain-of-Thought bei jeder Inferenz durch."
     consumers: [token_budget_multiplier, web_export_thinking_mode, use_case_inference]
     programmatic_effect: "5× Reasoning-Multiplikator in resolve_token_budget(); web_export → thinking_mode='thinking'"
+    display_role: category
     since: v4.4.0
 
   - slug: Thinking-Optional
@@ -70,6 +80,7 @@ reserved_tags:
     description: "Modell kann optional Thinking aktivieren (z.B. via preserve_thinking-Parameter)."
     consumers: [token_budget_multiplier, web_export_thinking_mode]
     programmatic_effect: "Erhöhtes Reasoning-Budget in resolve_token_budget(); web_export → thinking_mode='partial'"
+    display_role: category
     since: v4.4.0
 
   - slug: Multimodal
@@ -77,13 +88,15 @@ reserved_tags:
     description: "Modell ist primär für Vision-Aufgaben optimiert; Vision-Fähigkeit ist Kern-Feature."
     consumers: [use_case_inference, validator_warning]
     programmatic_effect: "use_case_primary sollte 'vision-language' sein; Validator warnt, wenn nicht."
+    display_role: category
     since: v4.7.0
 
   - slug: Vision-Capable
-    label: "Vision (Sekundäres Feature)"
+    label: "Vision"
     description: "Modell unterstützt Bild-Input als Add-on, primär aber für andere Aufgaben optimiert (Coding/Agentic)."
     consumers: [validator_warning_suppress]
     programmatic_effect: "Unterdrückt Multimodal-Warnung wenn use_case=agentic/coding/generalist."
+    display_role: badge
     since: v4.7.0
 
   - slug: Agentic
@@ -91,6 +104,7 @@ reserved_tags:
     description: "Modell ist auf Tool-Use und mehrstufige Aufgabenplanung optimiert (Single- und Multi-Agent-Use-Cases)."
     consumers: [use_case_inference]
     programmatic_effect: "Marker für use_case_primary='agentic'."
+    display_role: category
     since: v4.4.0
 
   - slug: Agentic-Orchestrator
@@ -98,6 +112,7 @@ reserved_tags:
     description: "Modell ist speziell für Multi-Agent-Orchestrierung optimiert (plant, delegiert an Sub-Agenten, synthetisiert). Geht über einfaches Tool-Use hinaus."
     consumers: [use_case_inference, web_export_filter]
     programmatic_effect: "Verfeinert use_case_primary='agentic' um Multi-Agent-Indikator; Web-Export-Filter."
+    display_role: badge
     since: v4.7.0
 
   - slug: Coder
@@ -105,6 +120,7 @@ reserved_tags:
     description: "Modell ist auf Code-Generierung spezialisiert (Use-Case-Indikator)."
     consumers: [use_case_inference]
     programmatic_effect: "use_case_primary='coding' (nur wenn NICHT zusammen mit 'General')."
+    display_role: category
     since: v4.4.0
 
   - slug: General
@@ -112,6 +128,7 @@ reserved_tags:
     description: "Allround-Modell ohne spezifischen Use-Case-Fokus."
     consumers: [use_case_inference]
     programmatic_effect: "Marker für use_case_primary='generalist'; blockiert 'Coder'→coding Mapping."
+    display_role: category
     since: v4.4.0
 
   - slug: Instruct
@@ -119,6 +136,7 @@ reserved_tags:
     description: "Modell wurde explizt auf Instruction-Following finegetuned."
     consumers: [web_export_filter]
     programmatic_effect: "Web-Export-Filter 'Instruction-Tuned'."
+    display_role: badge
     since: v4.4.0
 
   - slug: Open-Weight
@@ -126,6 +144,7 @@ reserved_tags:
     description: "Modellgewichte sind unter einer offenen Lizenz (Apache-2.0, MIT, etc.) frei herunterladbar und selbst hostbar. Redundant mit weights_license_tier='open-weights', aber als Web-Export-Filter nuetzlich."
     consumers: [web_export_filter]
     programmatic_effect: "Web-Export-Filter 'Open-Weight'."
+    display_role: category
     since: v4.10.11
 
 # ---------------------------------------------------------------------------
@@ -133,72 +152,84 @@ reserved_tags:
 # ---------------------------------------------------------------------------
 # Werden im Web-Export als Filter-Badges angezeigt, haben aber keine
 # Auswirkung auf Token-Budget, use_case-Inferenz oder Validator-Warnungen.
+# Alle informational_tags haben display_role=badge (kein dediziertes Feld).
 informational_tags:
 
   - slug: Long-Context
     label: "Long Context"
     description: "Kontextfenster > 100K Tokens. Kanonische Schreibweise mit Bindestrich."
     consumers: [web_export_filter]
+    display_role: badge
     since: v4.7.0
 
   - slug: Multilingual
     label: "Multilingual"
     description: "Modell unterstützt viele Sprachen nativ (z.B. 100+)."
     consumers: [web_export_filter]
+    display_role: badge
     since: v4.7.0
 
   - slug: Preview
     label: "Preview"
     description: "Experimental-/Preview-Release des Modells (z.B. 'gemini-3_1-pro-preview')."
     consumers: [web_export_filter]
+    display_role: badge
     since: v4.7.0
 
   - slug: Uncensored
     label: "Uncensored"
     description: "Modell wurde durch Abliteration oder Restriktions-Reduktion entschärft."
     consumers: [web_export_filter, risk_assessment]
+    display_role: badge
     since: v4.7.0
 
   - slug: MTP
     label: "Multi-Token Prediction"
     description: "Modell ist nativ mit Multi-Token Prediction trainiert (z. B. Qwen 3.6, Qwen3-Next) und für Speculative Decoding mit Draft-Modell optimiert."
     consumers: [web_export_filter]
+    display_role: badge
     since: v4.10.0
 
   - slug: Speculative-Decoding
     label: "Speculative Decoding"
     description: "Modell wird mit Speculative Decoding betrieben (z. B. draft-mtp bei llama.cpp, Medusa, EAGLE). Erhöht Decode-Throughput bei gleichbleibender Output-Qualität."
     consumers: [web_export_filter]
+    display_role: badge
     since: v4.10.0
 
   - slug: Uncensored-Finetuned
     label: "Uncensored Fine-Tuned"
     description: "Community-Fine-Tune mit reduzierten Restriktionen (vs. herstellerseitiges Uncensored)."
     consumers: [web_export_filter, risk_assessment]
+    display_role: badge
     since: v4.7.0
 
   - slug: Community-Quant
     label: "Community-Quantisierung"
     description: "Quantisierung durch Community (z.B. UndiX, TheBloke), nicht direkt vom Hersteller."
     consumers: [web_export_filter]
+    display_role: badge
     since: v4.7.0
 
   - slug: Prompt-Caching
     label: "Prompt Caching"
     description: "Provider unterstützt explizites Prompt-Caching für effiziente wiederholte Kontexte."
     consumers: [web_export_filter]
+    display_role: badge
     since: v4.7.0
 
   - slug: No-Reasoning
     label: "No Reasoning"
     description: "Modell hat explizit KEINEN Thinking-Modus (Gegenteil von Thinking)."
     consumers: [web_export_filter]
+    display_role: badge
     since: v4.7.0
 
   - slug: Fast-Reasoning
     label: "Fast Reasoning"
     description: "Reasoning mit reduziertem Token-Budget für schnelle Antworten."
     consumers: [web_export_filter]
+    display_role: badge
     since: v4.7.0
 
 # ---------------------------------------------------------------------------
