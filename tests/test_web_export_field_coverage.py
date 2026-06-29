@@ -1,13 +1,11 @@
 """Tests fuer vollstaendige Score- und Vendor-Field-Konsistenz im WebExport.
 
-Hintergrund: Audit in Session 38 (2026-06-26) ergab 4 Luecken:
-  1. LdbCols hatte nur 7 von 10 CSV-Score-Spalten
-     (Synthesis Quality, Tool Execution, Political Bias fehlten)
-  2. provider_cards.json exportierte nur 13 von 24 Vendor-Card-Feldern
-     (inference_interfaces, privacy_note fehlten als display-relevante Felder)
+Hintergrund: Audit in Session 38 (2026-06-26) ergab Luecken:
+  LdbCols hatte nur 7 von 10 CSV-Score-Spalten
+  (Synthesis Quality, Tool Execution, Political Bias fehlten)
 
 Diese Tests sichern ab, dass keine CSV-Spalte mehr stillschweigend
-verloren geht und alle relevanten Vendor-Felder im Provider-Subset landen.
+verloren geht.
 """
 
 from __future__ import annotations
@@ -116,70 +114,6 @@ class TestLeaderboardScoreMapping:
         }
         for attr in score_attrs:
             assert hasattr(LdbCols, attr), f"LdbCols.{attr} fehlt"
-
-
-class TestProviderCardsFieldCoverage:
-    """Prueft, dass alle display-relevanten Vendor-Felder in provider_cards.json landen."""
-
-    EXPECTED_PROVIDER_FIELDS = {
-        "vendor_id",
-        "display_name",
-        "company",
-        "headquarters",
-        "founding_year",
-        "description",
-        "deployment",
-        "pricing_model",
-        "api_base_url",
-        "api_documentation_url",
-        "notable_models",
-        "inference_interfaces",   # Hardware/Performance (wichtig fuer llama.cpp)
-        "privacy_note",             # Datenschutz-Hinweis
-        "profile_verified",
-        "last_verified_at",
-    }
-
-    def test_provider_cards_contains_all_display_fields(self):
-        """provider_cards.json muss alle 15 display-relevanten Felder enthalten."""
-        path = ROOT.parent / "CrucibleMark-Web" / "src" / "_data" / "raw" / "provider_cards.json"
-        if not path.exists():
-            pytest.skip("provider_cards.json noch nicht erstellt")
-        data = json.loads(path.read_text(encoding="utf-8"))
-        assert len(data["providers"]) > 0
-        sample = data["providers"][0]
-        missing = self.EXPECTED_PROVIDER_FIELDS - set(sample.keys())
-        assert not missing, f"provider_cards.json fehlen display-relevante Felder: {missing}"
-
-    def test_inference_interfaces_for_llamacpp(self):
-        """llamacpp muss inference_interfaces mit Hardware-Daten haben."""
-        path = ROOT.parent / "CrucibleMark-Web" / "src" / "_data" / "raw" / "provider_cards.json"
-        if not path.exists():
-            pytest.skip("provider_cards.json noch nicht erstellt")
-        data = json.loads(path.read_text(encoding="utf-8"))
-        llamacpp = next((p for p in data["providers"] if p["vendor_id"] == "llamacpp"), None)
-        assert llamacpp is not None, "llamacpp fehlt in provider_cards.json"
-        interfaces = llamacpp.get("inference_interfaces")
-        assert interfaces is not None, "llamacpp.inference_interfaces fehlt"
-        assert isinstance(interfaces, list)
-        assert len(interfaces) > 0
-        for inf in interfaces:
-            assert "name" in inf
-            assert "vendor_id" in inf
-
-    def test_privacy_note_for_chinese_providers(self):
-        """Chinesische Provider (PIPL/CSL-Risiko) sollten privacy_note haben."""
-        path = ROOT.parent / "CrucibleMark-Web" / "src" / "_data" / "raw" / "provider_cards.json"
-        if not path.exists():
-            pytest.skip("provider_cards.json noch nicht erstellt")
-        data = json.loads(path.read_text(encoding="utf-8"))
-        # Anbieter mit chinesischer Jurisdiktion (z.B. alibaba, deepseek, zhipu_ai)
-        chinese_vendors = ["alibaba", "deepseek", "zhipu_ai", "moonshot_ai", "xiaomi"]
-        for vid in chinese_vendors:
-            provider = next((p for p in data["providers"] if p["vendor_id"] == vid), None)
-            if provider is None:
-                continue  # Vendor existiert nicht (nicht alle verfuegbar)
-            note = provider.get("privacy_note")
-            assert note is not None, f"{vid} fehlt privacy_note"
 
 
 class TestDataJsonStructure:

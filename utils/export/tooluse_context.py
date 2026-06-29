@@ -89,6 +89,7 @@ def _load_asset_details(model_id: str) -> list[dict[str, Any]]:
     from utils.model_utils import resolve_canonical_model_id  # noqa: PLC0415
 
     canonical = resolve_canonical_model_id(model_id)
+    seen: set[str] = set()
     results: list[dict[str, Any]] = []
     for csv_name in _BENCHMARK_CSVS:
         csv_path = ROOT_DIR / csv_name
@@ -100,6 +101,9 @@ def _load_asset_details(model_id: str) -> list[dict[str, Any]]:
                     if not str(row.get("asset_id", "")).startswith("tooluse"):
                         continue
                     if resolve_canonical_model_id(row.get("model", "")) != canonical:
+                        continue
+                    aid = row.get("asset_id", "")
+                    if aid in seen:
                         continue
                     contribs: dict[str, Any] = {}
                     raw = row.get("score_contributions", "")
@@ -115,8 +119,9 @@ def _load_asset_details(model_id: str) -> list[dict[str, Any]]:
                             for k in (_FIELD_P1, _FIELD_P2, _FIELD_COMBINED, _FIELD_HALLUCINATION)
                             if row.get(k) not in (None, "")
                         }
+                    seen.add(aid)
                     results.append({
-                        "asset_id": row.get("asset_id", ""),
+                        "asset_id": aid,
                         "data": contribs,
                     })
         except Exception:

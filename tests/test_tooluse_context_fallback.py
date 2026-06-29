@@ -101,3 +101,54 @@ def test_load_asset_details_empty_csv_returns_empty(_fake_benchmark_csvs: Path, 
     """Modell ohne Einträge → leere Liste."""
     details = tc._load_asset_details("nonexistent/model")
     assert details == []
+
+
+def test_load_asset_details_dedup_duplicates(_fake_benchmark_csvs: Path, tmp_path: Path) -> None:
+    """Zwei CSV-Zeilen mit unterschiedlicher model-ID aber gleichem kanonischen
+    Modell und gleicher asset_id dürfen nicht zu doppelten Assets führen.
+
+    Reales Beispiel: gpt-5.4-nano (Punkt) und gpt-5_4-nano-2026-03-17 (Underscore)
+    lösen beide auf denselben kanonischen Namen auf — tooluse001–006 dürfen nur
+    je einmal im Ergebnis erscheinen.
+    """
+    from unittest.mock import patch
+
+    csv_dir = tmp_path / "benchmark_scores"
+    fieldnames = ["model", "asset_id", "status", "timestamp",
+                  "score_contributions", "p1_score", "p2_score",
+                  "combined_score", "hallucination_flag"]
+    # Zwei verschiedene Raw-IDs, die denselben kanonischen Namen haben
+    rows = [
+        {"model": "gpt-5.4-nano", "asset_id": f"tooluse00{i}", "status": "success",
+         "timestamp": "2026-01-01T00:00:00Z", "score_contributions": "",
+         "p1_score": "80", "p2_score": "50", "combined_score": "65",
+         "hallucination_flag": "false"}
+        for i in range(1, 4)
+    ] + [
+        {"model": "gpt-5_4-nano-2026-03-17", "asset_id": f"tooluse00{i}", "status": "success",
+         "timestamp": "2026-01-01T00:00:00Z", "score_contributions": "",
+         "p1_score": "80", "p2_score": "50", "combined_score": "65",
+         "hallucination_flag": "false"}
+        for i in range(1, 4)
+    ]
+    for name in ("local_models_benchmark.csv", "cloud_models_benchmark.csv", "commercial_models_benchmark.csv"):
+        path = csv_dir / name
+        with path.open("w", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer.writeheader()
+            for r in rows:
+                writer.writerow(r)
+
+    # Mock: beide IDs lösen auf denselben kanonischen Namen auf
+    with patch.object(tc, "ROOT_DIR", tmp_path), \
+         patch.object(tc, "_BENCHMARK_CSVS", [
+             f"benchmark_scores/{n}" for n in
+             ("local_models_benchmark.csv", "cloud_models_benchmark.csv", "commercial_models_benchmark.csv")
+         ]), \
+         patch("utils.model_utils.resolve_canonical_model_id",
+               side_effect=lambda mid: "gpt-5_4-nano-2026-03-17" if "nano" in mid else mid):
+        details = tc._load_asset_details("gpt-5_4-nano-2026-03-17")
+
+    asset_ids = [d["asset_id"] for d in details]
+    assert len(details) == 3, f"Expected 3 unique assets, got {len(details)}: {asset_ids}"
+    assert len(set(asset_ids)) == 3, f"Duplicate asset_ids found: {asset_ids}"

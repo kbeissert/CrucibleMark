@@ -18,7 +18,6 @@ from scripts.web_export import (
     parse_star_float,
     extract_badge_tier,
     extract_version,
-    clean_float,
     _strip_emojis,
     _build_vendor_alias_map,
     _normalize_vendor,
@@ -130,17 +129,6 @@ class TestExtractVersion:
 
     def test_empty_returns_none(self):
         assert extract_version("") is None
-
-
-class TestCleanFloat:
-    def test_numeric(self):
-        assert clean_float("3.14") == 3.14
-
-    def test_pending_returns_none(self):
-        assert clean_float("Pending") is None
-
-    def test_empty_returns_none(self):
-        assert clean_float("") is None
 
 
 class TestStripEmojis:

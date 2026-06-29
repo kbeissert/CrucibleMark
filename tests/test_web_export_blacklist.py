@@ -203,7 +203,6 @@ def test_meta_json_includes_blacklist_block(tmp_path: Path) -> None:
         generated_at="2026-06-09T00:00:00+00:00",
         models_list=[],
         pc_list=[],
-        provider_df=None,
         root_dir=root,
         comparisons_path=root / "docs" / "reviews",
         models_with_reports=0,
@@ -232,7 +231,6 @@ def test_meta_json_blacklist_block_default_when_omitted(tmp_path: Path) -> None:
         generated_at="2026-06-09T00:00:00+00:00",
         models_list=[],
         pc_list=[],
-        provider_df=None,
         root_dir=root,
         comparisons_path=root / "docs" / "reviews",
         models_with_reports=0,
@@ -282,7 +280,7 @@ def test_main_loop_calls_is_blacklisted_for_each_model(tmp_path: Path) -> None:
 
     with patch.object(we, "_setup_output_dirs", return_value=(
             output_root, models_dir, tmp_path)), \
-         patch.object(we, "_load_sources", return_value=(fake_df, None, None, None)), \
+         patch.object(we, "_load_sources", return_value=(fake_df, None, None)), \
          patch.object(we, "_build_pc_lookups", return_value=({}, {})), \
          patch.object(we, "_load_pc_block_meta", return_value={}), \
          patch.object(we, "_build_benchmark_run_dates", return_value={}), \
@@ -337,7 +335,7 @@ def test_main_loop_skips_blacklisted_model(tmp_path: Path) -> None:
 
     with patch.object(we, "_setup_output_dirs", return_value=(
             output_root, models_dir, tmp_path)), \
-         patch.object(we, "_load_sources", return_value=(fake_df, None, None, None)), \
+         patch.object(we, "_load_sources", return_value=(fake_df, None, None)), \
          patch.object(we, "_build_pc_lookups", return_value=({}, {})), \
          patch.object(we, "_load_pc_block_meta", return_value={}), \
          patch.object(we, "_build_benchmark_run_dates", return_value={}), \
