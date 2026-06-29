@@ -12,9 +12,47 @@ to know what reference files exist.
 ---
 
 # Active Context
-## Aktueller Status (2026-06-28)
+## Aktueller Status (2026-06-29)
 
-- **Session 43 (2026-06-28, in Arbeit) — Characteristics-Modalitäten als Einzel-Badges (v4.10.12):**
+- **Session 44 abgeschlossen (2026-06-29) — Web-Export-Schnittstellen-Check + Provider-Entfernung + ToolUse Tri-State + Linkify-Abschaffung (v4.10.12):**
+
+  User-Auftrag: Vollständige Schnittstellen-Verifikation zwischen Python-Export und Eleventy-Web. Provider/Speed-Messungs-Konzept dauerhaft aufgeben. `supports_tool_use` als Tri-State (`true`/`false`/`null`) sauber durchreichen. Auto-Linkify im Web abschaffen — nur noch explizite Markdown-Links, barrierefrei.
+
+  **Python-Repo (3 Commits):**
+
+  1. `feat(config)` (`8348463`) — Cohere in `classification_taxonomy.json → manufacturers.values` aufgenommen (`vendor_card_id: "cohere"`, `jurisdiction: "CA"`). `z-ai/glm-5.2` aus `web_export_blacklist.yaml` entfernt (ToolUse-Review generiert).
+
+  2. `refactor(web_export)` (`0316ce6`) — `provider_leaderboard.csv` nicht mehr geladen (`_load_sources` 4→3 return values). `provider_stats.json` + `provider_landscape_review.md` Schreiben entfernt. `clean_float()` dead code entfernt. ToolUse-Scores (`synthesis_quality`/`tool_execution`) nur bei `supports_tool_use is True` exportiert.
+
+  3. `fix(tooluse_context)` (`520f168`) — `_load_asset_details()` dedupliziert Duplikate pro kanonischer Modell-ID via `seen`-Set (gpt-5.4-nano ↔ gpt-5_4-nano-2026-03-17 erzeugten 12 statt 6 Assets). Test-Cleanup: `provider_df=None`-Args entfernt, `test_web_export_provider_cards.py` gelöscht, `_load_sources`-Mocks auf 3-Werte angepasst. ToolUse-Review für `z-ai/glm-5.2` generiert.
+
+  **Web-Repo (3 Commits):**
+
+  1. `refactor` (`e235497`) — `providerCards.11tydata.js` + `providerStats.11tydata.js` gelöscht. `.eleventy.js`: providerCards require + globalData + passthrough entfernt. `scoreboard-table.js`: `toolsBadge()` nutzt `supports_tool_use_state` ("true"/"false"/null), Score-Chips zeigen "n/a" bei false, "–" bei untested. `model-dashboard.njk`: ToolUse-Sektion conditional auf `tooluse`-Block.
+
+  2. `fix(a11y)` (`78f49b5`) — Auto-Linkify in `inlineContent`-Filter deaktiviert (`linkify: false`). Plain-Text-Domains (z.B. "Z.AI") werden nicht mehr auto-zu Links. Neuer `link_open`-Renderer-Override: externe Links erhalten `target="_blank"`, `rel="noopener noreferrer"`, `aria-label` (WCAG 2.4.4). `_typography.scss`: `a[target="_blank"]::after` rendert `bi-box-arrow-up-right` als visuellen Extern-Indikator.
+
+  3. `content(magazin)` (`be125d6`) — Zwei neue Magazin-Artikel.
+
+  **Verifikation (Schnittstellen-Check end-to-end):**
+  - Python-Export: 0 Warnungen, 0 Errors, 75 Modelle exportiert, 21 geskippt.
+  - Eleventy-Build: 313 Files, 0 Errors, 0 Console-Errors.
+  - Per-Model `data.json`: 75/75 konsistent (ToolUse-Block nur bei stu=true).
+  - `leaderboard.json`: 75 eindeutige IDs/Slugs, ToolUse-Scores nur bei 68 stu=true, 7 stu=false korrekt ohne.
+  - Frontend live: Scoreboard Tool-Badges korrekt, Command A+ (stu=false) ohne ToolCalling-Nav, GPT-5 (stu=true) mit voller ToolCalling-Seite.
+  - Web-Tests: 5/5 JS-Suiten grün.
+  - Drift-Check: `--apply` 8 PC-Einträge gepatcht, 0 missing-in-pc.
+
+  **Design-Entscheidung (Linkify):** Auto-Linkify von Plain-Text-Domains war ein Anti-Pattern für kuratierte Benchmark-Seite — unkrontrollierte Linkziele, schlechter Linktext (WCAG 2.4.4), Trust-Risiko. Entscheidung: nur explizite Markdown-Links `[Text](URL)`, barrierefrei mit `target/rel/aria-label` + CSS-Icon. Siehe `memory-bank/systemPatterns.md` für neue SSoT-Brücke.
+
+  **Offen (aus vorherigen Sessions):**
+  - 10 verbleibende ToolUse-Backfill-Modelle (3 ohne Audit-Logs, 7 Ollama-ID-Auflösung).
+  - hermes-4.3-36b-q6: 37/43 Tests — DGX Spark offline.
+  - `tooluse-scores.js:35`: p2→synthesis_quality Überschreibung prüfen.
+  - README Version Badge 4.10.8 → 4.10.12 aktualisieren.
+  - Pre-existing Test-Failure: `test_web_export_field_coverage.py::test_all_scores_keys_present_in_export` (political_bias nicht exportiert, political_compass deaktiviert).
+
+- **Session 43 abgeschlossen (2026-06-28) — Characteristics-Modalitäten als Einzel-Badges (v4.10.12):**
 
   User-Auftrag: Modalitäten (Text/Vision/Audio/Video) als einzelne Badges rendern statt als kombiniertes Label, damit Badges bei multimodalen Modellen (z.B. mimo-v2.5-pro mit 4 Modi) nicht riesig werden.
 
@@ -34,7 +72,7 @@ to know what reference files exist.
   - Export-Check: 74/74 Modelle mit `characteristics.categories.modalities` als Objektliste. Mimo-v2.5-pro → 4 Einzel-Badges (Text/Vision/Video/Audio) statt eines langen kombinierten.
   - Gebautes HTML verifiziert: einzelne `<li class="badge cm-badge--neutral cm-badge--truncate">` pro Modus.
 
-  **Status:** UNCOMMITTED (Python: `web_export.py`, `test_web_export_characteristics.py`; Web: `model-header.njk`).
+  **Status:** Committed in Session 44 (war uncommitted).
 
   **Offen (aus Session 42):**
   - 10 verbleibende ToolUse-Backfill-Modelle (3 ohne Audit-Logs, 7 Ollama-ID-Auflösung).

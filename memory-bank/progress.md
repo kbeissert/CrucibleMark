@@ -1,6 +1,53 @@
 # Progress
 
 Letzte Releases + aktueller Stand.
+### 2026-06-29 (Session 44) — Web-Export-Schnittstellen-Check + Provider-Entfernung + ToolUse Tri-State + Linkify-Abschaffung (v4.10.12)
+
+**Ausloeser:** Vollstaendige Schnittstellen-Verifikation zwischen Python-Export und Eleventy-Web. Provider/Speed-Messungs-Konzept dauerhaft aufgeben. `supports_tool_use` als Tri-State sauber durchreichen. Auto-Linkify im Web abschaffen — nur noch explizite Markdown-Links, barrierefrei.
+
+**Python-Repo (3 Commits):**
+
+1. **`feat(config)` (`8348463`)** — Cohere in `classification_taxonomy.json → manufacturers.values` aufgenommen (`vendor_card_id: "cohere"`, `jurisdiction: "CA"`). `z-ai/glm-5.2` aus `web_export_blacklist.yaml` entfernt (ToolUse-Review generiert).
+
+2. **`refactor(web_export)` (`0316ce6`)** — Provider-Datenquelle + dead code entfernt:
+   - `_load_sources()`: `provider_leaderboard.csv` nicht mehr geladen (4→3 return values).
+   - `_write_top_level_outputs()`: `provider_stats.json` + `provider_landscape_review.md` Schreiben entfernt.
+   - `clean_float()` dead code entfernt (unbenutzt).
+   - ToolUse-Scores (`synthesis_quality`/`tool_execution`) nur bei `supports_tool_use is True` exportiert — bei false/null werden sie nicht exportiert (auch nicht als null, weil `_strip_none()` null entfernt).
+
+3. **`fix(tooluse_context)` (`520f168`)** — Asset-Dedup + Test-Cleanup:
+   - `_load_asset_details()` dedupliziert Duplikate pro kanonischer Modell-ID via `seen`-Set (gpt-5.4-nano ↔ gpt-5_4-nano-2026-03-17 erzeugten 12 statt 6 Assets).
+   - Test-Cleanup: `provider_df=None`-Args entfernt, `test_web_export_provider_cards.py` gelöscht, `_load_sources`-Mocks auf 3-Werte angepasst.
+   - ToolUse-Review fuer `z-ai/glm-5.2` generiert (war blacklisted).
+
+**Web-Repo (3 Commits):**
+
+1. **`refactor` (`e235497`)** — Provider-Datenquellen entfernt, ToolUse Tri-State im Frontend:
+   - `providerCards.11tydata.js` + `providerStats.11tydata.js` gelöscht.
+   - `.eleventy.js`: providerCards require + globalData + passthrough entfernt.
+   - `scoreboard-table.js`: `toolsBadge()` nutzt `supports_tool_use_state` ("true"/"false"/null), Score-Chips zeigen "n/a" bei false, "–" bei untested.
+   - `model-dashboard.njk`: ToolUse-Sektion conditional auf `tooluse`-Block.
+
+2. **`fix(a11y)` (`78f49b5`)** — Auto-Linkify deaktiviert, externe Markdown-Links barrierefrei:
+   - `inlineContent`-Filter: `linkify: false` — Plain-Text-Domains (z.B. "Z.AI") werden NICHT auto-zu Links.
+   - Neuer `link_open`-Renderer-Override: externe Links erhalten `target="_blank"`, `rel="noopener noreferrer"`, `aria-label="<Linktext> (öffnet in neuem Tab)"` (WCAG 2.4.4).
+   - `_typography.scss`: `a[target="_blank"]::after` rendert `bi-box-arrow-up-right` als visuellen Extern-Indikator. Links mit eigenem Icon kein Doppel-Icon.
+
+3. **`content(magazin)` (`be125d6`)** — Zwei neue Magazin-Artikel.
+
+**Verifikation (Schnittstellen-Check end-to-end):**
+- Python-Export: 0 Warnungen, 0 Errors, 75 Modelle exportiert, 21 geskippt.
+- Eleventy-Build: 313 Files, 0 Errors, 0 Console-Errors.
+- Per-Model `data.json`: 75/75 konsistent (ToolUse-Block nur bei stu=true, 68/75).
+- `leaderboard.json`: 75 eindeutige IDs/Slugs, ToolUse-Scores nur bei 68 stu=true, 7 stu=false korrekt ohne.
+- Frontend live: Scoreboard Tool-Badges korrekt, Command A+ (stu=false) ohne ToolCalling-Nav, GPT-5 (stu=true) mit voller ToolCalling-Seite (6 Assets, Radar, Reliability, Review).
+- Web-Tests: 5/5 JS-Suiten gruen.
+- Drift-Check: `--apply` 8 PC-Eintraege gepatcht, 0 missing-in-pc.
+
+**Design-Entscheidung (Linkify):** Auto-Linkify von Plain-Text-Domains war ein Anti-Pattern fuer kuratierte Benchmark-Seite — unkrontrollierte Linkziele, schlechter Linktext (WCAG 2.4.4), Trust-Risiko. Entscheidung: nur explizite Markdown-Links `[Text](URL)`, barrierefrei mit `target/rel/aria-label` + CSS-Icon. Bewertung: SEO-neutral (Link-Juice-Leakage ist veraltet), NN/g empfiehlt kuratierte externe Links als Trust-Signal, aber nur wenn bewusst gesetzt. Auto-Linkify verliert editoriale Kontrolle ueber Linkziel.
+
+---
+
 ### 2026-06-28 (Session 43) — Characteristics-Modalitäten als Einzel-Badges (v4.10.12)
 
 **Ausloeser:** Modalitäten als kombiniertes String-Label ("Text + Vision + Audio + Video") erzeugt riesige Badges bei multimodalen Modellen (z.B. xiaomi/mimo-v2.5-pro mit 4 Modi). User-Anweisung: einzelne Badges pro Modus.
