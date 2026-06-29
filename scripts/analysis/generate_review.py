@@ -538,7 +538,6 @@ def process_model_review(
         "tier_metaphor_rules": tier_metaphor_rules,
         "model_specialization": get_model_specialization(tested_model_name),
         "model_p95_time": safe_round(model_metrics.get("P95 Time (s)")),
-        "model_tokens_per_s": safe_round(model_metrics.get("Tokens/s")),
         "model_timeout_rate": timeout_rate_str,
         "model_provider_type": model_metrics.get("Type", "n/a"),
         "model_size_class": _size_class,

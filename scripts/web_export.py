@@ -340,6 +340,53 @@ def normalize_pending(val: Any) -> str | None:
     except (ValueError, TypeError):
         return val_str
 
+
+def parse_compact_number(val: Any) -> float | int | None:
+    """Parst kompakte Zahlen mit Suffix (z.B. '83.7K' → 83700, '1.2M' → 1200000).
+    Liefert immer eine Zahl — nie einen String. Das ist Vertrags-Pflicht für den
+    Web-Export: Formatierung gehört in die Darstellungsschicht, nicht ins JSON.
+    """
+    if pd.isna(val): return None
+    val_str = str(val).strip()
+    if val_str in ("Pending", "—", ""): return None
+    multiplier = 1
+    upper = val_str.upper()
+    if upper.endswith("K"):
+        multiplier = 1_000
+        val_str = val_str[:-1]
+    elif upper.endswith("M"):
+        multiplier = 1_000_000
+        val_str = val_str[:-1]
+    try:
+        f = float(val_str) * multiplier
+        if math.isnan(f): return None
+        return int(f) if f == int(f) else f
+    except (ValueError, TypeError):
+        return None
+
+
+def parse_percent(val: Any) -> float | None:
+    """Parst Prozent-Strings (z.B. '100%' → 100.0) zu Zahlen."""
+    if pd.isna(val): return None
+    val_str = str(val).strip().rstrip("%")
+    if val_str in ("Pending", "—", ""): return None
+    try:
+        f = float(val_str)
+        return None if math.isnan(f) else f
+    except (ValueError, TypeError):
+        return None
+
+
+def parse_int(val: Any) -> int | None:
+    """Parst Ganzzahlen — liefert int, nie float (z.B. Timeout Count)."""
+    if pd.isna(val): return None
+    val_str = str(val).strip()
+    if val_str in ("Pending", "—", ""): return None
+    try:
+        return int(float(val_str))
+    except (ValueError, TypeError):
+        return None
+
 def parse_star_float(val) -> float | None:
     """Parst '4.0 ★' oder '3.8 ★' zu einem float. Gibt None bei fehlenden Werten zurück."""
     if pd.isna(val): return None
@@ -1079,12 +1126,12 @@ def _build_leaderboard_entry(
         "avg_task_duration_s": normalize_pending(row.get(LdbCols.AVG_TASK_DURATION)),
         "p95_time_s": normalize_pending(row.get(LdbCols.P95_TIME, row.get(LdbCols.P95_LEGACY, None))),
         "max_time_s": normalize_pending(row.get(LdbCols.MAX_TIME)),
-        "timeout_count": normalize_pending(row.get(LdbCols.TIMEOUT_COUNT)),
-        "tokens_total": normalize_pending(row.get(LdbCols.TOKENS_TOTAL)),
+        "timeout_count": parse_int(row.get(LdbCols.TIMEOUT_COUNT)),
+        "tokens_total": parse_compact_number(row.get(LdbCols.TOKENS_TOTAL)),
         "cost_per_1k": normalize_pending(row.get(LdbCols.COST_PER_1K)),
         "benchmark_cost": normalize_pending(row.get(LdbCols.BENCHMARK_COST)),
         "llm_judge_avg": normalize_pending(row.get(LdbCols.LLM_JUDGE_RAW)) or parse_star_float(row.get(LdbCols.LLM_JUDGE_DISPLAY)),
-        "llm_judge_coverage": normalize_pending(row.get(LdbCols.LLM_JUDGE_COVERAGE)),
+        "llm_judge_coverage": parse_percent(row.get(LdbCols.LLM_JUDGE_COVERAGE)),
         "tests_run": parse_tests_run(row.get(LdbCols.TESTS_RUN)),
         "scores": {
             "code_quality": normalize_pending(row.get(LdbCols.CODE_QUALITY)),
@@ -1099,14 +1146,14 @@ def _build_leaderboard_entry(
             "political_bias": normalize_pending(row.get(LdbCols.POLITICAL_BIAS)),
         },
         "tokens_per_module": {
-            "code_quality": normalize_pending(row.get("Tokens: Code Quality Audit")),
-            "cli_benchmark": normalize_pending(row.get("Tokens: CLI Badge")),
-            "ux_writing": normalize_pending(row.get("Tokens: UX Writing & Microcopy")),
-            "documentation_quality": normalize_pending(row.get("Tokens: Documentation Quality")),
-            "content_transformation": normalize_pending(row.get("Tokens: Content Transformation & Adaption")),
-            "cultural_intelligence": normalize_pending(row.get("Tokens: Cultural Intelligence")),
-            "logical_reasoning": normalize_pending(row.get("Tokens: Logical Reasoning")),
-            "system": normalize_pending(row.get("Tokens: System")),
+            "code_quality": parse_compact_number(row.get("Tokens: Code Quality Audit")),
+            "cli_benchmark": parse_compact_number(row.get("Tokens: CLI Badge")),
+            "ux_writing": parse_compact_number(row.get("Tokens: UX Writing & Microcopy")),
+            "documentation_quality": parse_compact_number(row.get("Tokens: Documentation Quality")),
+            "content_transformation": parse_compact_number(row.get("Tokens: Content Transformation & Adaption")),
+            "cultural_intelligence": parse_compact_number(row.get("Tokens: Cultural Intelligence")),
+            "logical_reasoning": parse_compact_number(row.get("Tokens: Logical Reasoning")),
+            "system": parse_compact_number(row.get("Tokens: System")),
         },
         "report_available": has_report,
         "review_available": has_review,
@@ -1467,11 +1514,17 @@ def _write_top_level_outputs(
     card_dir = root_dir / "benchmark_scores" / "model_cards"
     audit_logs_path = root_dir / "outputs" / "audit_logs"
     card_count = len(list(card_dir.glob("*.json"))) if card_dir.exists() else 0
-    audit_log_count = sum(
-        len(list(d.glob("*.md")))
-        for d in (audit_logs_path.iterdir() if audit_logs_path.exists() else [])
-        if d.is_dir()
-    )
+    # audit_log_count: NUR Audit-Logs fuer exportierte Modelle (Semantik-Konsistenz).
+    # Zaehlt alle .md-Files in outputs/audit_logs/ wäre ein anderer Wert als das,
+    # was im Webexport ankommt (dort nur Modelle aus dem Leaderboard).
+    exported_slugs = {_safe_name(m.get("model_id") or m.get("slug", "")) for m in models_list}
+    audit_log_count = 0
+    if audit_logs_path.exists():
+        for d in audit_logs_path.iterdir():
+            if not d.is_dir():
+                continue
+            if _safe_name(d.name) in exported_slugs:
+                audit_log_count += len(list(d.glob("*.md")))
 
     _atomic_write_json(
         out_dir / "meta.json",
