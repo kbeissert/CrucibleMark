@@ -86,12 +86,16 @@ class TestCsvFileCoverage:
     """Prueft, dass die CSV-Clean-Listen alle relevanten Files enthalten."""
 
     def test_sub_family_leaderboards_present(self):
-        """gemma_leaderboard.csv, qwen_leaderboard.csv, provider_leaderboard.csv
-        muessen in SUB_FAMILY_LEADERBOARD_CSVS sein."""
+        """gemma_leaderboard.csv, qwen_leaderboard.csv muessen in
+        SUB_FAMILY_LEADERBOARD_CSVS sein.
+
+        Hinweis: provider_leaderboard.csv wurde in v4.10.12 entfernt
+        (Provider-Stats-Use-Case stillgelegt).
+        """
         names = {p.name for p in SUB_FAMILY_LEADERBOARD_CSVS}
         assert "gemma_leaderboard.csv" in names
         assert "qwen_leaderboard.csv" in names
-        assert "provider_leaderboard.csv" in names
+        assert "provider_leaderboard.csv" not in names
 
     def test_sub_family_leaderboards_in_clean_list(self):
         """SUB_FAMILY_LEADERBOARD_CSVS muessen in CLEAN_CSV_FILES integriert sein."""
@@ -138,9 +142,10 @@ class TestEndToEndCleanupDryRun:
 
         out = capsys.readouterr().out
         # Alle Sub-Family-LBs sollten erwaehnt werden
+        # (provider_leaderboard.csv ist seit v4.10.12 entfernt)
         assert "gemma_leaderboard.csv" in out
         assert "qwen_leaderboard.csv" in out
-        assert "provider_leaderboard.csv" in out
+        assert "provider_leaderboard.csv" not in out
         # Main-LBs
         assert "benchmark_leaderboard.csv" in out
         assert "benchmark_leaderboard_detailed.csv" in out

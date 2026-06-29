@@ -4,7 +4,12 @@ Provider Card Generator
 =======================
 Generiert pro bekanntem Provider eine strukturierte JSON-Karte mit:
 - Redaktionellen Metadaten (Firmenbeschreibung, Datenschutz) via LLM
-- Gemessenen Performance-Statistiken aus provider_leaderboard.csv (hartcodierte Fakten)
+
+Provider-Liste kommt aus config/classification_taxonomy.json → manufacturers
+(SSoT fuer kanonische Hersteller). Performance-Statistiken werden NICHT mehr
+in die Provider Card geschrieben — die alte Datenquelle (provider_leaderboard.csv)
+wurde in v4.10.12 stillgelegt, weil Web-Export keine Provider-Stats mehr anzeigt
+und der Vergleich der Provider-Geschwindigkeiten nicht mehr sinnvoll ist.
 
 Die Card folgt dem kanonischen Schema in :mod:`utils.vendor_card_template`.
 Modell-spezifische Felder (origin_country, developer_jurisdiction, summary,
@@ -21,7 +26,6 @@ Verwendung:
 """
 
 import argparse
-import csv
 import json
 import logging
 import re
@@ -47,10 +51,11 @@ from utils.vendor_card_template import (
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
-LEADERBOARD_CSV = ROOT_DIR / "benchmark_scores" / "provider_leaderboard.csv"
+MANUFACTURERS_PATH = ROOT_DIR / "config" / "classification_taxonomy.json"
 
-# Provider, die keinen echten Cloud-Anbieter darstellen – werden übersprungen
-SKIP_PROVIDERS = {"Other / Unknown"}
+# Provider, die keinen echten Cloud-Anbieter darstellen – werden uebersprungen.
+# Aktuell keine — Taxonomy enthaelt nur echte Hersteller.
+SKIP_PROVIDERS: set[str] = set()
 
 SYSTEM_PROMPT = (
     "Du bist ein Cloud-Infrastruktur-Analyst mit Spezialisierung auf KI-Provider, "
@@ -104,27 +109,35 @@ Wichtige Hinweise:
 Falls du den Provider nicht kennst, setze "unknown": true und befülle die anderen Felder mit sinnvollen Platzhaltern."""
 
 
-def _load_stats_from_csv() -> dict[str, dict[str, Any]]:
-    """Liest gemessene Performance-Statistiken aus provider_leaderboard.csv."""
-    if not LEADERBOARD_CSV.exists():
-        logger.warning("provider_leaderboard.csv nicht gefunden – Stats werden leer sein. Bitte zuerst 'make vendor-stats' ausführen.")
-        return {}
+def _load_manufacturers_from_taxonomy() -> list[tuple[str, str]]:
+    """Laedt kanonische Provider-Liste aus config/classification_taxonomy.json.
 
-    stats: dict[str, dict[str, Any]] = {}
-    with open(LEADERBOARD_CSV, "r", encoding="utf-8") as f:
-        for row in csv.DictReader(f):
-            name = row.get("Provider", "").strip()
-            if not name:
-                continue
-            ping_raw = row.get("Active Ping TTFB (ms)", "N/A")
-            stats[name] = {
-                "models_tracked": int(row.get("Models Tracked", 0) or 0),
-                "median_tokens_per_s": float(row.get("Median t/s", 0) or 0),
-                "median_avg_task_duration_s": float(row.get("Median Avg Task Duration (s)", 0) or 0),
-                "cost_per_1k_median_usd": float(row.get("Cost per 1K (median $)", 0) or 0),
-                "active_ping_ttfb_ms": int(ping_raw) if str(ping_raw).isdigit() else None,
-            }
-    return stats
+    Returns:
+        Liste von (label, vendor_card_id)-Tupeln in Taxonomy-Reihenfolge.
+        Beispiel: [('Alibaba', 'alibaba'), ('Anthropic', 'anthropic'), ...]
+    """
+    if not MANUFACTURERS_PATH.exists():
+        logger.error("Taxonomy %s nicht gefunden.", MANUFACTURERS_PATH)
+        return []
+
+    with open(MANUFACTURERS_PATH, "r", encoding="utf-8") as f:
+        taxonomy = json.load(f)
+
+    manufacturers = taxonomy.get("manufacturers", {}).get("values", {})
+    return [(label, info.get("vendor_card_id", _safe_id(label))) for label, info in manufacturers.items()]
+
+
+def _resolve_provider_arg(arg: str, manufacturers: list[tuple[str, str]]) -> tuple[str, str] | None:
+    """Loest --provider-Argument auf: akzeptiert Label ('Anthropic') oder vendor_card_id ('anthropic').
+
+    Returns:
+        (label, vendor_card_id) oder None wenn nicht gefunden.
+    """
+    arg_normalized = _safe_id(arg)
+    for label, vid in manufacturers:
+        if label == arg or vid == arg or _safe_id(label) == arg_normalized:
+            return (label, vid)
+    return None
 
 
 def _load_config() -> dict[str, Any]:
@@ -149,7 +162,6 @@ def _parse_json_from_response(response: str) -> dict[str, Any]:
 def _generate_card(
     provider_name: str,
     provider_id: str,
-    stats: dict[str, Any],
     client: LLMClient,
     llm_provider: str,
     llm_model: str,
@@ -189,7 +201,6 @@ def _generate_card(
         logger.error("LLM-Call fehlgeschlagen für '%s': %s", provider_name, e)
         card = normalize_vendor_card_data(fallback)
         card["privacy_note"] = f"Card konnte nicht generiert werden (LLM-Fehler: {str(e)[:80]})."
-        card["stats"] = stats
         return card
 
     try:
@@ -198,8 +209,6 @@ def _generate_card(
         logger.error("JSON-Parse fehlgeschlagen für '%s': %s", provider_name, e)
         raw_card = fallback
 
-    # Stats aus CSV injizieren – diese Werte kommen immer aus echter Messung, nie vom LLM
-    raw_card["stats"] = stats
     raw_card["vendor_id"] = provider_id
 
     # Normalisierung gegen Template: entfernt redundante Felder, ergänzt fehlende
@@ -218,8 +227,7 @@ def _write_card(card: dict[str, Any]) -> Path:
 
 
 def generate(
-    provider_names: list[str],
-    all_stats: dict[str, dict[str, Any]],
+    provider_names: list[tuple[str, str]],
     client: LLMClient,
     llm_provider: str,
     llm_model: str,
@@ -228,13 +236,12 @@ def generate(
     generated = 0
     skipped = 0
 
-    for name in provider_names:
+    for name, provider_id in provider_names:
         if name in SKIP_PROVIDERS:
             logger.info("Übersprungen (kein echter Provider): %s", name)
             skipped += 1
             continue
 
-        provider_id = _safe_id(name)
         card_path = CARDS_DIR / f"{provider_id}.json"
 
         if card_path.exists() and not force:
@@ -242,8 +249,7 @@ def generate(
             skipped += 1
             continue
 
-        stats = all_stats.get(name, {})
-        card = _generate_card(name, provider_id, stats, client, llm_provider, llm_model)
+        card = _generate_card(name, provider_id, client, llm_provider, llm_model)
         path = _write_card(card)
         generated += 1
         logger.info("Karte gespeichert: %s → %s", name, path.name)
@@ -263,7 +269,7 @@ def main() -> None:
         "--provider",
         type=str,
         default=None,
-        help="Nur für diesen Provider generieren (exakter Name aus provider_leaderboard.csv, z.B. 'Anthropic')",
+        help="Nur für diesen Provider generieren (Label aus classification_taxonomy.json, z.B. 'Anthropic' oder vendor_card_id 'anthropic')",
     )
     parser.add_argument(
         "--force",
@@ -299,10 +305,10 @@ def main() -> None:
         return
 
     config = _load_config()
-    all_stats = _load_stats_from_csv()
+    manufacturers = _load_manufacturers_from_taxonomy()
 
-    if not all_stats:
-        logger.error("Keine Provider-Stats gefunden. Bitte zuerst 'make vendor-stats' ausführen.")
+    if not manufacturers:
+        logger.error("Keine Hersteller in Taxonomy gefunden. Bitte %s pruefen.", MANUFACTURERS_PATH)
         sys.exit(1)
 
     # LLM-Provider aus benchmark_config.yaml (gleiche Sektion wie model-cards)
@@ -316,14 +322,21 @@ def main() -> None:
     client = LLMClient(config=config)
 
     if args.provider:
-        provider_names = [args.provider]
+        resolved = _resolve_provider_arg(args.provider, manufacturers)
+        if resolved is None:
+            logger.error(
+                "Provider '%s' nicht in Taxonomy. Bekannt: %s",
+                args.provider,
+                ", ".join(label for label, _ in manufacturers),
+            )
+            sys.exit(1)
+        provider_names = [resolved]
     else:
-        provider_names = list(all_stats.keys())
-        logger.info("%d Provider aus provider_leaderboard.csv geladen.", len(provider_names))
+        provider_names = manufacturers
+        logger.info("%d Hersteller aus Taxonomy geladen.", len(provider_names))
 
     generate(
         provider_names=provider_names,
-        all_stats=all_stats,
         client=client,
         llm_provider=llm_provider,
         llm_model=llm_model,

@@ -97,8 +97,9 @@ class TestTemplateLookup:
         assert "vendor_id" in names
         assert "display_name" in names
         assert "deployment" in names
-        assert "stats" in names
         assert "unknown" in names
+        # Hinweis: ab v4.10.12 kein 'stats'-Feld mehr (Provider-Stats-Use-Case stillgelegt)
+        assert "stats" not in names
 
     def test_model_template_has_known_fields(self) -> None:
         names = get_template_field_names("model")

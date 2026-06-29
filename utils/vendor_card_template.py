@@ -8,7 +8,11 @@ Provider Card ausschließlich **Provider- bzw. Deployment-Eigenschaften**:
 
 - Wer betreibt die API? (Unternehmen, Sitz, Gründung)
 - Welches Recht gilt beim API-Call? (Deployment-Subobjekt)
-- Welche Performance-Statistiken wurden gemessen? (stats, aus provider_leaderboard.csv)
+
+Ab v4.10.12: Performance-Statistiken (``stats``-Feld) sind entfernt — die
+frühere Datenquelle ``benchmark_scores/provider_leaderboard.csv`` wurde
+stillgelegt, weil der Web-Export keine Provider-Stats mehr anzeigt und das
+Konzept "Provider-Speed-Vergleich" nicht weiterverfolgt wird.
 
 Modell-spezifische Informationen (developer, origin_country, summary, strengths,
 known_limitations, …) leben ausschließlich in der Model Card. Diese Trennung
@@ -74,8 +78,6 @@ _PROVIDER_CARD_TEMPLATE: dict[str, Any] = {
     "privacy_note": "TODO",
     # ---- Redaktioneller Kontext (Provider-übergreifend) -----------------
     "notable_models": [],
-    # ---- Gemessene Performance (aus provider_leaderboard.csv) ------------
-    "stats": {},
     # ---- Metadaten -------------------------------------------------------
     "unknown": False,
     "generated_at": None,

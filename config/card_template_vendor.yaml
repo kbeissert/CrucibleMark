@@ -132,14 +132,9 @@ required_fields:
     since: "v1.0"
     example: ["GPT-5.5", "GPT-5.4", "o4-mini"]
 
-  # --- Stats (vom provider_leaderboard.csv) ---
-  - name: stats
-    type: object
-    required: true
-    default: {}
-    description: "Performance-Statistiken (models_tracked, median_tokens_per_s, cost_per_1k_median_usd, active_ping_ttfb_ms)"
-    consumers: [leaderboard, web_export]
-    since: "v1.0"
+  # Hinweis: ab v4.10.12 kein 'stats'-Feld mehr. Performance-Vergleiche
+  # zwischen Providern wurden stillgelegt — die fruehere Datenquelle
+  # provider_leaderboard.csv wurde entfernt.
 
   # --- Metadaten ---
   - name: unknown

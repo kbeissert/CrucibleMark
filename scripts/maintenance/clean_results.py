@@ -44,13 +44,14 @@ PC_CSV_FILES: tuple[Path, ...] = (
 
 #: Sub-Family-Leaderboards (generiert, model-bezogen).
 #: NICHT in ``CSV_FILES`` weil sie eine andere Spaltenstruktur haben
-#: und nach Modell-Familie aggregiert sind (gemma/qwen), bzw. nach Provider.
+#: und nach Modell-Familie aggregiert sind (gemma/qwen).
 #: Muessen beim Model-Cleanup mit bereinigt werden, sonst bleiben stale
 #: Modell-Eintraege sichtbar.
+#: (provider_leaderboard.csv wurde in v4.10.12 entfernt — Provider-Stats-
+#: Use-Case stillgelegt.)
 SUB_FAMILY_LEADERBOARD_CSVS: tuple[Path, ...] = (
     Path("benchmark_scores/gemma_leaderboard.csv"),
     Path("benchmark_scores/qwen_leaderboard.csv"),
-    Path("benchmark_scores/provider_leaderboard.csv"),
 )
 
 #: Konsolidierte Clean-Liste: Benchmark-CSVs aus SSoT + PC-CSVs + Sub-Family-LBs.

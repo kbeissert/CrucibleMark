@@ -34,7 +34,8 @@ class TestLoadCardTemplate:
         t = load_card_template("vendor")
         assert t.card_type == "vendor"
         assert t.version == "1.1.0"
-        assert len(t.required_fields) == 18
+        # 17 (vor v4.10.12 waren es 18 inkl. 'stats' — Stats-Feld entfernt)
+        assert len(t.required_fields) == 17
         assert len(t.optional_fields) >= 3
 
     def test_unknown_card_type_raises(self) -> None:
@@ -155,7 +156,6 @@ class TestValidateCard:
             },
             "privacy_note": "Test note",
             "notable_models": ["TestProv-1"],
-            "stats": {"models_tracked": 1},
             "unknown": False,
             "generated_at": "2026-01-01T00:00:00+00:00",
             "last_verified_at": "2026-01-01",

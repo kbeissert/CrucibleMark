@@ -1,7 +1,7 @@
 .PHONY: \
 	help install install-dev \
 	benchmark political-compass political-compass-safe benchmark-cross-model benchmark-auto benchmark-human \
-	review reviews-auto reviews-auto-legacy reviews-bias-auto reviews-tooluse-auto reviews-all reviews-check review-new model-cards model-card vendor-cards leaderboard vendor-stats \
+	review reviews-auto reviews-auto-legacy reviews-bias-auto reviews-tooluse-auto reviews-all reviews-check review-new model-cards model-card vendor-cards leaderboard \
 	validate validate-single validate-assets validate-structure validate-cards validate-cards-template cards-sync card-create card-validate card-research vendor-cards-update model-cards-update test diff-results analyze-costs update-prices sync-cost-limits \
 	list-models judge-health list-modules \
 	probe-thinking probe-all-thinking \
@@ -77,7 +77,6 @@ help:
 	@printf "  %-25s %s\n" "leaderboard"     "Generiere CSV"
 	@printf "  %-25s %s\n" "review"          "Generiere Modell-Review (MODEL=)"
 	@printf "  %-25s %s\n" "reviews-auto"    "Alle Review-Typen (Sequenziell)"
-	@printf "  %-25s %s\n" "vendor-stats"  "System-Performance"
 	@printf "\n"
 	@printf "\033[1;32mCard-Lifecycle & Validierung\033[0m\n"
 	@printf "  %-25s %s\n" "model-cards"     "Erstelle/Update-Vorlagen"
@@ -242,12 +241,6 @@ probe-thinking:
 probe-all-thinking:
 	@echo "Probe fuer alle Cards ohne Probe-Feld..."
 	$(PYTHON) scripts/tools/probe_thinking.py --missing
-
-vendor-stats:
-	@echo "Aggregating Provider Stats (Ping vs System Speed)..."
-	$(PYTHON) scripts/analysis/generate_vendor_stats.py
-	@echo "Generating Provider Landscape Review..."
-	$(PYTHON) scripts/analysis/generate_review.py -t provider
 
 review:
 	@if [ -n "$(ALL)" ]; then \

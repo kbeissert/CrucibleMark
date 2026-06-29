@@ -1073,34 +1073,12 @@ def main() -> None:
     print(f"🔧 Konfigurierter Reviewer: {provider}/{model_id}")
 
     if args.type == "provider":
-        print("📊 Lade Provider Leaderboard...")
-        csv_path = ROOT_DIR / "benchmark_scores" / "provider_leaderboard.csv"
-        if not csv_path.exists():
-            print("❌ provider_leaderboard.csv nicht gefunden. Bitte erst generate_vendor_stats.py ausführen.")
-            return
-
-        csv_data = csv_path.read_text(encoding="utf-8")
-        with open(ROOT_DIR / "config" / "meta_reviewer_prompt.yaml", "r", encoding="utf-8") as f:
-            prompt_config = yaml.safe_load(f)
-
-        prompt = prompt_config.get("provider_reviewer", {}).get("system_instructions", "")
-        if not prompt:
-            prompt = prompt_config.get("meta_reviewer", {}).get("provider_reviewer", {}).get("system_instructions", "")
-
-        if not prompt:
-            print("❌ Fehler: 'provider_reviewer' Prompt in config/meta_reviewer_prompt.yaml nicht gefunden.")
-            return
-
-        prompt = prompt.replace("{csv_data}", csv_data)
-        print("🧠 Generiere Provider Landscape Report...")
-        try:
-            response = client.query(model=model_id, prompt=prompt, provider=provider, temperature=0.7)
-            out_file = ROOT_DIR / "docs" / "reviews" / "provider_landscape_review.md"
-            out_file.parent.mkdir(parents=True, exist_ok=True)
-            out_file.write_text(response, encoding="utf-8")
-            print(f"✅ Provider Review gespeichert unter: {out_file.relative_to(ROOT_DIR)}")
-        except Exception as e:
-            print(f"❌ Fehler bei der Generierung: {e}")
+        # DEPRECATED (v4.10.12): Provider-Vergleichs-Reviews wurden in Session 44
+        # stillgelegt — das Konzept "Provider-Speed-Vergleich" wird nicht mehr
+        # verfolgt. Stattdessen provider_cards.json (per LLM generierte
+        # redaktionelle Karten) + stats aus den einzelnen Modul-Reviews.
+        print("❌ --type provider ist deprecated (seit v4.10.12).")
+        print("   Stattdessen: vendor_cards.json via 'make vendor-cards' erzeugen.")
         return
 
     if args.type == "tooluse":
