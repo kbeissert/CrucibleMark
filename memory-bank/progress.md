@@ -1,6 +1,53 @@
 # Progress
 
 Letzte Releases + aktueller Stand.
+### 2026-06-29 (Session 45) — Export-Vertrag + Typ-Konsistenz + Review-Prosa-Drift-Fix (v4.10.12)
+
+**Ausloeser:** Vollstaendige Schnittstellen-Audit (User-Befund). Strukturelle Datenqualitaet sauber (0 Drift, 0 Duplikate), aber 3 Quell-Probleme identifiziert: (3a) Review-Prosa enthaelt Metrik-Zahlen, die vom Leaderboard abweichen (Faktor bis 2.8× bei gpt-5/gemini-2-5-pro); (3b) `audit_log_count`-Semantik unklar (5071 vs 3676); (3c) Typ-Inkonsistenz (Strings wie "83.7K"/"100%" statt Zahlen). Zusaetzlich: Dead-Code-Kompensation entfernen, stale Schema-Doku synchronisieren, Export-Vertrag schreiben.
+
+**Python-Repo (2 Commits):**
+
+1. **`fix(web_export)` (`aa4977f`)** — Drei Quell-Probleme gelöst:
+   - **3a Review-Prosa-Drift** (groesstes Schnittstellen-Loch): `meta_reviewer_prompt.yaml` — Zahl-Zitat-Anweisung entfernt. LLM diskutiert Speed jetzt qualitativ anhand Speed-Profile-Badge, zitiert keine exakten Tokens/s/P95/Timeout-Zahlen mehr. `generate_review.py` — `model_tokens_per_s` aus template_vars entfernt. Begruendung: Reviews werden zu einem Zeitpunkt generiert und bei Benchmark-Re-Runs nicht regeneriert — Zahlen in Prosa veralten und fuehren zu Drift.
+   - **3c Typ-Konsistenz** (Zahlen als Zahlen, Vertrags-Pflicht): `parse_compact_number()` ("83.7K"→83700, "1.2M"→1200000), `parse_percent()` ("100%"→100.0), `parse_int()` ("2"→2, nie float). Angewendet auf `tokens_total`, `tokens_per_module.*`, `llm_judge_coverage`, `timeout_count`. Formatierung gehoert in Darstellungsschicht, nicht JSON.
+   - **3b audit_log_count-Semantik:** Zaehlt jetzt NUR Audit-Logs fuer exportierte Modelle (vorher: alle Verzeichnisse inkl. tote/blacklisted Modelle). meta.audit_log_count ist jetzt konsistent mit dem, was im Webexport ankommt (3676 vs 5071).
+
+2. **`fix(review)` (`6c8e571`)** — Per-Task-Metriken aus Audit-Log-Kontext entfernt (Loch A zweite Schicht):
+   - `_strip_metric_lines()` entfernt `**Tokens/s:**`, `**Execution Time:**`, `**Tokens Used:**`, `**Cost:**` aus Audit-Logs BEVOR sie den LLM-Prompt erreichen.
+   - Verifiziert: 19.912 Metrik-Zeilen ueber 5.071 Audit-Logs entfernt.
+   - **Zweischichtiger Fix:** Schicht 1 (Prompt-Anweisung: keine exakten Zahlen zitieren) + Schicht 2 (Metriken gar nicht im Kontext). Der LLM kann die Zahlen nicht mehr zitieren, weil sie fehlen.
+   - Bestehende Reviews enthalten noch alte Zahlen — werden bei naechster Review-Regenerierung (`make reviews-auto --force`) durch qualitative Form ersetzt.
+
+**Web-Repo (1 Commit + uncommitted):**
+
+1. **`docs(schema)` (`db24bb4`)** — `data-schema.md` komplett neu als autoritativer Export-Vertrag:
+   - Type Contract (Felder, Typen, nullable-Wann, Parser-Zuordnung)
+   - Review-Prosa-Vertrag (keine exakten Zahlen im Fließtext)
+   - Tri-State `supports_tool_use_state` dokumentiert
+   - `audit_log_count` Semantik (nur exportierte Modelle)
+   - Provider-Dateien entfernt (provider_cards/stats)
+   - Edge Cases aktualisiert (dedupAssets/Known-Dup-Groups als gelöschte Defensiv-Kompensation dokumentiert)
+
+**Uncommitted (Web-Repo, von User vorab umgesetzt):**
+- Dead-Code-Entfernung Punkt 2: `dedupAssets()` + Test (`models-dedup-assets.test.js`), `KNOWN_DUP_GROUPS` + Alias-Map, `card_subtype`-Filter, `thinking_mode`-Fallback entfernt.
+- `check-data-coverage.js`: `checkToolUseCoverage()` cross-checkt gegen `supports_tool_use_state`. `checkProviderStatsSum()` entfernt. `checkAuditLogCount()` zählt nur `audit_logs/*.md`, `comparisons/*.md` separat.
+- `leaderboard.11tydata.js`: `thinking_mode`-Fallback auf architecture_tags/thinking_probe_detected entfernt.
+- `vendorCards.11tydata.js`: 1:1-Passthrough ohne Defensiv-Kompensation.
+- Magazin-Artikel "the-cost-of-intelligence.md" redaktionell überarbeitet.
+
+**Verifikation (User-Befund 14:03 Uhr):**
+- Cross-Coverage: 0/0/0/0, Pflichtfelder: 0/0
+- ToolUse-Vertrag: 0 stu-true-ohne-tooluse, 0 tooluse-ohne-stu, 7 erwartet-nicht-unterstützt
+- P1/P2 SSoT: 0/0 Mismatches, Inner/Outer-Leaderboard-Drift: 0
+- Assets: 68×6, 0 Duplikate, narrative_review: 68/68
+- Vendor-Cards: 18 vendors / 11 community, 0 dups, 0 missing refs
+- audit_log_count: 3676 = 3676 exakt (vorher −1245, jetzt behoben)
+- Build + Tests: 314 Files, 0 Errors, 41/41 Tests (Python: 197/197, Web: 4/4)
+- Typ-Fixes bestätigt: `tokens_total`=83700 (int), `timeout_count`=2 (int), `llm_judge_coverage`=100.0 (float), `tpm.code_quality`=14800 (int)
+- Audit-Log-Stripping: 19.912 Metrik-Zeilen entfernt, 0 verbleibend
+
+---
+
 ### 2026-06-29 (Session 44) — Web-Export-Schnittstellen-Check + Provider-Entfernung + ToolUse Tri-State + Linkify-Abschaffung (v4.10.12)
 
 **Ausloeser:** Vollstaendige Schnittstellen-Verifikation zwischen Python-Export und Eleventy-Web. Provider/Speed-Messungs-Konzept dauerhaft aufgeben. `supports_tool_use` als Tri-State sauber durchreichen. Auto-Linkify im Web abschaffen — nur noch explizite Markdown-Links, barrierefrei.

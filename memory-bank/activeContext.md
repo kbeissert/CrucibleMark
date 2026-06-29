@@ -14,6 +14,55 @@ to know what reference files exist.
 # Active Context
 ## Aktueller Status (2026-06-29)
 
+- **Session 45 abgeschlossen (2026-06-29) — Export-Vertrag + Typ-Konsistenz + Review-Prosa-Drift-Fix (v4.10.12):**
+
+  User-Auftrag: Vollständige Schnittstellen-Audit (User-Befund). Strukturell sauber, aber 3 Quell-Probleme identifiziert: (3a) Review-Prosa enthält Metrik-Zahlen, die vom Leaderboard abweichen (Faktor bis 2.8×); (3b) `audit_log_count`-Semantik unklar; (3c) Typ-Inkonsistenz (Strings statt Zahlen). Export-Vertrag als schriftliche Schnittstellendefinition schreiben. Stale Schema-Doku synchronisieren.
+
+  **Python-Repo (2 Commits):**
+
+  1. `fix(web_export)` (`aa4977f`) — Drei Quell-Probleme gelöst:
+     - **3a Review-Prosa-Drift** (größtes Loch): `meta_reviewer_prompt.yaml` — Zahl-Zitat-Anweisung entfernt. LLM diskutiert Speed jetzt qualitativ anhand Speed-Profile-Badge. `generate_review.py` — `model_tokens_per_s` aus template_vars entfernt.
+     - **3c Typ-Konsistenz** (Vertrags-Pflicht): `parse_compact_number()` ("83.7K"→83700), `parse_percent()` ("100%"→100.0), `parse_int()` ("2"→2). Angewendet auf `tokens_total`, `tokens_per_module.*`, `llm_judge_coverage`, `timeout_count`.
+     - **3b audit_log_count-Semantik:** Zählt jetzt NUR Audit-Logs für exportierte Modelle (3676 statt 5071 — vorher inkl. tote/blacklisted).
+
+  2. `fix(review)` (`6c8e571`) — Per-Task-Metriken aus Audit-Log-Kontext entfernt (Loch A zweite Schicht):
+     - `_strip_metric_lines()` entfernt `**Tokens/s:**`, `**Execution Time:**`, `**Tokens Used:**`, `**Cost:**` aus Audit-Logs BEVOR sie den LLM-Prompt erreichen.
+     - Verifiziert: 19.912 Metrik-Zeilen über 5.071 Audit-Logs entfernt.
+     - **Zweischichtiger Fix:** Schicht 1 (Prompt-Anweisung) + Schicht 2 (Metriken gar nicht im Kontext). Der LLM kann die Zahlen nicht mehr zitieren, weil sie fehlen.
+
+  **Web-Repo (1 Commit):**
+
+  1. `docs(schema)` (`db24bb4`) — `data-schema.md` komplett neu als autoritativer Export-Vertrag:
+     - Type Contract (Felder, Typen, nullable-Wann, Parser-Zuordnung)
+     - Review-Prosa-Vertrag (keine exakten Zahlen im Fließtext)
+     - Tri-State `supports_tool_use_state` dokumentiert
+     - `audit_log_count` Semantik (nur exportierte Modelle)
+     - Provider-Dateien entfernt (provider_cards/stats)
+     - Edge Cases aktualisiert (dedupAssets/Known-Dup-Groups als gelöschte Defensiv-Kompensation dokumentiert)
+
+  **Zusätzlich (Web-Repo, uncommitted — von User vorab umgesetzt):**
+  - Dead-Code-Entfernung Punkt 2: `dedupAssets()` + Test, `KNOWN_DUP_GROUPS` + Alias-Map, `card_subtype`-Filter, `thinking_mode`-Fallback entfernt.
+  - `check-data-coverage.js`: `checkToolUseCoverage()` cross-checkt gegen `supports_tool_use_state` (stu=true→tooluse muss vorhanden, stu≠true→kein tooluse erwartet). `checkProviderStatsSum()` entfernt (provider_stats.json weg). `checkAuditLogCount()` zählt nur `audit_logs/*.md` (Δ jetzt +0), `comparisons/*.md` separat ausgewiesen.
+
+  **Verifikation (User-Befund 14:03 Uhr):**
+  - Cross-Coverage: 0/0/0/0, Pflichtfelder: 0/0
+  - ToolUse-Vertrag: 0 stu-true-ohne-tooluse, 0 tooluse-ohne-stu, 7 erwartet-nicht-unterstützt
+  - P1/P2 SSoT: 0/0 Mismatches, Inner/Outer-Leaderboard-Drift: 0
+  - Assets: 68×6, 0 Duplikate, narrative_review: 68/68
+  - Vendor-Cards: 18 vendors / 11 community, 0 dups, 0 missing refs
+  - audit_log_count: 3676 = 3676 exakt (vorher −1245)
+  - Build + Tests: 314 Files, 0 Errors, 41/41 Tests (Python: 197/197, Web: 4/4)
+  - Typ-Fixes bestätigt: `tokens_total`=83700 (int), `timeout_count`=2 (int), `llm_judge_coverage`=100.0 (float), `tpm.code_quality`=14800 (int)
+
+  **Offen (aus vorherigen Sessions):**
+  - 10 verbleibende ToolUse-Backfill-Modelle (3 ohne Audit-Logs, 7 Ollama-ID-Auflösung).
+  - hermes-4.3-36b-q6: 37/43 Tests — DGX Spark offline.
+  - `tooluse-scores.js:35`: p2→synthesis_quality Überschreibung prüfen.
+  - README Version Badge 4.10.8 → 4.10.12 aktualisieren.
+  - Pre-existing Test-Failure: `test_web_export_field_coverage.py::test_all_scores_keys_present_in_export` (political_bias nicht exportiert, political_compass deaktiviert).
+  - **Bestehende Reviews enthalten noch alte Metrik-Zahlen** — werden bei nächster Review-Regenerierung (`make reviews-auto --force`) durch neue qualitative Form ersetzt.
+  - 6 true-mismatch Drift-Einträge (manuelles PC-Review nötig).
+
 - **Session 44 abgeschlossen (2026-06-29) — Web-Export-Schnittstellen-Check + Provider-Entfernung + ToolUse Tri-State + Linkify-Abschaffung (v4.10.12):**
 
   User-Auftrag: Vollständige Schnittstellen-Verifikation zwischen Python-Export und Eleventy-Web. Provider/Speed-Messungs-Konzept dauerhaft aufgeben. `supports_tool_use` als Tri-State (`true`/`false`/`null`) sauber durchreichen. Auto-Linkify im Web abschaffen — nur noch explizite Markdown-Links, barrierefrei.
