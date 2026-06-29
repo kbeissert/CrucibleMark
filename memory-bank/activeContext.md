@@ -14,6 +14,68 @@ to know what reference files exist.
 # Active Context
 ## Aktueller Status (2026-06-29)
 
+- **Session 46 abgeschlossen (2026-06-29 23:46) — Model-Diagnose + Cleanup-Sequenz + Modell-ID-Migration Pitfall:**
+
+  Drei voneinander unabhängige Probleme im Laufe der Session bearbeitet:
+
+  **1. ux_writing_002 für ornith-1-0-35b — Reasoning-Inferno + Cleanup:**
+  - Audit-Log `outputs/audit_logs/ornith-1-0-35b/ux_writing_002.md:126-200` zeigt: Modell hing auf Label #4 ("Account löschen - unwiderruflich") in Endlosschleife ("I'll use `Konto endgültig löschen` (22) / I'll change to `Konto löschen & bestätigen` (24) / I'm overcomplicating..." — 30+ Iterationen wortgleich).
+  - Constraint-Konflikt: "Beginne jedes Label mit einem starken, aktiven Verb" vs. UX-Konvention für destruktive Aktionen (Nomen zuerst zur Klarheit). Ornith's RL-Tuning kann diesen Konflikt nicht auflösen.
+  - 12.000 Reasoning-Tokens verbrannt, 662 Output-Tokens, 226s → "Empty response received from LLM" → Judge 0.0/5 → 1.1% rule-based (partielle Keyword-Matches aus Reasoning-Trace).
+  - **Fix in `config/provider_config.yaml:603-612`:** `enable_thinking: false` (llama-server mit `--reasoning off`) + `max_tokens: 8192` (defensive Spark-Cap per CLAUDE.md Session-26-Regel).
+  - **CSV- und Audit-Log-Cleanup:** CSV-Zeile `ux_writing_002 | ornith-1-0-35b | 1.05%` atomar entfernt (43 anderen ornith-Zeilen bleiben erhalten), `ux_writing_002.md` gelöscht.
+
+  **2. hermes-4.3-36b-q6 — Slowness + Duplication Diagnose, Blacklist + Comment-Out:**
+  - User-Symptom: Test 1 (code_quality_001) lief 626s für 4988 Tokens = 3.33 tok/s. Judge 2.0/5.
+  - Audit-Log `outputs/audit_logs/hermes-4_3-36b-q6/code_quality_001.md:105-127` zeigt: Issues-Tabelle komplett zweimal hintereinander (Verbatim-Duplikation). Judge bestraft explizit "Massive Duplication in the Table (15 duplicate rows)".
+  - **Diagnose-Ergebnis:**
+    - Slowness: pure Modell-/Hardware-Charakteristik. Historisch konsistent 1.3–5.6 tok/s für hermes-4_3-36b-q6 auf Spark (Dense 36B Q6_K + SWA-Attention + `parallel: 1`). Nicht via Config fixbar.
+    - Duplication: hybrid. Fehlende `repetition_penalty` (Card-Felder `repetition_penalty: null`, Config-Eintrag ohne Penalty). Theoretisch via `repetition_penalty: 1.1` mitigierbar, aber zugrundeliegende Ursache ist Hermes 4.3's architektonische Schwäche bei EOS-Disziplin für lange strukturierte Outputs.
+    - Falsche Kontrast-Rechnung (Model behauptet #888 = 4.5:1, real 3.55:1) und fehlende WCAG-2.2-Issues (Focus Not Obscured, Pointer Cancellation, Button-Type) sind reine Modellqualität, nicht behebbar.
+  - **Maßnahmen:** 
+    - `config/web_export_blacklist.yaml:53-54`: Neue Sektion "Hermes (NousResearch)" mit `- "hermes-4_3-36b-Q6"` (Dense 36B Q6_K auf Spark ~3 tok/s, bremst Auto-Benchmark aus).
+    - `config/provider_config.yaml:536-546`: Alle 11 Zeilen auskommentiert (im Stil der bestehenden auskommentierten Einträge wie `gemma-4-31b-it-creative-wordsmith-q8`).
+  - User-Kontext: "das Modell bremst den Auto-Benchmark aus" — explizite Bestätigung für Blacklist + Comment-Out.
+
+  **3. Ornith-Modell-ID-Duplikation — Vollständige Migration (5 betroffene Stellen):**
+  - User-Kontext half bei der Diagnose: "Ich glaube, ich habe den Benchmark erst direkt gestartet über den Wizard und anschließend noch einmal über den Auto-Benchmark." — erklärt die Duplikation exakt.
+  - Timeline: 18:24 neue Card `ornith-1-0-35b.json` (complete, profile_verified). 18:55 versehentlich zweite Draft-Card `ornith-1_0-35b-Q8_0_gguf.json` (alle TODO, nie aufgeräumt). 20:58–21:09 Wizard-Run mit alter ID (43 Tests). ~21:10 ID in provider_config.yaml korrigiert. 21:17–23:11 Auto-Benchmark mit neuer ID (43 Wiederholungen + 6 tooluse). 23:17/23:18 reviews-auto erzeugte Reviews für beide IDs separat.
+  - **Mid-run Naming-Konventions-Wechsel ohne Daten-Migration.** Drei strukturelle Schwächen:
+    1. Card-Research überschreibt Draft-Cards nicht beim Re-Run
+    2. provider_config ID-Wechsel triggert keine historische Daten-Migration
+    3. `_safe_name()` macht Merge unmöglich (Punkt vs. Bindestrich an Position 9)
+  - **Cleanup-Sequenz (8 Schritte, alle erfolgreich):**
+    1. CSV: 43 Zeilen `ornith-1_0-35b-Q8_0_gguf` → `ornith-1-0-35b` via atomares Python-Script (`tempfile.mkstemp + os.replace`)
+    2. Draft-Card gelöscht: `benchmark_scores/model_cards/ornith-1_0-35b-Q8_0_gguf.json`
+    3. Audit-Log-Dir gelöscht: `outputs/audit_logs/ornith-1_0-35b-Q8_0_gguf/` (5 code_quality Files)
+    4. Review-Dir gelöscht: `docs/reviews/ornith-1_0-35b-Q8_0_gguf/` (Review mit "TODO" als Modellname)
+    5. Card-Index rebuild: `rebuild_card_index('model')` → 99 Entries mit korrektem Card-Body (vorher hatte Index 1 Ornith-Entry mit `card_status="draft"`, jetzt `complete`, `profile_verified=True`)
+    6. `make consolidate-csv`: 1973 → 1880 Zeilen in local_models (92 Ornith-Duplikate + 1 generisch entfernt). Bonus: commercial_models 1469 → 1350 (119 weitere alte Duplikate gefunden).
+    7. `make leaderboard`: regeneriert compact + detailed LB. Ornith jetzt nur 1 Eintrag (Zeile 14, model_id=`ornith-1-0-35b`, display_name="Ornith 1.0 35B Q8_0 (GGUF)").
+    8. `make review MODEL=ornith-1-0-35b AUTO=1 FORCE=1`: regeneriert Review mit korrektem Modellnamen.
+  - **Verifikation:** Cards: 1 File. Audit-Log-Dirs: 1. Review-Dirs: 1. CSV-Zeilen: 49 (konsolidiert). LB-Einträge: 1. Card-Index: 1 Entry mit korrektem Body.
+
+  **4. CLAUDE.md — Neuer Critical Pitfall dokumentiert (`CLAUDE.md:179`):**
+  - **Modell-ID-Migration nach Umbenennung (ab v4.10.12):** System hat keinen automatischen Migrations-Pfad für Modell-Umbenennungen in `provider_config.yaml`. Symptome (zwei LB-Einträge, doppelte Reviews/Audit-Logs), Erkennung (zwei grep-Befehle), 8-Schritte-Manuelle-Cleanup-Sequenz, Defense-in-Depth TODO für `_load_results()` mit `resolve_canonical_model_id()`, Praxisbeispiel mit Datum 2026-06-29.
+
+  **Lessons-Learned für nächste Sessions:**
+  - **Reasoning-Loop-Detection:** Bei "Empty response received from LLM" + Judge 0.0/5 + hohe Reasoning-Tokens (>10000) immer Audit-Log auf Loop-Repetition prüfen (Suche nach wiederholten Reasoning-Phrasen). Fix: `enable_thinking: false` ist sauberer als `max_tokens`-Cap allein, weil es die Quelle eliminiert statt das Symptom zu dämpfen.
+  - **Performance-Modell-Charakteristik:** Dense 36B+ Q6_K auf Spark ist systembedingt langsam (1.3–5.6 tok/s). Vor dem Diagnose-Aufwand prüfen: gibt es historische Vergleichsdaten für das Modell? Wenn ja und konsistent langsam → Config-Bereinigung (Blacklist/Comment-Out) statt Re-Run.
+  - **Wizard + Auto-Benchmark kombiniert:** Wenn User zwischen Wizard- und Auto-Benchmark-Pfaden wechselt, immer prüfen ob die Modell-ID zwischen den Läufen konsistent geblieben ist. Wizard-Pfad kann alte IDs aus Draft-Cards noch verwenden.
+
+  **Offen (aus Session 46):**
+  - ux_writing_002 für ornith-1-0-35b muss neu getestet werden (Cleanup erledigt, Config-Fix aktiv) — Auto-Benchmark-Run ausstehend.
+  - **TODO (Defense-in-Depth, dokumentiert in CLAUDE.md):** `_load_results()` in `result_manager.py` sollte `resolve_canonical_model_id()` via `_collect_model_id_variants()` aufrufen BEVOR CSV geschrieben wird — würde zukünftige Modell-Umbenennungen abfangen.
+
+  **Offen (aus vorherigen Sessions, weiterhin gültig):**
+  - 10 verbleibende ToolUse-Backfill-Modelle (3 ohne Audit-Logs, 7 Ollama-ID-Auflösung).
+  - hermes-4.3-36b-q6: jetzt blacklisted + comment-out (gelöst in Session 46).
+  - `tooluse-scores.js:35`: p2→synthesis_quality Überschreibung prüfen.
+  - README Version Badge 4.10.8 → 4.10.12 aktualisieren.
+  - Pre-existing Test-Failure: `test_web_export_field_coverage.py::test_all_scores_keys_present_in_export` (political_bias nicht exportiert, political_compass deaktiviert).
+  - Bestehende Reviews enthalten noch alte Metrik-Zahlen — werden bei nächster Review-Regenerierung (`make reviews-auto --force`) durch neue qualitative Form ersetzt.
+  - 6 true-mismatch Drift-Einträge (manuelles PC-Review nötig).
+
 - **Session 45 abgeschlossen (2026-06-29) — Export-Vertrag + Typ-Konsistenz + Review-Prosa-Drift-Fix (v4.10.12):**
 
   User-Auftrag: Vollständige Schnittstellen-Audit (User-Befund). Strukturell sauber, aber 3 Quell-Probleme identifiziert: (3a) Review-Prosa enthält Metrik-Zahlen, die vom Leaderboard abweichen (Faktor bis 2.8×); (3b) `audit_log_count`-Semantik unklar; (3c) Typ-Inkonsistenz (Strings statt Zahlen). Export-Vertrag als schriftliche Schnittstellendefinition schreiben. Stale Schema-Doku synchronisieren.

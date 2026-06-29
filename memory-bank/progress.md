@@ -1,6 +1,45 @@
 # Progress
-
 Letzte Releases + aktueller Stand.
+### 2026-06-29 (Session 46) — Ornith-Reasoning-Loop-Fix + Hermes-Blacklist + Modell-ID-Migrations-Cleanup
+
+**Drei separate Probleme, eine Session.**
+
+**1. ux_writing_002 / ornith-1-0-35b — Reasoning-Inferno:**
+- Audit-Log zeigt 30+ wortgleiche Iterationen auf Label #4 "Account löschen" (Constraint-Konflikt Verb-First vs. destruktive Aktion). 12.000 Reasoning-Tokens / 662 Output-Tokens → "Empty response" → Judge 0.0/5 → 1.1%.
+- **Fix:** `config/provider_config.yaml:603-612` — `enable_thinking: false` (llama-server `--reasoning off`) + `max_tokens: 8192` (defensive Cap). Kommentar dokumentiert Auslöser.
+- **Cleanup:** CSV-Zeile + Audit-Log `ux_writing_002.md` atomar entfernt.
+
+**2. hermes-4.3-36b-q6 — Slowness + Output-Duplication:**
+- 626s für 4988 Tokens = 3.33 tok/s, Issues-Tabelle komplett zweimal hintereinander. Judge 2.0/5.
+- **Diagnose:** Slowness pure Hardware/Quant (historisch konsistent 1.3–5.6 tok/s für 36B Q6_K auf Spark). Duplikation hybrid: fehlende `repetition_penalty` (Card+Config null) + architektonische Schwäche. Falsche Kontrast-Rechnung (Modell) + fehlende WCAG-2.2-Issues (Modell-Wissen) sind reine Modellqualität.
+- **Maßnahmen:** Blacklist (`config/web_export_blacklist.yaml:53-54`) + Comment-Out (`config/provider_config.yaml:536-546`). User-Kontext: "bremst Auto-Benchmark aus".
+
+**3. Ornith-Modell-ID-Duplikation — Vollständige 8-Schritte-Migration:**
+- User-Diagnose: "Benchmark erst direkt über den Wizard, dann über Auto-Benchmark." → erklärt Mid-Run Naming-Konventions-Wechsel.
+- **Cleanup-Sequenz (alle erfolgreich):**
+  1. CSV: 43 Zeilen `ornith-1_0-35b-Q8_0_gguf` → `ornith-1-0-35b` (atomar via `tempfile.mkstemp + os.replace`)
+  2. Draft-Card gelöscht
+  3. Audit-Log-Dir `outputs/audit_logs/ornith-1_0-35b-Q8_0_gguf/` gelöscht (5 Files)
+  4. Review-Dir `docs/reviews/ornith-1_0-35b-Q8_0_gguf/` gelöscht
+  5. `rebuild_card_index('model')` → 99 Entries mit korrektem Body
+  6. `make consolidate-csv` → 1973 → 1880 (92 Ornith-Dups + 1 generisch). Bonus: commercial 1469 → 1350 (119 weitere alte Dups).
+  7. `make leaderboard` → 1 Ornith-Eintrag statt 2
+  8. `make review MODEL=ornith-1-0-35b AUTO=1 FORCE=1` → Review mit korrektem Modellnamen
+
+**Verifikation:** Cards 1, Audit-Logs 1, Reviews 1, CSV 49 Zeilen, LB 1 Eintrag, Card-Index 1 Entry mit `card_status="complete"`, `profile_verified=true`.
+
+**4. CLAUDE.md — Neuer Pitfall "Modell-ID-Migration nach Umbenennung (ab v4.10.12)":**
+- Symptome, Erkennung (2 grep-Befehle), 8-Schritte-Cleanup-Sequenz, Defense-in-Depth TODO für `_load_results()` mit `resolve_canonical_model_id()`. Praxisbeispiel mit Datum 2026-06-29.
+
+**Lessons für nächste Sessions:**
+- Reasoning-Loop: Audit-Log auf wortgleiche Iterationen prüfen. `enable_thinking: false` ist sauberer als `max_tokens`-Cap allein.
+- Performance-Charakteristik: Bei slow models historische Daten prüfen. Wenn konsistent langsam → Config-Bereinigung, nicht Re-Run.
+- Wizard + Auto-Benchmark-Kombination: Modell-ID-Konsistenz prüfen.
+
+**Offen:** ux_writing_002 ornith Re-Run ausstehend. Defense-in-Depth `_load_results()`-TODO.
+
+---
+
 ### 2026-06-29 (Session 45) — Export-Vertrag + Typ-Konsistenz + Review-Prosa-Drift-Fix (v4.10.12)
 
 **Ausloeser:** Vollstaendige Schnittstellen-Audit (User-Befund). Strukturelle Datenqualitaet sauber (0 Drift, 0 Duplikate), aber 3 Quell-Probleme identifiziert: (3a) Review-Prosa enthaelt Metrik-Zahlen, die vom Leaderboard abweichen (Faktor bis 2.8× bei gpt-5/gemini-2-5-pro); (3b) `audit_log_count`-Semantik unklar (5071 vs 3676); (3c) Typ-Inkonsistenz (Strings wie "83.7K"/"100%" statt Zahlen). Zusaetzlich: Dead-Code-Kompensation entfernen, stale Schema-Doku synchronisieren, Export-Vertrag schreiben.
