@@ -1,0 +1,31 @@
+{
+  "vendor_id": "deepreinforce",
+  "display_name": "DeepReinforce",
+  "company": "DeepReinforce",
+  "headquarters": "Santa Clara, California, USA",
+  "founding_year": 2024,
+  "pricing_model": "open-weights",
+  "api_base_url": null,
+  "api_documentation_url": "https://huggingface.co/deepreinforce-ai",
+  "deployment": {
+    "cloud_act_exposure": true,
+    "applicable_law": "US",
+    "data_residency": "N/A — kein eigener Cloud-API-Dienst; Modelle werden ausschließlich als Open-Weight-Downloads (Hugging Face) bereitgestellt. Hosting-Umgebung liegt vollständig beim Nutzer.",
+    "gdpr_dpa_available": "N/A",
+    "eu_adequacy_decision": "N/A",
+    "data_retention_days": -1,
+    "chinese_nsl_risk": "none"
+  },
+  "privacy_note": "DeepReinforce betreibt keinen eigenen Cloud-Inferenz-Dienst. Die Modelle (Ornith-Familie) sind ausschließlich als Open-Weight-Downloads unter MIT-Lizenz verfügbar. Datenschutzfragen liegen vollständig bei der Hosting-Infrastruktur des Nutzers. Wird Ornith über Drittanbieter wie DeepInfra oder Ollama inferiert, gelten deren jeweiligen Datenschutzbestimmungen. DeepReinforce selbst verarbeitet keine Nutzeranfragen.",
+  "notable_models": [
+    "ornith-1.0-9b",
+    "ornith-1.0-31b",
+    "ornith-1.0-35b",
+    "ornith-1.0-397b"
+  ],
+  "stats": {},
+  "unknown": false,
+  "generated_at": "2026-06-29T21:16:57.060376+00:00",
+  "last_verified_at": "2026-06-29",
+  "verification_source": "Perplexity"
+}
