@@ -50,6 +50,21 @@ from scripts.analysis.review import (
 # Maximum characters of audit-log data fed to the LLM reviewer.
 _MAX_LOG_CHARS = 30_000
 
+# Per-Task-Metrik-Zeilen, die aus dem Audit-Log-Kontext entfernt werden, BEVOR
+# sie den LLM erreichen. Diese Werte sind pro Einzel-Aufgabe und weichen von den
+# aggregierten Leaderboard-Werten ab — der LLM würde sie sonst zitieren und
+# Drift erzeugen. Die strukturierten Leaderboard-Felder sind die SSoT-Quelle.
+# Siehe Export-Vertrag (data-schema.md) — Review-Prosa-Vertrag.
+_METRIC_LINE_RE = re.compile(
+    r"^\*\*(?:Tokens/s:|Execution Time:|Tokens Used:|Cost:)\*\*.*$\n?",
+    re.MULTILINE,
+)
+
+
+def _strip_metric_lines(content: str) -> str:
+    """Entfernt pro-Task Metrik-Zeilen aus Audit-Log-Inhalt."""
+    return _METRIC_LINE_RE.sub("", content)
+
 
 def load_config() -> dict:
     config_path = ROOT_DIR / "benchmark_config.yaml"
@@ -322,6 +337,10 @@ def process_model_review(
                 continue
             if review_type == "benchmark" and is_bias_file:
                 continue
+
+            # Per-Task Metriken entfernen — sie weichen vom Leaderboard-Aggregat
+            # ab und würden Drift in der Review-Prosa erzeugen (Export-Vertrag).
+            content = _strip_metric_lines(content)
 
             judge_section_match = re.search(r"## 3\. Evaluation.*", content, re.DOTALL)
             system_info_match = re.search(r"> \[!(?:WARNING|CAUTION|ERROR)\].*?(?=\n\n|$)", content, re.DOTALL)
