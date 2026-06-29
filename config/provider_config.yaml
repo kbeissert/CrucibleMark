@@ -533,17 +533,17 @@ providers:
         temperature: 1.0
         top_k: 64
 
-      - id: hermes-4.3-36b-q6
-        name: Hermes 4.3 36B Q6_K (GGUF)
-        model_file: Hermes4-3/NousResearch_Hermes-4.3-36B-Q6_K.gguf
-        n_gpu_layers: 99
-        enable_thinking: false
-        temperature: 0.8
-        min_p: 0.05
-        # Hybrid-Attention (SWA): llama.cpp reguliert n_ctx automatisch herunter.
-        # parallel=1 verhindert sporadische Connection-Resets bei Heavy-Tasks.
-        context_length: 16384
-        parallel: 1
+      # - id: hermes-4.3-36b-q6
+      #   name: Hermes 4.3 36B Q6_K (GGUF)
+      #   model_file: Hermes4-3/NousResearch_Hermes-4.3-36B-Q6_K.gguf
+      #   n_gpu_layers: 99
+      #   enable_thinking: false
+      #   temperature: 0.8
+      #   min_p: 0.05
+      #   # Hybrid-Attention (SWA): llama.cpp reguliert n_ctx automatisch herunter.
+      #   # parallel=1 verhindert sporadische Connection-Resets bei Heavy-Tasks.
+      #   context_length: 16384
+      #   parallel: 1
 
       - id: gemma-4-26B-A4B-it-UD-Q5_K_XL-mtp
         name: Gemma 4 26B A4B IT UD-Q5_K_XL [+MTP] (GGUF)
@@ -599,6 +599,17 @@ providers:
         n_gpu_layers: 99
         context_length: 65536
         enable_thinking: false
+
+      - id: ornith-1-0-35b
+        name: Ornith 1.0 35B Q8_0 (GGUF)
+        model_file: Ornith1-35B/ornith-1.0-35b-Q8_0.gguf
+        n_gpu_layers: 99
+        context_length: 131072
+        max_tokens: 8192
+        enable_thinking: false  # Reasoning-Loop auf ux_writing 8-Scenario-Aufgaben (Constraint-Konflikt Verb-First vs. destruktive Aktion). Card-Override deaktiviert Thinking für Spark-Runs.
+        temperature: 0.6
+        top_p: 0.95
+        top_k: 20
 
       # - id: gemma-4-31b-it-creative-wordsmith-q8
       #   name: Gemma 4 31B Creative Wordsmith Uncensored Q8_0 (GGUF)

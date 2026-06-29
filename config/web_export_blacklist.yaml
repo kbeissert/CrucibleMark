@@ -50,6 +50,9 @@ blacklist:
 
   # GLM (Zhipu AI)
 
+  # Hermes (NousResearch)
+  - "hermes-4_3-36b-q6"  # Dense 36B Q6_K auf Spark ~3 tok/s, bremst Auto-Benchmark aus
+
   # Mistral AI
   - "mistral-medium-2312"             # Legacy, ersetzt durch Medium 3.5
 
