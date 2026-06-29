@@ -49,7 +49,6 @@ blacklist:
   - "gemma-4-31b-it-creative-wordsmith-q8"  # uncensored
 
   # GLM (Zhipu AI)
-  - "z-ai/glm-5.2"
 
   # Mistral AI
   - "mistral-medium-2312"             # Legacy, ersetzt durch Medium 3.5

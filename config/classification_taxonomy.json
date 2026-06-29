@@ -190,6 +190,13 @@
         "aliases": [],
         "jurisdiction": "US"
       },
+      "Cohere": {
+        "label": "Cohere",
+        "vendor_card_id": "cohere",
+        "description": "Cohere Inc. — Kanadisches KI-Unternehmen (Toronto), Entwickler der Command-Modellreihe (Command A+, Command A, Command A Reasoning, Command R+). Command A+ ist Open-Weight (Apache 2.0).",
+        "aliases": [],
+        "jurisdiction": "CA"
+      },
       "DeepSeek": {
         "label": "DeepSeek",
         "vendor_card_id": "deepseek",
