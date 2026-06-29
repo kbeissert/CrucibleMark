@@ -361,10 +361,6 @@ def extract_version(val) -> str | None:
     v = str(val).strip()
     return None if not v or v == "unknown" else v
 
-def clean_float(val: Any) -> float | None:
-    v = normalize_pending(val)
-    return float(v) if v is not None else None
-
 
 # Emoji-Bereinigung: entfernt alle Unicode-Emoji-Zeichen aus String-Werten.
 # Wird rekursiv auf alle exportierten JSON-Datenstrukturen angewendet.
@@ -838,14 +834,12 @@ def _load_sources(scores_dir: Path) -> tuple[
     "pd.DataFrame | None",
     "pd.DataFrame | None",
     "pd.DataFrame | None",
-    "pd.DataFrame | None",
 ]:
-    """Loads all source CSVs. Returns (ldb, pc, pc_lb, provider_df)."""
+    """Loads all source CSVs. Returns (ldb, pc, pc_lb)."""
     return (
         load_csv_with_fallback(scores_dir / "benchmark_leaderboard_detailed.csv"),
         load_csv_with_fallback(scores_dir / "political_compass_results.csv"),
         load_csv_with_fallback(scores_dir / "political_compass_leaderboard.csv"),
-        load_csv_with_fallback(scores_dir / "provider_leaderboard.csv"),
     )
 
 
@@ -1044,6 +1038,16 @@ def _build_leaderboard_entry(
     _raw_model_id = str(row.get(LdbCols.MODEL_ID, row.get("model_id_raw", row.get("model_id", "")))).strip()
     _normalized_tags = _normalize_export_tags(card.get("architecture_tags") or []) if card else []
     _characteristics = _build_characteristics(card, thinking_mode, _normalized_tags)
+    # synthesis_quality und tool_execution sind die P1/P2-Phasen des ToolUse-Moduls.
+    # Sie werden NUR exportiert, wenn supports_tool_use=true (verifiziert).
+    # Bei false (kann keine Tools) oder untested/null (noch nicht getestet)
+    # werden diese Scores nicht exportiert — auch nicht als null, weil
+    # _strip_none() null-Werte entfernt und das Fehlen des Keys im
+    # Frontend als "nicht verfügbar" interpretiert wird.
+    _supports_tool_use = card.get("supports_tool_use") if card else None
+    _has_tooluse = _supports_tool_use is True
+    _synthesis_quality = normalize_pending(row.get(LdbCols.SYNTHESIS_QUALITY)) if _has_tooluse else None
+    _tool_execution = normalize_pending(row.get(LdbCols.TOOL_EXECUTION)) if _has_tooluse else None
     return _strip_none({
         "slug": slug,
         "model_id": (card.get("model_id") if card else None) or (_raw_model_id or None),
@@ -1090,8 +1094,8 @@ def _build_leaderboard_entry(
             "content_transformation": normalize_pending(row.get(LdbCols.CONTENT_TRANSFORMATION)),
             "cultural_intelligence": normalize_pending(row.get(LdbCols.CULTURAL_INTELLIGENCE)),
             "logical_reasoning": normalize_pending(row.get(LdbCols.LOGICAL_REASONING)),
-            "synthesis_quality": normalize_pending(row.get(LdbCols.SYNTHESIS_QUALITY)),
-            "tool_execution": normalize_pending(row.get(LdbCols.TOOL_EXECUTION)),
+            "synthesis_quality": _synthesis_quality,
+            "tool_execution": _tool_execution,
             "political_bias": normalize_pending(row.get(LdbCols.POLITICAL_BIAS)),
         },
         "tokens_per_module": {
@@ -1412,7 +1416,6 @@ def _write_top_level_outputs(
     generated_at: str,
     models_list: list[dict[str, Any]],
     pc_list: list[dict[str, Any]],
-    provider_df: "pd.DataFrame | None",
     root_dir: Path,
     comparisons_path: Path,
     models_with_reports: int,
@@ -1421,7 +1424,7 @@ def _write_top_level_outputs(
     blacklist_total_entries: int = 0,
     blacklist_source: str = "config/web_export_blacklist.yaml",
 ) -> None:
-    """Writes leaderboard.json, political_compass.json, provider_stats.json, meta.json,
+    """Writes leaderboard.json, political_compass.json, meta.json,
     und vendor_cards.json mit Souveraenitaets-/GDPR-Metadaten pro Vendor.
 
     models_skipped_blacklist: Anzahl Modelle, die in diesem Run durch die Blacklist
@@ -1443,21 +1446,6 @@ def _write_top_level_outputs(
             }),
         )
 
-    if provider_df is not None:
-        provider_list = []
-        for _, r in provider_df.iterrows():
-            entry: dict = {}
-            for k, v in r.items():
-                if k in ("Provider", "Active Ping TTFB (ms)", "Models Tracked"):
-                    entry[k] = v if k == "Provider" else str(v)
-                else:
-                    entry[k] = clean_float(v)
-            provider_list.append(entry)
-        _atomic_write_json(
-            out_dir / "provider_stats.json",
-            _strip_emojis({"generated_at": generated_at, "providers": provider_list}),
-        )
-
     # BEFUND 4 Fix: Alle Vendor-Cards EINMAL lesen, dann in Memory splitten.
     # Vorher: _collect_vendor_cards(exclude_community=True) + _collect_community_cards()
     # lasen beide das gesamte Verzeichnis (54 File-Reads statt 27).
@@ -1473,20 +1461,6 @@ def _write_top_level_outputs(
         _atomic_write_json(
             out_dir / "community_cards.json",
             _strip_emojis({"generated_at": generated_at, "communities": community_cards}),
-        )
-
-    # Primary: docs/comparisons/ (v4.10.11+). Legacy: docs/reviews/ (vor v4.10.11).
-    # Beide Pfade werden unabhaengig von comparisons_path geprueft, weil
-    # comparisons_path selbst bereits docs/reviews/ ist (Legacy-Pfad).
-    primary_md = root_dir / "docs" / "comparisons" / "provider_landscape_review.md"
-    legacy_md = root_dir / "docs" / "reviews" / "provider_landscape_review.md"
-    provider_md = primary_md if primary_md.exists() else (legacy_md if legacy_md.exists() else None)
-    if provider_md is not None:
-        _atomic_copy(provider_md, out_dir / "provider_landscape_review.md")
-    else:
-        logging.warning(
-            "provider_landscape_review.md nicht gefunden in docs/comparisons/ oder docs/reviews/. "
-            "Web-Repo verwendet veralteten Stand. Bitte Quelldatei erstellen."
         )
 
     # SSoT-Sanity-Counts: Filesystem vs. Leaderboard-Konsistenz
@@ -1538,7 +1512,7 @@ def _init_export_context(
     _community_card_id_lookup = _build_community_card_id_lookup(root_dir / "config")
 
     provider_map = build_provider_map(root_dir / "benchmark_config.yaml")
-    ldb, pc, pc_lb, provider_df = _load_sources(scores_dir)
+    ldb, pc, pc_lb = _load_sources(scores_dir)
     if ldb is None:
         logging.error("❌ Failed to load required benchmark_leaderboard_detailed.csv. Exiting.")
         sys.exit(1)
@@ -1579,7 +1553,6 @@ def _init_export_context(
         "bl_exact": _bl_exact,
         "bl_pattern": _bl_pattern,
         "bl_total": _bl_total,
-        "provider_df": provider_df,
         "generated_at": datetime.datetime.now(datetime.UTC).isoformat(),
     }
 
@@ -1825,6 +1798,15 @@ def _process_leaderboard(
                 )
                 pc_list.append(compass_data)
 
+        # ToolUse-Daten werden nur exportiert, wenn supports_tool_use=true.
+        # Bei false (kann keine Tools) oder untested (noch nicht getestet)
+        # wird kein tooluse-Block generiert — das Frontend zeigt dann
+        # den entsprechenden Badge-Status (✗ oder –) ohne Score-Daten.
+        _tu_entry = (
+            _build_tooluse_entry(raw_model_id if raw_model_id and raw_model_id != "nan" else model_name, root_dir)
+            if (card and card.get("supports_tool_use") is True)
+            else None
+        )
         model_json: dict[str, Any] = {
             "leaderboard": entry,
             "political_compass": compass_data,
@@ -1833,7 +1815,7 @@ def _process_leaderboard(
                 "audit_logs_flat": sorted(audit_files),
                 "comparisons": comp_files_dict,
             },
-            "tooluse": _build_tooluse_entry(raw_model_id if raw_model_id and raw_model_id != "nan" else model_name, root_dir),
+            "tooluse": _tu_entry,
         }
 
         audit_logs_dict: dict[str, list[str]] = model_json["files"]["audit_logs"]  # type: ignore[assignment]
@@ -1890,7 +1872,6 @@ def main() -> None:
         generated_at=ctx["generated_at"],
         models_list=result["models_list"],
         pc_list=result["pc_list"],
-        provider_df=ctx["provider_df"],
         root_dir=root_dir,
         comparisons_path=comparisons_path,
         models_with_reports=result["models_with_reports"],
