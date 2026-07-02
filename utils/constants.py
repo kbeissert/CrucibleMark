@@ -38,7 +38,10 @@ TIMEOUT_ANTHROPIC_API = 600.0   # Anthropic SDK: 8000+-Token-Generierungen
 
 # Anthropic-Modelle, die `temperature` nicht unterstützen (Adaptive Thinking)
 # Quelle: https://platform.claude.com/docs/en/docs/about-claude/models (Apr 2026)
+# Ab Opus 4.8 / Sonnet 5 ist Adaptive Thinking für alle nachfolgenden Modelle aktiv.
 ANTHROPIC_NO_TEMPERATURE_MODELS: frozenset[str] = frozenset({
+    "claude-opus-4-8",
+    "claude-sonnet-5",
     "claude-opus-4-7",
     "claude-sonnet-4-6",
 })
