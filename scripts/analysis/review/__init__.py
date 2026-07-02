@@ -14,6 +14,7 @@ from .metrics import (
     get_model_metrics,
 )
 from .risk_calculator import (
+    _resolve_vendor_card_id,
     compute_sovereign_risk,
     detect_provider,
     get_vendor_card_context,
@@ -21,6 +22,7 @@ from .risk_calculator import (
 from .token_efficiency import build_token_efficiency_context
 
 __all__ = [
+    "_resolve_vendor_card_id",
     "build_constraint_violations_summary",
     "build_empty_response_context",
     "build_non_success_context",

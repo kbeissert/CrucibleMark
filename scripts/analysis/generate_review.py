@@ -34,8 +34,9 @@ from utils.model_utils import (
     get_model_specialization,
     get_use_case_primary,
 )
-from utils.vendor_card_template import _safe_id
+from utils.vendor_card_template import load_vendor_card
 from scripts.analysis.review import (
+    _resolve_vendor_card_id,
     build_constraint_violations_summary,
     build_empty_response_context,
     build_non_success_context,
@@ -219,55 +220,74 @@ def _ensure_model_card(
 
 
 def _ensure_vendor_card(
-    developer: str | None,
+    model_card: dict | None,
+    model_id: str,
     client: LLMClient,
     card_provider: str,
     card_model: str,
     auto_mode: bool,
     dry_run: bool,
 ) -> dict | None:
-    """Load or generate a provider card. Returns {} for local models (no provider)."""
-    if not developer:
+    """Stellt sicher, dass die Vendor-Card existiert, die der Review KONSUMIERT.
+
+    SSoT-Alignment mit :func:`get_vendor_card_context` (risk_calculator.py):
+    Auflösung über das kanonische ``vendor``-Feld (Vorrang) mit Taxonomy-Lookup
+    via ``_resolve_vendor_card_id()``, Fallback ``developer`` bzw. Provider-Heuristik.
+
+    FRÜHER (Bug): Lookup über das freitextliche ``developer``-Feld via
+    ``_safe_id(developer)``. Bei Composite-Strings wie
+    "Alibaba Cloud (Base) / Unsloth (GGUF-Quant)" erzeugte das einen Slug, auf den
+    keine Card-Datei passte — obwohl die Base-Card (``alibaba.json``) längst über
+    das ``vendor``-Feld auflösbar gewesen wäre.     Folge: False-Positive-Prompt, der
+    zur Generierung einer Composite-Card aufforderte, die der Konsum-Pfad nie lädt
+    (Dead Data). Zusätzlich war der Generierungspfad kaputt (Import einer nicht
+    existierenden Stats-Helper-Funktion + falsche Arity beim ``_generate_card``-
+    Aufruf) → Crash bei Bestätigung mit ``j``.
+
+    Returns:
+        dict (vorhandene oder neu generierte Card) bzw. ``{}`` für lokale Modelle
+        ohne auflösbaren Vendor. ``None`` = übersprungen (Nutzer abgelehnt /
+        nicht-interaktives Terminal).
+    """
+    # SSoT-Auflösung analog get_vendor_card_context: vendor hat Vorrang.
+    vendor_name: str | None = None
+    if model_card:
+        vendor_name = model_card.get("vendor") or model_card.get("developer")
+    if not vendor_name:
+        vendor_name = detect_provider(model_id)
+    if not vendor_name:
         return {}
 
-    # SSoT-Pfad: SSoT-Lookup via load_vendor_card().
-    from utils.vendor_card_template import CARDS_DIR, load_vendor_card
-    card_path = CARDS_DIR / f"{_safe_id(developer)}.json"
-    if card_path.exists():
-        existing = load_vendor_card(developer)
-        if existing:
-            return existing
+    card_id = _resolve_vendor_card_id(vendor_name)
+    existing = load_vendor_card(card_id) if card_id else None
+    if existing:
+        return existing
 
     if dry_run:
-        print(f"  [FEHLEND] Provider Card: {developer}")
+        print(f"  [FEHLEND] Provider Card: {vendor_name} (id={card_id})")
         return {}
 
     if not auto_mode:
         if not sys.stdin.isatty():
-            print(f"  [WARNUNG] Provider Card fehlt: {developer} — kein interaktives Terminal, überspringe.")
+            print(f"  [WARNUNG] Provider Card fehlt: {vendor_name} (id={card_id}) — kein interaktives Terminal, überspringe.")
             return None
-        answer = input(f"  [FEHLEND] Provider Card für '{developer}' nicht gefunden. Jetzt generieren? [j/N] ").strip().lower()
+        answer = input(f"  [FEHLEND] Provider Card für '{vendor_name}' (id={card_id}) nicht gefunden. Jetzt generieren? [j/N] ").strip().lower()
         if answer not in ("j", "ja", "y", "yes"):
-            print(f"  Überspringe Provider Card für {developer}.")
+            print(f"  Überspringe Provider Card für {vendor_name}.")
             return None
 
-    print(f"  Generiere Provider Card für {developer} ...")
-    # Direkter Aufruf statt Reflection: generate_vendor_cards_full() iteriert
-    # die Provider-Liste und ruft _generate_card/_write_card intern.
-    # Hier filtern wir auf den einen Provider via force-Logik im Caller-Pfad.
+    print(f"  Generiere Provider Card für {vendor_name} (id={card_id}) ...")
+    # Direkter Aufruf statt Reflection: generate_vendor_cards.generate() iteriert
+    # die Provider-Liste; hier generieren wir gezielt die eine fehlende Card.
     from scripts.analysis.generate_vendor_cards import (
-        _load_stats_from_csv,
         _generate_card,
         _write_card,
     )
     from utils.vendor_card_template import rebuild_provider_index
-    all_stats: dict = _load_stats_from_csv()
-    stats = all_stats.get(developer, {})
-    provider_id = _safe_id(developer)
-    card = _generate_card(developer, provider_id, stats, client, card_provider, card_model)
+    card = _generate_card(vendor_name, card_id, client, card_provider, card_model)
     _write_card(card)
     rebuild_provider_index()
-    print(f"  Provider Card erstellt: {developer}")
+    print(f"  Provider Card erstellt: {vendor_name}")
     return card
 
 
@@ -287,11 +307,9 @@ def _ensure_dependencies(
     if model_card is None:
         return None
 
-    developer: str | None = model_card.get("developer") if model_card else None
-    if not developer:
-        developer = detect_provider(model_id)
-
-    if _ensure_vendor_card(developer, client, card_provider, card_model, auto_mode, dry_run) is None:
+    # SSoT-Auflösung (vendor-Vorrang + Taxonomy-Lookup) passiert in
+    # _ensure_vendor_card selbst — analog get_vendor_card_context.
+    if _ensure_vendor_card(model_card, model_id, client, card_provider, card_model, auto_mode, dry_run) is None:
         return None
 
     return {}

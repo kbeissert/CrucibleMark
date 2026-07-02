@@ -5,12 +5,10 @@
   },
   "indexing": {
     "provider": "openai-compatible",
-    "model": "bge-m3-q8_0",
     "openai-compatible": {
-      "baseUrl": "http://100.89.110.0:1230/v1",
-      "apiKey": "sk-local"
+      "baseUrl": "http://100.89.110.0:2230/v1",
+      "apiKey": "sk-local-mg2026"
     },
-    "enabled": true,
-    "dimension": 1024
+    "enabled": true
   }
 }
