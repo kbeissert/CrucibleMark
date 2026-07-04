@@ -25,6 +25,7 @@ from scripts.web_export import (
     _normalize_community,
     _load_pc_block_meta,
     _build_block_scores,
+    _build_leaderboard_entry,
 )
 
 
@@ -149,6 +150,19 @@ class TestStripEmojis:
         assert _strip_emojis(42) == 42
         assert _strip_emojis(None) is None
 
+    def test_strips_variation_selector_16(self):
+        # VS16 (U+FE0F) bleibt nach Emoji-Entfernung als "unsichtbares Zeichen"
+        # stehen — z.B. in Speed Profile / Performance Tier ("⏱️ Interactive").
+        # Regression: _EMOJI_RE muss VS16/U+FE0E/ZWJ mit erfassen.
+        result = _strip_emojis("⏱\ufe0f Interactive DevOps Expert")
+        assert "\ufe0f" not in result
+        assert result == "Interactive DevOps Expert"
+
+    def test_strips_variation_selector_15_and_zwj(self):
+        result = _strip_emojis("a\ufe0e\u200db")
+        assert result == "ab"
+
+
 
 class TestVendorAliasMap:
     def test_loads_from_real_taxonomy(self):
@@ -242,3 +256,89 @@ class TestBuildBlockScores:
         result = _build_block_scores(module_stats, block_meta)
         assert result["7.9"]["vanilla_x"] == 1.0
         assert result["7.9"]["vanilla_y"] == -1.0
+
+
+def _lb_entry(row, card):
+    """Helper: ruft _build_leaderboard_entry mit Default-Args auf."""
+    return _build_leaderboard_entry(
+        row=row,
+        slug=card.get("model_id", "x"),
+        thinking_mode=None,
+        card=card,
+        vendor="V",
+        vendor_card_ref=None,
+        model_type="local",
+        has_report=False,
+        has_review=False,
+        review_published_at=None,
+        review_updated_at=None,
+        benchmark_run_at=None,
+        inference_provider="Ollama",
+    )
+
+
+class TestSynthesisQualityDatenbasiert:
+    """Regression: synthesis_quality/tool_execution werden datenbasiert
+    exportiert — nicht mehr an supports_tool_use=true gebunden.
+
+    Hintergrund: 7 Modelle (command-a-plus, gpt-oss-20b, qwen3-4b, qwen3-14b,
+    qwen2_5-coder-7b, qwen3_5-4b-*, qwen3_5-9b) haben supports_tool_use=false,
+    aber echte ToolUse-Daten (P1/P2) im Leaderboard. Frueher wurden die Scores
+    ausgeblendet → inkonsistente "8 Scores ohne synthesis_quality"-Befunde.
+    """
+
+    def test_exported_when_data_present_despite_stu_false(self):
+        row = {
+            "Model ID": "qwen3-4b",
+            "Model Name": "Qwen3 4B",
+            "Synthesis Quality": "51.67",
+            "Tool Execution": "51.67",
+            "Version": "1.0",
+        }
+        card = {
+            "model_id": "qwen3-4b",
+            "display_name": "Qwen3 4B",
+            "supports_tool_use": False,
+            "architecture_tags": [],
+        }
+        entry = _lb_entry(row, card)
+        assert entry["scores"]["synthesis_quality"] == 51.67
+        assert entry["scores"]["tool_execution"] == 51.67
+
+    def test_absent_when_no_data_untested(self):
+        """Ungetestete Modelle (kein Leaderboard-Wert) behalten keinen Key."""
+        row = {
+            "Model ID": "x",
+            "Model Name": "X",
+            "Synthesis Quality": "",
+            "Tool Execution": "",
+            "Version": "1.0",
+        }
+        card = {
+            "model_id": "x",
+            "supports_tool_use": None,
+            "architecture_tags": [],
+        }
+        entry = _lb_entry(row, card)
+        assert "synthesis_quality" not in entry["scores"]
+        assert "tool_execution" not in entry["scores"]
+
+    def test_supports_tool_use_flag_unaffected(self):
+        """Das Capability-Flag bleibt separat exportiert (true/false/null)."""
+        row = {
+            "Model ID": "qwen3-4b",
+            "Model Name": "Qwen3 4B",
+            "Synthesis Quality": "51.67",
+            "Version": "1.0",
+        }
+        card = {
+            "model_id": "qwen3-4b",
+            "supports_tool_use": False,
+            "architecture_tags": [],
+        }
+        entry = _lb_entry(row, card)
+        # supports_tool_use wird im Leaderboard-Entry nicht gefuehrt (nur im
+        # per-Modell-Card-Block) — daher hier nicht im entry erwartet. Der
+        # Test sichert lediglich, dass die Score-Entscheidung das Flag nicht
+        # mutiert (Datenpraesenz schlaegt Capability-Verdict).
+        assert entry["scores"]["synthesis_quality"] == 51.67

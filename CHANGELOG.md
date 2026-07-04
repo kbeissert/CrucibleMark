@@ -5,6 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v4.10.13] - 2026-07-04
+
+**WebExport-Konsistenz-Fixes: `synthesis_quality`/`tool_execution` datenbasiert exportiert; Emoji-Variation-Selectors werden gestrippt.**
+
+### Changed
+
+- **`scripts/web_export.py:_build_leaderboard_entry()` — ToolUse-Scores datenbasiert:**
+  `synthesis_quality` (ToolUse P1) und `tool_execution` (ToolUse P2) werden jetzt exportiert, sobald das Modell einen Wert im Leaderboard hat — unabhängig vom `supports_tool_use`-Flag. Zuvor wurden sie nur bei `supports_tool_use is True` exportiert, was 7 getestete Modelle mit `supports_tool_use: false` fälschlich ohne diese Scores ließ (command-a-plus-05-2026, openai_gpt-oss-20b, qwen2_5-coder-7b, qwen3-4b, qwen3-14b, qwen3_5-4b-*, qwen3_5-9b). Die Modelle haben echte ToolUse-Daten (P1/P2/combined) in `tooluse_leaderboard.csv`. Der detail-ToolUse-Block in `data.json.tooluse` (Per-Asset-Details, Radar, Reliability) bleibt weiterhin an `supports_tool_use=true` gebunden (Session-44-Frontend-Navigation). `supports_tool_use_state` ("true"/"false"/null) bleibt separates Capability-Indikator.
+
+- **`scripts/web_export.py:_EMOJI_RE` — Variation Selectors + ZWJ ergänzt:**
+  Die Emoji-Strip-Regex erfasste bisher die Emoji-Basiszeichen (z.B. ⏱ U+23F1), aber nicht die Variation Selectors U+FE0F (VS16) / U+FE0E (VS15) und die Zero Width Joiner U+200D. Nach `_strip_emojis("⏱\ufe0f Interactive")` blieb `"\ufe0f Interactive"` — ein unsichtbares Zeichen in `performance_tier`/`speed_profile`. Betraf ~20 Modelle. Jetzt werden VS16/VS15/ZWJ mit entfernt.
+
+### Fixed
+
+- **Dead-Code `_supports_tool_use` entfernt:** Die nach dem Refactor ungenutzte lokale Variable in `_build_leaderboard_entry()` (vorheriger einziger Konsument `_has_tooluse` wurde gelöscht) entfernt. `supports_tool_use_state` liest direkt `card.get("supports_tool_use")`.
+
+### Tests
+
+- **`tests/test_web_export_helpers.py`** — 5 neue Regressionstests: 2 für VS16/VS15/ZWJ-Stripping (`TestStripEmojis`), 3 für datenbasierte Synthesis-Export-Entscheidung (`TestSynthesisQualityDatenbasiert`) + `_lb_entry`-Helper.
+
+### Verifikation
+
+- 1002 passed / 1 skipped / 2 pre-existing failures (unrelated: `test_card_vocabulary_ssot::test_all_model_cards_pass_tag_whitelist`, `test_clean_results_arch_coverage::TestEndToEndCleanupDryRun::test_dry_run_mentions_all_csv_files`).
+- VS16-Fix verifiziert: "⏱️ Interactive" → "Interactive".
+- Synthesis-Fix verifiziert: stu=false+data → `synthesis_quality=51.67` exportiert; untested → Key absent.
+
+### Nicht behoben (out of scope Python-Repo)
+
+- **Problem 1 (Missing prices):** `command-a-plus-05-2026` + `ornith-1-0-35b` haben legitim null-Preise. Template-Fix `price-comparison-row.njk` (Web-Repo) ausstehend.
+- **Problem 3 (architecture_tags vs features):** Python-Export bereits korrekt. Doppel-Rendering in `model-header.njk` (Web-Repo) ausstehend.
+
 ## [v4.10.8] - 2026-06-23
 
 **Cohere ToolUse-Connector auf native `tools`-API migriert. `command-a-plus-05-2026` als `supports_tool_use=false` markiert (serverseitiger 500-Bug).**

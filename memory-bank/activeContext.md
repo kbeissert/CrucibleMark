@@ -12,6 +12,49 @@ to know what reference files exist.
 ---
 
 # Active Context
+## Aktueller Status (2026-07-04)
+
+- **Session 47 abgeschlossen (2026-07-04) — WebExport-Konsistenz-Check-Fixes: synthesis_quality datenbasiert + Emoji-Variation-Selectors (v4.10.13):**
+
+  User-Auftrag: 4 Probleme aus dem WebExport-Konsistenz-Check (Stand 2026-07-04 19:35 UTC) beheben.
+
+  **Problem 2 — Missing synthesis_quality (7 Modelle) — GELÖST (Python-Fix):**
+  - **Diagnose:** `web_export.py:1099-1108` gate-te `synthesis_quality`/`tool_execution` hinter `supports_tool_use is True`. Alle 7 Modelle haben `supports_tool_use: false`, ABER echte ToolUse-Daten (P1/P2/combined) in `tooluse_leaderboard.csv`. Der Berichts-Hypothese "Synthesis-Modul wurde nicht ausgeführt" war FALSCH — Daten existierten, der Export blendete sie aus.
+  - **Fix:** Gate von `supports_tool_use is True` auf Datenpräsenz umgestellt (`normalize_pending(row.get(...))` ohne Flag-Gate). Detail-ToolUse-Block (`data.json.tooluse`) bleibt weiterhin an `supports_tool_use=true` gebunden (Session-44-Frontend-Nav). Dead-Code `_supports_tool_use` (nach Refactor ungenutzt) im Code-Review entfernt.
+  - User-Entscheidung via question-Tool: "Datenbasiert exportieren (Recommended)".
+
+  **Problem 4 — Invisible char in speed_profile/performance_tier (claude-opus-4-7 u.a.) — GELÖST (Python-Fix):**
+  - **Diagnose:** `_EMOJI_RE` (Z.416-429) entfernte Stopuhren-Emoji U+23F1, aber NICHT Variation Selector U+FE0F (VS16). Nach `_strip_emojis` blieb "️ Interactive" (VS16-Rest). Betraf ~20 Modelle mit Emoji-Prefix in Performance Tier, nicht nur claude-opus-4-7.
+  - **Fix:** `_EMOJI_RE` um U+FE0F (VS16), U+FE0E (VS15), U+200D (ZWJ) erweitert. "⏱️ Interactive" → "Interactive".
+
+  **Problem 1 — Missing prices (2 Modelle) — KEIN Python-Fix (legitim null):**
+  - `command-a-plus-05-2026.json` + `ornith-1-0-35b.json` haben beide legitim null-Preise. Ornith = Self-hosted MIT (kein Per-Token-Tarif). Command A+ = Cohere hat keinen öffentlichen Per-Token-Tarif (nur Model Vault; heritage_ids command-a-03-2025). Berichtsbehauptung "Cohere hat öffentliche API-Preise" gilt für die BASE `command-a-03-2025` ($2/$8), die NICHT mehr im Repo existiert — Preise eintragen wäre sachlich falsch. Template-Fix im Web-Repo (`price-comparison-row.njk` Null-Guard) out of scope.
+
+  **Problem 3 — architecture_tags vs characteristics.features (claude-opus-4-7) — KEIN Python-Fix (bereits korrekt):**
+  - Python-Export bereits korrekt: `_build_characteristics` (Z.1063) unterdrückt "Vision-Capable" in `features`, wenn `image`-Modality "Vision" rendert. Doppel-Rendering im Web-Template `model-header.njk` — out of scope.
+
+  **Tests:** 5 neue Regressionstests in `tests/test_web_export_helpers.py` (2 VS16/VS15/ZWJ-Stripping + 3 datenbasierte Synthesis-Szenarien + `_lb_entry` Helper). 1002 passed / 1 skipped / 2 pre-existing failures (unrelated, via `git stash` verifiziert).
+
+  **Code-Review:** `/review uncommitted` — APPROVE WITH SUGGESTIONS; ein Dead-Code-Leftover (`_supports_tool_use`) gefunden und entfernt.
+
+  **Diff:** `web_export.py` (+14/−10), `test_web_export_helpers.py` (+100).
+
+  **Offen (Web-Repo, out of scope Python):**
+  - `price-comparison-row.njk` Null-Guard für null-Preise verifizieren.
+  - `model-header.njk` Doppel-Rendering architecture_tags/features prüfen.
+  - Frontend-Entscheidung: ob stu=false-Modelle den nun exportierten `synthesis_quality`-Score anzeigen sollen (`scoreboard-table.js:toolsBadge()` überschreibt aktuell auf "n/a").
+  - `tooluse-scores.js:35`: p2→synthesis_quality Überschreibung prüfen (noch offen aus Session 42/44).
+
+  **Offen (aus vorherigen Sessions, weiterhin gültig):**
+  - 10 verbleibende ToolUse-Backfill-Modelle (3 ohne Audit-Logs, 7 Ollama-ID-Auflösung).
+  - hermes-4.3-36b-q6: blacklisted + comment-out (gelöst in Session 46).
+  - ux_writing_002 für ornith-1-0-35b Re-Run ausstehend (Session 46).
+  - README Version Badge 4.10.8 → 4.10.13 aktualisieren.
+  - Pre-existing Test-Failures: `test_card_vocabulary_ssot.py::test_all_model_cards_pass_tag_whitelist`, `test_clean_results_arch_coverage::TestEndToEndCleanupDryRun::test_dry_run_mentions_all_csv_files` (gemma_leaderboard.csv).
+  - CHANGELOG hinkt hinter (top-Eintrag v4.10.8, Sessions 39–47 referenzieren v4.10.9–v4.10.13) — Konsolidierung ausstehend.
+  - Bestehende Reviews enthalten noch alte Metrik-Zahlen — werden bei nächster Review-Regenerierung (`make reviews-auto --force`) durch neue qualitative Form ersetzt.
+  - 6 true-mismatch Drift-Einträge (manuelles PC-Review nötig).
+
 ## Aktueller Status (2026-06-29)
 
 - **Session 46 abgeschlossen (2026-06-29 23:46) — Model-Diagnose + Cleanup-Sequenz + Modell-ID-Migration Pitfall:**

@@ -1,5 +1,34 @@
 # Progress
 Letzte Releases + aktueller Stand.
+### 2026-07-04 (Session 47) — WebExport-Konsistenz-Check-Fixes: synthesis_quality datenbasiert + Emoji-Variation-Selectors (v4.10.13)
+
+**Auslöser:** WebExport-Konsistenz-Check (Stand 2026-07-04 19:35 UTC) meldete 4 Probleme. Zwei davon waren Python-Export-Bugs, zwei sind Web-Template-/legitim-null-Fälle.
+
+**Problem 2 — Missing synthesis_quality (7 Modelle) — Python-Fix:**
+- `web_export.py:1099-1108` gate-te `synthesis_quality` (ToolUse P1) und `tool_execution` (P2) hinter `supports_tool_use is True`. 7 Modelle mit `supports_tool_use: false` haben aber echte ToolUse-Daten in `tooluse_leaderboard.csv` (command-a-plus, gpt-oss-20b, qwen3-4b/14b, qwen2_5-coder-7b, qwen3_5-4b-*/9b) — Score wurde fälschlich ausgeblendet → "8 Scores ohne synthesis_quality"-Befund.
+- **Fix:** Gate auf Datenpräsenz umgestellt. Detail-ToolUse-Block (`data.json.tooluse`) bleibt an `supports_tool_use=true` gebunden (Session-44-Frontend-Nav). `supports_tool_use_state` bleibt separates Capability-Indikator.
+- User-Entscheidung via question-Tool: "Datenbasiert exportieren (Recommended)".
+
+**Problem 4 — Invisible char in performance_tier/speed_profile — Python-Fix:**
+- `_EMOJI_RE` (Z.416-429) entfernte Emoji-Basiszeichen (⏱ U+23F1) aber nicht den Variation Selector U+FE0F (VS16). `"⏱\ufe0f Interactive"` → `"️ Interactive"` (unsichtbares VS16-Rest). Betraf ~20 Modelle, nicht nur claude-opus-4-7.
+- **Fix:** `_EMOJI_RE` um U+FE0F (VS16), U+FE0E (VS15), U+200D (ZWJ) erweitert.
+
+**Problem 1 — Missing prices (2 Modelle) — KEIN Python-Fix:**
+- `command-a-plus-05-2026` + `ornith-1-0-35b` haben legitim null-Preise (Self-hosted MIT / kein öffentlicher Cohere-Per-Token-Tarif). Berichtsbehauptung "Cohere hat öffentliche Preise" gilt für die gelöschte base `command-a-03-2025` ($2/$8), nicht für command-a-plus. Template-Fix `price-comparison-row.njk` (Web-Repo) out of scope.
+
+**Problem 3 — architecture_tags vs features (claude-opus-4-7) — KEIN Python-Fix:**
+- Python-Export korrekt (`_build_characteristics` Z.1063 unterdrückt "Vision-Capable" in features bei image-Modality). Doppel-Rendering in `model-header.njk` (Web-Repo) — out of scope.
+
+**Tests:** 5 neue in `tests/test_web_export_helpers.py` (2 VS16/VS15/ZWJ + 3 datenbasierte Synthesis). 1002 passed / 1 skipped / 2 pre-existing failures (unrelated).
+
+**Code-Review:** `/review uncommitted` — APPROVE WITH SUGGESTIONS; Dead-Code `_supports_tool_use` (nach Refactor ungenutzt) entfernt.
+
+**Verifikation:** VS16-Fix ("⏱️ Interactive" → "Interactive"), Synthesis-Fix (stu=false+data→51.67 exportiert; untested→Key absent). Diff: `web_export.py` (+14/−10), `test_web_export_helpers.py` (+100).
+
+**Offen (Web-Repo):** `price-comparison-row.njk` Null-Guard, `model-header.njk` Doppel-Rendering, Frontend-Entscheidung stu=false-Score-Anzeige.
+
+---
+
 ### 2026-06-29 (Session 46) — Ornith-Reasoning-Loop-Fix + Hermes-Blacklist + Modell-ID-Migrations-Cleanup
 
 **Drei separate Probleme, eine Session.**

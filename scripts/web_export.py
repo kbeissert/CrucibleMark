@@ -424,6 +424,9 @@ _EMOJI_RE = re.compile(
     "\U0001F700-\U0001F77F"  # Alchemistische Symbole
     "\U0001F900-\U0001FAFF"  # Ergänzende Symbole
     "\U0001FA00-\U0001FA9F"  # Schachsymbole & weitere
+    "\U0000FE0F"  # Variation Selector-16 (VS16) — Emoji-Praesentation
+    "\U0000FE0E"  # Variation Selector-15 (VS15) — Text-Praesentation
+    "\U0000200D"  # Zero Width Joiner (ZWJ) — verbindet Emoji-Sequenzen
     "]",
     flags=re.UNICODE,
 )
@@ -1096,16 +1099,18 @@ def _build_leaderboard_entry(
     _raw_model_id = str(row.get(LdbCols.MODEL_ID, row.get("model_id_raw", row.get("model_id", "")))).strip()
     _normalized_tags = _normalize_export_tags(card.get("architecture_tags") or []) if card else []
     _characteristics = _build_characteristics(card, thinking_mode, _normalized_tags)
-    # synthesis_quality und tool_execution sind die P1/P2-Phasen des ToolUse-Moduls.
-    # Sie werden NUR exportiert, wenn supports_tool_use=true (verifiziert).
-    # Bei false (kann keine Tools) oder untested/null (noch nicht getestet)
-    # werden diese Scores nicht exportiert — auch nicht als null, weil
-    # _strip_none() null-Werte entfernt und das Fehlen des Keys im
-    # Frontend als "nicht verfügbar" interpretiert wird.
-    _supports_tool_use = card.get("supports_tool_use") if card else None
-    _has_tooluse = _supports_tool_use is True
-    _synthesis_quality = normalize_pending(row.get(LdbCols.SYNTHESIS_QUALITY)) if _has_tooluse else None
-    _tool_execution = normalize_pending(row.get(LdbCols.TOOL_EXECUTION)) if _has_tooluse else None
+    # synthesis_quality (ToolUse P1) und tool_execution (ToolUse P2) werden
+    # datenbasiert exportiert: sobald das Modell einen Wert im Leaderboard
+    # hat, wird der Score gezeigt — unabhaengig vom supports_tool_use-Flag.
+    # supports_tool_use bleibt separates Capability-Indikator (s. supports_tool_use-
+    # Feld unten und supports_tool_use_state im Web-Frontend).
+    # Verhindert inkonsistente "8 Scores ohne synthesis_quality"-Befunde fuer
+    # Modelle, die getestet wurden (Daten in tooluse_leaderboard.csv) aber
+    # supports_tool_use=false tragen. Der detail-ToolUse-Block (data.json.
+    # tooluse) bleibt weiterhin an supports_tool_use=true gebunden, weil er
+    # Frontend-Navigationsauswirkungen hat (Session-44-Design).
+    _synthesis_quality = normalize_pending(row.get(LdbCols.SYNTHESIS_QUALITY))
+    _tool_execution = normalize_pending(row.get(LdbCols.TOOL_EXECUTION))
     return _strip_none({
         "slug": slug,
         "model_id": (card.get("model_id") if card else None) or (_raw_model_id or None),
