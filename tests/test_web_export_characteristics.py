@@ -148,6 +148,28 @@ class TestBuildCharacteristicsFeatures:
         assert feat_slugs == ["Agentic-Orchestrator", "Long-Context"]
         assert ch["categories"]["thinking"]["value"] == "partial"
 
+    def test_vision_capable_deduped_when_image_modality_present(self):
+        """Vision-Capable-Badge wird unterdrückt, wenn 'image' als Modality
+        gerendert wird — verhindert doppeltes 'Vision'-Badge (Modality grau +
+        Feature transparent). Siehe Bug-Report Claude Opus 4.8."""
+        tags = ["General", "Agentic-Orchestrator", "Long-Context",
+                "Vision-Capable"]
+        card = {"input_modalities": ["text", "image"]}
+        ch = _build_characteristics(card, "standard", tags)
+        feat_slugs = [f["slug"] for f in ch["features"]]
+        assert "Vision-Capable" not in feat_slugs
+        assert feat_slugs == ["Agentic-Orchestrator", "Long-Context"]
+        mod_labels = [m["label"] for m in ch["categories"]["modalities"]]
+        assert "Vision" in mod_labels
+
+    def test_vision_capable_kept_when_no_image_modality(self):
+        """Ohne image-Modality bleibt Vision-Capable als einziges Vision-Signal."""
+        tags = ["Vision-Capable", "Long-Context"]
+        card = {"input_modalities": ["text"]}
+        ch = _build_characteristics(card, "standard", tags)
+        feat_slugs = [f["slug"] for f in ch["features"]]
+        assert "Vision-Capable" in feat_slugs
+
 
 class TestBuildCharacteristicsStructure:
     """Strukturelle Integrität des Rückgabe-Objekts."""

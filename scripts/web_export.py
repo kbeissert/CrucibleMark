@@ -1047,14 +1047,25 @@ def _build_characteristics(
                 categories["modalities"] = mod_items
 
     # ── features: Display-Badges aus architecture_tags (nur display_role=badge) ──
+    # De-Duplizierung: Feature-Badges deren Label mit einem bereits gerenderten
+    # Modality-Label kollidiert, werden unterdrückt. Verhindert doppelte Badges
+    # (z.B. Vision-Capable + image→"Vision" → "Vision" erscheint nur als graue
+    # Modality-Kategorie, nicht zusätzlich als transparentes Feature-Badge).
+    modality_labels = {
+        mod["label"] for mod in categories.get("modalities", [])
+    }
     features: list[dict[str, str]] = []
     for tag in architecture_tags:
         role = display_roles.get(tag, "badge")
-        if role == "badge":
-            features.append({
-                "slug": tag,
-                "label": tag_labels.get(tag, tag),
-            })
+        if role != "badge":
+            continue
+        label = tag_labels.get(tag, tag)
+        if label in modality_labels:
+            continue
+        features.append({
+            "slug": tag,
+            "label": label,
+        })
 
     return {
         "categories": categories,
