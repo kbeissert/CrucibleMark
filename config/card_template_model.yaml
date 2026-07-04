@@ -62,10 +62,10 @@ required_fields:
     type: str
     required: true
     default: "TODO"
-    description: "Menschenlesbarer Modellname"
+    description: "Menschenlesbarer Modellname. Format: {Name} {Größe} ({Community-Gruppe ODER Variante}). Keine Quantisierungs-Specs, keine Deployment-Deskriptoren, keine Datumsangaben."
     consumers: [risk_calc, leaderboard, web_export, review]
     since: "v1.0"
-    example: "GPT-5.4 Mini"
+    example: "Qwen 3.5 9B (Unsloth)"
 
   - name: developer
     type: str

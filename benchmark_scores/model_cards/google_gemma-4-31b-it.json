@@ -9,7 +9,7 @@
   "deployment_type": "open-weights-cloud-available",
   "developer": "Google DeepMind",
   "developer_jurisdiction": "US",
-  "display_name": "Gemma 4 31B (Cloud API)",
+  "display_name": "Gemma 4 31B Instruct",
   "generated_at": "2026-04-23T22:05:37.243642+00:00",
   "input_price_per_1m": 0.14,
   "judge_context_hint": "Cloud-API-Variante von Gemma 4 31B ohne nachgewiesenen Thinking-Modus. Bei der Bewertung API-spezifische Konfiguration berücksichtigen. Multimodalität für Text und Bild nativ verfügbar, Audio und Video je nach Provider-Konfiguration. Kein lokaler Betrieb in dieser Variante.",

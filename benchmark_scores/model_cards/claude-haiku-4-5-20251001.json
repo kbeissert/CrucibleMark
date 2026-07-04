@@ -32,7 +32,7 @@
   "params_active_b": null,
   "params_total_b": null,
   "primary_focus": "instruction-following",
-  "size_class": "Desktop",
+  "size_class": "Frontier",
   "strengths": [
     "Schnelle Inferenz mit niedriger Latenz für Echtzeit-Interaktionen und API-Pipelines",
     "Kostengünstige Input- und Output-Preise für hohe Volumen",

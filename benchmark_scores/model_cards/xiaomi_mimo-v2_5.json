@@ -59,7 +59,7 @@
   "output_price_per_1m": 2.0,
   "unknown": false,
   "card_status": "complete",
-  "size_class": "Server",
+  "size_class": "Frontier",
   "generated_at": "2026-06-14T10:56:00+00:00",
   "thinking_probe_detected": true,
   "thinking_probe_evidence": "Multi-Probe (3 prompts, 2 detected, best confidence=medium): reasoning_tokens in provider metadata nachgewiesen. CoT-Schema identisch mit MiMo-V2.5-Pro: think-xml mit <think>-Tags.",

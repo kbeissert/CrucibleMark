@@ -9,7 +9,7 @@
   "deployment_type": "localweights",
   "developer": "Google DeepMind",
   "developer_jurisdiction": "US",
-  "display_name": "Gemma 3 12B IT (Q4_K_M)",
+  "display_name": "Gemma 3 12B IT",
   "generated_at": "2026-05-30T15:30:22.206663+00:00",
   "input_price_per_1m": 0.0,
   "judge_context_hint": "Lokales Gemma-3-12B-Instruct-Modell in Q4-Quantisierung. Bei der Bewertung präzise und kompakte Antworten erwarten, die bei sehr komplexen Reasoning-Ketten an Tiefe verlieren können. Lokales Deployment ohne externen Datentransfer.",

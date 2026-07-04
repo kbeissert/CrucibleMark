@@ -1,6 +1,6 @@
 {
   "model_id": "gemma-4-31B-it-qat-ud-q4",
-  "display_name": "Gemma 4 31B Instruct (Unsloth QAT UD-Q4)",
+  "display_name": "Gemma 4 31B Instruct (Unsloth)",
   "developer": "Google DeepMind (Base) / Unsloth (Community-Distribution)",
   "origin_country": "USA",
   "developer_jurisdiction": "US",

@@ -33,7 +33,7 @@
     "params_active_b": null,
     "params_total_b": null,
     "primary_focus": "instruction-following",
-    "size_class": "Desktop",
+    "size_class": "Frontier",
     "strengths": [
       "Schnelle Inferenz mit niedriger Latenz für Echtzeit-Interaktionen und API-Pipelines",
       "Kostengünstige Input- und Output-Preise für hohe Volumen",
@@ -252,6 +252,97 @@
     "community": null
   },
   {
+    "model_id": "claude-opus-4-8",
+    "display_name": "Claude Opus 4.8",
+    "developer": "Anthropic",
+    "origin_country": "USA",
+    "developer_jurisdiction": "US",
+    "deployment_type": "cloud-only",
+    "local_deployment_possible": false,
+    "weights_provenance_risk": "medium",
+    "weights_provenance_risk_rationale": "Anthropic ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act. Closed-Source-Modell mit First-Party-Sicherheitsfiltern (Anthropic Safety); keine Gewichte verfügbar.",
+    "model_family": "Claude",
+    "vendor": "Anthropic",
+    "primary_focus": "coding",
+    "use_case_primary": "agentic",
+    "parameter_architecture": "dense",
+    "params_total_b": null,
+    "params_active_b": null,
+    "context_window_k": 1000,
+    "knowledge_cutoff": "2026-01",
+    "summary": "Claude Opus 4.8 ist seit Ende Mai 2026 Anthropics Flaggschiff für Agentic-Coding und Enterprise-Workflows. Adaptive Thinking mit fünfstufiger Effort-Steuerung von Low bis Ultra Code ersetzt das frühere manuelle Token-Budget, Multimodalität, 1.000.000-Token-Kontextfenster. Dynamic Workflows erlauben in Claude Code bis zu 1.000 parallele Sub-Tasks, gesteuert aus JavaScript-Skripten, verfügbar auf Max-, Team- und Enterprise-Plänen.",
+    "strengths": [
+      "Adaptive Thinking mit fünfstufiger Effort-Steuerung — manuell konfigurierbar von Low bis Ultra Code.",
+      "Dynamic Workflows: bis zu 1.000 Sub-Tasks, Orchestrierung über JavaScript-Skripte.",
+      "Multimodale Eingabe für Text und Bild, 1.000.000-Token-Kontextfenster zum Standardpreis.",
+      "Fast Mode: rund 2,5-fache Geschwindigkeit, niedrigerer Preis (Research-Preview, Warteliste).",
+      "Ehrlichkeits-Upgrade: vierfach geringere Tendenz, eigene Fehler zu akzeptieren als Opus 4.7.",
+      "System-Messages können mid-conversation geändert werden, ohne Prompt-Cache zu verlieren."
+    ],
+    "known_limitations": [
+      "Verarbeitung läuft über Anthropics Cloud unter US-Recht mit CLOUD-Act-Risiko.",
+      "Proprietäre Gewichte, keine offene Veröffentlichung.",
+      "Fünfmal höhere Input-Kosten als Sonnet 5 (5 Dollar statt 2 pro 1M Tokens).",
+      "Maximaler Output auf 128.000 Tokens begrenzt, kein Extended Output über 128K verfügbar.",
+      "Fast Mode aktuell nur über Warteliste verfügbar (Research-Preview).",
+      "Microsoft Foundry bietet nur 200K statt 1M Kontextfenster."
+    ],
+    "judge_context_hint": "Anthropic-Opus-4.8-Frontier-Modell mit proprietärer Cloud-Bereitstellung unter US-Recht und CLOUD-Act-Risiko, Adaptive Thinking ist Standard mit Effort-Steuerung in fünf Stufen (Low bis Ultra Code), non-default Sampling-Parameter werden mit 400-Error zurückgewiesen. Multimodale Eingabe für Text und Bild, 1.000.000-Token-Kontext, 128.000-Token-Output. Dynamic Workflows sind ein Claude-Code-Feature, kein Modellverhalten; Bewertung gleichermaßen für Coding, Tool-Use und Multimodalität.",
+    "architecture_tags": [
+      "Thinking",
+      "Vision-Capable",
+      "Agentic-Orchestrator",
+      "Long-Context"
+    ],
+    "input_modalities": [
+      "text",
+      "image"
+    ],
+    "output_modalities": [
+      "text"
+    ],
+    "supports_tool_use": true,
+    "tooluse_tested_at": null,
+    "tooluse_score_p1": null,
+    "tooluse_score_p2": null,
+    "tooluse_recommendation": null,
+    "temperature": null,
+    "system_prompt_override": null,
+    "cot_marker_family": "native-thinking",
+    "cot_tags_detected": null,
+    "top_p": null,
+    "top_k": null,
+    "repetition_penalty": null,
+    "frequency_penalty": null,
+    "presence_penalty": null,
+    "seed": null,
+    "stop_sequences": null,
+    "license": "Proprietary (Anthropic Commercial Terms)",
+    "license_url": "https://www.anthropic.com/legal/commercial-terms",
+    "commercial_use_allowed": true,
+    "weights_license_tier": "proprietary",
+    "model_version": "4.8",
+    "input_price_per_1m": 5.0,
+    "output_price_per_1m": 25.0,
+    "unknown": false,
+    "card_status": "complete",
+    "size_class": "Frontier",
+    "generated_at": "2026-07-02T10:05:00+00:00",
+    "thinking_probe_detected": true,
+    "thinking_probe_evidence": "Adaptive Thinking ist standardmäßig aktiv, Effort-Parameter defaultet auf 'high' auf API und Claude Code laut offizieller Anthropic-Ankündigung.",
+    "thinking_probe_confidence": "high",
+    "thinking_probe_at": "2026-07-02T10:05:00+00:00",
+    "thinking_probe_manual_override": null,
+    "profile_verified": true,
+    "profile_verified_at": "2026-07-02",
+    "profile_verified_by": "Perplexity",
+    "last_modified_at": "2026-07-02",
+    "heritage_ids": [
+      "claude-opus-4-7"
+    ],
+    "community": null
+  },
+  {
     "architecture_tags": [
       "General",
       "Thinking-Optional"
@@ -285,7 +376,7 @@
     "params_active_b": null,
     "params_total_b": null,
     "primary_focus": "general",
-    "size_class": "Server",
+    "size_class": "Frontier",
     "strengths": [
       "Stark bei Coding und komplexen Agenten-Workflows, einschließlich langer autonomer Coding-Sitzungen",
       "Extended Thinking für tieferes Reasoning bei komplexen Aufgaben",
@@ -419,6 +510,96 @@
     "community": null
   },
   {
+    "model_id": "claude-sonnet-5",
+    "display_name": "Claude Sonnet 5",
+    "developer": "Anthropic",
+    "origin_country": "USA",
+    "developer_jurisdiction": "US",
+    "deployment_type": "cloud-only",
+    "local_deployment_possible": false,
+    "weights_provenance_risk": "medium",
+    "weights_provenance_risk_rationale": "Anthropic ist ein US-Anbieter; relevante Risiken betreffen Cloud-Verarbeitung unter US-Recht, da keine offenen Gewichte vorliegen.",
+    "model_family": "Claude",
+    "vendor": "Anthropic",
+    "primary_focus": "coding",
+    "use_case_primary": "agentic",
+    "parameter_architecture": "dense",
+    "params_total_b": null,
+    "params_active_b": null,
+    "context_window_k": 1000,
+    "knowledge_cutoff": "2026-01",
+    "summary": "Claude Sonnet 5 ist seit Ende Juni 2026 der neue Standard für Free- und Pro-Nutzer. Das Nachfolgemodell von Sonnet 4.6 bringt Adaptive Thinking als Default-Verhalten, Geschwindigkeit nahe Opus, und verarbeitet Text und Bilder mit einem 1.000.000-Token-Kontextfenster. Die Sicherheit ist deutlich verbessert, mit besserer Resistenz gegen Prompt-Injection und weniger Halluzinationen.",
+    "strengths": [
+      "Adaptive Thinking ersetzt Token-Budgets — weniger Fehlbedienung, das Modell entscheidet selbst.",
+      "Multimodale Eingabe: Text und Bilder, 1.000.000-Token-Kontextfenster.",
+      "Standard-Output bis 128.000 Tokens für umfangreiche Antworten.",
+      "Verbesserte Agentic-Fähigkeiten: Browser- und Terminal-Tool-Use, längere autonome Workflows.",
+      "Sicherheits-Upgrade gegenüber Sonnet 4.6: bessere Prompt-Injection-Resistenz.",
+      "Geschwindigkeit auf Frontier-Niveau, verkleinert Abstand zu Opus 4.8."
+    ],
+    "known_limitations": [
+      "Proprietär, keine offenen Gewichte — Verarbeitung nur über Anthropics Cloud.",
+      "Preise sind zeitlich befristet: 2/10 Dollar pro 1M Tokens nur bis 31. August 2026, danach 3/15.",
+      "Neuer Tokenizer erzeugt etwa 30 Prozent mehr Tokens als Sonnet 4.6 für identischen Text.",
+      "Nur Adaptive Thinking — manuelle Extended-Thinking- oder Sampling-Override-Calls geben 400-Error.",
+      "Kein Training für offensive Cybersecurity, entsprechende Nutzung wird blockiert."
+    ],
+    "judge_context_hint": "Anthropic-Sonnet-5-Frontier-Modell mit proprietärer Cloud-Bereitstellung unter US-Recht und CLOUD-Act-Risiko, Adaptive Thinking ist der einzige Modus. Manuelle Extended-Thinking-Konfigurationen sowie non-default Sampling-Parameter (Temperatur, top_p, top_k) werden mit 400-Error zurückgewiesen. Multimodale Eingabe für Text und Bild, 1.000.000-Token-Kontext, 128.000-Token-Output, Bewertung gleichermaßen für Coding, Tool-Use und Multimodalität.",
+    "architecture_tags": [
+      "Thinking",
+      "Vision-Capable",
+      "Agentic",
+      "Long-Context"
+    ],
+    "input_modalities": [
+      "text",
+      "image"
+    ],
+    "output_modalities": [
+      "text"
+    ],
+    "supports_tool_use": true,
+    "tooluse_tested_at": null,
+    "tooluse_score_p1": null,
+    "tooluse_score_p2": null,
+    "tooluse_recommendation": null,
+    "temperature": null,
+    "system_prompt_override": null,
+    "cot_marker_family": "native-thinking",
+    "cot_tags_detected": null,
+    "top_p": null,
+    "top_k": null,
+    "repetition_penalty": null,
+    "frequency_penalty": null,
+    "presence_penalty": null,
+    "seed": null,
+    "stop_sequences": null,
+    "license": "Proprietary (Anthropic Commercial Terms)",
+    "license_url": "https://www.anthropic.com/legal/commercial-terms",
+    "commercial_use_allowed": true,
+    "weights_license_tier": "proprietary",
+    "model_version": "5",
+    "input_price_per_1m": 2.0,
+    "output_price_per_1m": 10.0,
+    "unknown": false,
+    "card_status": "complete",
+    "size_class": "Frontier",
+    "generated_at": "2026-07-02T10:05:00+00:00",
+    "thinking_probe_detected": true,
+    "thinking_probe_evidence": "Adaptive Thinking ist laut offizieller Anthropic-Dokumentation standardmäßig aktiviert (im Gegensatz zu Sonnet 4.6, wo Requests ohne thinking-Feld ohne Denken liefen). Dynamische Reasoning-Tiefen-Allokation bestätigt.",
+    "thinking_probe_confidence": "high",
+    "thinking_probe_at": "2026-07-02T10:05:00+00:00",
+    "thinking_probe_manual_override": null,
+    "profile_verified": true,
+    "profile_verified_at": "2026-07-02",
+    "profile_verified_by": "Perplexity",
+    "last_modified_at": "2026-07-02",
+    "heritage_ids": [
+      "claude-sonnet-4-6"
+    ],
+    "community": null
+  },
+  {
     "architecture_tags": [
       "Coder"
     ],
@@ -447,7 +628,7 @@
       "Kein Allround-Modell, ausschliesslich für Coding optimiert",
       "Das volle Kontextfenster von 128.000 Tokens erfordert einen API-Upgrade"
     ],
-    "last_modified_at": "2026-06-29",
+    "last_modified_at": "2026-06-20",
     "license": "Mistral Codestral License",
     "license_url": "https://mistral.ai/licenses/MCSL-0.1.md",
     "local_deployment_possible": true,
@@ -469,7 +650,7 @@
     "profile_verified_by": null,
     "repetition_penalty": null,
     "seed": null,
-    "size_class": "Desktop",
+    "size_class": "Frontier",
     "stop_sequences": null,
     "strengths": [
       "Spezialisiert auf Code mit Fill-in-the-Middle-Fähigkeit",
@@ -524,15 +705,17 @@
       "Native Verarbeitung von Text und Bildern",
       "Unterstützung für 48 Sprachen, einschliesslich aller EU-Amtssprachen",
       "Bis zu 64.000 Tokens maximale Ausgabe",
-      "Native Integration mit vLLM und Hugging Face Transformers"
+      "Native Integration mit vLLM und Hugging Face Transformers",
+      "Self-Hosting unter Apache 2.0 ohne laufende Lizenz- oder Tokenkosten; Cohere Cloud-API nur über Cohere Model Vault (Stundenpreis pro Instanz) verfügbar, kein öffentlicher Per-Token-Tarif."
     ],
     "known_limitations": [
       "Weniger unabhängig publizierte Drittbenchmarks als vergleichbare Frontier-Modelle",
       "Thinking verbraucht Output-Tokens aus dem 64.000-Token-Budget",
       "Quantisierung für lokales Self-Hosting mit vertretbarem Ressourcenbedarf nötig",
-      "Tool-Use über die Cohere-API derzeit nicht stabil für komplexe Benchmark-Szenarien"
+      "Tool-Use über die Cohere-API derzeit nicht stabil für komplexe Benchmark-Szenarien",
+      "Cohere-API-Preise für command-a-plus-05-2026 werden nicht öffentlich gelistet; Produktions-Tarife erfordern Vertriebskontakt (sales@cohere.com), Trial-Keys sind auf 1.000 API-Calls pro Monat limitiert."
     ],
-    "judge_context_hint": "Offenes MoE-Modell von Cohere aus Kanada unter Apache-2.0-Lizenz. Reasoning-Anteil verbraucht Output-Tokens aus dem 64.000-Token-Budget, was bei intensivem Reasoning die Antwortlänge begrenzt. Vision-Input, 48 Sprachen und Agentic-Tool-Use sind Kernfähigkeiten. Lokales Deployment über vLLM möglich.",
+    "judge_context_hint": "Offenes MoE-Modell von Cohere aus Kanada unter Apache-2.0-Lizenz. Reasoning-Anteil verbraucht Output-Tokens aus dem 64.000-Token-Budget, was bei intensivem Reasoning die Antwortlänge begrenzt. Vision-Input, 48 Sprachen und Agentic-Tool-Use sind Kernfähigkeiten. Lokales Deployment über vLLM möglich. Kein öffentlicher Per-Token-Preis auf Cohere-Seite verfügbar — Selbst-Hosting ist kostenlos.",
     "architecture_tags": [
       "Thinking",
       "MoE",
@@ -588,6 +771,95 @@
     "heritage_ids": [
       "command-a-03-2025"
     ],
+    "community": null
+  },
+  {
+    "model_id": "deepseek-r1-distill-qwen-32b",
+    "display_name": "DeepSeek R1 Distill Qwen 32B",
+    "developer": "DeepSeek AI",
+    "origin_country": "CN",
+    "developer_jurisdiction": "CN",
+    "deployment_type": "local-weights",
+    "local_deployment_possible": true,
+    "weights_provenance_risk": "medium",
+    "weights_provenance_risk_rationale": "Modell wird lokal betrieben, CLOUD-Act-Risiko greift nicht. Hersteller DeepSeek AI sitzt in China; bei Cloud-Nutzung der Originalgewichte sind chinesische NSL-Risiken zu beachten. Die Q5_K_M-Quantisierung ist als Open-Weights-Modell vollständig nachvollziehbar, die Trainingsdaten sind nicht offengelegt.",
+    "model_family": "DeepSeek",
+    "vendor": "DeepSeek",
+    "primary_focus": "reasoning",
+    "use_case_primary": "reasoning",
+    "parameter_architecture": "dense",
+    "params_total_b": 32.5,
+    "params_active_b": 32.5,
+    "context_window_k": 131,
+    "knowledge_cutoff": "2024-07",
+    "summary": "DeepSeek R1 Distill Qwen 32B (Release 29. Januar 2025) ist ein distilliertes Reasoning-Modell, das durch überwachtes Feintuning auf rund 800.000 von DeepSeek R1 generierten Reasoning-Samples auf die Qwen2.5-32B-Architektur übertragen wurde. Mit MIT-Lizenz für die Distill-Gewichte, einem 131K-Token-Kontextfenster, standardmäßig aktivem Chain-of-Thought-Reasoning und Q5_K_M-Quantisierung für lokalen Betrieb auf Workstation-Hardware. Die Qualität liegt unter dem Original-R1 mit 671 Milliarden Parametern, übertrifft aber im 32B-Dense-Segment vergleichbare nicht-distillierte Modelle.",
+    "strengths": [
+      "Distilliertes Reasoning aus DeepSeek R1 (Self-Play RL) auf Qwen2.5-32B-Basisarchitektur.",
+      "MIT-Lizenz für die Distill-Gewichte ohne regionale Einschränkungen, voll kommerziell und fine-tunable.",
+      "Großzügiges 131K-Token-Kontextfenster für ein 32B-Dense-Modell dieser Klasse.",
+      "Dichte Qwen2.5-Architektur mit stabilen Inferenzeigenschaften und vorhersagbarem Verhalten.",
+      "Standardmäßiger Thinking-Modus mit Chain-of-Thought-Reasoning als integraler Bestandteil der Generierung.",
+      "Kompakte Q5_K_M-Quantisierung für effizienten lokalen Betrieb auf Workstation-Hardware mit begrenztem VRAM."
+    ],
+    "known_limitations": [
+      "Distilliertes Modell — Qualität unter dem vollgewichtigen DeepSeek R1 (671B) und R1-Distill-Llama-70B.",
+      "Reasoning-Modus erhöht Latenz und Token-Verbrauch signifikant (jede Antwort beginnt mit einem langen <think>-Block).",
+      "Potenzielle Zensur oder Schiefstellung bei geopolitisch sensiblen China-Themen, da Hersteller in China sitzt.",
+      "Dichte Architektur statt MoE — höherer Speicherverbrauch als vergleichbare Reasoning-MoE-Modelle ähnlicher Größe.",
+      "Q5_K_M-Quantisierung führt zu geringfügiger Qualitätsminderung gegenüber höheren Quantisierungsstufen (Q8_0).",
+      "Max. Output typischerweise auf 32.768 Tokens begrenzt, unabhängig vom vollen Kontextfenster."
+    ],
+    "judge_context_hint": "Open-Weights-Reasoning-Modell (etwa 32,5 Mrd. Parameter, dichte Qwen2.5-Basisarchitektur) mit standardmäßig aktivem Chain-of-Thought-Reasoning über <think>/</think>-Tags. Die Q5_K_M-Quantisierung führt zu geringfügig reduzierter Rechenqualität gegenüber Q8_0; Bewertungen sollten den Quantisierungseffekt beachten. Reasoning-Output ist integraler Bestandteil der Antwort, nicht optional. Trainiert primär auf englischsprachigen und chinesischen Daten, Wissen bis Juli 2024.",
+    "architecture_tags": [
+      "Thinking",
+      "Open-Weight"
+    ],
+    "input_modalities": [
+      "text"
+    ],
+    "output_modalities": [
+      "text"
+    ],
+    "supports_tool_use": false,
+    "tooluse_tested_at": null,
+    "tooluse_score_p1": null,
+    "tooluse_score_p2": null,
+    "tooluse_recommendation": null,
+    "temperature": 0.6,
+    "system_prompt_override": null,
+    "cot_marker_family": "think-xml",
+    "cot_tags_detected": [
+      "<think>",
+      "</think>"
+    ],
+    "top_p": 0.95,
+    "top_k": null,
+    "repetition_penalty": 1.0,
+    "frequency_penalty": null,
+    "presence_penalty": null,
+    "seed": null,
+    "stop_sequences": null,
+    "license": "MIT (Distill-Gewichte); Basis Qwen2.5 unter Qwen-Lizenz",
+    "license_url": "https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B",
+    "commercial_use_allowed": true,
+    "weights_license_tier": "open-weights",
+    "model_version": "Q5_K_M (GGUF)",
+    "input_price_per_1m": 0.0,
+    "output_price_per_1m": 0.0,
+    "unknown": false,
+    "card_status": "complete",
+    "size_class": "Workstation",
+    "generated_at": "2026-07-04T20:09:30+00:00",
+    "thinking_probe_detected": true,
+    "thinking_probe_evidence": "Manual override: DeepSeek R1-Distill-Modelle emittieren Chain-of-Thought-Reasoning über <think>/</think>-Tags im Chat-Template. Thinking ist integraler Bestandteil der Generierung, kein optionales Feature.",
+    "thinking_probe_confidence": "high",
+    "thinking_probe_at": "2026-07-04T20:09:30+00:00",
+    "thinking_probe_manual_override": "Thinking über <think>/</think>-Tags ist dokumentiertes Kernfeature laut DeepSeek-R1 Model Card und Chat-Template; bei Distill-Varianten strukturell unverändert.",
+    "profile_verified": true,
+    "profile_verified_at": "2026-07-04",
+    "profile_verified_by": "human",
+    "last_modified_at": "2026-07-04",
+    "heritage_ids": [],
     "community": null
   },
   {
@@ -1201,7 +1473,7 @@
     "unknown": false,
     "generated_at": "2026-06-09T20:32:00.000000+00:00",
     "card_status": "complete",
-    "size_class": "Server",
+    "size_class": "Frontier",
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "Not yet probed.",
     "thinking_probe_confidence": "low",
@@ -1254,7 +1526,7 @@
   },
   {
     "model_id": "gemma-3-12b-it-q8-spark",
-    "display_name": "Gemma 3 12B IT (Q8_0)",
+    "display_name": "Gemma 3 12B IT",
     "developer": "Google DeepMind",
     "origin_country": "USA",
     "developer_jurisdiction": "US",
@@ -1346,7 +1618,7 @@
     "deployment_type": "localweights",
     "developer": "Google DeepMind",
     "developer_jurisdiction": "US",
-    "display_name": "Gemma 3 12B IT (Q8_0)",
+    "display_name": "Gemma 3 12B IT",
     "generated_at": "2026-05-30T00:00:00.000000+00:00",
     "input_price_per_1m": 0.0,
     "judge_context_hint": "Lokale Gemma-3-12B-Variante in Q8-Quantisierung. Bei der Bewertung präzise, kompakte Instruction-Antworten erwarten. Quantisierungsqualität ist hoch, aber nicht identisch zur Originalpräzision. Lokales Deployment ohne externen Datentransfer.",
@@ -1419,7 +1691,7 @@
   },
   {
     "model_id": "gemma-3-12b-it-spark",
-    "display_name": "Gemma 3 12B IT (Q4_K_M)",
+    "display_name": "Gemma 3 12B IT",
     "developer": "Google DeepMind",
     "origin_country": "USA",
     "developer_jurisdiction": "US",
@@ -1512,7 +1784,7 @@
     "deployment_type": "localweights",
     "developer": "Google DeepMind",
     "developer_jurisdiction": "US",
-    "display_name": "Gemma 3 12B IT (Q4_K_M)",
+    "display_name": "Gemma 3 12B IT",
     "generated_at": "2026-05-30T15:30:22.206663+00:00",
     "input_price_per_1m": 0.0,
     "judge_context_hint": "Lokales Gemma-3-12B-Instruct-Modell in Q4-Quantisierung. Bei der Bewertung präzise und kompakte Antworten erwarten, die bei sehr komplexen Reasoning-Ketten an Tiefe verlieren können. Lokales Deployment ohne externen Datentransfer.",
@@ -1587,7 +1859,7 @@
   },
   {
     "model_id": "gemma-4-12b-it-ud-q4_k_xl",
-    "display_name": "Gemma 4 12B Instruct Q4_K_XL (UndiX-Derivative)",
+    "display_name": "Gemma 4 12B Instruct (Unsloth)",
     "developer": "Google DeepMind (Base) / UndiX (Community-Distribution)",
     "origin_country": "USA",
     "developer_jurisdiction": "US",
@@ -1672,7 +1944,7 @@
   },
   {
     "model_id": "gemma-4-12b-it-ud-q6_k_xl",
-    "display_name": "Gemma 4 12B Instruct Q6_K_XL (UndiX-Derivative)",
+    "display_name": "Gemma 4 12B Instruct (Unsloth)",
     "developer": "Google DeepMind (Base) / UndiX (Community-Distribution)",
     "origin_country": "USA",
     "developer_jurisdiction": "US",
@@ -1757,7 +2029,7 @@
   },
   {
     "model_id": "gemma-4-12b-it-ud-q8_k_xl",
-    "display_name": "Gemma 4 12B Instruct Q8_K_XL (UndiX-Derivative)",
+    "display_name": "Gemma 4 12B Instruct (Unsloth)",
     "developer": "Google DeepMind (Base) / UndiX (Community-Distribution)",
     "origin_country": "USA",
     "developer_jurisdiction": "US",
@@ -1840,7 +2112,7 @@
   },
   {
     "model_id": "gemma-4-26B-A4B-it-UD-Q5_K_XL-mtp",
-    "display_name": "Gemma 4 26B A4B Instruct (Unsloth Q5_K_XL MTP)",
+    "display_name": "Gemma 4 26B A4B Instruct (Unsloth)",
     "developer": "Google DeepMind (Base) / Unsloth (Community-Distribution)",
     "origin_country": "USA",
     "developer_jurisdiction": "US",
@@ -1923,7 +2195,7 @@
   },
   {
     "model_id": "gemma-4-26B-A4B-it-UD-Q8_K_XL",
-    "display_name": "Gemma 4 26B A4B Instruct (Unsloth Dynamic Q8_K_XL)",
+    "display_name": "Gemma 4 26B A4B Instruct (Unsloth)",
     "developer": "Google DeepMind (Base) / Unsloth (Community-Distribution)",
     "origin_country": "USA",
     "developer_jurisdiction": "US",
@@ -2007,7 +2279,7 @@
   },
   {
     "model_id": "gemma-4-26B-A4B-it-qat-ud-q4",
-    "display_name": "Gemma 4 26B-A4B Instruct (QAT, UD-Q4)",
+    "display_name": "Gemma 4 26B-A4B Instruct (Unsloth)",
     "developer": "Google DeepMind (Base) / Unsloth (Community-Distribution)",
     "origin_country": "USA",
     "developer_jurisdiction": "US",
@@ -2090,7 +2362,7 @@
   },
   {
     "model_id": "gemma-4-26b-a4b-q8",
-    "display_name": "Gemma 4 26B-A4B Instruct Q8_K_XL",
+    "display_name": "Gemma 4 26B-A4B Instruct",
     "developer": "Google DeepMind",
     "origin_country": "USA",
     "developer_jurisdiction": "US",
@@ -2174,7 +2446,7 @@
   },
   {
     "model_id": "gemma-4-31B-it-UD-Q8_K_XL-mtp",
-    "display_name": "Gemma 4 31B Instruct (Unsloth Q8_K_XL MTP)",
+    "display_name": "Gemma 4 31B Instruct (Unsloth)",
     "developer": "Google DeepMind (Base) / Unsloth (Community-Distribution)",
     "origin_country": "USA",
     "developer_jurisdiction": "US",
@@ -2258,7 +2530,7 @@
   },
   {
     "model_id": "gemma-4-31B-it-qat-ud-q4",
-    "display_name": "Gemma 4 31B Instruct (Unsloth QAT UD-Q4)",
+    "display_name": "Gemma 4 31B Instruct (Unsloth)",
     "developer": "Google DeepMind (Base) / Unsloth (Community-Distribution)",
     "origin_country": "USA",
     "developer_jurisdiction": "US",
@@ -2341,7 +2613,7 @@
   },
   {
     "model_id": "gemma-4-31b-it-creative-wordsmith-q8",
-    "display_name": "Gemma 4 31B Creative Wordsmith Uncensored Q8_0",
+    "display_name": "Gemma 4 31B Creative Wordsmith (Uncensored)",
     "developer": "Google DeepMind (Base) / ConicCat (Wordsmith Fine-Tune) / llmfan46 (Heretic-Abliteration) / mradermacher (GGUF-Quant)",
     "origin_country": "USA",
     "developer_jurisdiction": "US",
@@ -2427,7 +2699,7 @@
   },
   {
     "model_id": "gemma-4-ara-26b-a4b-q5",
-    "display_name": "Gemma 4 ARA 26B-A4B Q5_K_M (ARA-Abliterated)",
+    "display_name": "Gemma 4 ARA 26B-A4B (ARA-Abliterated)",
     "developer": "Google DeepMind (Base) / ARA-APEX (Abliteration + Quantisierung)",
     "origin_country": "USA",
     "developer_jurisdiction": "US",
@@ -2608,7 +2880,7 @@
     "deployment_type": "open-weights-cloud-available",
     "developer": "Google DeepMind",
     "developer_jurisdiction": "US",
-    "display_name": "Gemma 4 31B (Cloud API)",
+    "display_name": "Gemma 4 31B Instruct",
     "generated_at": "2026-04-23T22:05:37.243642+00:00",
     "input_price_per_1m": 0.14,
     "judge_context_hint": "Cloud-API-Variante von Gemma 4 31B ohne nachgewiesenen Thinking-Modus. Bei der Bewertung API-spezifische Konfiguration berücksichtigen. Multimodalität für Text und Bild nativ verfügbar, Audio und Video je nach Provider-Konfiguration. Kein lokaler Betrieb in dieser Variante.",
@@ -2714,7 +2986,7 @@
     "params_active_b": null,
     "params_total_b": null,
     "primary_focus": "general",
-    "size_class": "Server",
+    "size_class": "Frontier",
     "strengths": [
       "Sehr kosteneffizient bei guter Antwortqualität für Standardaufgaben",
       "Schnelle Inferenz mit niedrigen Latenzen für Echtzeit-Anwendungen",
@@ -3126,7 +3398,7 @@
     "params_active_b": null,
     "params_total_b": null,
     "primary_focus": "general",
-    "size_class": "Nano",
+    "size_class": "Frontier",
     "strengths": [
       "Schnelle Inferenz und niedrige Kosten",
       "Solide Strukturierung und Instruction-Following",
@@ -3222,7 +3494,7 @@
     "output_price_per_1m": 1.25,
     "unknown": false,
     "card_status": "complete",
-    "size_class": "Nano",
+    "size_class": "Frontier",
     "generated_at": "2026-06-10T10:55:00.000000+00:00",
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 0 chars",
@@ -3511,7 +3783,7 @@
     "deployment_type": "localweights",
     "developer": "Meta (Base: Llama 3.1 8B) / NousResearch (Fine-Tune) / Community GGUF-Distributor",
     "developer_jurisdiction": "US",
-    "display_name": "Hermes 3 8B (Q6_K_L)",
+    "display_name": "Hermes 3 8B",
     "generated_at": "2026-06-03T12:00:00.000000+00:00",
     "input_price_per_1m": 0.0,
     "judge_context_hint": "Lokales Uncensored-Fine-Tune auf Llama-3.1-Basis. Bei der Bewertung Hilfsbereitschaft und Struktur gewichten, nicht restriktive Sicherheitsantworten erwarten. Kein Thinking-Modus.",
@@ -3593,7 +3865,7 @@
     "deployment_type": "localweights",
     "developer": "Qwen (Base: Qwen3-14B) / NousResearch (Fine-Tune) / Community GGUF-Distributor",
     "developer_jurisdiction": "US",
-    "display_name": "Hermes 4 14B (Q6_K, Abliterated)",
+    "display_name": "Hermes 4 14B (Abliterated)",
     "generated_at": "2026-06-03T12:00:00.000000+00:00",
     "input_price_per_1m": 0.0,
     "judge_context_hint": "Abliterierte Variante mit entfernten Schutzmechanismen auf Qwen-3-Basis. Bei der Bewertung die offene, ungebremste Antwortweise explizit berücksichtigen. Tool-Use-Fähigkeit bestätigt. Kein produktions-konservatives Profil.",
@@ -3671,6 +3943,7 @@
   },
   {
     "architecture_tags": [
+      "Community-Quant",
       "Instruct",
       "Thinking-Optional"
     ],
@@ -3680,7 +3953,7 @@
     "deployment_type": "localweights",
     "developer": "Qwen (Base: Qwen3-14B) / NousResearch (Fine-Tune) / Community GGUF-Distributor",
     "developer_jurisdiction": "US",
-    "display_name": "Hermes 4 14B (Q4_K_M)",
+    "display_name": "Hermes 4 14B",
     "generated_at": "2026-06-03T12:00:00.000000+00:00",
     "input_price_per_1m": 0.0,
     "judge_context_hint": "Q4-Variante für lokale Assistenz mit effizienter Speichernutzung. Bei der Bewertung Effizienz und brauchbare Struktur gewichten, nicht maximale Tiefenleistung. Hybride Thinking-Modi verfügbar.",
@@ -3754,7 +4027,7 @@
   },
   {
     "model_id": "hermes-4.3-36b-q6",
-    "display_name": "Hermes 4.3 36B Q6_K",
+    "display_name": "Hermes 4.3 36B",
     "developer": "ByteDance (Base: Seed-OSS-36B-Base) / NousResearch (Fine-Tune) / Community GGUF-Distributor",
     "origin_country": "USA",
     "developer_jurisdiction": "US",
@@ -4282,7 +4555,7 @@
     "params_active_b": 128.0,
     "params_total_b": 128.0,
     "primary_focus": "general",
-    "size_class": "Server",
+    "size_class": "Frontier",
     "strengths": [
       "Modified-MIT-Lizenz mit kommerzieller Nutzbarkeit unter Revenue-Schwelle",
       "Hohe Leistung bei agentischen Aufgaben und Programmierung",
@@ -5146,7 +5419,7 @@
     "output_price_per_1m": 0.2,
     "unknown": false,
     "card_status": "draft",
-    "size_class": "Medium",
+    "size_class": "Workstation",
     "generated_at": "2026-06-14T10:56:00+00:00",
     "thinking_probe_detected": true,
     "thinking_probe_evidence": "Multi-Probe (3 prompts, 3 detected, best confidence=medium):\n  - math: [math] reasoning_tokens=34 in provider metadata. First 200 chars: **Step‑by‑step solution**\n\n1. **Identify the given quantities**  \n   - Distance traveled: \\(d = 120 \\text{ km}\\)  \n   - Time taken: \\(t = 1.5 \\text{ h}\\)\n\n2. **Recall the formula for average speed**  \n  - code: [code] reasoning_tokens=216 in provider metadata. First 200 chars: **Algorithm chosen:** **Bubble Sort**  \nBubble Sort is a simple comparison‑based sorting algorithm. It works by repeatedly stepping through the list, comparing each pair of adjacent elements and swapp\n  - decision: [decision] reasoning_tokens=63 in provider metadata. First 200 chars: **Short answer:**  \nThere is no universally accepted \"right\" answer.  The decision must be guided by a carefully designed ethical framework that balances several competing values—protecting human life",
@@ -5379,7 +5652,7 @@
     "output_price_per_1m": 4.4,
     "unknown": false,
     "card_status": "complete",
-    "size_class": "Workstation",
+    "size_class": "Frontier",
     "generated_at": "2026-04-23T21:59:59.335172+00:00",
     "thinking_probe_detected": true,
     "thinking_probe_evidence": "Manually confirmed: OpenAI o-series models use internal chain-of-thought reasoning. The API does not expose reasoning tokens or think-tags in the response body; automated probe cannot detect this. Token budget override is required.",
@@ -5465,7 +5738,7 @@
     "output_price_per_1m": 4.4,
     "unknown": false,
     "card_status": "complete",
-    "size_class": "Workstation",
+    "size_class": "Frontier",
     "generated_at": "2026-04-23T21:59:48.373411+00:00",
     "thinking_probe_detected": true,
     "thinking_probe_evidence": "Manually confirmed: OpenAI o-series models use internal chain-of-thought reasoning. The API does not expose reasoning tokens or think-tags in the response body; automated probe cannot detect this. Token budget override is required.",
@@ -5494,8 +5767,94 @@
     "community": null
   },
   {
+    "model_id": "openai/gpt-oss-120b",
+    "display_name": "GPT-OSS 120B",
+    "developer": "OpenAI",
+    "origin_country": "USA",
+    "developer_jurisdiction": "US",
+    "deployment_type": "open-weights-cloud-available",
+    "local_deployment_possible": true,
+    "weights_provenance_risk": "low",
+    "weights_provenance_risk_rationale": "OpenAI ist ein US-Unternehmen; das Modell wird unter Apache 2.0 als Open Weights veröffentlicht. Cloud-API via Groq: US-Jurisdiktion, CLOUD Act anwendbar. Lokales Deployment mit öffentlichen Gewichten vermeidet API-Datenabfluss.",
+    "model_family": "GPT OSS",
+    "vendor": "OpenAI",
+    "primary_focus": "general",
+    "use_case_primary": "generalist",
+    "parameter_architecture": "MoE",
+    "params_total_b": 116.8,
+    "params_active_b": 5.1,
+    "context_window_k": 131,
+    "knowledge_cutoff": "2024-06",
+    "summary": "GPT-OSS 120B ist seit August 2025 OpenAIs größtes Open-Weights-Modell und das offenste des Anbieters: Apache-2.0-Lizenz, lokales Deployment möglich. Das MoE bündelt 116,8 Milliarden Gesamt- bei nur etwa 5,1 Milliarden aktiven Parametern pro Token und läuft dank MXFP4-Quantisierung auf einer einzelnen 80-GB-GPU. Drei Reasoning-Stufen und native Tool-Use-Fähigkeiten runden das Profil ab.",
+    "strengths": [
+      "MoE mit 116,8 Mrd. Gesamt- und etwa 5,1 Mrd. aktiven Parametern pro Token.",
+      "Native MXFP4-Quantisierung erlaubt lokalen Betrieb auf einer einzelnen 80-GB-GPU.",
+      "Apache-2.0-Lizenz ohne regionale Einschränkungen, voll kommerziell und fine-tunable.",
+      "Drei Reasoning-Stufen (low, medium, high) als System-Prompt-Steuerung.",
+      "Native Tool-Use-Fähigkeiten für Browser-Suche, Code-Ausführung und Function Calling.",
+      "131.000-Token-Kontextfenster mit ebenso hohem Maximal-Output."
+    ],
+    "known_limitations": [
+      "Mindestens 80 GB GPU-Speicher für lokales Deployment (MXFP4-quantisiert).",
+      "Cloud-API-Nutzung über Drittanbieter wie Groq unterliegt deren Jurisdiktion.",
+      "Reines Text-Modell ohne Bild- oder Multimodal-Unterstützung.",
+      "Trainiert primär auf englischsprachigen Daten, Wissen bis Juni 2024.",
+      "Drei Reasoning-Stufen erfordern präzise System-Prompts zur Tiefensteuerung."
+    ],
+    "judge_context_hint": "OpenAI-GPT-OSS-120B-Modell mit Apache-2.0-Lizenz als Open Weights, MoE mit 116,8 Mrd. Gesamt- und etwa 5,1 Mrd. aktiven Parametern pro Token. Konfigurierbare Reasoning-Stufen (low/medium/high) per System-Prompt steuern Antworttiefe und -länge; native Tool-Use-Fähigkeiten für Browser-Suche, Code-Ausführung und Function Calling. Bewertung mit Schwerpunkt Coding, Reasoning und Tool-Use-Korrektheit, Wissensstand Juni 2024 beachten.",
+    "architecture_tags": [
+      "Thinking",
+      "Thinking-Optional",
+      "Tool-Use"
+    ],
+    "input_modalities": [
+      "text"
+    ],
+    "output_modalities": [
+      "text"
+    ],
+    "supports_tool_use": true,
+    "tooluse_tested_at": null,
+    "tooluse_score_p1": null,
+    "tooluse_score_p2": null,
+    "tooluse_recommendation": null,
+    "temperature": null,
+    "system_prompt_override": null,
+    "cot_marker_family": null,
+    "cot_tags_detected": null,
+    "top_p": null,
+    "top_k": null,
+    "repetition_penalty": null,
+    "frequency_penalty": null,
+    "presence_penalty": null,
+    "seed": null,
+    "stop_sequences": null,
+    "license": "Apache 2.0",
+    "license_url": "https://opensource.org/licenses/Apache-2.0",
+    "commercial_use_allowed": true,
+    "weights_license_tier": "open-weights",
+    "model_version": "120B",
+    "input_price_per_1m": 0.15,
+    "output_price_per_1m": 0.6,
+    "unknown": false,
+    "card_status": "complete",
+    "size_class": "Workstation",
+    "generated_at": "2026-07-04T15:16:00+00:00",
+    "thinking_probe_detected": true,
+    "thinking_probe_evidence": "Multi-Probe (3 prompts, 3 detected, best confidence=medium):\n  - math: [math] reasoning_tokens=43 in provider metadata. First 200 chars: **Step‑by‑step solution**\n\n1. **Identify the given quantities**  \n   - Distance traveled, \\(d = 120 \\text{ km}\\)  \n   - Time taken, \\(t = 1.5 \\text{ hours}\\)\n\n2. **Recall the formula for average speed\n  - code: [code] reasoning_tokens=39 in provider metadata. First 200 chars: Below is a **step‑by‑step walk‑through of sorting the list**\n\n```\n[3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5]\n```\n\nusing the **Insertion Sort** algorithm.  \nInsertion sort is a simple, stable, in‑place sorting \n  - decision: [decision] reasoning_tokens=285 in provider metadata. First 200 chars: **Short answer:**  \nIn most ethical frameworks the safest course for an autonomous vehicle (AV) is to act in a way that *minimizes overall harm* while respecting the reasonable expectations of the peo",
+    "thinking_probe_confidence": "medium",
+    "thinking_probe_at": "2026-07-04T16:21:04.500172+00:00",
+    "thinking_probe_manual_override": null,
+    "profile_verified": false,
+    "profile_verified_at": null,
+    "profile_verified_by": null,
+    "last_modified_at": "2026-07-04T15:16:00Z",
+    "heritage_ids": [],
+    "community": null
+  },
+  {
     "model_id": "openai/gpt-oss-20b",
-    "display_name": "GPT-OSS 20B via Groq",
+    "display_name": "GPT-OSS 20B",
     "developer": "OpenAI",
     "origin_country": "USA",
     "developer_jurisdiction": "US",
@@ -5542,8 +5901,8 @@
     "commercial_use_allowed": true,
     "weights_license_tier": "open-weights",
     "model_version": "20B",
-    "input_price_per_1m": null,
-    "output_price_per_1m": null,
+    "input_price_per_1m": 0.075,
+    "output_price_per_1m": 0.3,
     "unknown": false,
     "card_status": "complete",
     "size_class": "Desktop",
@@ -5578,7 +5937,7 @@
   },
   {
     "model_id": "ornith-1-0-35b",
-    "display_name": "Ornith 1.0 35B Q8_0 (GGUF)",
+    "display_name": "Ornith 1.0 35B",
     "developer": "DeepReinforce",
     "origin_country": "USA",
     "developer_jurisdiction": "US",
@@ -5671,7 +6030,7 @@
   },
   {
     "model_id": "qwen2_5-coder-7b",
-    "display_name": "Qwen 2.5 Coder 7B (Q6_K)",
+    "display_name": "Qwen 2.5 Coder 7B",
     "developer": "Alibaba Cloud",
     "origin_country": "China",
     "developer_jurisdiction": "CN",
@@ -5761,7 +6120,7 @@
     "deployment_type": "localweights",
     "developer": "Alibaba Cloud / Qwen Team",
     "developer_jurisdiction": "CN",
-    "display_name": "Qwen 3 14B (Q6_K)",
+    "display_name": "Qwen 3 14B",
     "generated_at": "2026-06-03T12:00:00.000000+00:00",
     "input_price_per_1m": 0.0,
     "judge_context_hint": "Lokal betriebenes Qwen-3-Modell mit optionalem Thinking-Modus. Bei der Bewertung Antwortqualität und Token-Verbrauch je nach Thinking-Modus berücksichtigen.",
@@ -5842,7 +6201,7 @@
     "deployment_type": "localweights",
     "developer": "Alibaba Cloud / Qwen Team",
     "developer_jurisdiction": "CN",
-    "display_name": "Qwen 3 4B (Q6_K)",
+    "display_name": "Qwen 3 4B",
     "generated_at": "2026-06-03T12:00:00.000000+00:00",
     "input_price_per_1m": 0.0,
     "judge_context_hint": "Lokal betriebenes 4-Milliarden-Parameter-Modell ohne multimodale Erweiterungen. Bei der Bewertung Wissenstiefe und Reasoning gegen die reduzierte Kapazität gewichten.",
@@ -5914,7 +6273,7 @@
   },
   {
     "model_id": "qwen3-coder-next-q4",
-    "display_name": "Qwen 3 Coder Next Q4_K_XL",
+    "display_name": "Qwen 3 Coder Next",
     "developer": "Alibaba Cloud",
     "origin_country": "China",
     "developer_jurisdiction": "CN",
@@ -5997,7 +6356,7 @@
   },
   {
     "model_id": "qwen3-coder-next-q4",
-    "display_name": "Qwen 3 Coder Next Q4_K_XL",
+    "display_name": "Qwen 3 Coder Next",
     "developer": "Alibaba Cloud",
     "origin_country": "China",
     "developer_jurisdiction": "CN",
@@ -6080,7 +6439,7 @@
   },
   {
     "model_id": "qwen3-coder-next-q8",
-    "display_name": "Qwen 3 Coder Next Q8_K_XL",
+    "display_name": "Qwen 3 Coder Next",
     "developer": "Alibaba Cloud",
     "origin_country": "China",
     "developer_jurisdiction": "CN",
@@ -6162,7 +6521,7 @@
   },
   {
     "model_id": "qwen3_5-35b-a3b-q4",
-    "display_name": "Qwen 3.5 35B-A3B Q4_K_XL",
+    "display_name": "Qwen 3.5 35B-A3B (Unsloth)",
     "developer": "Alibaba Cloud (Base) / Unsloth (GGUF-Quant)",
     "origin_country": "China",
     "developer_jurisdiction": "CN",
@@ -6190,9 +6549,10 @@
     "known_limitations": [
       "Ohne separate Multimodal-Projektor-Datei nur Text-Eingabe",
       "Leichter Qualitätsverlust durch Q4-Quantisierung im Vergleich zu Q6 oder Q8",
-      "Mögliche zensierte oder ausweichende Antworten bei sensiblen Themen mit China-Bezug"
+      "Mögliche zensierte oder ausweichende Antworten bei sensiblen Themen mit China-Bezug",
+      "llama.cpp: Bei Kontexten über ~64K können Kontext-Checkpoints unkontrollierten RAM-Anstieg verursachen. Bei Q4-KV-Cache weniger kritisch als bei Q8, aber bei Agentic-Loops mit vielen Tool-Calls weiterhin relevant. Workaround: --ctx-checkpoints 0 setzen."
     ],
-    "judge_context_hint": "Qwen 3.5 35B-A3B als MoE-Variante mit effizienter Inferenz und optionalem Thinking. Bei der Bewertung die Sampling-Defaults berücksichtigen. Vision nur mit zusätzlicher Projektor-Datei aktivierbar.",
+    "judge_context_hint": "Qwen 3.5 35B-A3B als MoE-Variante (Q4_K_XL) mit effizienter Inferenz und optionalem Thinking. Bei der Bewertung die Sampling-Defaults berücksichtigen. Vision nur mit zusätzlicher Projektor-Datei aktivierbar. Deployment-Hinweis: llama.cpp-Kontext-Checkpoints können bei Kontexten über ~64K zu unkontrolliertem RAM-Wachstum führen (weniger kritisch als bei Q8, aber in Agentic-Loops relevant). Workaround: --ctx-checkpoints 0 (GitHub Issues #23181, #21690).",
     "architecture_tags": [
       "General",
       "Instruct",
@@ -6247,7 +6607,7 @@
   },
   {
     "model_id": "qwen3_5-35b-a3b-q8",
-    "display_name": "Qwen 3.5 35B-A3B Q8_K_XL",
+    "display_name": "Qwen 3.5 35B-A3B (Unsloth)",
     "developer": "Alibaba Cloud (Base) / Unsloth (GGUF-Quant)",
     "origin_country": "China",
     "developer_jurisdiction": "CN",
@@ -6276,9 +6636,10 @@
     "known_limitations": [
       "Ohne separate Multimodal-Projektor-Datei nur Text-Eingabe",
       "Hoher VRAM-Bedarf durch Q8-Quantisierung bei MoE-Architektur",
-      "Mögliche zensierte oder ausweichende Antworten bei sensiblen Themen mit China-Bezug"
+      "Mögliche zensierte oder ausweichende Antworten bei sensiblen Themen mit China-Bezug",
+      "llama.cpp: Bei KV-Cache Q8 und Kontexten über ~64K können Kontext-Checkpoints unkontrollierten RAM-Anstieg und Server-Crashes verursachen. Workaround: --ctx-checkpoints 0 setzen."
     ],
-    "judge_context_hint": "Hochpräzise MoE-Variante mit effizienter Inferenz. Bei der Bewertung Sampling-Defaults berücksichtigen. Vision nur mit zusätzlicher Projektor-Datei aktivierbar.",
+    "judge_context_hint": "Hochpräzise Q8-MoE-Variante (35B/3B aktiv) mit effizienter Inferenz. Bei der Bewertung Sampling-Defaults berücksichtigen. Vision nur mit zusätzlicher Projektor-Datei aktivierbar. Bekanntes Deployment-Problem mit llama.cpp: KV-Cache Q8 in Kombination mit Kontexten über ~64K kann durch unkontrolliert wachsende Kontext-Checkpoints zu Server-Crashes führen (GitHub Issues #23181, #21690). Workaround: --ctx-checkpoints 0. Dieses Verhalten ist nicht modellspezifisch, sondern betrifft die gesamte Qwen3.x MoE-Familie unter dieser Konfiguration.",
     "architecture_tags": [
       "General",
       "Instruct",
@@ -6331,7 +6692,7 @@
   },
   {
     "model_id": "qwen3_5-4b-q4",
-    "display_name": "Qwen 3.5 4B (UD-Q4_K_XL)",
+    "display_name": "Qwen 3.5 4B (Unsloth)",
     "developer": "Alibaba Cloud (Base) / Unsloth (GGUF-Quant)",
     "origin_country": "China",
     "developer_jurisdiction": "CN",
@@ -6413,7 +6774,7 @@
   },
   {
     "model_id": "qwen3_5-4b-q6",
-    "display_name": "Qwen 3.5 4B (UD-Q6_K_XL)",
+    "display_name": "Qwen 3.5 4B (Unsloth)",
     "developer": "Alibaba Cloud (Base) / Unsloth (GGUF-Quant)",
     "origin_country": "China",
     "developer_jurisdiction": "CN",
@@ -6495,7 +6856,7 @@
   },
   {
     "model_id": "qwen3_5-4b-q8",
-    "display_name": "Qwen 3.5 4B (UD-Q8_K_XL)",
+    "display_name": "Qwen 3.5 4B (Unsloth)",
     "developer": "Alibaba Cloud (Base) / Unsloth (GGUF-Quant)",
     "origin_country": "China",
     "developer_jurisdiction": "CN",
@@ -6577,7 +6938,7 @@
   },
   {
     "model_id": "qwen3_5-9b",
-    "display_name": "Qwen 3.5 9B (UD-Q6_K_XL)",
+    "display_name": "Qwen 3.5 9B (Unsloth)",
     "developer": "Alibaba Cloud (Base) / Unsloth (GGUF-Quant)",
     "origin_country": "China",
     "developer_jurisdiction": "CN",
@@ -6629,7 +6990,7 @@
     "output_price_per_1m": 0.0,
     "unknown": false,
     "card_status": "complete",
-    "size_class": "Micro",
+    "size_class": "Edge",
     "generated_at": "2026-06-03T12:00:00.000000+00:00",
     "thinking_probe_detected": false,
     "thinking_probe_evidence": "Manual override: Qwen3.5-Basis mit Thinking-Optional – nicht explizit geprobt.",
@@ -6745,7 +7106,7 @@
   },
   {
     "model_id": "qwen3_6-35b-a3b-mtp-ud-q4",
-    "display_name": "Qwen 3.6 35B-A3B MTP UD-Q4_K_XL",
+    "display_name": "Qwen 3.6 35B-A3B (Unsloth)",
     "developer": "Alibaba Cloud (Base) / Unsloth (GGUF-Quant)",
     "origin_country": "China",
     "developer_jurisdiction": "CN",
@@ -6832,7 +7193,7 @@
   },
   {
     "model_id": "qwen3_6-35b-a3b-mtp-ud-q8",
-    "display_name": "Qwen 3.6 35B-A3B MTP UD-Q8_K_XL",
+    "display_name": "Qwen 3.6 35B-A3B (Unsloth)",
     "developer": "Alibaba Cloud (Base) / Unsloth (GGUF-Quant)",
     "origin_country": "China",
     "developer_jurisdiction": "CN",
@@ -6918,7 +7279,7 @@
   },
   {
     "model_id": "qwen3_6-35b-a3b-q8",
-    "display_name": "Qwen 3.6 35B-A3B Q8_K_XL",
+    "display_name": "Qwen 3.6 35B-A3B (Unsloth)",
     "developer": "Alibaba Cloud (Base) / Unsloth (GGUF-Quant)",
     "community": "Unsloth",
     "origin_country": "China",
@@ -7005,7 +7366,7 @@
   },
   {
     "model_id": "qwen3_6-35b-a3b-uncensored",
-    "display_name": "Qwen 3.6 35B-A3B Uncensored HauhauCS Aggressive Q8_K_P",
+    "display_name": "Qwen 3.6 35B-A3B (Uncensored)",
     "developer": "Alibaba Group (Qwen Team) / HauhauCS (Community Fine-Tune)",
     "origin_country": "China",
     "developer_jurisdiction": "CN",
@@ -7444,7 +7805,7 @@
   },
   {
     "model_id": "qwopus-3_6-27b-coder-mtp-q8",
-    "display_name": "Qwopus-3.6-27B-Coder MTP-Q8_0",
+    "display_name": "Qwopus-3.6-27B-Coder (Jackrong)",
     "developer": "Alibaba DAMO Academy (Base: Qwen3.6-27B) / Jackrong (Fine-Tune: Trace Inversion SFT + Hermes-Agent-SFT) / Kyle Hessling (Evaluation)",
     "origin_country": "China",
     "developer_jurisdiction": "CN",
@@ -7532,7 +7893,7 @@
   },
   {
     "model_id": "qwopus3_6-27b-v2-mtp-q8",
-    "display_name": "Qwopus 3.6-27B-v2 MTP-Q8_0",
+    "display_name": "Qwopus 3.6-27B-v2 (Jackrong)",
     "developer": "Alibaba DAMO Academy (Base: Qwen3.6-27B) / Jackrong (Fine-Tune: Trace Inversion SFT) / Kyle Hessling (Trace Inversion Methodology)",
     "origin_country": "China",
     "developer_jurisdiction": "CN",
@@ -7771,7 +8132,7 @@
     "output_price_per_1m": 2.0,
     "unknown": false,
     "card_status": "complete",
-    "size_class": "Server",
+    "size_class": "Frontier",
     "generated_at": "2026-06-14T10:56:00+00:00",
     "thinking_probe_detected": true,
     "thinking_probe_evidence": "Multi-Probe (3 prompts, 2 detected, best confidence=medium): reasoning_tokens in provider metadata nachgewiesen. CoT-Schema identisch mit MiMo-V2.5-Pro: think-xml mit <think>-Tags.",
@@ -7970,7 +8331,7 @@
   },
   {
     "model_id": "z-ai/glm-5-20260211",
-    "display_name": "GLM-5 (2026-02-11)",
+    "display_name": "GLM-5",
     "developer": "Z.AI (formerly Zhipu AI)",
     "origin_country": "China",
     "developer_jurisdiction": "CN",

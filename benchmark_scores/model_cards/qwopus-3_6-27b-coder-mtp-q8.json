@@ -1,6 +1,6 @@
 {
   "model_id": "qwopus-3_6-27b-coder-mtp-q8",
-  "display_name": "Qwopus-3.6-27B-Coder MTP-Q8_0",
+  "display_name": "Qwopus-3.6-27B-Coder (Jackrong)",
   "developer": "Alibaba DAMO Academy (Base: Qwen3.6-27B) / Jackrong (Fine-Tune: Trace Inversion SFT + Hermes-Agent-SFT) / Kyle Hessling (Evaluation)",
   "origin_country": "China",
   "developer_jurisdiction": "CN",

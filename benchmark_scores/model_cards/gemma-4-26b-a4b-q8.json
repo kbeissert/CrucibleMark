@@ -1,6 +1,6 @@
 {
   "model_id": "gemma-4-26b-a4b-q8",
-  "display_name": "Gemma 4 26B-A4B Instruct Q8_K_XL",
+  "display_name": "Gemma 4 26B-A4B Instruct",
   "developer": "Google DeepMind",
   "origin_country": "USA",
   "developer_jurisdiction": "US",

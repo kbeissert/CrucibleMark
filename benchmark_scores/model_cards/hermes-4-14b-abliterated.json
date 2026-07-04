@@ -10,7 +10,7 @@
   "deployment_type": "localweights",
   "developer": "Qwen (Base: Qwen3-14B) / NousResearch (Fine-Tune) / Community GGUF-Distributor",
   "developer_jurisdiction": "US",
-  "display_name": "Hermes 4 14B (Q6_K, Abliterated)",
+  "display_name": "Hermes 4 14B (Abliterated)",
   "generated_at": "2026-06-03T12:00:00.000000+00:00",
   "input_price_per_1m": 0.0,
   "judge_context_hint": "Abliterierte Variante mit entfernten Schutzmechanismen auf Qwen-3-Basis. Bei der Bewertung die offene, ungebremste Antwortweise explizit berücksichtigen. Tool-Use-Fähigkeit bestätigt. Kein produktions-konservatives Profil.",

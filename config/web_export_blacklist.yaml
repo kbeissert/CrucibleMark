@@ -13,10 +13,6 @@
 #
 blacklist:
 
-  # OpenAI (removed)
-  - "gpt-oss_120b-cloud"
-  - "openai_gpt-oss-120b"
-
   # DeepSeek
   - "deepseek_deepseek-chat-v3_1"
 

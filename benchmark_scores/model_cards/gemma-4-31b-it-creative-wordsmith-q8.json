@@ -1,6 +1,6 @@
 {
   "model_id": "gemma-4-31b-it-creative-wordsmith-q8",
-  "display_name": "Gemma 4 31B Creative Wordsmith Uncensored Q8_0",
+  "display_name": "Gemma 4 31B Creative Wordsmith (Uncensored)",
   "developer": "Google DeepMind (Base) / ConicCat (Wordsmith Fine-Tune) / llmfan46 (Heretic-Abliteration) / mradermacher (GGUF-Quant)",
   "origin_country": "USA",
   "developer_jurisdiction": "US",

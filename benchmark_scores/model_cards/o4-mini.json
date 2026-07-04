@@ -56,7 +56,7 @@
   "output_price_per_1m": 4.4,
   "unknown": false,
   "card_status": "complete",
-  "size_class": "Workstation",
+  "size_class": "Frontier",
   "generated_at": "2026-04-23T21:59:48.373411+00:00",
   "thinking_probe_detected": true,
   "thinking_probe_evidence": "Manually confirmed: OpenAI o-series models use internal chain-of-thought reasoning. The API does not expose reasoning tokens or think-tags in the response body; automated probe cannot detect this. Token budget override is required.",

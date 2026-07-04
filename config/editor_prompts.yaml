@@ -411,8 +411,12 @@ model_card_verification:
       `known_limitations` darauf hinweisen. Der Eintrag in `input_modalities`
       richtet sich nach dem Basismodell, wenn die Quantisierung keine
       Einschränkung dokumentiert.
-    - `display_name` = `"{Offizieller Basismodellname} ({Distributor} {Quantisierungsstufe})"`,
-      z.B. `"Gemma 3 27B IT (Unsloth Dynamic Q8_K_XL)"`
+    - `display_name` = `"{Offizieller Basismodellname} ({Community-Gruppe ODER Variante})"`,
+      z.B. `"Gemma 3 27B IT (Unsloth)"` oder `"Hermes 4 14B (Abliterated)"`.
+      **NICHT** im display_name: Quantisierungsstufe (Q4_K_M, Q8_0, UD-Q*, QAT, MTP),
+      Deployment-Deskriptoren (Cloud API, GGUF), Provider-Suffixe (via OpenRouter)
+      oder Datumsangaben. Diese Informationen gehören in `model_version`,
+      `deployment_type` bzw. `model_id`.
     - `summary` muss Basismodell, Distributor, Quantisierungsstufe und
       den praktischen Deploymentvorteil nennen
     - `judge_context_hint` muss auf die Quantisierungsvariante und
@@ -426,7 +430,7 @@ model_card_verification:
       (alternativ: Suche nach dem model_id-String auf HuggingFace)
     → Basismodell laut HF-Card: Google Gemma 3 27B IT (`google/gemma-3-27b-it`)
     → Basismodell-Seite aufrufen → Lizenz, Parameter, Context, Cutoff extrahieren
-    → `display_name: "Gemma 3 27B IT (Unsloth Dynamic Q8_K_XL)"`
+    → `display_name: "Gemma 3 27B IT (Unsloth)"`
     → `community: "Unsloth"`
     → `license: "Gemma Terms of Use"`, `license_url: "https://ai.google.dev/gemma/terms"`
     → `params_total_b: 27`, `params_active_b: null`, `parameter_architecture: "dense"`
@@ -763,7 +767,7 @@ model_onboarding:
     | `nvidia/llama-3.3-nemotron-super-49b-v1.5`  | `nvidia/llama-3_3-nemotron-super-49b-v1_5` / `nvidia_llama-3_3-nemotron-super-49b-v1_5.json` |
     | `qwen/qwen3.5-397b-a17b`                    | `qwen/qwen3_5-397b-a17b` / `qwen_qwen3_5-397b-a17b.json` |
     | `gemini-2.5-flash`                          | `gemini-2_5-flash` / `gemini-2_5-flash.json`  |
-    | `gpt-oss:120b-cloud`                        | `gpt-oss:120b-cloud` / `gpt-oss_120b-cloud.json` |
+    | `openai/gpt-oss-120b`                       | `openai/gpt-oss-120b` / `openai_gpt-oss-120b.json` |
 
     Ausnahme: Lokale llama.cpp-Modelle ohne echte API-ID → selbstgewählte ID
     ohne Sonderzeichen (z.B. `qwen3_5-35b-a3b-q8`).
@@ -774,7 +778,9 @@ model_onboarding:
     Pflichtfelder aus `config/card_template_model.yaml` vollständig befüllen.
     Besonders wichtig:
     - `model_id`: Interne Underscore-Form (z.B. `gpt-5_5-pro`, `xiaomi/mimo-v2_5-pro`)
-    - `display_name`: Lesbarer Name
+    - `display_name`: Lesbarer Name — Format: `{Name} {Größe} ({Community-Gruppe ODER Variante})`.
+      Keine Quantisierungs-Specs, keine Deployment-Deskriptoren, keine Provider-Suffixe, keine Datumsangaben.
+      z.B. `"Qwen 3.5 9B (Unsloth)"`, `"Hermes 4 14B (Abliterated)"`, `"Gemma 4 31B Instruct"`.
     - `vendor`: Kanonischer Vendor-Name aus `config/classification_taxonomy.json`
     - `weights_license_tier`: "proprietary" | "restricted-weights" | "open-weights"
     - `provider`: Laufzeit-Provider (z.B. "openrouter", "llamacpp", "anthropic")

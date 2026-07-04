@@ -1,6 +1,6 @@
 {
   "model_id": "qwen3_5-35b-a3b-q8",
-  "display_name": "Qwen 3.5 35B-A3B Q8_K_XL",
+  "display_name": "Qwen 3.5 35B-A3B (Unsloth)",
   "developer": "Alibaba Cloud (Base) / Unsloth (GGUF-Quant)",
   "origin_country": "China",
   "developer_jurisdiction": "CN",
@@ -26,7 +26,7 @@
     "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit",
     "Native Tool-Use-Unterstützung"
   ],
- "known_limitations": [
+  "known_limitations": [
     "Ohne separate Multimodal-Projektor-Datei nur Text-Eingabe",
     "Hoher VRAM-Bedarf durch Q8-Quantisierung bei MoE-Architektur",
     "Mögliche zensierte oder ausweichende Antworten bei sensiblen Themen mit China-Bezug",

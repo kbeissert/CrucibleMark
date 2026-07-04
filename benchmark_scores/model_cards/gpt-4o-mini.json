@@ -31,7 +31,7 @@
   "params_active_b": null,
   "params_total_b": null,
   "primary_focus": "general",
-  "size_class": "Server",
+  "size_class": "Frontier",
   "strengths": [
     "Sehr kosteneffizient bei guter Antwortqualität für Standardaufgaben",
     "Schnelle Inferenz mit niedrigen Latenzen für Echtzeit-Anwendungen",

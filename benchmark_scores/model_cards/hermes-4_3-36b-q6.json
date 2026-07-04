@@ -1,6 +1,6 @@
 {
   "model_id": "hermes-4.3-36b-q6",
-  "display_name": "Hermes 4.3 36B Q6_K",
+  "display_name": "Hermes 4.3 36B",
   "developer": "ByteDance (Base: Seed-OSS-36B-Base) / NousResearch (Fine-Tune) / Community GGUF-Distributor",
   "origin_country": "USA",
   "developer_jurisdiction": "US",

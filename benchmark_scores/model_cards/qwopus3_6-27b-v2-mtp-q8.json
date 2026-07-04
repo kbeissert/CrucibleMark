@@ -1,6 +1,6 @@
 {
   "model_id": "qwopus3_6-27b-v2-mtp-q8",
-  "display_name": "Qwopus 3.6-27B-v2 MTP-Q8_0",
+  "display_name": "Qwopus 3.6-27B-v2 (Jackrong)",
   "developer": "Alibaba DAMO Academy (Base: Qwen3.6-27B) / Jackrong (Fine-Tune: Trace Inversion SFT) / Kyle Hessling (Trace Inversion Methodology)",
   "origin_country": "China",
   "developer_jurisdiction": "CN",

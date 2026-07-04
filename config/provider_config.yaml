@@ -133,9 +133,8 @@ providers:
         name: Llama 3.3 (70B) Versatile
       - id: qwen/qwen3-32b
         name: Qwen 3 (32B) via Groq
-      # REMOVED 2026-06-27: GPT-OSS 120B via Groq — Modell gelöscht (clean-model)
-      # - id: openai/gpt-oss-120b
-      #   name: GPT-OSS 120B via Groq
+      - id: openai/gpt-oss-120b
+        name: GPT-OSS 120B
 
     cohere:
       name: Cohere
@@ -603,6 +602,18 @@ providers:
         n_gpu_layers: 99
         context_length: 65536
         enable_thinking: false
+
+      - id: deepseek-r1-distill-qwen-32b
+        name: DeepSeek R1 Distill Qwen 32B Q5_K_M (GGUF)
+        model_file: DeepSeek-R1-Distill-Qwen-32B/DeepSeek-R1-Distill-Qwen-32B-Q5_K_M.gguf
+        n_gpu_layers: 99
+        context_length: 65536
+        enable_thinking: true
+        temperature: 0.7
+        top_p: 0.8
+        top_k: 20
+        presence_penalty: 1.5
+        repeat_penalty: 1.0
 
       - id: ornith-1-0-35b
         name: Ornith 1.0 35B Q8_0 (GGUF)

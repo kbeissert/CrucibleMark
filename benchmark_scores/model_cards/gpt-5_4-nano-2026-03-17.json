@@ -46,7 +46,7 @@
   "output_price_per_1m": 1.25,
   "unknown": false,
   "card_status": "complete",
-  "size_class": "Nano",
+  "size_class": "Frontier",
   "generated_at": "2026-06-10T10:55:00.000000+00:00",
   "thinking_probe_detected": false,
   "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 0 chars",

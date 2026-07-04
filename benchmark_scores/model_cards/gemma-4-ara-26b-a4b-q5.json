@@ -1,6 +1,6 @@
 {
   "model_id": "gemma-4-ara-26b-a4b-q5",
-  "display_name": "Gemma 4 ARA 26B-A4B Q5_K_M (ARA-Abliterated)",
+  "display_name": "Gemma 4 ARA 26B-A4B (ARA-Abliterated)",
   "developer": "Google DeepMind (Base) / ARA-APEX (Abliteration + Quantisierung)",
   "origin_country": "USA",
   "developer_jurisdiction": "US",

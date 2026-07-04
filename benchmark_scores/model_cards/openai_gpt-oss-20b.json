@@ -1,6 +1,6 @@
 {
   "model_id": "openai/gpt-oss-20b",
-  "display_name": "GPT-OSS 20B via Groq",
+  "display_name": "GPT-OSS 20B",
   "developer": "OpenAI",
   "origin_country": "USA",
   "developer_jurisdiction": "US",
@@ -47,8 +47,8 @@
   "commercial_use_allowed": true,
   "weights_license_tier": "open-weights",
   "model_version": "20B",
-  "input_price_per_1m": null,
-  "output_price_per_1m": null,
+  "input_price_per_1m": 0.075,
+  "output_price_per_1m": 0.30,
   "unknown": false,
   "card_status": "complete",
   "size_class": "Desktop",

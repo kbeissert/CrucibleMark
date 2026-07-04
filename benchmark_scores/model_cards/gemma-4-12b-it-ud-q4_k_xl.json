@@ -1,6 +1,6 @@
 {
   "model_id": "gemma-4-12b-it-ud-q4_k_xl",
-  "display_name": "Gemma 4 12B Instruct Q4_K_XL (UndiX-Derivative)",
+  "display_name": "Gemma 4 12B Instruct (Unsloth)",
   "developer": "Google DeepMind (Base) / UndiX (Community-Distribution)",
   "origin_country": "USA",
   "developer_jurisdiction": "US",

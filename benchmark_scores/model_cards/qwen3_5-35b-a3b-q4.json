@@ -1,6 +1,6 @@
 {
   "model_id": "qwen3_5-35b-a3b-q4",
-  "display_name": "Qwen 3.5 35B-A3B Q4_K_XL",
+  "display_name": "Qwen 3.5 35B-A3B (Unsloth)",
   "developer": "Alibaba Cloud (Base) / Unsloth (GGUF-Quant)",
   "origin_country": "China",
   "developer_jurisdiction": "CN",

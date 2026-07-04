@@ -1,6 +1,6 @@
 {
   "model_id": "gemma-4-26B-A4B-it-UD-Q5_K_XL-mtp",
-  "display_name": "Gemma 4 26B A4B Instruct (Unsloth Q5_K_XL MTP)",
+  "display_name": "Gemma 4 26B A4B Instruct (Unsloth)",
   "developer": "Google DeepMind (Base) / Unsloth (Community-Distribution)",
   "origin_country": "USA",
   "developer_jurisdiction": "US",

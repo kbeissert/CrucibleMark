@@ -1,6 +1,6 @@
 {
   "model_id": "gemma-4-31B-it-UD-Q8_K_XL-mtp",
-  "display_name": "Gemma 4 31B Instruct (Unsloth Q8_K_XL MTP)",
+  "display_name": "Gemma 4 31B Instruct (Unsloth)",
   "developer": "Google DeepMind (Base) / Unsloth (Community-Distribution)",
   "origin_country": "USA",
   "developer_jurisdiction": "US",

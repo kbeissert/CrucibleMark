@@ -70,7 +70,7 @@
   "output_price_per_1m": 0.2,
   "unknown": false,
   "card_status": "draft",
-  "size_class": "Medium",
+  "size_class": "Workstation",
   "generated_at": "2026-06-14T10:56:00+00:00",
   "thinking_probe_detected": true,
   "thinking_probe_evidence": "Multi-Probe (3 prompts, 3 detected, best confidence=medium):\n  - math: [math] reasoning_tokens=34 in provider metadata. First 200 chars: **Step‑by‑step solution**\n\n1. **Identify the given quantities**  \n   - Distance traveled: \\(d = 120 \\text{ km}\\)  \n   - Time taken: \\(t = 1.5 \\text{ h}\\)\n\n2. **Recall the formula for average speed**  \n  - code: [code] reasoning_tokens=216 in provider metadata. First 200 chars: **Algorithm chosen:** **Bubble Sort**  \nBubble Sort is a simple comparison‑based sorting algorithm. It works by repeatedly stepping through the list, comparing each pair of adjacent elements and swapp\n  - decision: [decision] reasoning_tokens=63 in provider metadata. First 200 chars: **Short answer:**  \nThere is no universally accepted \"right\" answer.  The decision must be guided by a carefully designed ethical framework that balances several competing values—protecting human life",

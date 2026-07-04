@@ -1,6 +1,6 @@
 {
   "model_id": "gemma-3-12b-it-spark",
-  "display_name": "Gemma 3 12B IT (Q4_K_M)",
+  "display_name": "Gemma 3 12B IT",
   "developer": "Google DeepMind",
   "origin_country": "USA",
   "developer_jurisdiction": "US",

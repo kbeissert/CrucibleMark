@@ -1,5 +1,6 @@
 {
   "architecture_tags": [
+    "Community-Quant",
     "Instruct",
     "Thinking-Optional"
   ],
@@ -9,7 +10,7 @@
   "deployment_type": "localweights",
   "developer": "Qwen (Base: Qwen3-14B) / NousResearch (Fine-Tune) / Community GGUF-Distributor",
   "developer_jurisdiction": "US",
-  "display_name": "Hermes 4 14B (Q4_K_M)",
+  "display_name": "Hermes 4 14B",
   "generated_at": "2026-06-03T12:00:00.000000+00:00",
   "input_price_per_1m": 0.0,
   "judge_context_hint": "Q4-Variante für lokale Assistenz mit effizienter Speichernutzung. Bei der Bewertung Effizienz und brauchbare Struktur gewichten, nicht maximale Tiefenleistung. Hybride Thinking-Modi verfügbar.",

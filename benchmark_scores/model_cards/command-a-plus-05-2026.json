@@ -24,15 +24,17 @@
     "Native Verarbeitung von Text und Bildern",
     "Unterstützung für 48 Sprachen, einschliesslich aller EU-Amtssprachen",
     "Bis zu 64.000 Tokens maximale Ausgabe",
-    "Native Integration mit vLLM und Hugging Face Transformers"
+    "Native Integration mit vLLM und Hugging Face Transformers",
+    "Self-Hosting unter Apache 2.0 ohne laufende Lizenz- oder Tokenkosten; Cohere Cloud-API nur über Cohere Model Vault (Stundenpreis pro Instanz) verfügbar, kein öffentlicher Per-Token-Tarif."
   ],
   "known_limitations": [
     "Weniger unabhängig publizierte Drittbenchmarks als vergleichbare Frontier-Modelle",
     "Thinking verbraucht Output-Tokens aus dem 64.000-Token-Budget",
     "Quantisierung für lokales Self-Hosting mit vertretbarem Ressourcenbedarf nötig",
-    "Tool-Use über die Cohere-API derzeit nicht stabil für komplexe Benchmark-Szenarien"
+    "Tool-Use über die Cohere-API derzeit nicht stabil für komplexe Benchmark-Szenarien",
+    "Cohere-API-Preise für command-a-plus-05-2026 werden nicht öffentlich gelistet; Produktions-Tarife erfordern Vertriebskontakt (sales@cohere.com), Trial-Keys sind auf 1.000 API-Calls pro Monat limitiert."
   ],
-  "judge_context_hint": "Offenes MoE-Modell von Cohere aus Kanada unter Apache-2.0-Lizenz. Reasoning-Anteil verbraucht Output-Tokens aus dem 64.000-Token-Budget, was bei intensivem Reasoning die Antwortlänge begrenzt. Vision-Input, 48 Sprachen und Agentic-Tool-Use sind Kernfähigkeiten. Lokales Deployment über vLLM möglich.",
+  "judge_context_hint": "Offenes MoE-Modell von Cohere aus Kanada unter Apache-2.0-Lizenz. Reasoning-Anteil verbraucht Output-Tokens aus dem 64.000-Token-Budget, was bei intensivem Reasoning die Antwortlänge begrenzt. Vision-Input, 48 Sprachen und Agentic-Tool-Use sind Kernfähigkeiten. Lokales Deployment über vLLM möglich. Kein öffentlicher Per-Token-Preis auf Cohere-Seite verfügbar — Selbst-Hosting ist kostenlos.",
   "architecture_tags": [
     "Thinking",
     "MoE",

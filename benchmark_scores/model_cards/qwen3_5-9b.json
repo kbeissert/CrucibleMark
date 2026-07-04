@@ -1,6 +1,6 @@
 {
   "model_id": "qwen3_5-9b",
-  "display_name": "Qwen 3.5 9B (UD-Q6_K_XL)",
+  "display_name": "Qwen 3.5 9B (Unsloth)",
   "developer": "Alibaba Cloud (Base) / Unsloth (GGUF-Quant)",
   "origin_country": "China",
   "developer_jurisdiction": "CN",
@@ -52,7 +52,7 @@
   "output_price_per_1m": 0.0,
   "unknown": false,
   "card_status": "complete",
-  "size_class": "Micro",
+  "size_class": "Edge",
   "generated_at": "2026-06-03T12:00:00.000000+00:00",
   "thinking_probe_detected": false,
   "thinking_probe_evidence": "Manual override: Qwen3.5-Basis mit Thinking-Optional – nicht explizit geprobt.",
