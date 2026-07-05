@@ -1,6 +1,6 @@
 # CrucibleMark — Agent Context
 
-> **Single Source of Truth** für Cline, Hermes und Copilot.
+> **Single Source of Truth** für KiLo, Cline, Hermes und Copilot.
 > Dynamischer Projektstatus → `memory-bank/`.
 
 ## Project Overview

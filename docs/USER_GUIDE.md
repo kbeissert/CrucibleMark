@@ -655,5 +655,5 @@ make benchmark MODEL=your-test-model
 
 ---
 
-**Dokumenten-Version:** 4.10.8 (Ueberarbeitung 2026-06)\
+**Dokumenten-Version:** 4.10.13 (Ueberarbeitung 2026-07)\
 **Kompatibel mit:** CrucibleMark v4.10.x

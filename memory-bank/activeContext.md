@@ -49,9 +49,9 @@ to know what reference files exist.
   - 10 verbleibende ToolUse-Backfill-Modelle (3 ohne Audit-Logs, 7 Ollama-ID-Auflösung).
   - hermes-4.3-36b-q6: blacklisted + comment-out (gelöst in Session 46).
   - ux_writing_002 für ornith-1-0-35b Re-Run ausstehend (Session 46).
-  - README Version Badge 4.10.8 → 4.10.13 aktualisieren.
+  - ✅ README/PROJECT_STATUS/REF_TODO/Docs-Stempel auf v4.10.13 synchronisiert (2026-07-05).
   - Pre-existing Test-Failures: `test_card_vocabulary_ssot.py::test_all_model_cards_pass_tag_whitelist`, `test_clean_results_arch_coverage::TestEndToEndCleanupDryRun::test_dry_run_mentions_all_csv_files` (gemma_leaderboard.csv).
-  - CHANGELOG hinkt hinter (top-Eintrag v4.10.8, Sessions 39–47 referenzieren v4.10.9–v4.10.13) — Konsolidierung ausstehend.
+  - CHANGELOG hinkt hinter (top-Eintrag v4.10.13 vorhanden für Session 47, aber Zwischen-Versionen v4.10.9–v4.10.12 für Sessions 39–46 nicht separat dokumentiert) — Konsolidierung ausstehend.
   - Bestehende Reviews enthalten noch alte Metrik-Zahlen — werden bei nächster Review-Regenerierung (`make reviews-auto --force`) durch neue qualitative Form ersetzt.
   - 6 true-mismatch Drift-Einträge (manuelles PC-Review nötig).
 

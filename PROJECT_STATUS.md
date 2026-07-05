@@ -1,13 +1,17 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-06-27
-**Current Version:** 4.10.8 — Cohere Native ToolUse + Doku-Stempel-Check
+**Last Updated:** 2026-07-05
+**Current Version:** 4.10.13 — WebExport-Konsistenz-Fixes (ToolUse-Scores datenbasiert + Emoji-Variation-Selectors)
 **Status:** ✅ Production-Ready
 
 > **Hinweis:** Die Executive Summary weiter unten historisch auf v4.6.1.
-> Die Sub-Versionen v4.6.2–v4.10.8 sind im CHANGELOG.md vollständig dokumentiert.
+> Die Sub-Versionen v4.6.2–v4.10.13 sind im CHANGELOG.md vollständig dokumentiert.
 > Dieser Header wird bei jedem Phase-Commit nachgezogen,
 > die Executive Summary nur bei Major-Milestones.
+>
+> **Aktueller Stand (v4.10.13, 2026-07-05):**
+> - **WebExport-Konsistenz-Fixes (Session 47)** — `scripts/web_export.py:_build_leaderboard_entry()` exportiert `synthesis_quality` (ToolUse P1) / `tool_execution` (ToolUse P2) jetzt datenbasiert statt hinter `supports_tool_use=true`-Gate (7 Modelle mit echten ToolUse-Daten aber `supports_tool_use:false` waren fälschlich ohne Scores: command-a-plus-05-2026, openai_gpt-oss-20b, qwen2_5-coder-7b, qwen3-4b/14b, qwen3_5-4b-*/9b). `_EMOJI_RE` um VS16/VS15/ZWJ erweitert (`⏱\ufe0f Interactive` → `Interactive`). Dead-Code `_supports_tool_use` entfernt. 5 neue Regressionstests in `tests/test_web_export_helpers.py`. 1002 passed / 1 skipped / 2 pre-existing failures. Code-Review APPROVE.
+> - **Nicht behoben (out of scope Python-Repo):** `price-comparison-row.njk` Null-Guard für null-Preise, `model-header.njk` Doppel-Rendering architecture_tags/features, Frontend stu=false-Score-Anzeige (`scoreboard-table.js:toolsBadge()`).
 >
 > **Aktueller Stand (v4.10.8, 2026-06-23):**
 > - **Cohere Native ToolUse Connector**: `utils/providers/cohere.py` umgestellt auf nativen `tools`-API-Parameter (statt Prompt-basierter JSON-Schemas). `command-a-reasoning` 6/6 live (P1=90.0, P2=51.7), `command-a-03-2025` 4/6 live. `command-a-plus-05-2026` MoE-Instabilität (HTTP 500 bei Benchmark-Prompts) → `supports_tool_use=false` markiert.

@@ -5,6 +5,17 @@
 
 ## Abgeschlossen
 
+### WebExport-Konsistenz-Fixes (v4.10.13 – 04.07.26, Session 47)
+
+User-Auftrag: 4 Probleme aus dem WebExport-Konsistenz-Check (Stand 2026-07-04 19:35 UTC) beheben. 2 davon Python-Bugs, 2 legitim null/bereits korrekt.
+
+- [x] **ToolUse-Scores datenbasiert exportiert (Problem 2)** — `scripts/web_export.py:_build_leaderboard_entry()` Gate von `supports_tool_use=True` auf Datenpräsenz umgestellt. 7 Modelle mit echten ToolUse-Daten aber `supports_tool_use=false` (command-a-plus-05-2026, openai_gpt-oss-20b, qwen2_5-coder-7b, qwen3-4b/14b, qwen3_5-4b-*/9b) erhalten jetzt `synthesis_quality`/`tool_execution` Scores. Detail-ToolUse-Block (`data.json.tooluse`) bleibt an `supports_tool_use=true` gebunden (Session-44-Nav).
+- [x] **`_EMOJI_RE` um Variation Selectors erweitert (Problem 4)** — VS16 (U+FE0F), VS15 (U+FE0E) und ZWJ (U+200D) werden jetzt mit entfernt. `⏱\ufe0f Interactive` → `Interactive`. Betraf ~20 Modelle mit Emoji-Prefix in `performance_tier`/`speed_profile`.
+- [x] **Dead-Code `_supports_tool_use` entfernt** — Nach Refactor ungenutzte lokale Variable (`supports_tool_use_state` liest direkt `card.get(...)`).
+- [x] **5 neue Regressionstests** in `tests/test_web_export_helpers.py` (2 VS16/VS15/ZWJ + 3 datenbasierte Synthesis).
+- [x] **Code-Review APPROVE WITH SUGGESTIONS** — `/review uncommitted`.
+- [ ] **Offen (Web-Repo, out of scope):** `price-comparison-row.njk` Null-Guard, `model-header.njk` Doppel-Rendering, Frontend stu=false-Score-Anzeige (`scoreboard-table.js:toolsBadge()`), `tooluse-scores.js:35` p2→synthesis_quality Überschreibung.
+
 ### Doku-Stempel-Check + Drift-Refactor (v4.10.8 – 27.06.26, Session 40)
 
 User-Audit fand: 5 von 23 Docs hatten veraltete `Dokumenten-Version:`-Stempel, teils Monate hinter der Code-Version (USER_GUIDE v3.1.0, ARCHITECTURE/DEVELOPER_GUIDE v3.8.1, BACKUP_STRATEGY v3.2.0, MODEL_CLASSIFICATION v3.0.0 — alle sollten v4.10.8 sein). Codebase war der Doku ~11 Releases voraus.
