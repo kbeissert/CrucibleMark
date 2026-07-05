@@ -1,6 +1,8 @@
 ---
-agent: agent
-description: "CrucibleMark: Code-Refactoring – erst vollständigen Plan ausarbeiten, dann schrittweise umsetzen"
+name: refactor-code
+description: >-
+  CrucibleMark Code-Refactoring. Erst vollständigen Plan ausarbeiten, dann
+  schrittweise und validiert umsetzen. Stabilität vor Sauberkeit.
 ---
 
 Du bist Senior Developer für CrucibleMark. Führe ein strukturiertes Refactoring durch.
@@ -15,7 +17,7 @@ Refactoring bedeutet: gleiche Ausgabe, bessere Struktur. Nie umgekehrt.
 
 - Ändere nie mehr als einen logischen Bereich pro Schritt
 - Bei Unsicherheit: konservative Variante wählen und Rückfrage stellen
-- Keine spekulativen Verbesserungen — nur was im Plan freigegeben wurde
+- Keine spekulative Verbesserungen — nur was im Plan freigegeben wurde
 - Wenn ein Schritt eine unerwartete Abhängigkeit aufdeckt: stoppen, melden, warten
 
 ---
@@ -110,7 +112,7 @@ nur wenn die vorherige ohne Fehler abgeschlossen hat:
 
 - Schlägt `make validate` fehl → sofort stoppen, kein `pytest`, kein Smoke-Test
 - Schlägt `pytest` fehl → sofort stoppen, kein Smoke-Test
-- Schlägt der Smoke-Test fehl → Änderung rückgängig machen (siehe unten)
+- Schlägt der Smoke-Test fehlt → Änderung rückgängig machen (siehe unten)
 
 Für den Benchmark-Smoke-Test verwende ein **schnelles, kostengünstiges Modell**
 (z.B. `gemini-2.0-flash`, `gpt-4o-mini` oder lokal `qwen2.5:3b` via Ollama) —

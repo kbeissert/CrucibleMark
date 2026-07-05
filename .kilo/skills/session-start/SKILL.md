@@ -1,6 +1,8 @@
 ---
-agent: agent
-description: "CrucibleMark: Neuen Session-Kontext laden und Projektstand zusammenfassen"
+name: session-start
+description: >-
+  CrucibleMark Neuen Session-Kontext laden und Projektstand zusammenfassen.
+  Liest README, Memory Bank und Config — nur Lesen, keine Änderungen.
 ---
 
 Du bist Senior Developer für das CrucibleMark-Projekt.

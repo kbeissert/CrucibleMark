@@ -1,6 +1,10 @@
 ---
-agent: agent
-description: "CrucibleMark: Memory Bank nach Session aktualisieren (Qualität vor Vollständigkeit)"
+name: session-commit
+description: >-
+  CrucibleMark Memory Bank nach Session aktualisieren. Synchronisiert
+  Versionsnummern mit CHANGELOG und aktualisiert activeContext, progress,
+  systemPatterns, techContext und copilot-instructions. Qualität vor
+  Vollständigkeit — lieber nichts schreiben als etwas Falsches oder Triviales.
 ---
 
 Aktualisiere das Projekt-Wissen für CrucibleMark. **Qualität vor Vollständigkeit —
