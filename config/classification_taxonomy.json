@@ -364,6 +364,16 @@
         "description": "Jackrong — Community Fine-Tuner, spezialisiert auf Trace Inversion SFT und Hermes-Agent-SFT auf Qwen-Basismodellen. Zusammenarbeit mit Kyle Hessling (Trace Inversion Methodology).",
         "aliases": [],
         "speciality": "finetune"
+      },
+      "Mia-AiLab": {
+        "label": "Mia-AiLab",
+        "vendor_card_id": "mia_ailab",
+        "description": "Mia-AiLab (Mia's AI Lab) — Unabhängiger Community-Fine-Tuner, spezialisiert auf Full-Checkpoint-Instruction- und Reasoning-Fine-Tunes auf Qwen- und Gemma-Basismodellen (Qwable 3.6 27B/35B, Gemmable 4 12B/31B-MTP). MIT-Lizenz, lokales Deployment im Fokus. Trainingsdatenherkunft und Herstellerjurisdiktion nicht öffentlich dokumentiert.",
+        "aliases": [
+          "Mia's AI Lab",
+          "Mia AI Lab"
+        ],
+        "speciality": "finetune"
       }
     }
   }

@@ -440,6 +440,16 @@ providers:
       parallel: 2
       hardware_profile: dgx_spark_cuda
       models:
+      - id: qwable-3.6-27b-q4
+        name: Qwable 3.6 27B Q4_K_M (GGUF, Fable5-tune)
+        model_file: Qwable27B/Qwable-27b_Q4_K_M.gguf
+        n_gpu_layers: 99
+        enable_thinking: true
+      - id: qwable-3.6-35b-q5
+        name: Qwable 3.6 35B Q5_K_M (GGUF, Fable5-tune)
+        model_file: Qwable35b/Qwable-3.6-35b_q5_k_m.gguf
+        n_gpu_layers: 99
+        enable_thinking: true
 
       # ── Auskommentiert: nano-desktop-models (nicht auf Spark) ──
       # - id: gemma-3-12b-it-spark

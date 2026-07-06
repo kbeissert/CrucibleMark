@@ -1,0 +1,37 @@
+{
+  "vendor_id": "mia_ailab",
+  "card_subtype": "community",
+  "display_name": "Mia-AiLab",
+  "company": "Mia-AiLab (Mia's AI Lab, Community)",
+  "headquarters": "Unknown",
+  "founding_year": 2022,
+  "pricing_model": "open-source-self-hosted",
+  "api_base_url": null,
+  "api_documentation_url": "https://huggingface.co/Mia-AiLab",
+  "deployment": {
+    "cloud_act_exposure": false,
+    "applicable_law": "N/A (lokal only)",
+    "data_residency": "N/A (lokal only)",
+    "gdpr_dpa_available": false,
+    "eu_adequacy_decision": false,
+    "data_retention_days": 0,
+    "chinese_nsl_risk": "none"
+  },
+  "privacy_note": "Mia-AiLab betreibt keinen eigenen Cloud-Inferenz-Dienst. Die Modelle (Qwable 3.6, Gemmable 4) werden ausschließlich als Open-Weight-Downloads unter MIT-Lizenz auf Hugging Face bereitgestellt, primär als GGUF-Exporte für lokale Inferenz (llama.cpp, Unsloth Studio, LM Studio, Lemonade). Datenschutzfragen liegen vollständig bei der Hosting-Infrastruktur des Nutzers. Da keine Trainingsdaten offengelegt sind, bleibt die Datenprovenanz ebenfalls beim Fine-Tune-Autor.",
+  "notable_models": [
+    "Qwable 3.6 27B (Mia-AiLab)",
+    "Qwable 3.6 35B (Mia-AiLab)",
+    "Qwable 3.6 27B-MTP (Mia-AiLab)",
+    "Gemmable 4 12B-MTP-GGUF (Mia-AiLab)",
+    "Gemmable 4 31B-MTP-GGUF (Mia-AiLab)"
+  ],
+  "stats": {},
+  "unknown": false,
+  "generated_at": "2026-07-06T08:05:00+00:00",
+  "last_verified_at": "2026-07-06",
+  "verification_source": "https://huggingface.co/Mia-AiLab",
+  "profile_verified": false,
+  "profile_verified_at": null,
+  "profile_verified_by": null,
+  "description": "Mia-AiLab (Mia's AI Lab, HF-Bio: 'Building with local AI & LLMs | Insights, tools & honest experiments') ist ein unabhängiger Community-Fine-Tuner mit Fokus auf Full-Checkpoint-Instruction- und Reasoning-Fine-Tunes auf Qwen- und Gemma-Basismodellen, primär für lokales Deployment optimiert. Bekannte Modellfamilien: Qwable 3.6 (27B dense, 35B-A3B MoE, plus 27B-MTP-Variante) und Gemmable 4 (12B-MTP-GGUF und 31B-MTP-GGUF, jeweils GGUF-Exporte von Google Gemma 4 12B/31B). Alle veröffentlichten Modelle stehen unter MIT-Lizenz. Haupterkennungszeichen der Fine-Tunes ist Fable-5-Reasoning- und Trace-Style-Training für strukturierte, schrittweise Antworten. Weder das Hugging-Face-Profil noch der X-Account @MiaAI_lab (seit Juli 2022) oder die carrd.co-Seite enthalten eine Länder- oder Jurisdiktionsangabe, daher bleibt der Sitz unbekannt. Bei rein lokalem Betrieb sind weder US-CLOUD-Act noch chinesisches NSL relevant."
+}
