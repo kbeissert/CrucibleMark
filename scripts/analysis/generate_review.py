@@ -283,10 +283,8 @@ def _ensure_vendor_card(
         _generate_card,
         _write_card,
     )
-    from utils.vendor_card_template import rebuild_provider_index
     card = _generate_card(vendor_name, card_id, client, card_provider, card_model)
     _write_card(card)
-    rebuild_provider_index()
     print(f"  Provider Card erstellt: {vendor_name}")
     return card
 

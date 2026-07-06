@@ -26,7 +26,6 @@ Verwendung:
 """
 from __future__ import annotations
 
-import json
 import logging
 from dataclasses import dataclass, field
 from functools import lru_cache
@@ -179,10 +178,6 @@ def clear_cache() -> None:
 # ---------------------------------------------------------------------------
 # Card-Verzeichnis-Lookup (SSoT für Cards-Dir je Typ)
 # ---------------------------------------------------------------------------
-# Bisher existierte rebuild_provider_index() in utils/vendor_card_template.py,
-# aber kein symmetrisches Pendant für Model Cards. Diese SSoT-Funktion
-# konsolidiert den Index-Rebuild für beide Card-Typen, sodass Generator- und
-# Validate-Skripte dieselbe Pfad- und Schreiblogik nutzen.
 
 _CARDS_DIRS: dict[str, Path] = {
     "model": ROOT_DIR / "benchmark_scores" / "model_cards",
@@ -208,36 +203,3 @@ def cards_dir(card_type: str) -> Path:
             f"Verfügbar: {sorted(_CARDS_DIRS.keys())}"
         )
     return _CARDS_DIRS[card_type]
-
-
-def rebuild_card_index(card_type: str) -> int:
-    """Baut _index.json aus allen vorhandenen Einzelkarten neu auf.
-
-    Args:
-        card_type: "model" oder "vendor"
-
-    Returns:
-        Anzahl der aufgenommenen Cards.
-
-    Raises:
-        ValueError: card_type unbekannt.
-    """
-    cards_dir_path = cards_dir(card_type)
-    cards: list[dict[str, Any]] = []
-    for p in sorted(cards_dir_path.glob("*.json")):
-        if p.name == "_index.json":
-            continue
-        try:
-            loaded = json.loads(p.read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, OSError) as exc:
-            logger.warning("Konnte %s nicht lesen: %s", p.name, exc)
-            continue
-        if isinstance(loaded, dict):
-            cards.append(loaded)
-
-    index_path = cards_dir_path / "_index.json"
-    index_path.write_text(
-        json.dumps(cards, ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
-    )
-    return len(cards)

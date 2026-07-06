@@ -45,7 +45,6 @@ from utils.vendor_card_template import (
     CARDS_DIR,
     _safe_id,
     normalize_vendor_card_data,
-    rebuild_provider_index,
 )
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
@@ -255,8 +254,7 @@ def generate(
         logger.info("Karte gespeichert: %s → %s", name, path.name)
 
     if generated > 0:
-        count = rebuild_provider_index()
-        logger.info("_index.json aktualisiert (%d Provider Cards).", count)
+        logger.info("%d Provider Cards generiert.", generated)
 
     print(f"\nFertig: {generated} generiert, {skipped} übersprungen.")
 

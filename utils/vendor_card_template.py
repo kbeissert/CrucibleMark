@@ -241,30 +241,6 @@ def normalize_vendor_card_data(card_data: dict[str, Any]) -> dict[str, Any]:
     return result
 
 
-def rebuild_provider_index() -> int:
-    """Baut _index.json aus allen vorhandenen Einzelkarten neu auf.
-
-    Returns:
-        Anzahl der aufgenommenen Provider-Cards.
-    """
-    cards_dir = _cards_dir()
-    cards: list[dict[str, Any]] = []
-    for p in sorted(cards_dir.glob("*.json")):
-        if p.name == "_index.json":
-            continue
-        try:
-            cards.append(json.loads(p.read_text(encoding="utf-8")))
-        except (json.JSONDecodeError, OSError):
-            continue
-
-    index_path = cards_dir / "_index.json"
-    index_path.write_text(
-        json.dumps(cards, ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
-    )
-    return len(cards)
-
-
 # ---------------------------------------------------------------------------
 # Card-Status (Phase 22)
 # ---------------------------------------------------------------------------

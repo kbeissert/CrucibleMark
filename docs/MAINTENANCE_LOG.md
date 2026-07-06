@@ -33,7 +33,6 @@ CLI für die Card-Erstellung, analog zu `ensure_card_structure.py` aufgebaut:
 - **Skeleton via `utils.card_utils.ensure_card(model_id, provider=…)`** —
   SSoT-`ensure_card` mit `provider`-Parameter (übernimmt Konflikt-Resolver
   und `{base}--{shortcode}`-ID-Schema).
-- **`rebuild_card_index("model")`** am Ende.
 
 CLI:
 

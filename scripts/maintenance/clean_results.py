@@ -804,22 +804,6 @@ def _run_clean_logic(args) -> None:
     if args.model:
         clean_model_card(model=args.model, dry_run=args.dry_run)
 
-    # Card-Index rebuilden (model und vendor), damit _index.json keine
-    # stale Eintraege auf geloeschte Cards enthaelt.
-    if not args.dry_run and args.model:
-        try:
-            from utils.card_template import rebuild_card_index
-            model_count = rebuild_card_index("model")
-            print(f"   - model_cards/_index.json: rebuild ({model_count} Eintraege)")
-        except Exception as e:
-            print(f"   ⚠️ Card-Index-Rebuild (model) fehlgeschlagen: {e}")
-        try:
-            from utils.vendor_card_template import rebuild_provider_index
-            vendor_count = rebuild_provider_index()
-            print(f"   - vendor_cards/_index.json: rebuild ({vendor_count} Eintraege)")
-        except Exception as e:
-            print(f"   ⚠️ Card-Index-Rebuild (vendor) fehlgeschlagen: {e}")
-
     # Leaderboard Update triggern, wenn nicht dry run
     if not args.dry_run:
         print("\n📈 Aktualisiere Leaderboard...")

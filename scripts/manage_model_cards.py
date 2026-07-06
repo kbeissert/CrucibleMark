@@ -57,7 +57,6 @@ from utils.card_template import (  # noqa: E402
     CardTemplate,
     cards_dir,
     load_card_template,
-    rebuild_card_index,
 )
 from utils.model_utils import _card_path, _find_card
 
@@ -1817,7 +1816,6 @@ class CardManager:
                     json.dumps(cleaned, ensure_ascii=False, indent=2) + "\n",
                     encoding="utf-8",
                 )
-                rebuild_card_index("model")
                 logger.info("    ✅ %s aktualisiert.", path.name)
         elif self.args.fix and (report.parse_error or report.error):
             logger.info("    [FIX übersprungen] %s", report.parse_error or report.error)
@@ -1874,7 +1872,6 @@ class CardManager:
                 json.dumps(cleaned, ensure_ascii=False, indent=2) + "\n",
                 encoding="utf-8",
             )
-            rebuild_card_index("model")
             report.wrote = True
             logger.info("    ✅ %s geschrieben.", path.name)
         for w in warnings:

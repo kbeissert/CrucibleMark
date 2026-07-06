@@ -815,7 +815,6 @@ make model-cards                                    # interaktive Eingabe
 1. Berechne `_card_path(model_id, provider_key, for_write=True)` → kanonischer Pfad
 2. Falls Datei existiert und `--force` nicht gesetzt → Fehler (kein versehentliches Überschreiben)
 3. Template mit allen Pflichtfeldern als `"TODO"`-Platzhalter + automatisch berechnetem `size_class` schreiben
-4. `_index.json` neu aufbauen
 
 **Nach der Template-Erstellung:** Alle `"TODO"`-Felder manuell befüllen, dann `card_status` auf `"complete"` setzen. Der Thinking-Probe-Workflow (`make probe-thinking MODEL=...`) ergänzt die `thinking_probe_*`-Felder automatisch vor dem ersten Benchmark-Run.
 

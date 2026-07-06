@@ -226,7 +226,7 @@ def check_card(path: Path, data: dict) -> list[dict]:
             f"model_id='{model_id}' enthält doppelte Underscores",
             "model_id")
 
-    # 12. Duplikate in _index.json werden in main() geprüft
+    # 12. Duplikate in Card-Dateien werden in main() geprüft (inline glob)
     return findings
 
 
@@ -284,33 +284,28 @@ def main() -> int:
             for f in findings:
                 summary[f["severity"]] = summary.get(f["severity"], 0) + 1
 
-    # Duplikate in _index.json prüfen
-    index_path = CARDS_DIR / "_index.json"
-    if index_path.exists():
+    # Duplikate prüfen — direkt über Card-Dateien (früher via _index.json,
+    # das aber oft driftete; jetzt inline glob als Source of Truth)
+    seen: dict[str, int] = {}
+    for path in sorted(CARDS_DIR.glob("*.json")):
+        if path.name.startswith("_"):
+            continue
         try:
-            index = json.loads(index_path.read_text(encoding="utf-8"))
-            if isinstance(index, list):
-                seen: dict[str, int] = {}
-                for entry in index:
-                    if isinstance(entry, dict) and "model_id" in entry:
-                        mid = entry["model_id"]
-                        seen[mid] = seen.get(mid, 0) + 1
-                duplicates = {k: v for k, v in seen.items() if v > 1}
-                for mid, count in duplicates.items():
-                    all_findings["_index.json"] = all_findings.get("_index.json", []) + [{
-                        "severity": "CRITICAL",
-                        "code": "DUPLICATE_MODEL_ID",
-                        "message": f"model_id='{mid}' erscheint {count}× in _index.json",
-                        "field": "model_id",
-                    }]
-                    summary["CRITICAL"] += 1
-        except json.JSONDecodeError as exc:
-            all_findings["_index.json"] = [{
-                "severity": "CRITICAL",
-                "code": "JSON_ERROR",
-                "message": str(exc),
-                "field": "",
-            }]
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            continue
+        if isinstance(data, dict) and "model_id" in data:
+            mid = data["model_id"]
+            seen[mid] = seen.get(mid, 0) + 1
+    duplicates = {k: v for k, v in seen.items() if v > 1}
+    for mid, count in duplicates.items():
+        all_findings["DUPLICATE_MODEL_IDS"] = all_findings.get("DUPLICATE_MODEL_IDS", []) + [{
+            "severity": "CRITICAL",
+            "code": "DUPLICATE_MODEL_ID",
+            "message": f"model_id='{mid}' erscheint {count}× in Card-Dateien",
+            "field": "model_id",
+        }]
+        summary["CRITICAL"] += 1
 
     if args.json:
         output = {

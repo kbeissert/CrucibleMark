@@ -86,7 +86,7 @@ Wenn ein Modell via `make clean-model MODEL=X` entfernt wird, müssen ALLE Daten
 
 Sub-Family-Leaderboards (`SUB_FAMILY_LEADERBOARD_CSVS`) inkludieren: `gemma_leaderboard.csv`, `qwen_leaderboard.csv`, `provider_leaderboard.csv`.
 
-Nach Card-Löschung wird `rebuild_card_index("model")` + `rebuild_provider_index()` getriggert, sonst verweisen stale Index-Einträge auf gelöschte Cards.
+Nach Card-Löschung werden Leaderboard und Web-Export direkt aus den Einzelkarten-Dateien (`glob("*.json")`) neu generiert — ein separater Index-Rebuild ist nicht mehr nötig (früher `_index.json`, wurde wegen Silent-Drift entfernt).
 
 **Vergessene Pfade führen zu Web-Export-Drift** (Sub-LBs sichtbar nach Rebuild, dispatch_summaries von `_build_benchmark_run_dates` und `_build_tooluse_entry` gelesen).
 
@@ -123,7 +123,7 @@ grep -l '"model_id": "[^"]*\.[^"]*"' benchmark_scores/model_cards/*.json
 2. Draft-Card mit alter ID löschen (`benchmark_scores/model_cards/{old_id}.json`).
 3. Alte Audit-Log-Dirs löschen (`outputs/audit_logs/{old_safe_name}/`).
 4. Alte Review-Dirs löschen (`docs/reviews/{old_safe_name}/`).
-5. Card-Index rebuild: `PYTHONPATH=. python3 -c "from utils.card_template import rebuild_card_index; rebuild_card_index('model')"`.
+5. ~~Card-Index rebuild~~ — entfällt, `_index.json` wurde entfernt. Web-Export und Leaderboard lesen direkt aus den Einzelkarten.
 6. `make consolidate-csv` (dedupliziert physisch auf 1 Zeile pro `(model, asset_id)`, `keep="last"` hält neueren Timestamp).
 7. `make leaderboard` (regeneriert `benchmark_leaderboard*.csv` aus konsolidierter CSV).
 8. `make review MODEL=<new_id> AUTO=1 FORCE=1` (regeneriert Reviews mit korrektem Modellnamen).

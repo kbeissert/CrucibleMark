@@ -11,7 +11,6 @@ from utils.vendor_card_template import (
     ensure_vendor_card,
     load_vendor_card,
     normalize_vendor_card_data,
-    rebuild_provider_index,
 )
 
 
@@ -156,23 +155,6 @@ class TestEnsureProviderCard:
         assert data["founding_year"] is None
 
         test_path.unlink()
-
-
-class TestRebuildProviderIndex:
-    """rebuild_provider_index erstellt _index.json neu."""
-
-    def test_rebuild_index_returns_count(self) -> None:
-        """Gibt die Anzahl der gefundenen Provider Cards zurück."""
-        count = rebuild_provider_index()
-        assert isinstance(count, int)
-        assert count >= 1
-
-    def test_index_file_exists(self) -> None:
-        """_index.json wird geschrieben."""
-        from utils.vendor_card_template import CARDS_DIR
-
-        index_path = CARDS_DIR / "_index.json"
-        assert index_path.exists()
 
 
 class TestLoadProviderCard:

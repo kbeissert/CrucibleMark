@@ -189,9 +189,13 @@ Felder mit Beschreibung "null wenn X" müssen `required: false` sein — `is_unk
 
 Limitiert Targets pro Run. Bei `FORCE=1` werden immer die ersten N alphabetischen Cards verarbeitet (kein Skip bereits verifizierter). Ohne `FORCE` werden nur unverifizierte Cards verarbeitet — dann funktioniert Batch-Processing korrekt (10 pro Run, nächster Run nächste 10).
 
-### `_rebuild_index()` entfernt (v4.10.7)
+### `_index.json` entfernt (v4.10.12)
 
-`generate_model_cards.py` hatte `_rebuild_index()` — wurde zu `rebuild_card_index()` in `utils/card_template` migriert. Falls noch alte Aufrufe existieren (Beispiel: `generate_review.py:200` rief die alte Funktion auf → `AttributeError`-Crash bei `reviews-auto` Modell 54/118): verwaisten Aufruf + unbenutzten `mc_gen`-Import entfernen.
+`_index.json` (denormalisiertes Array aller Card-JSONs) wurde vollständig entfernt — sowohl für `model_cards/` als auch `vendor_cards/`. Begründung: 50% der Card-Modifikations-Commits vergaßen den Rebuild, der Index driftete silently. Kein Production-Code las den Index (Web-Export, Leaderboard, Benchmark-Runner lesen direkt per `glob("*.json")`); einziger Konsument war `audit_model_cards_full.py` (Duplicate-Detection), das jetzt inline globt. Die Funktionen `rebuild_card_index()` und `rebuild_provider_index()` wurden entfernt; defensive `if p.name == "_index.json": continue`-Checks bleiben als harmloses Dead Code bestehen.
+
+### `_rebuild_index()` entfernt (v4.10.7, historisch)
+
+`generate_model_cards.py` hatte früher `_rebuild_index()` — wurde zwischenzeitlich zu `rebuild_card_index()` in `utils/card_template` migriert, dann mit dem Index vollständig entfernt (siehe oben).
 
 ## MCP Auto-Lifecycle
 

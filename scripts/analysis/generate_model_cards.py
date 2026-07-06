@@ -8,7 +8,6 @@ danach ``card_status`` auf ``"complete"`` setzen.
 
 Konsumenten der Card-Struktur:
   - :mod:`utils.card_utils.ensure_card` (SSoT-Erzeugung)
-  - :mod:`utils.card_template.rebuild_card_index` (SSoT-Index-Rebuild)
   - :mod:`scripts.analysis.validate_cards` (Validierung gegen Template)
 
 Verwendung:
@@ -42,7 +41,6 @@ if str(ROOT_DIR) not in sys.path:
 
 from utils.card_template import (  # noqa: E402
     cards_dir,
-    rebuild_card_index,
 )
 from utils.card_utils import ensure_card  # noqa: E402
 from utils.model_utils import _card_path, resolve_canonical_model_id  # noqa: E402
@@ -423,14 +421,6 @@ def main() -> int:
         force=args.force,
     )
     reports = [report]
-
-    # Index-Rebuild nur bei tatsächlicher Erstellung
-    if report.action in {"created", "rebuilt"}:
-        try:
-            rebuild_card_index("model")
-            logger.info("_index.json aktualisiert.")
-        except (OSError, ValueError) as exc:
-            logger.warning("Index-Rebuild fehlgeschlagen: %s", exc)
 
     # Output
     if args.json:

@@ -124,8 +124,9 @@ class TestGenerateReviewNoReflection:
         assert "_write_card" in source, (
             "_ensure_vendor_card importiert _write_card nicht direkt!"
         )
-        assert "rebuild_provider_index" in source, (
-            "_ensure_vendor_card ruft rebuild_provider_index() nicht auf!"
+        assert "rebuild_provider_index" not in source, (
+            "_ensure_vendor_card ruft noch rebuild_provider_index() auf — "
+            "_index.json wurde entfernt (v4.10.12), Rebuild ist obsolet!"
         )
 
     def test_ensure_vendor_card_uses_ssoot_lookup(self) -> None:

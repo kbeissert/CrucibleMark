@@ -284,7 +284,6 @@ Slug-Mismatch-Bug (Punkte in der ID werden hart abgelehnt, weil
    - `name` → `display_name` (überschreibt nur, wenn aktueller Wert `"TODO"`)
    - `<provider.name>` → `developer` (gleiche Regel)
 3. **Skeleton** via `utils.card_utils.ensure_card(model_id, provider=…)` (SSoT).
-4. **`rebuild_card_index("model")`**.
 
 **Beispiele:**
 
@@ -332,7 +331,6 @@ mit komfortablem `MODEL=<id>`-Flag.
 
 1. `utils.card_sync.plan_sync(card_path, "model")` → `SyncPlan`
 2. `apply_sync(...)` mit `dry_run` / `yes` aus dem Aufruf
-3. `rebuild_card_index("model")`
 
 **Beispiele:**
 
@@ -380,7 +378,6 @@ zurück auf `true` am Ende. Bei Abbruch bleibt `false` als Resumption-Marker.
 8. **Un-Lock**: `profile_verified=true`, `profile_verified_at=YYYY-MM-DD`,
    `profile_verified_by="llm:<model>"`, `last_modified_at=YYYY-MM-DD`
 9. **Delete Backup** bei Erfolg
-10. **`rebuild_card_index("model")`**
 
 **Beispiele:**
 

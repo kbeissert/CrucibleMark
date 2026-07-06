@@ -20,7 +20,7 @@ from scripts.analysis.generate_model_cards import (
     format_json_report,
     format_text_report,
 )
-from utils.card_template import cards_dir, rebuild_card_index
+from utils.card_template import cards_dir
 
 
 # ---------------------------------------------------------------------------
@@ -253,38 +253,3 @@ class TestCardsDirSsoT:
     def test_cards_dir_unknown_raises(self) -> None:
         with pytest.raises(ValueError, match="Unbekannter card_type"):
             cards_dir("unknown")
-
-    def test_rebuild_card_index_for_model(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
-    ) -> None:
-        """rebuild_card_index sammelt alle Karten und schreibt _index.json."""
-        import utils.card_template as ct
-        # Patch die _CARDS_DIRS-Lookup auf tmp_path
-        monkeypatch.setitem(ct._CARDS_DIRS, "model", tmp_path)
-
-        # Eine Card ablegen
-        (tmp_path / "x.json").write_text(json.dumps({"model_id": "x"}))
-        (tmp_path / "y.json").write_text(json.dumps({"model_id": "y"}))
-
-        n = rebuild_card_index("model")
-        assert n == 2  # noqa: PLR2004
-        assert (tmp_path / "_index.json").exists()
-        index = json.loads((tmp_path / "_index.json").read_text())
-        assert len(index) == 2  # noqa: PLR2004
-        assert {c["model_id"] for c in index} == {"x", "y"}
-
-    def test_rebuild_card_index_skips_index_file(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
-    ) -> None:
-        """Bestehende _index.json wird nicht in den Index aufgenommen."""
-        import utils.card_template as ct
-        monkeypatch.setitem(ct._CARDS_DIRS, "model", tmp_path)
-        (tmp_path / "_index.json").write_text("[]")
-        (tmp_path / "x.json").write_text(json.dumps({"model_id": "x"}))
-
-        n = rebuild_card_index("model")
-        assert n == 1
-
-    def test_rebuild_card_index_unknown_type_raises(self) -> None:
-        with pytest.raises(ValueError, match="Unbekannter card_type"):
-            rebuild_card_index("unknown")
