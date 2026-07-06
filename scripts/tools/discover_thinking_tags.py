@@ -60,7 +60,7 @@ PROVIDER_CONFIG_PATH = ROOT_DIR / "config" / "provider_config.yaml"
 DEFAULT_OUTPUT = ROOT_DIR / "docs" / "THINKING_TAGS_INVENTORY.md"
 
 # Provider-Prioritaet: lokal > openrouter > rest
-_LOCAL_PRIORITY = {"llamacpp": 0, "llamacpp_spark": 1, "ollama": 2, "ollama_local": 3}
+_LOCAL_PRIORITY = {"llamacpp": 0, "llamacpp_spark": 1, "vllm_spark": 2, "ollama": 3, "ollama_local": 4}
 _CLOUD_PRIORITY = {"openrouter": 0, "groq": 1}
 
 
@@ -183,7 +183,7 @@ def pick_representatives(
     """Waehlt max_per_family Modelle pro Familie aus.
 
     Prioritaet:
-    1. Lokale Modelle (llamacpp > llamacpp_spark > ollama) — schnell, kostenlos
+    1. Lokale Modelle (llamacpp > llamacpp_spark > vllm_spark > ollama) — schnell, kostenlos
     2. OpenRouter (breiteste Coverage, oft mit "thinking"-Variante)
     3. Direkt-API (mistral, anthropic, openai, google, xai) — niedrigste Prio
     """

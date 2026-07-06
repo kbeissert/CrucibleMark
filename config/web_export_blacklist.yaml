@@ -15,6 +15,7 @@ blacklist:
 
   # DeepSeek
   - "deepseek_deepseek-chat-v3_1"
+  - "deepseek-r1-distill-qwen-32b"
 
   # Google
   # === Gemini ===
@@ -54,6 +55,9 @@ blacklist:
 
   # Moonshot AI
   - "moonshotai/kimi-k2.7-code"
+
+  # Qwable (Qwen-Derivat, Fable5-tune)
+  - "qwable-3_6-27b-q4"
 
   # Qwen (Alibaba)
   # --- qwen3_5-35b ---

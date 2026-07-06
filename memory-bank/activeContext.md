@@ -12,50 +12,39 @@ to know what reference files exist.
 ---
 
 # Active Context
-## Aktueller Status (2026-07-04)
+## Aktueller Status (2026-07-07)
 
-- **Session 47 abgeschlossen (2026-07-04) — WebExport-Konsistenz-Check-Fixes: synthesis_quality datenbasiert + Emoji-Variation-Selectors (v4.10.13):**
+- Abgeschlossen: `vllm_spark` Provider-Connector (`utils/providers/vllm_base.py` + `vllm_spark.py`) — steuert vLLM-Server auf asusGX10 via SSH (`vllm-start`/`vllm-stop`), OpenAI-kompatibles Backend auf Port 3300, Auto-Discovery von TOML-Configs, 14/14 Tests grün, erfolgreicher E2E-Benchmark mit `ornith-1.0-35B-FP8` (90.67% avg, Judge 4.3/5). 7 Code-Review-Findings behoben (Pfad-1-Retry, shlex.quote, Env-Var-Try, swap-Poll, Dead-Code, _is_healthy-Delegation, ${VAR}-API-Key).
+- Nächster Schritt: weitere Modelle auf asusGX10 benchmarken (MoE-Kandidaten: qwen3-coder-30b-a3b-q8, deepseek-r1-distill); `_server_model_name` vCard-System im Stream-Path noch nicht tested — Streaming-Benchmark ausstehend.
+- Offen/Risiko: `${VLLM_SPARK_API_KEY}` muss in `.env` (oder per Env-Var) gesetzt sein, sonst Default `sk-local` (funktioniert für Port 3300, aber dokumentations-würdig).
 
-  User-Auftrag: 4 Probleme aus dem WebExport-Konsistenz-Check (Stand 2026-07-04 19:35 UTC) beheben.
+**Carryover aus Session 48 (unverändert gültig):**
+- 10 verbleibende ToolUse-Backfill-Modelle (3 ohne Audit-Logs, 7 Ollama-ID-Auflösung).
+- ux_writing_002 für ornith-1-0-35b Re-Run ausstehend (Session 46 Cleanup abgeschlossen, Config-Fix aktiv).
+- Pre-existing Test-Failures: `test_card_vocabulary_ssot.py::test_all_model_cards_pass_tag_whitelist`, `test_clean_results_arch_coverage.py::TestEndToEndCleanupDryRun::test_dry_run_mentions_all_csv_files` (gemma_leaderboard.csv).
+- CHANGELOG hinkt hinter (Zwischen-Versionen v4.10.9–v4.10.12 für Sessions 39–46 nicht separat dokumentiert).
+- Bestehende Reviews enthalten noch alte Metrik-Zahlen — werden bei nächster Review-Regenerierung (`make reviews-auto --force`) durch neue qualitative Form ersetzt.
+- 6 true-mismatch Drift-Einträge (manuelles PC-Review nötig).
+- Web-Repo-Out-of-Scope: `price-comparison-row.njk` Null-Guard, `model-header.njk` Doppel-Rendering, `scoreboard-table.js:toolsBadge()` stu=false-Anzeige, `tooluse-scores.js:35` p2→synthesis_quality.
 
-  **Problem 2 — Missing synthesis_quality (7 Modelle) — GELÖST (Python-Fix):**
-  - **Diagnose:** `web_export.py:1099-1108` gate-te `synthesis_quality`/`tool_execution` hinter `supports_tool_use is True`. Alle 7 Modelle haben `supports_tool_use: false`, ABER echte ToolUse-Daten (P1/P2/combined) in `tooluse_leaderboard.csv`. Der Berichts-Hypothese "Synthesis-Modul wurde nicht ausgeführt" war FALSCH — Daten existierten, der Export blendete sie aus.
-  - **Fix:** Gate von `supports_tool_use is True` auf Datenpräsenz umgestellt (`normalize_pending(row.get(...))` ohne Flag-Gate). Detail-ToolUse-Block (`data.json.tooluse`) bleibt weiterhin an `supports_tool_use=true` gebunden (Session-44-Frontend-Nav). Dead-Code `_supports_tool_use` (nach Refactor ungenutzt) im Code-Review entfernt.
-  - User-Entscheidung via question-Tool: "Datenbasiert exportieren (Recommended)".
+## Aktueller Status (2026-07-06)
 
-  **Problem 4 — Invisible char in speed_profile/performance_tier (claude-opus-4-7 u.a.) — GELÖST (Python-Fix):**
-  - **Diagnose:** `_EMOJI_RE` (Z.416-429) entfernte Stopuhren-Emoji U+23F1, aber NICHT Variation Selector U+FE0F (VS16). Nach `_strip_emojis` blieb "️ Interactive" (VS16-Rest). Betraf ~20 Modelle mit Emoji-Prefix in Performance Tier, nicht nur claude-opus-4-7.
-  - **Fix:** `_EMOJI_RE` um U+FE0F (VS16), U+FE0E (VS15), U+200D (ZWJ) erweitert. "⏱️ Interactive" → "Interactive".
+- Abgeschlossen: Retry-Logik im `AnthropicProvider.health_check()` (3 Versuche, Exponential-Backoff 1s/2s) für transiente Anthropic-Fehler (529/429/5xx/APIConnectionError/APITimeoutError). 4xx-Auth-Fehler fail-fast ohne Retry. Kein Versionsbump — kein Verhalten geändert, nur Resilienz gegen Overloads.
+- Nächster Schritt: keine offene Arbeit aus dieser Mini-Session — Judge-Ausfall vom 06.07. war transient (3.10.04 health_check 529, Run endete natürlich). Bei nächstem Auto-Benchmark-Run mit hohem Judge-Aufkommen den Verlauf beobachten.
+- User-Entscheidung (für Pitfall-Doku): KEIN Judge-Fallback auf ein anderes LLM — Score-Drift zwischen Judge-Modellen würde historische Vergleiche verfälschen. Stattdessen Retry-only. Dokumentiert in `CLAUDE.md` (Architecture Top Constraints) und `memory-bank/systemPatterns.md` (Pitfalls).
 
-  **Problem 1 — Missing prices (2 Modelle) — KEIN Python-Fix (legitim null):**
-  - `command-a-plus-05-2026.json` + `ornith-1-0-35b.json` haben beide legitim null-Preise. Ornith = Self-hosted MIT (kein Per-Token-Tarif). Command A+ = Cohere hat keinen öffentlichen Per-Token-Tarif (nur Model Vault; heritage_ids command-a-03-2025). Berichtsbehauptung "Cohere hat öffentliche API-Preise" gilt für die BASE `command-a-03-2025` ($2/$8), die NICHT mehr im Repo existiert — Preise eintragen wäre sachlich falsch. Template-Fix im Web-Repo (`price-comparison-row.njk` Null-Guard) out of scope.
-
-  **Problem 3 — architecture_tags vs characteristics.features (claude-opus-4-7) — KEIN Python-Fix (bereits korrekt):**
-  - Python-Export bereits korrekt: `_build_characteristics` (Z.1063) unterdrückt "Vision-Capable" in `features`, wenn `image`-Modality "Vision" rendert. Doppel-Rendering im Web-Template `model-header.njk` — out of scope.
-
-  **Tests:** 5 neue Regressionstests in `tests/test_web_export_helpers.py` (2 VS16/VS15/ZWJ-Stripping + 3 datenbasierte Synthesis-Szenarien + `_lb_entry` Helper). 1002 passed / 1 skipped / 2 pre-existing failures (unrelated, via `git stash` verifiziert).
-
-  **Code-Review:** `/review uncommitted` — APPROVE WITH SUGGESTIONS; ein Dead-Code-Leftover (`_supports_tool_use`) gefunden und entfernt.
-
-  **Diff:** `web_export.py` (+14/−10), `test_web_export_helpers.py` (+100).
-
-  **Offen (Web-Repo, out of scope Python):**
-  - `price-comparison-row.njk` Null-Guard für null-Preise verifizieren.
-  - `model-header.njk` Doppel-Rendering architecture_tags/features prüfen.
-  - Frontend-Entscheidung: ob stu=false-Modelle den nun exportierten `synthesis_quality`-Score anzeigen sollen (`scoreboard-table.js:toolsBadge()` überschreibt aktuell auf "n/a").
-  - `tooluse-scores.js:35`: p2→synthesis_quality Überschreibung prüfen (noch offen aus Session 42/44).
-
-  **Offen (aus vorherigen Sessions, weiterhin gültig):**
-  - 10 verbleibende ToolUse-Backfill-Modelle (3 ohne Audit-Logs, 7 Ollama-ID-Auflösung).
-  - hermes-4.3-36b-q6: blacklisted + comment-out (gelöst in Session 46).
-  - ux_writing_002 für ornith-1-0-35b Re-Run ausstehend (Session 46).
-  - ✅ README/PROJECT_STATUS/REF_TODO/Docs-Stempel auf v4.10.13 synchronisiert (2026-07-05).
-  - Pre-existing Test-Failures: `test_card_vocabulary_ssot.py::test_all_model_cards_pass_tag_whitelist`, `test_clean_results_arch_coverage::TestEndToEndCleanupDryRun::test_dry_run_mentions_all_csv_files` (gemma_leaderboard.csv).
-  - CHANGELOG hinkt hinter (top-Eintrag v4.10.13 vorhanden für Session 47, aber Zwischen-Versionen v4.10.9–v4.10.12 für Sessions 39–46 nicht separat dokumentiert) — Konsolidierung ausstehend.
-  - Bestehende Reviews enthalten noch alte Metrik-Zahlen — werden bei nächster Review-Regenerierung (`make reviews-auto --force`) durch neue qualitative Form ersetzt.
-  - 6 true-mismatch Drift-Einträge (manuelles PC-Review nötig).
+**Carryover aus Session 47 / 46 (unverändert gültig):**
+- 10 verbleibende ToolUse-Backfill-Modelle (3 ohne Audit-Logs, 7 Ollama-ID-Auflösung).
+- ux_writing_002 für ornith-1-0-35b Re-Run ausstehend (Session 46).
+- Pre-existing Test-Failures: `test_card_vocabulary_ssot.py::test_all_model_cards_pass_tag_whitelist`, `test_clean_results_arch_coverage.py::TestEndToEndCleanupDryRun::test_dry_run_mentions_all_csv_files` (gemma_leaderboard.csv).
+- CHANGELOG hinkt hinter (Zwischen-Versionen v4.10.9–v4.10.12 für Sessions 39–46 nicht separat dokumentiert).
+- Bestehende Reviews enthalten noch alte Metrik-Zahlen — werden bei nächster Review-Regenerierung (`make reviews-auto --force`) durch neue qualitative Form ersetzt.
+- 6 true-mismatch Drift-Einträge (manuelles PC-Review nötig).
+- Web-Repo-Out-of-Scope: `price-comparison-row.njk` Null-Guard, `model-header.njk` Doppel-Rendering, `scoreboard-table.js:toolsBadge()` stu=false-Anzeige, `tooluse-scores.js:35` p2→synthesis_quality.
 
 ## Aktueller Status (2026-06-29)
+
+- **Session 47 abgeschlossen (2026-07-04) — WebExport-Konsistenz-Check-Fixes (v4.10.13):** 4 Probleme aus WebExport-Konsistenz-Check behoben. Problem 2 (synthesis_quality datenbasiert statt supports_tool_use-Gate) + Problem 4 (Emoji VS16/VS15/ZWJ strippen). Probleme 1 (legitim null Prices) + 3 (architecture_tags Doppelrendering) hatten keine Python-Fix nötig. **Tests:** 5 neue Regressionstests. **Status:** Committed.
 
 - **Session 46 abgeschlossen (2026-06-29 23:46) — Model-Diagnose + Cleanup-Sequenz + Modell-ID-Migration Pitfall:**
 

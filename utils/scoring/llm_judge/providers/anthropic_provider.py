@@ -6,10 +6,33 @@ Auth: ANTHROPIC_API_KEY environment variable.
 """
 
 import logging
+import os
 import time
 from typing import Any, Optional
 
 from .base_provider import JudgeProviderResponse, LLMJudgeProvider
+
+_TRANSIENT_STATUS_CODES = frozenset({408, 409, 429, 500, 502, 503, 504, 529})
+
+try:
+    _HEALTH_CHECK_MAX_ATTEMPTS = int(os.environ.get("CRUCIBLE_JUDGE_HEALTH_MAX_ATTEMPTS", "3"))
+except (ValueError, TypeError):
+    _HEALTH_CHECK_MAX_ATTEMPTS = 3
+try:
+    _HEALTH_CHECK_BACKOFF_SECONDS = float(os.environ.get("CRUCIBLE_JUDGE_HEALTH_BACKOFF", "1.0"))
+except (ValueError, TypeError):
+    _HEALTH_CHECK_BACKOFF_SECONDS = 1.0
+
+
+def _is_transient_error(exc: BaseException) -> bool:
+    """Return True if exc looks like a transient connectivity / capacity issue."""
+    if anthropic_module is None:
+        return False
+    if isinstance(exc, (anthropic_module.APIConnectionError, anthropic_module.APITimeoutError)):
+        return True
+    if isinstance(exc, anthropic_module.APIStatusError):
+        return exc.status_code in _TRANSIENT_STATUS_CODES
+    return False
 
 # Optional import guard: declared before try-block as per project convention
 anthropic_module: Optional[Any] = None
@@ -79,14 +102,37 @@ class AnthropicProvider(LLMJudgeProvider):
         )
 
     def health_check(self) -> bool:
-        """Ping the Anthropic API with a minimal request to verify connectivity."""
-        try:
-            self._client.messages.create(
-                model=self._model,
-                max_tokens=10,
-                messages=[{"role": "user", "content": "ping"}],
-            )
-            return True
-        except Exception as exc:  # pylint: disable=broad-exception-caught
-            logger.warning("Anthropic health check failed: %s", exc)
-            return False
+        """Ping the Anthropic API with a minimal request to verify connectivity.
+
+        Retries transient errors (529 overloaded, 429 rate-limit, 5xx, network/timeout)
+        with exponential backoff before declaring the judge unavailable. Permanent
+        errors (auth, permission, bad-request) fail fast without retry.
+        """
+        for attempt in range(1, _HEALTH_CHECK_MAX_ATTEMPTS + 1):
+            try:
+                self._client.messages.create(
+                    model=self._model,
+                    max_tokens=10,
+                    messages=[{"role": "user", "content": "ping"}],
+                )
+                if attempt > 1:
+                    logger.info(
+                        "Anthropic health check succeeded on attempt %d/%d",
+                        attempt, _HEALTH_CHECK_MAX_ATTEMPTS,
+                    )
+                return True
+            except Exception as exc:  # pylint: disable=broad-exception-caught
+                if not _is_transient_error(exc) or attempt == _HEALTH_CHECK_MAX_ATTEMPTS:
+                    logger.warning(
+                        "Anthropic health check failed: %s", exc,
+                    )
+                    return False
+                backoff = _HEALTH_CHECK_BACKOFF_SECONDS * (2 ** (attempt - 1))
+                logger.info(
+                    "Anthropic health check transient failure on attempt %d/%d "
+                    "(%s: %s) — retrying in %.1fs",
+                    attempt, _HEALTH_CHECK_MAX_ATTEMPTS,
+                    type(exc).__name__, exc, backoff,
+                )
+                time.sleep(backoff)
+        return False

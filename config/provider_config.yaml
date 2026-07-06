@@ -440,11 +440,11 @@ providers:
       parallel: 2
       hardware_profile: dgx_spark_cuda
       models:
-      - id: qwable-3.6-27b-q4
-        name: Qwable 3.6 27B Q4_K_M (GGUF, Fable5-tune)
-        model_file: Qwable27B/Qwable-27b_Q4_K_M.gguf
-        n_gpu_layers: 99
-        enable_thinking: true
+      # - id: qwable-3.6-27b-q4
+      #   name: Qwable 3.6 27B Q4_K_M (GGUF, Fable5-tune)
+      #   model_file: Qwable27B/Qwable-27b_Q4_K_M.gguf
+      #   n_gpu_layers: 99
+      #   enable_thinking: true
       - id: qwable-3.6-35b-q5
         name: Qwable 3.6 35B Q5_K_M (GGUF, Fable5-tune)
         model_file: Qwable35b/Qwable-3.6-35b_q5_k_m.gguf
@@ -613,17 +613,17 @@ providers:
         context_length: 65536
         enable_thinking: false
 
-      - id: deepseek-r1-distill-qwen-32b
-        name: DeepSeek R1 Distill Qwen 32B Q5_K_M (GGUF)
-        model_file: DeepSeek-R1-Distill-Qwen-32B/DeepSeek-R1-Distill-Qwen-32B-Q5_K_M.gguf
-        n_gpu_layers: 99
-        context_length: 65536
-        enable_thinking: true
-        temperature: 0.7
-        top_p: 0.8
-        top_k: 20
-        presence_penalty: 1.5
-        repeat_penalty: 1.0
+      # - id: deepseek-r1-distill-qwen-32b
+      #   name: DeepSeek R1 Distill Qwen 32B Q5_K_M (GGUF)
+      #   model_file: DeepSeek-R1-Distill-Qwen-32B/DeepSeek-R1-Distill-Qwen-32B-Q5_K_M.gguf
+      #   n_gpu_layers: 99
+      #   context_length: 65536
+      #   enable_thinking: true
+      #   temperature: 0.7
+      #   top_p: 0.8
+      #   top_k: 20
+      #   presence_penalty: 1.5
+      #   repeat_penalty: 1.0
 
       - id: ornith-1-0-35b
         name: Ornith 1.0 35B Q8_0 (GGUF)
@@ -677,10 +677,78 @@ providers:
       #     - "--spec-type draft-mtp"
       #     - "--spec-draft-n-max 2"
 
-      # ── Auskommentiert: nicht auf Spark / nicht vorhanden ──
-      # - id: qwen3.6-35b-a3b-q8 (Qwen3.6-35B-A3B-UD-Q8_K_XL.gguf — nicht vorhanden)
-      # - id: qwen3.6-35b-a3b-uncensored (Uncensored-HauhauCS — nicht vorhanden)
-      # - id: qwen3.5-35b-a3b-q4 (Q4-Quantisierung — nicht vorhanden)
-      # - id: qwen3-coder-30b-a3b-q8 (Qwen3-Coder-30B-A3B — nicht vorhanden)
-      # - id: qwen3-coder-next-q8 (Q8-Quantisierung — nicht vorhanden)
-      # - id: gemma-4-ara-26b-a4b-q5 (ARA-APEX — nicht vorhanden)
+    # vLLM auf asusGX10 (NVIDIA Blackwell, Remote via SSH).
+    # Steuerung per SSH vom Benchmark-Host. Modelle werden über TOML-Configs
+    # in ~/ai/shared/configs/vllm/models/ ausgewählt; ``vllm-start --config <NAME>``
+    # startet den Server, ``vllm-stop`` räumt den laufenden Container ab.
+    # Port 4300/v1 ist ein Token-Capture-Reverse-Proxy, der an den echten
+    # Direkter vLLM-Port 3300 (kein Proxy, keine Auth nötig).
+    # Der Token-Capture-Proxy auf 4300 authentifiziert jeden Request
+    # (auch /health und /v1/models), was den Connector fehleranfällig
+    # macht. Port 3300 ist das direkte Backend — robuster für
+    # Health-Checks und Modell-Discovery.
+    vllm_spark:
+      name: vLLM (asusGX10)
+      short_code: VSPK
+      api_type: vllm
+      model_type: open_weights_local
+      enabled: true  # asusGX10 erreichbar, Main-Container läuft.
+      read_timeout: 3600  # 60 Min — synthese-starke Modelle brauchen lange für lange Outputs
+      context_window: 131072  # ornith-1.0-35B-FP8 native context laut /v1/models
+      base_url: "http://192.168.1.191:3300/v1"
+      api_key: "${VLLM_SPARK_API_KEY}"  # env var (CLAUDE.md: API Keys NIEMALS in Git) — .env: VLLM_SPARK_API_KEY=sk-local-mg2026
+      token_param_name: max_tokens
+      # vllm-start/vllm-stop liegen unter ~/ai/shared/scripts/ (nicht im PATH).
+      server_start_cmd: "ssh -o BatchMode=yes -o ConnectTimeout=10 -p 22 kay_beissert@gx10-b20a.local /home/kay_beissert/ai/shared/scripts/vllm-start"
+      server_stop_cmd: "ssh -o BatchMode=yes -o ConnectTimeout=10 -p 22 kay_beissert@gx10-b20a.local /home/kay_beissert/ai/shared/scripts/vllm-stop"
+      toml_models_dir: "~/ai/shared/configs/vllm/models/"
+      server_ready_timeout_sec: 600
+      existing_server_ready_timeout_sec: 600
+      server_ready_poll_sec: 10
+      server_ready_probe_timeout_sec: 30
+      hardware_profile: asus_gx10_blackwell
+      models:
+      # Smoke-Test: klein, schnell, niedriger VRAM (kein NVFP4 noetig).
+      # TOML: ~/ai/shared/configs/vllm/models/Qwen2.5-0.5B.toml (915 B).
+      # - id: Qwen2.5-0.5B
+      #   name: Qwen 2.5 0.5B Instruct (vLLM, Smoke-Test)
+      #   config: Qwen2.5-0.5B
+      #   max_tokens: 2048
+      #   # Mini-Modell: 30 s sind mehr als ausreichend (real <10 s).
+      #   server_ready_timeout_sec: 30
+      # Hauptmodell: läuft bereits auf dem Main-Container (Port 3300 via Proxy 4300).
+      - id: ornith-1.0-35B-FP8
+        name: Ornith 1.0 35B FP8 (vLLM, aktiv)
+        config: Ornith1-35B-FP8
+        max_tokens: 16384
+
+      # Gemma 4 Familie — NVFP4 (modelopt), 131k Context.
+      # MoE 26B / Dense 31B (Base) / Dense 31B-Wordsmith (W4A16, uncensored).
+      - id: Gemma-4-26B
+        name: Gemma 4 26B-A4B NVFP4 (vLLM, MoE)
+        config: Gemma-4-26B
+        max_tokens: 16384
+      - id: Gemma-4-31B
+        name: Gemma 4 31B NVFP4 (vLLM, Dense, multimodal)
+        config: Gemma-4-31B
+        max_tokens: 16384
+      - id: Gemma-4-31B-Wordsmith-NVFP4
+        name: Gemma 4 31B Wordsmith NVFP4 (vLLM, Dense, uncensored)
+        config: Gemma-4-31B-Wordsmith-NVFP4
+        max_tokens: 16384
+
+      # Qwen 3.6 27B Dense — NVFP4 compressed-tensors, MTP, Thinking-Parser aktiv.
+      # 32k Context (Sweet-Spot für DGX Spark bei 0.70 gpu-mem-util).
+      - id: qwen3.6-27B
+        name: Qwen 3.6 27B NVFP4 (vLLM, Dense, MTP)
+        config: Qwen3.6-27B
+        max_tokens: 16384
+
+      # Weitere verfügbare TOMLs (per Auto-Discovery entdeckbar, nicht im Benchmark):
+      # - Qwen3-Embedding-0.6B-NVFP4: Embedding-Modell (kein LLM-Target)
+      # Beispiel-Eintrag zum Aktivieren einer neuen TOML
+      # (TOML liegt unter ~/ai/shared/configs/vllm/models/<NAME>.toml):
+      # - id: <NAME>
+      #   name: <Display-Name> (vLLM)
+      #   config: <NAME>
+      #   max_tokens: 16384

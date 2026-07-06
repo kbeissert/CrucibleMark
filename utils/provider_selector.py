@@ -166,17 +166,24 @@ class ProviderSelector:
         local_cfg = self.config.get("providers", {}).get("local", {})
         llamacpp_cfg = local_cfg.get("llamacpp", {})
         llamacpp_spark_cfg = local_cfg.get("llamacpp_spark", {})
+        vllm_spark_cfg = local_cfg.get("vllm_spark", {})
         ollama_cfg = local_cfg.get("ollama_local", {})
         use_llamacpp = llamacpp_cfg.get("enabled", False)
         use_llamacpp_spark = llamacpp_spark_cfg.get("enabled", False)
+        use_vllm_spark = vllm_spark_cfg.get("enabled", False)
         use_ollama = ollama_cfg.get("enabled", False)
 
-        if use_llamacpp and use_llamacpp_spark:
+        enabled_runtimes: list[tuple[str, str]] = []
+        if use_llamacpp:
+            enabled_runtimes.append(("llamacpp", "llama.cpp (MacBook Pro)"))
+        if use_llamacpp_spark:
+            enabled_runtimes.append(("llamacpp_spark", "llama.cpp (DGX Spark)"))
+        if use_vllm_spark:
+            enabled_runtimes.append(("vllm_spark", "vLLM (asusGX10)"))
+
+        if len(enabled_runtimes) > 1:
             runtime = select_from_list(
-                [
-                    ("llamacpp", "llama.cpp (MacBook Pro)"),
-                    ("llamacpp_spark", "llama.cpp (DGX Spark)"),
-                ],
+                enabled_runtimes,
                 display_func=lambda x: x[1],
                 prompt="Wähle lokale Runtime",
                 title="LOKALE PROVIDER",
@@ -184,18 +191,88 @@ class ProviderSelector:
             if runtime:
                 if runtime[0] == "llamacpp":
                     return self._select_llamacpp_model(llamacpp_cfg, "llamacpp")
-                return self._select_llamacpp_model(llamacpp_spark_cfg, "llamacpp_spark")
+                if runtime[0] == "llamacpp_spark":
+                    return self._select_llamacpp_model(llamacpp_spark_cfg, "llamacpp_spark")
+                if runtime[0] == "vllm_spark":
+                    return self._select_vllm_model(vllm_spark_cfg, "vllm_spark")
             sys.exit(0)
 
         if use_llamacpp:
             return self._select_llamacpp_model(llamacpp_cfg, "llamacpp")
         if use_llamacpp_spark:
             return self._select_llamacpp_model(llamacpp_spark_cfg, "llamacpp_spark")
+        if use_vllm_spark:
+            return self._select_vllm_model(vllm_spark_cfg, "vllm_spark")
         if use_ollama:
             return self._select_ollama_model()
         print("\n❌ Kein lokaler Provider aktiv. Bitte 'enabled: true' in benchmark_config.yaml setzen.")
         print("   providers.local.ollama_local.enabled oder providers.local.llamacpp.enabled")
         sys.exit(1)
+
+    def _select_vllm_model(self, vllm_cfg: dict, provider_name: str = "vllm_spark") -> tuple[str, str]:
+        """Wählt Modell aus der vLLM-Konfiguration.
+
+        vLLM-Modell-IDs sind TOML-Namen (oder absolute Pfade), keine GGUF-Dateien.
+        ``config_models`` enthält die Liste aus ``provider_config.yaml``;
+        ``live_ids`` werden vom laufenden ``/v1/models``-Endpunkt geholt.
+        """
+        config_models = [
+            {
+                "provider": provider_name,
+                "id": m.get("id", ""),
+                "name": m.get("name", m.get("id", "")),
+                "description": m.get("description", "") or m.get("config", ""),
+                "file": m.get("config", ""),
+            }
+            for m in vllm_cfg.get("models", [])
+            if m.get("id")
+        ]
+
+        live_ids: set[str] = set()
+        try:
+            from openai import OpenAI
+            import httpx
+
+            _client = OpenAI(
+                base_url=vllm_cfg.get("base_url", "http://127.0.0.1:4300/v1"),
+                api_key=vllm_cfg.get("api_key", "sk-local"),
+                timeout=httpx.Timeout(connect=3.0, read=5.0, write=5.0, pool=5.0),
+            )
+            resp = _client.models.list()
+            live_ids = {m.id for m in resp.data}
+            config_ids = {m["id"] for m in config_models}
+            for mid in live_ids - config_ids:
+                config_models.append(
+                    {"provider": provider_name, "id": mid, "name": mid,
+                     "description": "Live vom Server", "file": ""}
+                )
+        except Exception:
+            pass
+
+        if not config_models:
+            print(f"\n⚠️  Keine vLLM-Modelle in benchmark_config.yaml konfiguriert.")
+            print(f"Ergänze Modelle unter providers.local.{provider_name}.models")
+            sys.exit(1)
+
+        title = "LOKALE MODELLE (vLLM — asusGX10)"
+        server_hint = " [asusGX10]"
+
+        def display_model(m):
+            live_tag = server_hint if m["id"] in live_ids else ""
+            desc = m["description"] or m["file"] or ""
+            return (f"{m['name']}{live_tag}", f"ID: {m['id']}  {desc}".strip())
+
+        selected = select_from_list(
+            config_models,
+            display_func=display_model,
+            prompt="Wähle ein Modell",
+            title=title,
+        )
+
+        if selected:
+            print(f"✓ Ausgewählt: {selected['name']}")
+            return provider_name, str(selected["id"])
+        sys.exit(0)
 
     def _select_llamacpp_model(self, llamacpp_cfg: dict, provider_name: str = "llamacpp") -> tuple[str, str]:
         """Wählt Modell aus der llama.cpp-Konfiguration.

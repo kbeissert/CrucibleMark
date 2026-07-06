@@ -1,14 +1,14 @@
 ---
-name: session-commit
-description: >-
-  CrucibleMark Memory Bank nach Session aktualisieren. Synchronisiert
-  Versionsnummern mit CHANGELOG und aktualisiert activeContext, progress,
-  systemPatterns, techContext und copilot-instructions. Qualität vor
-  Vollständigkeit — lieber nichts schreiben als etwas Falsches oder Triviales.
+description: CrucibleMark Memory Bank nach  Session aktualisieren. Synchronisiert Versionsnummern mit CHANGELOG und aktualisiert activeContext, progress, systemPatterns, techContext und copilot-instructions. Qualität vor Vollständigkeit — lieber nichts  schreiben als etwas Falsches oder Triviales.
 ---
 
 Aktualisiere das Projekt-Wissen für CrucibleMark. **Qualität vor Vollständigkeit —
 lieber nichts schreiben als etwas Falsches oder Triviales.**
+
+> **⚠️ Keine Side-Effects auf das Dateisystem-UI:** Öffne weder Finder,
+> Datei-Explorer, Terminal-Fenster noch Web-Browser. Arbeite ausschließlich
+> über Read/Write/Edit/Grep/Glob — keine `open`, `xdg-open`, `subprocess`,
+> `webbrowser` oder Shell-Befehle mit UI-Effekt.
 
 
 ## 0. Versionssynchro (immer zuerst ausführen)

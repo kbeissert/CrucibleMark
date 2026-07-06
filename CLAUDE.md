@@ -33,8 +33,10 @@ Hartcodiert, nicht verhandelbar. Detail-Referenz → [architecture.md](.agent/ar
 - Judge kennt Modellnamen während Bewertung NICHT (Blind-Evaluierung).
 - **Sequenzielle Modell-Abarbeitung:** Modelle einzeln nacheinander, Server-Neustart zwischen Modellen, Cooldown via `AdaptivePauseCalculator`. NICHT parallelisieren (Design-Constraint, kein Performance-Bug).
 - **Judge-Reset zwischen Tasks:** jede Judge-Bewertung ist ein frischer API-Call. KEIN Judge-Caching.
+- **Kein Judge-Fallback auf anderes LLM:** Anthropic-Overloads (529/429/5xx) nur mit Exponential-Backoff-Retry im `health_check()` auffangen — Score-Drift zwischen Judge-Modellen verfälscht historische Benchmarks.
 - Konfiguration ausschließlich über Config-Files, nie hardcodiert.
 - Scoring-Logik nie stillschweigend verändern — verfälscht historische Benchmarks.
+- **`vllm-start` ist NICHT idempotent für Model-Swap:** Wenn der Container bereits mit einem anderen Modell läuft, weigert sich das Script zu starten und stoppt den laufenden Container nicht automatisch. Vor jedem Modell-Wechsel via Connector immer `vllm-stop` aufrufen (siehe `swap_model()` in `utils/providers/vllm_base.py`).
 
 ## AI & API Basics
 

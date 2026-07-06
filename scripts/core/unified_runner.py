@@ -499,8 +499,13 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
     def _ensure_llamacpp_server(
         self, model: str, provider: str, asset_id: str
     ) -> dict[str, Any] | None:
-        """Stellt sicher, dass llama.cpp-Server läuft. Returns Error-Result oder None."""
-        if provider not in ("llamacpp", "llamacpp_spark"):
+        """Stellt sicher, dass llama.cpp/vLLM-Server läuft. Returns Error-Result oder None.
+
+        Behandelt ``llamacpp``, ``llamacpp_spark`` und ``vllm_spark`` — alle drei
+        sind OpenAI-kompatible lokale Server, deren Lifecycle über die jeweilige
+        ``start_server(model)``-Methode im Provider-Client abgewickelt wird.
+        """
+        if provider not in ("llamacpp", "llamacpp_spark", "vllm_spark"):
             return None
         try:
             client = self.client.clients.get(provider)
@@ -514,18 +519,18 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
             started = client.start_server(model)
             if not started:
                 logger.error(
-                    "llama.cpp Server (%s) konnte nicht für Modell '%s' gestartet werden.",
+                    "Server (%s) konnte nicht für Modell '%s' gestartet werden.",
                     provider, model,
                 )
                 return self._create_error_result(
                     asset_id,
-                    f"llama.cpp Server ({provider}) Start fehlgeschlagen für Modell '{model}' — Server-Log prüfen",
+                    f"Server ({provider}) Start fehlgeschlagen für Modell '{model}' — Server-Log prüfen",
                     model=model, provider=provider,
                 )
         except Exception as _e:
-            logger.error("llama.cpp start_server für Modell '%s' fehlgeschlagen: %s", model, _e)
+            logger.error("start_server für Modell '%s' fehlgeschlagen: %s", model, _e)
             return self._create_error_result(
-                asset_id, f"llama.cpp start_server Exception: {_e}",
+                asset_id, f"start_server Exception: {_e}",
                 model=model, provider=provider,
             )
         return None
@@ -885,6 +890,7 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
             "llamacpp_spark",
             "llama_cpp",
             "llamacpp_local",
+            "vllm_spark",
         )
 
     def _run_batch_mode_if_applicable(
@@ -1387,6 +1393,7 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
             "llamacpp_spark",
             "llama_cpp",
             "llamacpp_local",
+            "vllm_spark",
         )
         provider_l = provider.lower()
         if provider_l not in local_provider_names:

@@ -1,5 +1,38 @@
 # Progress
 Letzte Releases + aktueller Stand.
+### 2026-07-07 (Session 48) — vllm_spark Provider-Connector + 7 Code-Review-Fixes
+
+**Auslöser:** Lokal-Modelle auf asusGX10 (vLLM-Server, CUDA) sollten benchmark-fähig werden — bisher nur Ollama/LlamaCpp verfügbar.
+
+**Geliefert:**
+- `utils/providers/vllm_base.py` (geteilt mit LlamacppBaseClient-Pattern: SSH-Lifecycle, Health-Checks, Adopt-Logik, TOML-Auto-Discovery, Query mit Token-Fallback + Streaming)
+- `utils/providers/vllm_spark.py` (`VllmSparkClient` Subklasse, Shortcode `VSPK`)
+- `config/provider_config.yaml` — vllm_spark Block (base_url=`http://192.168.1.191:3300/v1` direkt, kein Proxy)
+- 14/14 Tests in `tests/test_vllm_spark_provider.py`
+- `scripts/tools/smoketest_vllm_spark.py` Standalone-Smoketest
+
+**Root-Cause-Bugs (alle gefixt):**
+1. `_query_active_model()` fehlte Bearer-Token → 401 vom Proxy → fatal server-stop
+2. Port 4300 (Token-Capture-Proxy auth'd /health) → **Port 3300 direkt** (vLLM akzeptiert jeden Key)
+3. `_server_model_name` fehlte — API nutzt Original-Namen (`Ornith-1.0-35B-FP8`), nicht normalized
+4. `_probe_status()` neu: `healthy`/`loading`/`down` (verhindert fatal restart von loading containern)
+5. Adopt-Pfad 2 in 2a/2b/2c/2d gesplittet — stop nur bei echtem Conflict (2c)
+
+**Code-Review (7 Findings, alle gefixt):**
+- Pfad 1 Fallthrough → 3× Probe-Retry vor Cold-Start
+- `shlex.quote()` für alle interpolierten SSH-Cmd-Werte
+- Env-Var-Parsing in try/except mit Defaults
+- `swap_model()` pollt auf `status=="down"` vor restart (verhindert Recursion)
+- Dead-Code in anthropic_provider entfernt
+- `_is_healthy()` delegiert an `_probe_status()`
+- API-Key via `${VLLM_SPARK_API_KEY}` Env-Var statt hardcoded
+
+**E2E-Verifikation:** `run_benchmark.py --model ornith-1.0-35B-FP8 --provider local --module cli_benchmark --force` → 6/6 Tests, **90.67% avg**, Judge 4.3/5, 8.2s/Test.
+
+**Kein Release:** Code-Refactoring ohne Verhaltensänderung — kein Versionsbump.
+
+---
+
 ### 2026-07-04 (Session 47) — WebExport-Konsistenz-Check-Fixes: synthesis_quality datenbasiert + Emoji-Variation-Selectors (v4.10.13)
 
 **Auslöser:** WebExport-Konsistenz-Check (Stand 2026-07-04 19:35 UTC) meldete 4 Probleme. Zwei davon waren Python-Export-Bugs, zwei sind Web-Template-/legitim-null-Fälle.

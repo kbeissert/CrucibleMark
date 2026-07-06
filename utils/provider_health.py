@@ -194,6 +194,12 @@ def validate_untested_card(card: Dict[str, Any]) -> Tuple[bool, Optional[str]]:
         # Wenn kein expliziter Pfad → wir vertrauen auf Benchmark-Lauf
         return True, None
 
+    # vLLM: lokale Modelle werden über TOML in ~/ai/shared/configs/vllm/models/
+    # ausgewählt — die Existenz wird vom vllm-start-Skript geprüft, kein
+    # lokaler Datei-Check im Python-Code möglich (TOML liegt auf Remote-Host).
+    if provider == "vllm_spark":
+        return True, None
+
     # API-Provider: prüfen ob ENV-Var gesetzt
     if provider in _PROVIDER_ENV_VARS:
         if not is_api_provider_available(provider):

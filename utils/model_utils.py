@@ -44,6 +44,8 @@ _PROVIDER_SHORTCODES: dict[str, str] = {
     "llamacpp_spark": "SPRK",
     "llama_cpp": "M4APL",
     "llamacpp_local": "M4APL",
+    # vLLM local inference server (OpenAI-compatible)
+    "vllm_spark": "VSPK",
     # Ollama as cloud proxy (e.g. qwen3.5:397b-cloud via remote Ollama endpoint)
     "ollama_cloud": "CLD",
 }
@@ -64,6 +66,7 @@ def get_provider_shortcode(provider: str) -> str:
 
 _LOCAL_PROVIDER_NAMES: tuple[str, ...] = (
     "ollama", "llamacpp", "llamacpp_spark", "llama_cpp", "llamacpp_local",
+    "vllm_spark",
 )
 
 _PROVIDER_ALIAS_MAP: dict[str, str] = {

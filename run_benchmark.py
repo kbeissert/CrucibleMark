@@ -290,7 +290,7 @@ class BenchmarkRunner:
         audit_mode: bool = True,
     ):
         """Führt Benchmark aus (Lokal oder Kommerziell)."""
-        is_local = provider in ("ollama", "llamacpp", "llamacpp_spark", "llama_cpp", "llamacpp_local")
+        is_local = provider in ("ollama", "llamacpp", "llamacpp_spark", "llama_cpp", "llamacpp_local", "vllm_spark")
 
         _local_label = {
             "ollama": "Ollama (Local)",
@@ -298,6 +298,7 @@ class BenchmarkRunner:
             "llamacpp_spark": "llama.cpp Spark (Local)",
             "llama_cpp": "llama.cpp (Local)",
             "llamacpp_local": "llama.cpp (Local)",
+            "vllm_spark": "vLLM Spark (Local)",
         }.get(provider, provider.upper())
 
         self._print_header(

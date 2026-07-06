@@ -95,10 +95,13 @@ class LLMClient:
     # Phase 19: Aliase `llama_cpp` und `llamacpp_local` entfernt.
     # Jede Provider-Instanz hat jetzt ihren eigenen Schlüssel — siehe
     # `utils/providers/llamacpp.py` und `utils/providers/llamacpp_spark.py`.
+    # vllm_spark (2026-07-06) folgt demselben 1-Klasse-pro-Provider-Muster
+    # (siehe `utils/providers/vllm_base.py` / `vllm_spark.py`).
     _LOCAL_PROVIDERS = (
         "ollama",
         "llamacpp",
         "llamacpp_spark",
+        "vllm_spark",
     )
 
     def _first_local_metadata(self, key: str, default: float = 0.0) -> float:
