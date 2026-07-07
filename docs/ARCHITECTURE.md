@@ -644,7 +644,7 @@ Der Web Exporter ist ein eigenständiger Publishing-Schritt (Layer 4 Downstream)
 | `_build_pc_lookups(pc_lb)` | Baut PC-Leaderboard-Dicts (model_name + slug-Schlüssel) |
 | `_load_pc_block_meta(config_path)` | Lädt Block-Metadaten aus `political_compass/config.yaml` (Fallback: statisches Dict) |
 | `_export_model_files(model_out, audit_src, comp_src)` | Kopiert Audit-Logs + Review-Markdowns für ein Modell |
-| `_build_leaderboard_entry(row, card, ...)` | Baut den vollständigen Leaderboard-Dict (~45 Felder); top-level `model_id` aus Card; `size_class` Card-prioritär; `model_card`-Objekt mit 33 Feldern (inkl. Pricing, `weights_license_tier`, `thinking_probe_*`, `heritage_ids`) |
+| `_build_leaderboard_entry(row, card, ...)` | Baut den vollständigen Leaderboard-Dict (~45 Felder); top-level `model_id` aus Card; `size_class` Card-prioritär; `model_card`-Objekt mit 35 Feldern (inkl. Pricing, `weights_license_tier`, `thinking_probe_*`, `heritage_ids`, ab v4.10.14 `quantization_format`/`model_variant`) |
 | `_lookup_pc_row(model_name, slug, pc)` | Sucht AVG-Zeile in PC-Resultaten (exakt + slug-Fallback) |
 | `_build_compass_entry(pc_row, lb_row, ..., block_meta)` | Baut den Political-Compass-Dict inkl. Archetyp-Felder |
 | `_write_top_level_outputs(...)` | Schreibt `leaderboard.json`, `political_compass.json`, `provider_stats.json`, `meta.json` |

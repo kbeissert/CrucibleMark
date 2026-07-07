@@ -1185,6 +1185,12 @@ def _build_leaderboard_entry(
             # Identitaet (self-contained sub-dict, spiegelt Card-Sicht)
             "model_id": card.get("model_id"),
             "model_version": card.get("model_version"),
+            # v4.10.14: Quant/Variant-Separierung — model_version ist reine
+            # Versionsnummer; Quant/Format-Token und interne Variant-Namen
+            # wurden aus model_version ausgelagert (Migration siehe
+            # scripts/maintenance/migrate_model_versions_pollution.py).
+            "quantization_format": card.get("quantization_format"),
+            "model_variant": card.get("model_variant"),
             "unknown": card.get("unknown"),
             "display_name": card.get("display_name"),
             "developer": card.get("developer"),

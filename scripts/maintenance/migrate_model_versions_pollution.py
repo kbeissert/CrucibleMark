@@ -37,6 +37,12 @@ CSVS = [
     ROOT / "benchmark_scores" / "commercial_models_benchmark.csv",
     ROOT / "benchmark_scores" / "cloud_models_benchmark.csv",
     ROOT / "benchmark_scores" / "local_models_benchmark.csv",
+    # Political-Compass-CSVs (v4.10.14 nachgezogen): model_version ist hier
+    # ebenfalls Consumer — web_export.py:1352 liest pc_row.get("model_version").
+    # Ohne Co-Migration würde der PC-Export inkonsistente Versions-Strings
+    # zeigen (z.B. "GGUF (E4B)" statt "4") während das Main-Leaderboard clean ist.
+    ROOT / "benchmark_scores" / "political_compass_results.csv",
+    ROOT / "benchmark_scores" / "political_compass_leaderboard.csv",
 ]
 
 # Explizite Mapping-Tabelle (keine Heuristik — jede Card einzeln geprüft).
@@ -98,7 +104,14 @@ def _find_card_for_model_id(model_id: str) -> Path | None:
 
 
 def _collect_model_id_variants(model_id: str) -> list[str]:
-    """Varianten für CSV-Matching (Slash-Form, Underscore-Form etc.)."""
+    """Varianten für CSV-Matching (Slash-Form, Underscore-Form etc.).
+
+    CSVs verwenden unterschiedliche Namenskonventionen: Benchmark-CSVs nutzen
+    CrucibleMark-Underscore-Form (``qwen2_5-coder-7b``), PC-CSVs die rohe
+    Dot-Form (``qwen2.5-coder-7b``). Diese Funktion erzeugt beide Richtungen
+    plus Slash-/Colon-Normalisierung, damit die Migration alle CSVs konsistent
+    erfasst.
+    """
     variants = [model_id]
     base = model_id.split("/")[-1]
     if base != model_id:
@@ -106,6 +119,15 @@ def _collect_model_id_variants(model_id: str) -> list[str]:
     # Ollama-Form (Doppelpunkt) → CrucibleMark-Form
     if ":" in model_id:
         variants.append(model_id.replace(":", "-"))
+    # Dot ↔ Underscore (z.B. qwen2.5-coder-7b ↔ qwen2_5-coder-7b)
+    if "." in model_id:
+        variants.append(model_id.replace(".", "_"))
+    if "_" in model_id and "." not in model_id:
+        # Underscore → Dot nur bei numerischen Segmenten (qwen2_5 → qwen2.5)
+        import re
+        dotted = re.sub(r"(\d)_(\d)", r"\1.\2", model_id)
+        if dotted != model_id:
+            variants.append(dotted)
     return list(dict.fromkeys(variants))
 
 

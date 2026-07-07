@@ -641,6 +641,56 @@ optional_fields:
     since: "v4.9.2"
     example: "Unsloth"
 
+  # --- v4.10.14: Quant/Variant-Separierung (model_version = reine Versionsnummer) ---
+  - name: quantization_format
+    type: str
+    required: false
+    default: null
+    description: "Quantisierungs-/Format-Token fuer lokale Modelle (z.B. 'Q8_0 GGUF', 'FP8', 'NVFP4'). NICHT in model_version parsen — model_version ist reine Versionsnummer (Leaderboard-Groupby-Key)."
+    consumers: [web_export]
+    since: "v4.10.14"
+    example: "Q8_0 GGUF"
+
+  - name: model_variant
+    type: str
+    required: false
+    default: null
+    description: "Interne Fein-Tune-/Variant-Bezeichnung (z.B. 'MTP', 'Coder-MTP', 'Ortenzya Wordsmith', 'E4B', 'QAT', 'Abliterated'). Landet hier statt in model_version."
+    consumers: [web_export]
+    since: "v4.10.14"
+    example: "MTP"
+
+  - name: thinking_probe_manual_override
+    type: str
+    required: false
+    default: null
+    description: "Freitext-Rationale fuer einen manuellen Override der Thinking-Probe-Detektion (z.B. wenn Live-Probe vs. offizielle Doku widerspruechlich sind). Schon seit v4.7.x im Export; ab v4.10.14 auch im YAML-Vertrag erfasst."
+    consumers: [web_export]
+    since: "v4.7.1"
+    example: "Thinking via <think>-Tags ist dokumentiertes Kernfeature laut Model Card."
+
+  # --- Platzhalter-Felder (in _CARD_TEMPLATE vorhanden, aktuell 0/110 Cards befüllt) ---
+  # Divergenz Python<->YAML schliessen (v4.10.14). Keine web_export-Consumer, da
+  # ungenutzt: hardware_profile wird top-level aus der Leaderboard-CSV-Spalte
+  # exportiert (SSoT), inference_engine hat bisher keine Konsumenten.
+  - name: hardware_profile
+    type: str
+    required: false
+    default: null
+    description: "Platzhalter fuer Hardware-Profil in der Card (z.B. 'dgx_spark_cuda'). Aktuell ungenutzt — die SSoT fuer Hardware ist die Leaderboard-CSV-Spalte 'Hardware Profile' (top-level im Web-Export)."
+    consumers: []
+    since: "v4.10.14"
+    example: "dgx_spark_cuda"
+
+  - name: inference_engine
+    type: str
+    required: false
+    default: null
+    description: "Platzhalter fuer Inference-Engine (z.B. 'llama.cpp', 'vLLM'). Aktuell ungenutzt (0/110 Cards befuellt)."
+    consumers: []
+    since: "v4.10.14"
+    example: "vLLM"
+
 # ----------------------------------------------------------------------------
 # Validator-Konfiguration
 # ----------------------------------------------------------------------------

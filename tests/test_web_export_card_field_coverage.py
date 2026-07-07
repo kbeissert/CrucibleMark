@@ -110,6 +110,9 @@ def sample_card() -> dict:
         "profile_verified_at": "2026-06-20",
         "profile_verified_by": "card-research",
         "last_modified_at": "2026-06-20",
+        # v4.10.14: Quant/Variant-Separierung (model_version = reine Versionsnummer)
+        "quantization_format": "Q8_0 GGUF",
+        "model_variant": "MTP",
         # Optional v4.7.1: hier ungesetzt (kein Probe-Quartett)
     }
 
@@ -251,6 +254,46 @@ def test_model_card_subdict_passes_through_required_text_fields(field, sample_ca
         benchmark_run_at=None, inference_provider=None,
     )
     assert entry["model_card"][field] == f"TEST_VALUE_FOR_{field}"
+
+
+# ---------------------------------------------------------------------------
+# Test 4b (v4.10.14): Quant/Variant-Separierung — Pass-Through + None-Stripping
+# ---------------------------------------------------------------------------
+
+def test_model_card_passes_through_quant_and_variant(sample_card, sample_row) -> None:
+    """v4.10.14: quantization_format + model_variant muessen 1:1 aus der Card
+    kommen. Regressionsschutz fuer die model_version-Pollution-Migration, die
+    Quant/Variant-Tokens aus model_version in diese Felder ausgelagert hat."""
+    entry = _build_leaderboard_entry(
+        row=sample_row, card=sample_card, slug="t", vendor="v",
+        thinking_mode="standard", model_type="Offen",
+        has_report=False, has_review=False,
+        review_published_at=None, review_updated_at=None,
+        benchmark_run_at=None, inference_provider=None,
+    )
+    sub = entry["model_card"]
+    assert sub["quantization_format"] == "Q8_0 GGUF"
+    assert sub["model_variant"] == "MTP"
+    # model_version bleibt reine Versionsnummer (kein Quant-Token mehr)
+    assert sub["model_version"] == "7"
+
+
+def test_model_card_strips_none_quant_for_cloud_models(sample_card, sample_row) -> None:
+    """Cloud/Commercial-Modelle ohne Quantisierung: quantization_format=None
+    darf NICHT als null im Export landen (_strip_none entfernt den Key)."""
+    sample_card["quantization_format"] = None
+    sample_card["model_variant"] = None
+
+    entry = _build_leaderboard_entry(
+        row=sample_row, card=sample_card, slug="t", vendor="v",
+        thinking_mode="standard", model_type="Proprietär",
+        has_report=False, has_review=False,
+        review_published_at=None, review_updated_at=None,
+        benchmark_run_at=None, inference_provider=None,
+    )
+    sub = entry["model_card"]
+    assert "quantization_format" not in sub, "None-Quant darf nicht als null exportiert werden"
+    assert "model_variant" not in sub, "None-Variant darf nicht als null exportiert werden"
 
 
 # ---------------------------------------------------------------------------

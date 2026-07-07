@@ -64,7 +64,7 @@ def scan_cards(card_dir: Path = CARD_DIR) -> list[dict[str, str]]:
                     "model_id": data.get("model_id", ""),
                     "model_version_raw": str(version) if version else "",
                     "quantization_format_existing": data.get("quantization_format") or "",
-                    "hardware_platform_existing": data.get("hardware_platform") or "",
+                    "hardware_profile_existing": data.get("hardware_profile") or "",
                     "inference_engine_existing": data.get("inference_engine") or "",
                 }
             )

@@ -344,7 +344,7 @@ _CARD_TEMPLATE: dict[str, Any] = {
     "input_price_per_1m": None,
     "output_price_per_1m": None,
     # ---- Deploy-Kontext (Phase 48) -------------------------------------
-    # hardware_platform und inference_engine tragen Engine/Hardware
+    # hardware_profile und inference_engine tragen Engine/Hardware
     # explizit, damit Cross-Hardware-/Engine-Auswertungen ohne String-
     # Parsing der model_id möglich sind. SSoT bleibt der Provider-Config
     # (providers.local.<key>.hardware_profile / short_code) — die Card
@@ -352,7 +352,7 @@ _CARD_TEMPLATE: dict[str, Any] = {
     # quantization_format: "Q4_K_XL", "FP8", "NVFP4", "GGUF" etc. —
     # bewusst getrennt von model_version, da Quant/Format kein
     # Versionsdatum ist (siehe Audit Phase 48).
-    "hardware_platform": None,
+    "hardware_profile": None,
     "inference_engine": None,
     "quantization_format": None,
     # model_variant: interne Fein-Tune-/Variant-Bezeichnung (Mistral-style),
