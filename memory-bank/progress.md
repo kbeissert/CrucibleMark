@@ -1,6 +1,6 @@
 # Progress
 Letzte Releases + aktueller Stand.
-### 2026-07-07 (Session 49) — Card-Naming SUFFIX-SSoT + model_version-Pollution-Migration [DONE, uncommitted] (v4.10.14)
+### 2026-07-07 (Session 49) — Card-Naming SUFFIX-SSoT + model_version-Pollution-Migration [DONE, committed f154d99 + Folge-Commits] (v4.10.14)
 
 **Auslöser (Teil 1 — Card-Naming):** `_card_path(for_write=True)` produzierte PREFIX `{shortcode}_{base}.json`, während `build_card_id()` SUFFIX `{base}--{shortcode}.json` erzeugte. Diese Divergenz zwischen zwei SSoT-Funktionen verursachte Duplikat-Karten (PREFIX-Version + unprefixed Auto-Generierung via `enforce_card_first`, weil `_find_card` VSPK nicht kannte).
 
@@ -9,7 +9,7 @@ Letzte Releases + aktueller Stand.
 **Geliefert (Teil 1 — Card-Naming SUFFIX-SSoT):**
 - `utils/model_utils.py:_card_path(for_write=True)` ruft jetzt `build_card_id()` auf → SUFFIX statt PREFIX. `_find_card()` Read-Reihenfolge: SUFFIX → legacy PREFIX → unprefixed (Backward-Compat für unrenamte Karten).
 - 13 Karten per `git mv` umbenannt: 5 VSPK (PREFIX/unprefixed → SUFFIX), 8 SPRK (unprefixed → SUFFIX).
-- 2 Auto-Duplikate gelöscht (`Gemma-4-26B.json`, `Gemma-4-31B.json` — heute von `generate_review.py` erzeugt, weil Fix 1 noch uncommitted).
+- 2 Auto-Duplikate gelöscht (`Gemma-4-26B.json`, `Gemma-4-31B.json`).
 - `scripts/analysis/generate_review.py:210-215` — direkten `_card_path()`-Aufruf entfernt, `ensure_card(model_id)` ohne expliziten Pfad (SSoT-Delegation).
 - `tests/test_card_path_suffix_ssot.py` — 12 Regressionstests (SUFFIX-Produktion, Read-Reihenfolge, SSoT-Konsistenz `build_card_id` ↔ `_card_path`).
 - `scripts/maintenance/audit_model_versions.py` — Audit-Script für `model_version`-Drift (31 Cards flagged → nach Migration 0).
@@ -21,11 +21,21 @@ Letzte Releases + aktueller Stand.
 
 **Felder-Separierung SSoT (user-confirmed):** `model_version`=reine Versionsnummer ("3.5", "4", "1.0", "4.0"), `model_variant`=interne Variante, `quantization_format`=Quant/Format, `hardware_profile`=Hardware (bleibt CSV-Spalte + Provider-Config). Hardware NICHT in model_version (bleibt in `hardware_profile`).
 
-**Verifikation:** `audit_model_versions.py` 0 flagged (vorher 31). `make leaderboard` regeneriert, 0 Split-Rows (Groupby-Continuity gewahrt — `model_version` ist Leaderboard-Groupby-Key). `make validate` 0 invalid. `pytest` 1054 passed / 1 skipped / 2 pre-existing failures (unverändert — `test_card_vocabulary_ssot::test_all_model_cards_pass_tag_whitelist` "Dense"/"Tool-Use" Tags, `test_clean_results_arch_coverage::test_dry_run_mentions_all_csv_files` gemma_leaderboard.csv). CSV-Kontinuität: `model_id`-Felder in allen 13 Karten unverändert.
+**Folge-Commits (gleicher Tag, noch kein v4.10.15-Bump):**
+- `2146a25`: **F1 Slug-Collision-Fix** — `web_export.py:1770` slugifizierte `model_name` für Verzeichnisnamen; bei mehreren Benchmark-Runs mit gleichem Display-Namen (z.B. "Gemma 4 31B Instruct" für VSPK-lokal und OR-Cloud) wurde `data.json` überschrieben (last-row-wins). Fix: `_seen_slugs`-Set mit provider_code-Suffix bei Collision (Counter bei gleicher Provider). 15 Collisionen aufgelöst. `leaderboard.json`/`data.json` provider_code jetzt konsistent.
+- `da4f2a5`: **Scores-Contract + stu=null** — `_strip_none()` entfernte `political_bias`-Key wenn CSV-Wert leer. Fix: `_SCORES_CONTRACT_KEYS` (10 Modul-Keys) nach letztem `_strip_none`-Pass re-injiziert. 2 VSPK-Cards (`Gemma-4-31B--VSPK`, `ornith-1_0-35B-FP8--VSPK`) `supports_tool_use=true→null` (VSPK-Variante nicht getestet — Datenlücke, keine Engine-Limitation). `check:coverage` stu-Blocker: 2→0.
+- `d0ad62f`: **SSoT-Refactor** — `_SCORE_COLUMN_TO_KEY` als einzige Score-Keys-Quelle (LdbCols→short-key Mapping). Scores-Dict und Re-Injection werden daraus abgeleitet; Test importiert direkt. Neues Modul hinzufügen: nur LdbCols + Eintrag in `_SCORE_COLUMN_TO_KEY` — alles andere folgt automatisch.
+- `cc65a34`: **Skill→Command-Migration + vllm_batch.py + benchmark_auto.py Idempotenz** — 5 SKILL.md aus `.kilo/skills/` entfernt, 5 Command-Files in `.kilo/command/` neu. `scripts/core/vllm_batch.py` (248 Zeilen): Multi-VLLM-Container-Batch — startet mehrere Container parallel, wartet auf "completed all requests", stoppt alle gleichzeitig. Ersetzt manuelles stop/start für Multi-Modell-Läufe. `scripts/core/benchmark_auto.py`: `vllm-start` idempotenter — auto-stop bei Modell-Konflikt, 72h-Timeout (259200s) für 405B-Modelle, vLLM-Log-Polling. `tests/test_vllm_batch.py` (453 Zeilen): 9 Tests für vllm_batch.
 
-**Architektur-Entscheidung:** SUFFIX `{base}--{shortcode}.json` ist alleinige Schreibpfad-SSoT. Direkte `_card_path()`-Aufrufer MÜSSEN `provider=X` übergeben — besser `ensure_card(model_id)` ohne Pfad. Dokumentiert in `.agent/architecture.md` (SSoT-Tabelle) + `memory-bank/systemPatterns.md` (SSoT-Brücke + Pitfall "Card-Pfad SUFFIX-SSoT Divergenz").
+**Verifikation:** 1056 passed (2 pre-existing failures unverändert). `check:coverage` ✅ (stu-Blocker 0, Δ=+0). `check:drift` 66 OK (3 pre-existing True-Mismatches unverändert). `make validate` clean.
 
-**Status:** Uncommitted. Nächster Schritt: Commit als coherent card-naming SSoT-Refactoring + model_version migration (v4.10.14).
+**Architektur-Entscheidungen:**
+- SUFFIX `{base}--{shortcode}.json` ist alleinige Schreibpfad-SSoT.
+- **Scores-Dict als Vertrag:** Alle 10 Modul-Keys IMMER vorhanden (auch null) — `_SCORES_CONTRACT_KEYS` als SSoT nach letztem `_strip_none`-Pass re-injiziert.
+- **stu Capability vs Daten-Entkopplung:** `supports_tool_use=true` = Modell kann Tool-Use; stu=null = nicht getestet. `check:coverage`-Kontrakt: stu=true erfordert Tool-Use-Daten.
+- **SSoT-Prinzip durchgehend:** `_SCORE_COLUMN_TO_KEY` als einzige Score-Keys-Quelle, Scores-Dict + Test ableitend.
+
+**Status:** Committed. Kein v4.10.15-Bump (Folge-Commits können als v4.10.15.0 / .1 / .2 separat versioniert werden, oder unter v4.10.14.0-Hotfix laufen).
 
 ---
 
