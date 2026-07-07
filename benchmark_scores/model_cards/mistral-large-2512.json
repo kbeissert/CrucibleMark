@@ -41,7 +41,7 @@
   "license_url": "https://huggingface.co/mistralai/Mistral-Large-Instruct-2511",
   "commercial_use_allowed": true,
   "weights_license_tier": "open-weights",
-  "model_version": "2512",
+  "model_version": "3",
   "input_price_per_1m": 2.0,
   "output_price_per_1m": 6.0,
   "unknown": false,

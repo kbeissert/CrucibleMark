@@ -27,7 +27,7 @@
   "local_deployment_possible": true,
   "model_family": "Mistral",
   "model_id": "mistral-small-2603",
-  "model_version": "26.03",
+  "model_version": "4",
   "origin_country": "France",
   "output_price_per_1m": 0.3,
   "parameter_architecture": "moe",
