@@ -69,6 +69,15 @@ from scripts.core.llamacpp_batch import (  # noqa: E402
     stop_llamacpp_provider_server,
     run_llamacpp_provider_cleanup,
 )
+from scripts.core.vllm_batch import (  # noqa: E402
+    get_enabled_vllm_providers,
+    is_vllm_provider,
+    set_vllm_provider_context,
+    stop_vllm_provider_server,
+    run_vllm_provider_cleanup,
+    vllm_model_session,
+    VllmSessionError,
+)
 
 # Konstante für "Modell kann keine Tools" (getestet und fehlgeschlagen)
 SUPPORT_TOOL_USE_NOT_APPLICABLE = "not_applicable"
@@ -230,6 +239,19 @@ def _extract_config_model_ids(models_cfg: Any) -> list[str]:
 # Entfernt: _stop_enabled_local_llamacpp_servers → verwendet stop_llamacpp_provider_server aus llamacpp_batch.py
 
 
+def _is_local_server_provider(provider_key: str) -> bool:
+    """True für lokale OpenAI-kompatible Server (llama.cpp + vLLM).
+
+    Wird in ``_run_module_for_model`` genutzt, um zu entscheiden, ob ein
+    Score-Modul in-process ausgeführt werden muss (wg. Server-State) bzw.
+    das Cleanup-Flag an Delegate-Scripts weitergereicht wird.
+
+    Vereinigungsmenge von ``is_llamacpp_provider`` (M4 + Spark llama.cpp)
+    und ``is_vllm_provider`` (vllm_spark).
+    """
+    return is_llamacpp_provider(provider_key) or is_vllm_provider(provider_key)
+
+
 def _run_single_llamacpp_provider_batch(
     provider_key: str,
     provider_cfg: dict[str, Any],
@@ -361,6 +383,150 @@ def _run_llamacpp_model_modules(
         # "ran" oder "skipped" → weiter
 
 
+# -- vLLM-Batch (Phase 48): spiegelbildlich zu _run_single_llamacpp_provider_batch -
+# Gleiche Helper-Konventionen (_setup, _has_open_tests, _run_<provider>_model_modules),
+# aber vllm-spezifische Provider-Discovery (api_type=vllm) und Lifecycle.
+
+
+def _setup_vllm_runner_and_client(
+    provider_key: str, force: bool, audit_mode: bool,
+) -> tuple[UnifiedBenchmarkRunner, Any]:
+    """Erstellt Runner + VllmClient mit aktivierten Skip-Cleanup-Flags.
+
+    Spiegelbild zu ``_setup_llamacpp_runner_and_client``. Setzt zwei Flags:
+
+    - ``runner._skip_llamacpp_cleanup``: Runner-seitig. ``_cleanup_local_provider``
+      prüft dieses Flag heute nur für llama.cpp-Provider (nicht für vllm_spark);
+      vllm_spark wird dort über ``cleanup_on_exit``-Config gesteuert (aktuell
+      unset → Early-Return). Das Flag bleibt als Forward-Looking-Compat gesetzt.
+    - ``vllm_client._skip_vllm_cleanup``: Client-seitig. Verhindert, dass
+      ``VllmBaseClient.query()`` nach jedem Request den HTTP-Client zurücksetzt
+      (``_client = None``) — hält die Connection-Pool während des Batches alive.
+      Existiert seit vllm_base.py:984 (``getattr(self, "_skip_vllm_cleanup", False)``).
+    """
+    runner = UnifiedBenchmarkRunner(force=force, audit_mode=audit_mode)
+    # Cleanup-Kontrolle liegt beim Batch-Orchestrator, nicht beim einzelnen run_benchmark().
+    runner._skip_llamacpp_cleanup = True  # type: ignore[attr-defined]
+
+    vllm_client = runner.client.clients.get(provider_key)
+    if vllm_client is None:
+        print(f"❌ VllmClient '{provider_key}' nicht im Client-Registry gefunden.")
+        return runner, None
+    # Client-seitiges Skip-Flag: verhindert Connection-Reset pro Query.
+    vllm_client._skip_vllm_cleanup = True  # type: ignore[attr-defined]
+    set_vllm_provider_context(vllm_client, provider_key)
+    return runner, vllm_client
+
+
+def _run_vllm_model_modules(
+    *,
+    runner: UnifiedBenchmarkRunner,
+    model_id: str,
+    modules: list[dict[str, Any]],
+    existing_tests: set[tuple[str, str]],
+    force: bool,
+    audit_mode: bool,
+    mcp_mode: str,
+    provider_key: str,
+) -> None:
+    """Iteriert über Module für ein vLLM-Modell, bricht bei echtem Fehler ab.
+
+    ``_run_module_for_model`` returns ``"skipped"`` wenn keine offenen Assets
+    vorhanden sind — ``"failed"`` impliziert also zwingend offene Assets.
+    Ein separater ``get_startable_assets``-Aufruf hier ist redundant (die
+    asset-Ermittlung läuft in ``_run_module_for_model`` selbst).
+    """
+    for module in modules:
+        status = _run_module_for_model(
+            runner, model_id, module, existing_tests,
+            force=force, audit=audit_mode, mcp_mode=mcp_mode, provider=provider_key,
+        )
+        if status == "failed":
+            print(
+                f"   ⚠️  Modul '{module.get('key', 'unknown')}' für '{model_id}' fehlgeschlagen "
+                "(mit offenen Assets). Restliche Module für dieses Modell werden übersprungen."
+            )
+            break
+
+
+def _run_single_vllm_provider_batch(
+    provider_key: str,
+    provider_cfg: dict[str, Any],
+    modules: list[dict[str, Any]],
+    validator: ConfigValidator,
+    force: bool,
+    audit_mode: bool,
+    mcp_mode: str,
+) -> None:
+    """Batch-Run für einen aktivierten lokalen vLLM-Provider.
+
+    Vollständig analog zu ``_run_single_llamacpp_provider_batch`` —
+    Server-Lifecycle (prophylaktischer Stop → Start/Stop pro Modell →
+    End-of-Batch Cleanup) wird vom Orchestrator übernommen, nicht vom
+    einzelnen ``run_benchmark()``-Aufruf.
+
+    vLLM-Constraint (siehe CLAUDE.md): ``vllm-start`` ist nicht idempotent
+    → kein ``swap_model()``, immer ``stop_server()`` + ``start_server()``
+    zwischen Modellen. Realisiert via ``vllm_model_session``-Contextmanager
+    pro Modell in der Schleife.
+    """
+    model_ids = _extract_config_model_ids(provider_cfg.get("models", []))
+    if not model_ids:
+        print(f"⚠️  Keine Modelle für '{provider_key}' konfiguriert.")
+        return
+
+    csv_path = Path(
+        validator.config.get("output", {}).get(
+            "local_models_csv", "benchmark_scores/local_models_benchmark.csv"
+        )
+    )
+    existing_tests = get_existing_results(csv_path, force=force)
+    runner, vllm_client = _setup_vllm_runner_and_client(
+        provider_key, force, audit_mode,
+    )
+    if vllm_client is None:
+        return
+
+    provider_label = provider_cfg.get("name", provider_key)
+    print(f"\n🖥️  [1c/2] LOKALE MODELLE (VLLM: {provider_label})")
+    print(f"{'=' * 40}")
+    print(f"Konfigurierte Modelle: {len(model_ids)}")
+    print(f"Liste: {', '.join(model_ids)}\n")
+    print(f"Ignoriere bereits vorhandene Ergebnisse in: {csv_path}\n")
+
+    # Nur den eigenen Provider stoppen (nicht alle vLLM-Provider)
+    stop_vllm_provider_server(validator.config, provider_key=provider_key)
+
+    interrupted = False
+    try:
+        for i, model_id in enumerate(model_ids, 1):
+            print(f"\n➡️  MOD [{provider_key} {i}/{len(model_ids)}]: {model_id}")
+            if not _has_open_tests(modules, model_id, existing_tests):
+                print("   ✓ Alle Benchmarks bereits vorhanden — überspringe Modell.")
+                continue
+            # Pro-Modell-Session: start → yield → stop. Garantiert Stop
+            # zwischen Modellen (vllm-start ist nicht idempotent).
+            try:
+                with vllm_model_session(runner, provider_key, model_id):
+                    _run_vllm_model_modules(
+                        runner=runner, model_id=model_id, modules=modules,
+                        existing_tests=existing_tests, force=force, audit_mode=audit_mode,
+                        mcp_mode=mcp_mode, provider_key=provider_key,
+                    )
+            except VllmSessionError as exc:
+                print(f"   ❌ {exc} — überspringe Modell.")
+                continue
+    except KeyboardInterrupt:
+        print("\n⛔  Abbruch durch Benutzer.")
+        interrupted = True
+    finally:
+        # End-of-Batch Cleanup (post_stop_cmd, Cache-Bereinigung).
+        # Server-Stop pro Modell übernimmt vllm_model_session.
+        run_vllm_provider_cleanup(provider_key, provider_cfg)
+        if interrupted:
+            sys.exit(1)
+
+
 def _run_score_delegate_for_model(
     module: dict[str, Any],
     model: str,
@@ -465,15 +631,15 @@ def _run_module_for_model(
 
     print(f"   📊 Bench: {module['name']} ({len(assets_todo)} neue Tests) ...")
 
-    if _is_score_module(module) and not is_llamacpp_provider(provider):
-        # For local llama.cpp providers we must stay in-process to preserve the
+    if _is_score_module(module) and not _is_local_server_provider(provider):
+        # For local llama.cpp / vLLM providers we must stay in-process to preserve the
         # server ownership/context of the already started model server.
         ok = _run_score_delegate_for_model(module, model, force=force, audit=audit)
         return "ran" if ok else "failed"
 
     if module.get("delegate_script"):
-        # Für llama.cpp-Provider: Cleanup-Flag an Delegate weitergeben
-        _skip_cleanup = is_llamacpp_provider(provider)
+        # Für lokale Server-Provider (llama.cpp + vLLM): Cleanup-Flag an Delegate weitergeben
+        _skip_cleanup = _is_local_server_provider(provider)
         ok = _run_delegate_for_model(
             module, model, force=force, audit=audit, mcp_mode=mcp_mode,
             skip_llamacpp_cleanup=_skip_cleanup,
@@ -777,6 +943,31 @@ def run_llamacpp_batch(
 
     for provider_key, provider_cfg in enabled_llamacpp:
         _run_single_llamacpp_provider_batch(
+            provider_key=provider_key,
+            provider_cfg=provider_cfg,
+            modules=modules,
+            validator=validator,
+            force=force,
+            audit_mode=audit_mode,
+            mcp_mode=mcp_mode,
+        )
+
+
+def run_vllm_batch(
+    modules: list[dict[str, Any]],
+    validator: ConfigValidator,
+    force: bool = False,
+    audit_mode: bool = False,
+    mcp_mode: str = "live",
+) -> None:
+    """Batch-Run für alle aktivierten lokalen vLLM-Provider aus der Config (SSOT)."""
+    enabled_vllm = get_enabled_vllm_providers(validator.config)
+    if not enabled_vllm:
+        print("⏭️  Kein aktivierter lokaler vLLM-Provider in der Config — überspringe.")
+        return
+
+    for provider_key, provider_cfg in enabled_vllm:
+        _run_single_vllm_provider_batch(
             provider_key=provider_key,
             provider_cfg=provider_cfg,
             modules=modules,
@@ -1285,6 +1476,17 @@ def _run_main_benchmark_phases(
                 )
             except (KeyboardInterrupt, SystemExit):
                 print("\n⛔  Abbruch durch Benutzer (llama.cpp).")
+                aborted = True
+
+        # Phase 1c: Lokale Modelle (vLLM)
+        if not aborted:
+            try:
+                run_vllm_batch(
+                    modules, validator,
+                    force=args.force, audit_mode=args.audit, mcp_mode=args.mcp_mode,
+                )
+            except (KeyboardInterrupt, SystemExit):
+                print("\n⛔  Abbruch durch Benutzer (vLLM).")
                 aborted = True
 
         # Phase 2: Kommerzielle Modelle

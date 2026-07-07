@@ -1,5 +1,4 @@
 ---
-name: refactor-code
 description: >-
   CrucibleMark Code-Refactoring. Erst vollständigen Plan ausarbeiten, dann
   schrittweise und validiert umsetzen. Stabilität vor Sauberkeit.
@@ -26,11 +25,11 @@ Refactoring bedeutet: gleiche Ausgabe, bessere Struktur. Nie umgekehrt.
 
 Lies zunächst diese Dateien, um den aktuellen Stand zu verstehen:
 
-1. [memory-bank/activeContext.md](../../memory-bank/activeContext.md)
-2. [memory-bank/systemPatterns.md](../../memory-bank/systemPatterns.md)
-3. [memory-bank/techContext.md](../../memory-bank/techContext.md)
-4. [.github/copilot-instructions.md](../copilot-instructions.md)
-5. [docs/ARCHITECTURE.md](../../docs/ARCHITECTURE.md)
+1. [memory-bank/activeContext.md](../memory-bank/activeContext.md)
+2. [memory-bank/systemPatterns.md](../memory-bank/systemPatterns.md)
+3. [memory-bank/techContext.md](../memory-bank/techContext.md)
+4. [.github/copilot-instructions.md](../.github/copilot-instructions.md)
+5. [docs/ARCHITECTURE.md](../docs/ARCHITECTURE.md)
 
 Führe noch keine Änderungen durch.
 

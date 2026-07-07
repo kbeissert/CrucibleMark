@@ -1,5 +1,4 @@
 ---
-name: refactor-markdown
 description: >-
   CrucibleMark Markdown-Dateien und YAML-Prompts auf Typos, Formatierung und
   Konsistenz prüfen. Reiner Audit-Modus — kein Codetouching.
