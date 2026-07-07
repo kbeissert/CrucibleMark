@@ -209,9 +209,13 @@ def _ensure_model_card(
 
     print(f"  Generiere Model Card für {model_id} ...")
     from utils.card_utils import ensure_card
-    from utils.model_utils import _card_path
-    card_path_out = _card_path(model_id, for_write=True)
-    result_path = ensure_card(model_id, card_path=card_path_out)
+    # SSoT: ensure_card ohne expliziten card_path delegiert an _card_path(for_write=True).
+    # Wenn ein provider bekannt ist, sollte er hier übergeben werden, damit die Card
+    # unter der kanonischen SUFFIX-Form ({base}--{shortcode}.json) entsteht.
+    # Ohne provider entsteht die unprefixed Form — akzeptabel als Fallback, aber
+    # provider-spezifische Cards (SPRK/VSPK) müssen über ensure_card(provider=...)
+    # oder generate_model_cards.py angelegt werden.
+    result_path = ensure_card(model_id)
     print(f"  Model Card erstellt: {result_path}")
     try:
         return json.loads(result_path.read_text(encoding="utf-8"))

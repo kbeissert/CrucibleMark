@@ -47,7 +47,7 @@
   "license_url": "https://opensource.org/licenses/Apache-2.0",
   "commercial_use_allowed": true,
   "weights_license_tier": "open-weights",
-  "model_version": "UD-Q4_K_XL (GGUF)",
+  "model_version": "3.5",
   "input_price_per_1m": 0.0,
   "output_price_per_1m": 0.0,
   "unknown": false,
@@ -78,5 +78,7 @@
   "profile_verified_by": "llm:perplexity",
   "last_modified_at": "2026-06-21",
   "heritage_ids": [],
-  "community": "Unsloth"
+  "community": "Unsloth",
+  "model_variant": null,
+  "quantization_format": "UD-Q4_K_XL GGUF"
 }

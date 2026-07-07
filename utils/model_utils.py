@@ -25,27 +25,40 @@ T = TypeVar("T")
 
 # Provider short codes — mirrors benchmark_config.yaml → providers.<name>.short_code
 # This dict provides fast in-process lookup without YAML I/O on every call.
+#
+# Schema-Konvention für lokale Inference-Provider (max. 4 Zeichen):
+#   Optionaler Engine-Prefix (1 Zeichen) + Hardware-Kürzel (max. 3 Zeichen)
+#     V=vLLM, kein Prefix=llama.cpp → Engine über Präfix unterscheidbar
+#     M4xx = Apple M4 (MacBook Pro)
+#     SPK  = DGX Spark / asusGX10
+# Beispiel:
+#     M4APL = Mac M4 Apple + llama.cpp
+#     SPRK  = Spark + llama.cpp
+#     VSPK  = vLLM + Spark
+#     VM4   = vLLM + Mac (hypothetisch zukünftig)
+# API-Provider und Cloud-Proxies folgen einer einfacheren Regel: 2–3 Buchstaben
+# (API, OR, GR) — dort ist die Engine fix (HTTP-JSON).
 _PROVIDER_SHORTCODES: dict[str, str] = {
-    # Proprietary direct APIs
+    # Proprietary direct APIs (HTTP-JSON, keine Engine-Diskrimination nötig)
     "anthropic": "API",
     "openai": "API",
     "google": "API",
     "xai": "API",
     "mistral": "API",
-    # Cloud inference proxies
+    # Cloud inference proxies (HTTP-JSON)
     "openrouter": "OR",
     "groq": "GR",
     # Local runtime (Ollama, LM Studio, etc.)
     "ollama": "LCL",
     "ollama_local": "LCL",
     "local": "LCL",
-    # llama.cpp local inference server (OpenAI-compatible)
-    "llamacpp": "M4APL",
-    "llamacpp_spark": "SPRK",
-    "llama_cpp": "M4APL",
-    "llamacpp_local": "M4APL",
-    # vLLM local inference server (OpenAI-compatible)
-    "vllm_spark": "VSPK",
+    # llama.cpp local inference server (OpenAI-compatible) — kein V-Prefix
+    "llamacpp": "M4APL",        # Mac M4 Apple + llama.cpp
+    "llamacpp_spark": "SPRK",   # DGX Spark + llama.cpp
+    "llama_cpp": "M4APL",       # Alias
+    "llamacpp_local": "M4APL",  # Alias
+    # vLLM local inference server (OpenAI-compatible) — V-Prefix für Engine
+    "vllm_spark": "VSPK",       # asusGX10/DGX Spark + vLLM
     # Ollama as cloud proxy (e.g. qwen3.5:397b-cloud via remote Ollama endpoint)
     "ollama_cloud": "CLD",
 }
@@ -101,6 +114,46 @@ def get_hardware_profile(config: dict, provider: str) -> str | None:
         return local_cfg.get("config", {}).get("hardware_profile")
     except Exception:  # noqa: BLE001
         return None
+
+
+# ---------------------------------------------------------------------------
+# model_version Pollution Audit (Phase 48)
+# ---------------------------------------------------------------------------
+# Quant/Format-Token, die im ``model_version``-Feld nichts zu suchen haben.
+# Das Feld soll reine Versions-/Datums-Infos tragen (z.B. "3.5", "4.0",
+# "20251001"). Tokens wie "Q4_K_XL", "FP8", "GGUF" sind Engine-/Format-Infos
+# und gehören in das separate ``quantization_format``-Feld der Card.
+#
+# Achtung: Bestehende Cards tragen diese Tokens oft im model_version (Audit
+# ergab ~30 Karten, Stand Phase 48). Diese Funktion ändert KEINE Bestandsdaten
+# — das würde die Leaderboard-Groupby-Continuity brechen (model_version ist
+# Groupby-Key in score_calculator.py). Sie ist defensiv für NEUE Schreibvorgänge
+# und Grundlage für den Audit-Report.
+_QUANT_FORMAT_TOKENS: tuple[str, ...] = (
+    "GGUF", "Q2_K", "Q3_K", "Q4_0", "Q4_1", "Q4_K", "Q4_K_M", "Q4_K_S",
+    "Q5_0", "Q5_1", "Q5_K", "Q5_K_M", "Q5_K_S", "Q6_K", "Q8_0", "Q8_K",
+    "FP8", "FP16", "FP32", "BF16", "INT4", "INT8", "AWQ", "GPTQ", "NVFP4",
+    "QAT", "UD", "MTP", "MLX",
+)
+
+
+def model_version_has_quant_pollution(value: str | None) -> bool:
+    """True wenn *value* Quant/Format-Tokens enthält.
+
+    Use Cases:
+    - Audit-Script: scannt Cards und meldet, wo model_version quantifiziert ist.
+    - Card-Generator (Zukunft): kann warnen, wenn ein neuer Generator-Wert
+      Tokens enthält, die in ``quantization_format`` gehören.
+    - Read-Side: defensive Validierung für Werte aus user-editierten Cards.
+
+    Pure-Version-Werte wie ``"3.5"``, ``"4.0"``, ``"20251001"``, ``"latest"``
+    liefern False. Werte wie ``"4 (Q4_K_XL GGUF)"``, ``"1.0-FP8"``,
+    ``"UD-Q8_K_XL (GGUF)"`` liefern True.
+    """
+    if not value:
+        return False
+    upper = str(value).upper()
+    return any(token in upper for token in _QUANT_FORMAT_TOKENS)
 
 
 # ---------------------------------------------------------------------------
@@ -404,13 +457,18 @@ def _card_path(
        The provider namespace is already embedded in the ID (e.g. ``moonshotai/kimi-k2-0711``).
     2. **Commercial direct-API IDs** (shortcode == ``'API'``): ``safe_name.json``
        Brand names are globally unique (``claude-sonnet-4-6``, ``gpt-5``, …).
-    3. **Non-namespaced + non-API** (``LCL``, ``GR``, …): ``{SHORTCODE}_safe_name.json``
+    3. **Non-namespaced + non-API** (``LCL``, ``GR``, …): ``safe_name--{SHORTCODE}.json``
        These model IDs are *not* globally unique — the same bare name (e.g.
        ``llama3.3:70b``) can be served by multiple providers.
 
-       - ``for_write=False`` (read/lookup): tries the prefixed path first; falls back
-         to the legacy unprefixed path for cards created before this convention.
-       - ``for_write=True`` (card creation): always returns the prefixed path so new
+       SSoT: ``build_card_id()`` definiert ``{base}--{shortcode}`` als Schema.
+       ``_card_path(for_write=True)`` produziert dieselbe Form, damit beide
+       SSoT-Funktionen konsistent sind.
+
+       - ``for_write=False`` (read/lookup): tries the suffixed path first; falls back
+         to the legacy prefixed path (``{SHORTCODE}_safe_name.json``), then to the
+         legacy unprefixed path for cards created before this convention.
+       - ``for_write=True`` (card creation): always returns the suffixed path so new
          cards are stored at the canonical location.
 
     Parameters
@@ -451,16 +509,24 @@ def _card_path(
     if not shortcode or shortcode == "API":
         return CARD_DIR / f"{safe}.json"
 
-    # Rule 3: non-namespaced, non-API → provider-prefixed
-    prefixed = CARD_DIR / f"{shortcode}_{safe}.json"
+    # Rule 3: non-namespaced, non-API → provider-suffixed
+    # SSoT: build_card_id() definiert {base}--{shortcode} als kanonische Form.
+    # _card_path(for_write=True) muss dieselbe Form produzieren, sonst
+    # widersprechen sich die beiden SSoT-Funktionen und erzeugen Duplikate.
+    suffixed = CARD_DIR / f"{safe}--{shortcode}.json"
     unprefixed = CARD_DIR / f"{safe}.json"
+    # Legacy: ältere Karten nutzten PREFIX-Form ({shortcode}_{safe}.json).
+    # Diese Form wird beim Lesen noch gefunden, aber nie mehr zum Schreiben verwendet.
+    legacy_prefixed = CARD_DIR / f"{shortcode}_{safe}.json"
 
     if for_write:
-        return prefixed  # new cards always go to the canonical prefixed location
+        return suffixed  # new cards always go to the canonical suffixed location
 
-    # Read: prefer prefixed (new standard), fall back to legacy unprefixed
-    if prefixed.exists():
-        return prefixed
+    # Read: prefer suffixed (new SSoT), then legacy prefixed, then unprefixed
+    if suffixed.exists():
+        return suffixed
+    if legacy_prefixed.exists():
+        return legacy_prefixed
     return unprefixed  # caller must check .exists()
 
 
@@ -588,9 +654,18 @@ def _find_card(model_id: str, card_dir: Path | None = None) -> Path:
             return candidates[-1]  # most recent when multiple versions exist
         return unprefixed
 
-    # For non-namespaced IDs try all non-API shortcode prefixes.
-    # OR models are always namespaced, so only M4APL, SPRK and GR need checking.
-    for shortcode in ("M4APL", "SPRK", "GR"):
+    # SSoT: SUFFIX-Form ({base}--{shortcode}.json) ist die kanonische Konvention
+    # (definiert durch build_card_id). Diese wird zuerst gesucht.
+    # OR models are always namespaced, so the local-server prefixes are enough.
+    # Includes VSPK for vllm_spark (asusGX10) since Phase 48.
+    for shortcode in ("M4APL", "SPRK", "VSPK", "GR"):
+        candidate = _cd / f"{safe}--{shortcode}.json"
+        if candidate.exists():
+            return candidate
+
+    # Backward-compat: ältere Karten nutzten PREFIX-Form ({shortcode}_{base}.json).
+    # Diese Form wird beim Lesen noch gefunden, aber nie mehr zum Schreiben verwendet.
+    for shortcode in ("M4APL", "SPRK", "VSPK", "GR"):
         candidate = _cd / f"{shortcode}_{safe}.json"
         if candidate.exists():
             return candidate

@@ -5,6 +5,22 @@
 
 ## Abgeschlossen
 
+### Card-Naming SUFFIX-SSoT + model_version-Pollution-Migration (v4.10.14 – 07.07.26, Session 49)
+
+User-Auftrag: Card-Naming SSoT reparieren (PREFIX→SUFFIX-Alignment mit `build_card_id`) und `model_version`-Pollution (Quant/GGUF/Variant-Tokens) in korrekte Felder migrieren.
+
+- [x] **Fix 1-5 (Card-Schema-Robustness)** — `_find_card` VSPK-Support, Backward-Compat-Lookup, `_CARD_TEMPLATE` Optional-Felder, `_PROVIDER_SHORTCODES`-Doku, `audit_model_versions.py` (31 Cards flagged).
+- [x] **`_card_path(for_write=True)` PREFIX→SUFFIX** — ruft jetzt `build_card_id()` auf. `_find_card` Read-Reihenfolge SUFFIX → legacy PREFIX → unprefixed. 2 konfligierende SSoT-Funktionen jetzt vereinheitlicht.
+- [x] **13 Karten per `git mv` umbenannt** (5 VSPK, 8 SPRK) + 2 Auto-Duplikate gelöscht (`Gemma-4-26B.json`, `Gemma-4-31B.json`).
+- [x] **`generate_review.py:210-215` SSoT-Delegation** — direkten `_card_path()`-Aufruf entfernt, `ensure_card(model_id)` ohne Pfad.
+- [x] **`tests/test_card_path_suffix_ssot.py`** — 12 Regressionstests (SUFFIX-Produktion, Read-Reihenfolge, SSoT-Konsistenz).
+- [x] **CSV-Kontinuität verifiziert** — 7-dimension Audit: 0 stale PREFIX-Strings, 0 Cross-Card-Refs, `model_id`-Felder in allen 13 Karten unverändert.
+- [x] **Neues Feld `model_variant` in `_CARD_TEMPLATE`** — interne Fein-Tune-/Variant-Bezeichnung (MTP, Coder-MTP, Ortenzya Wordsmith, E4B, QAT, Abliterated) — landet jetzt hier statt in `model_version`.
+- [x] **`migrate_model_versions_pollution.py`** — atome Migration (Card 3 Felder + CSV `model_version`-Spalte zusammen, explizite 33-Modell-Mapping-Tabelle, idempotent, Dry-Run/`--apply`).
+- [x] **Migration angewendet** — 33 Cards + 1498 CSV-Zeilen (49 cloud + 1449 local). Backup in `.bak_model_version_migration_20260707_085031/`. 2 vorgängige CSV/Card-Splits geheilt (`hermes-4-14b-abliterated`, `hermes-4-14b-q4`).
+- [x] **Verifikation** — `audit_model_versions.py` 0 flagged (vorher 31). `make leaderboard` 0 Split-Rows (Groupby-Continuity gewahrt). `make validate` 0 invalid. `pytest` 1054 passed / 2 pre-existing failures (unverändert).
+- [x] **Memory-Bank-Update** — `.agent/architecture.md` SSoT-Tabelle, `systemPatterns.md` (SSoT-Brücke + Pitfall "Card-Pfad SUFFIX-SSoT Divergenz").
+
 ### WebExport-Konsistenz-Fixes (v4.10.13 – 04.07.26, Session 47)
 
 User-Auftrag: 4 Probleme aus dem WebExport-Konsistenz-Check (Stand 2026-07-04 19:35 UTC) beheben. 2 davon Python-Bugs, 2 legitim null/bereits korrekt.

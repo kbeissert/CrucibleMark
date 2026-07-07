@@ -17,7 +17,8 @@ Detail-Referenz für CrucibleMark-Architektur-Constraints. Die Top-Constraints s
 | Thema | SSoT-Aufruf |
 |---|---|
 | Token-Budget pro Modell | `resolve_token_budget()` in `utils/model_utils.py` — nie inline duplizieren |
-| Card-Pfad & -Lookup | `_card_path()` und `_find_card()` in `utils/model_utils.py` |
+| Card-Pfad & -Lookup | `build_card_id()` = alleinige SSoT für Schreibpfad (SUFFIX `{base}--{shortcode}.json`). `_card_path(for_write=True)` und `ensure_card(provider=X)` rufen `build_card_id()` auf — erzeugen KEINE PREFIX-Form. `_find_card()` Read-Reihenfolge: SUFFIX → legacy PREFIX (`{shortcode}_{base}`) → unprefixed. Direkte `_card_path()`-Aufrufer müssen `provider=X` übergeben, sonst entsteht unprefixed Pfad → Duplikate. |
+| Card-Felder-Separierung (`model_version`/`model_variant`/`quantization_format`) | `model_version` = **reine Versionsnummer** ("3.5", "4", "1.0", "4.0") — ist Leaderboard-Groupby-Key, Split bei Inkonsistenz. Quant/Format-Tokens (`Q8_0 GGUF`, `FP8`, `NVFP4`) → `quantization_format`. Interne Fein-Tune-/Variant-Namen (MTP, Coder-MTP, Ortenzya Wordsmith, E4B, QAT, Abliterated) → `model_variant`. Hardware bleibt in `hardware_profile` (CSV-Spalte + Provider-Config), NICHT in `model_version`. Bei Card-First-Override in `get_model_version()` müssen Card + CSV `model_version`-Spalte atomar zusammen migriert werden. |
 | Model-ID intern ↔ config/API | `internal_id_to_config_form()` in `utils/model_utils.py` |
 | Modell-Kategorisierung (Display) | `get_model_category()` in `utils/model_utils.py` |
 | Thinking-Erkennung (Override > Probe > None) | `resolve_effective_thinking()` in `utils/model_utils.py` |

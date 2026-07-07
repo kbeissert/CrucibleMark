@@ -51,7 +51,7 @@
   "license_url": "https://opensource.org/licenses/Apache-2.0",
   "commercial_use_allowed": true,
   "weights_license_tier": "open-weights",
-  "model_version": "3.6-MTP",
+  "model_version": "3.6",
   "input_price_per_1m": 0.0,
   "output_price_per_1m": 0.0,
   "unknown": false,
@@ -82,5 +82,7 @@
   "tooluse_score_p1": null,
   "tooluse_score_p2": null,
   "tooluse_recommendation": null,
-  "system_prompt_override": null
+  "system_prompt_override": null,
+  "model_variant": "MTP",
+  "quantization_format": null
 }

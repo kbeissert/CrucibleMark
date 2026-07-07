@@ -84,5 +84,7 @@
   "profile_verified_by": "llm:perplexity",
   "last_modified_at": "2026-06-20",
   "heritage_ids": [],
-  "community": null
+  "community": null,
+  "model_variant": "Abliterated",
+  "quantization_format": "Q6_K GGUF"
 }

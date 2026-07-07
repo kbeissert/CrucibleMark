@@ -25,7 +25,7 @@
   "local_deployment_possible": true,
   "model_family": "Gemma",
   "model_id": "gemma-3-12b-it-q8",
-  "model_version": "Q8_0 (GGUF)",
+  "model_version": "3",
   "origin_country": "USA",
   "output_price_per_1m": 0.0,
   "parameter_architecture": "dense",
@@ -78,5 +78,7 @@
   "profile_verified_by": "llm:perplexity",
   "last_modified_at": "2026-06-20",
   "heritage_ids": [],
-  "community": null
+  "community": null,
+  "model_variant": null,
+  "quantization_format": "Q8_0 GGUF"
 }

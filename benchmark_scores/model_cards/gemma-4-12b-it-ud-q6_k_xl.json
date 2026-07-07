@@ -50,7 +50,7 @@
   "license_url": "https://opensource.org/licenses/Apache-2.0",
   "commercial_use_allowed": true,
   "weights_license_tier": "open-weights",
-  "model_version": "4 (Q6_K_XL GGUF)",
+  "model_version": "4",
   "input_price_per_1m": 0.0,
   "output_price_per_1m": 0.0,
   "unknown": false,
@@ -81,5 +81,7 @@
   "cot_tags_detected": null,
   "profile_verified_by": "llm:perplexity",
   "last_modified_at": "2026-06-20",
-  "heritage_ids": []
+  "heritage_ids": [],
+  "model_variant": null,
+  "quantization_format": "Q6_K_XL GGUF"
 }

@@ -68,7 +68,7 @@
   "license_url": "https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B",
   "commercial_use_allowed": true,
   "weights_license_tier": "open-weights",
-  "model_version": "Q5_K_M (GGUF)",
+  "model_version": "r1",
   "input_price_per_1m": 0.0,
   "output_price_per_1m": 0.0,
   "unknown": false,
@@ -85,5 +85,7 @@
   "profile_verified_by": "human",
   "last_modified_at": "2026-07-04",
   "heritage_ids": [],
-  "community": null
+  "community": null,
+  "model_variant": null,
+  "quantization_format": "Q5_K_M GGUF"
 }

@@ -68,7 +68,7 @@
   "license_url": "https://huggingface.co/deepreinforce-ai/Ornith-1.0-35B-FP8",
   "commercial_use_allowed": true,
   "weights_license_tier": "open-weights",
-  "model_version": "1.0-FP8",
+  "model_version": "1.0",
   "input_price_per_1m": 0.0,
   "output_price_per_1m": 0.0,
   "unknown": false,
@@ -88,5 +88,7 @@
     "gemma-4",
     "qwen3_5-35b-a3b"
   ],
-  "community": null
+  "community": null,
+  "model_variant": null,
+  "quantization_format": "FP8"
 }

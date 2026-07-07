@@ -69,7 +69,7 @@
   "license_url": "https://huggingface.co/Mia-AiLab/Qwable-3.6-27b/blob/main/README.md",
   "commercial_use_allowed": true,
   "weights_license_tier": "open-weights",
-  "model_version": "3.6-Q4_K_M",
+  "model_version": "3.6",
   "input_price_per_1m": 0.0,
   "output_price_per_1m": 0.0,
   "unknown": false,
@@ -88,5 +88,7 @@
   "heritage_ids": [
     "qwen3_6-27b"
   ],
-  "community": "Mia-AiLab"
+  "community": "Mia-AiLab",
+  "model_variant": null,
+  "quantization_format": "Q4_K_M GGUF"
 }

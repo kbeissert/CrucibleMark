@@ -71,7 +71,7 @@
   "license_url": "https://huggingface.co/llmfan46/gemma-4-Ortenzya-The-Creative-Wordsmith-31B-it-uncensored-heretic-NVFP4",
   "commercial_use_allowed": true,
   "weights_license_tier": "open-weights",
-  "model_version": "4-31B-Ortenzya-NVFP4",
+  "model_version": "4",
   "input_price_per_1m": 0.0,
   "output_price_per_1m": 0.0,
   "unknown": false,
@@ -90,5 +90,7 @@
   "heritage_ids": [
     "gemma-4-31b"
   ],
-  "community": true
+  "community": true,
+  "model_variant": "Ortenzya Wordsmith",
+  "quantization_format": "NVFP4"
 }

@@ -25,7 +25,7 @@
   "local_deployment_possible": true,
   "model_family": "Gemma",
   "model_id": "google/gemma-4-31b-it",
-  "model_version": "31b-cloud",
+  "model_version": "4",
   "origin_country": "USA",
   "output_price_per_1m": 0.4,
   "parameter_architecture": "dense",
@@ -80,5 +80,7 @@
   "profile_verified_by": "llm:perplexity",
   "last_modified_at": "2026-06-20",
   "heritage_ids": [],
-  "community": null
+  "community": null,
+  "model_variant": null,
+  "quantization_format": null
 }

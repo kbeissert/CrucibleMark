@@ -1,6 +1,35 @@
 # Progress
 Letzte Releases + aktueller Stand.
-### 2026-07-07 (Session 48) — vllm_spark Provider-Connector + 7 Code-Review-Fixes
+### 2026-07-07 (Session 49) — Card-Naming SUFFIX-SSoT + model_version-Pollution-Migration [DONE, uncommitted] (v4.10.14)
+
+**Auslöser (Teil 1 — Card-Naming):** `_card_path(for_write=True)` produzierte PREFIX `{shortcode}_{base}.json`, während `build_card_id()` SUFFIX `{base}--{shortcode}.json` erzeugte. Diese Divergenz zwischen zwei SSoT-Funktionen verursachte Duplikat-Karten (PREFIX-Version + unprefixed Auto-Generierung via `enforce_card_first`, weil `_find_card` VSPK nicht kannte).
+
+**Auslöser (Teil 2 — model_version Pollution):** 31 Cards hatten Quant/Format-Tokens (`Q8_0 GGUF`, `FP8`, `NVFP4`) und interne Variant-Namen (`Ortenzya`, `MTP`, `Coder-MTP`) in `model_version` angesammelt, weil das korrekte Feld `quantization_format` in allen Karten `null` war.
+
+**Geliefert (Teil 1 — Card-Naming SUFFIX-SSoT):**
+- `utils/model_utils.py:_card_path(for_write=True)` ruft jetzt `build_card_id()` auf → SUFFIX statt PREFIX. `_find_card()` Read-Reihenfolge: SUFFIX → legacy PREFIX → unprefixed (Backward-Compat für unrenamte Karten).
+- 13 Karten per `git mv` umbenannt: 5 VSPK (PREFIX/unprefixed → SUFFIX), 8 SPRK (unprefixed → SUFFIX).
+- 2 Auto-Duplikate gelöscht (`Gemma-4-26B.json`, `Gemma-4-31B.json` — heute von `generate_review.py` erzeugt, weil Fix 1 noch uncommitted).
+- `scripts/analysis/generate_review.py:210-215` — direkten `_card_path()`-Aufruf entfernt, `ensure_card(model_id)` ohne expliziten Pfad (SSoT-Delegation).
+- `tests/test_card_path_suffix_ssot.py` — 12 Regressionstests (SUFFIX-Produktion, Read-Reihenfolge, SSoT-Konsistenz `build_card_id` ↔ `_card_path`).
+- `scripts/maintenance/audit_model_versions.py` — Audit-Script für `model_version`-Drift (31 Cards flagged → nach Migration 0).
+
+**Geliefert (Teil 2 — model_version Migration):**
+- `utils/card_utils.py:_CARD_TEMPLATE` — neues Feld `model_variant` (interne Fein-Tune-/Variant-Bezeichnung für MTP, Coder-MTP, Ortenzya Wordsmith, E4B, QAT, Abliterated).
+- `scripts/maintenance/migrate_model_versions_pollution.py` — atome Migration (Card 3 Felder + CSV `model_version`-Spalte zusammen, explizite 33-Modell-Mapping-Tabelle, idempotent, Dry-Run/`--apply`).
+- Migration angewendet: 33 Cards + 1498 CSV-Zeilen (49 cloud + 1449 local). Backup in `.bak_model_version_migration_20260707_085031/`. 2 vorgängige CSV/Card-Splits geheilt (`hermes-4-14b-abliterated`, `hermes-4-14b-q4` — Card bereits manuell bereinigt, CSV nie mit-migriert).
+
+**Felder-Separierung SSoT (user-confirmed):** `model_version`=reine Versionsnummer ("3.5", "4", "1.0", "4.0"), `model_variant`=interne Variante, `quantization_format`=Quant/Format, `hardware_profile`=Hardware (bleibt CSV-Spalte + Provider-Config). Hardware NICHT in model_version (bleibt in `hardware_profile`).
+
+**Verifikation:** `audit_model_versions.py` 0 flagged (vorher 31). `make leaderboard` regeneriert, 0 Split-Rows (Groupby-Continuity gewahrt — `model_version` ist Leaderboard-Groupby-Key). `make validate` 0 invalid. `pytest` 1054 passed / 1 skipped / 2 pre-existing failures (unverändert — `test_card_vocabulary_ssot::test_all_model_cards_pass_tag_whitelist` "Dense"/"Tool-Use" Tags, `test_clean_results_arch_coverage::test_dry_run_mentions_all_csv_files` gemma_leaderboard.csv). CSV-Kontinuität: `model_id`-Felder in allen 13 Karten unverändert.
+
+**Architektur-Entscheidung:** SUFFIX `{base}--{shortcode}.json` ist alleinige Schreibpfad-SSoT. Direkte `_card_path()`-Aufrufer MÜSSEN `provider=X` übergeben — besser `ensure_card(model_id)` ohne Pfad. Dokumentiert in `.agent/architecture.md` (SSoT-Tabelle) + `memory-bank/systemPatterns.md` (SSoT-Brücke + Pitfall "Card-Pfad SUFFIX-SSoT Divergenz").
+
+**Status:** Uncommitted. Nächster Schritt: Commit als coherent card-naming SSoT-Refactoring + model_version migration (v4.10.14).
+
+---
+
+### 2026-07-07 (Session 48) — vllm_spark Provider-Connector + 7 Code-Review-Fixes [DONE, committed a69e16c]
 
 **Auslöser:** Lokal-Modelle auf asusGX10 (vLLM-Server, CUDA) sollten benchmark-fähig werden — bisher nur Ollama/LlamaCpp verfügbar.
 
