@@ -48,7 +48,7 @@
   "output_modalities": [
     "text"
   ],
-  "supports_tool_use": true,
+  "supports_tool_use": null,
   "tooluse_tested_at": null,
   "tooluse_score_p1": null,
   "tooluse_score_p2": null,

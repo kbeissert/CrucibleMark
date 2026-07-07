@@ -330,6 +330,24 @@ def parse_tests_run(val) -> dict | None:
     if match: return {"completed": int(match.group(1)), "total": int(match.group(2))}
     return None
 
+# Scores-Contract: alle 10 Modul-Keys müssen IMMER in data.json.leaderboard.scores
+# vorhanden sein — auch wenn der Wert null ist (Modul nicht benchmarked).
+# _strip_none würde null-Values entfernen; dieser Contract stellt sicher, dass
+# das Web-Frontend alle Module rendern kann (test_web_export_field_coverage.py).
+_SCORES_CONTRACT_KEYS: tuple[str, ...] = (
+    "code_quality",
+    "cli_benchmark",
+    "ux_writing",
+    "documentation_quality",
+    "content_transformation",
+    "cultural_intelligence",
+    "logical_reasoning",
+    "synthesis_quality",
+    "tool_execution",
+    "political_bias",
+)
+
+
 def normalize_pending(val: Any) -> str | None:
     if pd.isna(val): return None
     val_str = str(val).strip()
@@ -1111,7 +1129,7 @@ def _build_leaderboard_entry(
     # Frontend-Navigationsauswirkungen hat (Session-44-Design).
     _synthesis_quality = normalize_pending(row.get(LdbCols.SYNTHESIS_QUALITY))
     _tool_execution = normalize_pending(row.get(LdbCols.TOOL_EXECUTION))
-    return _strip_none({
+    _entry = _strip_none({
         "slug": slug,
         "model_id": (card.get("model_id") if card else None) or (_raw_model_id or None),
         "model_name": (card.get("display_name") if card else None) or str(row.get(LdbCols.MODEL_NAME, "")),
@@ -1266,6 +1284,7 @@ def _build_leaderboard_entry(
             ),
         }) if card else None,
     })
+    return _entry
 
 
 def _lookup_pc_row(
@@ -1925,9 +1944,21 @@ def _process_leaderboard(
         for cat_files in audit_logs_dict.values():
             cat_files.sort()
 
+        _model_data = _strip_emojis(_strip_none(model_json))
+        # Scores-Contract: _strip_none (Z.1956) hat null-Values entfernt — aber
+        # alle 10 Modul-Keys müssen im scores-Dict vorhanden sein (Frontend-Vertrag,
+        # test_web_export_field_coverage.py). Re-Injection nach dem letzten Strip.
+        _lb = _model_data.get("leaderboard")
+        if isinstance(_lb, dict):
+            _scores = _lb.get("scores")
+            if isinstance(_scores, dict):
+                for _k in _SCORES_CONTRACT_KEYS:
+                    _scores.setdefault(_k, None)
+            else:
+                _lb["scores"] = dict.fromkeys(_SCORES_CONTRACT_KEYS, None)
         _atomic_write_json(
             model_out / "data.json",
-            _strip_emojis(_strip_none(model_json)),
+            _model_data,
         )
 
     return {
