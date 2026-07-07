@@ -21,19 +21,12 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 
-# CSV-Spalten die in 'scores' Dict exportiert werden muessten
-EXPECTED_SCORE_KEYS = {
-    "code_quality",
-    "cli_benchmark",
-    "ux_writing",
-    "documentation_quality",
-    "content_transformation",
-    "cultural_intelligence",
-    "logical_reasoning",
-    "synthesis_quality",
-    "tool_execution",
-    "political_bias",
-}
+# Score-Keys: SSoT ist scripts.web_export._SCORES_CONTRACT_KEYS.
+# Neue Module werden dort ergaenzt und sind automatisch hier sichtbar.
+EXPECTED_SCORE_KEYS: set[str] = set(
+    __import__("scripts.web_export", fromlist=["_SCORES_CONTRACT_KEYS"])
+    ._SCORES_CONTRACT_KEYS
+)
 
 
 class TestLeaderboardScoreMapping:

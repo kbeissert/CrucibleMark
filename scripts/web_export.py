@@ -330,22 +330,27 @@ def parse_tests_run(val) -> dict | None:
     if match: return {"completed": int(match.group(1)), "total": int(match.group(2))}
     return None
 
-# Scores-Contract: alle 10 Modul-Keys müssen IMMER in data.json.leaderboard.scores
-# vorhanden sein — auch wenn der Wert null ist (Modul nicht benchmarked).
-# _strip_none würde null-Values entfernen; dieser Contract stellt sicher, dass
-# das Web-Frontend alle Module rendern kann (test_web_export_field_coverage.py).
-_SCORES_CONTRACT_KEYS: tuple[str, ...] = (
-    "code_quality",
-    "cli_benchmark",
-    "ux_writing",
-    "documentation_quality",
-    "content_transformation",
-    "cultural_intelligence",
-    "logical_reasoning",
-    "synthesis_quality",
-    "tool_execution",
-    "political_bias",
-)
+# Scores-Contract: SSoT für die 10 Modul-Keys in data.json.leaderboard.scores.
+# Alle Keys müssen IMMER vorhanden sein — auch wenn der Wert null ist
+# (Modul nicht benchmarked). _strip_none würde null-Values entfernen;
+# dieser Contract stellt sicher, dass das Web-Frontend alle Module rendern
+# kann (test_web_export_field_coverage.py).
+#
+# Neue Module hier ergänzen — _SCORES_CONTRACT_KEYS, _build_leaderboard_entry
+# und test_web_export_field_coverage.py derivieren automatisch.
+_SCORE_COLUMN_TO_KEY: dict[str, str] = {
+    LdbCols.CODE_QUALITY:          "code_quality",
+    LdbCols.CLI_BADGE:             "cli_benchmark",
+    LdbCols.UX_WRITING:            "ux_writing",
+    LdbCols.DOCUMENTATION_QUALITY: "documentation_quality",
+    LdbCols.CONTENT_TRANSFORMATION: "content_transformation",
+    LdbCols.CULTURAL_INTELLIGENCE: "cultural_intelligence",
+    LdbCols.LOGICAL_REASONING:     "logical_reasoning",
+    LdbCols.SYNTHESIS_QUALITY:     "synthesis_quality",
+    LdbCols.TOOL_EXECUTION:        "tool_execution",
+    LdbCols.POLITICAL_BIAS:        "political_bias",
+}
+_SCORES_CONTRACT_KEYS: tuple[str, ...] = tuple(_SCORE_COLUMN_TO_KEY.values())
 
 
 def normalize_pending(val: Any) -> str | None:
@@ -1127,8 +1132,6 @@ def _build_leaderboard_entry(
     # supports_tool_use=false tragen. Der detail-ToolUse-Block (data.json.
     # tooluse) bleibt weiterhin an supports_tool_use=true gebunden, weil er
     # Frontend-Navigationsauswirkungen hat (Session-44-Design).
-    _synthesis_quality = normalize_pending(row.get(LdbCols.SYNTHESIS_QUALITY))
-    _tool_execution = normalize_pending(row.get(LdbCols.TOOL_EXECUTION))
     _entry = _strip_none({
         "slug": slug,
         "model_id": (card.get("model_id") if card else None) or (_raw_model_id or None),
@@ -1168,16 +1171,8 @@ def _build_leaderboard_entry(
         "llm_judge_coverage": parse_percent(row.get(LdbCols.LLM_JUDGE_COVERAGE)),
         "tests_run": parse_tests_run(row.get(LdbCols.TESTS_RUN)),
         "scores": {
-            "code_quality": normalize_pending(row.get(LdbCols.CODE_QUALITY)),
-            "cli_benchmark": normalize_pending(row.get(LdbCols.CLI_BADGE)),
-            "ux_writing": normalize_pending(row.get(LdbCols.UX_WRITING)),
-            "documentation_quality": normalize_pending(row.get(LdbCols.DOCUMENTATION_QUALITY)),
-            "content_transformation": normalize_pending(row.get(LdbCols.CONTENT_TRANSFORMATION)),
-            "cultural_intelligence": normalize_pending(row.get(LdbCols.CULTURAL_INTELLIGENCE)),
-            "logical_reasoning": normalize_pending(row.get(LdbCols.LOGICAL_REASONING)),
-            "synthesis_quality": _synthesis_quality,
-            "tool_execution": _tool_execution,
-            "political_bias": normalize_pending(row.get(LdbCols.POLITICAL_BIAS)),
+            key: normalize_pending(row.get(_col))
+            for _col, key in _SCORE_COLUMN_TO_KEY.items()
         },
         "tokens_per_module": {
             "code_quality": parse_compact_number(row.get("Tokens: Code Quality Audit")),
