@@ -1759,6 +1759,12 @@ def _process_leaderboard(
     models_with_reviews = 0
     models_skipped_blacklist = 0
 
+    # F1: Slug-Collision-Tracking — mehrere Benchmark-Runs (verschiedene
+    # Quants/Provider) mit gleichem Display-Namen würden sonst dieselbe
+    # data.json überschreiben. Bei Collision wird provider_code als Suffix
+    # angehängt; falls das noch nicht eindeutig ist, folgt ein Counter.
+    _seen_slugs: set[str] = set()
+
     count = 0
     total = len(ldb)
 
@@ -1772,6 +1778,25 @@ def _process_leaderboard(
             continue
 
         raw_model_id = str(row.get(LdbCols.MODEL_ID, row.get("model_id_raw", row.get("model_id", "")))).strip()
+
+        # F1: Slug uniquifizieren bei Collision (verschiedene Quants/Provider,
+        # gleicher Display-Name). Erste Occurrence behält den cleanen Slug,
+        # weitere bekommen provider_code-Suffix, bei gleicher Provider ein Counter.
+        if slug in _seen_slugs:
+            _pc = str(row.get(LdbCols.PROVIDER_CODE, "")).strip().lower()
+            _base = f"{slug}-{_pc}" if _pc else f"{slug}-2"
+            _n = 2
+            _candidate = _base
+            while _candidate in _seen_slugs:
+                _n += 1
+                _candidate = f"{slug}-{_pc}-{_n}" if _pc else f"{slug}-{_n}"
+            _orig_slug = slug
+            slug = _candidate
+            logging.warning(
+                "  [WARN] [%s/%s] Slug-Collision: %r → %r (model_id=%s, provider=%s)",
+                count, total, _orig_slug, slug, raw_model_id, _pc or "?",
+            )
+        _seen_slugs.add(slug)
         card, model_audit_src, model_comp_src = _resolve_model_dirs_and_card(
             model_name=model_name,
             raw_model_id=raw_model_id,
