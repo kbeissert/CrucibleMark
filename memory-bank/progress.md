@@ -1,5 +1,146 @@
 # Progress
 Letzte Releases + aktueller Stand.
+
+### 2026-07-08 (Session 51) — vLLM-Experiment abgeschlossen: llama.cpp `--reasoning off` leakt Thinking [DONE, uncommitted]
+
+**Auslöser:** vLLM-Ornith-Benchmark (Thinking OFF) lieferte deutlich schlechtere Ergebnisse als llama.cpp (73.85% vs 76.3%). Analyse sollte klären: Quantisierungsunterschied (FP8 vs Q8_0) oder Thinking-Modus-Differenz?
+
+**Kritischer Befund — llama.cpp `--reasoning off` unterdrückt Thinking NICHT:**
+- `--reasoning off` (llama.cpp Server-Flag) steuert nur die `\<think\>`-Tag-PARSING, nicht die GENERATION. Das Modell generiert weiterhin Reasoning als Klartext ("Here's a thinking process:...", "The user wants to:...").
+- Der Server gibt diesen Text als `reasoning_content` im API-Response zurück — CrucibleMark's `llamacpp_base.py:750` liest `getattr(msg, "reasoning_content", None)` und speichert es als `think_content`.
+- 22/50 Ornith-Tasks (44%) haben think_content trotz `enable_thinking: false` — überwiegend Reasoning- und CLI-Aufgaben.
+- vLLM mit `enable_thinking: false` (Chat-Template-Variable) unterdrückt Thinking korrekt: 0/49 Tasks mit think_content.
+
+**Score-Aufschlüsselung (Beweis: Quantisierung ist NICHT der Faktor):**
+- llama.cpp Tasks MIT think_content:    22 Tasks, Ø 80.98%
+- llama.cpp Tasks OHNE think_content:   28 Tasks, Ø 75.39%
+- vLLM (alle ohne think_content):       49 Tasks, Ø 75.55%
+- → Ohne Thinking: 75.39% vs 75.55% = nahezu identisch (Delta +0.16pp).
+- → Der gesamte Score-Unterschied kommt von den 22 Tasks mit leaked Thinking.
+
+**vLLM-Thinking-Verifikation (vor Benchmark-Start, 3 Fragen geklärt):**
+1. `--default-chat-template-kwargs '{"enable_thinking":false}'` ist gültiger vLLM-0.22.1-Flag (Docker-Logs bestätigt).
+2. Orniths `chat_template.jinja:145-148` unterstützt `enable_thinking` (Qwen3-Standard-Toggle).
+3. Komplexer Test-Prompt bestätigt Thinking OFF (reasoning=null, keine `\<think\>`-Tags).
+
+**Strategische Entscheidung — vLLM-Experiment beendet:**
+- Nutzer hat alle lokalen Modelle auf beiden Backends getestet: GGUF/llama.cpp ist in JEDEM Fall schneller UND hat bessere Ergebnisse.
+- vLLM's Stärken (Continuous Batching, PagedAttention, Multi-Sequence) bringen Single-User nichts.
+- vLLM implementiert Thinking-Suppression korrekt → Modell ist benachteiligt vs. llama.cpp (wo Thinking durchleakt und Scoresboost erzeugt).
+- Benchmark soll reale Nutzer-Erlebnisse abbilden: llama.cpp's leaked Thinking IST die Realität für Single-User — nicht "reparieren".
+- vLLM-Code bleibt im Repo (Ornith-Artikel, evtl. zukünftige Modelle ohne GGUF).
+- Ornith vLLM-Ergebnis (73.85%) bleibt im Leaderboard als Thinking-OFF-Referenz.
+
+**vLLM-Sampling Re-Baseline (4 Modelle): CANCELLED.**
+Gemma-4-26B, Gemma-4-31B, Gemma-4-31B-Wordsmith-NVFP4, qwen3.6-27B werden nicht auf vLLM re-baselined. vLLM wird für lokale Modelle nicht weiter eingesetzt. Die Sampling-Fixes aus Session 50 (v4.10.15) bleiben im Code — relevant falls vLLM in Zukunft wieder genutzt wird.
+
+**Offen:**
+- Working Tree uncommitted (Session-50-Code + v4.10.15-Bump + Session-51-Analyse).
+
+**Auslöser:** Nutzer erkannte grundlegende vLLM-Konfigurationsfragen bei Ornith (Thinking-Modell, Token-Budget-Konflikt). Analyse der drei Konfigurationsschichten (Remote-TOML → provider_config-Server-Overrides → Per-Request-Sampling). Nutzer-Entscheidung: Thinking OFF für beide Backends (Cross-Backend-Konsistenz), danach Thinking ON testen.
+
+**Geliefert (Verifikation — 3 Fragen geklärt):**
+1. **`--default-chat-template-kwargs` ist gültiger vLLM-0.22.1-Flag** — Docker-Logs bestätigen: `'default_chat_template_kwargs': {'enable_thinking': False}` in non-default args. Server startete fehlerfrei.
+2. **Orniths Chat-Template unterstützt `enable_thinking`** — `chat_template.jinja:145-148` (SEPARATE Datei, `tokenizer_config.json` hat `chat_template: null`): Qwen3-Standard-Toggle. `enable_thinking=false` → leerer `<think>\n\n</think>\n\n`-Block (Modell überspringt Reasoning); `true`/undefined → `<think>\n` (Modell generiert Reasoning).
+3. **Komplexer Test-Prompt bestätigt Thinking OFF** — Farmer-Optimierungsproblem (nicht-trivial): 703 completion tokens, `reasoning: null`, `finish_reason: "stop"`, keine `<think>`-Tags in content. `--reasoning-parser qwen3` aktiv → `reasoning: null` ist aussagekräftig.
+
+**Cross-Backend-Mechanismus:**
+- llama.cpp: `--reasoning off` (Server-Flag) → kein Think-Block
+- vLLM: `--default-chat-template-kwargs '{"enable_thinking":false}'` → leerer Think-Block via `chat_template.jinja`
+- Beide: Thinking OFF, `max_tokens: 8192` ausreichend
+
+**vLLM-TOML-Konfiguration (GX10, `~/ai/shared/configs/vllm/models/Ornith1-35B-FP8.toml`):**
+- `extra_args` hinzugefügt: `--default-chat-template-kwargs {"enable_thinking":false}`, `--max-num-seqs 1` (Single-User), `--reasoning-parser qwen3`, `--tool-call-parser qwen3_xml`, `--enable-auto-tool-choice`
+- `max_model_len: 131072` (nicht reduziert — Thinking braucht Headroom), `gpu_memory_utilization: 0.50`
+- TOML liegt auf Remote-Host, nicht im Git-Repo
+
+**Strategische Initiative — Thinking-Mode-Dual-Benchmarking:**
+- **Problem:** Systematische Asymmetrie — alle lokalen Thinking-Modelle (Qwen3/3.5, Gemma4, Ornith) laufen mit `enable_thinking: false`; Cloud-Modelle (o1/o3/Claude/Gemini-2.5/GLM-5) mit Thinking ON → lokaler Handicap im Leaderboard.
+- **Plan (4 Phasen):**
+  1. Phase 1 (jetzt): Thinking OFF, beide Backends — vLLM-Benchmark startklar.
+  2. Phase 2: Thinking ON, beide Backends — `max_tokens: 32768`, TOML/Config anpassen.
+  3. Phase 3: `thinking_mode`-Spalte in CSV (`on`/`off`/`adaptive`/`n/a`), Runner liest aus `model_cfg.thinking_mode`.
+  4. Phase 4: Leaderboard Best-of-Both `max(score) GROUP BY model`, Web-Export zeigt Modus.
+- **Architektur-Entscheidung:** `thinking_probe_detected` in Card dokumentiert FÄHIGKEIT (stabil), nicht Laufzeit-Konfiguration. Laufzeit-Modus via `thinking_mode`-Spalte in CSV erfassen. Best-of-Both für Publikation, beide Results für Transparenz speichern.
+
+**Offen:**
+- vLLM-Ornith Benchmark (`make benchmark MODEL=ornith-1.0-35B-FP8`) — Nutzer startet manuell.
+- vLLM-Sampling Re-Baseline der 4 anderen Modelle (Gemma-4-26B/31B/Wordsmith-NVFP4, qwen3.6-27B) — noch ausstehend (Session-50-Aufgabe).
+- Working Tree uncommitted (Session-50-Code + v4.10.15-Bump).
+
+---
+
+### 2026-07-08 — vLLM-Sampling Re-Baseline (4 Modelle) [CANCELLED]
+
+vLLM-Experiment beendet (siehe Session 51 oben). Alle lokalen Modelle sind auf llama.cpp/GGUF schneller und besser. Die 4 vLLM-Modelle (Gemma-4-26B, Gemma-4-31B, Gemma-4-31B-Wordsmith-NVFP4, qwen3.6-27B) werden nicht re-baselined. Sampling-Fixes aus Session 50 bleiben im Code (relevant falls vLLM wiederverwendet wird).
+
+### 2026-07-08 (Session 50) — Baustellen-Cleanup [DONE, uncommitted] (v4.10.15)
+
+**Auslöser:** Nutzer-Auftrag „fixe und arbeite die bekannten Baustellen ab … schließe all diese Probleme". Systematische Abarbeitung aller offenen losen Enden aus der v4.10.14-Session-Reihe (progress.md/activeContext.md). Code-/Config-/Card-/Test-Fixes + 2 Live-Runs.
+
+**Geliefert (6 Bereiche):**
+
+1. **Sampling-vs-Card-Drift (vllm_spark, 4 Modelle)** — Cards dokumentierten Sampling-Werte, die `provider_config.yaml` nicht lieferte → effektiv nur Framework-Default temperature=0.1. Nutzer-Entscheidung (Cards→provider_config): 4 Modelle erhalten Sampling-Parameter aus ihren Cards:
+   - `Gemma-4-26B`/`Gemma-4-31B`/`Gemma-4-31B-Wordsmith-NVFP4`: temperature=1.0, top_p=0.95, top_k=64 (Google-Empfehlung, bestätigt durch vLLM-`generation_config.json`-Warning beim Gemma-4-26B-Server-Start).
+   - `qwen3.6-27B`: temperature=0.6, top_p=0.95, top_k=20.
+   - ornith-1.0-35B-FP8 war bereits synchron (Reference-Pattern).
+   - **Hinweis:** Zukünftige Benchmark-Runs dieser 4 Modelle weichen von historischen Runs (temperature=0.1) ab — für Konsistenz Re-Runs nötig.
+
+2. **vLLM-Extensions-Whitelist (`vllm_base.py:_resolve_sampling`)** — Bislang war nur `top_k` hardcodiert in `extra_body`; gleiche Bug-Klasse drohte bei jedem weiteren Sampling-Override. Generische Whitelist-Konstante `_VLLM_EXTRA_BODY_KEYS` (top_k, min_p, repetition_penalty, chat_template_kwargs, guided_json/regex/choice/grammar/decoding_backend/whitespace_pattern, bad_words, stop_token_ids) mit Schleife. Neue vLLM-Extensions: nur ein Konstanten-Eintrag, kein Code-Churn in `_resolve_sampling` (DRY gegen Mapping-Drift). `_OPENAI_STANDARD_SAMPLING_KEYS` dokumentiert die direkten Body-Keys.
+
+3. **Card-Vocabulary: Dense + Tool-Use deprecated** — `test_card_vocabulary_ssot` schlug fehl (4 Cards mit unbekannten Tags: Dense×3 in VSPK-Cards, Tool-Use in openai_gpt-oss-120b). `config/card_vocabulary.yaml`: `Dense` (redundant mit parameter_architecture='dense', symmetrisch zu MoE) und `Tool-Use` (redundant mit supports_tool_use, symmetrisch zu Function-Calling) als deprecated→null aufgenommen (v4.10.15). 4 Cards bereinigt (Tags entfernt).
+
+4. **Sub-Family-Leaderboard-Konzept entfernt** — `test_clean_results_arch_coverage` schlug fehl (erwartete `gemma_leaderboard.csv`/`qwen_leaderboard.csv` im Dry-Run-Output, aber die Dateien wurden nie generiert und nie in git getrackt — verwaistes Konzept). `scripts/maintenance/clean_results.py`: `SUB_FAMILY_LEADERBOARD_CSVS` entfernt, `CLEAN_CSV_FILES` ohne Sub-Family-LBs. Test angepasst (Sub-Family-Assertions entfernt, `test_sub_family_leaderboards_present`/`in_clean_list` gestrichen).
+
+5. **Gemma-4-26B--VSPK ThinkingProbe (live)** — Card hatte `thinking_probe_detected=null`. Probe via `make probe-thinking MODEL=Gemma-4-26B PROVIDER=vllm_spark`: Server-Swap (ornith→Gemma-4-26B), 3/3 Probes detected → `detected=true, confidence=medium` (`probe_at: 2026-07-08T06:15:39Z`). Alle 5 VSPK-Cards jetzt probed. vLLM-Server-Start bestätigte Sampling-Fix (generation_config.json-Warning mit 1.0/0.95/64).
+
+6. **ux_writing_002 ornith Re-Run (live)** — Audit-Log existierte (29.06., 60.25%), aber CSV-Zeile fehlte (Inkonsistenz nach Session-46-Cleanup). `python run_benchmark.py --provider local --module ux_writing --model ornith-1-0-35b --force`: 5/5 Tests, Ø 71.91%, ux_writing_002=78.75%/Judge 4.0/5 (vormals 1.1% Reasoning-Loop). enable_thinking:false-Fix wirkt. CSV + Audit-Logs konsistent. Leaderboard aktualisiert.
+
+**Verifikation:** Full sweep **1079 passed, 1 skipped, 0 failures** (vorher 2 pre-existing failures). `make validate` exit 0, clean. Beide vormals-fehlschlagenden Tests (`test_card_vocabulary_ssot`, `test_clean_results_arch_coverage`) jetzt grün. `test_vllm_spark_provider` 34/34 grün (Sampling-Chain-Tests kompatibel mit Whitelist-Refactor).
+
+**check:drift True-Mismatches (3) — Out of scope:** Die in progress.md (Session 49) erwähnten „3 pre-existing `check:drift` True-Mismatches" sind Web-Repo-Checks (`check:drift`/`check:coverage` sind npm-Skripte in cruciblemark-web; Begriff „True-Mismatch" existiert nicht im Python-Repo). Nicht im Python-Repo fixbar. Bei Bedarf im Web-Repo prüfen.
+
+**Architektur-Entscheidungen:**
+- Sampling-SSoT: Card dokumentiert Hersteller-Empfehlung, `provider_config.yaml` liefert sie an `_resolve_sampling` (Runtime-SSoT laut CLAUDE.md „Konfiguration ausschließlich über Config-Files").
+- vLLM-Extensions: Whitelist-Konstante statt hardcodierter Einzel-Keys (geschlossen gegen Mapping-Drift).
+- Sub-Family-LBs: verwaistes Konzept konsequent entfernt (symmetrisch zu provider_leaderboard.csv-Stilllegung v4.10.12).
+
+**Status:** Working Tree, uncommitted. v4.10.15-Bump ausstehend (README badge + CHANGELOG). Commit-Strategie: thematische Aufteilung (siehe activeContext.md „Nächster Schritt").
+
+---
+
+### 2026-07-08 — resolve_provider() Canonical→Config-Drift-Fix [DONE, uncommitted]
+
+**Auslöser:** ToolUse-Benchmark abgebrochen mit `Local model 'ornith-1_0-35B-FP8' not found in Ollama!` (Error aus `run_benchmark.py:185`). Subprozess-Aufruf `run_tooluse_benchmark.py:_run_model` kanonisierte `ornith-1.0-35B-FP8` → `ornith-1_0-35B-FP8` (Version-Underscore), `resolve_provider()` verglich **exakt** gegen `config/provider_config.yaml`-Eintrag `ornith-1.0-35B-FP8` (Dot), mismatch → Fallthrough zu `:`-Heuristik → `ollama`. Selbe Bug-Klasse traf `qwen3_6-27B` (→ groq via Prefix-Fallback) und `qwen3_5-35b-a3b-q8` (→ llamacpp via Hardware-Default — funktionierte nur zufällig).
+
+**Geliefert:**
+- `utils/model_utils.py:1061`: `resolve_provider()` berechnet vor Config-Lookup `internal_id_to_config_form(model_name)` und vergleicht sowohl Roh-Form als auch Normalisierte gegen `m.id`. Pattern identisch zu `find_model_in_provider_cfg()`, das bereits von openai/openrouter/groq/google/xai Connectoren verwendet wird.
+- `tests/test_resolve_provider_canonical_form.py` (NEU, 9 parametrisiert): 3 Test-Gruppen — Canonical-Underscore→Provider (ornith-1_0-…, qwen3_6-…, qwen3_5-…), Heuristik-Preservation (gemma3:12b→ollama, minimax/minimax-m3→openrouter), No-Version-Pattern-Sanity (Gemma-4-31B/26B→vllm_spark).
+
+**Verifikation:** 9/9 neue Tests grün. `resolve_provider()`-Reproduktion: `ornith-1_0-35B-FP8` (ollama → vllm_spark), `qwen3_6-27B` (groq → vllm_spark), `qwen3_5-35b-a3b-q8` (llamacpp via fallback → llamacpp_spark via exact-match). Full sweep 1079 passed (2 pre-existing failures unverändert: `test_card_vocabulary_ssot`, `test_clean_results_arch_coverage`). `make validate` clean (exit 0).
+
+**Verwandte Findings (sichtbar geworden während Diagnose, NICHT behoben):**
+1. **Sampling-vs-Card-Drift:** 4 von 5 vllm_spark-Modellen dokumentieren Sampling-Werte in Cards, die provider_config.yaml nicht liefert (Gemma-4-26B/31B/Wordsmith-NVFP4: Card 1.0/0.95/64, effektiv 0.1/–/–; qwen3_6-27B: Card 0.6/0.95/20, effektiv 0.1/–/–).
+2. **Hardcoded `top_k`-Sonderbehandlung** in `vllm_base.py:_resolve_sampling`: nur `top_k` geht aktuell in `extra_body`. Andere vLLM-Extensions (min_p, repetition_penalty, chat_template_kwargs, guided_*, bad_words, stop_token_ids) brauchen Whitelist-Erweiterung — sonst dieselbe Bug-Klasse bei nächstem Sampling-Override.
+
+**Architektur-Notiz:** `resolve_provider()`-Bug ist genau der in CLAUDE.md gewarnte „Mapping-Drift zwischen kanonischer ID und Config-Eintrag" — `find_model_in_provider_cfg()` (SSoT) hatte die korrekte Normalisierung, der alte `resolve_provider`-Pfad kanonisierte sie nie. Fix folgt jetzt der bestehenden Konvention statt eines neuen Mappings.
+
+**Status:** Working Tree, uncommitted. Commit sollte separiert von ThinkingProbe-Fixes aus Session-50-Handoff erfolgen.
+
+### 2026-07-07 — ThinkingProbe Budget-Erschöpfung vs Cold-Start + Probe-Script-Fixes [DONE, uncommitted]
+
+**Auslöser:** `qwen3_6-27B--VSPK.json` hatte `thinking_probe_detected=false` trotz `reasoning_tokens=512` bei 0 chars Output — Probe mit `_PROBE_MAX_TOKENS=512` klassifizierte Budget-Erschöpfung als Cold-Start.
+
+**Geliefert (Working Tree):**
+- `utils/model_utils.py`: `_PROBE_MAX_TOKENS` 512→4096; neue Konstante `_PROBE_BUDGET_EXHAUSTION_RATIO=0.9`; Cold-Start-Guard verzweigt (≥90 % actual_max_tokens → detected=true/medium Budget-Erschöpfung; darunter → detected=false/low Cold-Start); `actual_max_tokens` aus `token_limit_used` (Fallback Konstante); Docstring Signal-Hierarchie aktualisiert.
+- `tests/test_thinking_probe_inline_cot.py`: `_mock_llm_client` um `token_limit_used` erweitert; 3 neue Tests (90 %-Schwelle, exakt max_tokens, Per-Modell-Cap < Konstante). 16/16 grün.
+- `scripts/tools/probe_thinking.py`: Fix 1 (Config-Merge) — `_load_config` delegiert jetzt an `ConfigValidator(...).config` (SSoT, war lokal re-implementiert → vllm_spark ohne `base_url` → Endlos-Cold-Start); Fix 2 (Card-Pfad) — `run_probe` Skip-Check + `_write_probe_to_card` nutzen `_find_card` (SUFFIX-SSoT), `ensure_card(card_path=)` für In-Place-Update statt `ensure_card(provider=)` (verhindert unprefixed Duplikate / `-2`-Kollisionsvarianten). `_PROVIDER_CONFIG_PATH` + `yaml`-Import entfernt.
+- `tests/test_probe_thinking_script.py` (NEU): 4 Tests (Config-Merge present, In-Place-Update kein Duplikat, kein `-2`-Suffix, Create-when-missing). 91/91 Sweep grün, Lint clean (nur pre-existing E402/UP017).
+- Live Re-Probe `qwen3_6-27B--VSPK`: `detected=true, confidence=medium` (`probe_at: 2026-07-07T22:00:58Z`), `Thinking` zu `architecture_tags` hinzugefügt. Kein Duplikat-Card entstanden.
+- `/review uncommitted` (advisory): Security/Dead Code NO_FINDINGS, Business Logic NO_FINDINGS, Duplication 1 SUGGESTION (umgesetzt → ConfigValidator-Reuse).
+
+**Offen:** Working Tree committen (ThinkingProbe-Änderungen separieren von pre-existing unzusammenhängenden Dateien — Gemma VSPK-Card-Edits, qwopus-Deletions). v4.10.15-Bump (Session-49-Folge-Commits + diese Arbeit). Optional: Gemma-4-31B--VSPK re-proben (evtl. ähnlich betroffen).
+
 ### 2026-07-07 (Session 49) — Card-Naming SUFFIX-SSoT + model_version-Pollution-Migration [DONE, committed f154d99 + Folge-Commits] (v4.10.14)
 
 **Auslöser (Teil 1 — Card-Naming):** `_card_path(for_write=True)` produzierte PREFIX `{shortcode}_{base}.json`, während `build_card_id()` SUFFIX `{base}--{shortcode}.json` erzeugte. Diese Divergenz zwischen zwei SSoT-Funktionen verursachte Duplikat-Karten (PREFIX-Version + unprefixed Auto-Generierung via `enforce_card_first`, weil `_find_card` VSPK nicht kannte).
