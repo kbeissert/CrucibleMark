@@ -18,6 +18,8 @@ from utils.model_utils import (
     _has_inline_cot,
     _INLINE_COT_LENGTH_THRESHOLD,
     _INLINE_COT_OPS,
+    _PROBE_MAX_TOKENS,
+    _PROBE_BUDGET_EXHAUSTION_RATIO,
     probe_thinking_model,
     ThinkingProbeResult,
 )
@@ -116,11 +118,23 @@ def test_inline_cot_minimum_length_boundary():
 # probe_thinking_model() — Integration Signal C mit gemocktem LLMClient
 # ---------------------------------------------------------------------------
 
-def _mock_llm_client(raw_response: str, reasoning_tokens: int = 0) -> MagicMock:
-    """Baut einen Mock-LLMClient, der `raw_response` und `reasoning_tokens` liefert."""
+def _mock_llm_client(
+    raw_response: str,
+    reasoning_tokens: int = 0,
+    token_limit_used: int | None = None,
+) -> MagicMock:
+    """Baut einen Mock-LLMClient, der `raw_response` und `reasoning_tokens` liefert.
+
+    ``token_limit_used`` simuliert den per-Modell-Cap / Token-Fallback des
+    Providers (z. B. wenn provider_config max_tokens < _PROBE_MAX_TOKENS setzt).
+    None → Metadata ohne den Key → _probe_single nutzt _PROBE_MAX_TOKENS-Fallback.
+    """
     client = MagicMock()
     client.query.return_value = raw_response
-    client.last_response_metadata = {"reasoning_tokens": reasoning_tokens}
+    metadata: dict = {"reasoning_tokens": reasoning_tokens}
+    if token_limit_used is not None:
+        metadata["token_limit_used"] = token_limit_used
+    client.last_response_metadata = metadata
     return client
 
 
@@ -183,12 +197,13 @@ def test_probe_signal_b_takes_precedence_over_signal_c():
 
 
 def test_probe_signal_b_cold_start_empty_output_not_detected():
-    """Cold-Start-Guard: reasoning_tokens > 0 + leerer Output → detected=False.
+    """Cold-Start-Guard: reasoning_tokens > 0 + leerer Output (unter Budget-Schwelle) → detected=False.
 
     Hintergrund: llama.cpp-Modelle (z. B. Gemma 4 26B-A4B-QAT) liefern
     bei den ersten Anfragen reasoning_tokens=512, aber 0 chars Output.
     Das ist ein Kontext-Aufbau-Artefakt, kein echter Thinking-Nachweis.
-    Ohne den Guard wuerde Signal B faelschlicherweise detected=True setzen.
+    Mit _PROBE_MAX_TOKENS=4096 liegt 512 bei 12,5 % — deutlich unter der
+    90 %-Budget-Erschöpfungs-Schwelle → Cold-Start, nicht Thinking.
     """
     client = _mock_llm_client("", reasoning_tokens=512)
 
@@ -199,6 +214,7 @@ def test_probe_signal_b_cold_start_empty_output_not_detected():
     assert result.confidence == "low"
     assert "reasoning_tokens=512" in result.evidence
     assert "Cold-Start-Verdacht" in result.evidence
+    assert "Budget-Erschöpfung" not in result.evidence
 
 
 def test_probe_signal_b_cold_start_whitespace_only_not_detected():
@@ -211,6 +227,69 @@ def test_probe_signal_b_cold_start_whitespace_only_not_detected():
     assert result.detected is False
     assert result.confidence == "low"
     assert "Cold-Start-Verdacht" in result.evidence
+
+
+def test_probe_signal_b_budget_exhaustion_detected():
+    """Budget-Erschöpfung: reasoning_tokens ≈ max_tokens + leerer Output → detected=True.
+
+    Hintergrund: Qwen3.6-27B (Hybrid-Thinking) verbrauchte bei max_tokens=512
+    das gesamte Budget fuer Reasoning (reasoning_tokens=512) und emittierte
+    0 chars Output. Das ist ein Thinking-Nachweis, kein Cold-Start.
+    Mit _PROBE_MAX_TOKENS=4096 muss reasoning_tokens >= 90 % sein, um als
+    Budget-Erschöpfung erkannt zu werden.
+    """
+    # Genau das Budget verbraucht → finish_reason wäre 'length'
+    exhausted = int(_PROBE_MAX_TOKENS * _PROBE_BUDGET_EXHAUSTION_RATIO)
+    client = _mock_llm_client("", reasoning_tokens=exhausted)
+
+    with patch("utils.llm_client.LLMClient", return_value=client):
+        result = probe_thinking_model("qwen3_6-27B", "vllm_spark", config={})
+
+    assert result.detected is True
+    assert result.confidence == "medium"
+    assert f"reasoning_tokens={exhausted}" in result.evidence
+    assert "Budget-Erschöpfung" in result.evidence
+    # Abgrenzung: Evidence darf nicht als Cold-Start-Verdacht klassifiziert sein
+    # ("kein Cold-Start" als Erklaerungstext ist erlaubt, "Cold-Start-Verdacht"
+    # als Verdict nicht).
+    assert "Cold-Start-Verdacht" not in result.evidence
+
+
+def test_probe_signal_b_budget_exhaustion_full_budget_detected():
+    """reasoning_tokens == max_tokens (exakt) → Budget-Erschöpfung, detected=True."""
+    client = _mock_llm_client("", reasoning_tokens=_PROBE_MAX_TOKENS)
+
+    with patch("utils.llm_client.LLMClient", return_value=client):
+        result = probe_thinking_model("test-model", "vllm_spark", config={})
+
+    assert result.detected is True
+    assert result.confidence == "medium"
+    assert "Budget-Erschöpfung" in result.evidence
+
+
+def test_probe_signal_b_budget_exhaustion_with_per_model_cap():
+    """Budget-Erschöpfung bei per-Modell-Cap < _PROBE_MAX_TOKENS → detected=True.
+
+    Szenario: provider_config setzt max_tokens=2048 (z. B. stark gecaptes
+    lokales Modell). Der Provider propagiert token_limit_used=2048. Das
+    Modell verbraucht das gesamte gecapte Budget fuer Reasoning (2048) und
+    emittiert 0 chars. Die Schwellwert-Berechnung MUSS gegen 2048 (actual),
+    nicht gegen 4096 (Konstante) laufen, sonst wird Budget-Erschöpfung
+    falsch als Cold-Start klassifiziert (2048 < 3686 = 90 % von 4096).
+    """
+    client = _mock_llm_client(
+        "", reasoning_tokens=2048, token_limit_used=2048
+    )
+
+    with patch("utils.llm_client.LLMClient", return_value=client):
+        result = probe_thinking_model("capped-model", "vllm_spark", config={})
+
+    assert result.detected is True
+    assert result.confidence == "medium"
+    assert "reasoning_tokens=2048" in result.evidence
+    assert "max_tokens=2048" in result.evidence
+    assert "Budget-Erschöpfung" in result.evidence
+    assert "Cold-Start-Verdacht" not in result.evidence
 
 
 def test_probe_no_signals_returns_low_confidence():

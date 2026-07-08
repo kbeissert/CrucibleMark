@@ -1066,6 +1066,12 @@ def resolve_provider(model_name: str) -> tuple[str, str]:
     if ":" in model_name and "/" not in model_name:
         return "ollama", model_name
 
+    # SSoT: Version-Underscore→Dot normalisieren (qwen3_5-… → qwen3.5-…),
+    # damit kanonisierte IDs aus resolve_canonical_model_id() gegen Config-Einträge
+    # mit Dot-Versionen in provider_config.yaml matchen. Pattern ist identisch zu
+    # find_model_in_provider_cfg() und wird bereits von allen Provider-Konnektoren
+    # (openai/openrouter/groq/google/xai) angewendet.
+    _model_name_config_form = internal_id_to_config_form(model_name)
     # SSOT: Lookup in benchmark_config.yaml AND config/provider_config.yaml (merged)
     _config_paths = [Path("benchmark_config.yaml"), Path("config/provider_config.yaml")]
     for _config_path in _config_paths:
@@ -1082,8 +1088,10 @@ def resolve_provider(model_name: str) -> tuple[str, str]:
                     if not isinstance(_prov_cfg, dict):
                         continue
                     for _m in _prov_cfg.get("models", []):
-                        if isinstance(_m, dict) and _m.get("id") == model_name:
-                            return _prov_key, model_name
+                        if isinstance(_m, dict):
+                            _m_id = _m.get("id", "")
+                            if _m_id == model_name or _m_id == _model_name_config_form:
+                                return _prov_key, model_name
             # Check local providers (llamacpp, ollama, etc.)
             _local = _providers.get("local", {})
             if isinstance(_local, dict):
@@ -1091,8 +1099,10 @@ def resolve_provider(model_name: str) -> tuple[str, str]:
                     if not isinstance(_prov_cfg, dict):
                         continue
                     for _m in _prov_cfg.get("models", []):
-                        if isinstance(_m, dict) and _m.get("id") == model_name:
-                            return _prov_key, model_name
+                        if isinstance(_m, dict):
+                            _m_id = _m.get("id", "")
+                            if _m_id == model_name or _m_id == _model_name_config_form:
+                                return _prov_key, model_name
         except Exception:
             pass
 
@@ -1727,7 +1737,17 @@ _PROBE_PROMPTS: dict[str, str] = {
 }
 # Backward-compat: alter Single-Prompt-Slot (Card-First-Hook).
 _PROBE_PROMPT = _PROBE_PROMPTS["math"]
-_PROBE_MAX_TOKENS = 512
+# Token-Budget fuer den Reasoning-Probe. Muss gross genug sein, dass ein
+# Hybrid-Thinking-Modell (z. B. Qwen3.6-27B) seine interne Reasoning-Phase
+# abschliesst UND sichtbaren Content emittiert. 512 (alter Wert) reichte
+# nur fuer Reasoning, nicht fuer Output → Cold-Start-Guard klassifizierte
+# Budget-Erschöpfung falsch als "0 chars output" (Qwen3.6-27B-VSPK, 2026-07-07).
+# 4096 deckt typische Reasoning-Phasen (800-2500 Tokens) + Antwort ab.
+_PROBE_MAX_TOKENS = 4096
+# Schwelle (Anteil an _PROBE_MAX_TOKENS), ab der leerer Output + hohe
+# reasoning_tokens als Budget-Erschöpfung (Thinking-Nachweis) gilt statt
+# als Cold-Start-Artefakt. 90 % toleriert Off-by-one in Usage-Reporting.
+_PROBE_BUDGET_EXHAUSTION_RATIO = 0.9
 
 # Erweiterte Tag-Liste basierend auf Modell-Familien-Inventar.
 # Quellen: Qwen 3/3.5/3.6, DeepSeek R1/V3, OpenAI OSS (gpt-oss),
@@ -1877,6 +1897,14 @@ def _probe_single(
     reasoning_tokens: int = int(
         (client.last_response_metadata or {}).get("reasoning_tokens") or 0
     )
+    # Tatsaechlich gesendetes max_tokens (kann < _PROBE_MAX_TOKENS sein, wenn
+    # der Provider einen per-Modell-Cap oder Token-Fallback angewendet hat).
+    # Wird fuer die Budget-Erschöpfungs-Schwelle benoetigt, damit die
+    # Erkennung auch bei Models mit niedrigem max_tokens-Cap funktioniert.
+    actual_max_tokens: int = int(
+        (client.last_response_metadata or {}).get("token_limit_used")
+        or _PROBE_MAX_TOKENS
+    )
 
     # Signal A -- explicit think-tags (high confidence)
     tags_found = _find_think_tags(raw)
@@ -1893,16 +1921,41 @@ def _probe_single(
         )
 
     # Signal B -- provider metadata reports reasoning tokens (medium)
-    # Cold-Start-Guard: reasoning_tokens > 0 + leerer Output = ambig.
-    # llama.cpp-Modelle (z. B. Gemma 4 26B-A4B-QAT) liefern bei ersten Anfragen
-    # reasoning_tokens=512, aber 0 chars Output (Kontext-Aufbau, kein echter Thinking-Nachweis).
+    # Differenzierung bei leerem Output: zwei Szenarien erzeugen dasselbe
+    # Pattern (reasoning_tokens > 0 + raw.strip() == ""), muessen aber
+    # entgegengesetzt bewertet werden:
+    #   (a) Echter Cold-Start (z. B. llama.cpp Gemma 4 26B-A4B-QAT beim
+    #       ersten Request): reasoning_tokens deutlich < max_tokens, leerer
+    #       Output wegen KV-Cache-Aufbau → kein Thinking-Nachweis (low).
+    #   (b) Budget-Erschöpfung (z. B. Qwen3.6-27B Hybrid-Thinking): das
+    #       Modell verbraucht das gesamte max_tokens-Budget fuer Reasoning
+    #       (reasoning_tokens ≈ max_tokens) und emittiert 0 sichtbare
+    #       Zeichen → STARKES Thinking-Signal (medium).
+    # Unterscheidungskriterium: Verhaeltnis reasoning_tokens / max_tokens.
+    # Ab _PROBE_BUDGET_EXHAUSTION_RATIO (90 %) liegt Fall (b) vor.
     if reasoning_tokens > 0:
         if not raw.strip():
+            budget_threshold = int(actual_max_tokens * _PROBE_BUDGET_EXHAUSTION_RATIO)
+            if reasoning_tokens >= budget_threshold:
+                return ThinkingProbeResult(
+                    detected=True,
+                    evidence=(
+                        f"[{prompt_name}] reasoning_tokens={reasoning_tokens} "
+                        f"bei max_tokens={actual_max_tokens} — Budget vollständig "
+                        f"für Reasoning verbraucht (0 chars sichtbarer Output). "
+                        f"Budget-Erschöpfung = Thinking-Nachweis, kein Cold-Start."
+                    ),
+                    confidence="medium",
+                    prompts_used=(prompt_name,),
+                    tags_found=(),
+                )
+            # Genuine cold-start: reasoning_tokens deutlich unter Budget
             return ThinkingProbeResult(
                 detected=False,
                 evidence=(
                     f"[{prompt_name}] reasoning_tokens={reasoning_tokens} "
-                    f"aber 0 chars output — Cold-Start-Verdacht, "
+                    f"aber 0 chars output — Cold-Start-Verdacht "
+                    f"(reasoning_tokens << max_tokens={actual_max_tokens}), "
                     f"kein Thinking-Nachweis."
                 ),
                 confidence="low",
@@ -1969,9 +2022,13 @@ def probe_thinking_model(
     Signal hierarchy:
       - high:  <think>/<thinking>/<thought>/<|...|>/<reason>/<reflection>/<analysis>/...
                tags present in response
-      - medium: reasoning_tokens metadata > 0
+      - medium: reasoning_tokens metadata > 0 (mit sichtbarem Output)
+      - medium: Budget-Erschöpfung — reasoning_tokens >= 90 % von
+               _PROBE_MAX_TOKENS bei leerem Output (Modell hat das gesamte
+               Budget fuer Reasoning verbraucht; z. B. Qwen3.6-27B)
       - medium: inline CoT im content-Feld (Antwort >200 chars + mind. 2 Ops)
-      - low:    no signal found
+      - low:    no signal found (oder Cold-Start: reasoning_tokens > 0 +
+               leerer Output, aber reasoning_tokens << max_tokens)
 
     detected = True if confidence in ("high", "medium")
 

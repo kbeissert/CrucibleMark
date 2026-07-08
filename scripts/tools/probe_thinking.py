@@ -27,14 +27,17 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-import yaml
-
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from utils.card_utils import ensure_card
-from utils.model_utils import ThinkingProbeResult, probe_thinking_model
+from utils.config_validator import ConfigValidator
+from utils.model_utils import (
+    ThinkingProbeResult,
+    _find_card,
+    probe_thinking_model,
+)
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
@@ -43,9 +46,15 @@ CARDS_DIR = ROOT_DIR / "benchmark_scores" / "model_cards"
 
 
 def _load_config() -> dict[str, Any]:
-    config_path = ROOT_DIR / "benchmark_config.yaml"
-    with open(config_path, "r", encoding="utf-8") as f:
-        return yaml.safe_load(f)
+    """Lädt benchmark_config.yaml + provider_config.yaml (gemerged).
+
+    Delegiert an ``ConfigValidator`` (SSoT für den Config-Merge inkl.
+    Fehlerbehandlung + Duplicate-ID-Warnung). Ohne diesen Merge fehlen
+    vllm_spark/llamacpp_spark-Provider-Configs (``base_url``/``server_start_cmd``)
+    → Probe-Script defaultet auf ``127.0.0.1`` und hält endlos im
+    Cold-Start-Wait fest.
+    """
+    return ConfigValidator(str(ROOT_DIR / "benchmark_config.yaml")).config
 
 
 def _infer_provider(model_id: str, config: dict[str, Any]) -> str:
@@ -91,10 +100,22 @@ def _probe_fields_to_dict(probe: ThinkingProbeResult) -> dict[str, Any]:
 def _write_probe_to_card(
     model_id: str,
     probe: ThinkingProbeResult,
+    *,
+    provider: str | None = None,
 ) -> Path:
-    """Schreibt Probe-Ergebnis in Card (vollständige Struktur wird sichergestellt)."""
-    # Vollständige Card-Struktur anlegen/ergänzen (keine Minimal-Card mehr)
-    card_path = ensure_card(model_id)
+    """Schreibt Probe-Ergebnis in Card (vollständige Struktur wird sichergestellt).
+
+    Bestehende Cards werden **in place** aktualisiert: ``_find_card`` löst die
+    SUFFIX-Form (``--VSPK``/``--SPRK``/…) auf und ``ensure_card(card_path=...)``
+    überschreibt diese ohne Unique-ID-Resolver (der nur für Neuerstellung
+    gedacht ist und sonst ``-2``-Duplikate erzeugt). Fehlt die Card komplett,
+    wird sie via ``ensure_card(provider=...)`` mit korrektem SUFFIX angelegt.
+    """
+    existing_path = _find_card(model_id)
+    if existing_path.exists():
+        card_path = ensure_card(model_id, card_path=existing_path)
+    else:
+        card_path = ensure_card(model_id, provider=provider)
 
     probe_fields = _probe_fields_to_dict(probe)
 
@@ -129,8 +150,10 @@ def run_probe(
     Returns:
         True wenn Probe erfolgreich, False bei Fehler
     """
-    safe = model_id.replace("/", "_").replace(":", "_").replace(".", "_")
-    card_path = CARDS_DIR / f"{safe}.json"
+    # SUFFIX-SSoT: _find_card findet provider-spezifische Cards (SPRK/VSPK/…)
+    # ohne expliziten Provider. Die alte {safe}.json-Logik traf nur unprefixed
+    # Cards und übersah --VSPK/--SPRK-Varianten (Skip-Check falsch-negativ).
+    card_path = _find_card(model_id)
 
     if not force and card_path.exists():
         try:
@@ -154,7 +177,7 @@ def run_probe(
         logger.error("❌ Probe fehlgeschlagen für '%s': %s", model_id, e)
         return False
 
-    card_path = _write_probe_to_card(model_id, probe)
+    card_path = _write_probe_to_card(model_id, probe, provider=provider_key)
     icon = "🧠" if probe.detected else "💬"
     try:
         display_path = card_path.resolve().relative_to(ROOT_DIR)
