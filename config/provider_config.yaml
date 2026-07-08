@@ -368,17 +368,26 @@ providers:
         name: Gemma 4 12B Instruct UD-Q4_K_XL (GGUF)
         model_file: gemma-4-12b-it-UD-Q4_K_XL.gguf
         n_gpu_layers: 99
-        enable_thinking: false  # Thinking → unbounded Hang (v4.4.1)
+        enable_thinking: true  # Gemma 4 Channel-Tokens (<|channel|>): --jinja + --reasoning-format deepseek separiert Thinking in reasoning_content. vormals false (v4.4.1 Hang — mit Separation + max_tokens-Cap begrenzt).
+        extra_server_args:
+          - "--jinja"
+          - "--reasoning-format deepseek"
       - id: gemma-4-12b-it-ud-q6_k_xl
         name: Gemma 4 12B Instruct UD-Q6_K_XL (GGUF)
         model_file: gemma-4-12b-it-UD-Q6_K_XL.gguf
         n_gpu_layers: 99
-        enable_thinking: false
+        enable_thinking: true  # Gemma 4 Channel-Tokens — siehe q4_k_xl-Kommentar
+        extra_server_args:
+          - "--jinja"
+          - "--reasoning-format deepseek"
       - id: gemma-4-12b-it-ud-q8_k_xl
         name: Gemma 4 12B Instruct UD-Q8_K_XL (GGUF)
         model_file: gemma-4-12b-it-UD-Q8_K_XL.gguf
         n_gpu_layers: 99
-        enable_thinking: false
+        enable_thinking: true  # Gemma 4 Channel-Tokens — siehe q4_k_xl-Kommentar
+        extra_server_args:
+          - "--jinja"
+          - "--reasoning-format deepseek"
       - id: hermes-3-8b
         name: Hermes 3 Llama 3.1 8B Q6_K_L (GGUF)
         model_file: Hermes-3-Llama-3.1-8B-Q6_K_L.gguf
@@ -559,9 +568,12 @@ providers:
         model_file: Gemma4-26B/gemma-4-26B-A4B-it-UD-Q8_K_XL.gguf
         n_gpu_layers: 99
         context_length: 65536
-        enable_thinking: false
+        enable_thinking: true  # Gemma 4 Channel-Tokens (<|channel|>): --jinja + --reasoning-format deepseek separiert Thinking in reasoning_content
         temperature: 1.0
         top_k: 64
+        extra_server_args:
+          - "--jinja"
+          - "--reasoning-format deepseek"
 
       # - id: hermes-4.3-36b-q6
       #   name: Hermes 4.3 36B Q6_K (GGUF)
@@ -580,9 +592,11 @@ providers:
         model_file: Gemma4-26B/gemma-4-26B-A4B-it-UD-Q5_K_XL.gguf
         model_draft_file: Gemma4-26B/gemma-4-26B-A4B-it-Q8_0-MTP.gguf
         n_gpu_layers: 99
-        enable_thinking: false
+        enable_thinking: true  # Gemma 4 Channel-Tokens (<|channel|>): --jinja + --reasoning-format deepseek separiert Thinking in reasoning_content
         context_length: 65536
         extra_server_args:
+          - "--jinja"
+          - "--reasoning-format deepseek"
           - "--spec-type draft-mtp"
           - "--spec-draft-n-max 4"
 
@@ -591,9 +605,11 @@ providers:
         model_file: Gemma4-31b/gemma-4-31B-it-UD-Q8_K_XL.gguf
         model_draft_file: Gemma4-31b/gemma-4-31B-it-Q8_0-MTP.gguf
         n_gpu_layers: 99
-        enable_thinking: false
+        enable_thinking: true  # Gemma 4 Channel-Tokens (<|channel|>): --jinja + --reasoning-format deepseek separiert Thinking in reasoning_content
         context_length: 131072
         extra_server_args:
+          - "--jinja"
+          - "--reasoning-format deepseek"
           - "--spec-type draft-mtp"
           - "--spec-draft-n-max 4"
 

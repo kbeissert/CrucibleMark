@@ -1752,11 +1752,12 @@ _PROBE_BUDGET_EXHAUSTION_RATIO = 0.9
 # Erweiterte Tag-Liste basierend auf Modell-Familien-Inventar.
 # Quellen: Qwen 3/3.5/3.6, DeepSeek R1/V3, OpenAI OSS (gpt-oss),
 # Anthropic Extended Thinking, Meta Llama 4, NousResearch Hermes,
-# Mistral Magistral, GLM, Kimi. Bei neu entdeckten Tags: hier ergaenzen
-# + Test in tests/test_thinking_probe_families.py.
+# Mistral Magistral, GLM, Kimi, Gemma 4 (Channel-Tokens). Bei neu
+# entdeckten Tags: hier ergaenzen + Test in tests/test_thinking_probe_families.py.
 _THINK_TAGS: tuple[str, ...] = (
     "<think>", "<thinking>", "<thought>",            # Qwen 3/3.5/3.6, Magistral, GLM
     "<|thinking|>", "<|reasoning|>",                 # OpenAI OSS (gpt-oss)
+    "<|channel|>",                                   # Gemma 4 (Channel-Token: <|channel|>analysis/thought/final)
     "<reasoning>", "<reason>",                       # DeepSeek R1/V3
     "<reflection>",                                  # Meta Llama 4 (Reflektion)
     "<analysis>", "<plan>",                          # Anthropic Extended Thinking
@@ -1814,6 +1815,7 @@ def _find_think_tags(text: str) -> tuple[str, ...]:
 _COT_FAMILY_MAP: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("think-xml", ("<think>", "<thought>")),        # Qwen 3/3.5/3.6 + Magistral
     ("openai-oss", ("<|thinking|>", "<|reasoning|>")),
+    ("channel-tags", ("<|channel|>",)),              # Gemma 4 (Channel-Token-Format)
     ("deepseek-reasoning", ("<reasoning>", "<reason>")),
     ("llama-cot", ("<reflection>",)),
     ("anthropic-extended", ("<analysis>", "<plan>")),

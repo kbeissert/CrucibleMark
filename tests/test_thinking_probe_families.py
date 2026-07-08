@@ -31,6 +31,7 @@ from utils.model_utils import (  # noqa: E402
     _find_think_tags,
     _PROBE_PROMPTS,
     _THINK_TAGS,
+    classify_cot_marker_family,
     probe_thinking_model,
 )
 
@@ -84,6 +85,15 @@ class TestFindThinkTags:
         # Haeufige Woerter sollten NICHT als Tags erkannt werden
         assert _find_think_tags("The thinking process is important.") == ()
         assert _find_think_tags("She had a thoughtful moment.") == ()
+
+    def test_gemma4_channel_tag_detected(self) -> None:
+        """Gemma 4 nutzt <|channel|>-Steuertokens (analysis/thought/final).
+
+        Mit --reasoning-format none (Default) leaken diese in den content.
+        _find_think_tags muss sie erkennen, damit Signal A anschlaegt.
+        """
+        assert "<|channel|>" in _find_think_tags("<|channel|>analysis step 1<|channel|>final Answer")
+        assert "<|channel|>" in _find_think_tags("<|channel|>thought reasoning here")
 
 
 # ---------------------------------------------------------------------------
@@ -469,6 +479,9 @@ class TestThinkTagsCompleteness:
     def test_hermes_scratchpad_present(self) -> None:
         assert "<scratchpad>" in _THINK_TAGS
 
+    def test_gemma4_channel_tag_present(self) -> None:
+        assert "<|channel|>" in _THINK_TAGS
+
     def test_tags_are_lowercase(self) -> None:
         for tag in _THINK_TAGS:
             assert tag == tag.lower(), f"Tag {tag!r} ist nicht lowercase"
@@ -490,3 +503,35 @@ class TestProbePromptsConfig:
         assert _PROBE_PROMPTS["math"] != _PROBE_PROMPTS["code"]
         assert _PROBE_PROMPTS["math"] != _PROBE_PROMPTS["decision"]
         assert _PROBE_PROMPTS["code"] != _PROBE_PROMPTS["decision"]
+
+
+# ---------------------------------------------------------------------------
+# classify_cot_marker_family()
+# ---------------------------------------------------------------------------
+class TestClassifyCotMarkerFamily:
+    """Tests fuer die Familien-Zuordnung aus gefundenen Tags."""
+
+    def test_empty_returns_none(self) -> None:
+        assert classify_cot_marker_family(()) == "none"
+        assert classify_cot_marker_family([]) == "none"
+        assert classify_cot_marker_family(None) == "none"
+
+    def test_think_xml_family(self) -> None:
+        assert classify_cot_marker_family(("<think>",)) == "think-xml"
+        assert classify_cot_marker_family(("<thought>",)) == "think-xml"
+
+    def test_openai_oss_family(self) -> None:
+        assert classify_cot_marker_family(("<|thinking|>",)) == "openai-oss"
+        assert classify_cot_marker_family(("<|reasoning|>",)) == "openai-oss"
+
+    def test_channel_tags_family(self) -> None:
+        """Gemma 4 Channel-Tokens muessen als 'channel-tags' klassifiziert werden."""
+        assert classify_cot_marker_family(("<|channel|>",)) == "channel-tags"
+
+    def test_first_match_wins(self) -> None:
+        """Bei mehreren Tags gewinnt die erste Familie in _COT_FAMILY_MAP."""
+        result = classify_cot_marker_family(("<think>", "<|channel|>"))
+        assert result == "think-xml"
+
+    def test_case_insensitive(self) -> None:
+        assert classify_cot_marker_family(("<|CHANNEL|>",)) == "channel-tags"
