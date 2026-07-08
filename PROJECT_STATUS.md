@@ -1,7 +1,7 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-07-07
-**Current Version:** 4.10.14 — Card-Naming SUFFIX-SSoT-Alignment + model_version-Pollution-Migration (neues Feld model_variant)
+**Last Updated:** 2026-07-08
+**Current Version:** 4.10.15 — Baustellen-Cleanup (Sampling-Drift, vLLM-Extensions-Whitelist, Card-Vocabulary, ThinkingProbe, Sub-Family-LB)
 **Status:** ✅ Production-Ready
 
 > **Hinweis:** Die Executive Summary weiter unten historisch auf v4.6.1.

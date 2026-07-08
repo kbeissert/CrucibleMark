@@ -5,6 +5,40 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v4.10.15] - 2026-07-08
+
+**Baustellen-Cleanup: Sampling-Drift, vLLM-Extensions-Whitelist, Card-Vocabulary, Sub-Family-LB-Entfernung, 2 pre-existing Test-Failures behoben, 2 Live-Runs.**
+
+### Changed
+
+- **Sampling-vs-Card-Drift (vllm_spark, 4 Modelle) — `config/provider_config.yaml`:** 4 vllm_spark-Modelle dokumentierten Sampling-Werte in Cards, die `provider_config.yaml` nicht lieferte → effektiv lief nur Framework-Default temperature=0.1. Nutzer-Entscheidung (Cards→provider_config): `Gemma-4-26B`/`Gemma-4-31B`/`Gemma-4-31B-Wordsmith-NVFP4` erhalten temperature=1.0, top_p=0.95, top_k=64 (Google-Empfehlung, bestätigt durch vLLM-`generation_config.json`-Warning beim Server-Start); `qwen3.6-27B` erhält temperature=0.6, top_p=0.95, top_k=20. ornith-1.0-35B-FP8 war bereits synchron (Reference-Pattern). Hinweis: Zukünftige Runs weichen von historischen (temperature=0.1) ab.
+
+- **vLLM-Extensions-Whitelist — `utils/providers/vllm_base.py:_resolve_sampling`:** Bislang war nur `top_k` hardcodiert in `extra_body`; gleiche Bug-Klasse drohte bei jedem weiteren Sampling-Override. Neue generische Whitelist-Konstante `_VLLM_EXTRA_BODY_KEYS` (top_k, min_p, repetition_penalty, chat_template_kwargs, guided_json/regex/choice/grammar/decoding_backend/whitespace_pattern, bad_words, stop_token_ids) mit Schleife. Neue vLLM-Extensions: nur ein Konstanten-Eintrag, kein Code-Churn in `_resolve_sampling` (DRY gegen Mapping-Drift). `_OPENAI_STANDARD_SAMPLING_KEYS` dokumentiert die direkten Body-Keys (temperature, top_p).
+
+- **Card-Vocabulary: `Dense` + `Tool-Use` deprecated — `config/card_vocabulary.yaml`:** `Dense` (redundant mit `parameter_architecture='dense'`, symmetrisch zu `MoE`) und `Tool-Use` (redundant mit `supports_tool_use`, symmetrisch zu `Function-Calling`) als deprecated→null aufgenommen. 4 Cards bereinigt (`Gemma-4-31B--VSPK`, `Gemma-4-31B-Wordsmith-NVFP4--VSPK`, `qwen3_6-27B--VSPK`: Dense entfernt; `openai_gpt-oss-120b`: Tool-Use entfernt).
+
+- **Sub-Family-Leaderboard-Konzept entfernt — `scripts/maintenance/clean_results.py`:** `SUB_FAMILY_LEADERBOARD_CSVS` (gemma_leaderboard.csv, qwen_leaderboard.csv) entfernt — die Dateien wurden nie generiert und nie in git getrackt (verwaistes Konzept). `CLEAN_CSV_FILES` ohne Sub-Family-LBs. Symmetrisch zu provider_leaderboard.csv-Stilllegung (v4.10.12).
+
+### Fixed
+
+- **`test_card_vocabulary_ssot::test_all_model_cards_pass_tag_whitelist`** (pre-existing failure): 4 Cards mit unbekannten Tags (Dense×3, Tool-Use×1) — durch deprecated-Aufnahme + Card-Bereinigung gelöst.
+- **`test_clean_results_arch_coverage::test_dry_run_mentions_all_csv_files`** (pre-existing failure): erwartete verwaiste `gemma_leaderboard.csv`/`qwen_leaderboard.csv` im Dry-Run-Output — durch Sub-Family-Konzept-Entfernung gelöst.
+
+### Added
+
+- **Gemma-4-26B--VSPK ThinkingProbe (live):** Card hatte `thinking_probe_detected=null`. Probe via vllm_spark: 3/3 Probes detected → `detected=true, confidence=medium`. Alle 5 VSPK-Cards jetzt probed.
+- **ux_writing_002 ornith-1-0-35b Re-Run (live):** Audit-Log existierte (60.25%), aber CSV-Zeile fehlte (Inkonsistenz nach Session-46-Cleanup). Re-Run: 5/5 Tests, Ø 71.91%, ux_writing_002=78.75%/Judge 4.0/5 (vormals 1.1% Reasoning-Loop). enable_thinking:false-Fix wirkt. CSV + Audit-Logs konsistent.
+
+### Tests
+
+- `make validate` 0 invalid. `pytest` **1079 passed / 1 skipped / 0 failures** (vorher 2 pre-existing failures). `test_vllm_spark_provider` 34/34 grün (Sampling-Chain-Tests kompatibel mit Whitelist-Refactor).
+
+### Out of Scope
+
+- Die in progress.md (Session 49) erwähnten „3 pre-existing `check:drift` True-Mismatches" sind Web-Repo-Checks (`check:drift`/`check:coverage` sind npm-Skripte in cruciblemark-web; Begriff „True-Mismatch" existiert nicht im Python-Repo). Nicht im Python-Repo fixbar.
+
+---
+
 ## [v4.10.14] - 2026-07-07
 
 **Card-Naming SUFFIX-SSoT-Alignment + `model_version`-Pollution-Migration (neues Feld `model_variant`).**

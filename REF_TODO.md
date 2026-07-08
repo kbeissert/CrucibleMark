@@ -5,6 +5,18 @@
 
 ## Abgeschlossen
 
+### Baustellen-Cleanup (v4.10.15 – 08.07.26, Session 50)
+
+User-Auftrag: alle bekannten offenen Baustellen aus der v4.10.14-Session-Reihe schließen.
+
+- [x] **Sampling-vs-Card-Drift** — 4 vllm_spark-Modelle (Gemma-4-26B/31B/Wordsmith-NVFP4, qwen3.6-27B) bekamen in `config/provider_config.yaml` Card-konforme Sampling-Parameter (temperature/top_p/top_k). Runtime-SSoT ist `provider_config.yaml`, NICHT die Model Card (Card = Dokumentation, wird zur Laufzeit nicht gelesen).
+- [x] **vLLM-Extensions-Whitelist** — `utils/providers/vllm_base.py`: `_VLLM_EXTRA_BODY_KEYS`-Konstante (top_k, min_p, repetition_penalty, guided_*, etc.) mit generischem Loop statt hardcodierter Einzel-Keys. `_resolve_sampling` whitelist-getrieben.
+- [x] **Card-Vocabulary: Dense + Tool-Use deprecated** — `config/card_vocabulary.yaml`: beide als deprecated→null (symmetrisch zu MoE/Function-Calling). 4 Cards bereinigt.
+- [x] **Sub-Family-Leaderboard-Konzept entfernt** — `scripts/maintenance/clean_results.py`: `SUB_FAMILY_LEADERBOARD_CSVS` entfernt (nie generiert, nie in git).
+- [x] **2 pre-existing Test-Failures behoben** — `test_card_vocabulary_ssot` + `test_clean_results_arch_coverage`.
+- [x] **2 Live-Runs** — Gemma-4-26B--VSPK ThinkingProbe (detected=true/medium), ux_writing_002 ornith Re-Run (78.75%, vormals 1.1% Reasoning-Loop).
+- [x] **Regression clean** — 1079 passed / 1 skipped / 0 failures; `make validate` exit 0.
+
 ### Card-Naming SUFFIX-SSoT + model_version-Pollution-Migration (v4.10.14 – 07.07.26, Session 49)
 
 User-Auftrag: Card-Naming SSoT reparieren (PREFIX→SUFFIX-Alignment mit `build_card_id`) und `model_version`-Pollution (Quant/GGUF/Variant-Tokens) in korrekte Felder migrieren.

@@ -1,6 +1,6 @@
 # CrucibleMark
 
-[![Version](https://img.shields.io/badge/version-4.10.14-blue)](.)
+[![Version](https://img.shields.io/badge/version-4.10.15-blue)](.)
 
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](.)
 [![License](https://img.shields.io/badge/license-MIT-green)](.)
@@ -163,6 +163,7 @@ Tiefergehende Einblicke in die Methodik findest du im `docs/` Verzeichnis:
 
 Die vollständige Versionshistorie steht in [CHANGELOG.md](CHANGELOG.md). Kurzfassung der letzten drei Releases:
 
+- **v4.10.15 (2026-07-08) — Baustellen-Cleanup:** Sampling-vs-Card-Drift bei 4 vllm_spark-Modellen behoben (Cards→provider_config: Gemma 1.0/0.95/64, qwen3.6-27B 0.6/0.95/20). vLLM-Extensions-Whitelist in `_resolve_sampling` (generische `_VLLM_EXTRA_BODY_KEYS` statt hardcodiertem top_k). Card-Vocabulary: `Dense`/`Tool-Use` deprecated. Verwaistes Sub-Family-Leaderboard-Konzept entfernt. 2 pre-existing Test-Failures behoben (`test_card_vocabulary_ssot`, `test_clean_results_arch_coverage`). Gemma-4-26B--VSPK ThinkingProbe live (detected=true/medium). ux_writing_002 ornith Re-Run (78.75%, vormals 1.1% Reasoning-Loop). 1079 passed, 0 failures.
 - **v4.10.13 (2026-07-04) — WebExport-Konsistenz-Fixes:** `synthesis_quality`/`tool_execution` datenbasiert exportiert (statt hinter `supports_tool_use=true`-Gate) — 7 Modelle mit echten ToolUse-Daten aber `supports_tool_use=false` erhalten jetzt Scores. `_EMOJI_RE` um Variation Selectors (VS16/VS15/ZWJ) erweitert. Dead-Code `_supports_tool_use` entfernt. 5 neue Regressionstests.
 - **v4.10.8 (2026-06-23) — Cohere Native ToolUse + Sicherheits-Härtung:** Cohere-Connector auf nativen `tools`-API umgestellt (`command-a-reasoning` P1=90/P2=51.7). `command-a-plus` MoE-Instabilität mit `supports_tool_use=false` markiert. ThinkingProbe-Hardening (Models.json-Manifest, Card-First-Property).
 - **v4.10.7 (2026-06-22) — `clean-results` Variant-Handling + `_rebuild_index()` Fix:** `clean_results.py` bereinigt jetzt ALLE ID-Varianten (Underscore, Hyphen, Punkt). Neue SSoT `_collect_model_id_variants()`. `--dry-run` in `clean.py` ergänzt. `_rebuild_index()`-Crash in `generate_review.py` gefixt. Dead-Model `grok-4.1-fast-reasoning` vollständig entfernt. 10/10 Tests grün.
@@ -173,5 +174,5 @@ Die vollständige Versionshistorie steht in [CHANGELOG.md](CHANGELOG.md). Kurzfa
 
 - **Maintainer:** kbeissert
 - **Repository:** [github.com/kbeissert/cruciblemark](https://github.com/kbeissert/cruciblemark)
-- **Status:** ✅ Production-Ready (v4.10.14)
+- **Status:** ✅ Production-Ready (v4.10.15)
 
