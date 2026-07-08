@@ -55,6 +55,38 @@ DEFAULT_READY_TIMEOUT_SEC: int = 600  # 10 Min — Ladezeit großer MoE-Modelle
 DEFAULT_POLL_SEC: int = 10
 DEFAULT_PROBE_TIMEOUT_SEC: int = 30
 
+# Standard OpenAI-Parameter, die direkt in den Request-Body geschrieben werden
+# (vom OpenAI-Python-Client nativ akzeptiert). Sie werden NICHT in extra_body
+# verpackt. Reihenfolge irrelevant — nur Membership zählt.
+_OPENAI_STANDARD_SAMPLING_KEYS: tuple[str, ...] = ("temperature", "top_p")
+
+# vLLM-spezifische Sampling-Extensions, die via ``extra_body`` geschleust werden
+# MÜSSEN. Der OpenAI-Python-Client lehnt unbekannte kwargs in ``.create()``
+# strikt ab (``Completions.create() got an unexpected keyword argument 'top_k'``);
+# vLLM akzeptiert diese Felder aber nativ als JSON-Body. ``extra_body`` ist der
+# offizielle Weg des OpenAI-Clients, provider-spezifische Felder zu schleusen.
+# Siehe vLLM OpenAI-compatible server docs.
+#
+# Erweiterung (Session 2026-07-08): Bislang war nur ``top_k`` hardcodiert —
+# dieselbe Bug-Klasse drohte bei jedem weiteren Sampling-Override. Die
+# Whitelist macht die Auflösung generisch: neue vLLM-Extensions werden durch
+# einen Eintrag hier bekannt, ohne dass ``_resolve_sampling`` angefasst werden
+# muss (DRY, geschlossen gegen Mapping-Drift).
+_VLLM_EXTRA_BODY_KEYS: tuple[str, ...] = (
+    "top_k",
+    "min_p",
+    "repetition_penalty",
+    "chat_template_kwargs",
+    "guided_json",
+    "guided_regex",
+    "guided_choice",
+    "guided_grammar",
+    "guided_decoding_backend",
+    "guided_whitespace_pattern",
+    "bad_words",
+    "stop_token_ids",
+)
+
 
 def _extract_port(base_url: str, default: int = DEFAULT_VLLM_PORT) -> int:
     """Port aus base_url parsen, Fallback auf default bei Parse-Fehler."""
@@ -223,6 +255,82 @@ class VllmBaseClient(BaseProviderClient):
         genutzt. Per Provider-Config (``toml_models_dir``) überschreibbar.
         """
         return self._provider_cfg().get("toml_models_dir", "~/ai/shared/configs/vllm/models/")
+
+    def _vllm_defaults(self) -> dict[str, Any]:
+        """vllm_defaults-Block aus ``providers.local.config`` (DRY-X).
+
+        Initial leer (per Default) — bestehende vLLM-Modelle ohne
+        Sampling-Override verhalten sich unverändert. Modelle mit
+        explizitem ``model_cfg``-Override (Cross-Backend-Vergleich gegen
+        llama.cpp, z. B. Ornith 1.0 35B) konsumieren diese Defaults als
+        Cascade-Stufe zwischen ``model_cfg`` und dem Framework-Default
+        (siehe :meth:`_resolve_sampling`).
+        """
+        return self._local_cfg.get("config", {}).get("vllm_defaults", {})
+
+    def _resolve_sampling(
+        self,
+        model_id: str,
+        passed_temperature: float | None,
+    ) -> dict[str, Any]:
+        """Sampling-Override-Kaskade: model_cfg > vllm_defaults > passed.
+
+        Liefert die tatsächlich gesetzten Werte als flache Dict, die in
+        ``query()`` per ``**`` in die ``params``-Dict gespreizt wird.
+
+        Field-Klassifizierung:
+
+        * **Standard OpenAI** (``temperature``, ``top_p``) — werden direkt
+          in den Request-Body geschrieben, identisch zum OpenAI-HTTP-Schema.
+        * **vLLM-spezifisch** (alle Keys aus :data:`_VLLM_EXTRA_BODY_KEYS`,
+          z. B. ``top_k``, ``min_p``, ``repetition_penalty``,
+          ``chat_template_kwargs``, ``guided_*``, ``bad_words``,
+          ``stop_token_ids``) — werden in ``extra_body`` verpackt. Hintergrund:
+          der OpenAI-Python-Client lehnt unbekannte kwargs in ``.create()``
+          strikt ab (``Completions.create() got an unexpected keyword
+          argument 'top_k'``); vLLM akzeptiert diese Felder aber nativ
+          als JSON-Body. ``extra_body`` ist der offizielle Weg des
+          OpenAI-Clients, provider-spezifische Felder zu schleusen.
+
+        Chain (für jeden Key):
+          * ``model_cfg`` > ``vllm_defaults`` > Framework-Default.
+          * ``temperature`` fällt bei fehlendem Override auf
+            ``passed_temperature`` (Framework, derzeit 0.1) zurück.
+          * Alle anderen Keys: ``None`` heißt „nicht gesetzt" — der
+            vLLM-Server-Default aus der Remote-TOML greift unverändert.
+
+        Bei leerem ``vllm_defaults``-Block und ohne ``model_cfg``-Override
+        verhält sich diese Methode exakt wie der vorherige Stand (nur
+        ``temperature`` aus dem Aufrufer; kein extra_body).
+        """
+        cfg = self._model_cfg(model_id)
+        defaults = self._vllm_defaults()
+        out: dict[str, Any] = {}
+
+        # temperature: gesonderter Pfad, weil passed_temperature als
+        # Framework-Fallback dient (die anderen Keys haben keinen solchen
+        # Fallback — dort bedeutet "nicht konfiguriert" = vLLM-TOML-Default).
+        temp = cfg.get("temperature", defaults.get("temperature"))
+        if temp is not None:
+            out["temperature"] = temp
+        elif passed_temperature is not None:
+            out["temperature"] = passed_temperature
+
+        # top_p: Standard-OpenAI, direkt im Body (kein extra_body).
+        top_p_value = cfg.get("top_p", defaults.get("top_p"))
+        if top_p_value is not None:
+            out["top_p"] = top_p_value
+
+        # vLLM-Extensions: generische Whitelist-Schleife über
+        # _VLLM_EXTRA_BODY_KEYS. Neue Extensions werden durch einen Eintrag
+        # in der Konstante bekannt — kein Code-Churn hier (DRY gegen
+        # Mapping-Drift, gleiche Bug-Klasse wie der ehemalige top_k-Only-Hack).
+        for ext_key in _VLLM_EXTRA_BODY_KEYS:
+            value = cfg.get(ext_key, defaults.get(ext_key))
+            if value is not None:
+                out.setdefault("extra_body", {})[ext_key] = value
+
+        return out
 
     def _discover_remote_tomls(self) -> list[str]:
         """TOML-Dateinamen (ohne Endung) vom Remote-Host listen.
@@ -1003,7 +1111,7 @@ class VllmBaseClient(BaseProviderClient):
         params: dict[str, Any] = {
             "model": self._server_model_name or model,
             "messages": messages,
-            "temperature": temperature,
+            **self._resolve_sampling(model, temperature),
         }
         if stream_handler:
             params["stream"] = True

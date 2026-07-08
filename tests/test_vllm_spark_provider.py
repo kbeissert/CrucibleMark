@@ -21,6 +21,12 @@ VLLM_CTX: int = 32768
 VLLM_BASE_URL: str = "http://192.168.1.200:4300/v1"
 VLLM_API_KEY: str = "sk-local-vllm"
 HERMES_OVERRIDE_TIMEOUT: int = 900
+SAMPLING_TEMP: float = 0.6
+SAMPLING_TOP_P: float = 0.95
+SAMPLING_TOP_K: int = 20
+PASSED_TEMP_DEFAULT: float = 0.1
+PASSED_TEMP_VARIANT: float = 0.7
+PASSED_TEMP_LOW: float = 0.4
 
 
 # ---------------------------------------------------------------------------
@@ -216,3 +222,252 @@ def test_model_cfg_lookup_with_canonical_id(vllm_provider_config):
 
     assert cfg.get("name") == "Qwen 3.5 35B-A3B (vLLM, FP8)"
     assert cfg.get("config") == "Qwen3.5-35B-A3B"
+
+
+# ---------------------------------------------------------------------------
+# Sampling-Chain: model_cfg → vllm_defaults → passed
+# ---------------------------------------------------------------------------
+
+@pytest.fixture
+def vllm_sampling_config():
+    """Config mit vllm_defaults und Ornith-Modell (Cross-Backend-Vergleich)."""
+    return {
+        "providers": {
+            "local": {
+                "config": {
+                    "vllm_defaults": {
+                        "temperature": SAMPLING_TEMP,
+                        "top_p": SAMPLING_TOP_P,
+                        "top_k": SAMPLING_TOP_K,
+                    },
+                },
+                "vllm_spark": {
+                    "name": "vLLM (asusGX10)",
+                    "api_type": "vllm",
+                    "enabled": True,
+                    "base_url": VLLM_BASE_URL,
+                    "api_key": VLLM_API_KEY,
+                    "models": [
+                        {
+                            "id": "ornith-1.0-35B-FP8",
+                            "name": "Ornith 1.0 35B FP8",
+                            "config": "Ornith1-35B-FP8",
+                            "max_tokens": 8192,
+                            "temperature": SAMPLING_TEMP,
+                            "top_p": SAMPLING_TOP_P,
+                            "top_k": SAMPLING_TOP_K,
+                        },
+                        {
+                            # Modell ohne sampling-Override — muss unverändert bleiben.
+                            "id": "untouched-model",
+                            "name": "Untouched",
+                        },
+                    ],
+                },
+            },
+        },
+    }
+
+
+def test_resolve_sampling_model_override_wins(vllm_sampling_config):
+    """model_cfg.temperature > vllm_defaults.temperature > passed_temperature.
+
+    Field-Klassifikation: ``temperature`` und ``top_p`` landen top-level,
+    ``top_k`` (vLLM-spezifisch, nicht im OpenAI-Schema) wird in
+    ``extra_body`` verpackt (BUGFIX gegen OpenAI-Client-Validierung).
+    """
+    client = VllmSparkClient(vllm_sampling_config)
+    sampling = client._resolve_sampling("ornith-1.0-35B-FP8", passed_temperature=PASSED_TEMP_DEFAULT)
+
+    assert sampling == {
+        "temperature": SAMPLING_TEMP,
+        "top_p": SAMPLING_TOP_P,
+        "extra_body": {"top_k": SAMPLING_TOP_K},
+    }
+
+
+def test_resolve_sampling_defaults_cascade(vllm_sampling_config):
+    """Modell ohne Override erbt aus vllm_defaults (wenn aktiv)."""
+    client = VllmSparkClient(vllm_sampling_config)
+
+    # Modell ohne sampling-Override, das durch expliziten Eintrag ersetzt wird
+    vllm_sampling_config["providers"]["local"]["vllm_spark"]["models"][1][
+        "temperature"
+    ] = SAMPLING_TEMP
+
+    sampling = client._resolve_sampling("untouched-model", passed_temperature=PASSED_TEMP_DEFAULT)
+    assert sampling["temperature"] == SAMPLING_TEMP
+
+
+def test_resolve_sampling_empty_defaults_preserves_framework_value():
+    """Bei leerem vllm_defaults-Block und ohne model_cfg-Override greift
+    ausschließlich der passed_temperature (Framework-Default 0.1).
+
+    Garantiert, dass bestehende vLLM-Modelle KEIN stiller Sampling-Shift
+    auf 0.6/0.95/20 erfahren.
+    """
+    cfg = {
+        "providers": {
+            "local": {
+                "config": {"vllm_defaults": {}},
+                "vllm_spark": {
+                    "name": "vLLM",
+                    "api_type": "vllm",
+                    "models": [
+                        {"id": "stable-model", "name": "Stable"},
+                    ],
+                },
+            },
+        },
+    }
+    client = VllmSparkClient(cfg)
+
+    sampling = client._resolve_sampling("stable-model", passed_temperature=PASSED_TEMP_DEFAULT)
+    assert sampling == {"temperature": PASSED_TEMP_DEFAULT}
+    assert "top_p" not in sampling
+    assert "extra_body" not in sampling
+
+
+def test_resolve_sampling_top_pk_only_when_configured():
+    """top_p und extra_body werden NICHT erzeugt, wenn weder model_cfg noch
+    vllm_defaults sie setzen — vLLM-Server-Default aus der TOML bleibt
+    unverändert aktiv.
+    """
+    cfg = {
+        "providers": {
+            "local": {
+                "config": {"vllm_defaults": {"temperature": SAMPLING_TEMP}},
+                "vllm_spark": {
+                    "name": "vLLM",
+                    "api_type": "vllm",
+                    "models": [{"id": "m", "name": "M"}],
+                },
+            },
+        },
+    }
+    client = VllmSparkClient(cfg)
+
+    sampling = client._resolve_sampling("m", passed_temperature=PASSED_TEMP_VARIANT)
+    assert sampling["temperature"] == SAMPLING_TEMP  # default kicks in
+    assert "top_p" not in sampling
+    assert "extra_body" not in sampling
+
+
+def test_resolve_sampling_no_provider_cfg_returns_minimum():
+    """Provider ohne models-Block (leere Config) liefert mindestens
+    den passed_temperature, nichts anderes.
+    """
+    cfg = {"providers": {"local": {"vllm_spark": {"models": []}}}}
+    client = VllmSparkClient(cfg)
+
+    sampling = client._resolve_sampling("unknown", passed_temperature=PASSED_TEMP_LOW)
+    assert sampling == {"temperature": PASSED_TEMP_LOW}
+
+
+# ---------------------------------------------------------------------------
+# End-to-End: Sampling-Override landet tatsächlich am OpenAI-Wire
+# ---------------------------------------------------------------------------
+
+class _StubMessage:
+    """Minimal-OpenAI-Message: content + reasoning."""
+    def __init__(self, content: str = "Hallo zurück", reasoning: str = "") -> None:
+        self.content = content
+        self.reasoning_content = reasoning
+        self.reasoning = reasoning
+
+
+class _StubChoice:
+    def __init__(self) -> None:
+        self.message = _StubMessage()
+        self.finish_reason = "stop"
+
+
+class _StubUsage:
+    prompt_tokens = 10
+    completion_tokens = 4
+    total_tokens = 14
+
+
+class _StubResponse:
+    """Minimal-OpenAI-ChatCompletion-Response."""
+    def __init__(self, model_name: str) -> None:
+        self.model = model_name
+        self.choices = [_StubChoice()]
+        self.usage = _StubUsage()
+
+
+def test_query_passes_model_cfg_sampling_to_client(monkeypatch, vllm_sampling_config):
+    """End-to-End: model_cfg.temperature/top_p/top_k landen am Wire.
+
+    Mockt ``_execute_with_token_fallback`` (den inneren API-Call-Pfad) und
+    prüft das tatsächliche ``func_kwargs``-Dict, das an die OpenAI-Bibliothek
+    übergeben würde. Garantiert, dass die Sampling-Chain nicht nur intern
+    korrekt auflöst, sondern wirklich bis zum Request-Body durchschlägt.
+    """
+    client = VllmSparkClient(vllm_sampling_config)
+
+    # Server-Lifecycle überspringen — wir testen nur das Sampling-Payload.
+    monkeypatch.setattr(client, "_ensure_model_ready", lambda model: True)
+
+    captured: dict = {}
+
+    def fake_fallback(func, token_param_name, initial_max_tokens, error_keywords, func_kwargs):
+        """Snapshot der kwargs + Stub-Response zurückgeben."""
+        captured["func_kwargs"] = dict(func_kwargs)
+        captured["func"] = func
+        return _StubResponse(model_name="ornith-1.0-35B-FP8"), initial_max_tokens, False
+
+    monkeypatch.setattr(client, "_execute_with_token_fallback", fake_fallback)
+
+    out = client.query(
+        model="ornith-1.0-35B-FP8",
+        prompt="Sag Hallo auf Deutsch",
+        temperature=PASSED_TEMP_DEFAULT,  # Framework-Default 0.1 muss überstimmt werden
+    )
+
+    assert out == "Hallo zurück"
+
+    kwargs = captured["func_kwargs"]
+    assert kwargs["model"] == "ornith-1.0-35B-FP8"
+    # Sampling-Override aus model_cfg gewinnt gegen passed_temperature=0.1.
+    assert kwargs["temperature"] == SAMPLING_TEMP
+    assert kwargs["top_p"] == SAMPLING_TOP_P
+    # top_k landet in extra_body (nicht im OpenAI-HTTP-Schema).
+    assert kwargs.get("extra_body", {}).get("top_k") == SAMPLING_TOP_K
+
+
+def test_query_does_not_emit_top_pk_without_config(monkeypatch):
+    """Ohne sampling-Override werden weder top_p noch extra_body.top_k
+    emittiert — vLLM-Server-Default aus der TOML bleibt unverändert.
+    """
+    cfg = {
+        "providers": {
+            "local": {
+                "config": {"vllm_defaults": {}},
+                "vllm_spark": {
+                    "name": "vLLM",
+                    "api_type": "vllm",
+                    "base_url": VLLM_BASE_URL,
+                    "api_key": VLLM_API_KEY,
+                    "models": [{"id": "stable-model", "name": "Stable"}],
+                },
+            },
+        },
+    }
+    client = VllmSparkClient(cfg)
+    monkeypatch.setattr(client, "_ensure_model_ready", lambda model: True)
+
+    captured: dict = {}
+
+    def fake_fallback(func, token_param_name, initial_max_tokens, error_keywords, func_kwargs):
+        captured["func_kwargs"] = dict(func_kwargs)
+        return _StubResponse(model_name="stable-model"), initial_max_tokens, False
+
+    monkeypatch.setattr(client, "_execute_with_token_fallback", fake_fallback)
+
+    client.query(model="stable-model", prompt="x", temperature=PASSED_TEMP_DEFAULT)
+
+    kwargs = captured["func_kwargs"]
+    assert kwargs["temperature"] == PASSED_TEMP_DEFAULT  # Framework-Default bleibt
+    assert "top_p" not in kwargs
+    assert "extra_body" not in kwargs

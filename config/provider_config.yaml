@@ -294,6 +294,23 @@ providers:
         presence_penalty: 0.0
         repeat_penalty: 1.0
 
+      # vLLM Defaults (per-request Sampling-Parameter, analog llama_cpp_defaults).
+      # Architektur-Unterschied zu llama.cpp: vLLM-Sampling wird in der TOML auf
+      # dem Remote-Host konfiguriert — wir haben darauf keinen Lese-Zugriff.
+      # Wir reichen die Werte daher als OpenAI-Request-Parameter pro Query durch.
+      # Sampling-Chain: model_cfg → vllm_defaults → Parameter NICHT gesetzt
+      # (vLLM-Server-Default aus der TOML greift).
+      # Initial leer: bestehende vLLM-Modelle verhalten sich unverändert.
+      # Modelle mit explizitem model_cfg-Override (z. B. Ornith 1.0 35B für
+      # Cross-Backend-Vergleich gegen llama.cpp) konsumieren diese Defaults
+      # als Cascade. Empfohlene Werte stehen als auskommentierte Vorlage.
+      vllm_defaults: {}
+        # Empfohlene Sampling-Vorlage (zum Aktivieren einkommentieren):
+        # temperature: 0.6
+        # top_p: 0.95
+        # top_k: 20
+        # repetition_penalty: 1.0
+
       # Modelle mit nativem Context-Limit < global context_window.
       # Ollama fällt sonst still auf das Modell-Limit zurück → hier explizit gemacht.
       model_context_overrides:
@@ -625,6 +642,7 @@ providers:
       #   presence_penalty: 1.5
       #   repeat_penalty: 1.0
 
+      # Sampling identisch mit vllm_spark.ornith-1.0-35B-FP8 (Cross-Backend-Vergleich).
       - id: ornith-1-0-35b
         name: Ornith 1.0 35B Q8_0 (GGUF)
         model_file: Ornith1-35B/ornith-1.0-35b-Q8_0.gguf
@@ -707,6 +725,11 @@ providers:
       server_ready_poll_sec: 10
       server_ready_probe_timeout_sec: 30
       hardware_profile: asus_gx10_blackwell
+      # Besonderheit vLLM-Spark: Sampling-Parameter (temperature/top_p/top_k u. a.)
+      # werden hier pro Modell konfiguriert und vom Connector zur Anfragezeit via
+      # _resolve_sampling() in den Request-Body bzw. extra_body geschrieben — NICHT
+      # bereits beim Serverstart in die Remote-TOML gebacken. Fehlt ein Wert hier,
+      # greift der vLLM-Server-Default aus der TOML. Siehe utils/providers/vllm_base.py.
       models:
       # Smoke-Test: klein, schnell, niedriger VRAM (kein NVFP4 noetig).
       # TOML: ~/ai/shared/configs/vllm/models/Qwen2.5-0.5B.toml (915 B).
@@ -717,32 +740,63 @@ providers:
       #   # Mini-Modell: 30 s sind mehr als ausreichend (real <10 s).
       #   server_ready_timeout_sec: 30
       # Hauptmodell: läuft bereits auf dem Main-Container (Port 3300 via Proxy 4300).
+      # Sampling-Parameter MÜSSEN identisch mit llamacpp_spark.ornith-1-0-35b sein
+      # (Cross-Backend-Vergleich: Q8_0-GGUF vs FP8 ist bereits asymmetrisch,
+      # die Sampling-Ebene soll aber apples-to-apples bleiben).
+      # vLLM kennt keinen --reasoning-Flag — enable_thinking wird über die Remote-TOML
+      # (~/ai/shared/configs/vllm/models/Ornith1-35B-FP8.toml) gesteuert.
       - id: ornith-1.0-35B-FP8
         name: Ornith 1.0 35B FP8 (vLLM, aktiv)
         config: Ornith1-35B-FP8
-        max_tokens: 16384
+        max_tokens: 8192
+        temperature: 0.6
+        top_p: 0.95
+        top_k: 20
+        # repetition_penalty:  # Card: null — vLLM-Server-Default greift
 
       # Gemma 4 Familie — NVFP4 (modelopt), 131k Context.
       # MoE 26B / Dense 31B (Base) / Dense 31B-Wordsmith (W4A16, uncensored).
+      # Sampling-Parameter synchron mit Model Cards (SSoT: Card dokumentiert
+      # die Hersteller-Empfehlung, provider_config liefert sie an _resolve_sampling).
+      # Gemma 4 offizielle Empfehlung: temperature=1.0, top_p=0.95, top_k=64.
       - id: Gemma-4-26B
         name: Gemma 4 26B-A4B NVFP4 (vLLM, MoE)
         config: Gemma-4-26B
         max_tokens: 16384
+        temperature: 1.0
+        top_p: 0.95
+        top_k: 64
+        # repetition_penalty:  # Card: null — vLLM-Server-Default greift
+
       - id: Gemma-4-31B
         name: Gemma 4 31B NVFP4 (vLLM, Dense, multimodal)
         config: Gemma-4-31B
         max_tokens: 16384
+        temperature: 1.0
+        top_p: 0.95
+        top_k: 64
+        # repetition_penalty:  # Card: null — vLLM-Server-Default greift
+
       - id: Gemma-4-31B-Wordsmith-NVFP4
         name: Gemma 4 31B Wordsmith NVFP4 (vLLM, Dense, uncensored)
         config: Gemma-4-31B-Wordsmith-NVFP4
         max_tokens: 16384
+        temperature: 1.0
+        top_p: 0.95
+        top_k: 64
+        # repetition_penalty:  # Card: null — vLLM-Server-Default greift
 
       # Qwen 3.6 27B Dense — NVFP4 compressed-tensors, MTP, Thinking-Parser aktiv.
       # 32k Context (Sweet-Spot für DGX Spark bei 0.70 gpu-mem-util).
+      # Sampling synchron mit Card: temperature=0.6, top_p=0.95, top_k=20.
       - id: qwen3.6-27B
         name: Qwen 3.6 27B NVFP4 (vLLM, Dense, MTP)
         config: Qwen3.6-27B
         max_tokens: 16384
+        temperature: 0.6
+        top_p: 0.95
+        top_k: 20
+        # repetition_penalty:  # Card: null — vLLM-Server-Default greift
 
       # Weitere verfügbare TOMLs (per Auto-Discovery entdeckbar, nicht im Benchmark):
       # - Qwen3-Embedding-0.6B-NVFP4: Embedding-Modell (kein LLM-Target)
@@ -752,3 +806,8 @@ providers:
       #   name: <Display-Name> (vLLM)
       #   config: <NAME>
       #   max_tokens: 16384
+      #   # Sampling-Template (siehe vllm_base.py:_resolve_sampling):
+      #   temperature: 0.6
+      #   top_p: 0.95
+      #   top_k: 20
+      #   # repetition_penalty:  # falls spezifiziert, sonst vLLM-Server-Default
