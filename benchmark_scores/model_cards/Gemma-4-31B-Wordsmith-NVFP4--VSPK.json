@@ -38,7 +38,6 @@
   "architecture_tags": [
     "Reasoning",
     "Thinking",
-    "Dense",
     "Open-Weight",
     "Multimodal",
     "Uncensored",
@@ -74,14 +73,18 @@
   "model_version": "4",
   "input_price_per_1m": 0.0,
   "output_price_per_1m": 0.0,
+  "hardware_profile": null,
+  "inference_engine": null,
+  "quantization_format": "NVFP4",
+  "model_variant": "Ortenzya Wordsmith",
   "unknown": false,
   "card_status": "complete",
   "size_class": "Workstation",
   "generated_at": "2026-07-07T01:30:00+00:00",
-  "thinking_probe_detected": null,
-  "thinking_probe_evidence": null,
-  "thinking_probe_confidence": null,
-  "thinking_probe_at": null,
+  "thinking_probe_detected": true,
+  "thinking_probe_evidence": "Multi-Probe (3 prompts, 3 detected, best confidence=medium):\n  - math: [math] Inline CoT im content-Feld: Antwort 651 chars (>200) mit 20 Berechnungs-Operatoren. First 200 chars: To find the average speed of the train, follow these steps:\n\n**1. Identify the given information:**\n*   **Distance ($d$):** 120 km\n*   **Time ($t$):** 1.5 hours\n\n**2. State the formula for average spe\n  - code: [code] Inline CoT im content-Feld: Antwort 1125 chars (>200) mit 4 Berechnungs-Operatoren. First 200 chars: To sort this list, I will use the **Bubble Sort** algorithm. It is one of the most intuitive sorting methods: it repeatedly steps through the list, compares adjacent elements, and swaps them if they a\n  - decision: [decision] Inline CoT im content-Feld: Antwort 2346 chars (>200) mit 16 Berechnungs-Operatoren. First 200 chars: The question of whether an autonomous vehicle (AV) should prioritize the passenger or a pedestrian in a \"no-win\" scenario is one of the most debated problems in machine ethics, often framed as a moder",
+  "thinking_probe_confidence": "medium",
+  "thinking_probe_at": "2026-07-07T18:50:25.651632+00:00",
   "thinking_probe_manual_override": null,
   "profile_verified": false,
   "profile_verified_at": null,
@@ -90,7 +93,5 @@
   "heritage_ids": [
     "gemma-4-31b"
   ],
-  "community": true,
-  "model_variant": "Ortenzya Wordsmith",
-  "quantization_format": "NVFP4"
+  "community": true
 }

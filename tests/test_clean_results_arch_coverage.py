@@ -24,7 +24,6 @@ try:
         _extract_model_from_dispatch_summary,
         CLEAN_CSV_FILES,
         LEADERBOARD_CSVS,
-        SUB_FAMILY_LEADERBOARD_CSVS,
     )
 except ImportError as e:
     import pytest
@@ -83,27 +82,13 @@ class TestDispatchSummaryExtraction:
 
 
 class TestCsvFileCoverage:
-    """Prueft, dass die CSV-Clean-Listen alle relevanten Files enthalten."""
+    """Prueft, dass die CSV-Clean-Listen die relevanten Files enthalten.
 
-    def test_sub_family_leaderboards_present(self):
-        """gemma_leaderboard.csv, qwen_leaderboard.csv muessen in
-        SUB_FAMILY_LEADERBOARD_CSVS sein.
-
-        Hinweis: provider_leaderboard.csv wurde in v4.10.12 entfernt
-        (Provider-Stats-Use-Case stillgelegt).
-        """
-        names = {p.name for p in SUB_FAMILY_LEADERBOARD_CSVS}
-        assert "gemma_leaderboard.csv" in names
-        assert "qwen_leaderboard.csv" in names
-        assert "provider_leaderboard.csv" not in names
-
-    def test_sub_family_leaderboards_in_clean_list(self):
-        """SUB_FAMILY_LEADERBOARD_CSVS muessen in CLEAN_CSV_FILES integriert sein."""
-        clean_names = {p.name for p in CLEAN_CSV_FILES}
-        for p in SUB_FAMILY_LEADERBOARD_CSVS:
-            assert p in CLEAN_CSV_FILES, (
-                f"{p.name} fehlt in CLEAN_CSV_FILES — Sub-Family-LB wird nicht bereinigt"
-            )
+    Hinweis: Sub-Family-Leaderboards (gemma_leaderboard.csv, qwen_leaderboard.csv)
+    wurden in v4.10.15 entfernt — das Konzept war verwaist (nie generiert, nie
+    in git getrackt). provider_leaderboard.csv wurde bereits in v4.10.12
+    stillgelegt.
+    """
 
     def test_main_leaderboards_present(self):
         names = {p.name for p in LEADERBOARD_CSVS}
@@ -141,10 +126,10 @@ class TestEndToEndCleanupDryRun:
             pass
 
         out = capsys.readouterr().out
-        # Alle Sub-Family-LBs sollten erwaehnt werden
-        # (provider_leaderboard.csv ist seit v4.10.12 entfernt)
-        assert "gemma_leaderboard.csv" in out
-        assert "qwen_leaderboard.csv" in out
+        # Sub-Family-LBs (gemma/qwen) wurden in v4.10.15 entfernt — verwaistes
+        # Konzept, nie generiert. provider_leaderboard.csv seit v4.10.12 stillgelegt.
+        assert "gemma_leaderboard.csv" not in out
+        assert "qwen_leaderboard.csv" not in out
         assert "provider_leaderboard.csv" not in out
         # Main-LBs
         assert "benchmark_leaderboard.csv" in out

@@ -274,6 +274,16 @@ deprecated_tags:
     reason: "Redundant mit parameter_architecture='moe'. Tag-Wert wurde durch das explizite Feld ersetzt."
     since: v4.7.0
 
+  - slug: "Dense"
+    normalized_to: null
+    reason: "Redundant mit parameter_architecture='dense'. Symmetrisch zu 'MoE' — Tag-Wert durch das explizite Feld abgedeckt."
+    since: v4.10.15
+
+  - slug: "Tool-Use"
+    normalized_to: null
+    reason: "Redundant mit supports_tool_use=true. Symmetrisch zu 'Function-Calling'/'Computer-Use' — Capability gehört ins dedizierte Feld, nicht in architecture_tags."
+    since: v4.10.15
+
   - slug: "Coding"
     normalized_to: "Coder"
     reason: "Konsolidierung: nur 'Coder' als Tag, da use_case_primary='coding' das Feld schon abdeckt."

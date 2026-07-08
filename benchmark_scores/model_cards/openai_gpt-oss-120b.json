@@ -36,8 +36,7 @@
   "judge_context_hint": "OpenAI-GPT-OSS-120B-Modell mit Apache-2.0-Lizenz als Open Weights, MoE mit 116,8 Mrd. Gesamt- und etwa 5,1 Mrd. aktiven Parametern pro Token. Konfigurierbare Reasoning-Stufen (low/medium/high) per System-Prompt steuern Antworttiefe und -länge; native Tool-Use-Fähigkeiten für Browser-Suche, Code-Ausführung und Function Calling. Bewertung mit Schwerpunkt Coding, Reasoning und Tool-Use-Korrektheit, Wissensstand Juni 2024 beachten.",
   "architecture_tags": [
     "Thinking",
-    "Thinking-Optional",
-    "Tool-Use"
+    "Thinking-Optional"
   ],
   "input_modalities": [
     "text"

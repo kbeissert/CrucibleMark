@@ -42,21 +42,13 @@ PC_CSV_FILES: tuple[Path, ...] = (
     Path("benchmark_scores/political_compass_leaderboard.csv"),
 )
 
-#: Sub-Family-Leaderboards (generiert, model-bezogen).
-#: NICHT in ``CSV_FILES`` weil sie eine andere Spaltenstruktur haben
-#: und nach Modell-Familie aggregiert sind (gemma/qwen).
-#: Muessen beim Model-Cleanup mit bereinigt werden, sonst bleiben stale
-#: Modell-Eintraege sichtbar.
-#: (provider_leaderboard.csv wurde in v4.10.12 entfernt — Provider-Stats-
-#: Use-Case stillgelegt.)
-SUB_FAMILY_LEADERBOARD_CSVS: tuple[Path, ...] = (
-    Path("benchmark_scores/gemma_leaderboard.csv"),
-    Path("benchmark_scores/qwen_leaderboard.csv"),
-)
-
-#: Konsolidierte Clean-Liste: Benchmark-CSVs aus SSoT + PC-CSVs + Sub-Family-LBs.
+#: Konsolidierte Clean-Liste: Benchmark-CSVs aus SSoT + PC-CSVs.
+#: (Sub-Family-Leaderboards gemma_leaderboard.csv/qwen_leaderboard.csv wurden
+#: in v4.10.15 entfernt — das Konzept war verwaist: die Dateien wurden nie
+#: generiert und nie in git getrackt. provider_leaderboard.csv wurde bereits
+#: in v4.10.12 stillgelegt.)
 CLEAN_CSV_FILES: tuple[Path, ...] = (
-    tuple(path for path, _ in CSV_FILES) + PC_CSV_FILES + SUB_FAMILY_LEADERBOARD_CSVS
+    tuple(path for path, _ in CSV_FILES) + PC_CSV_FILES
 )
 
 #: Cost-Log (nicht in CSV_FILES, da kein Benchmark-Ergebnis-CSV).
