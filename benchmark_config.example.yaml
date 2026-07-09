@@ -22,6 +22,16 @@ runner_environment:
       description: "Apple Silicon M4, 24GB Unified Memory (Shared RAM/VRAM)"
       compute_unit: "CPU/Metal"
       ram_gb: 24
+    dgx_spark_cuda:
+      type: "local_server"
+      description: "NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, ~115 GB Unified Memory — kein praktisches Speicherlimit für getestete Modellgrößen)"
+      compute_unit: "CUDA (Blackwell)"
+      ram_gb: 115
+    asus_gx10_blackwell:
+      type: "local_server"
+      description: "ASUS GX10 / NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, ~115 GB Unified Memory — kein praktisches Speicherlimit für getestete Modellgrößen)"
+      compute_unit: "CUDA (Blackwell)"
+      ram_gb: 115
     nvidia_rtx4090:
       type: "local_dedicated"
       description: "NVIDIA RTX 4090, 24GB VRAM, 64GB System RAM"

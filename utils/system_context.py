@@ -40,15 +40,35 @@ class SystemContextManager:
                 profile = self.profile
 
             desc = profile.get("description", "Apple Silicon M4, 24GB Unified Memory")
-            ram = profile.get("ram_gb", "24")
+            ram = profile.get("ram_gb", 24)
 
-            return f"""WICHTIGER SYSTEM-KONTEXT ZUR PERFORMANCE:
-Dieses lokale Modell wurde native auf folgendem lokalen Referenzsystem evaluiert: {desc}. Da es auf lokaler Hardware läuft, sind Parameter-Größen und VRAM-Grenzen extrem relevant.
+            # Bei ample Speicher (>=64 GB) ist Speicher für getestete Modellgrößen
+            # kein praktischer Engpass. Das Template drängt den Reviewer dann NICHT
+            # auf Speicher-Spekulation (Swapping, VRAM-Grenze) — die Sperrklausel im
+            # Prompt verbietet dies zusätzlich. Bei knappen Speicher (<64 GB, z.B.
+            # M4 mit 24 GB) bleibt die Speicher-Grenze ein legitimer Diskurspunkt.
+            try:
+                ram_int = int(ram)
+            except (TypeError, ValueError):
+                ram_int = 24
+            memory_constrained = ram_int < 64
+
+            if memory_constrained:
+                return f"""WICHTIGER SYSTEM-KONTEXT ZUR PERFORMANCE:
+Dieses lokale Modell wurde native auf folgendem lokalen Referenzsystem evaluiert: {desc}. Da es auf lokaler Hardware läuft, sind Parameter-Größen und Speichergrenzen relevant.
 
 REGELN FÜR DEIN REVIEW IN BEZUG AUF HARDWARE:
 1. Erwähne diese exakte Hardware-Spezifikation ({desc}) genau EINMAL einführend im Fazit oder im Abschnitt zur Geschwindigkeit. Verweise darauf, dass es sich um ein LOKALES Modell handelt.
 2. Nutze im restlichen Text ausschließlich den neutralen Begriff "das Testsystem".
-3. Minimiere Aussagen über absolute Dauer. Nutze stattdessen die bereitgestellten t/s (Tokens per Second) als primäre Metrik und setze sie ins Verhältnis zur Speichergrenze von {ram}GB (Swapping-Risiken bei großen Modellen)."""
+3. Minimiere Aussagen über absolute Dauer. Nutze stattdessen die bereitgestellten t/s (Tokens per Second) als primäre Metrik und setze sie ins Verhältnis zur Speichergrenze von {ram_int}GB (Swapping-Risiken bei großen Modellen)."""
+
+            return f"""WICHTIGER SYSTEM-KONTEXT ZUR PERFORMANCE:
+Dieses lokale Modell wurde native auf folgendem lokalen Referenzsystem evaluiert: {desc}. Da es auf lokaler Hardware läuft, ist die generelle Durchsatz- und Latenz-Charakteristik relevant.
+
+REGELN FÜR DEIN REVIEW IN BEZUG AUF HARDWARE:
+1. Erwähne diese exakte Hardware-Spezifikation ({desc}) genau EINMAL einführend im Fazit oder im Abschnitt zur Geschwindigkeit. Verweise darauf, dass es sich um ein LOKALES Modell handelt.
+2. Nutze im restlichen Text ausschließlich den neutralen Begriff "das Testsystem".
+3. Minimiere Aussagen über absolute Dauer. Nutze stattdessen die bereitgestellten t/s (Tokens per Second) als primäre Metrik. Das Testsystem hat mit {ram_int} GB ausreichend Speicher für alle getesteten Modellgrößen — Speicher ist hier kein Engpass. Beschreibe Timeouts oder Latenzspitzen neutral als Stabilitätsbefund ohne spekulative Ursachenzuschreibung auf Arbeitsspeicher."""
 
         elif run_type == "commercial":
             return """WICHTIGER KONTEXT ZUR PERFORMANCE (KOMMERZIELL/CLOUD):

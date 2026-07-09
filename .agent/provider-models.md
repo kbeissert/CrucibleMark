@@ -140,6 +140,70 @@ vLLM-Modelle mit `enable_thinking: true` werden beim Config-Load automatisch in 
 
 `resolve_provider()` nutzt `ConfigValidator().config` als primäre Quelle (merge + expansion aware), nicht die Roh-YAML. Andernfalls sind generierte `{id}-thinking`-Profile unsichtbar → fälschlicher Fallback auf Ollama.
 
+### `thinking_mode`-Spalte erfasst Runtime-Konfiguration (Session 54)
+
+`utils/base_runner.py:_resolve_thinking_mode(model, provider)` leitet aus model_cfg ab:
+
+| Config | `thinking_mode` |
+|---|---|
+| `card_model_id` vorhanden (vLLM Dual-Profile Thinking) | `Thinking` |
+| `chat_template_kwargs.enable_thinking: false` (vLLM Dual-Profile Standard) | `Standard` |
+| `chat_template_kwargs.enable_thinking: true` | `Thinking` |
+| `enable_thinking: true` (llama.cpp) | `Thinking` |
+| `enable_thinking: false` (llama.cpp) | `Standard` |
+| Keine Thinking-Config (Cloud/Commercial) | `n/a` |
+
+CSV-Spalte + Leaderboard-Spalte "Thinking Mode" zwischen `Speed Profile` und `Total Score`. **Trennung:** `thinking_mode` = Runtime-Config (pro-Run); `thinking_probe_detected` = Capability (stabil).
+
+### `thinking_mode` dreifach sichtbar (Session 55)
+
+Eine Datenquelle (`_resolve_thinking_mode()`), drei Ausgabeorte:
+
+| Ebene | Code | Sichtbar für |
+|---|---|---|
+| **CSV-Spalte** | `utils/base_runner.py:build_base_result()` | Datenanalyse, Leaderboard |
+| **Audit-Log-Header** | `utils/benchmark_utils.py:save_audit_log(thinking_mode=...)` | Mensch (Datei direkt) |
+| **Review-Prompt** | `scripts/analysis/generate_review.py:_resolve_thinking_mode_for_review()` | LLM-Reviewer |
+
+**Review-Prompt-Pitfall:** Externe Audit-Analyse zeigte, dass Reviewer beide Ornith-Läufe fälschlich als "Thinking-Lauf" deklarierten. Wurzel: `{model_tags}` enthält "Thinking" als Architektur-Tag (Capability, immer vorhanden), aber kein Runtime-Modus-Datenfeld. Reviewer riet aus Tags statt aus Daten. **Pflicht:** Jede Runtime-Config, die den Reviewer beeinflusst, MUSS als hartes Datenfeld im Prompt stehen.
+
+**Pattern für Prompt-Variablen:** `model_metrics.get("<Spalte>") or _resolve_<x>_for_review(model_id)` — Leaderboard-Spalte als Primärquelle, Config-Lookup via `resolve_model_cfg_for()` als Fallback für alte Daten ohne Spalte.
+
+### `{hardware_context}` pro-Modell korrekt auflösen (Session 56)
+
+`SystemContextManager.get_editor_prompt_injection()` injiziert Hardware-Info in den Reviewer-Prompt. Der `hardware_profile`-Key pro Provider:
+
+| Provider | `hardware_profile`-Key | Hardware | `ram_gb` |
+|---|---|---|---|
+| `llamacpp` | `m4_macbook_pro_metal` | Apple Silicon M4, 24 GB | 24 (constrained) |
+| `llamacpp_spark` | `dgx_spark_cuda` | NVIDIA DGX Spark, 115 GB | 115 (ample) |
+| `vllm_spark` | `asus_gx10_blackwell` | ASUS GX10 / DGX Spark, 115 GB | 115 (ample) |
+
+**Lookup-Kette in `generate_review.py`:**
+1. `_get_hardware_profile_for_model(model_id, validator.config)` — sucht in Provider-Config (SSoT)
+2. `_get_hardware_profile_from_csv(model_id)` — Fallback: liest `hardware_profile`-Spalte aus roher CSV (für auskommentierte/umbenannte Modelle)
+3. `SystemContextManager.get_editor_prompt_injection(run_type, hardware_profile_key=...)` — löst Key gegen `benchmark_config.yaml:runner_environment.profiles` auf;Fallback auf `active_profile`
+
+**Pflicht:** Jeder `hardware_profile`-Key in `provider_config.yaml` MUSS in `benchmark_config.yaml:runner_environment.profiles` definiert sein. Sonst fällt der Lookup auf `active_profile` (M4) zurück → Reviewer zitiert falsche Hardware. Die Sperrklausel im Prompt verbietet Hardware-Spekulation, funktioniert aber NUR wenn `{hardware_context}` die korrekte Hardware liefert.
+
+**Local-Template konditional (Session 56):** `system_context.py` verwendet zwei Templates je nach `ram_gb`:
+- **`ram_gb < 64` (memory-constrained):** Template nennt "Speichergrenze" und "Swapping-Risiken" als legitimen Diskurspunkt. Korrekt für M4 (24 GB).
+- **`ram_gb >= 64` (ample):** Template formuliert "Speicher ist hier kein Engpass" — keine Speicher-Spekulation. Verhindert, dass der Reviewer Timeouts auf 115-GB-Hardware fälschlich dem Speicher zuschreibt. Die Beschreibung enthält "kein praktisches Speicherlimit für getestete Modellgrößen".
+
+**Audit-Befund (Session 56):** Externe Audit-Analyse zeigte, dass Reviews für Spark/GX10-Modelle "Apple Silicon M4, 24GB Unified Memory" zitierten. Ursache: `asus_gx10_blackwell`-Profil fehlte in `benchmark_config.yaml` → Fallback auf `active_profile` = M4. Die Sperrklausel im Prompt war korrekt, aber das Datenfeld `{hardware_context}` lieferte die falsche Hardware.
+
+### `-thinking`-Suffix-Fallback für Card-Lookup ohne `model_cfg` (Session 54)
+
+Viele Caller (`generate_review.py`, `review/risk_calculator.py`, `review/metrics.py`, `sync_cards.py`) rufen `_find_card()` ohne `model_cfg` auf. Der `card_model_id`-Redirect greift dort nicht.
+
+**Lösung — `_find_card()`-Fallback:** wenn `model_cfg is None` UND `lookup_id.endswith("-thinking")` UND keine Card gefunden, streife `-thinking` deterministisch ab und rufe `_find_card(base_id, card_dir)` rekursiv. Greift nur als Last-Resort (nach SUFFIX/PREFIX/date-glob/dot→hyphen).
+
+**Kritische Trennung:** `resolve_canonical_model_id` darf NICHT `card.model_id` zurückgeben wenn die Card via Suffix-Fallback gefunden wurde — sonst verschmelzen Basis- und Thinking-Profil im Leaderboard. Stattdessen `_safe_name(base)` zurückgeben (Profil-eigene ID).
+
+### Display-Name-Sharing (Session 54)
+
+`scripts/leaderboard/module_integration.py:_add_thinking_profile_names()` ergänzt `display_lookup` für Thinking-Profile aus der expandierten Config. Beide Profile zeigen denselben Display-Namen, Unterscheidung über `model_id` + `thinking_mode`-Spalte.
+
 ## Provider-ID-Heuristiken
 
 ### `_infer_provider()` — `/`-Präsenz-Heuristik

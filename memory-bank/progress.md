@@ -1,6 +1,109 @@
 # Progress
 Letzte Releases + aktueller Stand.
 
+### 2026-07-09 (Session 55) — `thinking_mode` im Reviewer-Prompt + Audit-Log-Header [DONE, uncommitted]
+
+**Auslöser:** Session 54 fügte `thinking_mode` als CSV-Spalte und Leaderboard-Spalte hinzu. Der Reviewer konnte es aber nicht sehen — das Prompt-Template hatte keine Variable dafür, der Reviewer riet aus `{model_tags}` (Architektur-Tag, immer "Thinking" für Ornith = Capability, nicht Runtime-Modus). Externe Audit-Analyse zeigte: beide Reviews deklarierten sich fälschlich als "Thinking-Lauf", obwohl Stabilitätsdaten (Timeout-Rate, P95) zeigten, dass einer ein Standard-Lauf war.
+
+**Geliefert:**
+
+1. **Neue Prompt-Variable `{model_thinking_mode}`** (`scripts/analysis/generate_review.py`):
+   - Neue Hilfsfunktion `_resolve_thinking_mode_for_review(model_id)` — nutzt `resolve_model_cfg_for` als SSoT-Helper, durchsucht expandierte Config.
+   - In `template_vars` (Meta-Reviewer UND Tool-Use-Reviewer): `_thinking_mode = model_metrics.get("Thinking Mode") or _resolve_thinking_mode_for_review(tested_model_name)` — Leaderboard-Spalte als Primärquelle, Config-Lookup als Fallback für alte CSV-Daten ohne `thinking_mode`-Spalte.
+   - Fallback greift für alte Daten, neue Benchmark-Läufe schreiben `thinking_mode` direkt ins CSV.
+
+2. **Prompt-Template aktualisiert** (`config/meta_reviewer_prompt.yaml`):
+   - **Abschnitt "VLLM-Doppel-Lauf"** (Zeile 47): "Prüfe daher IMMER zuerst den rohen Modell-Namen" ersetzt durch: `**Tatsächlicher Modus dieses Testlaufs: \`{model_thinking_mode}\`** — dieser Wert ist ein hartes Datenfeld aus der Benchmark-Pipeline, nicht aus dem Modellnamen erraten.` Plus Erläuterung der drei Werte (`Thinking`/`Standard`/`n/a`).
+   - **Abschnitt "VLLM-Doppel-Lauf-Modifier"** (Zeile 65): "Wenn die Modell-ID einen `-thinking`-Suffix trägt" ersetzt durch Verweis auf Datenfeld.
+
+3. **`thinking_mode` im Audit-Log-Header** (`utils/benchmark_utils.py:save_audit_log`):
+   - Neuer Parameter `thinking_mode: Optional[str]` in `save_audit_log`-Signatur.
+   - Schreibt `**Thinking Mode:** <mode>` in den Header nach `**Provider:**`, vor `**Execution Time:**`.
+   - Aufgerufen in `utils/scoring/judge_evaluator.py` mit `thinking_mode=result.get("thinking_mode")`.
+   - Generisch: jede `_resolve_thinking_mode()`-Auflösung fließt ins Audit-Log.
+
+4. **Detailed Leaderboard-Spalte** (`scripts/leaderboard/exporter.py`): `"Thinking Mode"` zur Spaltenliste des detaillierten Leaderboards hinzugefügt (zwischen `Speed Profile` und `Performance Tier`), damit `get_model_metrics()` den Wert aus dem Leaderboard lesen kann.
+
+5. **Backfill Ornith Audit-Logs** (149 Dateien):
+   - `outputs/audit_logs/ornith-1_0-35B-FP8-thinking/`: 49 Dateien → `**Thinking Mode:** Thinking`
+   - `outputs/audit_logs/ornith-1_0-35B-FP8/`: 50 Dateien → `**Thinking Mode:** Standard`
+   - `outputs/audit_logs/ornith-1-0-35b/`: 50 Dateien → `**Thinking Mode:** Standard` (llama.cpp, enable_thinking: false)
+   - Script: `_strip_metric_lines` Regex prüft NICHT auf "Thinking Mode:" → keine Kollision. Idempotent (skip wenn bereits vorhanden).
+   - Mensch-Lesbarkeit: Audit-Log-Files haben jetzt sichtbaren Thinking-Modus. LLM-Reviewer sieht es über Prompt-Variable.
+
+**Drei Sichtbarkeitsebenen für `thinking_mode`:**
+
+| Ebene | Wo | Sichtbar für |
+|---|---|---|
+| **Audit-Log-File** | `**Thinking Mode:** Thinking/Standard` im Header | Mensch (Datei direkt) |
+| **CSV** | `thinking_mode`-Spalte pro Task | Datenanalyse, Leaderboard |
+| **Review-Prompt** | `{model_thinking_mode}` als hartes Datenfeld | LLM-Reviewer |
+
+**Tests:** 1125 passed, 1 skipped, 1 pre-existing failure (`qwen3_5-35b-a3b-q8` auskommentiert vor Session 51). `make validate` exit 0.
+
+**Status:** Working Tree, uncommitted.
+
+---
+
+### 2026-07-09 (Session 54) — Display-Name-Fix + `thinking_mode`-Spalte + `-thinking`-Suffix-Fallback [DONE, uncommitted]
+
+**Auslöser:** Session 53 schloss die card_model_id-Drift im Web-Export. Drei Folgeprobleme aus dem Review-Workflow und der Leaderboard-Darstellung blieben offen:
+
+1. **Display-Name falsch:** Nach dem ersten Review-Versuch zeigte das Leaderboard `TODO` statt `Ornith 1.0 35B (FP8)` für das Thinking-Profil. Root Cause: `generate_review.py:_ensure_model_card` rief `ensure_card()` auf, das eine Draft-Card mit `display_name=TODO` anlegte.
+2. **Kein Thinking-Modus-Signal:** Der Leaderboard hatte keine Spalte, die anzeigt, ob ein Lauf im Standard- oder Thinking-Modus lief. Für vLLM-Dual-Profile und llama.cpp-Toggle wichtig.
+3. **Card-Lookup ohne model_cfg schlägt fehl:** `generate_review.py` (und viele andere Caller) rufen `_find_card(model_id)` ohne `model_cfg` auf. Der `card_model_id`-Redirect greift nicht → Review-Generator findet keine Card für `{id}-thinking`.
+
+**Geliefert:**
+
+1. **Display-Name-Fix** (`scripts/leaderboard/module_integration.py`) — Neue Funktion `_add_thinking_profile_names(id_lookup, display_lookup)`:
+   - Lädt expandierte Config via `ConfigValidator`.
+   - Iteriert `providers.local.<provider_key>.models[]` (nested structure!).
+   - Für jeden model_cfg mit `card_model_id`: trägt `display_lookup[profile_id] = display_lookup[card_ref]` ein (derselbe Name wie das Original-Modell).
+   - Aufgerufen in `_get_lookups()` direkt nach `_build_card_lookups()`.
+   - Ergebnis: Beide Ornith-Einträge zeigen jetzt `Ornith 1.0 35B (FP8)` — derselbe Name, nicht `Ornith 1.0 35B FP8 Thinking`.
+
+2. **`thinking_mode`-Spalte** (`utils/base_runner.py`) — Neue Methode `_resolve_thinking_mode(model, provider)`:
+   - Findet model_cfg in `providers.commercial`+`local` via `find_model_in_provider_cfg`.
+   - `card_model_id` in model_cfg → `"Thinking"` (vLLM dual-profile thinking).
+   - `chat_template_kwargs.enable_thinking: false` → `"Standard"` (vLLM dual-profile standard).
+   - `chat_template_kwargs.enable_thinking: true` → `"Thinking"`.
+   - `enable_thinking: true/false` (llama.cpp) → `"Thinking"`/`"Standard"`.
+   - Sonst → `"n/a"` (Cloud/Commercial ohne Toggle).
+   - Ergebnis wird als `thinking_mode`-Key in `build_base_result()` eingetragen → automatisch CSV-Spalte.
+   - Leaderboard re-attached die Spalte (`scripts/leaderboard/__init__.py`) und zeigt sie als `"Thinking Mode"` zwischen `Speed Profile` und `Total Score` (`scripts/leaderboard/exporter.py`).
+
+3. **`-thinking`-Suffix-Fallback in `_find_card()`** (`utils/model_utils.py`) — Letzter Fallback vor `return unprefixed`:
+   - Nur wenn `model_cfg is None` UND `lookup_id.endswith("-thinking")`.
+   - Streift `-thinking` deterministisch ab (analog zu `strip_date_suffix`) und ruft `_find_card(base_id, card_dir)` rekursiv.
+   - Greift NUR wenn `model_cfg` nicht übergeben wurde (sonst übernimmt `card_model_id`-Redirect den Lookup bereits deterministisch).
+   - Ergebnis: `_find_card("ornith-1_0-35B-FP8-thinking")` → findet `ornith-1_0-35B-FP8--VSPK.json`.
+
+4. **`resolve_canonical_model_id` schützt Thinking-Profil-Identität** (`utils/model_utils.py`) — Neue Variable `_is_thinking_suffix`:
+   - Wenn `model_cfg is None` UND `base.endswith("-thinking")` → `_find_card` findet die Basis-Card via Suffix-Fallback.
+   - **Aber:** `resolve_canonical_model_id` gibt `_safe_name(base)` zurück (Profil-eigene ID), NICHT `card.model_id` der Basis-Card.
+   - Sonst würden Basis- und Thinking-Profil im Leaderboard zu einer ID verschmelzen — CSV `model_id` wäre identisch, Benchmark-Ergebnisse würden sich überschreiben.
+   - Ergebnis: `resolve_canonical_model_id("ornith-1_0-35B-FP8-thinking")` → `"ornith-1_0-35B-FP8-thinking"`.
+
+**Tests:**
+- `tests/test_card_model_id_lookup.py` — 1 Test aktualisiert (`test_find_card_ornith_thinking_without_cfg_drifts` → positive Assertion), 1 neuer Test (`test_resolve_canonical_thinking_without_cfg_preserves_thinking_id`).
+
+**Full Suite:** 1125 passed (+8 von Session 53), 1 skipped, 1 pre-existing failure (`qwen3_5-35b-a3b-q8` auskommentiert vor Session 51). `make validate` exit 0.
+
+**Architektur-Entscheidungen:**
+- **`-thinking`-Suffix-Strip ist DETERMINISTISCH, kein Heuristik-Raten.** Analog zu `strip_date_suffix` für Datums-Suffixe. Greift nur wenn kein `card_model_id`-Redirect verfügbar ist. Wenn `model_cfg` übergeben wird, hat der Redirect Vorrang.
+- **Card-Lookup und Modell-Identität sind getrennt.** `_find_card` darf Suffix-Strip nutzen (für Card-Datei-Suche). `resolve_canonical_model_id` darf NICHT die Profil-ID verschmelzen (für CSV-/Leaderboard-Eindeutigkeit).
+- **`thinking_mode`-Spalte erfasst Runtime-Konfiguration, nicht Capability.** `thinking_probe_detected` in Card dokumentiert Fähigkeit (stabil). `thinking_mode` zeigt was für diesen Lauf konfiguriert war (pro-Run).
+- **Display-Name bleibt original.** Nutzer-Präferenz: kein "Thinking"-Suffix im Namen. Unterscheidung über `thinking_mode`-Spalte im Leaderboard.
+
+**Bug-Fixes während Implementierung:**
+- `_add_thinking_profile_names` iterierte initial `providers.<key>.models[]` (top-level), aber die echten Provider sind nested unter `providers.local.<key>`. Fix: Drill-in auf `providers.local.<provider_key>.models[]`.
+- Initiale Implementation von `_find_card`-Fallback platzierte die `card_dir`-Rekursion außerhalb der Funktion (Orphan-Code). Fix: Inline-Rekursion mit `card_dir`-Parameter.
+- Test `test_find_card_ornith_thinking_without_cfg_drifts` war für das alte Verhalten geschrieben (kein Fallback). Fix: positive Assertion, +1 neuer Test für `resolve_canonical_model_id`.
+
+**Status:** Working Tree, uncommitted.
+
+---
+
 ### 2026-07-08 (Session 53) — Dual-Profile card_model_id-Drift behoben [DONE, uncommitted]
 
 **Auslöser:** Session 52 implementierte `card_model_id`-Redirect für Dual-Thinking-Profile, aber 4 Aufrufstellen reichten `model_cfg` nicht durch → Live-Drift: Ornith Thinking-Profil zeigte `k.A.` statt `1.0/VSPK` in Leaderboard-Version, Web-Export hatte `card = None` (kein vendor, keine probe-fields). Zusätzlich existierte eine Drift-Card `ornith-1_0-35B-FP8-thinking.json` mit `medium`-Confidence (statt `high`) und `TODO`-Placeholder.

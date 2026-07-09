@@ -129,6 +129,25 @@ Historische Lifecycle-Flags wie `always_stop_before_start` sind für den konsoli
 
 Seit v4.3.0 gilt zusätzlich: Der `UnifiedBenchmarkRunner` führt den lokalen Provider-Cleanup in `finally` aus. Bei aktivem `cleanup_on_exit` werden `server_stop_cmd` und optional `server_post_stop_cmd` deshalb auch bei `KeyboardInterrupt`/Abbruch ausgeführt.
 
+### Hardware-Profile & `{hardware_context}` für Reviewer-Prompt (ab Session 56)
+
+Jeder lokale Provider in `provider_config.yaml` hat ein `hardware_profile`-Feld. Dieser Key wird in `benchmark_config.yaml:runner_environment.profiles` aufgelöst und bestimmt, welche Hardware-Beschreibung der Meta-Reviewer im Prompt sieht.
+
+**Pflicht:** Jeder `hardware_profile`-Key in `provider_config.yaml` MUSS in `benchmark_config.yaml` definiert sein. Fehlt der Key, fällt der Lookup auf `active_profile` (M4) zurück → der Reviewer zitiert die falsche Hardware.
+
+| Provider | Key | Hardware | `ram_gb` | Template |
+|---|---|---|---|---|
+| `llamacpp` | `m4_macbook_pro_metal` | Apple Silicon M4, 24 GB | 24 | constrained (Swapping-Risiken) |
+| `llamacpp_spark` | `dgx_spark_cuda` | NVIDIA DGX Spark, 115 GB | 115 | ample (kein Engpass) |
+| `vllm_spark` | `asus_gx10_blackwell` | ASUS GX10 / DGX Spark, 115 GB | 115 | ample (kein Engpass) |
+
+**Lookup-Kette in `generate_review.py`:**
+1. `_get_hardware_profile_for_model()` — Provider-Config (SSoT)
+2. `_get_hardware_profile_from_csv()` — Fallback: rohe CSV `hardware_profile`-Spalte (für auskommentierte Modelle)
+3. `SystemContextManager.get_editor_prompt_injection()` — löst Key gegen `benchmark_config.yaml` auf
+
+**Local-Template konditional:** Bei `ram_gb < 64` (memory-constrained) nennt das Template "Swapping-Risiken" als legitimen Diskurspunkt. Bei `ram_gb >= 64` (ample) formuliert es "Speicher ist hier kein Engpass" — keine Speicher-Spekulation. Die Sperrklausel im Prompt (`meta_reviewer_prompt.yaml:30`) verbietet dem Reviewer zusätzlich, Hardware-Annahmen zu erfinden, die nicht im `{hardware_context}`-Datenfeld stehen.
+
 ### Spark: Token-Management pro Modell (ab Session 26)
 
 Der `llamacpp_spark`-Server ist ein eigenständiger Prozess mit eigenem Kontextfenster. Drei Ebenen steuern das Token-Verhalten:
@@ -384,6 +403,107 @@ vllm_spark:
 **Pitfall: `resolve_provider` muss expandierte Config sehen.** `resolve_provider()` nutzt `ConfigValidator().config` als primäre Quelle (merge + expansion aware), nicht die Roh-YAML. Andernfalls sind generierte `{id}-thinking`-Profile unsichtbar → fälschlicher Fallback auf Ollama.
 
 Regressionstests: `tests/test_config_thinking_expansion.py` (18 Tests), `tests/test_card_model_id_lookup.py` (7 Tests), `tests/test_vllm_spark_provider.py` (+5 Swap-Entkopplungs-Tests).
+
+### Dual-Thinking-Profile: Leaderboard-Darstellung (ab Session 54)
+
+Thinking-Profile erscheinen im Leaderboard unter dem **originalen Display-Namen** des Modells (nicht mit "Thinking"-Suffix). Die Unterscheidung erfolgt über zwei Mechanismen:
+
+| Mechanismus | Standard-Profil | Thinking-Profil |
+|---|---|---|
+| `model_id` (CSV/Leaderboard) | `ornith-1_0-35B-FP8` | `ornith-1_0-35B-FP8-thinking` |
+| `display_name` (Leaderboard) | `Ornith 1.0 35B (FP8)` | `Ornith 1.0 35B (FP8)` (derselbe!) |
+| `thinking_mode` (CSV/Leaderboard-Spalte) | `Standard` | `Thinking` |
+| Karte | `ornith-1_0-35B-FP8--VSPK.json` | `ornith-1_0-35B-FP8--VSPK.json` (geteilt) |
+
+**`thinking_mode`-Spalte (`utils/base_runner.py:_resolve_thinking_mode`):**
+
+| Config | `thinking_mode` |
+|---|---|
+| `card_model_id` vorhanden (vLLM Dual-Profile Thinking) | `Thinking` |
+| `chat_template_kwargs.enable_thinking: false` (vLLM Dual-Profile Standard) | `Standard` |
+| `chat_template_kwargs.enable_thinking: true` | `Thinking` |
+| `enable_thinking: true` (llama.cpp) | `Thinking` |
+| `enable_thinking: false` (llama.cpp) | `Standard` |
+| Keine Thinking-Config (Cloud/Commercial) | `n/a` |
+
+**Trennung Runtime-Config vs. Capability:**
+- `thinking_mode` = was war für diesen Lauf konfiguriert (pro-Run, CSV-Spalte).
+- `thinking_probe_detected` = kann das Modell Thinking (Card-Feld, stabil).
+
+Beide Felder sind unabhängig — ein Modell mit `thinking_mode=Standard` kann `thinking_probe_detected=true` haben (Capability ja, aber nicht aktiviert).
+
+**Display-Name-Sharing (`scripts/leaderboard/module_integration.py:_add_thinking_profile_names`):**
+
+Die Funktion ergänzt `display_lookup` für Thinking-Profile aus der expandierten Config:
+```python
+for model_cfg in providers["local"][provider_key]["models"]:
+    if "card_model_id" in model_cfg:
+        profile_id = _safe_name(model_cfg["id"])
+        card_ref = _safe_name(model_cfg["card_model_id"])
+        display_lookup[profile_id] = display_lookup[card_ref]
+```
+
+### Dual-Thinking-Profile: Card-Lookup-Fallback (ab Session 54)
+
+Der `card_model_id`-Redirect in `_find_card()` und `resolve_canonical_model_id()` greift nur, wenn `model_cfg` übergeben wird. Viele Caller (`generate_review.py`, `review/risk_calculator.py`, `review/metrics.py`, `sync_cards.py`) rufen `_find_card()` ohne `model_cfg` auf — dort greift der Redirect nicht.
+
+**Lösung — deterministischer `-thinking`-Suffix-Fallback in `_find_card()`:**
+
+```python
+# Last-Resort-Fallback in _find_card():
+if model_cfg is None and lookup_id.endswith("-thinking"):
+    base_id = lookup_id[: -len("-thinking")]
+    base_path = _find_card(base_id, card_dir=card_dir)
+    if base_path.exists():
+        return base_path
+```
+
+Greift nur wenn `model_cfg is None` UND keine Card für `{id}-thinking` gefunden wurde (nach allen anderen Fallbacks). Deterministisch (kein Heuristik-Raten), generisch für alle vLLM-Modelle mit `enable_thinking: true`.
+
+**Kritische Trennung — `resolve_canonical_model_id` schützt Thinking-Profil-Identität:**
+
+Wenn `_find_card` via Suffix-Fallback die Basis-Card findet, DARF `resolve_canonical_model_id` NICHT `card.model_id` zurückgeben — sonst würden Basis- und Thinking-Profil im Leaderboard zu einer ID verschmelzen (CSV-Zeile wird überschrieben).
+
+```python
+_is_thinking_suffix = (
+    model_cfg is None
+    and base.endswith("-thinking")
+)
+if _used_card_redirect or _is_thinking_suffix:
+    return _safe_name(base)  # Profil-eigene ID, NICHT card.model_id
+```
+
+**Zusammenfassung:**
+
+| Funktion | Suffix-Strip erlaubt? | Begründung |
+|---|---|---|
+| `_find_card` | ✅ Ja (Last-Resort) | Findet Card-Datei; Suffix-Strip ist deterministisch |
+| `resolve_canonical_model_id` | ❌ Nein | Muss CSV-Identität erhalten; gibt `_safe_name(base)` bei Thinking-Suffix zurück |
+
+Regressionstests: `tests/test_card_model_id_lookup.py` (+1 Test: `test_resolve_canonical_thinking_without_cfg_preserves_thinking_id`).
+
+### Dual-Thinking-Profile: `thinking_mode`-Sichtbarkeit (ab Session 55)
+
+`thinking_mode` ist auf drei Ebenen sichtbar — eine Datenquelle (`_resolve_thinking_mode()` aus model_cfg), drei Ausgabeorte:
+
+| Ebene | Wo | Sichtbar für | Code |
+|---|---|---|---|
+| **CSV-Spalte** | `thinking_mode` pro Task-Zeile | Datenanalyse, Leaderboard | `utils/base_runner.py:build_base_result()` |
+| **Audit-Log-Header** | `**Thinking Mode:** Thinking/Standard` nach `**Provider:**` | Mensch (Datei direkt) | `utils/benchmark_utils.py:save_audit_log()` |
+| **Leaderboard-Spalte** | `"Thinking Mode"` zwischen `Speed Profile` und `Total Score` | Leaderboard-Leser | `scripts/leaderboard/exporter.py` |
+| **Review-Prompt-Variable** | `{model_thinking_mode}` als hartes Datenfeld | LLM-Reviewer | `scripts/analysis/generate_review.py:_resolve_thinking_mode_for_review()` |
+
+**Warum drei Ebenen?** Verschiedene Konsumenten brauchen unterschiedliche Sichtbarkeit:
+- **Mensch:** Audit-Log-File direkt lesen → Header-Zeile.
+- **Datenanalyse:** CSV-Aggregation → Spalte.
+- **Leaderboard:** Vergleichende Tabelle → Spalte.
+- **LLM-Reviewer:** Prompt-Inhalt → Variable (sonst rät er aus Architektur-Tags, siehe Session-55-Befund).
+
+**Review-Prompt-Pitfall (Session 55):** Externe Audit-Analyse zeigte, dass Reviewer beide Ornith-Läufe fälschlich als "Thinking-Lauf" deklarierten, obwohl Stabilitätsdaten (Timeout-Rate, P95) zeigten, dass einer Standard war. Wurzel: `{model_tags}` enthält "Thinking" als Architektur-Tag (Capability, immer vorhanden), aber kein Runtime-Modus-Datenfeld. Reviewer riet aus Tags statt aus Daten.
+
+**Pflicht:** Jede Runtime-Config, die den Reviewer beeinflusst (thinking_mode, temperature, max_tokens), MUSS als hartes Datenfeld im Prompt stehen — nicht aus Modellnamen oder Architektur-Tags ableiten lassen.
+
+**Backfill alter Audit-Logs:** Für Ornith wurden 149 Audit-Log-Dateien patchiert (49 Thinking, 50 vLLM-Standard, 50 llama.cpp-Standard). Idempotent — Script prüft `if "**Thinking Mode:**" in content: skip`.
 
 ---
 
@@ -1472,8 +1592,7 @@ class YourEvaluator:
 | `percentage` | Float | Normalisiert (0–100) |
 | `routine_contribution` | Float | config.yaml |
 | `reasoning_contribution` | Float | config.yaml |
-
----
+| `thinking_mode` | String | `utils/base_runner.py:_resolve_thinking_mode()` — `"Thinking"`/`"Standard"`/`"n/a"` pro Task. Automatisch via `_get_updated_fieldnames()`. Wird auch im Leaderboard als `"Thinking Mode"`-Spalte angezeigt. |
 
 ### Custom Spalten
 

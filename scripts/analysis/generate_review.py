@@ -35,6 +35,7 @@ from utils.model_utils import (
     get_use_case_primary,
 )
 from utils.vendor_card_template import load_vendor_card
+from utils.model_utils import resolve_model_cfg_for
 from scripts.analysis.review import (
     _resolve_vendor_card_id,
     build_constraint_violations_summary,
@@ -50,6 +51,34 @@ from scripts.analysis.review import (
 
 # Maximum characters of audit-log data fed to the LLM reviewer.
 _MAX_LOG_CHARS = 30_000
+
+
+def _resolve_thinking_mode_for_review(model_id: str) -> str:
+    """Löst den Thinking-Modus für einen Review-Kandidaten auf.
+
+    Fallback, wenn ``Thinking Mode`` nicht im Leaderboard steht (z.B. bei
+    alten CSV-Daten ohne ``thinking_mode``-Spalte). Nutzt ``resolve_model_cfg_for``
+    als SSoT-Helper, der die expandierte Config durchsucht.
+
+    Returns:
+        ``"Thinking"`` / ``"Standard"`` / ``"n/a"``
+    """
+    try:
+        from utils.config_validator import ConfigValidator
+        config = ConfigValidator(str(ROOT_DIR / "benchmark_config.yaml")).config
+        model_cfg = resolve_model_cfg_for(model_id, config)
+        if not model_cfg:
+            return "n/a"
+        if "card_model_id" in model_cfg:
+            return "Thinking"
+        ctk = model_cfg.get("chat_template_kwargs")
+        if isinstance(ctk, dict) and "enable_thinking" in ctk:
+            return "Thinking" if ctk["enable_thinking"] else "Standard"
+        if "enable_thinking" in model_cfg:
+            return "Thinking" if model_cfg["enable_thinking"] else "Standard"
+    except Exception:  # pylint: disable=broad-except
+        pass
+    return "n/a"
 
 # Per-Task-Metrik-Zeilen, die aus dem Audit-Log-Kontext entfernt werden, BEVOR
 # sie den LLM erreichen. Diese Werte sind pro Einzel-Aufgabe und weichen von den
@@ -137,6 +166,36 @@ def _get_hardware_profile_for_model(model_id: str, config: dict) -> str:
                 raw_id = m.get("id", "")
                 if raw_id == model_id or _safe_name(raw_id) == safe_target:
                     return hw
+    return ""
+
+
+def _get_hardware_profile_from_csv(model_id: str) -> str:
+    """Liest hardware_profile aus der rohen Benchmark-CSV als Fallback.
+
+    Wenn _get_hardware_profile_for_model() leer zurückgibt (Modell auskommentiert
+    oder umbenannt in provider_config.yaml), liefert dieser Helper den
+    hardware_profile-Wert aus der CSV-Spalte der rohen Benchmark-Daten.
+    Die CSV speichert pro Task-Zeile den hardware_profile-Key des Providers,
+    der den Lauf durchgeführt hat.
+    """
+    csv_path = ROOT_DIR / "benchmark_scores" / "local_models_benchmark.csv"
+    if not csv_path.exists():
+        return ""
+    safe_target = _safe_name(model_id)
+    try:
+        import csv as _csv
+        with open(csv_path, "r", encoding="utf-8") as f:
+            reader = _csv.DictReader(f)
+            for row in reader:
+                row_model = row.get("model", "") or row.get("model_id", "")
+                if not row_model:
+                    continue
+                if _safe_name(row_model) == safe_target:
+                    hw = (row.get("hardware_profile") or "").strip()
+                    if hw:
+                        return hw
+    except Exception:
+        pass
     return ""
 
 
@@ -450,11 +509,13 @@ def process_model_review(
         context_manager = SystemContextManager()
         # SSOT: hardware_profile aus provider_config.yaml für lokale Modelle lesen.
         # Damit wird das Testsystem des Modells beschrieben, nicht der Review-Rechner.
-        hw_profile_key = (
-            _get_hardware_profile_for_model(tested_model_name, validator.config)
-            if run_type == "local"
-            else ""
-        )
+        # Fallback: wenn Provider-Config-Lookup leer ist (Modell auskommentiert oder
+        # umbenannt), lies hardware_profile aus der rohen Benchmark-CSV.
+        hw_profile_key = ""
+        if run_type == "local":
+            hw_profile_key = _get_hardware_profile_for_model(tested_model_name, validator.config)
+            if not hw_profile_key:
+                hw_profile_key = _get_hardware_profile_from_csv(tested_model_name)
         hardware_context = context_manager.get_editor_prompt_injection(
             run_type, hardware_profile_key=hw_profile_key
         )
@@ -566,6 +627,7 @@ def process_model_review(
     _use_case = get_use_case_primary(tested_model_name)
     _size_class = model_metrics.get("Size Class") or get_model_size_class(tested_model_name)
     _param_arch = _get_card_field(tested_model_name, "parameter_architecture", "dense")
+    _thinking_mode = model_metrics.get("Thinking Mode") or _resolve_thinking_mode_for_review(tested_model_name)
 
     template_vars = {
         "tested_model_name": tested_model_name,
@@ -580,6 +642,7 @@ def process_model_review(
         "model_timeout_rate": timeout_rate_str,
         "model_provider_type": model_metrics.get("Type", "n/a"),
         "model_size_class": _size_class,
+        "model_thinking_mode": _thinking_mode,
         "model_card_context": get_model_card_context(tested_model_name),
         "vendor_card_context": get_vendor_card_context(tested_model_name),
         "token_efficiency_context": token_efficiency_context,
@@ -749,6 +812,7 @@ def _run_tooluse_reviews(
 
         ctx["model_tags"] = ", ".join(identity["tags"])
         ctx["display_model_name"] = identity["display_name"]
+        ctx["model_thinking_mode"] = _resolve_thinking_mode_for_review(mid)
         ctx["model_card_context"] = get_model_card_context(mid)
         ctx["use_case_classification_context"] = format_classification_context(
             _use_case, _size_class, _param_arch, _taxonomy

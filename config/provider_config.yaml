@@ -799,7 +799,7 @@ providers:
         top_p: 0.95
         top_k: 64
         # repetition_penalty:  # Card: null — vLLM-Server-Default greift
-        # enable_thinking: true
+        enable_thinking: true
 
       - id: Gemma-4-31B
         name: Gemma 4 31B NVFP4 (vLLM, Dense, multimodal)
@@ -809,7 +809,7 @@ providers:
         top_p: 0.95
         top_k: 64
         # repetition_penalty:  # Card: null — vLLM-Server-Default greift
-        # enable_thinking: true
+        enable_thinking: true
 
       - id: Gemma-4-31B-Wordsmith-NVFP4
         name: Gemma 4 31B Wordsmith NVFP4 (vLLM, Dense, uncensored)
@@ -819,7 +819,7 @@ providers:
         top_p: 0.95
         top_k: 64
         # repetition_penalty:  # Card: null — vLLM-Server-Default greift
-        # enable_thinking: true
+        enable_thinking: true
 
       # Qwen 3.6 27B Dense — NVFP4 compressed-tensors, MTP, Thinking-Parser aktiv.
       # 32k Context (Sweet-Spot für DGX Spark bei 0.70 gpu-mem-util).
@@ -832,7 +832,7 @@ providers:
         top_p: 0.95
         top_k: 20
         # repetition_penalty:  # Card: null — vLLM-Server-Default greift
-        # enable_thinking: true
+        enable_thinking: true
 
       # Weitere verfügbare TOMLs (per Auto-Discovery entdeckbar, nicht im Benchmark):
       # - Qwen3-Embedding-0.6B-NVFP4: Embedding-Modell (kein LLM-Target)

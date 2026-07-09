@@ -264,6 +264,7 @@ def save_audit_log(
     provider: Optional[str] = None,
     reasoning_tokens: Optional[int] = None,
     think_content: Optional[str] = None,
+    thinking_mode: Optional[str] = None,
     **kwargs
 ) -> None:
     """
@@ -284,6 +285,8 @@ def save_audit_log(
             f.write(f"**Model:** {model}\n")
             if provider:
                 f.write(f"**Provider:** {provider}\n")
+            if thinking_mode:
+                f.write(f"**Thinking Mode:** {thinking_mode}\n")
             if execution_time is not None:
                 f.write(f"**Execution Time:** {execution_time:.2f} s\n")
             if tokens_used is not None:

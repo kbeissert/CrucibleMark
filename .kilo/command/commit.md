@@ -59,9 +59,3 @@ Regeln:å
 - Kein Kommentar, keine Erklärung der Entscheidungen
 - Keine Co-Authored-by-Zeilen und keine Issue-Referenzen
   ergänzen, sofern nicht aus dem Diff eindeutig ableitbar
-
-## Ausgabe
-
-Gib die Commit-Message als einzelnen Markdown-Codeblock aus –
-bereit zum Kopieren in den Commit-Dialog oder zur Übergabe an
-`git commit -F -`.

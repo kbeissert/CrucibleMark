@@ -301,11 +301,11 @@ def test_find_card_ornith_thinking_finds_shared_card(
 def test_find_card_ornith_thinking_without_cfg_drifts(
     isolated_card_dir: Path,
 ) -> None:
-    """Ohne model_cfg (alter Aufruf-Stil) wird die geteilte Card NICHT gefunden.
+    """Ohne model_cfg (alter Aufruf-Stil) wird die Basis-Card via -thinking-Suffix-Fallback gefunden.
 
-    Dieser Test dokumentiert den Bug: ohne Redirect fällt _find_card auf
-    den Profile-Pfad zurück, der nicht existiert. Dies ist das Verhalten,
-    das durch den Fix vermieden wird (Aufrufer müssen model_cfg reichen).
+    _find_card streift das ``-thinking``-Suffix deterministisch und sucht
+    nach der Basis-Card. Dies ermöglicht Aufrufer ohne model_cfg (z.B.
+    generate_review.py) transparenten Zugriff auf die geteilte Card.
     """
     shared_card = isolated_card_dir / "ornith-1_0-35B-FP8--VSPK.json"
     shared_card.write_text(
@@ -313,8 +313,35 @@ def test_find_card_ornith_thinking_without_cfg_drifts(
         encoding="utf-8",
     )
 
-    # Ohne model_cfg → sucht nach ornith-1_0-35B-FP8-thinking*.json → nicht vorhanden
+    # Ohne model_cfg → -thinking-Suffix-Fallback findet die Basis-Card
     result = _find_card("ornith-1_0-35B-FP8-thinking")
-    assert not result.exists()
-    # Der zurückgegebene Pfad ist der nicht-existente Profile-Pfad
-    assert "thinking" in result.name
+    assert result.exists()
+    # Die gefundene Card ist die Basis-Card (kein -thinking im Dateinamen)
+    assert "thinking" not in result.name
+    assert result.name == "ornith-1_0-35B-FP8--VSPK.json"
+
+
+def test_resolve_canonical_thinking_without_cfg_preserves_thinking_id(
+    isolated_card_dir: Path,
+) -> None:
+    """resolve_canonical_model_id ohne model_cfg erhält die -thinking-ID.
+
+    Auch wenn _find_card die Basis-Card via Suffix-Fallback findet, darf
+    resolve_canonical_model_id NICHT card.model_id (Basis-ID) zurückgeben.
+    Die kanonische ID des Thinking-Profils bleibt ``{id}-thinking`` —
+    sonst verschmelzen Basis- und Thinking-Ergebnis im Leaderboard.
+    """
+    shared_card = isolated_card_dir / "ornith-1_0-35B-FP8--VSPK.json"
+    shared_card.write_text(
+        json.dumps({"model_id": "ornith-1_0-35B-FP8", "model_version": "1.0"}),
+        encoding="utf-8",
+    )
+
+    # Ohne model_cfg: Card wird gefunden (Suffix-Fallback), aber kanonische
+    # ID bleibt die Thinking-Profil-ID
+    canonical = resolve_canonical_model_id("ornith-1_0-35B-FP8-thinking")
+    assert canonical == "ornith-1_0-35B-FP8-thinking"
+
+    # Basis-ID bleibt unverändert
+    canonical_base = resolve_canonical_model_id("ornith-1_0-35B-FP8")
+    assert canonical_base == "ornith-1_0-35B-FP8"

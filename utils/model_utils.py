@@ -421,14 +421,25 @@ def resolve_canonical_model_id(
         and model_cfg["card_model_id"] != model_id
     )
 
+    # Thinking-Profile ohne model_cfg: ``_find_card`` findet die Basis-Card
+    # via ``-thinking``-Suffix-Fallback. In diesem Fall MUSS die kanonische
+    # ID die EIGENE (Profil-ID, z.B. ``{id}-thinking``) bleiben — NICHT
+    # ``card.model_id`` der Basis-Card. Sonst verschmelzen Basis- und
+    # Thinking-Profil im Leaderboard zu einer ID.
+    _is_thinking_suffix = (
+        model_cfg is None
+        and base.endswith("-thinking")
+    )
+
     try:
         card_path = _find_card(base, model_cfg=model_cfg)
     except Exception:  # noqa: BLE001
         card_path = None
     if card_path is not None and card_path.exists():
-        # Bei card_model_id-Redirect: Card-Existenz bestätigt, aber die
-        # kanonische ID ist die EIGENE (Profil-ID), nicht die der Card.
-        if _used_card_redirect:
+        # Bei card_model_id-Redirect ODER -thinking-Suffix-Fallback:
+        # Card-Existenz bestätigt, aber die kanonische ID ist die EIGENE
+        # (Profil-ID), nicht die der Card.
+        if _used_card_redirect or _is_thinking_suffix:
             return _safe_name(base)
         try:
             data = json.loads(card_path.read_text(encoding="utf-8"))
@@ -789,6 +800,25 @@ def _find_card(
                     hyphen_path.name, lookup_id,
                 )
                 return hyphen_path
+
+    # Thinking-Profile-Fallback: Wenn die model_id auf ``-thinking`` endet und
+    # keine eigene Card existiert (Thinking-Profile teilen sich die Card des
+    # Basis-Modells via ``card_model_id``), streife das Suffix ab und suche
+    # nach der Basis-Card. Dies ist ein deterministischer Fallback (kein
+    # Heuristik-Raten) — analog zu ``strip_date_suffix``.
+    # Greift NUR wenn ``model_cfg`` nicht übergeben wurde (sonst übernimmt
+    # ``card_model_id``-Redirect den Lookup bereits deterministisch).
+    if model_cfg is None and lookup_id.endswith("-thinking"):
+        base_id = lookup_id[: -len("-thinking")]
+        if base_id and base_id != lookup_id:
+            base_path = _find_card(base_id, card_dir=card_dir)
+            if base_path.exists():
+                import logging as _logging
+                _logging.debug(
+                    "_find_card: -thinking suffix fallback matched '%s' for input '%s'",
+                    base_path.name, lookup_id,
+                )
+                return base_path
 
     return unprefixed  # May or may not exist — caller checks
 

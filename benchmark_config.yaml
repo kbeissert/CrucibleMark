@@ -13,10 +13,19 @@ runner_environment:
       description: Apple Silicon M4, 24GB Unified Memory (Shared RAM/VRAM)
       compute_unit: CPU/Metal
       ram_gb: 24
-    # DGX Spark — wird via llamacpp_spark-Provider referenziert
+    # DGX Spark / ASUS GX10 — gleiche Hardware (GB10 Grace Blackwell), verschiedene
+    # Provider-Backends (llamacpp_spark vs vllm_spark). Beide Profile beschreiben
+    # dasselbe physische System. ram_gb=115 ist für alle getesteten Modellgrößen
+    # (max. 35B) kein praktisches Speicherlimit — die Sperrklausel im Reviewer-
+    # Prompt verbietet Speicher-Spekulation, wenn keine enge Grenze genannt wird.
     dgx_spark_cuda:
       type: local_server
-      description: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, ~115 GB Unified Memory)
+      description: NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, ~115 GB Unified Memory — kein praktisches Speicherlimit für getestete Modellgrößen)
+      compute_unit: CUDA (Blackwell)
+      ram_gb: 115
+    asus_gx10_blackwell:
+      type: local_server
+      description: ASUS GX10 / NVIDIA DGX Spark (GB10 Grace Blackwell Superchip, ~115 GB Unified Memory — kein praktisches Speicherlimit für getestete Modellgrößen)
       compute_unit: CUDA (Blackwell)
       ram_gb: 115
     nvidia_rtx4090:

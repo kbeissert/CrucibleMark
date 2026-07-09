@@ -189,6 +189,7 @@ def export_leaderboard_detailed(leaderboard: pd.DataFrame, cat_cols: List[str]) 
         "Provider Code",
         "Badge",
         "Speed Profile",
+        "Thinking Mode",  # Thinking/Standard/n/a (vLLM dual-profile / llama.cpp)
         "Performance Tier",
         "Total Score",
         "Tokens/s",

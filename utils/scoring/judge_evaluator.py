@@ -324,4 +324,5 @@ def generate_audit_log(
         provider=result.get("provider"),
         reasoning_tokens=result.get("reasoning_tokens"),
         think_content=result.get("think_content"),
+        thinking_mode=result.get("thinking_mode"),
     )
