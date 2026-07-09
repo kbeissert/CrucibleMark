@@ -317,6 +317,74 @@ Der Code in `_build_server_cmd()` (`utils/providers/llamacpp_base.py`) prüft f�
 
 Regressionstests: `tests/test_llamacpp_provider_separation.py::test_build_server_cmd_uses_llama_cpp_defaults`, `::test_build_server_cmd_model_override_wins`, `::test_build_server_cmd_works_without_defaults_block`.
 
+### vLLM Dual-Thinking-Profile: Config-Driven-Expansion (ab Session 52)
+
+vLLM-Modelle mit `enable_thinking: true` werden beim Config-Load automatisch in **zwei Benchmark-Profile** expandiert — ein Container bedient beide Profile per-Request, ohne Server-Neustart beim Profil-Wechsel.
+
+**Warum nur vLLM?** vLLM's `enable_thinking` ist ein Chat-Template-Kwarg, der per-Request via `chat_template_kwargs` gesteuert wird. llama.cpp's `enable_thinking` ist ein Server-Start-Flag (`--reasoning on`/`off`) — kann nicht per-Request gewechselt werden. Die Expansion läuft daher NUR für Provider mit `api_type == "vllm"`.
+
+**Mechanik:**
+
+1. **Config-Expansion** (`utils/config_validator.py:_expand_thinking_profiles()`): Aufgerufen in `_load_config` nach Merge, vor `_check_duplicate_model_ids`. Für jeden vLLM-Modell-Eintrag mit `enable_thinking: true`:
+   - **Original-Eintrag** (Standard-Profil): konsumiert `enable_thinking`, setzt `chat_template_kwargs: {"enable_thinking": false}`.
+   - **Generierter Thinking-Eintrag**: `id: {original_id}-thinking`, `config:` identisch (→ kein Container-Swap), `card_model_id: {original_id}` (→ teilt Card), `chat_template_kwargs: {"enable_thinking": true}`, `max_tokens: {thinking_max_tokens}`.
+
+2. **Swap-Entkopplung** (`utils/providers/vllm_base.py`): Neue Instance-Variable `_active_config` trackt die TOML-Config des aktiven Modells. `_ensure_model_ready` vergleicht `config:` statt `model_id`:
+   - Gleiche `config:` (z.B. Standard → Thinking desselben Modells) → **kein `swap_model`**, nur per-Request-Param-Wechsel.
+   - Unterschiedliche `config:` → `swap_model` wie bisher (echter Modell-Wechsel).
+   - Backward-compat: `_active_config is None` → bisheriges Verhalten.
+
+3. **Card-Lookup via `card_model_id`** (`utils/model_utils.py`): `_find_card()` und `resolve_canonical_model_id()` akzeptieren optional `model_cfg`. Wenn `card_model_id` vorhanden → Card-Lookup über dieses Feld. `resolve_canonical_model_id` gibt die **Profile-eigene ID** zurück (`{id}-thinking`), NICHT die Card's `model_id` — CSV `model_id` bleibt eindeutig. `enforce_card_first()` threaded `model_cfg` durch → keine Platzhalter-Cards für Thinking-Profile.
+
+**Config-Beispiel (`provider_config.yaml`):**
+
+```yaml
+vllm_spark:
+  thinking_max_tokens: 32768   # Provider-Default für Thinking-Profile
+  models:
+  - id: ornith-1.0-35B-FP8
+    config: Ornith1-35B-FP8
+    enable_thinking: true      # ← Trigger für Expansion
+    max_tokens: 8192           # Standard-Profil Output-Cap
+    temperature: 0.7
+    top_p: 0.8
+    top_k: 20
+```
+
+**Resultierende expandierte Config (transparent für alle Downstream-Konsumenten):**
+
+```yaml
+# Standard-Profil (generiert):
+- id: ornith-1.0-35B-FP8
+  config: Ornith1-35B-FP8
+  chat_template_kwargs: {"enable_thinking": false}
+  max_tokens: 8192
+  temperature: 0.7
+  top_p: 0.8
+  top_k: 20
+
+# Thinking-Profil (generiert):
+- id: ornith-1.0-35B-FP8-thinking
+  config: Ornith1-35B-FP8           # ← identisch → kein Swap
+  card_model_id: ornith-1.0-35B-FP8  # ← teilt Card
+  chat_template_kwargs: {"enable_thinking": true}
+  max_tokens: 32768                  # ← thinking_max_tokens
+  temperature: 0.7
+  top_p: 0.8
+  top_k: 20
+```
+
+**`thinking_max_tokens`-Quelle (Priorität):**
+1. `model_cfg.thinking_max_tokens` (pro Modell überschreibbar)
+2. `provider.thinking_max_tokens` (Provider-Default)
+3. Fehler (kein Hardcoding)
+
+**Leaderboard-Auswirkung:** Zwei separate CSV-Einträge (`ornith-1_0-35B-FP8` und `ornith-1_0-35B-FP8-thinking`), zwei Leaderboard-Einträge, eine geteilte Model-Card.
+
+**Pitfall: `resolve_provider` muss expandierte Config sehen.** `resolve_provider()` nutzt `ConfigValidator().config` als primäre Quelle (merge + expansion aware), nicht die Roh-YAML. Andernfalls sind generierte `{id}-thinking`-Profile unsichtbar → fälschlicher Fallback auf Ollama.
+
+Regressionstests: `tests/test_config_thinking_expansion.py` (18 Tests), `tests/test_card_model_id_lookup.py` (7 Tests), `tests/test_vllm_spark_provider.py` (+5 Swap-Entkopplungs-Tests).
+
 ---
 
 ## Reasoning-Modelle: Reasoning-Erkennung & Card-First Workflow
@@ -695,7 +763,7 @@ resolve_canonical_model_id("mistral-large-latest")
 
 > **Brücken-Klassifikation:** `resolve_canonical_model_id()` ist der **Card-/Path-Use-Case**. Für **Leaderboard-/Display-Use-Cases** (menschenlesbare Vendor-Schreibweise) stattdessen `normalize_model_id()` + optional `strip_date_suffix()` verwenden.
 
-#### `enforce_card_first(model_id: str) → tuple[str, bool]`
+#### `enforce_card_first(model_id: str, model_cfg: dict | None = None) → tuple[str, bool]`
 
 **Card-First-Vertrag** (genutzt in `utils/result_manager.py::save_results`). Stellt sicher, dass jede geschriebene `model_id` durch eine Model Card im Filesystem abgedeckt ist.
 
@@ -714,6 +782,8 @@ canonical, has_card = enforce_card_first("unregistered-model-xyz")
 ```
 
 > **Wichtig:** `enforce_card_first()` ist **kein** Hard-Fail. Ein unregistriertes Modell bricht den Benchmark-Lauf nicht ab — die Lücke wird stattdessen als Draft sichtbar und wandert in die Kartenpflege.
+
+> **`model_cfg`-Parameter (ab Session 52):** Wenn `model_cfg` mit `card_model_id`-Feld übergeben wird (z.B. Thinking-Profil), nutzt `enforce_card_first` die Original-Card via `card_model_id`-Redirect statt eine Platzhalter-Card zu erstellen. `ResultManager._find_model_cfg()` löst die model_cfg aus der expandierten Config auf und reicht sie durch.
 
 ---
 

@@ -11,6 +11,7 @@ Detail-Referenz für CrucibleMark-Architektur-Constraints. Die Top-Constraints s
 - **Konfiguration ausschließlich über Config-Files**, nie hardcodiert.
 - **Sequenzielle Modell-Abarbeitung (Design-Constraint):** Modelle werden einzeln nacheinander getestet, Server wird zwischen Modellen neu gestartet, Cooldown via `AdaptivePauseCalculator`. Das ist KEIN Performance-Bug — es garantiert gleichwertige Testumgebungen. **NICHT parallelisieren.**
 - **Judge-Reset zwischen Tasks:** jede Judge-Bewertung ist ein frischer API-Call ohne Kontext aus vorherigen Bewertungen. KEIN Judge-Caching einführen — verhindert Kontextmix.
+- **vLLM-Thinking-Profile-Expansion nur für `api_type == "vllm"`:** `_expand_thinking_profiles()` darf NUR vLLM-Provider expandieren. llama.cpp's `enable_thinking` ist ein Server-Start-Flag (per-Server, nicht per-Request) — Expansion würde zwei Profile mit unterschiedlichem Server-Flag erzeugen, die dennoch neu starten müssen. Nur vLLM's `enable_thinking` ist ein Chat-Template-Kwarg, der per-Request via `chat_template_kwargs` gesteuert wird.
 
 ## Single Sources of Truth (SSoT)
 
@@ -23,6 +24,9 @@ Detail-Referenz für CrucibleMark-Architektur-Constraints. Die Top-Constraints s
 | Modell-Kategorisierung (Display) | `get_model_category()` in `utils/model_utils.py` |
 | Thinking-Erkennung (Override > Probe > None) | `resolve_effective_thinking()` in `utils/model_utils.py` |
 | `_safe_name()` für Datei-/Verzeichnis-Namen | `utils/model_utils.py` — Pflicht für `outputs/audit_logs/<slug>/` und `docs/reviews/<slug>/` |
+| vLLM Dual-Thinking-Profile Expansion | `utils/config_validator.py:_expand_thinking_profiles()` — aufgerufen in `_load_config` nach Merge, vor `_check_duplicate_model_ids`. Nur für `api_type == "vllm"`. Generiert aus `enable_thinking: true` zwei Profile: Standard (`{id}`, `chat_template_kwargs: {enable_thinking: false}`) + Thinking (`{id}-thinking`, `card_model_id: {id}`, `chat_template_kwargs: {enable_thinking: true}`, `max_tokens: thinking_max_tokens}`). `thinking_max_tokens`-Quelle: model_cfg > provider > Fehler (kein Hardcoding). |
+| vLLM Swap-Entkopplung (Profile-Wechsel ohne Neustart) | `utils/providers/vllm_base.py:_active_config` — trackt TOML-Config des aktiven Modells. `_ensure_model_ready` vergleicht `config:` statt `model_id`: gleiche `config:` → kein `swap_model`, nur per-Request-Param-Wechsel. Backward-compat: `_active_config is None` → bisheriges Verhalten. |
+| `card_model_id`-Redirect (Card-Lookup für Thinking-Profile) | `utils/model_utils.py:_find_card()` + `resolve_canonical_model_id()` — akzeptieren optional `model_cfg`. Wenn `card_model_id` vorhanden → Card-Lookup über dieses Feld. `resolve_canonical_model_id` gibt Profile-eigene `_safe_name(base)` zurück (nicht Card's `model_id`) — CSV `model_id` bleibt `{id}-thinking`. `enforce_card_first()` + `ResultManager._find_model_cfg()` threaden `model_cfg` durch. |
 | GGUF Post-Apply-Korrekturen | `_ensure_gguf_conventions()` in `manage_model_cards.py` |
 
 ## Anthropic `max_tokens` (aktuell)

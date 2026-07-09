@@ -1,6 +1,81 @@
 # Progress
 Letzte Releases + aktueller Stand.
 
+### 2026-07-08 (Session 53) — Dual-Profile card_model_id-Drift behoben [DONE, uncommitted]
+
+**Auslöser:** Session 52 implementierte `card_model_id`-Redirect für Dual-Thinking-Profile, aber 4 Aufrufstellen reichten `model_cfg` nicht durch → Live-Drift: Ornith Thinking-Profil zeigte `k.A.` statt `1.0/VSPK` in Leaderboard-Version, Web-Export hatte `card = None` (kein vendor, keine probe-fields). Zusätzlich existierte eine Drift-Card `ornith-1_0-35B-FP8-thinking.json` mit `medium`-Confidence (statt `high`) und `TODO`-Placeholder.
+
+**Geliefert:**
+- **SSoT-Helper `resolve_model_cfg_for(model_id, config)`** in `utils/model_utils.py` — iteriert `commercial`+`local`-Sections, nutzt `find_model_in_provider_cfg` für normalisierten Lookup. Ersetzt 15-Zeilen-Inline-Loops in `result_manager._find_model_cfg` und `base_runner._resolve_thinking_mode`.
+- **4 Drift-Stellen gefixt:**
+  - `scripts/leaderboard/data_loader.py:223` — `card_version_map`-Loop lädt Config einmal, reicht `model_cfg` an `_find_model_card`. → Ornith Thinking zeigt `1.0/VSPK` statt `k.A.`.
+  - `scripts/core/unified_runner.py:_resolve_model_card_path` — akzeptiert `model_cfg`, reicht an `_find_card`. → Probe findet geteilte Card.
+  - `scripts/core/unified_runner.py:_canonicalize_and_probe` — löst `model_cfg` auf, reicht an `resolve_canonical_model_id` + `_ensure_model_card`.
+  - `scripts/web_export.py:load_model_card` — akzeptiert optionales `config`, löst `model_cfg` auf, reicht an `resolve_canonical_model_id` + `_find_card`. → Thinking-Profil bekommt vollständige Card-Daten (version, probe, vendor, license).
+- **Edge-Case `_write_probe_to_card`** — bei `card_loaded=False` + `card_model_id`-Redirect: `ensure_card(card_model_id)` legt Shared-Card unter Basis-ID an (keine Drift-Card mit Profil-ID).
+- **Drift-Card entfernt:** `benchmark_scores/model_cards/ornith-1_0-35B-FP8-thinking.json` (Artefakt).
+
+**Tests:** `tests/test_card_model_id_lookup.py` +7 Tests (SSoT-Helper: thinking-profile, standard-profile, dot-normalization, unknown, empty-config; End-to-End: ornith-shared-card-found, ornith-without-cfg-drifts). 1124 passed, 1 skipped, 1 pre-existing failure (`qwen3_5-35b-a3b-q8` GGUF fehlt).
+
+**Code-Review:** APPROVE WITH 1 SUGGESTION (umgesetzt → `provider`-Parameter aus `_write_probe_to_card` entfernt).
+
+**Architektur-Notiz:** `ensure_card(card_model_id)` OHNE `provider` (nicht mit), weil `provider`-Variante `model_id` auf `{base}--{shortcode}` setzt statt auf Basis-ID. Die unprefixed Card wird trotzdem von `_find_card` gefunden (SUFFIX-Suffix-Lookup).
+
+**Status:** Working Tree, uncommitted.
+
+---
+
+### 2026-07-08 (Session 52) — vLLM Dual-Thinking-Profile: Config-Driven-Expansion + Swap-Entkopplung [DONE, uncommitted]
+
+**Auslöser:** Strategische Initiative Thinking-Mode-Dual-Benchmarking (Phase 2, progress.md:57-64). Ein vLLM-Container pro Modell soll zwei Benchmark-Profile per-Request bedienen: Standard (`enable_thinking: false`) + Thinking (`enable_thinking: true`). Kein Server-Neustart beim Profil-Wechsel. Eine Card, zwei Leaderboard-Einträge.
+
+**Plan-Datei:** `.kilo/plans/1783522014316-vllm-dual-thinking-profiles.md` (Source of Truth).
+
+**Geliefert (4 Bereiche):**
+
+1. **Config-Expansion (`utils/config_validator.py`)** — Neue Methode `_expand_thinking_profiles(providers)`, aufgerufen in `_load_config` nach Merge, vor `_check_duplicate_model_ids`. Iteriert nur Provider mit `api_type == "vllm"` (KRITISCH: llama.cpp hat `enable_thinking` als Server-Flag mit anderer Semantik — NICHT expandieren). Für jeden model_cfg-Eintrag mit `enable_thinking: true`:
+   - Original-Eintrag: konsumiert `enable_thinking`, setzt explizit `chat_template_kwargs: {"enable_thinking": false}`.
+   - Generiert Thinking-Eintrag: `id: {original_id}-thinking`, `name: {name} Thinking`, `config:` identisch, `card_model_id: {original_id}`, `chat_template_kwargs: {"enable_thinking": true}`, `max_tokens: {thinking_max_tokens}`.
+   - `thinking_max_tokens`-Quelle: model_cfg `thinking_max_tokens` > provider `thinking_max_tokens` > Fehler (kein Hardcoding).
+
+2. **vLLM-Connector Swap-Entkopplung (`utils/providers/vllm_base.py`)** — Neues Instance-Attribut `_active_config: str | None`. In `start_server`/`swap_model`: beim Successful-Set von `_active_model` zusätzlich `_active_config = self._config_arg(model_id)`. `_ensure_model_ready` hat neuen Pfad vor `swap_model`: wenn `self._active_config == self._config_arg(new_model)` UND `_is_healthy()` → **kein Swap**, nur per-Request-Param-Wechsel via `_resolve_sampling`. Backward-compat: `_active_config is None` → bisheriges Verhalten.
+
+3. **Card-Lookup via `card_model_id` (`utils/model_utils.py`)** — `_find_card()` und `resolve_canonical_model_id()` akzeptieren optional `model_cfg`-Parameter. Wenn `card_model_id` im model_cfg vorhanden, nutzen sie dieses für Card-Lookup (deterministisch, kein Suffix-Stripping-Heuristik). `resolve_canonical_model_id` mit Redirect gibt die PROFILES eigene `_safe_name(base)` zurück (CSV `model_id` bleibt `{id}-thinking`), NICHT die Card's `model_id`. `enforce_card_first()` und `result_manager.ResultManager._find_model_cfg()` threaden `model_cfg` durch, verhindern Platzhalter-Card-Erstellung für Thinking-Profile.
+
+4. **Config-Einträge (`config/provider_config.yaml`)** — `thinking_max_tokens: 32768` als vllm_spark Provider-Default. `enable_thinking: true` an Ornith-Standard-Eintrag (Trigger für Expansion).
+
+**Bug-Fixes während Implementierung:**
+- `resolve_provider()` las YAML direkt ohne Expansion → konnte `{id}-thinking`-Profile nicht sehen → fiel auf Ollama zurück. Fix: nutzt jetzt `ConfigValidator().config` als primäre Quelle (merge + expansion aware), mit Raw-YAML-Fallback.
+- Erroneous placeholder card `ornith-1_0-35B-FP8-thinking.json` wurde vor `enforce_card_first`-Fix auto-generiert. Gelöscht, Code-Fix verhindert Wiederholung.
+
+**Tests:**
+- `tests/test_config_thinking_expansion.py` (18 Tests): Expansion generiert 2 Einträge aus 1; Original verliert `enable_thinking`, bekommt `chat_template_kwargs: false`; Thinking-Eintrag hat korrekte id/card_model_id/max_tokens; `api_type != vllm` wird NICHT expandiert (llama.cpp-Regression); fehlendes `thinking_max_tokens` → Fehler.
+- `tests/test_card_model_id_lookup.py` (7 Tests): `card_model_id`-Feld → Card gefunden; fehlendes Feld → bisheriges Verhalten; Redirect gibt Profile-eigene ID zurück (nicht Card's `model_id`).
+- `tests/test_vllm_spark_provider.py` (+5 Tests): Profil-Wechsel (gleiche `config:`) → kein `swap_model`-Aufruf; echter Modell-Wechsel (ungleiche `config:`) → `swap_model`; backward-compat (`_active_config is None`).
+
+**Live-Verifikation:**
+- Per-Request-Test: Standard (kein `think_content`, 0.6s) vs Thinking (`think_content` populated, 8.8s) ✓
+- CLI-Benchmark `cli_benchmark` auf Thinking-Profil: 95.3% avg, 6/6 Tests, `think_content=JA` für alle 6 ✓
+- Container-Swap korrekt vermieden beim Profil-Wechsel ✓
+
+**Full Suite:** 1117 passed, 1 skipped, 1 pre-existing failure (`qwen3_5-35b-a3b-q8` auskommentiert vor dieser Session). `make validate` exit 0.
+
+**Architektur-Entscheidungen:**
+- `resolve_canonical_model_id` mit `card_model_id`-Redirect gibt `_safe_name(base)` (Profile-eigene ID) zurück, NICHT die Card's `model_id` — CSV `model_id` bleibt `{id}-thinking`, Redirect ist NUR für Card-Existenz-Check.
+- `resolve_provider` nutzt `ConfigValidator` als primäre Config-Quelle (seht expandierte Profile), mit Raw-YAML-Fallback für Edge-Cases.
+- `_expand_thinking_profiles` nur für `api_type == "vllm"` — llama.cpp nutzt `enable_thinking` als Server-Start-Flag (`--reasoning off`), unterschiedliche Semantik.
+- `enforce_card_first` threaded `model_cfg` durch, um Platzhalter-Cards für Thinking-Profile zu vermeiden (die teilen sich die Original-Card via `card_model_id`).
+
+**Offen (Out-of-Scope, laut Plan):**
+- `benchmark_auto.py`/`vllm_batch.py` config-Gruppierung — Container-Session-Optimierung für beide Profile (gruppieren nach `config:` statt `model_id`).
+- `thinking_mode`-CSV-Spalte (Phase 3 der strategischen Initiative).
+- Web-Export: welcher der beiden Leaderboard-Einträge exportiert wird (Blacklist-Anpassung).
+- `reasoning_effort`-Abstufung (Ornith-Template unterstützt nur bool).
+
+**Status:** Working Tree, uncommitted.
+
+---
+
 ### 2026-07-08 (Session 51) — vLLM-Experiment abgeschlossen: llama.cpp `--reasoning off` leakt Thinking [DONE, uncommitted]
 
 **Auslöser:** vLLM-Ornith-Benchmark (Thinking OFF) lieferte deutlich schlechtere Ergebnisse als llama.cpp (73.85% vs 76.3%). Analyse sollte klären: Quantisierungsunterschied (FP8 vs Q8_0) oder Thinking-Modus-Differenz?

@@ -109,6 +109,37 @@ Zusätzlich: `reasoning_tokens` wird bevorzugt aus `usage.completion_tokens_deta
 
 Per-Model-Cap wird in `llamacpp_base.py:query()` NACH `resolve_token_budget()` angewendet: `min(initial_tokens, model_cfg_max_tokens)`.
 
+## vLLM Dual-Thinking-Profile (Session 52)
+
+vLLM-Modelle mit `enable_thinking: true` werden beim Config-Load automatisch in zwei Profile expandiert. Ein Container bedient beide per-Request — kein Server-Neustart beim Profil-Wechsel.
+
+### Expansion-Mechanik
+
+`_expand_thinking_profiles(providers)` in `utils/config_validator.py`, aufgerufen in `_load_config` nach Merge, vor `_check_duplicate_model_ids`:
+
+- **Nur `api_type == "vllm"`** — llama.cpp's `enable_thinking` ist ein Server-Start-Flag (`--reasoning on`/`off`), kein per-Request-Parameter. Expansion für llama.cpp würde zwei Profile erzeugen, die trotzdem neu starten müssen.
+- **Original-Eintrag (Standard-Profil):** konsumiert `enable_thinking`, setzt `chat_template_kwargs: {"enable_thinking": false}`.
+- **Generierter Thinking-Eintrag:** `id: {original_id}-thinking`, `config:` identisch (→ kein Swap), `card_model_id: {original_id}` (→ teilt Card), `chat_template_kwargs: {"enable_thinking": true}`, `max_tokens: {thinking_max_tokens}`.
+- **`thinking_max_tokens`-Quelle:** model_cfg > provider > Fehler (kein Hardcoding).
+
+### Swap-Entkopplung
+
+`_active_config: str | None` in `vllm_base.py` trackt die TOML-Config des aktiven Modells. `_ensure_model_ready` vergleicht `config:` statt `model_id`:
+
+- Gleiche `config:` (z.B. Standard → Thinking desselben Modells) → **kein `swap_model`**, nur per-Request-Param-Wechsel via `_resolve_sampling`.
+- Unterschiedliche `config:` → `swap_model` wie bisher.
+- Backward-compat: `_active_config is None` → bisheriges Verhalten.
+
+### Card-Lookup via `card_model_id`
+
+`_find_card()` und `resolve_canonical_model_id()` akzeptieren optional `model_cfg`. Wenn `card_model_id` vorhanden → Card-Lookup über dieses Feld (deterministisch, kein Suffix-Stripping-Heuristik). `resolve_canonical_model_id` gibt die **Profile-eigene ID** zurück (`{id}-thinking`), NICHT die Card's `model_id` — CSV `model_id` bleibt eindeutig.
+
+`enforce_card_first()` und `ResultManager._find_model_cfg()` threaden `model_cfg` durch → verhindern Platzhalter-Card-Erstellung für Thinking-Profile.
+
+### `resolve_provider` muss expandierte Config sehen
+
+`resolve_provider()` nutzt `ConfigValidator().config` als primäre Quelle (merge + expansion aware), nicht die Roh-YAML. Andernfalls sind generierte `{id}-thinking`-Profile unsichtbar → fälschlicher Fallback auf Ollama.
+
 ## Provider-ID-Heuristiken
 
 ### `_infer_provider()` — `/`-Präsenz-Heuristik

@@ -317,6 +317,24 @@ extra_args = [
 ]
 ```
 
+**Aufrufbeispiele (für später, ohne Server-Restart):**
+```bash
+# Default: no thinking
+curl -X POST http://localhost:3300/v1/chat/completions -d '{
+  "model": "ornith-1.0-35B-FP8",
+  "messages": [{"role":"user","content":"..."}],
+  "temperature": 0.6, "top_p": 0.95, "top_k": 20
+}'
+
+# Thinking on (pro Request):
+curl -X POST http://localhost:3300/v1/chat/completions -d '{
+  "model": "ornith-1.0-35B-FP8",
+  "messages": [{"role":"user","content":"..."}],
+  "temperature": 0.6, "top_p": 0.95, "top_k": 20,
+  "chat_template_kwargs": {"enable_thinking": true}
+}'
+```
+
 ### Think-Content-Beispiel (llama.cpp, reasoning_metacog_001)
 
 ```

@@ -261,6 +261,22 @@ llama.cpp-Modelle mit `--reasoning on` geben Thinking-Inhalte im separaten API-F
 | Groq | Bearer token | Modellabhängig | ✅ | Im Wrapper | `max_completion_tokens` statt `max_tokens` (config-getrieben); `reasoning_tokens` aus `usage.completion_tokens_details` |
 | Cohere | API key | 128K (Command) | ❌ | 500 → 2× Retry (Backoff) | **Native `tools`-API für ToolUse-Modul** (v4.10.8); Prompt-basierte Tool-Schemas kollidieren mit Reasoning-Modellen; `thinking: {"type": "disabled"}` bei Native Tools; `command-a-plus`: MoE-Instabilität bei komplexen Prompts (HTTP 500) |
 
+**vLLM Dual-Thinking-Profile (ab Session 52):**
+
+vLLM-Modelle mit `enable_thinking: true` werden beim Config-Load automatisch in zwei Benchmark-Profile expandiert — ein Container bedient beide per-Request, ohne Server-Neustart beim Profil-Wechsel.
+
+| Aspekt | Mechanik |
+|---|---|
+| **Expansion-Trigger** | `enable_thinking: true` im model_cfg (nur `api_type == "vllm"`) |
+| **Standard-Profil** | `{id}` mit `chat_template_kwargs: {"enable_thinking": false}`, `max_tokens` aus Config |
+| **Thinking-Profil** | `{id}-thinking` mit `chat_template_kwargs: {"enable_thinking": true}`, `max_tokens: thinking_max_tokens`, `card_model_id: {id}` |
+| **Container-Reuse** | `_active_config`-Tracking in `vllm_base.py` vergleicht `config:` (TOML) statt `model_id` → gleiche `config:` = kein Swap |
+| **Card-Sharing** | `card_model_id`-Feld → `_find_card()` nutzt Original-Card für Thinking-Profil (deterministisch, kein Suffix-Stripping) |
+| **Leaderboard** | Zwei separate CSV-Einträge (`{id}` + `{id}-thinking`), zwei Leaderboard-Einträge, eine geteilte Card |
+| **`thinking_max_tokens`-Quelle** | model_cfg > provider > Fehler (kein Hardcoding) |
+
+**Warum nur vLLM?** vLLM's `enable_thinking` ist ein Chat-Template-Kwarg (per-Request via `chat_template_kwargs`). llama.cpp's `enable_thinking` ist ein Server-Start-Flag (`--reasoning on`/`off`) — kann nicht per-Request gewechselt werden. Expansion läuft daher NUR für `api_type == "vllm"`.
+
 **Provider Thinking/Reasoning-Extraktion (ab v4.10.1):**
 
 Alle Provider-Connectors in `utils/providers/` extrahieren seit v4.10.1 konsistent drei Felder in `last_response_metadata`:
