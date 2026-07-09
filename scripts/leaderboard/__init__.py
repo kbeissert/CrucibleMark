@@ -151,6 +151,15 @@ def main(print_table: bool = True) -> Optional[pd.DataFrame]:
         )
         leaderboard = leaderboard.merge(provider_map, on="model", how="left")
 
+    # 3a.1 Re-attach thinking_mode column (vLLM dual-profile / llama.cpp)
+    if "thinking_mode" in df.columns and "thinking_mode" not in leaderboard.columns:
+        mode_map = (
+            df.groupby("model")["thinking_mode"]
+            .agg(lambda s: s.mode().iloc[0] if not s.mode().empty else "n/a")
+            .reset_index()
+        )
+        leaderboard = leaderboard.merge(mode_map, on="model", how="left")
+
     # 3b. Enrich with LLM Judge scores
     leaderboard = _enrich_with_llm_judge(leaderboard, df)
 

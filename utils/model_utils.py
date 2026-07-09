@@ -299,6 +299,44 @@ def find_model_in_provider_cfg(
     return None
 
 
+def resolve_model_cfg_for(
+    model_id: str,
+    config: dict[str, Any],
+) -> dict[str, Any] | None:
+    """SSoT: Löst den ``model_cfg``-Eintrag für ``model_id`` aus der expandierten Config auf.
+
+    Iteriert über die ``commercial``- und ``local``-Provider-Sections und nutzt
+    ``find_model_in_provider_cfg`` für den normalisierten Lookup (Underscore↔Dot).
+
+    Wird benötigt, damit Aufrufer den ``card_model_id``-Redirect für
+    Dual-Thinking-Profile (vLLM) konsistent weiterreichen können — ohne an
+    jeder Aufrufstelle den Section-Loop zu duplizieren.
+
+    Ersetzt die bisher inline duplizierten Loops in:
+    - ``result_manager.ResultManager._find_model_cfg``
+    - ``base_runner.BaseTest._resolve_thinking_mode``
+
+    Args:
+        model_id: Interne Modell-ID (z.B. ``ornith-1_0-35B-FP8-thinking``).
+        config:   Die vollständige Config (wie ``ConfigValidator().config``).
+
+    Returns:
+        Den Model-Eintrag-Dict wenn gefunden, sonst ``None``.
+    """
+    providers = config.get("providers", {})
+    for section in ("commercial", "local"):
+        section_cfg = providers.get(section, {})
+        if not isinstance(section_cfg, dict):
+            continue
+        for prov_cfg in section_cfg.values():
+            if not isinstance(prov_cfg, dict):
+                continue
+            entry = find_model_in_provider_cfg(prov_cfg, model_id)
+            if entry is not None:
+                return entry
+    return None
+
+
 def strip_date_suffix(model_id: str) -> str:
     """Entfernt Datums-/Monatssuffixe am Ende einer Model-ID (SSoT).
 
@@ -316,7 +354,11 @@ def strip_date_suffix(model_id: str) -> str:
     return cleaned
 
 
-def resolve_canonical_model_id(model_id: str) -> str:
+def resolve_canonical_model_id(
+    model_id: str,
+    *,
+    model_cfg: dict[str, Any] | None = None,
+) -> str:
     """SSoT für alle model_id-Auflösungen.
 
     Liefert die kanonische Schreibweise einer Model-ID, identisch mit der
@@ -365,11 +407,29 @@ def resolve_canonical_model_id(model_id: str) -> str:
     if not model_id:
         return model_id
     base = normalize_model_id(model_id)
+
+    # card_model_id-Redirect: Wenn model_cfg ein card_model_id-Feld enthält,
+    # wird _find_card die Card der ORIGINAL-Modell-ID finden. Der Redirect
+    # dient NUR der Card-Existenz-Prüfung — die kanonische ID des Profils
+    # (z.B. ``{id}-thinking``) bleibt unverändert. Andernfalls würde
+    # resolve_canonical_model_id die Original-ID zurückgeben und die
+    # CSV-Spalte überschreiben (Plan: "CSV model_id bleibt {...}-thinking").
+    _used_card_redirect = (
+        model_cfg is not None
+        and isinstance(model_cfg.get("card_model_id"), str)
+        and bool(model_cfg["card_model_id"])
+        and model_cfg["card_model_id"] != model_id
+    )
+
     try:
-        card_path = _find_card(base)
+        card_path = _find_card(base, model_cfg=model_cfg)
     except Exception:  # noqa: BLE001
         card_path = None
     if card_path is not None and card_path.exists():
+        # Bei card_model_id-Redirect: Card-Existenz bestätigt, aber die
+        # kanonische ID ist die EIGENE (Profil-ID), nicht die der Card.
+        if _used_card_redirect:
+            return _safe_name(base)
         try:
             data = json.loads(card_path.read_text(encoding="utf-8"))
             if isinstance(data, dict):
@@ -386,7 +446,11 @@ def resolve_canonical_model_id(model_id: str) -> str:
     return _safe_name(base)
 
 
-def enforce_card_first(model_id: str) -> tuple[str, bool]:
+def enforce_card_first(
+    model_id: str,
+    *,
+    model_cfg: dict[str, Any] | None = None,
+) -> tuple[str, bool]:
     """Card-First-Vertrag: stellt sicher, dass jede geschriebene model_id eine
     Model Card besitzt.
 
@@ -410,9 +474,9 @@ def enforce_card_first(model_id: str) -> tuple[str, bool]:
     """
     if not model_id:
         return model_id, False
-    canonical = resolve_canonical_model_id(model_id)
+    canonical = resolve_canonical_model_id(model_id, model_cfg=model_cfg)
     try:
-        card_path = _find_card(canonical)
+        card_path = _find_card(canonical, model_cfg=model_cfg)
     except Exception:  # noqa: BLE001
         card_path = None
     if card_path is not None and card_path.exists():
@@ -616,7 +680,11 @@ def resolve_unique_card_id(desired_id: str, card_dir: Path | None = None) -> str
     return candidate
 
 
-def _find_card(model_id: str, card_dir: Path | None = None) -> Path:
+def _find_card(
+    model_id: str,
+    card_dir: Path | None = None,
+    model_cfg: dict[str, Any] | None = None,
+) -> Path:
     """Finds an existing model card for *model_id* without knowing the provider.
 
     When a provider is not available at the call site (e.g. inside utility
@@ -635,13 +703,30 @@ def _find_card(model_id: str, card_dir: Path | None = None) -> Path:
         Override the card directory. ``None`` (default) uses the module-level
         ``CARD_DIR`` constant. Pass an explicit path when the caller resolves
         paths relative to a root directory (e.g. in ``scripts/web_export.py``).
+    model_cfg:
+        Optional model_cfg-Block (z.B. aus ``provider_config.yaml``). Wenn
+        gesetzt und ``card_model_id`` enthalten ist, wird DIESER Wert als
+        Card-Lookup-Basis verwendet statt ``model_id``. Ermöglicht
+        Profil-Entries (``{id}-thinking``), die auf die Card der
+        zugrundeliegenden Modell-ID zeigen (vLLM Dual-Thinking-Profile).
     """
     _cd = card_dir if card_dir is not None else CARD_DIR
-    safe = _safe_name(model_id)
+
+    # Profil-Redirect: card_model_id im model_cfg überschreibt die model_id
+    # für den Lookup. Deterministisch (kein Suffix-Stripping), kein
+    # Re-Entry der Funktion → verhindert Endlos-Rekursion, falls ein
+    # profile-Eintrag selbst wieder card_model_id trägt.
+    lookup_id = model_id
+    if model_cfg is not None:
+        card_model_id = model_cfg.get("card_model_id")
+        if isinstance(card_model_id, str) and card_model_id:
+            lookup_id = card_model_id
+
+    safe = _safe_name(lookup_id)
     unprefixed = _cd / f"{safe}.json"
 
     # Namespaced IDs (OpenRouter, Groq namespaced, …) only ever use the unprefixed path
-    if "/" in model_id:
+    if "/" in lookup_id:
         if unprefixed.exists():
             return unprefixed
         # Glob fallback for date-suffixed cards (e.g. z-ai_glm-5-20260211.json).
@@ -650,7 +735,7 @@ def _find_card(model_id: str, card_dir: Path | None = None) -> Path:
         candidates = sorted(_cd.glob(f"{safe}-[0-9]*.json"))
         if candidates:
             import logging as _logging
-            _logging.debug("_find_card: glob fallback matched '%s' for input '%s'", candidates[-1].name, model_id)
+            _logging.debug("_find_card: glob fallback matched '%s' for input '%s'", candidates[-1].name, lookup_id)
             return candidates[-1]  # most recent when multiple versions exist
         return unprefixed
 
@@ -672,10 +757,10 @@ def _find_card(model_id: str, card_dir: Path | None = None) -> Path:
 
     # Version-aware fallback: card was renamed from alias to version-specific file
     # e.g. "mistral-large-latest" → "mistral-large-3.json"
-    if model_id.endswith("-latest") or model_id.endswith(":latest"):
-        ver = get_model_version(model_id, provider="api")
+    if lookup_id.endswith("-latest") or lookup_id.endswith(":latest"):
+        ver = get_model_version(lookup_id, provider="api")
         if ver and ver.strip() not in _STALE_VERSIONS:
-            base = re.sub(r"[:-]latest$", "", model_id)
+            base = re.sub(r"[:-]latest$", "", lookup_id)
             versioned = _cd / f"{_safe_name(base)}-{ver.strip()}.json"
             if versioned.exists():
                 return versioned
@@ -685,23 +770,23 @@ def _find_card(model_id: str, card_dir: Path | None = None) -> Path:
         candidates = sorted(_cd.glob(f"{safe}-[0-9]*.json"))
         if candidates:
             import logging as _logging
-            _logging.debug("_find_card: glob fallback matched '%s' for input '%s'", candidates[-1].name, model_id)
+            _logging.debug("_find_card: glob fallback matched '%s' for input '%s'", candidates[-1].name, lookup_id)
             return candidates[-1]
 
     # Dot-to-hyphen fallback: API model IDs with dots (e.g. "grok-4.1-fast-reasoning")
     # may have cards named with hyphens (e.g. "grok-4-1-fast-reasoning.json") when the
     # provider_config entry uses hyphens.  _safe_name converts dots to underscores, so the
     # primary lookup misses the hyphen-named card.  Try the hyphen variant as a last resort.
-    if not unprefixed.exists() and "." in model_id:
-        hyphen_id = model_id.replace(".", "-")
-        if hyphen_id != model_id:
+    if not unprefixed.exists() and "." in lookup_id:
+        hyphen_id = lookup_id.replace(".", "-")
+        if hyphen_id != lookup_id:
             hyphen_safe = _safe_name(hyphen_id)
             hyphen_path = _cd / f"{hyphen_safe}.json"
             if hyphen_path.exists():
                 import logging as _logging
                 _logging.debug(
                     "_find_card: dot→hyphen fallback matched '%s' for input '%s'",
-                    hyphen_path.name, model_id,
+                    hyphen_path.name, lookup_id,
                 )
                 return hyphen_path
 
@@ -1072,39 +1157,56 @@ def resolve_provider(model_name: str) -> tuple[str, str]:
     # find_model_in_provider_cfg() und wird bereits von allen Provider-Konnektoren
     # (openai/openrouter/groq/google/xai) angewendet.
     _model_name_config_form = internal_id_to_config_form(model_name)
-    # SSOT: Lookup in benchmark_config.yaml AND config/provider_config.yaml (merged)
-    _config_paths = [Path("benchmark_config.yaml"), Path("config/provider_config.yaml")]
-    for _config_path in _config_paths:
-        if not _config_path.exists():
+
+    # Config-Quellen: zuerst ConfigValidator (merged + thinking-expandierte
+    # Config — sieht auch generierte ``{id}-thinking``-Profile), danach
+    # Fallback auf direktes YAML-Lesen (falls ConfigValidator fehlschlägt).
+    _provider_sources: list[dict] = []
+    try:
+        from utils.config_validator import ConfigValidator  # noqa: PLC0415
+        _validator_cfg = ConfigValidator().config
+        _provider_sources.append(_validator_cfg.get("providers", {}))
+    except Exception:  # noqa: BLE001
+        pass
+
+    # Fallback: direktes YAML-Lesen (bestehendes Verhalten für Edge-Cases,
+    # in denen ConfigValidator nicht instanziierbar ist).
+    if not _provider_sources:
+        for _config_path in [Path("benchmark_config.yaml"), Path("config/provider_config.yaml")]:
+            if not _config_path.exists():
+                continue
+            try:
+                with open(_config_path, encoding="utf-8") as _f:
+                    _cfg = yaml.safe_load(_f)
+                _provider_sources.append(_cfg.get("providers", {}))
+            except Exception:  # noqa: BLE001
+                pass
+
+    for _providers in _provider_sources:
+        if not isinstance(_providers, dict):
             continue
-        try:
-            with open(_config_path, encoding="utf-8") as _f:
-                _cfg = yaml.safe_load(_f)
-            _providers = _cfg.get("providers", {})
-            # Check commercial providers first
-            _commercial = _providers.get("commercial", {})
-            if isinstance(_commercial, dict):
-                for _prov_key, _prov_cfg in _commercial.items():
-                    if not isinstance(_prov_cfg, dict):
-                        continue
-                    for _m in _prov_cfg.get("models", []):
-                        if isinstance(_m, dict):
-                            _m_id = _m.get("id", "")
-                            if _m_id == model_name or _m_id == _model_name_config_form:
-                                return _prov_key, model_name
-            # Check local providers (llamacpp, ollama, etc.)
-            _local = _providers.get("local", {})
-            if isinstance(_local, dict):
-                for _prov_key, _prov_cfg in _local.items():
-                    if not isinstance(_prov_cfg, dict):
-                        continue
-                    for _m in _prov_cfg.get("models", []):
-                        if isinstance(_m, dict):
-                            _m_id = _m.get("id", "")
-                            if _m_id == model_name or _m_id == _model_name_config_form:
-                                return _prov_key, model_name
-        except Exception:
-            pass
+        # Check commercial providers first
+        _commercial = _providers.get("commercial", {})
+        if isinstance(_commercial, dict):
+            for _prov_key, _prov_cfg in _commercial.items():
+                if not isinstance(_prov_cfg, dict):
+                    continue
+                for _m in _prov_cfg.get("models", []):
+                    if isinstance(_m, dict):
+                        _m_id = _m.get("id", "")
+                        if _m_id == model_name or _m_id == _model_name_config_form:
+                            return _prov_key, model_name
+        # Check local providers (llamacpp, ollama, etc.)
+        _local = _providers.get("local", {})
+        if isinstance(_local, dict):
+            for _prov_key, _prov_cfg in _local.items():
+                if not isinstance(_prov_cfg, dict):
+                    continue
+                for _m in _prov_cfg.get("models", []):
+                    if isinstance(_m, dict):
+                        _m_id = _m.get("id", "")
+                        if _m_id == model_name or _m_id == _model_name_config_form:
+                            return _prov_key, model_name
 
     # Fallback: Präfix-Matching für nicht konfigurierte Modelle
     name_lower = model_name.lower()

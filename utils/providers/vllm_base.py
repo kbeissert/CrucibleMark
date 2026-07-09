@@ -124,6 +124,7 @@ class VllmBaseClient(BaseProviderClient):
         self._client: Any | None = None
         self._client_base_url: str | None = None
         self._active_model: str | None = None
+        self._active_config: str | None = None  # TOML/Config des aktiven Modells (Profil-Tracking)
         self._server_model_name: str | None = None  # echter Server-Name (z. B. "ornith-1.0-35B-FP8")
         self._server_pid: int | None = None
 
@@ -754,6 +755,7 @@ class VllmBaseClient(BaseProviderClient):
                 probe_name = detected  # Server-Name für API-Calls
                 if self._is_model_ready(probe_name):
                     self._active_model = model_id
+                    self._active_config = self._config_arg(model_id)
                     self._server_model_name = detected
                     logger.debug(
                         "Adopting already running vLLM endpoint at %s with model '%s' (server name: '%s')",
@@ -777,6 +779,7 @@ class VllmBaseClient(BaseProviderClient):
                     log_prefix="Adopt warmup",
                 ):
                     self._active_model = model_id
+                    self._active_config = self._config_arg(model_id)
                     self._server_model_name = detected
                     print("   ✅ Modell bereit nach Wartezeit", flush=True)
                     logger.debug(
@@ -800,6 +803,7 @@ class VllmBaseClient(BaseProviderClient):
             # Latenz) zum Stoppen des laufenden Servers führt.
             if detected is None and self._is_model_ready(model_id):
                 self._active_model = model_id
+                self._active_config = self._config_arg(model_id)
                 self._server_model_name = model_id  # kein Server-Name bekannt, model_id verwenden
                 logger.debug(
                     "Adopting already running vLLM endpoint at %s with model '%s' "
@@ -863,6 +867,7 @@ class VllmBaseClient(BaseProviderClient):
                 log_prefix="Loading warmup",
             ):
                 self._active_model = model_id
+                self._active_config = self._config_arg(model_id)
                 # Server-Namen abfragen für API-Calls
                 detected = self._query_active_model()
                 self._server_model_name = detected or model_id
@@ -901,6 +906,7 @@ class VllmBaseClient(BaseProviderClient):
             model_id, timeout_sec=ready_timeout, poll_sec=ready_poll, log_prefix="vLLM",
         ):
             self._active_model = model_id
+            self._active_config = self._config_arg(model_id)
             # Server-Namen abfragen für API-Calls
             detected = self._query_active_model()
             self._server_model_name = detected or model_id
@@ -943,6 +949,7 @@ class VllmBaseClient(BaseProviderClient):
             logger.warning("Could not stop vLLM server: %s", exc)
 
         self._active_model = None
+        self._active_config = None
         self._server_model_name = None
         self._client = None
         self._client_base_url = None
@@ -1000,6 +1007,13 @@ class VllmBaseClient(BaseProviderClient):
     def _ensure_model_ready(self, model: str) -> bool:
         """Stellt sicher, dass ``model`` auf dem vLLM-Server geladen ist.
 
+        Profil-Sprung-Logik: Zwei Profile (Standard + Thinking) zeigen auf
+        dasselbe TOML (``config`` identisch). In diesem Fall darf KEIN
+        Container-Swap erfolgen — nur die per-Request-Sampling-Parameter
+        wechseln (``_resolve_sampling`` greift automatisch auf das
+        model_cfg des neuen Profils zu). Der Vergleich erfolgt auf der
+        ``_config_arg``-Ebene (TOML/Pfad), NICHT auf der model_id.
+
         Returns:
             True wenn Modell bereit (oder bereits geladen), sonst False.
         """
@@ -1016,6 +1030,35 @@ class VllmBaseClient(BaseProviderClient):
                 model,
             )
             self._active_model = None
+            self._active_config = None
+            self._server_model_name = None
+            return self.start_server(model)
+
+        # Profil-Wechsel: anderes Profil (Standard ↔ Thinking), aber
+        # DASSELBE TOML. Kein Container-Swap nötig — nur per-Request-Sampling
+        # wechselt. Backward-compat: ohne aktives _active_config (ältere
+        # Single-Profile-Connector-Instanzen) wird der bisherige Pfad benutzt.
+        if (
+            self._active_model is not None
+            and self._active_model != model
+            and self._active_config is not None
+            and self._active_config == self._config_arg(model)
+        ):
+            probe_name = self._server_model_name or self._active_model
+            if self._is_healthy() and self._is_model_ready(probe_name):
+                self._active_model = model
+                self._active_config = self._config_arg(model)
+                logger.debug(
+                    "Profil-Wechsel ohne Container-Swap: '%s' → '%s' "
+                    "(gleiches TOML '%s').",
+                    self._active_model, model, self._active_config,
+                )
+                return True
+            logger.debug(
+                "Profil-Wechsel erkannt, aber Server nicht bereit — Cold-Start.",
+            )
+            self._active_model = None
+            self._active_config = None
             self._server_model_name = None
             return self.start_server(model)
 

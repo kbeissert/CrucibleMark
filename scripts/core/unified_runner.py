@@ -45,6 +45,7 @@ from utils.model_utils import (
     get_model_version,
     probe_thinking_model,
     resolve_canonical_model_id,
+    resolve_model_cfg_for,
 )
 from utils.rate_limiter import RateLimiter
 from utils.scoring.exceptions import JudgeUnavailableError
@@ -112,18 +113,22 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         self.existing_cloud_benchmarks = self._load_existing_benchmarks(self.cloud_csv)
         self.existing_local_benchmarks = self._load_existing_benchmarks(self.local_csv)
 
-    def _ensure_model_card(self, model: str, provider: str) -> str:
+    def _ensure_model_card(self, model: str, provider: str, model_cfg: dict[str, Any] | None = None) -> str:
         """
         Card-First-Hook: stellt sicher, dass eine Model Card mit Thinking-Probe-Ergebnis
         vorhanden ist, bevor der erste Benchmark-Run startet.
 
         Delegiert an drei private Helfer: Card-Pfad bestimmen, Probe-Felder lesen,
         Probe-Felder schreiben. Returns canonical model_id.
+
+        Args:
+            model_cfg: Optionaler Config-Eintrag für ``card_model_id``-Redirect
+                (Dual-Thinking-Profile). Ohne diesen bleibt das Verhalten wie bisher.
         """
         if model in self._probed_models:
             return model
 
-        card_path, _safe = self._resolve_model_card_path(model)
+        card_path, _safe = self._resolve_model_card_path(model, model_cfg=model_cfg)
         needs_probe, card_loaded, canonical_model = self._read_card_probe_state(
             model, card_path
         )
@@ -137,14 +142,22 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
             # Probe übersprungen (Budget/Quota-Fehler)
             return canonical_model
 
-        self._write_probe_to_card(model, card_path, probe, card_loaded)
+        self._write_probe_to_card(model, card_path, probe, card_loaded, model_cfg=model_cfg)
         self._probed_models.add(model)
         return canonical_model
 
-    def _resolve_model_card_path(self, model: str) -> tuple[Path, str]:
-        """Ermittelt Card-Pfad via _find_card (mit glob-Fallback) oder Safe-Name."""
+    def _resolve_model_card_path(
+        self, model: str, *, model_cfg: dict[str, Any] | None = None,
+    ) -> tuple[Path, str]:
+        """Ermittelt Card-Pfad via _find_card (mit glob-Fallback) oder Safe-Name.
+
+        Args:
+            model_cfg: Optionaler Config-Eintrag für ``card_model_id``-Redirect
+                (Dual-Thinking-Profile). Wird an ``_find_card`` weitergereicht,
+                damit Thinking-Profile die geteilte Card finden.
+        """
         cards_dir = Path("benchmark_scores/model_cards")
-        found_path = _find_card(model)
+        found_path = _find_card(model, model_cfg=model_cfg)
         if found_path is not None and found_path.exists():
             card_path = found_path
             logger.debug("[Card-First] Card gefunden via _find_card: %s", card_path)
@@ -245,8 +258,17 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         card_path: Path,
         probe: Any,
         card_loaded: bool,
+        *,
+        model_cfg: dict[str, Any] | None = None,
     ) -> None:
-        """Schreibt Probe-Felder (Detected, Evidence, Confidence, Timestamp + CoT-Quartett) in die Card."""
+        """Schreibt Probe-Felder (Detected, Evidence, Confidence, Timestamp + CoT-Quartett) in die Card.
+
+        Args:
+            model_cfg: Optionaler Config-Eintrag für ``card_model_id``-Redirect.
+                Wenn ``card_loaded=False`` und ``card_model_id`` vorhanden ist,
+                wird die Shared-Card unter der Basis-ID angelegt (statt einer
+                Drift-Card mit der Profil-ID).
+        """
         from utils.model_utils import classify_cot_marker_family
 
         probe_fields: dict[str, Any] = {
@@ -262,7 +284,27 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
             probe_fields["cot_marker_family"] = classify_cot_marker_family(probe.tags_found)
             probe_fields["cot_tags_detected"] = list(probe.tags_found)
 
-        card_path = ensure_card(model, card_path=card_path if card_loaded else None)
+        if card_loaded:
+            # Shared-Card existiert → direkt beschreiben (ensure_card ergänzt
+            # nur fehlende Felder, model_id bleibt erhalten).
+            card_path = ensure_card(model, card_path=card_path)
+        elif model_cfg and isinstance(model_cfg.get("card_model_id"), str) and model_cfg["card_model_id"]:
+            # Shared-Card existiert NICHT, aber card_model_id-Redirect aktiv.
+            # → Shared-Card unter der Basis-ID anlegen (keine Drift-Card mit
+            # Profil-ID). Ohne provider: ensure_card setzt model_id = Basis-ID
+            # (ohne --VSPK-Suffix) und legt die Card am unprefixed Pfad an.
+            # _find_card findet sie später sowohl über den unprefixed Pfad als
+            # auch über den --VSPK-Suffix-Lookup.
+            card_model_id = model_cfg["card_model_id"]
+            card_path = ensure_card(card_model_id)
+            logger.info(
+                "[Card-First] Shared-Card '%s' für Profil '%s' angelegt (card_model_id-Redirect).",
+                card_model_id, model,
+            )
+        else:
+            # Kein Redirect → Profil-ID-Card anlegen (bestehendes Verhalten).
+            card_path = ensure_card(model, card_path=None)
+
         card_content: dict = json.loads(card_path.read_text(encoding="utf-8"))
         card_content.update(probe_fields)
         if probe.detected:
@@ -916,14 +958,21 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         )
 
     def _canonicalize_and_probe(self, model: str, provider: str) -> str:
-        """SSoT-Canonical + Card-First-Probe. Returns kanonisierte model_id."""
+        """SSoT-Canonical + Card-First-Probe. Returns kanonisierte model_id.
+
+        Löst ``model_cfg`` aus der Config auf und reicht es an
+        ``resolve_canonical_model_id`` und ``_ensure_model_card`` weiter,
+        damit ``card_model_id``-Redirects (Dual-Thinking-Profile) die
+        geteilte Card finden statt eine Drift-Card anzulegen.
+        """
         original_model = model
-        model = resolve_canonical_model_id(model)
+        model_cfg = resolve_model_cfg_for(original_model, self.validator.config)
+        model = resolve_canonical_model_id(original_model, model_cfg=model_cfg)
         if model != original_model:
             logger.info(
                 "[SSoT] model_id kanonisiert: '%s' → '%s'", original_model, model,
             )
-        return self._ensure_model_card(model, provider)
+        return self._ensure_model_card(model, provider, model_cfg=model_cfg)
 
     def _print_run_header(
         self, provider: str, model: str, benchmark_info: dict[str, Any]

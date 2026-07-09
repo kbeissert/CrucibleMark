@@ -287,7 +287,7 @@ def test_main_loop_calls_is_blacklisted_for_each_model(tmp_path: Path) -> None:
          patch.object(we, "build_provider_map", return_value={}), \
          patch.object(we, "load_model_card", return_value=None), \
          patch.object(we, "_resolve_dir", return_value=None), \
-         patch.object(we, "_export_model_files", return_value=([], {"review": None, "bias_review": None})), \
+         patch.object(we, "_export_model_files", return_value={"review": None, "bias_review": None}), \
          patch.object(we, "_build_leaderboard_entry", return_value={"slug": "x"}), \
          patch.object(we, "_build_tooluse_entry", return_value=None), \
          patch.object(we, "_write_top_level_outputs", return_value=None), \
@@ -329,9 +329,9 @@ def test_main_loop_skips_blacklisted_model(tmp_path: Path) -> None:
 
     written_data: list[str] = []
 
-    def _capture_write(model_out, audit_src, comp_src):
+    def _capture_write(model_out, comp_src):
         written_data.append(model_out.name)
-        return [], {"review": None, "bias_review": None}
+        return {"review": None, "bias_review": None}
 
     with patch.object(we, "_setup_output_dirs", return_value=(
             output_root, models_dir, tmp_path)), \

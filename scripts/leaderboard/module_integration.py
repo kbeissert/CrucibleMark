@@ -29,11 +29,14 @@ if str(ROOT_DIR) not in sys.path:
 # pylint: disable=import-error
 try:
     from utils.module_registry import get_active_modules
-    from utils.model_utils import _find_card, resolve_canonical_model_id
+    from utils.model_utils import _find_card, resolve_canonical_model_id, _safe_name
+    from utils.config_validator import ConfigValidator
 except ImportError:
     get_active_modules = None  # type: ignore
     _find_card = None  # type: ignore
     resolve_canonical_model_id = None  # type: ignore
+    _safe_name = None  # type: ignore
+    ConfigValidator = None  # type: ignore
 # pylint: enable=import-error
 
 
@@ -96,6 +99,43 @@ def _build_card_lookups() -> Tuple[Dict[str, str], Dict[str, str]]:
     return id_lookup, display_lookup
 
 
+def _add_thinking_profile_names(
+    id_lookup: Dict[str, str],
+    display_lookup: Dict[str, str],
+) -> None:
+    """Ergänzt display_lookup für Thinking-Profile (card_model_id-Redirect).
+
+    Thinking-Profile haben keine eigene Card — sie teilen sich die Card des
+    Original-Modells via ``card_model_id``. Daher findet ``_build_card_lookups()``
+    keinen Eintrag für ``{id}-thinking``. Diese Funktion lädt die expandierte
+    Config und trägt den Display-Namen aus der geteilten Card ein — derselbe
+    Name wie das Original-Modell. Die Unterscheidung erfolgt über die
+    ``thinking_mode``-Spalte, nicht über den Display-Namen.
+    """
+    if ConfigValidator is None or _safe_name is None:
+        return
+    try:
+        config = ConfigValidator(str(ROOT_DIR / "benchmark_config.yaml")).config
+    except Exception:  # pylint: disable=broad-except
+        return
+    # Provider sind verschachtelt: providers.local.<provider_key>.models[]
+    local_providers = config.get("providers", {}).get("local", {})
+    for _provider_key, provider_data in local_providers.items():
+        if not isinstance(provider_data, dict):
+            continue
+        for model_cfg in provider_data.get("models", []):
+            if "card_model_id" not in model_cfg:
+                continue
+            profile_id = _safe_name(model_cfg["id"])
+            # Display-Name aus der geteilten Card übernehmen (gleicher Name)
+            card_ref = _safe_name(model_cfg["card_model_id"])
+            if card_ref in display_lookup:
+                display_lookup[profile_id] = display_lookup[card_ref]
+            elif profile_id not in display_lookup:
+                display_lookup[profile_id] = card_ref
+            id_lookup[profile_id] = profile_id
+
+
 # Backward compat wrapper
 def _build_model_id_lookup() -> Dict[str, str]:
     """Legacy: gibt nur den ID-Lookup zurück."""
@@ -112,6 +152,7 @@ def _get_lookups() -> Tuple[Dict[str, str], Dict[str, str]]:
     global _ID_LOOKUP, _DISPLAY_LOOKUP
     if _ID_LOOKUP is None or _DISPLAY_LOOKUP is None:
         _ID_LOOKUP, _DISPLAY_LOOKUP = _build_card_lookups()
+        _add_thinking_profile_names(_ID_LOOKUP, _DISPLAY_LOOKUP)
     return _ID_LOOKUP, _DISPLAY_LOOKUP
 
 

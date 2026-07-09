@@ -551,13 +551,23 @@ def _strip_emojis(obj: Any) -> Any:
     return obj
 
 
-def load_model_card(model_name: str, root_dir: Path) -> dict | None:
+def load_model_card(
+    model_name: str,
+    root_dir: Path,
+    config: dict | None = None,
+) -> dict | None:
     """Loads the model card JSON for *model_name*.
 
     SSoT: Delegates to resolve_canonical_model_id() (utils/model_utils.py) for
     the full Card-Lookup-Pipeline (Card-Filenames + _safe_name-Fallback + Slug
     Derivation), then applies web-export-specific fallbacks for display-name
     vs. model_id mismatches (e.g. "kimi-k2.5" → "moonshotai/kimi-k2.5-0127").
+
+    Args:
+        config: Optional Provider-Config (wie ``ConfigValidator().config``).
+            Wenn gesetzt, wird ``resolve_model_cfg_for`` genutzt, um den
+            ``card_model_id``-Redirect für Dual-Thinking-Profile aufzulösen,
+            damit Thinking-Profile die geteilte Card finden.
     """
     from utils.model_utils import resolve_canonical_model_id
 
@@ -569,9 +579,15 @@ def load_model_card(model_name: str, root_dir: Path) -> dict | None:
         except (json.JSONDecodeError, OSError):
             return None
 
+    # card_model_id-Redirect für Dual-Thinking-Profile auflösen.
+    _model_cfg: dict | None = None
+    if config is not None:
+        from utils.model_utils import resolve_model_cfg_for  # noqa: PLC0415
+        _model_cfg = resolve_model_cfg_for(model_name, config)
+
     # SSoT-Brücke: kanonische ID auflösen (Card-Lookup + Slug-Derivation)
-    canonical = resolve_canonical_model_id(model_name)
-    path = _find_card(canonical, card_dir=card_dir)
+    canonical = resolve_canonical_model_id(model_name, model_cfg=_model_cfg)
+    path = _find_card(canonical, card_dir=card_dir, model_cfg=_model_cfg)
     if path.exists():
         return _try_load(path)
 
@@ -679,30 +695,6 @@ def _build_block_scores(module_stats: dict, block_meta: dict) -> dict:
             }
     return blocks
 
-
-def extract_audit_category(filename: str) -> str:
-    """Extracts category prefix from audit log filename."""
-    name = filename.replace('.md', '')
-
-    # Explicit mapping for known exceptions
-    mapping = {
-        "00_bias_report": "bias",
-        "00_bias": "bias",
-    }
-    if name in mapping:
-        return mapping[name]
-
-    # Strip leading numbers/underscores (e.g., '00_bias_report' generic fallback)
-    name = re.sub(r'^\d+_', '', name)
-
-    # Find anything before first number or first underscore followed by number
-    match = re.match(r'^([a-zA-Z_]+?)(?:_?\d+.*|$)', name)
-    if match:
-        cat = match.group(1).rstrip('_').lower()
-        if cat:
-            return cat
-
-    return "other"
 
 def find_latest_markdown(dir_path: Path, prefix: str = "") -> Path | None:
     if not dir_path.exists() or not dir_path.is_dir(): return None
@@ -933,22 +925,19 @@ def _build_pc_lookups(
 
 def _export_model_files(
     model_out: Path,
-    audit_src: Path | None,
     comp_src: Path | None,
-) -> tuple[list[str], dict[str, Optional[str]]]:
-    """Copies audit logs and comparison markdown files for one model.
+) -> dict[str, Optional[str]]:
+    """Kopiert die Comparison-Markdown-Dateien (Review + Bias-Review) eines Modells.
 
-    Returns (audit_files, comp_files_dict).
+    Audit-Logs (Judge-Logs pro Task) werden NICHT mehr exportiert — sie werden
+    im Web-Frontend nirgends gerendert und waren toter Ballast (~35 MB).
+    ``report_available`` wird stattdessen aus der Existenz des Audit-Quellverzeichnisses
+    abgeleitet (siehe _audit_has_benchmark), ohne die Dateien zu kopieren.
+
+    Returns:
+        comp_files_dict mit Keys 'review' und 'bias_review' (jeweils Dateiname
+        oder None).
     """
-    audit_files: list[str] = []
-    if audit_src and audit_src.exists():
-        out_audit = model_out / "audit_logs"
-        out_audit.mkdir(exist_ok=True)
-        for f in audit_src.glob("*.md"):
-            sanitized = sanitize_audit_log(f.read_text(encoding="utf-8"))
-            _atomic_write_text(out_audit / f.name, sanitized)
-            audit_files.append(f.name)
-
     comp_files_dict: dict[str, Optional[str]] = {"review": None, "bias_review": None}
     if comp_src and comp_src.exists():
         out_comp = model_out / "comparisons"
@@ -962,7 +951,7 @@ def _export_model_files(
             _atomic_copy(latest_bias, out_comp / latest_bias.name)
             comp_files_dict["bias_review"] = latest_bias.name
 
-    return audit_files, comp_files_dict
+    return comp_files_dict
 
 
 # ---------------------------------------------------------------------------
@@ -1623,6 +1612,14 @@ def _init_export_context(
     elif _bl_loaded:
         logging.info("  Blacklist: Datei geladen, leer.")
 
+    # Provider-Config für card_model_id-Redirect (Dual-Thinking-Profile).
+    # Graceful degradation: ohne Config bleibt load_model_card wie bisher.
+    _provider_config: dict | None = None
+    try:
+        _provider_config = ConfigValidator().config
+    except Exception:  # pylint: disable=broad-except
+        pass
+
     return {
         "root_dir": root_dir,
         "comparisons_path": comparisons_path,
@@ -1631,6 +1628,7 @@ def _init_export_context(
         "community_alias_map": _community_alias_map,
         "community_card_id_lookup": _community_card_id_lookup,
         "provider_map": provider_map,
+        "provider_config": _provider_config,
         "ldb": ldb,
         "pc": pc,
         "pc_lb_map": pc_lb_map,
@@ -1644,6 +1642,20 @@ def _init_export_context(
         "bl_total": _bl_total,
         "generated_at": datetime.datetime.now(datetime.UTC).isoformat(),
     }
+
+
+def _audit_has_benchmark(model_audit_src: Path | None) -> bool:
+    """True wenn das Audit-Quellverzeichnis echte Judge-Logs enthaelt.
+
+    ``00_bias_report.md`` ist kein Modul-Benchmark und wird ignoriert.
+    Genutzt von _should_skip_model (Skip-Entscheidung) und zur Ableitung
+    von ``report_available`` OHNE die Logs ins Web-Repo zu kopieren.
+    """
+    return (
+        model_audit_src is not None
+        and model_audit_src.exists()
+        and any(f.name != "00_bias_report.md" for f in model_audit_src.glob("*.md"))
+    )
 
 
 def _should_skip_model(
@@ -1667,14 +1679,10 @@ def _should_skip_model(
     has_raw = bool(raw_model_id) and raw_model_id != "nan"
 
     # Skip 1: kein Benchmark (weder Audit-Log noch CSV-Score)
-    _audit_has_benchmark = (
-        model_audit_src is not None
-        and model_audit_src.exists()
-        and any(f.name != "00_bias_report.md" for f in model_audit_src.glob("*.md"))
-    )
+    _audit_has_bench = _audit_has_benchmark(model_audit_src)
     _csv_total = str(row.get(LdbCols.TOTAL_SCORE, "")).strip()
     _csv_has_benchmark = _csv_total not in ("", "Pending", "—", "nan") and not pd.isna(row.get(LdbCols.TOTAL_SCORE, float("nan")))
-    if not _audit_has_benchmark and not _csv_has_benchmark:
+    if not _audit_has_bench and not _csv_has_benchmark:
         logging.debug("  [%s/%s] %s -> SKIP (nur PC-Daten, kein Benchmark)", count, total, model_name)
         return "no_benchmark"
 
@@ -1764,6 +1772,7 @@ def _process_leaderboard(
     community_alias_map = ctx["community_alias_map"]
     community_card_id_lookup = ctx["community_card_id_lookup"]
     provider_map = ctx["provider_map"]
+    provider_config = ctx.get("provider_config")
     bl_exact = ctx["bl_exact"]
     bl_pattern = ctx["bl_pattern"]
 
@@ -1815,7 +1824,7 @@ def _process_leaderboard(
             model_name=model_name,
             raw_model_id=raw_model_id,
             slug=slug,
-            card_lookup=lambda mid: load_model_card(mid, root_dir),
+            card_lookup=lambda mid: load_model_card(mid, root_dir, config=provider_config),
             audit_dirs=audit_dirs,
             comp_dirs=comp_dirs,
             count=count,
@@ -1851,8 +1860,8 @@ def _process_leaderboard(
         model_out = models_dir / slug
         model_out.mkdir(exist_ok=True)
 
-        audit_files, comp_files_dict = _export_model_files(model_out, model_audit_src, model_comp_src)
-        has_report = len(audit_files) > 0
+        comp_files_dict = _export_model_files(model_out, model_comp_src)
+        has_report = _audit_has_benchmark(model_audit_src)
         has_review = comp_files_dict["review"] is not None or comp_files_dict["bias_review"] is not None
         review_published_at, review_updated_at = _review_date_range(model_comp_src) if model_comp_src else (None, None)
         if has_report: models_with_reports += 1
@@ -1925,19 +1934,10 @@ def _process_leaderboard(
             "leaderboard": entry,
             "political_compass": compass_data,
             "files": {
-                "audit_logs": {},
-                "audit_logs_flat": sorted(audit_files),
                 "comparisons": comp_files_dict,
             },
             "tooluse": _tu_entry,
         }
-
-        audit_logs_dict: dict[str, list[str]] = model_json["files"]["audit_logs"]  # type: ignore[assignment]
-        for af in audit_files:
-            cat = extract_audit_category(af)
-            audit_logs_dict.setdefault(cat, []).append(af)
-        for cat_files in audit_logs_dict.values():
-            cat_files.sort()
 
         _model_data = _strip_emojis(_strip_none(model_json))
         # Scores-Contract: _strip_none (Z.1956) hat null-Values entfernt — aber

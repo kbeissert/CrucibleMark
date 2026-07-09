@@ -471,3 +471,197 @@ def test_query_does_not_emit_top_pk_without_config(monkeypatch):
     assert kwargs["temperature"] == PASSED_TEMP_DEFAULT  # Framework-Default bleibt
     assert "top_p" not in kwargs
     assert "extra_body" not in kwargs
+
+
+# ---------------------------------------------------------------------------
+# Dual-Thinking-Profile: Swap-Entkopplung über _active_config
+# ---------------------------------------------------------------------------
+
+
+def _dual_profile_config() -> dict:
+    """Config mit Standard- und Thinking-Profil (gleiche ``config:``-TOML)."""
+    return {
+        "providers": {
+            "local": {
+                "vllm_spark": {
+                    "name": "vLLM (asusGX10)",
+                    "api_type": "vllm",
+                    "enabled": True,
+                    "base_url": VLLM_BASE_URL,
+                    "api_key": VLLM_API_KEY,
+                    "models": [
+                        {
+                            "id": "ornith-1.0-35B-FP8",
+                            "name": "Ornith 1.0 35B FP8",
+                            "config": "Ornith1-35B-FP8",
+                            "max_tokens": 8192,
+                        },
+                        {
+                            "id": "ornith-1.0-35B-FP8-thinking",
+                            "name": "Ornith 1.0 35B FP8 Thinking",
+                            "config": "Ornith1-35B-FP8",  # ← identisch → kein Swap
+                            "card_model_id": "ornith-1.0-35B-FP8",
+                            "max_tokens": 32768,
+                        },
+                        {
+                            "id": "Gemma-4-26B",
+                            "name": "Gemma 4 26B",
+                            "config": "Gemma-4-26B",
+                            "max_tokens": 16384,
+                        },
+                    ],
+                },
+            },
+        },
+    }
+
+
+def test_profile_switch_same_config_skips_swap(monkeypatch):
+    """Profil-Wechsel (gleiche ``config:``) → kein ``swap_model``-Aufruf.
+
+    Dual-Thinking-Profile zeigen auf dasselbe TOML. Der Connector MUSS
+    die per-Request-Sampling-Parameter wechseln, OHNE den Container neu
+    zu starten.
+    """
+    client = VllmSparkClient(_dual_profile_config())
+
+    # Aktiver Container läuft mit dem Standard-Profil.
+    client._active_model = "ornith-1.0-35B-FP8"
+    client._active_config = "Ornith1-35B-FP8"
+    client._server_model_name = "ornith-1.0-35B-FP8"
+
+    # Health + Readiness-Probe positiv.
+    monkeypatch.setattr(client, "_is_healthy", lambda: True)
+    monkeypatch.setattr(client, "_is_model_ready", lambda model: True)
+
+    # Falls swap_model AUFGERUFEN würde, schlägt der Test fehl.
+    swap_called = {"flag": False}
+
+    def fail_swap(model):
+        swap_called["flag"] = True
+        return False
+
+    monkeypatch.setattr(client, "swap_model", fail_swap)
+
+    result = client._ensure_model_ready("ornith-1.0-35B-FP8-thinking")
+
+    assert result is True
+    assert swap_called["flag"] is False, "swap_model darf NICHT aufgerufen werden"
+    # Active-Model zeigt jetzt auf das Thinking-Profil.
+    assert client._active_model == "ornith-1.0-35B-FP8-thinking"
+    assert client._active_config == "Ornith1-35B-FP8"
+
+
+def test_real_model_swap_different_config_calls_swap_model(monkeypatch):
+    """Echter Modell-Wechsel (ungleiche ``config:``) → ``swap_model`` wird aufgerufen.
+
+    Garantiert, dass die Profil-Logik nur bei IDENTISCHEM ``config`` greift —
+    nicht bei echtem Backend-Wechsel.
+    """
+    client = VllmSparkClient(_dual_profile_config())
+
+    client._active_model = "ornith-1.0-35B-FP8"
+    client._active_config = "Ornith1-35B-FP8"
+    client._server_model_name = "ornith-1.0-35B-FP8"
+
+    monkeypatch.setattr(client, "_is_healthy", lambda: True)
+    monkeypatch.setattr(client, "_is_model_ready", lambda model: True)
+
+    swap_called = {"flag": False, "model": None}
+
+    def fake_swap(model):
+        swap_called["flag"] = True
+        swap_called["model"] = model
+        return True
+
+    monkeypatch.setattr(client, "swap_model", fake_swap)
+
+    result = client._ensure_model_ready("Gemma-4-26B")
+
+    assert result is True
+    assert swap_called["flag"] is True
+    assert swap_called["model"] == "Gemma-4-26B"
+
+
+def test_profile_switch_backward_compatible_without_active_config(monkeypatch):
+    """Backward-compat: ``_active_config is None`` → bisheriges Verhalten.
+
+    Ältere Connector-Instanzen (vor dem Dual-Profile-Patch) haben kein
+    ``_active_config`` gesetzt. Sie müssen weiterhin ``swap_model`` aufrufen,
+    wenn das aktive Modell abweicht — kein Silent-Skip.
+    """
+    client = VllmSparkClient(_dual_profile_config())
+
+    client._active_model = "ornith-1.0-35B-FP8"
+    client._active_config = None  # Legacy-Instanz
+    client._server_model_name = "ornith-1.0-35B-FP8"
+
+    monkeypatch.setattr(client, "_is_healthy", lambda: True)
+    monkeypatch.setattr(client, "_is_model_ready", lambda model: True)
+
+    swap_called = {"flag": False}
+
+    def fake_swap(model):
+        swap_called["flag"] = True
+        return True
+
+    monkeypatch.setattr(client, "swap_model", fake_swap)
+
+    result = client._ensure_model_ready("ornith-1.0-35B-FP8-thinking")
+
+    assert result is True
+    assert swap_called["flag"] is True, (
+        "Legacy-Instanzen ohne _active_config müssen swap_model aufrufen"
+    )
+
+
+def test_active_config_cleared_on_stop_server():
+    """``stop_server`` setzt auch ``_active_config`` zurück."""
+    client = VllmSparkClient(_dual_profile_config())
+
+    client._active_model = "ornith-1.0-35B-FP8-thinking"
+    client._active_config = "Ornith1-35B-FP8"
+    client._server_model_name = "ornith-1.0-35B-FP8"
+
+    # subprocess-Aufrufe dürfen nicht durchkommen.
+    import unittest.mock as mock
+    with mock.patch("utils.providers.vllm_base.subprocess.run"), \
+         mock.patch("utils.providers.vllm_base.subprocess.Popen"):
+        client.stop_server()
+
+    assert client._active_model is None
+    assert client._active_config is None
+    assert client._server_model_name is None
+
+
+def test_profile_switch_unhealthy_falls_back_to_cold_start(monkeypatch):
+    """Profil-Wechsel bei ungesundem Server → Cold-Start, kein Swap.
+
+    Wenn die Health-Probe fehlschlägt, hilft auch der config-Match nicht:
+    der Connector muss den Container frisch starten.
+    """
+    client = VllmSparkClient(_dual_profile_config())
+
+    client._active_model = "ornith-1.0-35B-FP8"
+    client._active_config = "Ornith1-35B-FP8"
+    client._server_model_name = "ornith-1.0-35B-FP8"
+
+    monkeypatch.setattr(client, "_is_healthy", lambda: False)
+    monkeypatch.setattr(client, "_is_model_ready", lambda model: False)
+
+    start_called = {"flag": False, "model": None}
+
+    def fake_start(model=None):
+        start_called["flag"] = True
+        start_called["model"] = model
+        client._active_model = model
+        client._active_config = client._config_arg(model)
+        return True
+
+    monkeypatch.setattr(client, "start_server", fake_start)
+
+    result = client._ensure_model_ready("ornith-1.0-35B-FP8-thinking")
+
+    assert result is True
+    assert start_called["flag"] is True
+    assert start_called["model"] == "ornith-1.0-35B-FP8-thinking"

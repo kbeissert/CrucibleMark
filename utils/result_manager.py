@@ -26,7 +26,7 @@ from utils.constants import (
     RESULT_TYPE_CLOUD,
     RESULT_TYPE_COMMERCIAL,
 )
-from utils.model_utils import enforce_card_first
+from utils.model_utils import enforce_card_first, resolve_model_cfg_for
 from scripts.maintenance.sanitize_benchmark_csvs import (
     _is_header_repeat,
     _is_narrative_asset_id,
@@ -48,10 +48,21 @@ class ResultManager:
             self.config.get("output", {}).get("directory", "benchmark_scores")
         )
 
+    def _find_model_cfg(self, model_id: str) -> dict[str, Any] | None:
+        """Sucht den model_cfg-Eintrag für ``model_id`` in der expandierten Config.
+
+        Wird für ``card_model_id``-Redirects benötigt (z.B. Thinking-Profile):
+        der generierte ``{id}-thinking``-Eintrag trägt ``card_model_id``, das
+        ``enforce_card_first`` nutzen soll, um die Original-Card wiederzuverwenden
+        statt eine Platzhalter-Card anzulegen.
+
+        Delegiert an die SSoT ``resolve_model_cfg_for`` (utils/model_utils.py).
+        """
+        return resolve_model_cfg_for(model_id, self.config)
+
     def _get_csv_path(self, result_type: str) -> Path:
         """Ermittelt den Pfad zur CSV-Datei basierend auf dem Typ."""
         # result_type: 'local', 'commercial', 'golden'
-
         if result_type == RESULT_TYPE_LOCAL:
             key = "local_models_csv"
             default = "benchmark_scores/local_models_benchmark.csv"
@@ -192,7 +203,13 @@ class ResultManager:
         # (WARNING + ensure_card() bei fehlender Card; kein Hard-Fail)
         for r in results:
             if "model" in r:
-                canonical, _has_card = enforce_card_first(r["model"])
+                # model_cfg aus der expandierten Config nachschlagen, damit
+                # card_model_id-Redirects (z.B. Thinking-Profile) funktionieren:
+                # enforce_card_first → resolve_canonical_model_id → _find_card
+                # nutzt card_model_id für den Card-Lookup statt eine neue
+                # Platzhalter-Card anzulegen.
+                _model_cfg = self._find_model_cfg(r["model"])
+                canonical, _has_card = enforce_card_first(r["model"], model_cfg=_model_cfg)
                 r["model"] = canonical
 
         # Automatisches Ermitteln des result_type anhand des ersten Eintrags, falls nicht explizit übergeben

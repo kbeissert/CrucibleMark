@@ -96,6 +96,7 @@ def export_leaderboard_compact(leaderboard: pd.DataFrame, cat_cols: List[str]) -
         "Version",
         "Badge",
         "Speed Profile",
+        "Thinking Mode",  # Thinking/Standard/n/a (vLLM dual-profile / llama.cpp)
         "Total Score",
         "Tokens/s",
         "Avg Task Duration (s)",

@@ -22,6 +22,7 @@ try:
     from utils.model_utils import (
         get_model_category,
         resolve_canonical_model_id,
+        resolve_model_cfg_for,
         strip_date_suffix,
     )
 except ImportError:
@@ -44,6 +45,10 @@ except ImportError:
     def resolve_canonical_model_id(model_id):  # type: ignore[no-redef]
         """Fallback: gibt die Eingabe zurück (kein Card-Lookup möglich)."""
         return model_id
+
+    def resolve_model_cfg_for(model_id, config):  # type: ignore[no-redef]
+        """Fallback: kein Config-Lookup möglich."""
+        return None
 
 
 # pylint: enable=import-error
@@ -219,9 +224,19 @@ def load_benchmark_data() -> pd.DataFrame:
         from utils.model_utils import _find_card as _find_model_card  # noqa: PLC0415
         _card_dir = Path(__file__).resolve().parents[2] / "benchmark_scores" / "model_cards"
 
+        # Config einmal laden für card_model_id-Redirect (Dual-Thinking-Profile).
+        # Graceful degradation: ohne Config bleibt der Lookup wie bisher (kein Redirect).
+        _cfg: dict | None = None
+        try:
+            from utils.config_validator import ConfigValidator  # noqa: PLC0415
+            _cfg = ConfigValidator().config
+        except Exception:  # pylint: disable=broad-except
+            pass
+
         card_version_map: dict = {}
         for model_id in df["model"].unique():
-            card_path = _find_model_card(str(model_id), card_dir=_card_dir)
+            _model_cfg = resolve_model_cfg_for(str(model_id), _cfg) if _cfg else None
+            card_path = _find_model_card(str(model_id), card_dir=_card_dir, model_cfg=_model_cfg)
             if card_path and card_path.exists():
                 try:
                     card = _json_card.loads(card_path.read_text(encoding="utf-8"))

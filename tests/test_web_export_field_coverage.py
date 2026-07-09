@@ -121,17 +121,23 @@ class TestDataJsonStructure:
         for section in ("leaderboard", "political_compass", "files", "tooluse"):
             assert section in data, f"data.json fehlt Top-Level-Section: {section}"
 
-    def test_files_audit_logs_grouped_by_module(self):
-        """files.audit_logs muss nach Modul gruppiert sein."""
+    def test_files_has_comparisons_block(self):
+        """files-Block enthaelt comparisons (Review/Bias-Review-Referenzen).
+
+        Audit-Logs werden seit dem Dead-Weight-Cleanup nicht mehr exportiert
+        (weder als Verzeichnis noch als files.audit_logs/files.audit_logs_flat
+        in data.json) — sie werden im Frontend nirgends gerendert.
+        report_available wird aus der Quell-Verzeichnisexistenz abgeleitet.
+        """
         m_dir = ROOT.parent / "CrucibleMark-Web" / "src" / "_data" / "raw" / "models"
         if not (m_dir / "claude-haiku-4-5" / "data.json").exists():
             pytest.skip("Web-Export noch nicht erstellt")
         data = json.loads((m_dir / "claude-haiku-4-5" / "data.json").read_text())
-        audit_logs = data["files"]["audit_logs"]
-        assert isinstance(audit_logs, dict)
-        assert "bias" in audit_logs
-        # Mindestens 5 Modul-Gruppen erwartet
-        assert len(audit_logs) >= 5
+        files = data["files"]
+        assert "comparisons" in files
+        # Audit-Log-Reste duerfen nach dem Cleanup nicht mehr vorhanden sein
+        assert "audit_logs" not in files
+        assert "audit_logs_flat" not in files
 
     def test_leaderboard_model_card_self_contained(self):
         """model_card muss self-contained sein (Pflichtfelder in jeder Card vorhanden).

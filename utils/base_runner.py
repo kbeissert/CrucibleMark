@@ -13,7 +13,7 @@ from utils.config_validator import ConfigValidator
 from utils.result_manager import ResultManager
 from utils.module_loader import load_test_class
 from utils.constants import QUALITY_EXCELLENT, QUALITY_GOOD, QUALITY_OK
-from utils.model_utils import resolve_token_budget, get_hardware_profile
+from utils.model_utils import resolve_token_budget, get_hardware_profile, resolve_model_cfg_for
 
 from schemas.result import BenchmarkResult
 
@@ -159,6 +159,9 @@ class BaseBenchmarkRunner:
         # Remains None when not available (cloud proxy, non-Ollama providers).
         tps_eval = getattr(exec_result, "tps_eval", None)
 
+        # Thinking-Modus aus model_cfg ableiten (vLLM dual-profile / llama.cpp / n/a)
+        thinking_mode = self._resolve_thinking_mode(model, provider)
+
         # Build dict from BenchmarkResult object + Scoring
         result = {
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -186,6 +189,7 @@ class BaseBenchmarkRunner:
             "token_limit_used": getattr(exec_result, "token_limit_used", None),
             "thought_tag_compliance": getattr(exec_result, "thought_tag_compliance", None),
             "think_content": getattr(exec_result, "think_content", None),
+            "thinking_mode": thinking_mode,
         }
 
         # Add category scores
@@ -193,6 +197,32 @@ class BaseBenchmarkRunner:
             result[cat] = f"{val['achieved']}/{val['max']}"
 
         return result
+
+    def _resolve_thinking_mode(self, model: str, provider: str) -> str:
+        """Leitet den Thinking-Modus aus der model_cfg ab.
+
+        Returns:
+            "Thinking" — vLLM dual-profile thinking oder llama.cpp enable_thinking=true
+            "Standard" — vLLM dual-profile standard oder llama.cpp enable_thinking=false
+            "n/a" — keine Thinking-Konfiguration (Cloud/Commercial ohne Toggle)
+        """
+        try:
+            model_cfg = resolve_model_cfg_for(model, self.validator.config)
+            if not model_cfg:
+                return "n/a"
+            # vLLM dual-profile: card_model_id vorhanden → Thinking-Profil
+            if "card_model_id" in model_cfg:
+                return "Thinking"
+            # vLLM dual-profile: chat_template_kwargs.enable_thinking → Standard/Thinking
+            ctk = model_cfg.get("chat_template_kwargs")
+            if isinstance(ctk, dict) and "enable_thinking" in ctk:
+                return "Thinking" if ctk["enable_thinking"] else "Standard"
+            # llama.cpp: enable_thinking Flag
+            if "enable_thinking" in model_cfg:
+                return "Thinking" if model_cfg["enable_thinking"] else "Standard"
+        except Exception:  # pylint: disable=broad-except
+            pass
+        return "n/a"
 
     def save_results(self, results: list, result_type: str | None = None) -> None:
         """Wird von den Kind-Klassen verwendet, um per ResultManager zu speichern."""

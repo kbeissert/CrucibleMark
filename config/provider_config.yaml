@@ -563,17 +563,19 @@ providers:
 
       # ── Aktive Spark-Modelle ──
 
-      - id: gemma-4-26B-A4B-it-UD-Q8_K_XL
-        name: Gemma 4 26B A4B Instruct UD-Q8_K_XL (GGUF)
-        model_file: Gemma4-26B/gemma-4-26B-A4B-it-UD-Q8_K_XL.gguf
-        n_gpu_layers: 99
-        context_length: 65536
-        enable_thinking: true  # Gemma 4 Channel-Tokens (<|channel|>): --jinja + --reasoning-format deepseek separiert Thinking in reasoning_content
-        temperature: 1.0
-        top_k: 64
-        extra_server_args:
-          - "--jinja"
-          - "--reasoning-format deepseek"
+      # ── Auskommentiert 2026-07-08: Q8_K_XL-Datei existiert nicht auf der Spark.
+      # Auf der Disk liegt nur Q5_K_XL (+ MTP-Draft) — siehe Modell unten.
+      # - id: gemma-4-26B-A4B-it-UD-Q8_K_XL
+      #   name: Gemma 4 26B A4B Instruct UD-Q8_K_XL (GGUF)
+      #   model_file: Gemma4-26B/gemma-4-26B-A4B-it-UD-Q8_K_XL.gguf
+      #   n_gpu_layers: 99
+      #   context_length: 65536
+      #   enable_thinking: true
+      #   temperature: 1.0
+      #   top_k: 64
+      #   extra_server_args:
+      #     - "--jinja"
+      #     - "--reasoning-format deepseek"
 
       # - id: hermes-4.3-36b-q6
       #   name: Hermes 4.3 36B Q6_K (GGUF)
@@ -629,22 +631,23 @@ providers:
           - "--spec-draft-n-max 2"
           - '--chat-template-kwargs {"preserve_thinking":true}'
 
-      - id: qwen3_5-35b-a3b-q8
-        name: Qwen 3.5 35B-A3B UD-Q8_K_XL (GGUF)
-        model_file: Qwen3.5/Qwen3.5-35B-A3B-UD-Q8_K_XL.gguf
-        n_gpu_layers: 99
-        context_length: 65536
-        enable_thinking: false
-        temperature: 0.7
-        top_p: 0.8
-        top_k: 20
+      # ── Auskommentiert 2026-07-08: GGUF-Dateien fehlen auf der Spark. ──
+      # - id: qwen3_5-35b-a3b-q8
+      #   name: Qwen 3.5 35B-A3B UD-Q8_K_XL (GGUF)
+      #   model_file: Qwen3.5/Qwen3.5-35B-A3B-UD-Q8_K_XL.gguf
+      #   n_gpu_layers: 99
+      #   context_length: 65536
+      #   enable_thinking: false
+      #   temperature: 0.7
+      #   top_p: 0.8
+      #   top_k: 20
 
-      - id: qwen3-coder-next-q4
-        name: Qwen 3 Coder Next UD-Q4_K_XL (GGUF)
-        model_file: Qwen3-Coder-Next/Qwen3-Coder-Next-UD-Q4_K_XL.gguf
-        n_gpu_layers: 99
-        context_length: 65536
-        enable_thinking: false
+      # - id: qwen3-coder-next-q4
+      #   name: Qwen 3 Coder Next UD-Q4_K_XL (GGUF)
+      #   model_file: Qwen3-Coder-Next/Qwen3-Coder-Next-UD-Q4_K_XL.gguf
+      #   n_gpu_layers: 99
+      #   context_length: 65536
+      #   enable_thinking: false
 
       # - id: deepseek-r1-distill-qwen-32b
       #   name: DeepSeek R1 Distill Qwen 32B Q5_K_M (GGUF)
@@ -732,6 +735,12 @@ providers:
       base_url: "http://192.168.1.191:3300/v1"
       api_key: "${VLLM_SPARK_API_KEY}"  # env var (CLAUDE.md: API Keys NIEMALS in Git) — .env: VLLM_SPARK_API_KEY=sk-local-mg2026
       token_param_name: max_tokens
+      # Default-Budget für Thinking-Profile (max_tokens des generierten
+      # ``{id}-thinking``-Eintrags via Config-Expansion). Pro Modell via
+      # ``thinking_max_tokens`` überschreibbar. Wird NUR für Modelle mit
+      # ``enable_thinking: true`` wirksam; alle anderen Modelle bleiben
+      # unverändert (kein Expansion-Trigger).
+      thinking_max_tokens: 32768
       # vllm-start/vllm-stop liegen unter ~/ai/shared/scripts/ (nicht im PATH).
       server_start_cmd: "ssh -o BatchMode=yes -o ConnectTimeout=10 -p 22 kay_beissert@gx10-b20a.local /home/kay_beissert/ai/shared/scripts/vllm-start"
       server_stop_cmd: "ssh -o BatchMode=yes -o ConnectTimeout=10 -p 22 kay_beissert@gx10-b20a.local /home/kay_beissert/ai/shared/scripts/vllm-stop"
@@ -770,6 +779,13 @@ providers:
         top_k: 20
         # repetition_penalty:  # Card: null — vLLM-Server-Default greift
 
+        # Dual-Thinking-Profile-Trigger: erzeugt zusätzlich
+        # ``ornith-1.0-35B-FP8-thinking`` mit enable_thinking=true und
+        # max_tokens=32768 (provider-default thinking_max_tokens). Beide
+        # Profile zeigen auf dasselbe TOML → kein Container-Swap beim
+        # Profil-Wechsel (Connector entscheidet config-basiert).
+        enable_thinking: true
+
       # Gemma 4 Familie — NVFP4 (modelopt), 131k Context.
       # MoE 26B / Dense 31B (Base) / Dense 31B-Wordsmith (W4A16, uncensored).
       # Sampling-Parameter synchron mit Model Cards (SSoT: Card dokumentiert
@@ -783,6 +799,7 @@ providers:
         top_p: 0.95
         top_k: 64
         # repetition_penalty:  # Card: null — vLLM-Server-Default greift
+        # enable_thinking: true
 
       - id: Gemma-4-31B
         name: Gemma 4 31B NVFP4 (vLLM, Dense, multimodal)
@@ -792,6 +809,7 @@ providers:
         top_p: 0.95
         top_k: 64
         # repetition_penalty:  # Card: null — vLLM-Server-Default greift
+        # enable_thinking: true
 
       - id: Gemma-4-31B-Wordsmith-NVFP4
         name: Gemma 4 31B Wordsmith NVFP4 (vLLM, Dense, uncensored)
@@ -801,6 +819,7 @@ providers:
         top_p: 0.95
         top_k: 64
         # repetition_penalty:  # Card: null — vLLM-Server-Default greift
+        # enable_thinking: true
 
       # Qwen 3.6 27B Dense — NVFP4 compressed-tensors, MTP, Thinking-Parser aktiv.
       # 32k Context (Sweet-Spot für DGX Spark bei 0.70 gpu-mem-util).
@@ -813,6 +832,7 @@ providers:
         top_p: 0.95
         top_k: 20
         # repetition_penalty:  # Card: null — vLLM-Server-Default greift
+        # enable_thinking: true
 
       # Weitere verfügbare TOMLs (per Auto-Discovery entdeckbar, nicht im Benchmark):
       # - Qwen3-Embedding-0.6B-NVFP4: Embedding-Modell (kein LLM-Target)

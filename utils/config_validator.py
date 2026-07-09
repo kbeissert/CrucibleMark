@@ -58,6 +58,12 @@ class ConfigValidator:
                 providers = provider_data.get("providers")
                 if providers:
                     config["providers"] = providers
+                    # Thinking-Profil-Expansion: vLLM-Modelle mit
+                    # ``enable_thinking: true`` werden transparent in zwei
+                    # Einträge aufgespalten (Standard + Thinking). Muss VOR
+                    # der Duplikat-Prüfung laufen, damit die generierten
+                    # ``{id}-thinking``-IDs in den Check einbezogen werden.
+                    self._expand_thinking_profiles(providers)
                     self._check_duplicate_model_ids(providers)
             except (OSError, yaml.YAMLError) as e:
                 logger.error("Failed to load provider_config.yaml: %s", e)
@@ -69,6 +75,83 @@ class ConfigValidator:
             )
 
         return config
+
+    def _expand_thinking_profiles(self, providers: dict[str, Any]) -> None:
+        """Expändiert vLLM-Modelle mit ``enable_thinking: true`` in zwei Profile.
+
+        Pro ``enable_thinking: true``-Eintrag werden zwei Einträge erzeugt:
+
+        * **Standard-Profil** (Original-ID): ``enable_thinking`` wird
+          konsumiert, dafür explizit ``chat_template_kwargs: {"enable_thinking": False}``
+          gesetzt — verhindert, dass das TOML/Server-Default-Verhalten Thinking
+          ungewollt aktiviert.
+        * **Thinking-Profil** (``{id}-thinking``): zeigt per ``card_model_id``
+          auf dieselbe Card wie das Original, hebt aber ``enable_thinking`` per
+          ``chat_template_kwargs: {"enable_thinking": True}`` an und übernimmt
+          ``thinking_max_tokens`` (provider-default > per-Modell-Override).
+
+        Beide Profile zeigen auf dasselbe TOML (``config`` identisch) → der
+        vLLM-Connector erkennt die Identität und führt keinen Container-Swap
+        durch (per-Request-Param-Wechsel reicht).
+
+        Wichtig: Nur Provider mit ``api_type == "vllm"`` werden expandiert.
+        llama.cpp nutzt ``enable_thinking`` als Server-Flag (``--reasoning off``)
+        mit abweichender Semantik — eine automatische Expansion würde dort
+        fehlerhafte Einträge erzeugen.
+        """
+        for section_key, section in providers.items():
+            if not isinstance(section, dict):
+                continue
+            for prov_key, prov_cfg in section.items():
+                if not isinstance(prov_cfg, dict):
+                    continue
+                if prov_cfg.get("api_type") != "vllm":
+                    continue
+                models = prov_cfg.get("models")
+                if not isinstance(models, list):
+                    continue
+                expanded: list[dict[str, Any]] = []
+                for model in models:
+                    if not isinstance(model, dict) or not model.get("enable_thinking"):
+                        expanded.append(model)
+                        continue
+                    original_id = model.get("id")
+                    original_name = model.get("name", original_id or "")
+                    if not original_id:
+                        expanded.append(model)
+                        continue
+
+                    thinking_max_tokens = model.get(
+                        "thinking_max_tokens",
+                        prov_cfg.get("thinking_max_tokens"),
+                    )
+                    if thinking_max_tokens is None:
+                        raise ValueError(
+                            f"vLLM-Modell '{original_id}' (Provider {prov_key}) hat "
+                            f"'enable_thinking: true' aber kein 'thinking_max_tokens' — "
+                            f"weder im model_cfg noch im Provider-Default. "
+                            f"Bitte 'thinking_max_tokens' setzen (z.B. 32768)."
+                        )
+
+                    # Original-Eintrag: enable_thinking konsumieren,
+                    # explizit auf False in chat_template_kwargs setzen.
+                    standard = dict(model)
+                    standard.pop("enable_thinking", None)
+                    standard["chat_template_kwargs"] = {"enable_thinking": False}
+                    expanded.append(standard)
+
+                    # Thinking-Eintrag: eigener id-Suffix, gleiche Card,
+                    # höheres max_tokens-Budget.
+                    thinking_entry = dict(model)
+                    thinking_entry.pop("enable_thinking", None)
+                    thinking_entry["id"] = f"{original_id}-thinking"
+                    thinking_entry["name"] = f"{original_name} Thinking"
+                    thinking_entry["card_model_id"] = original_id
+                    thinking_entry["chat_template_kwargs"] = {"enable_thinking": True}
+                    thinking_entry["max_tokens"] = thinking_max_tokens
+                    expanded.append(thinking_entry)
+
+                prov_cfg["models"] = expanded
 
     def _check_duplicate_model_ids(self, providers: dict[str, Any]) -> None:
         """Prüft alle expliziten Modell-IDs auf Duplikate über alle Provider hinweg.
