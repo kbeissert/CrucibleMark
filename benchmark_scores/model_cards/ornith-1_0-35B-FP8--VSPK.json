@@ -4,7 +4,7 @@
   "developer": "DeepReinforce",
   "origin_country": "US",
   "developer_jurisdiction": "US",
-  "deployment_type": "local-weights",
+  "deployment_type": "localweights",
   "local_deployment_possible": true,
   "weights_provenance_risk": "low",
   "weights_provenance_risk_rationale": "DeepReinforce ist eine US-basierte RL-Forschungsorganisation. Das Modell ist unter MIT-Lizenz ohne regionale Einschränkungen auf Hugging Face verfügbar (79.608 Downloads/Monat). Linienbaum: Qwen3.5-35B-A3B (hybride MoE-Basis, Alibaba Cloud) + Gemma 4 → DeepReinforce Ornith-1.0-35B (RL-Post-Training) → offizielle FP8-Block-Quantisierung (E4M3) desselben Autors. Kein chinesisches NSL-Risiko, kein US-CLOUD-Act-Risiko bei lokalem Betrieb, da reines Open-Weight-Modell ohne Cloud-API-Zwang.",

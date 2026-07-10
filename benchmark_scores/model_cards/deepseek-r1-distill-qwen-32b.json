@@ -4,7 +4,7 @@
   "developer": "DeepSeek AI",
   "origin_country": "CN",
   "developer_jurisdiction": "CN",
-  "deployment_type": "local-weights",
+  "deployment_type": "localweights",
   "local_deployment_possible": true,
   "weights_provenance_risk": "medium",
   "weights_provenance_risk_rationale": "Modell wird lokal betrieben, CLOUD-Act-Risiko greift nicht. Hersteller DeepSeek AI sitzt in China; bei Cloud-Nutzung der Originalgewichte sind chinesische NSL-Risiken zu beachten. Die Q5_K_M-Quantisierung ist als Open-Weights-Modell vollständig nachvollziehbar, die Trainingsdaten sind nicht offengelegt.",

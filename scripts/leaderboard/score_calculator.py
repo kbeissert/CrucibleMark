@@ -31,8 +31,18 @@ def _build_price_lookup() -> Dict[str, float]:
     Legacy fallback: cost_limits.yaml entries for models without a card yet.
     Card prices take precedence; cost_limits.yaml is only used for models
     not yet covered by a card (e.g. cloud proxies, uncommon models).
+
+    Defense-in-Depth: Cards with deployment_type in LOCAL_DEPLOYMENT_TYPES
+    (e.g. "localweights") default to 0.0 if output_price_per_1m is missing
+    or null. Lokale Modelle haben keine API-Kosten — eine leere Preis-Zelle
+    verfälscht die Benchmark-Cost-Berechnung.
     """
     import json as _json
+
+    # Whitelist der "rein lokalen" deployment_types. Hybrid-Typen wie
+    # "open-weights-cloud-available" oder "cloud-and-local" zählen NICHT als
+    # lokal — diese Modelle haben einen Cloud-Preis und sollen nur diesen zeigen.
+    LOCAL_DEPLOYMENT_TYPES = frozenset({"localweights", "local-weights"})
 
     card_dir = ROOT_DIR / "benchmark_scores" / "model_cards"
     lookup: Dict[str, float] = {}
@@ -45,9 +55,14 @@ def _build_price_lookup() -> Dict[str, float]:
             if not isinstance(card, dict):
                 continue
             model_id = card.get("model_id")
+            if not model_id:
+                continue
             price_per_m = card.get("output_price_per_1m")
-            if model_id and isinstance(price_per_m, (int, float)):
+            if isinstance(price_per_m, (int, float)):
                 lookup[model_id] = float(price_per_m) / 1000.0
+            elif card.get("deployment_type") in LOCAL_DEPLOYMENT_TYPES:
+                # Lokales Modell ohne expliziten Preis → 0.0 (Defense-in-Depth)
+                lookup[model_id] = 0.0
         except (OSError, _json.JSONDecodeError):
             continue
 
@@ -742,8 +757,10 @@ def calculate_scores(
 
     # Cost per 1K Output Tokens — from model cards (cost_limits.yaml as legacy fallback).
     # Uses the published output_price_per_1m for each known model, converted to per-1K.
-    # Models without a card price (e.g. local Ollama, unknown cloud proxies)
-    # receive None → shows as empty in the leaderboard.
+    # Local-only models (deployment_type ∈ {"localweights", "local-weights"}) default to 0.0
+    # even without an explicit price (see _build_price_lookup Defense-in-Depth).
+    # Models without a card price AND not marked local-only (e.g. cloud-only,
+    # hybrid cloud-and-local) receive None → empty in the leaderboard.
     price_lookup = _get_price_lookup()
 
     def calc_cost_per_1k_tokens(row: pd.Series) -> Optional[float]:

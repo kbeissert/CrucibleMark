@@ -4,7 +4,7 @@
   "developer": "Mia-AiLab (Fine-Tune) / Alibaba Cloud (Base)",
   "origin_country": null,
   "developer_jurisdiction": null,
-  "deployment_type": "local-weights",
+  "deployment_type": "localweights",
   "local_deployment_possible": true,
   "weights_provenance_risk": "low",
   "weights_provenance_risk_rationale": "Modell wird lokal auf der DGX Spark über llama.cpp betrieben, kein Cloud-Datentransfer. Die Qwable-Gewichte stehen unter MIT-Lizenz ohne regionale Einschränkungen auf Hugging Face. Linienbaum: Qwen/Qwen3.6-27B (Alibaba Cloud) → unsloth/Qwen3.6-27B (Unsloth Re-Host) → Mia-AiLab/Qwable-3.6-27B (Fine-Tune). Trainingsdaten (Fable-5-Style Reasoning/Instruction-Datensatz) sind laut README nicht vollständig offengelegt. Fine-Tune-Autorin Mia-AiLab: HF-Profil, X-Profil (@MiaAI_lab, seit Juli 2022) und carrd.co-Seite enthalten keine Jurisdiktion oder Länderangabe, Herkunft bleibt unbekannt. Bei rein lokalem Betrieb sind weder US-CLOUD-Act noch chinesisches NSL relevant.",

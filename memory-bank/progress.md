@@ -1,6 +1,66 @@
 # Progress
 Letzte Releases + aktueller Stand.
 
+### 2026-07-10 (Session 57) — Local-Model Price = 0.0 + Code Quality Pending geklärt [DONE, uncommitted]
+
+**Auslöser:** Nutzer-Re-Run von `qwen3_6-27B-thinking` für `code_quality`-Modul schrieb erfolgreich Score (70.44). Nutzer-Beobachtung: Leaderboard zeigt für lokale Modelle **leere** Cost-Spalte (statt 0.0). Wiederholt für `qwen3_6-27B`/`-thinking`, `Gemma-4-26B`/`-thinking`, `Gemma-4-31B`/`-thinking`. Leere Zelle verfälscht `Benchmark Cost`-Berechnung.
+
+**Root-Cause (`scripts/leaderboard/score_calculator.py:49`):**
+```python
+if model_id and isinstance(price_per_m, (int, float)):
+    lookup[model_id] = float(price_per_m) / 1000.0
+```
+Wenn `output_price_per_1m = None` (lokale Karten ohne expliziten Preis) → Skip → Lookup-Eintrag fehlt → `_lookup_price()` → `None` → leere Leaderboard-Zelle.
+
+**Geliefert:**
+
+1. **3 Cards repariert** (`deployment_type: "local-weights" → "localweights"`, `output_price_per_1m/input_price_per_1m: null → 0.0`):
+   - `Gemma-4-26B--VSPK.json`
+   - `Gemma-4-31B--VSPK.json`
+   - `qwen3_6-27B--VSPK.json`
+   - `deployment_type`-Migration ist gleichzeitig Whitelist-Korrektur (`audit_model_cards_full.py:112` kennt nur `"localweights"`).
+
+2. **Defense-in-Depth in `_build_price_lookup()`** (`scripts/leaderboard/score_calculator.py`):
+   - Neue Konstante `LOCAL_DEPLOYMENT_TYPES = frozenset({"localweights", "local-weights"})` — tolerant gegen beide Schreibweisen.
+   - Fallback: wenn Card `deployment_type` in Whitelist UND `output_price_per_1m` fehlt/None → `lookup[model_id] = 0.0`.
+   - Hybrid-Typen (`cloud-only`, `cloud-and-local`, `open-weights-cloud-available`) bleiben korrekt **leer** (kein Auto-Default — sonst verfälschte Cloud-Preise).
+
+3. **Test-Suite** (`tests/test_score_calculator_price_lookup.py`, NEU, 12 Tests):
+   - Lokale Karten mit `output_price_per_1m=0.0` / `=2.5` / `=None` (beide deployment_type-Schreibweisen).
+   - Cloud-/Hybrid-Karten ohne Preis → KEIN Eintrag (kein falsches 0.0).
+   - Edge: Card ohne `model_id` → silently skipped.
+   - 3 Regressionstests auf echte Cards (`qwen3_6-27B`, `Gemma-4-26B`, `Gemma-4-31B` → 0.0).
+   - Sanity: `claude-opus-4-6` → 0.025 (Cloud unverändert).
+
+4. **Verifikation:** `make validate` exit 0. `pytest`: 1148 passed, 1 skipped, 1 pre-existing failure (`qwen3_5-35b-a3b-q8`, dokumentiert). Leaderboard regeneriert (`make leaderboard`) → lokale Models zeigen `Cost per 1K = 0.0`, `Benchmark Cost = 0.0`. Cloud-Modelle unverändert. `ornith-1-0-35b`/`command-a-plus-05-2026` (Hybrid) bleiben leer (gewollt).
+
+**Code Quality "Pending" geklärt — KEIN Orchestrator-Bug:**
+- Diagnose der 3 anderen Thinking-Profile (`Gemma-4-31B-thinking`, `Gemma-4-26B-thinking`, `Gemma-4-31B-Wordsmith-NVFP4-thinking`): 0 `code_quality_*`-Runs.
+- Ursache: Die 08:59-Session war **separater ToolUse-Runner** (`scripts/run_tooluse_benchmark.py`), NICHT Score-Runner. `code_quality` wurde nie für Thinking-Profile geplant.
+- Architektur-Realität: Drei separate Runner — `run_score_benchmark.py` (cli/reasoning/ux/doc/content/cultural/code_quality), `run_tooluse_benchmark.py` (nur tooluse), `run_political_compass_benchmark.py` (nur PC). Partielle Runs führen zu stillen Coverage-Lücken.
+
+**Architektur-Entscheidungen:**
+- **Card-SSoT für lokale Modelle:** `deployment_type` ist semantisch der Indikator für "rein lokal vs. Cloud-fähig". `local_deployment_possible=true` allein reicht NICHT (auch `codestral-2508`, `llama-4-scout`, etc. sind cloud-fähig mit Price).
+- **Defense-in-Depth statt harter Migration:** Whitelist akzeptiert beide Schreibweisen (`localweights` + `local-weights`), damit die restlichen 5 Cards mit `"local-weights"` (deepseek-r1-distill-qwen-32b, ornith-1_0-35B-FP8, qwable-3_6-27b-q4, qwable-3_6-35b-q5, Gemma-4-31B-Wordsmith-NVFP4) auch ohne sofortige Migration korrekt funktionieren.
+- **Kein 0.0-Default für Hybrid:** `open-weights-cloud-available` und `cloud-and-local` haben einen Cloud-Preis. Auto-0.0 würde diesen überschreiben. User-Entscheidung explizit: nur `localweights`/`local-weights` (rein lokal) → 0.0.
+
+**Out of Scope (operativ, NICHT behoben):**
+- 3 Gemma Thinking-Profile brauchen `code_quality`-Re-Run: `python scripts/run_score_benchmark.py --models "Gemma-4-31B-thinking,Gemma-4-26B-thinking,Gemma-4-31B-Wordsmith-NVFP4-thinking" --modules code_quality`.
+- 5 restliche Cards mit `"local-weights"`-Schreibweise können kosmetisch zu `"localweights"` migriert werden (Defense-in-Depth macht es funktional unnötig).
+- 2 Hybrid-Karten ohne Preis (`ornith-1-0-35b`, `command-a-plus-05-2026`) bleiben leer im Leaderboard (bewusst, User-Decision Session 47).
+
+**Folge-Schritt im selben Chat (User-Auftrag „vor dem großen Push"):**
+
+1. **5 kosmetische Card-Migrationen** (`local-weights` → `localweights`) — durchgeführt: `Gemma-4-31B-Wordsmith-NVFP4--VSPK`, `deepseek-r1-distill-qwen-32b`, `ornith-1_0-35B-FP8--VSPK`, `qwable-3_6-27b-q4`, `qwable-3_6-35b-q5--SPRK`. Card-Audit-Script (`scripts/dev/audit_model_cards_full.py`) sollte nachziehen — Whitelist kennt jetzt nur noch `"localweights"` (kein `"local-weights"` mehr im Repo).
+
+2. **`ornith-1-0-35b--SPRK` auf `localweights` geändert** — Datenanalyse ergab: nur lokal getestet (50 Runs, nur Provider `llamacpp_spark`). Defense-in-Depth greift → `Cost per 1K = 0.0`, `Benchmark Cost = 0.0` (vorher leer). Konsistent mit der anderen Ornith-Variante `ornith-1_0-35B-FP8` (VSPK, bereits `localweights`).
+
+3. **`command-a-plus-05-2026` NICHT geändert** — Datenanalyse ergab: nur via Cohere Cloud getestet (50 Runs, nur Provider `cohere`). Bleibt `deployment_type = "cloud-and-local"`, leerer Preis im Leaderboard. User-Aussage "nur lokal getestet" traf nur für ornith zu, nicht für command-a-plus.
+
+**Status:** Working Tree, uncommitted. Working-Tree-Diff: 5 Dateien geändert (`score_calculator.py`, 3 Cards, 1 neuer Test). Working Tree insgesamt weiterhin uncommitted (Sessions 52–57).
+
+---
+
 ### 2026-07-09 (Session 55) — `thinking_mode` im Reviewer-Prompt + Audit-Log-Header [DONE, uncommitted]
 
 **Auslöser:** Session 54 fügte `thinking_mode` als CSV-Spalte und Leaderboard-Spalte hinzu. Der Reviewer konnte es aber nicht sehen — das Prompt-Template hatte keine Variable dafür, der Reviewer riet aus `{model_tags}` (Architektur-Tag, immer "Thinking" für Ornith = Capability, nicht Runtime-Modus). Externe Audit-Analyse zeigte: beide Reviews deklarierten sich fälschlich als "Thinking-Lauf", obwohl Stabilitätsdaten (Timeout-Rate, P95) zeigten, dass einer ein Standard-Lauf war.
