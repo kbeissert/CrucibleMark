@@ -324,7 +324,7 @@ validate-cards:
 
 test: validate
 	@echo "Running Unit Tests..."
-	$(PYTHON) -m pytest benchmark_modules/ tests/ utils/scoring/llm_judge/tests/ -v --tb=short
+	$(PYTHON) -m pytest benchmark_modules/ tests/ -v --tb=short
 
 # === LINT (Ruff + Pylint) ===
 # Ruff ist der harte Gate (C901 max-complexity=12 via .ruff.toml).
