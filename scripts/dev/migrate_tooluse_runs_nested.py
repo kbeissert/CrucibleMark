@@ -38,7 +38,6 @@ from pathlib import Path
 ROOT_DIR = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(ROOT_DIR))
 
-from utils.model_utils import _find_card  # noqa: E402
 
 CARD_DIR = ROOT_DIR / "benchmark_scores" / "model_cards"
 LOG_FMT = "%(asctime)s [%(levelname)s] %(message)s"

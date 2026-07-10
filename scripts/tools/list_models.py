@@ -10,7 +10,7 @@ import shutil
 import logging
 import subprocess
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 # Third-party imports
 # pylint: disable=import-error
@@ -47,7 +47,7 @@ logging.getLogger("httpcore").setLevel(logging.CRITICAL)
 logging.getLogger("openai").setLevel(logging.CRITICAL)
 
 
-def load_config() -> Dict[str, Any]:
+def load_config() -> dict[str, Any]:
     """Lädt die benchmark_config.yaml."""
     config_path = Path("benchmark_config.yaml")
     if not config_path.exists():
@@ -172,7 +172,7 @@ def check_ollama() -> None:
             print(f"{Colors.FAIL}Ollama Executable nicht gefunden.{Colors.ENDC}")
 
 
-def _diagnose_api_error(e: Exception) -> Tuple[str, str, Optional[str]]:
+def _diagnose_api_error(e: Exception) -> tuple[str, str, str | None]:
     """Analysiert Exception und gibt (Status, Msg, DetailedMsg) zurück."""
     err_str = str(e).lower()
     status = f"{Colors.FAIL}ERR {Colors.ENDC}"
@@ -233,7 +233,7 @@ def _test_model_connectivity(
         )
 
 
-def check_commercial(config: Dict[str, Any]) -> None:
+def check_commercial(config: dict[str, Any]) -> None:
     """Prüft kommerzielle Provider und deren Status durch echten API-Ping."""
     providers = config.get("providers", {}).get("commercial", {})
 

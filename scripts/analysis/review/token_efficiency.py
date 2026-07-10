@@ -55,7 +55,7 @@ def build_token_efficiency_context(tested_model_name: str, token_budgets: dict[s
         if not src.exists():
             continue
         try:
-            with open(src, "r", encoding="utf-8") as f:
+            with open(src, encoding="utf-8") as f:
                 for row in csv.DictReader(f):
                     asset_id = row.get("asset_id", "")
                     model_name = row.get("model", "")

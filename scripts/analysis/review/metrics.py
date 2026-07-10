@@ -45,7 +45,7 @@ def get_model_metrics(model_name: str) -> dict:
         )
 
     try:
-        with open(detailed_csv, "r", encoding="utf-8") as f:
+        with open(detailed_csv, encoding="utf-8") as f:
             reader = csv.DictReader(f)
             for row in reader:
                 norm_csv = normalize_model_name(row.get("Model ID", row.get("model_id", "")))

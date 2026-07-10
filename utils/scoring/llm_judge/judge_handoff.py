@@ -15,9 +15,9 @@ from __future__ import annotations
 import json
 import logging
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -48,15 +48,15 @@ class PendingJudgeResult:
 
     # --- Timestamp (ISO 8601) ---
     timestamp_completed: str = field(
-        default_factory=lambda: datetime.now(timezone.utc).isoformat()
+        default_factory=lambda: datetime.now(UTC).isoformat()
     )
 
     # --- Phase-3 results (populated by judge runner) ---
-    judge_score: Optional[int] = None
-    judge_reasoning: Optional[str] = None
-    judge_latency_ms: Optional[float] = None
-    judge_parse_success: Optional[bool] = None
-    judge_provider_used: Optional[str] = None  # which provider actually ran
+    judge_score: int | None = None
+    judge_reasoning: str | None = None
+    judge_latency_ms: float | None = None
+    judge_parse_success: bool | None = None
+    judge_provider_used: str | None = None  # which provider actually ran
 
     def __post_init__(self) -> None:
         """Store an immutable copy of response_time_ms at construction time."""
@@ -91,7 +91,7 @@ class PendingJudgeResult:
         """
         return self.judge_parse_success is not None
 
-    def to_final_result(self) -> Dict[str, Any]:
+    def to_final_result(self) -> dict[str, Any]:
         """
         Serialise to a flat dict ready for JSON output or CSV merging.
 

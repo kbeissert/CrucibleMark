@@ -19,7 +19,7 @@ import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from utils.model_utils import (get_ollama_models_info,
 
@@ -59,9 +59,9 @@ except ImportError as e:
 class BenchmarkRunConfig:
     """Konfiguration für einen Benchmark-Lauf."""
 
-    module_name: Optional[str] = None
-    provider_type: Optional[str] = None
-    model_name: Optional[str] = None
+    module_name: str | None = None
+    provider_type: str | None = None
+    model_name: str | None = None
     run_all: bool = False
     num_runs: int = 1
     force: bool = False
@@ -105,8 +105,8 @@ class BenchmarkRunner:
         return result
 
     def select_module(
-        self, module_name: Optional[str] = None
-    ) -> tuple[Optional[str], Optional[dict[str, Any]]]:
+        self, module_name: str | None = None
+    ) -> tuple[str | None, dict[str, Any] | None]:
         """Interaktive Modul-Auswahl oder direkter Zugriff."""
         modules = self.get_enabled_modules()
 
@@ -422,7 +422,7 @@ class BenchmarkRunner:
                         print("🔄 Automatische Einleitung des Safety-Runs (Triple-Run Verification)...")
                         subprocess.run([sys.executable, "scripts/core/verify_compass_anomalies.py", "--model_id", model], check=False)
                         break
-                except Exception as e:
+                except Exception:
                     logger.exception("Anomaly trigger failed for model %s", model)
 
     @staticmethod

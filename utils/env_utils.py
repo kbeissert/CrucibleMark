@@ -3,10 +3,9 @@ Utility functions for environment variable management.
 """
 
 import os
-from typing import Optional
 
 
-def get_required_env(key: str, error_msg: Optional[str] = None) -> str:
+def get_required_env(key: str, error_msg: str | None = None) -> str:
     """
     Retrieves an environment variable or raises ValueError if missing.
 

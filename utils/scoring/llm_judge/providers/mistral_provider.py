@@ -7,12 +7,12 @@ Auth: MISTRAL_API_KEY environment variable.
 
 import logging
 import time
-from typing import Any, Optional
+from typing import Any
 
 from .base_provider import JudgeProviderResponse, LLMJudgeProvider
 
 # Optional import guard: declared before try-block as per project convention
-mistral_module: Optional[Any] = None
+mistral_module: Any | None = None
 try:
     from mistralai import Mistral as mistral_module  # type: ignore[no-redef]
 except ImportError:

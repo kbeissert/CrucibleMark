@@ -3,7 +3,7 @@ import logging
 import time
 import json
 import traceback
-from typing import Dict, Any, Optional
+from typing import Any
 
 from utils.scoring.llm_judge.judge_config import LLMJudgeConfig
 from utils.scoring.llm_judge.judge_runner import JudgeRunner
@@ -12,16 +12,16 @@ from utils.scoring.exceptions import JudgeUnavailableError
 from utils.benchmark_utils import save_audit_log
 
 def evaluate_with_judge(
-    result: Dict[str, Any],
+    result: dict[str, Any],
     response: str,
-    asset_data: Dict[str, Any],
-    judge_cfg_dict: Dict[str, Any],
+    asset_data: dict[str, Any],
+    judge_cfg_dict: dict[str, Any],
     eval_module_id: str,
     model: str,
-    asset_cfg: Optional[Dict[str, Any]],
-    benchmark_info: Dict[str, Any],
-    provider: Optional[str] = None,
-) -> Dict[str, Any]:
+    asset_cfg: dict[str, Any] | None,
+    benchmark_info: dict[str, Any],
+    provider: str | None = None,
+) -> dict[str, Any]:
     """
     Executes the LLM Judge scoring methodology and updates the result dictionary.
     """
@@ -230,11 +230,11 @@ def evaluate_with_judge(
     return result
 
 def generate_audit_log(
-    result: Dict[str, Any],
+    result: dict[str, Any],
     exec_result: Any,
-    asset_data: Dict[str, Any],
+    asset_data: dict[str, Any],
     response: str,
-    score: Dict[str, Any]
+    score: dict[str, Any]
 ) -> None:
     """
     Generates and saves the audit log based on configuration.

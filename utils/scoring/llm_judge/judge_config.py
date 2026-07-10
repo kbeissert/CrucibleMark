@@ -6,7 +6,7 @@ from __future__ import annotations
 from utils.constants import DEFAULT_UNLOAD_DELAY_MS
 
 
-from typing import List, Literal, Optional
+from typing import Literal
 from utils.constants import OLLAMA_DEFAULT_BASE_URL
 
 from pydantic import BaseModel, Field
@@ -36,7 +36,7 @@ class ProviderConfig(BaseModel):
     temperature: float = Field(DEFAULT_TEMPERATURE, ge=0.0, le=1.0)
     max_tokens: int = Field(DEFAULT_MAX_TOKENS, gt=0)
     timeout_seconds: int = Field(DEFAULT_TIMEOUT_SECONDS, gt=0)
-    base_url: Optional[str] = Field(
+    base_url: str | None = Field(
         None,
         description="Only required for Ollama (e.g. http://localhost:11434).",
     )
@@ -79,7 +79,7 @@ class LLMJudgeConfig(BaseModel):
     )
     provider: ProviderConfig = Field(default_factory=lambda: ProviderConfig())
     scoring: ScoringConfig = Field(default_factory=lambda: ScoringConfig())
-    applicable_modules: List[str] = Field(
+    applicable_modules: list[str] = Field(
         default_factory=lambda: [
             "ux_writing",
             "documentation_quality",
@@ -88,13 +88,13 @@ class LLMJudgeConfig(BaseModel):
         ],
         description="Benchmark module IDs where the LLM Judge is activated.",
     )
-    module_judge_model: Optional[str] = Field(
+    module_judge_model: str | None = Field(
         None,
         description="Optional module-specific override for the primary judge model.",
     )
 
     @classmethod
-    def from_dict(cls, data: dict) -> "LLMJudgeConfig":
+    def from_dict(cls, data: dict) -> LLMJudgeConfig:
         """
         Build LLMJudgeConfig from a nested dict (e.g. loaded from YAML).
 

@@ -38,7 +38,7 @@ import logging
 import math
 import re
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 from pathlib import Path
 from typing import Any
 
@@ -258,7 +258,7 @@ def _reconstruct_leaderboard_row(avg_row: dict[str, Any]) -> dict[str, Any] | No
     provider_type = "ollama" if normalized.startswith(("gemma", "qwen", "mistral", "ministral", "llama", "deepseek", "NousResearch", "hf.co")) else "openrouter"
 
     row = {
-        "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
+        "timestamp": datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S"),
         "model": normalized,
         "model_category": _resolve_model_category(normalized, provider_type),
         "provider_type": provider_type,

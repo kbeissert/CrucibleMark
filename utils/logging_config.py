@@ -1,4 +1,3 @@
-from typing import Optional
 import logging
 import logging.handlers
 import sys
@@ -21,7 +20,7 @@ def _load_logging_config():
     }
     try:
         if CONFIG_PATH.exists():
-            with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+            with open(CONFIG_PATH, encoding="utf-8") as f:
                 data = yaml.safe_load(f)
                 return data.get("logging", defaults)
     except Exception:
@@ -29,7 +28,7 @@ def _load_logging_config():
     return defaults
 
 
-def setup_logging(log_file: Optional[Path] = None):
+def setup_logging(log_file: Path | None = None):
     """
     Konfiguriert das Logging-System basierend auf benchmark_config.yaml.
     """

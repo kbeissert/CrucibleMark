@@ -16,7 +16,8 @@ import math
 import re
 from fnmatch import fnmatch
 from pathlib import Path
-from typing import Any, Callable, Optional
+from typing import Any
+from collections.abc import Callable
 
 # Setup import path so that 'utils' and other root-level packages are importable
 # regardless of how the script is invoked (make, direct call, IDE).
@@ -540,9 +541,8 @@ def _atomic_copy(src: Path, dst: Path) -> None:
         dir=str(target_dir),
     )
     try:
-        with os.fdopen(fd, "wb") as f_out:
-            with open(src, "rb") as f_in:
-                shutil.copyfileobj(f_in, f_out)
+        with os.fdopen(fd, "wb") as f_out, open(src, "rb") as f_in:
+            shutil.copyfileobj(f_in, f_out)
         os.replace(tmp_path, dst)
         # copy2-Verhalten: Permissions vom Source uebernehmen
         shutil.copymode(src, dst)
@@ -941,7 +941,7 @@ def _build_pc_lookups(
 def _export_model_files(
     model_out: Path,
     comp_src: Path | None,
-) -> dict[str, Optional[str]]:
+) -> dict[str, str | None]:
     """Kopiert die Comparison-Markdown-Dateien (Review + Bias-Review) eines Modells.
 
     Audit-Logs (Judge-Logs pro Task) werden NICHT mehr exportiert — sie werden
@@ -953,7 +953,7 @@ def _export_model_files(
         comp_files_dict mit Keys 'review' und 'bias_review' (jeweils Dateiname
         oder None).
     """
-    comp_files_dict: dict[str, Optional[str]] = {"review": None, "bias_review": None}
+    comp_files_dict: dict[str, str | None] = {"review": None, "bias_review": None}
     if comp_src and comp_src.exists():
         out_comp = model_out / "comparisons"
         out_comp.mkdir(exist_ok=True)

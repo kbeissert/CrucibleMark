@@ -25,7 +25,7 @@ csv_path = Path('benchmark_scores/political_compass_leaderboard.csv')
 # 2. Parse CSV
 rows = []
 header = []
-with open(csv_path, 'r') as f:
+with open(csv_path) as f:
     reader = csv.reader(f)
     header = next(reader)
     for r in reader:
@@ -64,7 +64,7 @@ for i, row in enumerate(rows):
     flips = 0
     total_valid = 0
 
-    for qid in van.keys():
+    for qid in van:
         if qid in frc and qid in assets:
             v_ans = van[qid].get('answer')
             f_ans = frc[qid].get('answer')

@@ -23,7 +23,7 @@ import argparse
 import json
 import logging
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 from pathlib import Path
 from typing import Any
 
@@ -86,7 +86,7 @@ def _probe_fields_to_dict(probe: ThinkingProbeResult) -> dict[str, Any]:
         "thinking_probe_detected": probe.detected,
         "thinking_probe_evidence": probe.evidence,
         "thinking_probe_confidence": probe.confidence,
-        "thinking_probe_at": datetime.now(timezone.utc).isoformat(),
+        "thinking_probe_at": datetime.now(UTC).isoformat(),
     }
     # v4.7.1 CoT-Quartett: Marker-Familie + Tag-Liste nur setzen, wenn
     # tatsaechlich Tags gefunden wurden. Sonst bleiben die Felder null

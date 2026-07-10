@@ -72,7 +72,7 @@ class CardReport:
 def _read_json(path: Path) -> dict[str, Any] | None:
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, OSError) as exc:
+    except (json.JSONDecodeError, OSError):
         return None
     if not isinstance(data, dict):
         return None

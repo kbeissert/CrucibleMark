@@ -3,7 +3,7 @@ Regex/Rule-based Scorer implementation.
 Evaluates responses based on defined criteria (Regex, Keywords, etc).
 """
 
-from typing import Any, Dict, Tuple
+from typing import Any
 from .base import BaseScorer
 from .helpers import ScoringHelpers
 
@@ -18,8 +18,8 @@ class RegexScorer(BaseScorer):
         self.helpers = ScoringHelpers()
 
     def score_response(
-        self, response: str, asset: Dict[str, Any], **kwargs
-    ) -> Dict[str, Any]:
+        self, response: str, asset: dict[str, Any], **kwargs
+    ) -> dict[str, Any]:
         """
         Implementation of the BaseScorer interface for Rule/Regex scoring.
         """
@@ -72,8 +72,8 @@ class RegexScorer(BaseScorer):
         return results
 
     def _dispatch_criterion(
-        self, criterion: Dict[str, Any], response: str, response_lower: str
-    ) -> Tuple[float, str]:
+        self, criterion: dict[str, Any], response: str, response_lower: str
+    ) -> tuple[float, str]:
         """Dispatches to the correct helper method."""
         method = criterion.get("check_method")
         method_name = f"score_{method}"

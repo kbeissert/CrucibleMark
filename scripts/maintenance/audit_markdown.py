@@ -36,7 +36,7 @@ def audit_markdown_files(apply_fixes=False):
     # 1. Check MD files (Read-only as before)
     for path in files_to_check_md:
         try:
-            with open(path, 'r', encoding='utf-8') as file:
+            with open(path, encoding='utf-8') as file:
                 content = file.read()
                 lines = content.split('\n')
         except Exception: continue
@@ -102,7 +102,7 @@ def audit_markdown_files(apply_fixes=False):
 
     for path in files_to_check_yaml:
         try:
-            with open(path, 'r', encoding='utf-8') as file:
+            with open(path, encoding='utf-8') as file:
                 lines = file.readlines()
         except Exception: continue
 

@@ -238,7 +238,7 @@ def _run_model(model_id: str, force: bool = False, silent: bool = False) -> bool
                     return True  # Als Erfolg werten, da Ergebnis vollständig existiert
                 else:
                     print(f"  ⚠ Leaderboard-Eintrag für {model_id} existiert, aber Per-Asset-Detailzeilen fehlen in Benchmark-CSVs")
-                    print(f"    → Führe Benchmark aus, um Detailzeilen zu ergänzen (Cache-Check erweitert v4.10.12)")
+                    print("    → Führe Benchmark aus, um Detailzeilen zu ergänzen (Cache-Check erweitert v4.10.12)")
             # else: kein Leaderboard-Eintrag → Benchmark ausführen
         except Exception:
             # Bei Fehler im Cache-Check defensiv weitermachen (Benchmark ausführen)

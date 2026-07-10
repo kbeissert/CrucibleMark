@@ -80,11 +80,10 @@ def compute_sovereign_risk(model_card: dict, provider_card: dict | None) -> tupl
                 risks.append(("medium", "Lokal betrieben – kein Datentransfer, aber Weights stammen von riskantem Entwickler"))
             else:
                 risks.append(("low", "Vollständig lokal, kein Datentransfer"))
+    elif wprov == "high":
+        risks.append(("medium", "Kein Provider zugeordnet (vermutlich lokal) – Weights-Risiko bleibt"))
     else:
-        if wprov == "high":
-            risks.append(("medium", "Kein Provider zugeordnet (vermutlich lokal) – Weights-Risiko bleibt"))
-        else:
-            risks.append(("low", "Kein Cloud-Provider zugeordnet"))
+        risks.append(("low", "Kein Cloud-Provider zugeordnet"))
 
     if not risks:
         return ("medium", "Unbekannte Risikokombination")

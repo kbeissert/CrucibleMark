@@ -14,7 +14,8 @@ Design Principles:
 import time
 import sys
 import unicodedata
-from typing import Optional, List, TypeVar, Callable
+from typing import TypeVar
+from collections.abc import Callable
 
 # Constants
 VARIATION_SELECTOR_16 = 0xFE0F
@@ -50,11 +51,11 @@ class TerminalUI:
 
     @staticmethod
     def select_from_list(
-        items: List[T],
+        items: list[T],
         display_func: Callable[[T], str | tuple[str, str]],
         prompt: str = "Wähle einen Eintrag",
-        title: Optional[str] = None,
-    ) -> Optional[T]:
+        title: str | None = None,
+    ) -> T | None:
         """
         Generic interactive selection from a list.
 
@@ -127,7 +128,7 @@ class TerminalUI:
             width += 1
         return width
 
-    def _print_box(self, lines: list[str], title: Optional[str] = None):
+    def _print_box(self, lines: list[str], title: str | None = None):
         """Helper to print a nice ASCII box with correct alignment."""
         content_width = self.terminal_width
 
@@ -156,7 +157,7 @@ class TerminalUI:
         model_name: str,
         provider: str,
         num_runs: int,
-        extra_info: Optional[list[str]] = None,
+        extra_info: list[str] | None = None,
     ):
         """Prints the module introduction screen."""
         lines = [
@@ -296,7 +297,7 @@ class TerminalUI:
         coords: tuple[float, float],
         sigma: tuple[float, float],
         archetype: str,
-        chart: Optional[str],
+        chart: str | None,
         stats: dict,
     ):
         """Prints the comprehensive final report."""

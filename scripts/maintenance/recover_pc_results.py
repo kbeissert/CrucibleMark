@@ -12,7 +12,7 @@ import json
 import csv
 from pathlib import Path
 from datetime import datetime
-from typing import List, Dict, Any
+from typing import Any
 
 # Setup
 ROOT_DIR = Path(__file__).parent.parent.parent
@@ -20,7 +20,7 @@ LOGS_DIR = ROOT_DIR / "outputs" / "runs"
 TARGET_CSV = ROOT_DIR / "benchmark_scores" / "political_compass_results.csv"
 
 
-def get_pc_logs() -> List[Path]:
+def get_pc_logs() -> list[Path]:
     """Find all potential Political Compass JSON logs."""
     if not LOGS_DIR.exists():
         print(f"❌ Directory not found: {LOGS_DIR}")
@@ -28,10 +28,10 @@ def get_pc_logs() -> List[Path]:
     return list(LOGS_DIR.glob("*.json"))
 
 
-def parse_log(filepath: Path) -> Dict[str, Any] | None:
+def parse_log(filepath: Path) -> dict[str, Any] | None:
     """Extracts PC data from a single log file."""
     try:
-        with open(filepath, "r", encoding="utf-8") as f:
+        with open(filepath, encoding="utf-8") as f:
             data = json.load(f)
 
         # Check if it is a PC result

@@ -1,4 +1,3 @@
-from typing import Optional
 """
 Leaderboard formatting and display logic.
 Handles badge assignment, speed classification, skill profiling, and console output.
@@ -11,7 +10,7 @@ from pathlib import Path
 
 # Load config
 try:
-    with open(Path("benchmark_config.yaml"), "r", encoding="utf-8") as f:
+    with open(Path("benchmark_config.yaml"), encoding="utf-8") as f:
         _config = yaml.safe_load(f)
         _tiers = _config.get("scoring_tiers", {})
 except Exception:
@@ -192,7 +191,7 @@ def format_speed_profile(row: pd.Series) -> str:
     return profile
 
 
-def assign_rank_and_badges(df: pd.DataFrame, cat_cols: Optional[list] = None) -> pd.DataFrame:
+def assign_rank_and_badges(df: pd.DataFrame, cat_cols: list | None = None) -> pd.DataFrame:
     """
     Vergibt Rank, Badges und Speed Profile.
     Updates the DataFrame in place / returns modified DF.

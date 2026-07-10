@@ -11,7 +11,6 @@ import argparse
 import logging
 import re
 from pathlib import Path
-from typing import List
 
 # Third-party
 import yaml
@@ -145,7 +144,7 @@ logging.basicConfig(level=logging.INFO, format="%(message)s")
 logger = logging.getLogger("clean_results")
 
 
-def get_module_asset_ids(module_key: str) -> List[str]:
+def get_module_asset_ids(module_key: str) -> list[str]:
     """
     Ermittelt alle Asset-IDs, die zu einem bestimmten Modul gehören.
     Nutzt die Config und scannt die YAML-Dateien.
@@ -177,7 +176,7 @@ def get_module_asset_ids(module_key: str) -> List[str]:
     if assets_dir.exists():
         for f in assets_dir.glob("*.yaml"):
             try:
-                with open(f, "r", encoding="utf-8") as yf:
+                with open(f, encoding="utf-8") as yf:
                     data = yaml.safe_load(yf)
                     if "metadata" in data and "id" in data["metadata"]:
                         ids.append(str(data["metadata"]["id"]))
@@ -539,7 +538,7 @@ def clean_model_card(model: str, dry_run: bool = False):
 def clean_csv(
     file_path: Path,
     model: str = None,
-    asset_ids: List[str] = None,
+    asset_ids: list[str] = None,
     dry_run: bool = False,
 ):
     """Löscht Zeilen aus einer CSV basierend auf Filtern.

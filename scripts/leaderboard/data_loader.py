@@ -5,7 +5,6 @@ Handles reading commercial, local, and golden standard benchmark results.
 
 import csv
 from pathlib import Path
-from typing import Dict, List
 
 import pandas as pd
 
@@ -54,7 +53,7 @@ except ImportError:
 # pylint: enable=import-error
 
 
-def _extract_scores_from_df(df: pd.DataFrame) -> Dict[str, float]:
+def _extract_scores_from_df(df: pd.DataFrame) -> dict[str, float]:
     """Helper to extract latest scores per asset from a DataFrame."""
     refs = {}
     if "status" in df.columns:
@@ -74,7 +73,7 @@ def _extract_scores_from_df(df: pd.DataFrame) -> Dict[str, float]:
     return refs
 
 
-def _process_csv(dfs: List[pd.DataFrame], filepath: Path, type_label: str) -> None:
+def _process_csv(dfs: list[pd.DataFrame], filepath: Path, type_label: str) -> None:
     """
     Helper to process a single CSV File and append to list of DataFrames.
 
@@ -148,7 +147,7 @@ def load_benchmark_data() -> pd.DataFrame:
         pd.DataFrame: Concatenated and deduplicated benchmark results.
                       Returns empty DataFrame if no data found.
     """
-    dfs: List[pd.DataFrame] = []
+    dfs: list[pd.DataFrame] = []
 
     _process_csv(dfs, COMMERCIAL_CSV, "Proprietär")
     _process_csv(dfs, CLOUD_CSV, "Open Weights (Cloud)")

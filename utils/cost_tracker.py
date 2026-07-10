@@ -2,7 +2,6 @@ import csv
 import logging
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, Optional
 
 
 
@@ -41,7 +40,7 @@ class CostTracker:
         if not self.cost_log_file.exists():
             return
         try:
-            with open(self.cost_log_file, "r", newline="", encoding="utf-8") as f:
+            with open(self.cost_log_file, newline="", encoding="utf-8") as f:
                 reader = csv.DictReader(f)
                 if reader.fieldnames and "call_type" in reader.fieldnames:
                     return  # Bereits migriert
@@ -174,8 +173,8 @@ class CostTracker:
         return cost
 
     def get_spend_breakdown(
-        self, provider: str, date_str: Optional[str] = None
-    ) -> Dict[str, float]:
+        self, provider: str, date_str: str | None = None
+    ) -> dict[str, float]:
         """Gibt {call_type: Gesamtkosten} für einen Provider (optional: Tag) zurück."""
         if not self.cost_log_file.exists():
             return {}
@@ -183,9 +182,9 @@ class CostTracker:
         if date_str is None:
             date_str = datetime.now().strftime("%Y-%m-%d")
 
-        breakdown: Dict[str, float] = {}
+        breakdown: dict[str, float] = {}
         try:
-            with open(self.cost_log_file, "r", encoding="utf-8") as f:
+            with open(self.cost_log_file, encoding="utf-8") as f:
                 reader = csv.DictReader(f)
                 for row in reader:
                     if row.get("date") != date_str or row.get("provider") != provider:

@@ -22,7 +22,7 @@ def _load_context_window():
     """Liest context_window sicher aus benchmark_config.yaml."""
     try:
         if CONFIG_PATH.exists():
-            with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+            with open(CONFIG_PATH, encoding="utf-8") as f:
                 data = yaml.safe_load(f)
                 return int(
                     data.get("providers", {})
@@ -40,7 +40,7 @@ def _load_context_overrides() -> dict:
     """Liest model_context_overrides aus benchmark_config.yaml."""
     try:
         if CONFIG_PATH.exists():
-            with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+            with open(CONFIG_PATH, encoding="utf-8") as f:
                 data = yaml.safe_load(f)
                 yaml_overrides = (
                     data.get("providers", {})
@@ -73,7 +73,7 @@ def get_generation_defaults() -> dict:
     """Lädt globale Generation-Defaults aus benchmark_config.yaml."""
     try:
         if CONFIG_PATH.exists():
-            with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+            with open(CONFIG_PATH, encoding="utf-8") as f:
                 data = yaml.safe_load(f)
                 return data.get("defaults", {}).get("generation", {})
     except Exception:

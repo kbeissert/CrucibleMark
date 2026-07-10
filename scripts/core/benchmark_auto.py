@@ -60,7 +60,6 @@ from utils.model_utils import (  # noqa: E402
 # Gemeinsame llama.cpp-Batch-Orchestrierung
 from scripts.core.runner_contract import update_leaderboard  # noqa: E402
 from scripts.core.llamacpp_batch import (  # noqa: E402
-    canonical_lookup_keys,
     get_enabled_llamacpp_providers,
     get_existing_results,
     get_startable_assets,

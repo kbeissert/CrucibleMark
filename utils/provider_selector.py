@@ -1,6 +1,5 @@
 import sys
 import importlib.util
-from typing import Optional
 
 from utils.benchmark_utils import select_from_list
 from utils.constants import MODEL_TYPE_OPEN_WEIGHTS_CLOUD
@@ -13,7 +12,7 @@ class ProviderSelector:
     def __init__(self, config: dict):
         self.config = config
 
-    def select_provider(self, provider_type: Optional[str] = None) -> tuple[str, str]:
+    def select_provider(self, provider_type: str | None = None) -> tuple[str, str]:
         """Interaktive Provider-Auswahl (commercial/local/cloud)."""
         if provider_type and provider_type in ["commercial", "local", "cloud"]:
             return self._select_provider_models(provider_type)
@@ -250,7 +249,7 @@ class ProviderSelector:
             pass
 
         if not config_models:
-            print(f"\n⚠️  Keine vLLM-Modelle in benchmark_config.yaml konfiguriert.")
+            print("\n⚠️  Keine vLLM-Modelle in benchmark_config.yaml konfiguriert.")
             print(f"Ergänze Modelle unter providers.local.{provider_name}.models")
             sys.exit(1)
 
@@ -316,7 +315,7 @@ class ProviderSelector:
             pass
 
         if not config_models:
-            print(f"\n⚠️  Keine llama.cpp-Modelle in benchmark_config.yaml konfiguriert.")
+            print("\n⚠️  Keine llama.cpp-Modelle in benchmark_config.yaml konfiguriert.")
             print(f"Ergänze Modelle unter providers.local.{provider_name}.models")
             sys.exit(1)
 

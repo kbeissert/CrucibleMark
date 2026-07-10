@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import logging
 from string import Template
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 from utils.model_utils import get_model_identity
 
@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Module-specific domain descriptions for role framing
 # ---------------------------------------------------------------------------
-_MODULE_DOMAIN: Dict[str, str] = {
+_MODULE_DOMAIN: dict[str, str] = {
     "ux_writing": (
         "UX Writing and microcopy. You are deeply familiar with plain language principles, "
         "call-to-action clarity, error message best practices, onboarding copy, and "
@@ -114,7 +114,7 @@ Score 2  – Very poor: Largely wrong, off-topic, or extremely incomplete.
 Score 1  – Almost Unacceptable: Barely answers the prompt, mostly irrelevant.
 Score 0  – Unacceptable: Complete failure; refusal, non-answer, or entirely irrelevant."""
 
-_RUBRIC_BY_SCALE: Dict[int, str] = {3: _RUBRIC_3, 5: _RUBRIC_5, 10: _RUBRIC_10}
+_RUBRIC_BY_SCALE: dict[int, str] = {3: _RUBRIC_3, 5: _RUBRIC_5, 10: _RUBRIC_10}
 
 # ---------------------------------------------------------------------------
 # Prompt templates
@@ -169,17 +169,17 @@ def build_prompts(
     golden_standard: str,
     module_id: str,
     scale: int,
-    rubric_override: Optional[str] = None,
-    tested_model_id: Optional[str] = None,
-    required_language: Optional[str] = None,
+    rubric_override: str | None = None,
+    tested_model_id: str | None = None,
+    required_language: str | None = None,
     language_weight: float = 0.20,
-    token_budget_context: Optional[Dict[str, int]] = None,
+    token_budget_context: dict[str, int] | None = None,
     truncation_context: bool = False,
-    small_model_token_context: Optional[Dict[str, Any]] = None,
-    token_usage_context: Optional[Dict[str, Any]] = None,
-    tool_content: Optional[str] = None,
-    tool_content_quality: Optional[str] = None,
-) -> Tuple[str, str]:
+    small_model_token_context: dict[str, Any] | None = None,
+    token_usage_context: dict[str, Any] | None = None,
+    tool_content: str | None = None,
+    tool_content_quality: str | None = None,
+) -> tuple[str, str]:
     """
     Build the (system_prompt, user_prompt) pair for the LLM Judge.
 
@@ -239,7 +239,7 @@ def build_prompts(
             )
 
     if required_language:
-        _LANG_LABELS: Dict[str, str] = {"de": "German (Deutsch)", "en": "English"}
+        _LANG_LABELS: dict[str, str] = {"de": "German (Deutsch)", "en": "English"}
         lang_label = _LANG_LABELS.get(required_language, required_language.upper())
         system_prompt += (
             f"\n\n## LANGUAGE COMPLIANCE (Mandatory \u2013 {int(language_weight * 100)}% of total score) ##\n"
@@ -314,7 +314,7 @@ def build_prompts(
                 _visible = _tu_used - _tu_reasoning
                 _lines.append(f"- **Visible output tokens** (approx.): {_visible:,} tokens")
         if _tu_truncated:
-            _lines.append(f"- **Truncated**: YES (response was cut off at budget limit)")
+            _lines.append("- **Truncated**: YES (response was cut off at budget limit)")
 
         if _lines:
             _usage_block = "\n".join(_lines)

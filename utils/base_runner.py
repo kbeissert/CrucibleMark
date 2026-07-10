@@ -5,7 +5,7 @@ Stellt gemeinsame Funktionalität für lokale und kommerzielle Runner bereit.
 
 import logging
 from pathlib import Path
-from typing import Dict, Any, Tuple
+from typing import Any
 from datetime import datetime
 
 from utils.llm_client import LLMClient
@@ -45,9 +45,9 @@ class BaseBenchmarkRunner:
         self,
         model: str,
         asset_path: Path,
-        benchmark_info: Dict[str, Any],
+        benchmark_info: dict[str, Any],
         provider: str = "ollama",
-    ) -> Tuple[Any, BenchmarkResult]:
+    ) -> tuple[Any, BenchmarkResult]:
         """Lädt und führt ein Test-Modul aus (Shared Logic)."""
         # Pfad-Logik vereinheitlichen
         if "path" in benchmark_info:
@@ -134,10 +134,10 @@ class BaseBenchmarkRunner:
     def build_base_result(
         self,
         model: str,
-        asset_data: Dict[str, Any],
+        asset_data: dict[str, Any],
         exec_result: BenchmarkResult,  # Updated type hint
         provider: str,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Erstellt das standardisierte Ergebnis-Dictionary."""
         score = exec_result.data
         asset_id = asset_data.get("metadata", {}).get("id", "unknown")

@@ -7,7 +7,7 @@ import logging
 import os
 import contextlib
 from pathlib import Path
-from typing import Any, List, Optional
+from typing import Any
 import numpy as np  # pylint: disable=import-error
 
 try:
@@ -48,7 +48,7 @@ class SemanticSimilarity:
             cls._warning_logged = True
 
     @classmethod
-    def get_model(cls) -> Optional[Any]:
+    def get_model(cls) -> Any | None:
         """Lazy loading of the model."""
         if not HAS_TRANSFORMERS:
             if not cls._warning_logged:
@@ -134,7 +134,7 @@ class SemanticSimilarity:
         return score >= threshold
 
     @classmethod
-    def find_best_match(cls, query: str, candidates: List[str]) -> float:
+    def find_best_match(cls, query: str, candidates: list[str]) -> float:
         """
         Finds the highest similarity score between query and a list of candidates.
 

@@ -21,7 +21,7 @@ import logging
 import re
 import shutil
 import sys
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, UTC
 from pathlib import Path
 
 # Projekt-Root auf sys.path, damit ``utils.*`` importierbar ist
@@ -128,8 +128,8 @@ def _is_older_than(path: Path, days: int) -> bool:
     """Prueft, ob ``path`` aelter als ``days`` Tage ist."""
     if not path.exists():
         return False
-    mtime = datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc)
-    return mtime < (datetime.now(tz=timezone.utc) - timedelta(days=days))
+    mtime = datetime.fromtimestamp(path.stat().st_mtime, tz=UTC)
+    return mtime < (datetime.now(tz=UTC) - timedelta(days=days))
 
 
 def pre_backup_hygiene(
@@ -178,7 +178,7 @@ def pre_backup_hygiene(
 
     # 2) Legacy-Backup-Artefakte in ein safety-Archiv verschieben
     backups_dir = root / "backups"
-    safety_dir = backups_dir / f"_pre_clean_{datetime.now(tz=timezone.utc).strftime('%Y%m%d_%H%M%S')}"
+    safety_dir = backups_dir / f"_pre_clean_{datetime.now(tz=UTC).strftime('%Y%m%d_%H%M%S')}"
     if not dry_run:
         safety_dir.mkdir(parents=True, exist_ok=True)
     for pattern in _LEGACY_BACKUP_GLOBS:

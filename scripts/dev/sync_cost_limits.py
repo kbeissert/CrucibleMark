@@ -21,7 +21,6 @@ import argparse
 import csv
 import json
 from pathlib import Path
-from typing import Dict, Optional, Set
 
 import yaml
 
@@ -37,7 +36,7 @@ CSV_FILES = [
 ]
 
 # Maps benchmark_config provider key → cost_limits.yaml section key
-PROVIDER_SECTION_MAP: Dict[str, str] = {
+PROVIDER_SECTION_MAP: dict[str, str] = {
     "anthropic": "anthropic",
     "openai": "openai",
     "google": "google",
@@ -48,7 +47,7 @@ PROVIDER_SECTION_MAP: Dict[str, str] = {
 }
 
 
-def load_config_models() -> Dict[str, Set[str]]:
+def load_config_models() -> dict[str, set[str]]:
     """
     Liest alle explizit gelisteten Modell-IDs aus benchmark_config.yaml.
     Providers mit auto_discover=True werden übersprungen (kommen aus CSV).
@@ -57,7 +56,7 @@ def load_config_models() -> Dict[str, Set[str]]:
     with open(BENCHMARK_CONFIG, encoding="utf-8") as f:
         cfg = yaml.safe_load(f)
 
-    result: Dict[str, Set[str]] = {}
+    result: dict[str, set[str]] = {}
 
     # Alle Provider-Blöcke liegen unter providers: → commercial: (und local:, wird ignoriert)
     providers_cfg = cfg.get("providers", {})
@@ -76,12 +75,12 @@ def load_config_models() -> Dict[str, Set[str]]:
     return result
 
 
-def load_csv_models() -> Dict[str, Set[str]]:
+def load_csv_models() -> dict[str, set[str]]:
     """
     Liest Modell-IDs aus den Benchmark-CSVs (für auto-discover-Modelle wie ollama_cloud).
     Gibt {section_key: {model_id, ...}} zurück.
     """
-    result: Dict[str, Set[str]] = {}
+    result: dict[str, set[str]] = {}
     for path in CSV_FILES:
         if not path.exists():
             continue
@@ -102,7 +101,7 @@ def load_csv_models() -> Dict[str, Set[str]]:
     return result
 
 
-def load_configured_models() -> Dict[str, Set[str]]:
+def load_configured_models() -> dict[str, set[str]]:
     """
     Sammelt alle Modell-IDs, für die bereits ein Preis konfiguriert ist.
 
@@ -114,7 +113,7 @@ def load_configured_models() -> Dict[str, Set[str]]:
 
     Gibt {section_key: {model_id, ...}} zurück.
     """
-    result: Dict[str, Set[str]] = {}
+    result: dict[str, set[str]] = {}
 
     # 1. Model Cards (primäre SSoT)
     for card_path in CARD_DIR.glob("*.json"):
@@ -154,27 +153,27 @@ def load_configured_models() -> Dict[str, Set[str]]:
 
 
 def find_missing(
-    config_models: Dict[str, Set[str]],
-    csv_models: Dict[str, Set[str]],
-    configured: Dict[str, Set[str]],
-) -> Dict[str, Set[str]]:
+    config_models: dict[str, set[str]],
+    csv_models: dict[str, set[str]],
+    configured: dict[str, set[str]],
+) -> dict[str, set[str]]:
     """
     Gibt {section: {model_ids}} zurück, die in config/CSV stehen, aber keinen Preis haben.
     Der Vergleich erfolgt section-agnostisch: eine Model-ID gilt als konfiguriert,
     sobald sie in irgendeiner Card oder YAML-Sektion einen Preiseintrag hat.
     """
-    combined: Dict[str, Set[str]] = {}
+    combined: dict[str, set[str]] = {}
     for section, ids in config_models.items():
         combined.setdefault(section, set()).update(ids)
     for section, ids in csv_models.items():
         combined.setdefault(section, set()).update(ids)
 
     # Flat-Set aller konfigurierten Model-IDs (über alle Sektionen hinweg)
-    configured_flat: Set[str] = set()
+    configured_flat: set[str] = set()
     for ids in configured.values():
         configured_flat.update(ids)
 
-    missing: Dict[str, Set[str]] = {}
+    missing: dict[str, set[str]] = {}
     for section, ids in combined.items():
         diff = ids - configured_flat
         if diff:
@@ -182,7 +181,7 @@ def find_missing(
     return missing
 
 
-def insert_placeholders(missing: Dict[str, Set[str]]) -> int:
+def insert_placeholders(missing: dict[str, set[str]]) -> int:
     """
     Fügt Platzhalter-Einträge (null-Preise) in cost_limits.yaml ein.
     Erhält Kommentare durch Text-Level-Insertion statt YAML-Serialisierung.
@@ -194,7 +193,7 @@ def insert_placeholders(missing: Dict[str, Set[str]]) -> int:
     lines = text.splitlines(keepends=True)
 
     # providers:-Block begrenzen: Start- und End-Index ermitteln
-    providers_start: Optional[int] = None
+    providers_start: int | None = None
     providers_end: int = len(lines)
     for i, line in enumerate(lines):
         if line.rstrip() == "providers:":
@@ -216,7 +215,7 @@ def insert_placeholders(missing: Dict[str, Set[str]]) -> int:
 
     for section, model_ids in sorted(missing.items()):
         section_header = f"  {section}:"
-        section_line_idx: Optional[int] = None
+        section_line_idx: int | None = None
 
         # Nur im providers:-Block suchen (verhindert Match in settings: o.ä.)
         for i in range(providers_start, providers_end):
@@ -232,7 +231,7 @@ def insert_placeholders(missing: Dict[str, Set[str]]) -> int:
             continue
 
         # Einfügen vor daily_budget oder vor dem nächsten Sektion-Header (2-Leerzeichen-Einzug)
-        insert_before: Optional[int] = None
+        insert_before: int | None = None
         for i in range(section_line_idx + 1, providers_end):
             line = lines[i]
             stripped = line.lstrip()
@@ -277,7 +276,7 @@ def main() -> None:
     missing = find_missing(config_models, csv_models, configured)
 
     # Gesamtzahlen ermitteln (Union beider Quellen, nicht dict-overwrite)
-    combined_all: Dict[str, Set[str]] = {}
+    combined_all: dict[str, set[str]] = {}
     for section, ids in config_models.items():
         combined_all.setdefault(section, set()).update(ids)
     for section, ids in csv_models.items():

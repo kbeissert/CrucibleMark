@@ -9,11 +9,11 @@ import re
 from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
-from typing import Any, List, Optional, TypeVar
+from typing import Any, TypeVar
 
 import yaml
 
-from utils.model_utils import _safe_name, normalize_model_id
+from utils.model_utils import _safe_name
 
 T = TypeVar("T")
 
@@ -61,8 +61,8 @@ def select_from_list(
     items: list[T],
     display_func: Callable[[T], str | tuple[str, str]],
     prompt: str = "Wähle einen Eintrag",
-    title: Optional[str] = None,
-) -> Optional[T]:
+    title: str | None = None,
+) -> T | None:
     """DEPRECATED: Use TerminalUI.select_from_list instead."""
     from utils.benchmark_ui import TerminalUI
 
@@ -90,13 +90,13 @@ def discover_assets(directory: str | Path, pattern: str = "*.yaml") -> list[Path
 
 # Default tags stripped by clean_reasoning_tags when no override is given.
 # Covers the most common CoT tag families across providers.
-_DEFAULT_REASONING_TAGS: List[str] = ["think", "thought", "reasoning"]
+_DEFAULT_REASONING_TAGS: list[str] = ["think", "thought", "reasoning"]
 
 
 def clean_reasoning_tags(
     text: str,
-    tags: Optional[List[str]] = None,
-    extra_patterns: Optional[List[str]] = None,
+    tags: list[str] | None = None,
+    extra_patterns: list[str] | None = None,
 ) -> str:
     """Remove reasoning/CoT tags from a model response before scoring.
 
@@ -240,7 +240,7 @@ def _get_token_budget(asset_id: str) -> tuple[str | None, int | None]:
         import yaml
         from pathlib import Path as _Path
         _config_path = _Path(__file__).resolve().parent.parent / "benchmark_config.yaml"
-        with open(_config_path, "r", encoding="utf-8") as f:
+        with open(_config_path, encoding="utf-8") as f:
             _cfg = yaml.safe_load(f)
         budget = _cfg.get("token_budgets", {}).get(module_key)
         return module_key, budget
@@ -257,14 +257,14 @@ def save_audit_log(
     base_dir: Path = Path("outputs/audit_logs"),
     token_limit_cutoff: bool = False,
     token_limit_fallback: bool = False,
-    execution_time: Optional[float] = None,
-    tokens_used: Optional[int] = None,
-    tokens_per_second: Optional[float] = None,
-    cost: Optional[float] = None,
-    provider: Optional[str] = None,
-    reasoning_tokens: Optional[int] = None,
-    think_content: Optional[str] = None,
-    thinking_mode: Optional[str] = None,
+    execution_time: float | None = None,
+    tokens_used: int | None = None,
+    tokens_per_second: float | None = None,
+    cost: float | None = None,
+    provider: str | None = None,
+    reasoning_tokens: int | None = None,
+    think_content: str | None = None,
+    thinking_mode: str | None = None,
     **kwargs
 ) -> None:
     """

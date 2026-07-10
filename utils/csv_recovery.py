@@ -4,7 +4,7 @@ Handles heuristic extraction of data from malformed LLM outputs.
 """
 from utils.constants import MAX_PERCENTAGE
 
-from typing import Any, Dict, List, Optional
+from typing import Any
 from pathlib import Path
 import pandas as pd  # pylint: disable=import-error
 
@@ -28,15 +28,15 @@ def load_csv_robust(filepath: Path) -> pd.DataFrame:
     return pd.read_csv(filepath, on_bad_lines="skip", engine="python")
 
 
-def get_csv_header_idx(header: List[str]) -> Dict[str, int]:
+def get_csv_header_idx(header: list[str]) -> dict[str, int]:
     """Generates a mapping of column names to indices."""
     # Map all columns found in header to their index
     return {col: i for i, col in enumerate(header)}
 
 
 def parse_row_robust(
-    parts: List[str], header_idx: Dict[str, int]
-) -> Optional[Dict[str, Any]]:
+    parts: list[str], header_idx: dict[str, int]
+) -> dict[str, Any] | None:
     """Legacy helper: Tries to parse a single row, recovering it if broken."""
     # Strategy 1: Standard - Length matches
     if len(parts) == len(header_idx):
@@ -51,8 +51,8 @@ def parse_row_robust(
 
 
 def _extract_model_from_parts(
-    parts: List[str], exclude_values: List[str]
-) -> Optional[str]:
+    parts: list[str], exclude_values: list[str]
+) -> str | None:
     """Sucht nach dem Modellnamen in den CSV-Teilen."""
     for p in parts:
         if p in exclude_values:
@@ -62,7 +62,7 @@ def _extract_model_from_parts(
     return None
 
 
-def _guess_percentage(row: Dict[str, Any], floats: List[float]) -> float:
+def _guess_percentage(row: dict[str, Any], floats: list[float]) -> float:
     """Versucht den Percentage-Wert zu raten, falls er fehlt."""
     if "percentage" in row:
         return float(row["percentage"])
@@ -74,9 +74,9 @@ def _guess_percentage(row: Dict[str, Any], floats: List[float]) -> float:
     return 0.0
 
 
-def _extract_basic_fields(parts: List[str]) -> Dict[str, Any]:
+def _extract_basic_fields(parts: list[str]) -> dict[str, Any]:
     """Extrahiert Asset ID, Tier, Status und Timestamp."""
-    row: Dict[str, Any] = {}
+    row: dict[str, Any] = {}
     for p in parts:
         if (
             "code_quality" in p or "ux_writing" in p or "documentation_quality" in p
@@ -95,7 +95,7 @@ def _extract_basic_fields(parts: List[str]) -> Dict[str, Any]:
     return row
 
 
-def _recover_broken_row(parts: List[str]) -> Optional[Dict[str, Any]]:
+def _recover_broken_row(parts: list[str]) -> dict[str, Any] | None:
     """Attempts to rescue data from a row that doesn't match the header."""
     # 1. Basis-Felder extrahieren
     row = _extract_basic_fields(parts)

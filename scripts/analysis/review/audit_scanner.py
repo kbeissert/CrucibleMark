@@ -65,7 +65,7 @@ def build_empty_response_context(model_name: str) -> str:
         if not csv_path.exists():
             continue
         try:
-            with open(csv_path, "r", encoding="utf-8") as f:
+            with open(csv_path, encoding="utf-8") as f:
                 for row in csv.DictReader(f):
                     if row.get("model") != model_name or row.get("status") != "success":
                         continue
@@ -110,7 +110,7 @@ def build_non_success_context(model_name: str) -> str:
         if not csv_path.exists():
             continue
         try:
-            with open(csv_path, "r", encoding="utf-8") as f:
+            with open(csv_path, encoding="utf-8") as f:
                 for row in csv.DictReader(f):
                     if row.get("model") != model_name:
                         continue

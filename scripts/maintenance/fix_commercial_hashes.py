@@ -30,7 +30,7 @@ def fix_csv_file(file_path):
     has_changes = False
 
     try:
-        with open(path, "r", newline="", encoding="utf-8", errors="replace") as f:
+        with open(path, newline="", encoding="utf-8", errors="replace") as f:
             # Check for header
             try:
                 reader = csv.DictReader(f)

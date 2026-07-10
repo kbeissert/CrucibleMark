@@ -9,13 +9,13 @@ from utils.constants import MS_PER_SECOND
 
 import logging
 import time
-from typing import Any, Optional
+from typing import Any
 
 from utils.constants import OLLAMA_DEFAULT_BASE_URL
 from .base_provider import JudgeProviderResponse, LLMJudgeProvider
 
 # Optional import guard: declared before try-block as per project convention
-requests_module: Optional[Any] = None
+requests_module: Any | None = None
 try:
     import requests as requests_module  # type: ignore[no-redef]
 except ImportError:

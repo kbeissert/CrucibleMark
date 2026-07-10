@@ -3,7 +3,6 @@ Scorer Factory.
 Provides easy access to Scorer instances.
 """
 
-from typing import Dict, Type
 from .base import BaseScorer
 from .regex_scorer import RegexScorer
 from .llm_scorer import LLMScorer
@@ -12,7 +11,7 @@ from .llm_scorer import LLMScorer
 class ScorerFactory:
     """Factory class to retrieve Scorer instances by name."""
 
-    _scorers: Dict[str, Type[BaseScorer]] = {
+    _scorers: dict[str, type[BaseScorer]] = {
         "regex": RegexScorer,
         "rule": RegexScorer,  # Alias
         "llm": LLMScorer,

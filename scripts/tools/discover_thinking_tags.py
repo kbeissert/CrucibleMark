@@ -33,7 +33,7 @@ from __future__ import annotations
 import argparse
 import logging
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 from pathlib import Path
 from typing import Any
 
@@ -123,7 +123,7 @@ def load_merged_config() -> dict[str, Any]:
     for path in (CONFIG_PATH, PROVIDER_CONFIG_PATH):
         if not path.exists():
             continue
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             data = yaml.safe_load(f) or {}
         for section in ("providers", "defaults", "local", "modules", "reasoning"):
             if section in data:
@@ -357,7 +357,7 @@ def render_markdown(
     lines.append("- **medium**: `reasoning_tokens > 0` in Provider-Metadaten ODER Inline-CoT im content-Feld")
     lines.append("- **low**: Kein Signal")
     lines.append("")
-    lines.append(f"**Aktuell bekannte Tag-Liste** (SSoT: `utils/model_utils._THINK_TAGS`):")
+    lines.append("**Aktuell bekannte Tag-Liste** (SSoT: `utils/model_utils._THINK_TAGS`):")
     lines.append("")
     lines.append("```python")
     lines.append(f"_THINK_TAGS = {list(_THINK_TAGS)!r}")
@@ -421,9 +421,9 @@ def render_markdown(
                     lines.append(f"- **{prompt_name}** ({probe['raw_len']} chars, "
                                  f"tags={probe['tags_found']}, reasoning_t={probe['reasoning_tokens']}, "
                                  f"inline_cot={probe['inline_cot']}):")
-                    lines.append(f"  ```")
+                    lines.append("  ```")
                     lines.append(f"  {preview}")
-                    lines.append(f"  ```")
+                    lines.append("  ```")
             lines.append("")
         lines.append("</details>")
         lines.append("")
@@ -489,7 +489,7 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    run_started = datetime.now(timezone.utc).isoformat()
+    run_started = datetime.now(UTC).isoformat()
     config = load_merged_config()
     families_filter = set(args.families) if args.families else None
 
@@ -518,7 +518,7 @@ def main() -> None:
         continue_on_error=not args.fail_fast,
     )
 
-    run_finished = datetime.now(timezone.utc).isoformat()
+    run_finished = datetime.now(UTC).isoformat()
     markdown = render_markdown(results, run_started=run_started, run_finished=run_finished)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(markdown, encoding="utf-8")

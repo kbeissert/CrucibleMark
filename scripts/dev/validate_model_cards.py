@@ -232,7 +232,7 @@ def check_card(path: Path, data: dict) -> list[str]:
     provenance_risk = data.get("weights_provenance_risk", "")
     origin_country = data.get("origin_country", "")
     deployment_type = data.get("deployment_type", "")
-    
+
     if provenance_risk and origin_country:
         # Proprietary Models aus USA/China müssen mindestens "medium" Risk haben
         if tier == "proprietary" and origin_country in ("USA", "China"):
@@ -241,7 +241,7 @@ def check_card(path: Path, data: dict) -> list[str]:
                     f"[PROVENANCE RISK] weights_provenance_risk='low' unzulässig für "
                     f"proprietary Model aus {origin_country} (CLOUD Act/CSL-Exposition → mindestens 'medium')"
                 )
-        
+
         # Open-Weights Cloud-Only aus USA/China müssen mindestens "medium" Risk haben
         if tier == "open-weights" and origin_country in ("USA", "China") and deployment_type == "cloud-only":
             if provenance_risk == "low":

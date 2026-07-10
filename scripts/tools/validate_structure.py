@@ -9,7 +9,6 @@ Ref: docs/ADDING_MODULES.md
 
 import sys
 from pathlib import Path
-from typing import List
 
 # Configuration
 MODULES_ROOT = Path("benchmark_modules")
@@ -32,7 +31,7 @@ MANDATORY_DIRS = {"assets", "core"}  # Now mandatory for ALL modules (MVC Standa
 STRICT_MODE_MODULES = {"*"}  # All modules are strict now
 
 
-def get_modules(root: Path) -> List[Path]:
+def get_modules(root: Path) -> list[Path]:
     """Returns a list of module directories."""
     modules = []
     if not root.exists():
@@ -48,7 +47,7 @@ def get_modules(root: Path) -> List[Path]:
     return sorted(modules)
 
 
-def _check_mandatory_dirs(module_path: Path) -> List[str]:
+def _check_mandatory_dirs(module_path: Path) -> list[str]:
     """Checks for presence of mandatory directories."""
     errors = []
     for directory in MANDATORY_DIRS:
@@ -57,7 +56,7 @@ def _check_mandatory_dirs(module_path: Path) -> List[str]:
     return errors
 
 
-def _check_root_files(module_path: Path) -> List[str]:
+def _check_root_files(module_path: Path) -> list[str]:
     """Checks for unexpected files in module root."""
     errors = []
     for item in module_path.iterdir():
@@ -72,7 +71,7 @@ def _check_root_files(module_path: Path) -> List[str]:
     return errors
 
 
-def _check_mvc_architecture(module_path: Path) -> List[str]:
+def _check_mvc_architecture(module_path: Path) -> list[str]:
     """Checks for MVC compliance (Core directory and Evaluators)."""
     errors = []
     core_path = module_path / "core"
@@ -90,7 +89,7 @@ def _check_mvc_architecture(module_path: Path) -> List[str]:
     return errors
 
 
-def validate_module(module_path: Path) -> List[str]:
+def validate_module(module_path: Path) -> list[str]:
     """Validates a single module against the rules."""
     errors = []
     errors.extend(_check_mandatory_dirs(module_path))

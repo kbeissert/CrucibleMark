@@ -7,12 +7,12 @@ Auth: GOOGLE_API_KEY environment variable.
 
 import logging
 import time
-from typing import Any, Optional
+from typing import Any
 
 from .base_provider import JudgeProviderResponse, LLMJudgeProvider
 
 # Optional import guard: declared before try-block as per project convention
-genai: Optional[Any] = None
+genai: Any | None = None
 try:
     import google.generativeai as genai  # type: ignore
 except ImportError:

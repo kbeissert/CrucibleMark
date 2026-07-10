@@ -4,7 +4,7 @@ Calculates Routine vs Reasoning scores, aggregates stats, and classifies models.
 """
 
 import sys
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 import pandas as pd
 import yaml
@@ -23,7 +23,7 @@ if str(ROOT_DIR) not in sys.path:
 # 1b. PRICE LOOKUP (from model cards, cost_limits.yaml as legacy fallback)
 # ==============================================================================
 
-def _build_price_lookup() -> Dict[str, float]:
+def _build_price_lookup() -> dict[str, float]:
     """
     Builds a flat {model_id: output_cost_per_1k} dict.
 
@@ -45,7 +45,7 @@ def _build_price_lookup() -> Dict[str, float]:
     LOCAL_DEPLOYMENT_TYPES = frozenset({"localweights", "local-weights"})
 
     card_dir = ROOT_DIR / "benchmark_scores" / "model_cards"
-    lookup: Dict[str, float] = {}
+    lookup: dict[str, float] = {}
 
     # 1. Model cards (primary SSoT)
     for card_path in card_dir.glob("*.json"):
@@ -87,7 +87,7 @@ def _build_price_lookup() -> Dict[str, float]:
     return lookup
 
 
-def _lookup_price(model_ver: str, model_name: str, lookup: Dict[str, float]) -> Optional[float]:
+def _lookup_price(model_ver: str, model_name: str, lookup: dict[str, float]) -> float | None:
     """
     Resolves output_cost_per_1k for a model.
 
@@ -107,10 +107,10 @@ def _lookup_price(model_ver: str, model_name: str, lookup: Dict[str, float]) -> 
                 return lookup[key]
     return None
 
-_PRICE_LOOKUP: Optional[Dict[str, float]] = None
+_PRICE_LOOKUP: dict[str, float] | None = None
 
 
-def _get_price_lookup() -> Dict[str, float]:
+def _get_price_lookup() -> dict[str, float]:
     """Returns cached price lookup dict (lazy init)."""
     # pylint: disable=global-statement
     global _PRICE_LOOKUP  # noqa: PLW0603
@@ -126,9 +126,9 @@ def _get_price_lookup() -> Dict[str, float]:
 
 def _get_row_contribution(
     row: pd.Series,
-    asset_contrib_map: Dict[str, Dict[str, float]],
-    cat_to_config: Dict[str, Any],
-) -> Tuple[float, float, float, float]:
+    asset_contrib_map: dict[str, dict[str, float]],
+    cat_to_config: dict[str, Any],
+) -> tuple[float, float, float, float]:
     """
     Helper to calculate routine/reasoning contribution AND weights for a single row.
     Returns: (contrib_routine, contrib_reasoning, weight_routine, weight_reasoning)
@@ -174,7 +174,7 @@ def _get_row_contribution(
 
 
 def _calculate_group_scores(
-    df: pd.DataFrame, modules_config: Dict[str, Any]
+    df: pd.DataFrame, modules_config: dict[str, Any]
 ) -> pd.DataFrame:
     """
     Calculates Routine vs Reasoning scores using granular contributions (v3 logic).
@@ -212,7 +212,7 @@ def _calculate_group_scores(
     # 2b. Build module-weight scale factors (self-normalizing, Subset-safe)
     # module_weight / sum_of_config_weights_in_that_module → scale per asset row.
     # Falls module_weight=None (kein Eintrag), scale=1.0 (Rückwärtskompatibilität).
-    def _module_scale(mod_data: Dict[str, Any]) -> float:
+    def _module_scale(mod_data: dict[str, Any]) -> float:
         module_weight = mod_data.get("module_weight")
         if module_weight is None:
             return 1.0
@@ -230,7 +230,7 @@ def _calculate_group_scores(
             config_weight_sum = max(float(mod_data.get("assets_count", 1)) * max(default_sum, 1.0), 1.0)
         return float(module_weight) / config_weight_sum
 
-    module_weight_scales: Dict[str, float] = {
+    module_weight_scales: dict[str, float] = {
         cat_name: _module_scale(mod_data)
         for cat_name, mod_data in cat_to_config.items()
     }
@@ -314,7 +314,7 @@ def _calculate_group_scores(
 
 
 def _aggregate_basic_stats(
-    df: pd.DataFrame, modules_config: Dict[str, Any]
+    df: pd.DataFrame, modules_config: dict[str, Any]
 ) -> pd.DataFrame:
     """Aggregates percentage, time and counts. Handles non-scoring modules correctly."""
 
@@ -487,7 +487,7 @@ def _aggregate_basic_stats(
 
 
 def _calculate_run_counts(
-    df: pd.DataFrame, modules_config: Dict[str, Any]
+    df: pd.DataFrame, modules_config: dict[str, Any]
 ) -> pd.DataFrame:
     """Calculates 'Tests Run' using logic overrides (e.g. PC = 9 tests)."""
 
@@ -596,8 +596,8 @@ def _calculate_stability_score(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def calculate_scores(
-    df: pd.DataFrame, modules_config: Dict[str, Any]
-) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    df: pd.DataFrame, modules_config: dict[str, Any]
+) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
     Main entry point for scoring calculations.
 
@@ -763,7 +763,7 @@ def calculate_scores(
     # hybrid cloud-and-local) receive None → empty in the leaderboard.
     price_lookup = _get_price_lookup()
 
-    def calc_cost_per_1k_tokens(row: pd.Series) -> Optional[float]:
+    def calc_cost_per_1k_tokens(row: pd.Series) -> float | None:
         # Match by model_version, then full model name, then prefix (longest key first)
         model_ver = str(row.get("model_version", "") or "").strip()
         model_name = str(row.get("model", "") or "").strip()
@@ -776,7 +776,7 @@ def calculate_scores(
     # Fallback: cost_usd (sum from benchmark CSVs) — covers date-suffixed OpenRouter models
     #           and any other model whose name doesn't match the price lookup exactly.
     if "tokens_used" in result.columns:
-        def calc_benchmark_cost(row: pd.Series) -> Optional[float]:
+        def calc_benchmark_cost(row: pd.Series) -> float | None:
             price = row.get("Cost per 1K (USD)")
             tokens = row.get("tokens_used")
             try:

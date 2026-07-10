@@ -22,7 +22,7 @@ import logging
 import yaml  # type: ignore[import-untyped]
 
 from copy import deepcopy
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 from pathlib import Path
 from typing import Any
 
@@ -329,9 +329,8 @@ def normalize_tags(tags: list[str]) -> tuple[list[str], list[tuple[str, str | No
             report.append((tag, new_value, reason))
             if new_value is not None and new_value not in normalized:
                 normalized.append(new_value)
-        else:
-            if tag not in normalized:
-                normalized.append(tag)
+        elif tag not in normalized:
+            normalized.append(tag)
 
     return normalized, report
 
@@ -535,20 +534,19 @@ def ensure_card(
         if key in existing:
             # Bestehenden Wert beibehalten
             result[key] = existing[key]
+        # Fehlende Felder mit berechneten oder statischen Defaults ergänzen
+        elif key == "model_id":
+            result[key] = model_id
+        elif key == "size_class":
+            try:
+                result[key] = get_model_size_class(model_id)
+            except (FileNotFoundError, json.JSONDecodeError):
+                result[key] = None
+        elif key == "generated_at":
+            result[key] = datetime.now(UTC).isoformat()
         else:
-            # Fehlende Felder mit berechneten oder statischen Defaults ergänzen
-            if key == "model_id":
-                result[key] = model_id
-            elif key == "size_class":
-                try:
-                    result[key] = get_model_size_class(model_id)
-                except (FileNotFoundError, json.JSONDecodeError):
-                    result[key] = None
-            elif key == "generated_at":
-                result[key] = datetime.now(timezone.utc).isoformat()
-            else:
-                # Mutable Defaults deep-kopieren (z.B. Listen)
-                result[key] = deepcopy(default)
+            # Mutable Defaults deep-kopieren (z.B. Listen)
+            result[key] = deepcopy(default)
 
     # model_id immer korrekt setzen (auch wenn schon vorhanden)
     result["model_id"] = model_id

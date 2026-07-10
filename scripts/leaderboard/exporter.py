@@ -3,7 +3,6 @@ Leaderboard export functionality.
 Handles saving the final leaderboard to CSV or other formats.
 """
 
-from typing import List
 
 import pandas as pd
 
@@ -60,7 +59,7 @@ def _format_tokens_k(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def export_leaderboard_compact(leaderboard: pd.DataFrame, cat_cols: List[str]) -> None:
+def export_leaderboard_compact(leaderboard: pd.DataFrame, cat_cols: list[str]) -> None:
     """
     Exports the COMPACT leaderboard (human-readable, ~20 columns).
     Excludes verbose metrics like P95, redundant speed columns, etc.
@@ -133,11 +132,11 @@ def export_leaderboard_compact(leaderboard: pd.DataFrame, cat_cols: List[str]) -
     try:
         df_export.to_csv(OUTPUT_CSV, index=False)
         print(f"Compact Leaderboard saved to: {OUTPUT_CSV}")
-    except (IOError, PermissionError) as e:
+    except (OSError, PermissionError) as e:
         print(f"⚠️ Error saving compact leaderboard: {e}")
 
 
-def export_leaderboard_detailed(leaderboard: pd.DataFrame, cat_cols: List[str]) -> None:
+def export_leaderboard_detailed(leaderboard: pd.DataFrame, cat_cols: list[str]) -> None:
     """
     Exports the DETAILED leaderboard (26+ cols).
     Includes P95, Max Time, Timeout Count, Routine/Reasoning aggregates.
@@ -248,11 +247,11 @@ def export_leaderboard_detailed(leaderboard: pd.DataFrame, cat_cols: List[str]) 
     try:
         df_export.to_csv(detailed_csv, index=False)
         print(f"Detailed Leaderboard saved to: {detailed_csv}")
-    except (IOError, PermissionError) as e:
+    except (OSError, PermissionError) as e:
         print(f"⚠️ Error saving detailed leaderboard: {e}")
 
 
-def export_to_csv(leaderboard: pd.DataFrame, cat_cols: List[str]) -> None:
+def export_to_csv(leaderboard: pd.DataFrame, cat_cols: list[str]) -> None:
     """
     Legacy entry point - calls both exports.
     """

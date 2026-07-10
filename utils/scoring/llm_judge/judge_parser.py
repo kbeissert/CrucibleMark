@@ -18,14 +18,13 @@ import json
 import logging
 import re
 from dataclasses import dataclass
-from typing import Dict, Optional
 
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Word-to-integer mapping for written-out score words
 # ---------------------------------------------------------------------------
-_WORD_TO_INT: Dict[str, int] = {
+_WORD_TO_INT: dict[str, int] = {
     "zero": 0,
     "one": 1,
     "two": 2,
@@ -55,22 +54,22 @@ _RE_REASONING_START = re.compile(
 class JudgeResult:
     """Structured output of the judge parser."""
 
-    score: Optional[float]
+    score: float | None
     reasoning: str
     raw_response: str
     parse_success: bool
     # Populated by judge_runner after parsing (not set by the parser itself)
-    judge_latency_ms: Optional[float] = None
-    judge_provider_used: Optional[str] = None
-    judge_model_used: Optional[str] = None
+    judge_latency_ms: float | None = None
+    judge_provider_used: str | None = None
+    judge_model_used: str | None = None
 
     # Sub-scores
-    judge_task_compliance: Optional[float] = None
-    judge_output_quality: Optional[float] = None
-    judge_standard_adherence: Optional[float] = None
-    judge_content_grounding: Optional[float] = None
+    judge_task_compliance: float | None = None
+    judge_output_quality: float | None = None
+    judge_standard_adherence: float | None = None
+    judge_content_grounding: float | None = None
     # Tool-use grounding fields (populated when tool_content was passed to the judge)
-    hallucination_detected: Optional[bool] = None
+    hallucination_detected: bool | None = None
 
 
 def parse(raw_response: str) -> JudgeResult:
@@ -121,7 +120,7 @@ def parse(raw_response: str) -> JudgeResult:
     judge_standard_adherence = sub_scores.get("standard_adherence") if sub_scores else None
     judge_content_grounding = sub_scores.get("content_grounding") if sub_scores else None
 
-    hallucination_detected: Optional[bool] = None
+    hallucination_detected: bool | None = None
     if json_data and "hallucination_detected" in json_data:
         raw_hall = json_data["hallucination_detected"]
         if isinstance(raw_hall, bool):
@@ -169,7 +168,7 @@ def parse(raw_response: str) -> JudgeResult:
 # ---------------------------------------------------------------------------
 
 
-def _extract_score(text: str) -> Optional[int]:
+def _extract_score(text: str) -> int | None:
     """
     Locate the SCORE marker and return the integer value.
 
@@ -236,7 +235,7 @@ def _extract_reasoning(text: str) -> str:
     return reasoning_text
 
 
-def _extract_json_block(text: str) -> Optional[dict]:
+def _extract_json_block(text: str) -> dict | None:
     """
     Extracts the JSON block from the new prompt format and parses it.
     Returns the parsed dict if successful, None otherwise.
@@ -265,7 +264,7 @@ def _extract_json_block(text: str) -> Optional[dict]:
         return None
 
 
-def _extract_sub_scores_legacy(text: str) -> Optional[dict]:
+def _extract_sub_scores_legacy(text: str) -> dict | None:
     """
     Extracts the JSON sub-score block from the legacy judge's output.
     Looks for the last ```json ... ``` block in the text or a raw JSON fallback.

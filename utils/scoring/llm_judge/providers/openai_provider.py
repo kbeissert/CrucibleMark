@@ -7,12 +7,12 @@ Auth: OPENAI_API_KEY environment variable.
 
 import logging
 import time
-from typing import Any, Optional
+from typing import Any
 
 from .base_provider import JudgeProviderResponse, LLMJudgeProvider
 
 # Optional import guard: declared before try-block as per project convention
-openai_module: Optional[Any] = None
+openai_module: Any | None = None
 try:
     import openai as openai_module  # type: ignore[no-redef]
 except ImportError:

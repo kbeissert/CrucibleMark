@@ -9,7 +9,7 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 from pathlib import Path
 from typing import Any
 
@@ -35,7 +35,7 @@ def write_run_summary(summary_path: str | None, payload: dict[str, Any]) -> None
     target.parent.mkdir(parents=True, exist_ok=True)
 
     envelope: dict[str, Any] = {
-        "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "generated_at": datetime.now(UTC).isoformat(timespec="seconds"),
         "schema": "crucible.runner_summary.v1",
     }
     envelope.update(payload)

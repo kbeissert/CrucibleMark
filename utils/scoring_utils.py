@@ -3,7 +3,7 @@ Scoring Utilities.
 Shared helper functions for scoring calculations.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from utils.model_utils import _safe_name
 
@@ -19,8 +19,8 @@ def normalize_model_name(s: str) -> str:
 
 
 def calculate_score_contributions(
-    result: Dict[str, Any], asset_cfg: Optional[Dict[str, Any]]
-) -> Dict[str, Any]:
+    result: dict[str, Any], asset_cfg: dict[str, Any] | None
+) -> dict[str, Any]:
     """
     Calculate routine/reasoning score contributions.
     """
@@ -44,9 +44,9 @@ def calculate_score_contributions(
 
 def calculate_hybrid_score(
     regex_score: float,
-    judge_score: Optional[float],
-    asset_config: Optional[Dict[str, Any]],
-    module_config: Optional[Dict[str, Any]],
+    judge_score: float | None,
+    asset_config: dict[str, Any] | None,
+    module_config: dict[str, Any] | None,
     judge_enabled: bool,
 ) -> float:
     """

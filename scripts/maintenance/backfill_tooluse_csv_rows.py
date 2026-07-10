@@ -22,7 +22,6 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import ast
 import csv
 import json
 import logging

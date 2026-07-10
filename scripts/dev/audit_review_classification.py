@@ -21,7 +21,6 @@ from __future__ import annotations
 import argparse
 import sys
 from pathlib import Path
-from typing import Optional
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
 if str(ROOT_DIR) not in sys.path:
@@ -32,7 +31,7 @@ from utils.constants import MODEL_TYPE_OPEN_WEIGHTS_CLOUD
 from utils.model_utils import _safe_name
 
 
-def resolve_run_type(model_id: str, validator: ConfigValidator) -> tuple[str, Optional[str], str]:
+def resolve_run_type(model_id: str, validator: ConfigValidator) -> tuple[str, str | None, str]:
     """Spiegelt die Logik aus generate_review.py.process_model_review().
 
     `model_id` ist hier bereits der safe_name (Verzeichnisname aus outputs/audit_logs/).
@@ -45,7 +44,7 @@ def resolve_run_type(model_id: str, validator: ConfigValidator) -> tuple[str, Op
     commercial_providers = validator.config.get("providers", {}).get("commercial", {})
     target_safe = _safe_name(model_id)
 
-    resolved_provider_key: Optional[str] = None
+    resolved_provider_key: str | None = None
     resolved_model_type: str = ""
     for prov_key, prov_cfg in commercial_providers.items():
         if not isinstance(prov_cfg, dict) or not prov_cfg.get("enabled", False):

@@ -11,7 +11,7 @@ import ast
 import csv
 import json
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 from pathlib import Path
 from typing import Any
 
@@ -111,7 +111,7 @@ class ToolUseExporter:
         tool_call_attempts_max = 0
         mcp_mode = "mock"
         assets_error = 0
-        timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        timestamp = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
         for result in results:
             if result.status == "error":
@@ -392,16 +392,12 @@ class ToolUseExporter:
                         asset_id = str(row.get("asset_id", ""))
                         key = (model_id, asset_id)
                         existing = best_rows.get(key)
-                        if existing is None:
+                        if existing is None or row.get("timestamp", "") > existing.get("timestamp", ""):
                             best_rows[key] = row
-                        else:
-                            # Neuerer Timestamp gewinnt
-                            if row.get("timestamp", "") > existing.get("timestamp", ""):
+                        elif row.get("timestamp", "") == existing.get("timestamp", ""):
+                            # Gleichzeitig: success > error
+                            if row.get("status") == "success" and existing.get("status") != "success":
                                 best_rows[key] = row
-                            elif row.get("timestamp", "") == existing.get("timestamp", ""):
-                                # Gleichzeitig: success > error
-                                if row.get("status") == "success" and existing.get("status") != "success":
-                                    best_rows[key] = row
             except (OSError, csv.Error) as exc:
                 logger.warning("Could not read %s: %s", csv_path, exc)
 
@@ -463,7 +459,7 @@ class ToolUseExporter:
             p2 = float(row.get("p2_score", "") or 0.0)
         except (ValueError, TypeError):
             p2 = 0.0
-        timestamp = row.get("timestamp") or datetime.now(timezone.utc).strftime(
+        timestamp = row.get("timestamp") or datetime.now(UTC).strftime(
             "%Y-%m-%dT%H:%M:%SZ",
         )
 
@@ -507,7 +503,7 @@ class ToolUseExporter:
         tool_call_attempts_max = 0
         mcp_mode = "mock"
         assets_error = 0
-        timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        timestamp = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
         for row in rows:
             if row.get("status") == "error":

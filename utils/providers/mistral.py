@@ -4,7 +4,8 @@ Getrennte Implementierungen für Ollama, Anthropic, Mistral
 """
 import os
 import logging
-from typing import Any, List, Optional, Callable
+from typing import Any
+from collections.abc import Callable
 # Optional Provider Imports
 try:
     pass
@@ -71,7 +72,7 @@ class MistralClient(BaseProviderClient):
         model: str,
         prompt: str,
         temperature: float,
-        stream_handler: Optional[Callable[[str], None]] = None,
+        stream_handler: Callable[[str], None] | None = None,
         **kwargs,
     ) -> str:
         """Query Mistral API"""
@@ -158,7 +159,7 @@ class MistralClient(BaseProviderClient):
         except Exception:
             # Let RetryHandler handle logging
             raise
-    def get_available_models(self) -> List[str]:
+    def get_available_models(self) -> list[str]:
         """Listet verfügbare Mistral-Modelle"""
         return [
             "mistral-large-latest",

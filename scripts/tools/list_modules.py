@@ -27,7 +27,7 @@ def main():
         return
 
     try:
-        with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+        with open(CONFIG_PATH, encoding="utf-8") as f:
             config = yaml.safe_load(f)
 
         print("\n📋 Checking Active Modules:")

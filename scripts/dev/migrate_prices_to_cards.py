@@ -17,7 +17,6 @@ import argparse
 import json
 import sys
 from pathlib import Path
-from typing import List
 
 import yaml
 
@@ -69,10 +68,10 @@ def main() -> None:
     with open(COST_LIMITS, encoding="utf-8") as f:
         data = yaml.safe_load(f)
 
-    migrated: List[str] = []
-    already_set: List[str] = []
-    skipped_alias: List[str] = []
-    no_card: List[str] = []
+    migrated: list[str] = []
+    already_set: list[str] = []
+    skipped_alias: list[str] = []
+    no_card: list[str] = []
 
     providers = data.get("providers", {})
     for provider, models in providers.items():

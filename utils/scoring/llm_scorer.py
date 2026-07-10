@@ -3,7 +3,7 @@ LLM Scorer implementation.
 Uses a small local LLM (e.g. qwen2.5:14b) to evaluate responses against a rubric.
 """
 
-from typing import Any, Dict
+from typing import Any
 from .base import BaseScorer
 
 
@@ -14,8 +14,8 @@ class LLMScorer(BaseScorer):
     """
 
     def score_response(
-        self, response: str, asset: Dict[str, Any], **kwargs
-    ) -> Dict[str, Any]:
+        self, response: str, asset: dict[str, Any], **kwargs
+    ) -> dict[str, Any]:
         """
         Implementation of LLM-based scoring.
 

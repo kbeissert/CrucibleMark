@@ -39,6 +39,7 @@ ROOT_DIR = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(ROOT_DIR))
 
 from utils.model_utils import _find_card, resolve_canonical_model_id  # noqa: E402
+from datetime import UTC
 
 logging.basicConfig(
     level=logging.INFO,
@@ -151,9 +152,9 @@ def main() -> int:
         )
 
         if not args.dry_run:
-            from datetime import datetime, timezone
+            from datetime import datetime
 
-            now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+            now_iso = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
             if correct_val is True:
                 card["supports_tool_use"] = True
             elif correct_val is False:

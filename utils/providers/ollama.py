@@ -3,7 +3,8 @@ Provider-spezifische LLM Clients
 Getrennte Implementierungen für Ollama, Anthropic, Mistral
 """
 import logging
-from typing import Any, List, Optional, Callable, Dict
+from typing import Any
+from collections.abc import Callable
 from utils.ollama_config import CODING_BENCHMARK_OPTIONS, CREATIVE_BENCHMARK_OPTIONS, get_num_ctx_for_model
 from utils.model_utils import is_reasoning_model
 # Optional Provider Imports
@@ -30,7 +31,7 @@ class OllamaClient(BaseProviderClient):
     """Ollama Provider Client"""
     PROVIDER_NAMES = ["ollama", "ollama_local", "ollama_cloud"]
 
-    def __init__(self, config: Dict[str, Any]):
+    def __init__(self, config: dict[str, Any]):
         super().__init__(config)
         self._client = None
     @property
@@ -41,7 +42,7 @@ class OllamaClient(BaseProviderClient):
                 raise ImportError("Library 'ollama' not installed. Please install it.")
             self._client = ollama
         return self._client
-    def _get_options(self, model: str, temperature: float) -> Dict[str, Any]:
+    def _get_options(self, model: str, temperature: float) -> dict[str, Any]:
         """Konfiguriert Optionen basierend auf Temperatur und Modell-Typ."""
         # Select options based on temperature
         if temperature >= 0.3:
@@ -77,9 +78,9 @@ class OllamaClient(BaseProviderClient):
         self,
         model: str,
         prompt: str,
-        options: Dict[str, Any],
+        options: dict[str, Any],
         stream_handler: Callable[[str], None],
-        system_prompt: Optional[str] = None,
+        system_prompt: str | None = None,
     ) -> str:
         """Behandelt Streaming-Response von Ollama."""
         messages = []
@@ -201,7 +202,7 @@ class OllamaClient(BaseProviderClient):
         model: str,
         prompt: str,
         temperature: float,
-        stream_handler: Optional[Callable[[str], None]] = None,
+        stream_handler: Callable[[str], None] | None = None,
         **kwargs,
     ) -> str:
         """Query Ollama API"""
@@ -259,7 +260,7 @@ class OllamaClient(BaseProviderClient):
         except Exception as e:
             logger.debug("Ollama query failed: %s", e)
             raise
-    def get_available_models(self) -> List[str]:
+    def get_available_models(self) -> list[str]:
         """Listet verfügbare Ollama-Modelle"""
         try:
             response = self.client.list()

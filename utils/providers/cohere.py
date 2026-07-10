@@ -10,7 +10,8 @@ Tool-Schemas → HTTP 422/500. Native tools umgeht das Problem vollständig.
 
 import json
 import logging
-from typing import Any, List, Optional, Callable
+from typing import Any
+from collections.abc import Callable
 
 import httpx
 
@@ -196,7 +197,7 @@ class CohereClient(BaseProviderClient):
         model: str,
         prompt: str,
         temperature: float,
-        stream_handler: Optional[Callable[[str], None]] = None,
+        stream_handler: Callable[[str], None] | None = None,
         **kwargs,
     ) -> str:
         """Query Cohere v2 Chat API.
@@ -360,7 +361,7 @@ class CohereClient(BaseProviderClient):
             return tokens.get("reasoning_tokens")
         return None
 
-    def get_available_models(self) -> List[str]:
+    def get_available_models(self) -> list[str]:
         return [
             "command-a-plus-05-2026",
             "command-a-03-2025",

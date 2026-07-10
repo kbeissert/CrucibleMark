@@ -6,11 +6,11 @@ The framework asks the modules how they want to be integrated.
 """
 
 from pathlib import Path
-from typing import Dict, Any, List, Tuple
+from typing import Any
 import yaml  # pylint: disable=import-error
 
 
-def load_module_config(module_path: Path) -> Dict[str, Any]:
+def load_module_config(module_path: Path) -> dict[str, Any]:
     """
     Loads the module-specific config.yaml.
     """
@@ -21,7 +21,7 @@ def load_module_config(module_path: Path) -> Dict[str, Any]:
         return {}
 
     try:
-        with open(config_file, "r", encoding="utf-8") as f:
+        with open(config_file, encoding="utf-8") as f:
             return yaml.safe_load(f) or {}
     except Exception as e:  # pylint: disable=broad-exception-caught
         print(f"Warning: Could not load config for module at {module_path}: {e}")
@@ -29,8 +29,8 @@ def load_module_config(module_path: Path) -> Dict[str, Any]:
 
 
 def get_active_modules(
-    benchmark_config: Dict[str, Any],
-) -> List[Tuple[str, Dict[str, Any], Dict[str, Any]]]:
+    benchmark_config: dict[str, Any],
+) -> list[tuple[str, dict[str, Any], dict[str, Any]]]:
     """
     Returns a list of active modules in the order defined in benchmark_config.yaml.
 
@@ -67,7 +67,7 @@ def get_active_modules(
     return active_modules
 
 
-def get_module_test_count(module_path: Path, internal_config: Dict[str, Any]) -> int:
+def get_module_test_count(module_path: Path, internal_config: dict[str, Any]) -> int:
     """
     Calculates the expected number of tests for a module.
 
@@ -140,7 +140,7 @@ def get_module_test_count(module_path: Path, internal_config: Dict[str, Any]) ->
     return int(count)
 
 
-def load_active_benchmarks(config: Dict[str, Any]) -> Dict[str, Any]:
+def load_active_benchmarks(config: dict[str, Any]) -> dict[str, Any]:
     """Load active benchmark modules in runner-compatible format.
 
     Reads benchmark_config.yaml (via passed config dict) and converts enabled modules

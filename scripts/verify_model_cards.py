@@ -68,21 +68,21 @@ def verify_cards():
     for card_file in sorted(cards_dir.glob("*.json")):
         with open(card_file) as f:
             data = json.load(f)
-        
+
         if isinstance(data, list):
             issues.append(f"📁 {card_file.stem}: enthält Liste statt Dict, überspringe")
             continue
-        
+
         model_id = data.get("model_id", card_file.stem)
         all_model_ids.add(model_id)
-        
+
         # Pflichtfelder prüfen
         for field in REQUIRED_FIELDS:
             if field not in data:
                 issues.append(f"❌ {card_file.stem}: missing field '{field}'")
             elif data[field] is None or (isinstance(data[field], str) and data[field].strip() == ""):
                 issues.append(f"⚠️  {card_file.stem}: empty/null value for '{field}'")
-        
+
         # Vendor gegen kanonische Liste validieren
         vendor_val = data.get("vendor")
         if canonical_vendors and vendor_val is not None and vendor_val not in canonical_vendors:
@@ -112,14 +112,14 @@ def verify_cards():
         # card_status prüfen
         if data.get("card_status") != "complete":
             issues.append(f"📝 {card_file.stem}: card_status='{data.get('card_status', 'MISSING')}'")
-    
+
     # Gegen provider_config auf fehlende Cards prüfen (grep-basiert, keine yaml-Abhängigkeit)
     config_path = Path(__file__).parent.parent / "config" / "provider_config.yaml"
     if config_path.exists():
         config_text = config_path.read_text()
         import re
         config_model_ids = set(re.findall(r'^\s+- id:\s+(.+)$', config_text, re.MULTILINE))
-        
+
         missing_in_cards = config_model_ids - all_model_ids
         if missing_in_cards:
             issues.append("\n📋 Modelle in config, aber keine Card vorhanden:")
@@ -127,7 +127,7 @@ def verify_cards():
                 issues.append(f"   ❌ {mid}")
         else:
             issues.append(f"\n✅ Alle {len(config_model_ids)} Konfigurationsmodelle haben Cards.")
-    
+
     if issues:
         print("\n".join(issues))
         return 1

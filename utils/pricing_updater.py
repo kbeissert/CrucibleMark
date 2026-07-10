@@ -21,7 +21,7 @@ import json
 import logging
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, Optional, Tuple
+from typing import Optional
 from urllib.error import URLError
 from urllib.request import urlopen
 from utils.constants import TIMEOUT_HTTP_FETCH
@@ -60,7 +60,7 @@ def _load_pricing_url() -> str:
 # Nur Modelle eintragen die in LiteLLM vorhanden sind.
 # Modelle OHNE Eintrag (z.B. gpt-5, gpt-5-mini) bleiben in cost_limits.yaml
 # manuell gepflegt und werden als Fallback verwendet.
-LITELLM_MODEL_MAP: Dict[str, str] = {
+LITELLM_MODEL_MAP: dict[str, str] = {
     # --- Anthropic ---
     "claude-sonnet-4-6": "claude-sonnet-4-6",
     "claude-opus-4-6": "claude-opus-4-6",
@@ -107,7 +107,7 @@ class PricingUpdater:
     """
 
     _instance: Optional["PricingUpdater"] = None
-    _prices: Optional[Dict[str, Dict]] = None
+    _prices: dict[str, dict] | None = None
 
     def __new__(cls) -> "PricingUpdater":
         if cls._instance is None:
@@ -156,7 +156,7 @@ class PricingUpdater:
                 self._load_cache()
         return updated
 
-    def get_price(self, model_id: str) -> Optional[Tuple[float, float]]:
+    def get_price(self, model_id: str) -> tuple[float, float] | None:
         """
         Gibt (input_cost_per_1k, output_cost_per_1k) für ein Modell zurück.
         None wenn das Modell nicht im Cache ist.
@@ -233,12 +233,12 @@ class PricingUpdater:
         url = _load_pricing_url()
         try:
             with urlopen(url, timeout=TIMEOUT_HTTP_FETCH) as resp:
-                raw: Dict = json.loads(resp.read().decode("utf-8"))
+                raw: dict = json.loads(resp.read().decode("utf-8"))
         except (URLError, OSError, Exception) as e:
             logger.warning("LiteLLM-Preisfetch fehlgeschlagen: %s", e)
             return False
 
-        prices: Dict[str, Dict] = {}
+        prices: dict[str, dict] = {}
         missing: list[str] = []
 
         for our_id, litellm_key in LITELLM_MODEL_MAP.items():

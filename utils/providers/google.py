@@ -5,7 +5,8 @@ Provider-spezifische LLM Clients
 Getrennte Implementierungen für Ollama, Anthropic, Mistral
 """
 import logging
-from typing import Any, List, Optional, Callable, Dict
+from typing import Any
+from collections.abc import Callable
 from utils.env_utils import get_required_env
 # Optional Provider Imports
 try:
@@ -41,7 +42,7 @@ class GoogleClient(BaseProviderClient):
     PROVIDER_CONFIG_KEY = "google"
     DEFAULT_TOKEN_PARAM = "max_tokens"
 
-    def __init__(self, config: Dict[str, Any]):
+    def __init__(self, config: dict[str, Any]):
         super().__init__(config)
         self.api_key = get_required_env("GOOGLE_API_KEY")
         if genai:
@@ -69,7 +70,7 @@ class GoogleClient(BaseProviderClient):
         model: str,
         prompt: str,
         temperature: float,
-        stream_handler: Optional[Callable[[str], None]] = None,
+        stream_handler: Callable[[str], None] | None = None,
         **kwargs,
     ) -> str:
         """Query Google Gemini API"""
@@ -181,7 +182,7 @@ class GoogleClient(BaseProviderClient):
         except Exception as e:
             logger.error(f"Google Gemini query failed: {e}")
             raise
-    def get_available_models(self) -> List[str]:
+    def get_available_models(self) -> list[str]:
         """List available Gemini models"""
         if not genai:
             return []

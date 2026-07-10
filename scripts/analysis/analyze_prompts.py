@@ -9,7 +9,7 @@ Detailed breakdown of System Prompt vs User Prompt vs Content.
 
 import sys
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Any
 
 # Third-party imports
 try:
@@ -41,7 +41,7 @@ def count_tokens(text: str) -> int:
     return len(text) // 4  # Rough estimate for english text
 
 
-def analyze_module(module_path: Path) -> List[Dict[str, Any]]:
+def analyze_module(module_path: Path) -> list[dict[str, Any]]:
     """Scans a module directory for assets and analyzes them."""
     assets_dir = module_path / "assets"
     if not assets_dir.exists():
@@ -92,7 +92,7 @@ def analyze_module(module_path: Path) -> List[Dict[str, Any]]:
     return sorted(results, key=lambda x: x["total_tokens"], reverse=True)
 
 
-def print_report(module_name: str, assets: List[Dict[str, Any]]):
+def print_report(module_name: str, assets: list[dict[str, Any]]):
     """Prints a formatted report for a module."""
     if not assets:
         return
@@ -176,10 +176,10 @@ def _print_cost_log_breakdown():
     cutoff = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
 
     # { provider: { call_type: total_cost } }
-    data: Dict[str, Dict[str, float]] = {}
+    data: dict[str, dict[str, float]] = {}
 
     try:
-        with open(cost_log, "r", encoding="utf-8") as f:
+        with open(cost_log, encoding="utf-8") as f:
             reader = csv.DictReader(f)
             for row in reader:
                 if row.get("date", "") < cutoff:

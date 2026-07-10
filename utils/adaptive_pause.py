@@ -8,7 +8,7 @@ based on model size, previous task intensity, and benchmark mode.
 import time
 import gc
 from enum import Enum
-from typing import Dict, Any, Tuple, Optional
+from typing import Any
 
 
 class BenchmarkMode(Enum):
@@ -36,7 +36,7 @@ class ModelConfig:
     }
 
     @classmethod
-    def get_config(cls, model_name: str) -> Tuple[int, float]:
+    def get_config(cls, model_name: str) -> tuple[int, float]:
         """Detect model size configuration from name."""
         model_lower = model_name.lower()
 
@@ -105,7 +105,7 @@ class AdaptivePauseCalculator:
 
         self.base_pause = (self.min_pause + self.max_pause) // 2
 
-    def calculate(self, previous_test: Optional[Dict[str, Any]]) -> int:
+    def calculate(self, previous_test: dict[str, Any] | None) -> int:
         """
         Calculate optimal pause duration in seconds.
 
@@ -151,7 +151,7 @@ class AdaptivePauseCalculator:
         final_pause = max(self.min_pause, min(self.max_pause, int(pause)))
         return final_pause
 
-    def _get_reason(self, previous_test: Optional[Dict[str, Any]], pause: int) -> str:
+    def _get_reason(self, previous_test: dict[str, Any] | None, pause: int) -> str:
         """Generate a human-readable reason for the updated pause."""
         if previous_test is None:
             return "Initial model settle"
@@ -169,7 +169,7 @@ class AdaptivePauseCalculator:
         return "Standard recovery"
 
     def wait(
-        self, previous_test: Optional[Dict[str, Any]] = None, verbose: bool = True
+        self, previous_test: dict[str, Any] | None = None, verbose: bool = True
     ) -> int:
         """
         Calculates and executes the pause.

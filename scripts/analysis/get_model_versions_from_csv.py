@@ -4,7 +4,7 @@ model_versions = {}
 files = [f for f in glob.glob('benchmark_scores/*.csv') if 'leaderboard' not in f]
 for f in files:
     try:
-        with open(f, 'r', encoding='utf-8') as csvf:
+        with open(f, encoding='utf-8') as csvf:
             reader = csv.DictReader(csvf)
             for row in reader:
                 model = row.get('model', row.get('model_name'))

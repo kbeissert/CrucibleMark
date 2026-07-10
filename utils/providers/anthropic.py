@@ -4,8 +4,9 @@ Getrennte Implementierungen für Ollama, Anthropic, Mistral
 """
 import time
 import logging
-from typing import Any, List, Optional, Callable
-from utils.constants import MAX_TOKENS_ANTHROPIC, TIMEOUT_ANTHROPIC_API, ANTHROPIC_NO_TEMPERATURE_MODELS
+from typing import Any
+from collections.abc import Callable
+from utils.constants import TIMEOUT_ANTHROPIC_API, ANTHROPIC_NO_TEMPERATURE_MODELS
 from utils.env_utils import get_required_env
 # Optional Provider Imports
 try:
@@ -99,7 +100,7 @@ class AnthropicClient(BaseProviderClient):
         model: str,
         prompt: str,
         temperature: float,
-        stream_handler: Optional[Callable[[str], None]] = None,
+        stream_handler: Callable[[str], None] | None = None,
         **kwargs,
     ) -> str:
         """Query Anthropic API"""
@@ -256,7 +257,7 @@ class AnthropicClient(BaseProviderClient):
         output = getattr(usage, "output_tokens", 0) or 0
         # Fallback: wenn output_tokens < initial, aber kein explizites Fallback-Signal
         return initial, False
-    def get_available_models(self) -> List[str]:
+    def get_available_models(self) -> list[str]:
         """Listet verfügbare Claude-Modelle"""
         return [
             "claude-sonnet-4-5-20250929",

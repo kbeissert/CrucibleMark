@@ -44,7 +44,7 @@ json_files = glob.glob('outputs/**/*.json', recursive=True)
 
 for filepath in json_files:
     try:
-        with open(filepath, 'r', encoding='utf-8') as f:
+        with open(filepath, encoding='utf-8') as f:
             data = json.load(f)
 
         changed = False
@@ -75,7 +75,7 @@ for filepath in json_files:
 csv_files = [f for f in glob.glob('benchmark_scores/*.csv') if 'leaderboard' not in f]
 for filepath in csv_files:
     try:
-        with open(filepath, 'r', encoding='utf-8') as f:
+        with open(filepath, encoding='utf-8') as f:
             reader = csv.DictReader(f)
             rows = list(reader)
             fieldnames = reader.fieldnames

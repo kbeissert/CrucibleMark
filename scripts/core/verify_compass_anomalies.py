@@ -24,7 +24,7 @@ def get_anomalies(threshold=1.0, provider_filter=None, model_id=None):
     model_files = {}
     for json_file in runs_dir.glob("results_*.json"):
         try:
-            with open(json_file, "r", encoding="utf-8") as f:
+            with open(json_file, encoding="utf-8") as f:
                 data = json.load(f)
 
             model_name = data.get("model", "")

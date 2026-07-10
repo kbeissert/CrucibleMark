@@ -3,7 +3,7 @@ Base interfaces for Scoring components.
 """
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Optional
+from typing import Any
 
 
 class BaseScorer(ABC):
@@ -16,16 +16,16 @@ class BaseScorer(ABC):
     def score_response(
         self,
         response: str,
-        asset: Dict[str, Any],
+        asset: dict[str, Any],
         **kwargs,  # Context, previous messages, etc.
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Scores a text response against the provided asset configuration.
         """
 
     def calculate_score_contributions(
-        self, result: Dict[str, Any], asset_cfg: Optional[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+        self, result: dict[str, Any], asset_cfg: dict[str, Any] | None
+    ) -> dict[str, Any]:
         """
         Calculate routine/reasoning score contributions.
         Moves logic from old scoring_utils.py to BaseScorer for reuse.

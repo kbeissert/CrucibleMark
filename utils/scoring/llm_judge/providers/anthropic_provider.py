@@ -8,7 +8,7 @@ Auth: ANTHROPIC_API_KEY environment variable.
 import logging
 import os
 import time
-from typing import Any, Optional
+from typing import Any
 
 from .base_provider import JudgeProviderResponse, LLMJudgeProvider
 
@@ -35,7 +35,7 @@ def _is_transient_error(exc: BaseException) -> bool:
     return False
 
 # Optional import guard: declared before try-block as per project convention
-anthropic_module: Optional[Any] = None
+anthropic_module: Any | None = None
 try:
     import anthropic as anthropic_module  # type: ignore[no-redef]
 except ImportError:

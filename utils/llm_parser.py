@@ -4,7 +4,7 @@ Provides unified parsing logic for LLM responses and usage metadata.
 """
 
 import re
-from typing import Any, Tuple
+from typing import Any
 
 
 class LLMParser:
@@ -46,7 +46,7 @@ class LLMParser:
         return response_text
 
     @staticmethod
-    def extract_usage_tokens(usage: Any) -> Tuple[int, int]:
+    def extract_usage_tokens(usage: Any) -> tuple[int, int]:
         """
         Extracts input and output tokens from a generic provider usage object.
         Supports Anthropic, OpenAI, Mistral (dicts and objects).

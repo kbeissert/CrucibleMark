@@ -30,7 +30,6 @@ import json
 import logging
 import re
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -119,7 +118,7 @@ def _load_manufacturers_from_taxonomy() -> list[tuple[str, str]]:
         logger.error("Taxonomy %s nicht gefunden.", MANUFACTURERS_PATH)
         return []
 
-    with open(MANUFACTURERS_PATH, "r", encoding="utf-8") as f:
+    with open(MANUFACTURERS_PATH, encoding="utf-8") as f:
         taxonomy = json.load(f)
 
     manufacturers = taxonomy.get("manufacturers", {}).get("values", {})
@@ -141,7 +140,7 @@ def _resolve_provider_arg(arg: str, manufacturers: list[tuple[str, str]]) -> tup
 
 def _load_config() -> dict[str, Any]:
     config_path = ROOT_DIR / "benchmark_config.yaml"
-    with open(config_path, "r", encoding="utf-8") as f:
+    with open(config_path, encoding="utf-8") as f:
         return yaml.safe_load(f)
 
 

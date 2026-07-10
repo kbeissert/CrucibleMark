@@ -18,7 +18,6 @@ import sys
 import yaml
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 if str(ROOT_DIR) not in sys.path:
@@ -98,7 +97,7 @@ def _strip_metric_lines(content: str) -> str:
 
 def load_config() -> dict:
     config_path = ROOT_DIR / "benchmark_config.yaml"
-    with open(config_path, "r", encoding="utf-8") as f:
+    with open(config_path, encoding="utf-8") as f:
         return yaml.safe_load(f)
 
 
@@ -109,7 +108,7 @@ def _load_webexport_blacklist() -> set[str]:
     """
     blacklist_path = ROOT_DIR / "config" / "web_export_blacklist.yaml"
     try:
-        with open(blacklist_path, "r", encoding="utf-8") as f:
+        with open(blacklist_path, encoding="utf-8") as f:
             data = yaml.safe_load(f)
             blacklist = data.get("blacklist", [])
             # Return as set for fast O(1) lookup
@@ -184,7 +183,7 @@ def _get_hardware_profile_from_csv(model_id: str) -> str:
     safe_target = _safe_name(model_id)
     try:
         import csv as _csv
-        with open(csv_path, "r", encoding="utf-8") as f:
+        with open(csv_path, encoding="utf-8") as f:
             reader = _csv.DictReader(f)
             for row in reader:
                 row_model = row.get("model", "") or row.get("model_id", "")
@@ -199,7 +198,7 @@ def _get_hardware_profile_from_csv(model_id: str) -> str:
     return ""
 
 
-def get_latest_audit_dir(base_dir: Path) -> Optional[Path]:
+def get_latest_audit_dir(base_dir: Path) -> Path | None:
     """Find the most recently modified audit sub-directory."""
     subdirs = [d for d in base_dir.iterdir() if d.is_dir() and d.name != ".DS_Store"]
     if not subdirs:
@@ -212,7 +211,7 @@ def collect_data() -> str:
     csv_path = ROOT_DIR / "benchmark_scores" / "benchmark_leaderboard.csv"
     if not csv_path.exists():
         return "Keine Leaderboard-Daten gefunden."
-    with open(csv_path, "r", encoding="utf-8") as f:
+    with open(csv_path, encoding="utf-8") as f:
         return f.read()
 
 
@@ -540,7 +539,7 @@ def process_model_review(
 
     prompt_key = "bias_reviewer" if review_type == "bias" else "meta_reviewer"
     try:
-        with open(ROOT_DIR / "config" / "meta_reviewer_prompt.yaml", "r", encoding="utf-8") as f:
+        with open(ROOT_DIR / "config" / "meta_reviewer_prompt.yaml", encoding="utf-8") as f:
             prompt_yaml = yaml.safe_load(f)
         prompt_template = prompt_yaml.get(prompt_key, {}).get("system_instructions", "")
     except Exception as e:
@@ -604,7 +603,7 @@ def process_model_review(
         import csv as _csv
         pc_csv_path = ROOT_DIR / "benchmark_scores" / "political_compass_leaderboard.csv"
         if pc_csv_path.exists():
-            with open(pc_csv_path, "r", encoding="utf-8") as _f:
+            with open(pc_csv_path, encoding="utf-8") as _f:
                 for _row in _csv.DictReader(_f):
                     _safe = _safe_name(_row.get("model", ""))
                     if _safe == tested_model_name or _row.get("model") == tested_model_name:
@@ -706,7 +705,7 @@ def _run_tooluse_reviews(
     )
 
     try:
-        with open(ROOT_DIR / "config" / "meta_reviewer_prompt.yaml", "r", encoding="utf-8") as f:
+        with open(ROOT_DIR / "config" / "meta_reviewer_prompt.yaml", encoding="utf-8") as f:
             prompt_yaml = yaml.safe_load(f)
         prompt_template = prompt_yaml.get("tooluse_reviewer", {}).get("system_instructions", "")
     except Exception as e:
@@ -969,7 +968,7 @@ def _run_per_model_all_reviews(
     # Ollama-Format-IDs enthält (z.B. "gemma3:12b"), die nicht mit den audit_log-Slug-Namen
     # übereinstimmen (z.B. "gemma-3-12b-it"). Ein pro-Modell-Lookup würde immer fehlschlagen.
     # Mit model=None iteriert _run_tooluse_reviews über get_all_tooluse_model_ids() → korrekte IDs.
-    print(f"\n── Tool-Use-Reviews (alle ausstehenden Einträge aus tooluse_leaderboard.csv) ──")
+    print("\n── Tool-Use-Reviews (alle ausstehenden Einträge aus tooluse_leaderboard.csv) ──")
     tooluse_args = argparse.Namespace(**vars(args))
     tooluse_args.model = None  # Kein Slug-Filter — IDs kommen aus tooluse_leaderboard.csv
     _run_tooluse_reviews(tooluse_args, client, provider, model_id, max_tokens)
@@ -996,7 +995,7 @@ def _run_audit_reviews(
     found_models = False
 
     safe_target_model = _safe_name(args.model) if args.model else None
-    
+
     # Lade Webexport-Blacklist für Auto-Review-Skip
     blacklist = _load_webexport_blacklist() if args.auto else set()
 
@@ -1017,12 +1016,12 @@ def _run_audit_reviews(
         # korrekt gematcht werden.
         if safe_target_model and _safe_name(subdir.name) != safe_target_model:
             continue
-        
+
         # Webexport-Blacklist-Check: Modelle auf der Blacklist im Auto-Modus überspringen
         if args.auto and subdir.name in blacklist:
             print(f"⏩ {subdir.name}: Auf Webexport-Blacklist → Review wird übersprungen.")
             continue
-        
+
         found_models = True
 
         # Heritage-ID-Fallback: prüfe ob subdir.name eine veraltete ID ist,

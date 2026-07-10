@@ -42,7 +42,7 @@ def load_session(name: str) -> dict:
     path = get_session_path(name)
     if path.exists():
         try:
-            with open(path, "r", encoding="utf-8") as f:
+            with open(path, encoding="utf-8") as f:
                 return json.load(f)
         except Exception as e:
             print(f"⚠️  Konnte Session nicht laden: {e}")

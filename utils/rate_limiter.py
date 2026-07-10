@@ -32,7 +32,7 @@ class RateLimiter:
         p = Path(path)
         if not p.exists():
             return {}
-        with open(p, "r") as f:
+        with open(p) as f:
             return yaml.safe_load(f) or {}
 
     def _get_limit(self, key: str, default: int) -> int:

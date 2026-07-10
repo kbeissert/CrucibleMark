@@ -23,7 +23,7 @@ import importlib
 import logging
 import os
 import time
-from typing import Any, Dict, Optional
+from typing import Any
 
 from utils.constants import OLLAMA_DEFAULT_BASE_URL
 from .judge_config import LLMJudgeConfig
@@ -73,7 +73,7 @@ def _build_provider(config: LLMJudgeConfig) -> LLMJudgeProvider:
     final_model = (
         config.module_judge_model if config.module_judge_model else prov_cfg.model
     )
-    kwargs: Dict[str, Any] = {
+    kwargs: dict[str, Any] = {
         "model": final_model,
         "temperature": prov_cfg.temperature,
         "max_tokens": prov_cfg.max_tokens,
@@ -104,7 +104,7 @@ def _try_complete(
     system_prompt: str,
     user_prompt: str,
     provider_label: str,
-) -> Optional[JudgeProviderResponse]:
+) -> JudgeProviderResponse | None:
     """
     Attempt provider.complete() and return None on any exception.
 
@@ -130,7 +130,7 @@ def _try_complete(
 
 
 def _should_unload(
-    tested_model_provider: Optional[str],
+    tested_model_provider: str | None,
     judge_provider_name: str,
 ) -> bool:
     """
@@ -181,7 +181,7 @@ class JudgeRunner:
                     LLMJudgeConfig.from_dict(yaml_data).
         """
         self._config = config
-        self._provider: Optional[LLMJudgeProvider] = None
+        self._provider: LLMJudgeProvider | None = None
 
     @property
     def provider(self) -> LLMJudgeProvider:
@@ -196,8 +196,8 @@ class JudgeRunner:
 
     def _maybe_unload_tested_model(
         self,
-        tested_model_id: Optional[str],
-        tested_model_provider: Optional[str],
+        tested_model_id: str | None,
+        tested_model_provider: str | None,
     ) -> None:
         """
         Unload the tested Ollama model before the judge loads, if applicable.
@@ -264,7 +264,7 @@ class JudgeRunner:
         self,
         system_prompt: str,
         user_prompt: str,
-    ) -> tuple[Optional[JudgeProviderResponse], str, str]:
+    ) -> tuple[JudgeProviderResponse | None, str, str]:
         """
         Execute primary provider with fail-fast architecture.
         Raises JudgeUnavailableError if it cannot respond.
@@ -305,18 +305,18 @@ class JudgeRunner:
         model_response: str,
         golden_standard: str,
         module_id: str,
-        rubric_override: Optional[str] = None,
-        tested_model_id: Optional[str] = None,
-        tested_model_provider: Optional[str] = None,
-        response_time_ms: Optional[float] = None,
-        required_language: Optional[str] = None,
+        rubric_override: str | None = None,
+        tested_model_id: str | None = None,
+        tested_model_provider: str | None = None,
+        response_time_ms: float | None = None,
+        required_language: str | None = None,
         language_weight: float = 0.20,
-        token_budget_context: Optional[dict] = None,
-        small_model_token_context: Optional[dict] = None,
-        token_usage_context: Optional[dict] = None,
+        token_budget_context: dict | None = None,
+        small_model_token_context: dict | None = None,
+        token_usage_context: dict | None = None,
         truncation_context: bool = False,
-        tool_content: Optional[str] = None,
-        tool_content_quality: Optional[str] = None,
+        tool_content: str | None = None,
+        tool_content_quality: str | None = None,
     ) -> JudgeResult:
         """
         Evaluate a model response and return a structured JudgeResult.
@@ -463,11 +463,11 @@ class JudgeRunner:
         model_response: str,
         golden_standard: str,
         module_id: str,
-        rubric_override: Optional[str] = None,
-        tested_model_id: Optional[str] = None,
-        tested_model_provider: Optional[str] = None,
-        response_time_ms: Optional[float] = None,
-    ) -> Optional[float]:
+        rubric_override: str | None = None,
+        tested_model_id: str | None = None,
+        tested_model_provider: str | None = None,
+        response_time_ms: float | None = None,
+    ) -> float | None:
         """
         Convenience wrapper that normalises the judge score to 0–100.
 
@@ -496,11 +496,11 @@ class JudgeRunner:
         model_response: str,
         golden_standard: str,
         module_id: str,
-        rubric_override: Optional[str] = None,
-        tested_model_id: Optional[str] = None,
-        tested_model_provider: Optional[str] = None,
-        response_time_ms: Optional[float] = None,
-    ) -> Dict[str, Any]:
+        rubric_override: str | None = None,
+        tested_model_id: str | None = None,
+        tested_model_provider: str | None = None,
+        response_time_ms: float | None = None,
+    ) -> dict[str, Any]:
         """
         Run the judge and return a dict ready for merging into BenchmarkResult.data.
 
@@ -528,7 +528,7 @@ class JudgeRunner:
             response_time_ms=response_time_ms,
         )
         scale = self._config.scoring.scale
-        normalised: Optional[float] = None
+        normalised: float | None = None
         if judge_result.score is not None:
             if scale > 0:
                 normalised = round((judge_result.score / scale) * 100.0, 2)

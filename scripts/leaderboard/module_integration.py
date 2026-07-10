@@ -15,7 +15,7 @@ SSoT (Single Source of Truth):
 
 import json
 import sys
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 import pandas as pd
 
@@ -40,7 +40,7 @@ except ImportError:
 # pylint: enable=import-error
 
 
-def _build_card_lookups() -> Tuple[Dict[str, str], Dict[str, str]]:
+def _build_card_lookups() -> tuple[dict[str, str], dict[str, str]]:
     """
     SSoT: Liest alle Model Cards und baut zwei Lookups:
     1. {beliebiger_model_string → kanonische_model_id}
@@ -50,8 +50,8 @@ def _build_card_lookups() -> Tuple[Dict[str, str], Dict[str, str]]:
         Tuple von (id_lookup, display_lookup)
     """
     import re as _re_card
-    id_lookup: Dict[str, str] = {}
-    display_lookup: Dict[str, str] = {}
+    id_lookup: dict[str, str] = {}
+    display_lookup: dict[str, str] = {}
     card_dir = ROOT_DIR / "benchmark_scores" / "model_cards"
     if not card_dir.exists():
         return id_lookup, display_lookup
@@ -100,8 +100,8 @@ def _build_card_lookups() -> Tuple[Dict[str, str], Dict[str, str]]:
 
 
 def _add_thinking_profile_names(
-    id_lookup: Dict[str, str],
-    display_lookup: Dict[str, str],
+    id_lookup: dict[str, str],
+    display_lookup: dict[str, str],
 ) -> None:
     """Ergänzt display_lookup für Thinking-Profile (card_model_id-Redirect).
 
@@ -137,18 +137,18 @@ def _add_thinking_profile_names(
 
 
 # Backward compat wrapper
-def _build_model_id_lookup() -> Dict[str, str]:
+def _build_model_id_lookup() -> dict[str, str]:
     """Legacy: gibt nur den ID-Lookup zurück."""
     id_lookup, _ = _build_card_lookups()
     return id_lookup
 
 
 # Global caches (lazy init)
-_ID_LOOKUP: Optional[Dict[str, str]] = None
-_DISPLAY_LOOKUP: Optional[Dict[str, str]] = None
+_ID_LOOKUP: dict[str, str] | None = None
+_DISPLAY_LOOKUP: dict[str, str] | None = None
 
 
-def _get_lookups() -> Tuple[Dict[str, str], Dict[str, str]]:
+def _get_lookups() -> tuple[dict[str, str], dict[str, str]]:
     global _ID_LOOKUP, _DISPLAY_LOOKUP
     if _ID_LOOKUP is None or _DISPLAY_LOOKUP is None:
         _ID_LOOKUP, _DISPLAY_LOOKUP = _build_card_lookups()
@@ -156,7 +156,7 @@ def _get_lookups() -> Tuple[Dict[str, str], Dict[str, str]]:
     return _ID_LOOKUP, _DISPLAY_LOOKUP
 
 
-def _get_model_id_lookup() -> Dict[str, str]:
+def _get_model_id_lookup() -> dict[str, str]:
     """Legacy: gibt nur den ID-Lookup zurück."""
     return _get_lookups()[0]
 
@@ -226,7 +226,7 @@ def _resolve_to_display_name(model_str: str) -> str:
 
 
 def _enrich_from_csv_source(
-    result: pd.DataFrame, label: str, source_config: Dict[str, Any]
+    result: pd.DataFrame, label: str, source_config: dict[str, Any]
 ) -> pd.DataFrame:
     """
     Generic Enrichment: Loads data from a custom CSV based on Config.
@@ -395,10 +395,10 @@ def _enrich_from_csv_source(
 
 def enrich_with_module_data(
     result: pd.DataFrame,
-    cat_cols: List[str],
-    modules_config: Dict[str, Any],
-    full_config: Dict[str, Any],
-) -> Tuple[pd.DataFrame, List[str]]:
+    cat_cols: list[str],
+    modules_config: dict[str, Any],
+    full_config: dict[str, Any],
+) -> tuple[pd.DataFrame, list[str]]:
     """
     Merges custom/additional data columns for modules defined in their config.
     """

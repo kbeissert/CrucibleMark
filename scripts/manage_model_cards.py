@@ -36,7 +36,7 @@ import time
 from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import yaml
 
@@ -136,8 +136,8 @@ class CardCheckReport:
     findings: list[CardFinding] = field(default_factory=list)
     summary: str = ""
     raw_response: str = ""
-    parse_error: Optional[str] = None
-    error: Optional[str] = None
+    parse_error: str | None = None
+    error: str | None = None
     would_write: bool = False
 
 
@@ -147,8 +147,8 @@ class CardMakeReport:
     card_path: Path
     new_card: dict = field(default_factory=dict)
     raw_response: str = ""
-    parse_error: Optional[str] = None
-    error: Optional[str] = None
+    parse_error: str | None = None
+    error: str | None = None
     warnings: list[str] = field(default_factory=list)
     would_write: bool = False
     wrote: bool = False
@@ -171,14 +171,14 @@ class ResearchReport:
     findings: list[CardFinding] = field(default_factory=list)
     summary: str = ""
     raw_response: str = ""
-    parse_error: Optional[str] = None
-    error: Optional[str] = None
+    parse_error: str | None = None
+    error: str | None = None
     locked: bool = False
     unlocked: bool = False
     would_write: bool = False
     wrote: bool = False
     profile_verified: bool = False
-    backup_path: Optional[Path] = None
+    backup_path: Path | None = None
 
 
 @dataclass
@@ -186,7 +186,7 @@ class LLMSpec:
     provider_name: str
     model: str
     base_url: str
-    api_key: Optional[str]
+    api_key: str | None
     max_tokens: int
     temperature: float
 
@@ -196,7 +196,7 @@ class LLMSession:
         self,
         model: str,
         base_url: str,
-        api_key: Optional[str],
+        api_key: str | None,
         max_retries: int,
         timeout_s: int,
     ) -> None:
@@ -211,7 +211,7 @@ class LLMSession:
         self._client = OpenAI(**kwargs)
 
     def query(self, system: str, user: str, temperature: float) -> str:
-        last_exc: Optional[Exception] = None
+        last_exc: Exception | None = None
         timeout = httpx.Timeout(timeout=self.timeout_s, connect=10.0, read=self.timeout_s, pool=self.timeout_s)
         for attempt in range(1, self.max_retries + 1):
             try:
@@ -258,7 +258,7 @@ def _setup_logging() -> None:
 
 def _load_benchmark_config() -> dict:
     path = ROOT_DIR / "benchmark_config.yaml"
-    with open(path, "r", encoding="utf-8") as f:
+    with open(path, encoding="utf-8") as f:
         return yaml.safe_load(f)
 
 
@@ -295,7 +295,7 @@ def _resolve_llm_spec(args: argparse.Namespace, config: dict) -> LLMSpec:
 
 
 def _load_editor_prompt() -> str:
-    with open(EDITOR_PROMPTS_PATH, "r", encoding="utf-8") as f:
+    with open(EDITOR_PROMPTS_PATH, encoding="utf-8") as f:
         data = yaml.safe_load(f)
     prompt = data.get("model_card_verification", {}).get("prompt", "")
     if not prompt:
@@ -832,7 +832,7 @@ def _build_make_user_prompt(
 _JSON_FENCE_RE = re.compile(r"```(?:json)?\s*(\{.*?\})\s*```", re.DOTALL)
 
 
-def _extract_json_object(text: str) -> Optional[dict]:
+def _extract_json_object(text: str) -> dict | None:
     if not text:
         return None
     m = _JSON_FENCE_RE.search(text)
@@ -872,7 +872,7 @@ def _extract_json_object(text: str) -> Optional[dict]:
     return None
 
 
-def _parse_check_response(text: str) -> tuple[list[CardFinding], str, Optional[str]]:
+def _parse_check_response(text: str) -> tuple[list[CardFinding], str, str | None]:
     parsed = _extract_json_object(text)
     if parsed is None:
         return [], "", f"Kein parsebares JSON in der LLM-Antwort: {text[:200]}…"
@@ -893,7 +893,7 @@ def _parse_check_response(text: str) -> tuple[list[CardFinding], str, Optional[s
     return findings, summary, None
 
 
-def _parse_make_response(text: str) -> tuple[Optional[dict], Optional[str]]:
+def _parse_make_response(text: str) -> tuple[dict | None, str | None]:
     parsed = _extract_json_object(text)
     if parsed is None:
         return None, f"Kein parsebares JSON in der LLM-Antwort: {text[:200]}…"

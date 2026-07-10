@@ -16,7 +16,7 @@ Usage:
 import sys
 import json
 import argparse
-from typing import Dict, Any, List
+from typing import Any
 import math
 from pathlib import Path
 
@@ -31,7 +31,7 @@ from utils.constants import Colors  # noqa: E402
 
 def load_json(path: str) -> Any:
     try:
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             return json.load(f)
     except Exception as e:
         print(f"{Colors.FAIL}Error loading {path}: {e}{Colors.ENDC}")
@@ -39,7 +39,7 @@ def load_json(path: str) -> Any:
 
 
 def compare_political_compass(
-    ref: Dict[str, Any], test: Dict[str, Any], threshold: float
+    ref: dict[str, Any], test: dict[str, Any], threshold: float
 ):
     """Specific comparison logic for Political Compass results."""
     print(f"\n{Colors.HEADER}🧭 Political Compass Comparison{Colors.ENDC}")
@@ -86,7 +86,7 @@ def compare_political_compass(
 
 
 def compare_standard_benchmark(
-    ref: List[Dict[str, Any]], test: List[Dict[str, Any]], threshold: float
+    ref: list[dict[str, Any]], test: list[dict[str, Any]], threshold: float
 ):
     """Compares standard list-based benchmark results."""
     print(f"\n{Colors.HEADER}📊 Score Comparison{Colors.ENDC}")

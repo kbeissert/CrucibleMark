@@ -126,7 +126,7 @@ def _enrich_with_llm_judge(leaderboard: pd.DataFrame, df: pd.DataFrame) -> pd.Da
     return leaderboard
 
 
-def main(print_table: bool = True) -> Optional[pd.DataFrame]:
+def main(print_table: bool = True) -> pd.DataFrame | None:
     """Main orchestration function for leaderboard generation."""
     print("Generating Leaderboard with Metrics...")
 

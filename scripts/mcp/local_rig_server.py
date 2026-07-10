@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 from html.parser import HTMLParser
 from pathlib import Path
 import platform
@@ -73,7 +73,7 @@ def ping(message: str = "pong") -> str:
 @mcp.tool()
 def now_iso() -> str:
     """Return current UTC timestamp in ISO-8601 format."""
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 @mcp.tool()

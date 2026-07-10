@@ -8,7 +8,7 @@ import json
 import logging
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, Any
+from typing import Any
 
 from utils.benchmark_utils import (
     format_pc_run_data,
@@ -37,7 +37,7 @@ class PoliticalCompassHandler:
     """Delegates reporting and file-writing for the Political Compass module."""
 
     @staticmethod
-    def is_political_compass(benchmark_info: Dict[str, Any]) -> bool:
+    def is_political_compass(benchmark_info: dict[str, Any]) -> bool:
         """Determines if the benchmark is the Political Compass module."""
         module_id = benchmark_info.get("id", "")
         return (
@@ -49,7 +49,7 @@ class PoliticalCompassHandler:
     def handle_results(
         cls,
         model: str,
-        report: Dict[str, Any],
+        report: dict[str, Any],
         model_version: str,
         test_instance: Any,
         audit_mode: bool = False,
@@ -108,7 +108,7 @@ class PoliticalCompassHandler:
 
     @staticmethod
     def _update_local_pc_csv(
-        model: str, report: Dict[str, Any], model_version: str
+        model: str, report: dict[str, Any], model_version: str
     ) -> None:
         """Upsert logic for local runner (replaces previous entries for this model)."""
         pc_csv = Path("benchmark_scores/political_compass_results.csv")
@@ -178,7 +178,7 @@ class PoliticalCompassHandler:
         # Upsert: remove existing rows for this model, then append new rows
         existing_rows = []
         if pc_csv.exists() and pc_csv.stat().st_size > 0:
-            with open(pc_csv, "r", encoding="utf-8") as f:
+            with open(pc_csv, encoding="utf-8") as f:
                 reader = csv.DictReader(f)
                 existing_rows = [r for r in reader if r.get("model") != model]
                 if reader.fieldnames:
@@ -195,7 +195,7 @@ class PoliticalCompassHandler:
 
     @staticmethod
     def _update_commercial_pc_csv(
-        model: str, report: Dict[str, Any], model_version: str
+        model: str, report: dict[str, Any], model_version: str
     ) -> None:
         """Original read-replace-write logic for commercial runner."""
         pc_csv = Path("benchmark_scores/political_compass_results.csv")
@@ -214,7 +214,7 @@ class PoliticalCompassHandler:
         ]
         pc_rows = []
         if pc_csv.exists():
-            with open(pc_csv, "r", encoding="utf-8") as f:
+            with open(pc_csv, encoding="utf-8") as f:
                 reader = csv.DictReader(f)
                 pc_rows = list(reader)
                 if reader.fieldnames:
@@ -240,7 +240,7 @@ class PoliticalCompassHandler:
     @staticmethod
     def _generate_derivatives(
         model: str,
-        report: Dict[str, Any],
+        report: dict[str, Any],
         test_instance: Any,
         audit_mode: bool,
         provider_type: str,

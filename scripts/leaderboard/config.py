@@ -4,7 +4,7 @@ Leaderboard configuration and registry management.
 
 import sys
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any
 
 import yaml
 
@@ -44,12 +44,12 @@ LOCAL_CSV = Path(
 OUTPUT_CSV = SCORES_DIR / "benchmark_leaderboard.csv"
 
 
-def load_model_registry() -> Dict[str, Any]:
+def load_model_registry() -> dict[str, Any]:
     """Loads model registry from YAML."""
     if not REGISTRY_FILE.exists():
         return {"models": {}}
     try:
-        with open(REGISTRY_FILE, "r", encoding="utf-8") as f:
+        with open(REGISTRY_FILE, encoding="utf-8") as f:
             data = yaml.safe_load(f)
             return data if data else {"models": {}}
     except Exception as e:
@@ -57,7 +57,7 @@ def load_model_registry() -> Dict[str, Any]:
         return {"models": {}}
 
 
-def save_model_registry(registry_data: Dict[str, Any]) -> None:
+def save_model_registry(registry_data: dict[str, Any]) -> None:
     """Saves registry back to YAML."""
     try:
         with open(REGISTRY_FILE, "w", encoding="utf-8") as f:

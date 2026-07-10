@@ -3,7 +3,7 @@
 
 import sys
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 # pylint: disable=import-error
 import yaml
@@ -81,7 +81,7 @@ class CLIAssetValidator:
         with open(config_path, encoding="utf-8") as f:
             config = yaml.safe_load(f)
 
-        aggregated_results: Dict[str, Any] = {"valid": 0, "invalid": 0, "details": []}
+        aggregated_results: dict[str, Any] = {"valid": 0, "invalid": 0, "details": []}
 
         print(f"Lese Konfiguration: {config_path}")
 
@@ -106,7 +106,7 @@ class CLIAssetValidator:
         return aggregated_results
 
 
-def _print_report(results: Dict[str, Any]) -> None:
+def _print_report(results: dict[str, Any]) -> None:
     """Pretty prints the validation report."""
     print("=" * 60)
     print("ASSET VALIDATION REPORT")

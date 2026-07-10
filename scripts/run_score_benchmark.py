@@ -35,10 +35,6 @@ from utils.model_utils import resolve_provider  # noqa: E402
 # llama.cpp Batch-Orchestrierung
 from scripts.core.llamacpp_batch import (  # noqa: E402
     is_llamacpp_provider,
-    get_enabled_llamacpp_providers,
-    stop_llamacpp_provider_server,
-    run_llamacpp_provider_cleanup,
-    set_llamacpp_provider_context,
     llamacpp_model_session,
     get_existing_results,
     get_startable_assets,

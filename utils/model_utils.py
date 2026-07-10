@@ -7,8 +7,8 @@ import logging
 import re
 import shutil
 import subprocess
-from datetime import datetime, timezone
-from typing import Any, Literal, Optional, TypeVar
+from datetime import datetime, UTC
+from typing import Any, Literal, TypeVar
 
 import yaml
 from dataclasses import dataclass
@@ -916,7 +916,7 @@ def find_card_by_heritage_id(legacy_id: str, card_dir: Path | None = None) -> Pa
     return None
 
 
-def _extract_ollama_id(model_name: str, ollama_output: str) -> Optional[str]:
+def _extract_ollama_id(model_name: str, ollama_output: str) -> str | None:
     """Extracts a model hash/ID from `ollama list` output for an exact model name match."""
     candidates = [model_name]
     if model_name.startswith("ollama/"):
@@ -1334,7 +1334,7 @@ def resolve_provider(model_name: str) -> tuple[str, str]:
     return "ollama", model_name
 
 
-def is_cloud_model(model_name: str, size_gb: Optional[float] = None) -> bool:
+def is_cloud_model(model_name: str, size_gb: float | None = None) -> bool:
     """
     SSOT: Determines if an Ollama model is a cloud proxy model.
 
@@ -1369,7 +1369,7 @@ def is_cloud_model(model_name: str, size_gb: Optional[float] = None) -> bool:
 
 
 def get_model_category(
-    model_name: str, source_file: str = "local", size_gb: Optional[float] = None, provider: Optional[str] = None
+    model_name: str, source_file: str = "local", size_gb: float | None = None, provider: str | None = None
 ) -> str:
     """
     Central SSOT for model categorization.
@@ -2414,8 +2414,8 @@ def _is_override_active(
         except (ValueError, TypeError):
             return False
         if expiry.tzinfo is None:
-            expiry = expiry.replace(tzinfo=timezone.utc)
-        check_now = now or datetime.now(timezone.utc)
+            expiry = expiry.replace(tzinfo=UTC)
+        check_now = now or datetime.now(UTC)
         if check_now >= expiry:
             return False
     return True

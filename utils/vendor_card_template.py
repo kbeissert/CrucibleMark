@@ -30,7 +30,7 @@ from __future__ import annotations
 import json
 import re
 from copy import deepcopy
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 from pathlib import Path
 from typing import Any
 
@@ -166,7 +166,7 @@ def ensure_vendor_card(provider_id: str, *, card_path: Path | None = None) -> Pa
 
     # generated_at setzen, falls weder im existing noch im Template ein Wert steht
     if not result.get("generated_at"):
-        result["generated_at"] = datetime.now(timezone.utc).isoformat()
+        result["generated_at"] = datetime.now(UTC).isoformat()
 
     # Nicht-Template-Felder aus bestehender Card ans Ende anhängen
     for key, value in existing.items():
@@ -236,7 +236,7 @@ def normalize_vendor_card_data(card_data: dict[str, Any]) -> dict[str, Any]:
 
     # generated_at setzen, falls nicht vorhanden
     if not result.get("generated_at"):
-        result["generated_at"] = datetime.now(timezone.utc).isoformat()
+        result["generated_at"] = datetime.now(UTC).isoformat()
 
     return result
 
@@ -275,7 +275,7 @@ def _parse_iso_timestamp(value: str | None) -> datetime | None:
     except (TypeError, ValueError):
         return None
     if dt.tzinfo is None:
-        dt = dt.replace(tzinfo=timezone.utc)
+        dt = dt.replace(tzinfo=UTC)
     return dt
 
 
@@ -315,7 +315,7 @@ def get_vendor_card_status(stale_days: int = 90) -> dict[str, Any]:
             - stale_threshold_days: int (echo des Parameters)
             - checked_at: ISO-8601-Timestamp
     """
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     cards_dir = _cards_dir()
     by_provider: list[dict[str, Any]] = []
     counts = {

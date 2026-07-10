@@ -7,7 +7,7 @@ Utilities für Integration von RCI in Benchmark-Runner und Leaderboards.
 Ermöglicht einfache Berechnung und Speicherung von RCI-Scores.
 """
 
-from typing import Any, Dict, List
+from typing import Any
 from pathlib import Path
 import csv
 from benchmark_modules.reasoning_logic.core.evaluators import (
@@ -26,9 +26,9 @@ class RCIIntegrator:
 
     def extract_scores_from_results(
         self,
-        reasoning_results: Dict[str, Any],
+        reasoning_results: dict[str, Any],
         tier_filter: str = "all",
-    ) -> Dict[str, List[float]]:
+    ) -> dict[str, list[float]]:
         """
         Extract Tier 1-2 and Tier 3 scores from reasoning module results.
 
@@ -62,8 +62,8 @@ class RCIIntegrator:
 
     def compute_rci(
         self,
-        reasoning_results: Dict[str, Any],
-    ) -> Dict[str, Any]:
+        reasoning_results: dict[str, Any],
+    ) -> dict[str, Any]:
         """
         Compute RCI from complete reasoning results.
 
@@ -99,8 +99,8 @@ class RCIIntegrator:
         self,
         csv_path: str,
         model_name: str,
-        rci_data: Dict[str, Any],
-        additional_data: Dict[str, Any] = None,
+        rci_data: dict[str, Any],
+        additional_data: dict[str, Any] = None,
     ) -> None:
         """
         Update leaderboard CSV with RCI scores.

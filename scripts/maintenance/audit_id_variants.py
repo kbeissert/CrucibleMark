@@ -18,9 +18,8 @@ import argparse
 import json
 import sys
 from collections import defaultdict
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 from pathlib import Path
-from typing import Any
 
 import pandas as pd
 import yaml
@@ -178,10 +177,10 @@ def _render_report(
     lines: list[str] = []
     lines.append("# ID-Varianten-Audit (CrucibleMark)\n")
     lines.append(
-        f"_Erstellt: {datetime.now(tz=timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}_\n"
+        f"_Erstellt: {datetime.now(tz=UTC).strftime('%Y-%m-%d %H:%M:%S UTC')}_\n"
     )
     lines.append(
-        f"_Quelle: `scripts/maintenance/audit_id_variants.py`_\n"
+        "_Quelle: `scripts/maintenance/audit_id_variants.py`_\n"
     )
     lines.append("")
 
@@ -265,7 +264,7 @@ def main() -> int:
     if args.output is None:
         audits_dir = _PROJECT_ROOT / "outputs" / "audits"
         audits_dir.mkdir(parents=True, exist_ok=True)
-        ts = datetime.now(tz=timezone.utc).strftime("%Y%m%d_%H%M%S")
+        ts = datetime.now(tz=UTC).strftime("%Y%m%d_%H%M%S")
         out_path = audits_dir / f"id_variants_{ts}.md"
     else:
         out_path = args.output

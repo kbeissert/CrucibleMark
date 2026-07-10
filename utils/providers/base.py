@@ -3,7 +3,8 @@ Provider-spezifische LLM Clients
 Getrennte Implementierungen für Ollama, Anthropic, Mistral
 """
 import logging
-from typing import Any, List, Optional, Callable
+from typing import Any
+from collections.abc import Callable
 logger = logging.getLogger(__name__)
 
 
@@ -44,12 +45,12 @@ class BaseProviderClient:
     """Basis-Klasse für Provider-spezifische Clients"""
 
     # Liste der logischen Provider-Namen, für die dieser Client verantwortlich ist (z.B. ["openai"])
-    PROVIDER_NAMES: List[str] = []
+    PROVIDER_NAMES: list[str] = []
 
     # Config-Key unter providers.commercial (z.B. "openrouter", "openai", "anthropic").
     # Subklassen setzen diesen Wert, damit _resolve_request_tokens() die richtige
     # Provider-Config laden kann. None = kein Provider-Config-Lookup (z.B. Ollama).
-    PROVIDER_CONFIG_KEY: Optional[str] = None
+    PROVIDER_CONFIG_KEY: str | None = None
 
     # Standard-Token-Parametername, falls nicht in der Config definiert.
     DEFAULT_TOKEN_PARAM: str = "max_tokens"
@@ -82,7 +83,7 @@ class BaseProviderClient:
         model: str,
         prompt: str,
         temperature: float,
-        stream_handler: Optional[Callable[[str], None]] = None,
+        stream_handler: Callable[[str], None] | None = None,
         **kwargs,
     ) -> str:
         """
@@ -97,7 +98,7 @@ class BaseProviderClient:
             Response-Text
         """
         raise NotImplementedError
-    def get_available_models(self) -> List[str]:
+    def get_available_models(self) -> list[str]:
         """Listet verfügbare Modelle"""
         raise NotImplementedError
     def is_accessible(self) -> bool:
@@ -227,7 +228,7 @@ class BaseProviderClient:
         func: Callable,
         token_param_name: str,
         initial_max_tokens: int,
-        error_keywords: List[str],
+        error_keywords: list[str],
         func_kwargs: dict
     ) -> tuple[Any, int, bool]:
         """

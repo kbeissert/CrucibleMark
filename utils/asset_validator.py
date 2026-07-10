@@ -5,7 +5,7 @@ Provides validation logic for asset files to ensure schema compliance.
 from utils.constants import TOTAL_SCORING_WEIGHT
 
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any
 import yaml
 
 
@@ -13,12 +13,12 @@ class AssetValidator:
     """Validates YAML Test Assets."""
 
     @staticmethod
-    def validate_file(file_path: Path) -> Tuple[bool, str]:
+    def validate_file(file_path: Path) -> tuple[bool, str]:
         """Validates a single asset file (convenience wrapper)."""
         validator = AssetValidator()
         return validator._validate_file_internal(file_path)  # pylint: disable=protected-access
 
-    def _validate_file_internal(self, file_path: Path) -> Tuple[bool, str]:
+    def _validate_file_internal(self, file_path: Path) -> tuple[bool, str]:
         """Internal validation logic."""
         try:
             with open(file_path, encoding="utf-8") as f:
@@ -36,7 +36,7 @@ class AssetValidator:
         except Exception as e:  # pylint: disable=broad-exception-caught
             return False, f"YAML Error: {e}"
 
-    def validate_structure(self, data: Dict[str, Any]) -> List[str]:
+    def validate_structure(self, data: dict[str, Any]) -> list[str]:
         """Validates the structure of the asset dictionary."""
         errors = []
 
@@ -69,7 +69,7 @@ class AssetValidator:
 
         return errors
 
-    def _validate_scoring(self, scoring: Dict[str, Any]) -> List[str]:
+    def _validate_scoring(self, scoring: dict[str, Any]) -> list[str]:
         """Decides which scoring validation to apply (Legacy vs V2)."""
         # If explicitly rubric or coordinate_mapping, skip weight check
         if scoring.get("method") in ["rubric", "coordinate_mapping", "llm_judge"]:
@@ -80,7 +80,7 @@ class AssetValidator:
         return self._validate_legacy_scoring(scoring)
 
     @staticmethod
-    def _validate_v2_scoring(scoring: Dict[str, Any]) -> List[str]:
+    def _validate_v2_scoring(scoring: dict[str, Any]) -> list[str]:
         """Validates Scoring v2.0 Format."""
         errors = []
         total_weight: float = 0.0
@@ -111,7 +111,7 @@ class AssetValidator:
         return errors
 
     @staticmethod
-    def _validate_legacy_scoring(scoring: Dict[str, Any]) -> List[str]:
+    def _validate_legacy_scoring(scoring: dict[str, Any]) -> list[str]:
         """Validates Legacy Scoring Format."""
         errors = []
         total_weight: float = 0.0

@@ -3,7 +3,7 @@ import glob
 unique_models = set()
 for f in glob.glob('benchmark_scores/*.csv'):
     try:
-        with open(f, 'r') as csvfile:
+        with open(f) as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
                 if row.get('model'):

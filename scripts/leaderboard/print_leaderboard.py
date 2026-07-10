@@ -1,5 +1,5 @@
 import csv
-with open('benchmark_scores/benchmark_leaderboard.csv', 'r') as f:
+with open('benchmark_scores/benchmark_leaderboard.csv') as f:
     reader = csv.DictReader(f)
     print(f"{'Model':<30} | {'Version':<20} | {'Score'}")
     print("-" * 65)

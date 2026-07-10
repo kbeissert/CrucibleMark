@@ -10,7 +10,7 @@ Prüft:
 import os
 import logging
 from pathlib import Path
-from typing import Any, Optional, Tuple
+from typing import Any
 import yaml
 from dotenv import load_dotenv
 
@@ -191,7 +191,7 @@ class ConfigValidator:
                         seen[mid] = location
 
 
-    def get_provider_config(self, provider_key: str) -> Optional[dict[str, Any]]:
+    def get_provider_config(self, provider_key: str) -> dict[str, Any] | None:
         """Holt Provider-Konfiguration.
 
         Args:
@@ -215,7 +215,7 @@ class ConfigValidator:
             if provider.get("enabled", False)
         }
 
-    def validate_golden_standard(self) -> Tuple[bool, str]:
+    def validate_golden_standard(self) -> tuple[bool, str]:
         """Validiert die golden_standard Konfiguration."""
         try:
             # Check basic structure

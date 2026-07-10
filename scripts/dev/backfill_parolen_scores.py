@@ -209,7 +209,7 @@ def _update_csv(
         logger.error("CSV nicht gefunden: %s", PC_CSV)
         return False
 
-    with open(PC_CSV, "r", encoding="utf-8") as fh:
+    with open(PC_CSV, encoding="utf-8") as fh:
         reader = csv.DictReader(fh)
         all_rows = list(reader)
         fieldnames = list(reader.fieldnames or [])

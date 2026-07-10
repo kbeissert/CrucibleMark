@@ -6,7 +6,6 @@ Wiederverwendbar für alle Module mit requires_mcp: true.
 import json
 import urllib.request
 import urllib.error
-from typing import Optional
 
 
 def check_mcp_health(health_url: str, timeout: int = 3) -> dict:

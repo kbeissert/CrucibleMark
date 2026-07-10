@@ -22,7 +22,7 @@ import os
 import shutil
 import subprocess
 from pathlib import Path
-from typing import Any, Dict, Optional, Set, Tuple
+from typing import Any
 
 import yaml
 
@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 # Provider-Name → ENV-Var Mapping. Wird von validate_untested_card() genutzt,
 # um vor dem API-Call zu prüfen, ob der Key überhaupt gesetzt ist.
-_PROVIDER_ENV_VARS: Dict[str, str] = {
+_PROVIDER_ENV_VARS: dict[str, str] = {
     "mistral": "MISTRAL_API_KEY",
     "anthropic": "ANTHROPIC_API_KEY",
     "openai": "OPENAI_API_KEY",
@@ -48,13 +48,13 @@ class _OllamaModelCache:
     """Trivialer Singleton-Container als pylint-saubere Alternative zu `global`."""
 
     def __init__(self) -> None:
-        self.value: Optional[Set[str]] = None
+        self.value: set[str] | None = None
 
 
 _OLLAMA_MODEL_CACHE = _OllamaModelCache()
 
 
-def _infer_provider_from_config(model_id: str) -> Optional[str]:
+def _infer_provider_from_config(model_id: str) -> str | None:
     """Infer provider only via exact ID matches in config files (no heuristics)."""
     config_paths = (Path("benchmark_config.yaml"), Path("config/provider_config.yaml"))
     for config_path in config_paths:
@@ -88,7 +88,7 @@ def _infer_provider_from_config(model_id: str) -> Optional[str]:
     return None
 
 
-def get_installed_ollama_models(force_refresh: bool = False) -> Set[str]:
+def get_installed_ollama_models(force_refresh: bool = False) -> set[str]:
     """Gibt die Menge der installierten Ollama-Modellnamen zurück.
 
     Nutzt prozess-lokalen Cache, um nicht für jede Card einen Subprocess zu starten.
@@ -97,7 +97,7 @@ def get_installed_ollama_models(force_refresh: bool = False) -> Set[str]:
     if _OLLAMA_MODEL_CACHE.value is not None and not force_refresh:
         return _OLLAMA_MODEL_CACHE.value
 
-    installed: Set[str] = set()
+    installed: set[str] = set()
     ollama_path = shutil.which("ollama")
     if not ollama_path:
         logger.debug("Ollama-Binary nicht gefunden — setze installierte Modelle = ∅")
@@ -150,7 +150,7 @@ def is_api_provider_available(provider: str) -> bool:
     return bool(os.environ.get(env_var, "").strip())
 
 
-def validate_untested_card(card: Dict[str, Any]) -> Tuple[bool, Optional[str]]:
+def validate_untested_card(card: dict[str, Any]) -> tuple[bool, str | None]:
     """Prüft, ob eine untested-Card prinzipiell testbar ist.
 
     Returns:
@@ -218,9 +218,9 @@ def validate_untested_card(card: Dict[str, Any]) -> Tuple[bool, Optional[str]]:
 
 
 def filter_testable_cards(
-    cards: list[Tuple[str, str]],
-    card_lookup: Optional[Dict[str, Dict[str, Any]]] = None,
-) -> Tuple[list[Tuple[str, str]], list[Tuple[str, str, str]]]:
+    cards: list[tuple[str, str]],
+    card_lookup: dict[str, dict[str, Any]] | None = None,
+) -> tuple[list[tuple[str, str]], list[tuple[str, str, str]]]:
     """Filtert eine Liste von (model_id, display_name) Tupeln nach Erreichbarkeit.
 
     Args:
@@ -245,7 +245,7 @@ def filter_testable_cards(
                 continue
             try:
                 import json
-                with open(card_path_candidate, "r", encoding="utf-8") as f:
+                with open(card_path_candidate, encoding="utf-8") as f:
                     card_lookup[mid] = json.load(f)
             except (OSError, ValueError) as exc:
                 logger.warning(
@@ -257,8 +257,8 @@ def filter_testable_cards(
                 )
                 continue
 
-    testable: list[Tuple[str, str]] = []
-    unreachable: list[Tuple[str, str, str]] = []
+    testable: list[tuple[str, str]] = []
+    unreachable: list[tuple[str, str, str]] = []
     for mid, name in cards:
         card = card_lookup.get(mid, {"model_id": mid, "provider": "unknown"})
         ok, reason = validate_untested_card(card)
