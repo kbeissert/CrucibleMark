@@ -60,6 +60,50 @@ LEADERBOARD_CSVS: tuple[Path, ...] = (
 )
 
 
+def _extend_variants_with_safe_and_hyphen(variants: set[str]) -> None:
+    """Erweitert ``variants`` um _safe_name- und Punkt-zu-Hyphen-Varianten.
+
+    Wird mehrfach in :func:`_collect_model_id_variants` aufgerufen, um
+    zusaetzlich gefundene IDs (z.B. aus Card-Cross-Discovery) in die
+    Normalisierungs-Pipelines aufzunehmen.
+    """
+    for v in list(variants):
+        variants.add(_safe_name(v))
+        if "." in v:
+            variants.add(v.replace(".", "-"))
+
+
+def _discover_cross_variant_ids(variants: set[str], safe_variants: set[str]) -> None:
+    """Ergänzt ``variants`` um IDs aus Card-inhalten (model_id, heritage_ids).
+
+    Findet z.B. "grok-4.1-fast-reasoning" in der Card wenn Input
+    "grok-4_1-fast-reasoning" war (Underscore ohne Card-Lookup).
+    Scannt AUCH heritage_ids — wenn eine Card umbenannt wurde (z.B.
+    gpt-oss:120b-cloud → openai/gpt-oss-120b), steht der alte Name
+    nur noch in heritage_ids und muss trotzdem gefunden werden.
+    """
+    try:
+        import json as _json
+        for card_file in CARD_DIR.glob("*.json"):
+            try:
+                data = _json.loads(card_file.read_text(encoding="utf-8"))
+                card_mid = data.get("model_id", "")
+                if card_mid and _safe_name(card_mid) in safe_variants:
+                    variants.add(card_mid)
+                # heritage_ids: alte kanonische IDs, die auf diese Card zeigen
+                for hid in (data.get("heritage_ids") or []):
+                    if isinstance(hid, str) and (
+                        hid in variants or _safe_name(hid) in safe_variants
+                    ):
+                        if card_mid:
+                            variants.add(card_mid)
+                        variants.add(hid)
+            except Exception:  # noqa: BLE001
+                continue
+    except Exception:  # noqa: BLE001
+        pass
+
+
 def _collect_model_id_variants(model: str) -> set[str]:
     """Sammt ALLE Schreibweisen einer Model-ID fuer variant-aware Cleanup.
 
@@ -85,51 +129,17 @@ def _collect_model_id_variants(model: str) -> set[str]:
         canonical = resolve_canonical_model_id(model)
         variants.add(canonical)
     except Exception:  # noqa: BLE001
-        canonical = model
-
-    # 3. _safe_name-Formen fuer alle bisherigen Varianten
-    for v in list(variants):
-        variants.add(_safe_name(v))
-
-    # 4. Punkt-zu-Hyphen-Variante (provider_config nutzt Bindestriche)
-    for v in list(variants):
-        if "." in v:
-            variants.add(v.replace(".", "-"))
-
-    # 5. Cross-Variant-Discovery: Durchsuche existierende Cards nach
-    #    model_id-Feldern, deren _safe_name zu unseren Varianten passt.
-    #    Findet z.B. "grok-4.1-fast-reasoning" in der Card wenn Input
-    #    "grok-4_1-fast-reasoning" war (Underscore ohne Card-Lookup).
-    #    Scannt AUCH heritage_ids — wenn eine Card umbenannt wurde (z.B.
-    #    gpt-oss:120b-cloud → openai/gpt-oss-120b), steht der alte Name
-    #    nur noch in heritage_ids und muss trotzdem gefunden werden.
-    safe_variants = {_safe_name(v) for v in variants}
-    try:
-        import json as _json
-        for card_file in CARD_DIR.glob("*.json"):
-            try:
-                data = _json.loads(card_file.read_text(encoding="utf-8"))
-                card_mid = data.get("model_id", "")
-                if card_mid and _safe_name(card_mid) in safe_variants:
-                    variants.add(card_mid)
-                # heritage_ids: alte kanonische IDs, die auf diese Card zeigen
-                for hid in (data.get("heritage_ids") or []):
-                    if isinstance(hid, str) and (
-                        hid in variants or _safe_name(hid) in safe_variants
-                    ):
-                        if card_mid:
-                            variants.add(card_mid)
-                        variants.add(hid)
-            except Exception:  # noqa: BLE001
-                continue
-    except Exception:  # noqa: BLE001
         pass
 
-    # 6. Erneut _safe_name fuer alle neuen Varianten
-    for v in list(variants):
-        variants.add(_safe_name(v))
-        if "." in v:
-            variants.add(v.replace(".", "-"))
+    # 3+4. _safe_name + Punkt-zu-Hyphen
+    _extend_variants_with_safe_and_hyphen(variants)
+
+    # 5. Cross-Variant-Discovery aus Card-Inhalten
+    safe_variants = {_safe_name(v) for v in variants}
+    _discover_cross_variant_ids(variants, safe_variants)
+
+    # 6. Erneut _safe_name + Hyphen fuer alle neuen Varianten
+    _extend_variants_with_safe_and_hyphen(variants)
 
     variants.discard("")
     return variants
@@ -360,6 +370,100 @@ def _extract_model_from_dispatch_summary(stem: str) -> str | None:
     return None
 
 
+def _remove_model_directory(item, label: str, dry_run: bool) -> None:
+    """Loescht ein Verzeichnis im 'rmtree'-Pfad mit Logging/Error-Handling.
+
+    Shared helper for category-subdir + reviews cleanup.
+    """
+    print(f"   - Lösche {label}/{item.name}")
+    if not dry_run:
+        try:
+            shutil.rmtree(item)
+        except OSError as e:
+            print(f"     ❌ Fehler beim Löschen von {item.name}: {e}")
+
+
+def _remove_model_file(item, label: str, dry_run: bool) -> None:
+    """Loescht eine Datei mit Logging/Error-Handling.
+
+    Shared helper for results_* + dispatch_summaries cleanup.
+    """
+    print(f"   - Lösche {label}/{item.name}")
+    if not dry_run:
+        try:
+            item.unlink()
+        except OSError as e:
+            print(f"     ❌ Fehler beim Löschen von {item.name}: {e}")
+
+
+def _item_matches_variant(item_name: str, variants_norm: set[str]) -> bool:
+    """Variant-aware Match für Verzeichnis-/Dateinamen gegen die Model-Norm-Set."""
+    item_norm = _norm_dir(item_name)
+    return item_norm in variants_norm or any(
+        item_norm.endswith(f"_{v}") for v in variants_norm
+    )
+
+
+def _scan_category_subdirs(
+    base_dir: Path, category: str, variants_norm: set[str], dry_run: bool
+) -> None:
+    """Loescht modell-spezifische Sub-Directories einer outputs/-Kategorie."""
+    for item in base_dir.iterdir():
+        if not item.is_dir() or item.name in (".gitkeep", ".DS_Store"):
+            continue
+        if _item_matches_variant(item.name, variants_norm):
+            _remove_model_directory(item, category, dry_run)
+
+
+def _extract_model_part_from_results_name(name: str) -> str | None:
+    """Extrahiert den Modell-Slug aus einem ``results_<model>_<date>.json``-Namen."""
+    rest = name[len("results_"):]
+    date_match = re.search(r"_\d{8}_\d{6}\.json$", rest)
+    if date_match:
+        return rest[:date_match.start()]
+    return rest.replace(".json", "")
+
+
+def _scan_results_files(
+    base_dir: Path, category: str, variants_norm: set[str], dry_run: bool
+) -> None:
+    """Loescht ``results_<model>_<date>.json``-Dateien in outputs/runs/."""
+    for item in base_dir.iterdir():
+        if not item.is_file() or item.name == ".gitkeep":
+            continue
+        if not item.name.startswith("results_"):
+            continue
+        model_part = _extract_model_part_from_results_name(item.name)
+        if _norm_dir(model_part) in variants_norm:
+            _remove_model_file(item, category, dry_run)
+
+
+def _scan_dispatch_summaries(
+    ds_dir: Path, category: str, variants_norm: set[str], dry_run: bool
+) -> None:
+    """Loescht dispatch_summary-Dateien, deren Modell-Slug zu den Varianten passt."""
+    for item in ds_dir.iterdir():
+        if not item.is_file():
+            continue
+        model_part = _extract_model_from_dispatch_summary(item.stem)
+        if model_part is None:
+            continue
+        if _norm_dir(model_part) in variants_norm:
+            _remove_model_file(item, f"{category}/dispatch_summaries", dry_run)
+
+
+def _scan_reviews_dir(variants_norm: set[str], dry_run: bool) -> None:
+    """Loescht modell-spezifische Verzeichnisse unter docs/reviews/."""
+    reviews_dir = ROOT_DIR / "docs" / "reviews"
+    if not reviews_dir.exists():
+        return
+    for item in reviews_dir.iterdir():
+        if not item.is_dir() or item.name in (".gitkeep", ".DS_Store"):
+            continue
+        if _item_matches_variant(item.name, variants_norm):
+            _remove_model_directory(item, "docs/reviews", dry_run)
+
+
 def clean_model_output_directories(model: str, dry_run: bool = False):
     """Löscht modellspezifische Verzeichnisse aus outputs/ (audit_logs, comparisons, runs)
     und docs/reviews/.
@@ -384,90 +488,84 @@ def clean_model_output_directories(model: str, dry_run: bool = False):
     if len(variants) > 1:
         print(f"   Varianten: {', '.join(sorted(variants))}")
 
-    def _matches(item_name: str) -> bool:
-        """Prueft ob ein Verzeichnis-/Dateiname zum Modell passt (variant-aware)."""
-        item_norm = _norm_dir(item_name)
-        return item_norm in variants_norm or any(
-            item_norm.endswith(f"_{v}") for v in variants_norm
-        )
-
     for category in ["audit_logs", "comparisons", "runs"]:
         base_dir = ROOT_DIR / "outputs" / category
         if not base_dir.exists():
             continue
-
-        # 1. Sub-Directories (z.B. outputs/audit_logs/<model>/)
-        for item in base_dir.iterdir():
-            if not item.is_dir() or item.name in (".gitkeep", ".DS_Store"):
-                continue
-            if _matches(item.name):
-                print(f"   - Lösche {category}/{item.name}")
-                if not dry_run:
-                    try:
-                        shutil.rmtree(item)
-                    except OSError as e:
-                        print(f"     ❌ Fehler beim Löschen von {item.name}: {e}")
-
-        # 2. Files in outputs/runs/ (results_<model>_<date>.json)
+        _scan_category_subdirs(base_dir, category, variants_norm, dry_run)
         if category == "runs":
-            for item in base_dir.iterdir():
-                if not item.is_file():
-                    continue
-                if item.name in (".gitkeep",):
-                    continue
-                # results_*.json haben Format: results_<model>_<YYYYMMDD>_<HHMMSS>.json
-                # Wir muessen den model-Teil extrahieren
-                if item.name.startswith("results_"):
-                    # Schneide 'results_' Praefix und Datums-Suffix ab
-                    rest = item.name[len("results_"):]
-                    # Datums-Suffix: _YYYYMMDD_HHMMSS.json
-                    date_match = re.search(r"_\d{8}_\d{6}\.json$", rest)
-                    if date_match:
-                        model_part = rest[:date_match.start()]
-                    else:
-                        model_part = rest.replace(".json", "")
-                    if _norm_dir(model_part) in variants_norm:
-                        print(f"   - Lösche {category}/{item.name}")
-                        if not dry_run:
-                            try:
-                                item.unlink()
-                            except OSError as e:
-                                print(f"     ❌ Fehler beim Löschen von {item.name}: {e}")
-
-            # 3. dispatch_summaries/ Subdir
+            _scan_results_files(base_dir, category, variants_norm, dry_run)
             ds_dir = base_dir / "dispatch_summaries"
             if ds_dir.exists():
-                for item in ds_dir.iterdir():
-                    if not item.is_file():
-                        continue
-                    # Extrahiere Modell-Anteil (variant-aware über _extract_model_from_dispatch_summary)
-                    model_part = _extract_model_from_dispatch_summary(item.stem)
-                    if model_part is None:
-                        continue
-                    if _norm_dir(model_part) in variants_norm:
-                        print(f"   - Lösche {category}/dispatch_summaries/{item.name}")
-                        if not dry_run:
-                            try:
-                                item.unlink()
-                            except OSError as e:
-                                print(f"     ❌ Fehler beim Löschen von {item.name}: {e}")
+                _scan_dispatch_summaries(ds_dir, category, variants_norm, dry_run)
 
-    reviews_dir = ROOT_DIR / "docs" / "reviews"
-    if reviews_dir.exists():
-        for item in reviews_dir.iterdir():
-            if not item.is_dir() or item.name in (".gitkeep", ".DS_Store"):
-                continue
-            item_norm = _norm_dir(item.name)
-            matched = item_norm in variants_norm or any(
-                item_norm.endswith(f"_{v}") for v in variants_norm
-            )
-            if matched:
-                print(f"   - Lösche docs/reviews/{item.name}")
-                if not dry_run:
-                    try:
-                        shutil.rmtree(item)
-                    except OSError as e:
-                        print(f"     ❌ Fehler beim Löschen von {item.name}: {e}")
+    _scan_reviews_dir(variants_norm, dry_run)
+
+
+def _collect_cards_by_direct_filename(safe_variants: set[str]) -> set[Path]:
+    """Sammelt Karten via direkter Dateinamen-Match (z.B. ``<slug>.json``)."""
+    out: set[Path] = set()
+    for sv in safe_variants:
+        p = CARD_DIR / f"{sv}.json"
+        if p.exists():
+            out.add(p.resolve())
+    return out
+
+
+def _collect_cards_by_find_card(variants: set[str]) -> set[Path]:
+    """Sammelt Karten via ``_find_card`` (beruecksichtigt Prefixed-Pfade)."""
+    out: set[Path] = set()
+    for v in variants:
+        try:
+            p = _find_card(v)
+            if p.exists():
+                out.add(p.resolve())
+        except Exception:  # noqa: BLE001
+            pass
+    return out
+
+
+def _collect_cards_by_glob(safe_variants: set[str]) -> set[Path]:
+    """Sammelt Karten via Glob-Prefix (fuer date-suffixed Cards)."""
+    out: set[Path] = set()
+    for sv in safe_variants:
+        for p in CARD_DIR.glob(f"{sv}*.json"):
+            out.add(p.resolve())
+    return out
+
+
+def _collect_cards_by_model_id_content(safe_variants: set[str]) -> set[Path]:
+    """Sammelt Cards, deren Inhalt eine Variante als ``model_id`` enthaelt.
+
+    Z.B. Dateiname ``grok-4-1-fast-reasoning.json`` aber
+    model_id=``grok-4.1-fast-reasoning`` im Inhalt.
+    """
+    out: set[Path] = set()
+    for card_file in CARD_DIR.glob("*.json"):
+        try:
+            import json as _json
+            data = _json.loads(card_file.read_text(encoding="utf-8"))
+            card_mid = data.get("model_id", "")
+            if card_mid and _safe_name(card_mid) in safe_variants:
+                out.add(card_file.resolve())
+        except Exception:  # noqa: BLE001
+            continue
+    return out
+
+
+def _delete_card_paths(cards_to_delete: set[Path], model: str, dry_run: bool) -> None:
+    """Loescht die gesammelten Card-Pfade mit Logging und Error-Handling."""
+    for card_path in sorted(cards_to_delete):
+        try:
+            display = card_path.relative_to(ROOT_DIR)
+        except ValueError:
+            display = card_path
+        print(f"   - Lösche model_card: {display}")
+        if not dry_run:
+            try:
+                card_path.unlink()
+            except OSError as e:
+                print(f"     ❌ Fehler beim Löschen: {e}")
 
 
 def clean_model_card(model: str, dry_run: bool = False):
@@ -483,57 +581,20 @@ def clean_model_card(model: str, dry_run: bool = False):
     safe_variants = {_safe_name(v) for v in variants}
 
     cards_to_delete: set[Path] = set()
-
-    # 1. Direkte Dateinamen-Matches fuer alle safe-Name-Varianten
-    for sv in safe_variants:
-        p = CARD_DIR / f"{sv}.json"
-        if p.exists():
-            cards_to_delete.add(p.resolve())
-
-    # 2. _find_card fuer jede Variante (beruecksichtigt Prefixed-Pfade)
-    for v in variants:
-        try:
-            p = _find_card(v)
-            if p.exists():
-                cards_to_delete.add(p.resolve())
-        except Exception:  # noqa: BLE001
-            pass
-
-    # 3. Glob-Fallback: Dateien deren Name mit einer safe-Variante beginnt
-    #    (fuer date-suffixed cards wie grok-4-1-fast-reasoning-20260422.json)
-    for sv in safe_variants:
-        for p in CARD_DIR.glob(f"{sv}*.json"):
-            cards_to_delete.add(p.resolve())
+    cards_to_delete |= _collect_cards_by_direct_filename(safe_variants)
+    cards_to_delete |= _collect_cards_by_find_card(variants)
+    cards_to_delete |= _collect_cards_by_glob(safe_variants)
 
     # 4. Dateinamen-Matching: Auch Cards finden, die eine Schreibweise
-    #    des model_id-FELDS enthalten (z.B. Dateiname "grok-4-1-fast-reasoning.json"
-    #    aber model_id="grok-4.1-fast-reasoning" im Inhalt)
+    #    des model_id-FELDS enthalten (Fallback wenn 1-3 nichts finden).
     if not cards_to_delete:
-        for card_file in CARD_DIR.glob("*.json"):
-            try:
-                import json as _json
-                data = _json.loads(card_file.read_text(encoding="utf-8"))
-                card_mid = data.get("model_id", "")
-                if card_mid and _safe_name(card_mid) in safe_variants:
-                    cards_to_delete.add(card_file.resolve())
-            except Exception:  # noqa: BLE001
-                continue
+        cards_to_delete |= _collect_cards_by_model_id_content(safe_variants)
 
     if not cards_to_delete:
         print(f"   - model_card: keine Card für '{model}' gefunden.")
         return
 
-    for card_path in sorted(cards_to_delete):
-        try:
-            display = card_path.relative_to(ROOT_DIR)
-        except ValueError:
-            display = card_path
-        print(f"   - Lösche model_card: {display}")
-        if not dry_run:
-            try:
-                card_path.unlink()
-            except OSError as e:
-                print(f"     ❌ Fehler beim Löschen: {e}")
+    _delete_card_paths(cards_to_delete, model, dry_run)
 
 def clean_csv(
     file_path: Path,
@@ -681,52 +742,105 @@ def _dead_model_info(model: str) -> None:
             pass
 
 
+def _run_prune_orphans(args) -> None:
+    """Prune-Orphans-Submodus: sucht und loescht verwaiste Report-Verzeichnisse.
+
+    Wird von :func:`_run_clean_logic` aufgerufen wenn ``args.prune_orphans`` gesetzt
+    ist und kehrt vor dem normalen Clean-Flow zurueck.
+    """
+    from scripts.maintenance.prune_orphaned_reports import (
+        find_orphaned_dirs,
+        load_known_model_ids,
+    )
+
+    dry_run = args.dry_run
+    known_ids = load_known_model_ids()
+    orphaned = find_orphaned_dirs(known_ids)
+
+    if not orphaned:
+        print("✅ Keine verwaisten Report-Verzeichnisse gefunden.")
+        return
+
+    mode_label = "[DRY RUN] " if dry_run else ""
+    print(f"\n{mode_label}Verwaiste Verzeichnisse:\n")
+    for d in orphaned:
+        size_kb = sum(f.stat().st_size for f in d.rglob("*") if f.is_file()) // 1024
+        print(f"  🗑️  {d.relative_to(ROOT_DIR)}  ({size_kb} KB)")
+    print(f"\nGesamt: {len(orphaned)} Verzeichnisse")
+
+    if dry_run:
+        print("\nℹ️  Dry-Run — mit --delete + --prune-orphans wirklich löschen.")
+        return
+
+    if not args.force:
+        confirm = input("⚠️  Alle löschen? [y/N]: ").strip().lower()
+        if confirm not in ("y", "yes", "j", "ja"):
+            print("❌ Abbruch.")
+            return
+
+    deleted = 0
+    errors = 0
+    for d in orphaned:
+        try:
+            shutil.rmtree(d)
+            print(f"   ✅ Gelöscht: {d.relative_to(ROOT_DIR)}")
+            deleted += 1
+        except OSError as e:
+            print(f"   ❌ Fehler bei {d.name}: {e}")
+            errors += 1
+    print(f"\n{'✅' if errors == 0 else '⚠️'} Fertig: {deleted} gelöscht, {errors} Fehler.")
+
+
+def _clean_tooluse_module(dry_run: bool) -> None:
+    """Bereinigt das tooluse-Modul als Ganzes (Header-only + jsonl komplett leeren)."""
+    lb_path = Path("benchmark_scores/tooluse_leaderboard.csv")
+    if lb_path.exists():
+        import pandas as pd  # pylint: disable=import-outside-toplevel
+        header_df = pd.read_csv(lb_path).iloc[0:0]
+        print(f"   - tooluse_leaderboard.csv: komplette Bereinigung ({len(pd.read_csv(lb_path))} Zeilen) ...")
+        if not dry_run:
+            header_df.to_csv(lb_path, index=False)
+            print("     ✅ Gespeichert.")
+        else:
+            print("     (Dry Run - keine Änderung)")
+    clean_tooluse_metrics_jsonl(model=None, dry_run=dry_run)
+
+
+def _resolve_target_assets(args) -> list[str]:
+    """Loest Asset-IDs fuer ``args.module`` auf und loggt das Ergebnis.
+
+    Returns leere Liste wenn kein Modul angegeben oder keine Assets gefunden.
+    """
+    if not args.module:
+        return []
+    print(f"🔍 Suche Assets für Modul '{args.module}'...")
+    assets = get_module_asset_ids(args.module)
+    if not assets:
+        print("   Keine Assets gefunden oder Modul existiert nicht.")
+        return []
+    print(f"   Gefundene Asset-IDs: {len(assets)} (z.B. {assets[:3]}...)")
+    return assets
+
+
+def _run_model_artifact_cleanup(args) -> None:
+    """Fuehrt alle modell-spezifischen Cleanup-Schritte aus.
+
+    Reihenfolge bewusst: CSVs brauchen die Card (resolve_canonical_model_id),
+    Cards werden daher ZULETZT geloescht.
+    """
+    clean_model_output_directories(model=args.model, dry_run=args.dry_run)
+    clean_cost_log(model=args.model, dry_run=args.dry_run)
+    clean_tooluse_metrics_jsonl(model=args.model, dry_run=args.dry_run)
+    # Cards ZULETZT löschen (nach CSV-Bereinigung).
+    clean_model_card(model=args.model, dry_run=args.dry_run)
+
+
 def _run_clean_logic(args) -> None:
     """Phase 28: Ausgelagerte Clean-Logik, geteilt zwischen main() und main_with_args()."""
 
     # Separater Modus: Verwaiste Reports aufräumen
     if args.prune_orphans:
-        from scripts.maintenance.prune_orphaned_reports import (
-            find_orphaned_dirs,
-            load_known_model_ids,
-        )
-
-        dry_run = args.dry_run
-        known_ids = load_known_model_ids()
-        orphaned = find_orphaned_dirs(known_ids)
-
-        if not orphaned:
-            print("✅ Keine verwaisten Report-Verzeichnisse gefunden.")
-            return
-
-        mode_label = "[DRY RUN] " if dry_run else ""
-        print(f"\n{mode_label}Verwaiste Verzeichnisse:\n")
-        for d in orphaned:
-            size_kb = sum(f.stat().st_size for f in d.rglob("*") if f.is_file()) // 1024
-            print(f"  🗑️  {d.relative_to(ROOT_DIR)}  ({size_kb} KB)")
-        print(f"\nGesamt: {len(orphaned)} Verzeichnisse")
-
-        if dry_run:
-            print("\nℹ️  Dry-Run — mit --delete + --prune-orphans wirklich löschen.")
-            return
-
-        if not args.force:
-            confirm = input("⚠️  Alle löschen? [y/N]: ").strip().lower()
-            if confirm not in ("y", "yes", "j", "ja"):
-                print("❌ Abbruch.")
-                return
-
-        deleted = 0
-        errors = 0
-        for d in orphaned:
-            try:
-                shutil.rmtree(d)
-                print(f"   ✅ Gelöscht: {d.relative_to(ROOT_DIR)}")
-                deleted += 1
-            except OSError as e:
-                print(f"   ❌ Fehler bei {d.name}: {e}")
-                errors += 1
-        print(f"\n{'✅' if errors == 0 else '⚠️'} Fertig: {deleted} gelöscht, {errors} Fehler.")
+        _run_prune_orphans(args)
         return
 
     if not args.model and not args.module:
@@ -741,59 +855,22 @@ def _run_clean_logic(args) -> None:
     if args.model:
         _dead_model_info(args.model)
 
-    # Asset IDs auflösen, falls Modul angegeben
-    target_assets = []
-    if args.module:
-        print(f"🔍 Suche Assets für Modul '{args.module}'...")
-        target_assets = get_module_asset_ids(args.module)
-        if not target_assets:
-            print("   Keine Assets gefunden oder Modul existiert nicht.")
-            # Wir machen weiter, vielleicht ist nur der Name falsch, aber clean csv logik skipped dann eh
-        else:
-            print(
-                f"   Gefundene Asset-IDs: {len(target_assets)} (z.B. {target_assets[:3]}...)"
-            )
+    target_assets = _resolve_target_assets(args)
 
     # Checkpoints und Debug-Files bereinigen
     clean_checkpoints(model=args.model, module_key=args.module, dry_run=args.dry_run)
 
-    # Modellspezifische Verzeichnisse löschen (falls Modell angegeben)
-    # (audit_logs, comparisons, runs, reviews — variant-aware)
-    if args.model:
-        clean_model_output_directories(model=args.model, dry_run=args.dry_run)
-
-    # Phase 29: CSVs ZUERST bereinigen (braucht Cards für resolve_canonical_model_id).
-    # Reihenfolge: Benchmark-CSVs → PC-CSVs → Leaderboards → cost_log.
+    # Phase 29: CSVs ZUERST bereinigen (brauchen Cards fuer resolve_canonical_model_id).
+    # Reihenfolge: Benchmark-CSVs → PC-CSVs → Leaderboards.
     for f in CLEAN_CSV_FILES:
         clean_csv(f, model=args.model, asset_ids=target_assets, dry_run=args.dry_run)
-
     for f in LEADERBOARD_CSVS:
         clean_csv(f, model=args.model, dry_run=args.dry_run)
 
     if args.model:
-        clean_cost_log(model=args.model, dry_run=args.dry_run)
-
-    # tooluse_metrics.jsonl: model-basiert oder komplett (bei --module tooluse)
-    if args.model:
-        clean_tooluse_metrics_jsonl(model=args.model, dry_run=args.dry_run)
+        _run_model_artifact_cleanup(args)
     elif args.module == "tooluse":
-        # tooluse-Leaderboard auf Header reduzieren (alle Zeilen gehören zum Modul)
-        lb_path = Path("benchmark_scores/tooluse_leaderboard.csv")
-        if lb_path.exists():
-            import pandas as pd  # pylint: disable=import-outside-toplevel
-            header_df = pd.read_csv(lb_path).iloc[0:0]  # nur Header, keine Zeilen
-            print(f"   - tooluse_leaderboard.csv: komplette Bereinigung ({len(pd.read_csv(lb_path))} Zeilen) ...")
-            if not args.dry_run:
-                header_df.to_csv(lb_path, index=False)
-                print("     ✅ Gespeichert.")
-            else:
-                print("     (Dry Run - keine Änderung)")
-        clean_tooluse_metrics_jsonl(model=None, dry_run=args.dry_run)
-
-    # Cards ZULETZT löschen (nach CSV-Bereinigung, da resolve_canonical_model_id
-    # die Card fuer die Varianten-Aufloesung braucht).
-    if args.model:
-        clean_model_card(model=args.model, dry_run=args.dry_run)
+        _clean_tooluse_module(args.dry_run)
 
     # Leaderboard Update triggern, wenn nicht dry run
     if not args.dry_run:

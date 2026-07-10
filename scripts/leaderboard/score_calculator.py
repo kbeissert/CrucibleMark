@@ -23,31 +23,17 @@ if str(ROOT_DIR) not in sys.path:
 # 1b. PRICE LOOKUP (from model cards, cost_limits.yaml as legacy fallback)
 # ==============================================================================
 
-def _build_price_lookup() -> dict[str, float]:
-    """
-    Builds a flat {model_id: output_cost_per_1k} dict.
+# Whitelist der "rein lokalen" deployment_types. Hybrid-Typen wie
+# "open-weights-cloud-available" oder "cloud-and-local" zählen NICHT als
+# lokal — diese Modelle haben einen Cloud-Preis und sollen nur diesen zeigen.
+_LOCAL_DEPLOYMENT_TYPES = frozenset({"localweights", "local-weights"})
 
-    Primary source: model card JSON files (benchmark_scores/model_cards/*.json).
-    Legacy fallback: cost_limits.yaml entries for models without a card yet.
-    Card prices take precedence; cost_limits.yaml is only used for models
-    not yet covered by a card (e.g. cloud proxies, uncommon models).
 
-    Defense-in-Depth: Cards with deployment_type in LOCAL_DEPLOYMENT_TYPES
-    (e.g. "localweights") default to 0.0 if output_price_per_1m is missing
-    or null. Lokale Modelle haben keine API-Kosten — eine leere Preis-Zelle
-    verfälscht die Benchmark-Cost-Berechnung.
-    """
+def _load_card_prices(lookup: dict[str, float]) -> None:
+    """Reads model cards (primary SSoT) and populates lookup in-place."""
     import json as _json
 
-    # Whitelist der "rein lokalen" deployment_types. Hybrid-Typen wie
-    # "open-weights-cloud-available" oder "cloud-and-local" zählen NICHT als
-    # lokal — diese Modelle haben einen Cloud-Preis und sollen nur diesen zeigen.
-    LOCAL_DEPLOYMENT_TYPES = frozenset({"localweights", "local-weights"})
-
     card_dir = ROOT_DIR / "benchmark_scores" / "model_cards"
-    lookup: dict[str, float] = {}
-
-    # 1. Model cards (primary SSoT)
     for card_path in card_dir.glob("*.json"):
         try:
             with open(card_path, encoding="utf-8") as f:
@@ -60,13 +46,15 @@ def _build_price_lookup() -> dict[str, float]:
             price_per_m = card.get("output_price_per_1m")
             if isinstance(price_per_m, (int, float)):
                 lookup[model_id] = float(price_per_m) / 1000.0
-            elif card.get("deployment_type") in LOCAL_DEPLOYMENT_TYPES:
+            elif card.get("deployment_type") in _LOCAL_DEPLOYMENT_TYPES:
                 # Lokales Modell ohne expliziten Preis → 0.0 (Defense-in-Depth)
                 lookup[model_id] = 0.0
         except (OSError, _json.JSONDecodeError):
             continue
 
-    # 2. cost_limits.yaml legacy fallback (models not yet in a card)
+
+def _load_cost_limits_prices(lookup: dict[str, float]) -> None:
+    """Legacy fallback: cost_limits.yaml entries for models not yet in a card."""
     cost_limits_path = ROOT_DIR / "config" / "cost_limits.yaml"
     try:
         with open(cost_limits_path, encoding="utf-8") as f:
@@ -84,6 +72,24 @@ def _build_price_lookup() -> dict[str, float]:
     except (OSError, yaml.YAMLError):
         pass
 
+
+def _build_price_lookup() -> dict[str, float]:
+    """
+    Builds a flat {model_id: output_cost_per_1k} dict.
+
+    Primary source: model card JSON files (benchmark_scores/model_cards/*.json).
+    Legacy fallback: cost_limits.yaml entries for models without a card yet.
+    Card prices take precedence; cost_limits.yaml is only used for models
+    not yet covered by a card (e.g. cloud proxies, uncommon models).
+
+    Defense-in-Depth: Cards with deployment_type in LOCAL_DEPLOYMENT_TYPES
+    (e.g. "localweights") default to 0.0 if output_price_per_1m is missing
+    or null. Lokale Modelle haben keine API-Kosten — eine leere Preis-Zelle
+    verfälscht die Benchmark-Cost-Berechnung.
+    """
+    lookup: dict[str, float] = {}
+    _load_card_prices(lookup)
+    _load_cost_limits_prices(lookup)
     return lookup
 
 
@@ -313,39 +319,35 @@ def _calculate_group_scores(
 # ==============================================================================
 
 
-def _aggregate_basic_stats(
-    df: pd.DataFrame, modules_config: dict[str, Any]
-) -> pd.DataFrame:
-    """Aggregates percentage, time and counts. Handles non-scoring modules correctly."""
+def _build_scoring_category_map(
+    modules_config: dict[str, Any]
+) -> dict[str, bool]:
+    """Maps module category name → enable_scoring flag."""
+    return {
+        mod_data.get("name", mod_key): mod_data.get("enable_scoring", True)
+        for mod_key, mod_data in modules_config.items()
+    }
 
-    # Filter for scoring assets only
-    cat_to_scoring = {}
-    for mod_key, mod_data in modules_config.items():
-        name = mod_data.get("name", mod_key)
-        cat_to_scoring[name] = mod_data.get("enable_scoring", True)
 
-    def is_scoring_asset(row):
-        cat = row.get("category", "")
-        return cat_to_scoring.get(cat, True)
-
-    # Ensure numeric columns for aggregation (Fix: prevent string concatenation in sum)
-    cols_to_numeric = ["execution_time", "cost_usd", "tokens_used", "tokens_per_second", "load_time"]
+def _normalize_numeric_columns(df: pd.DataFrame) -> None:
+    """Coerce numeric aggregation columns in-place; prevents string-concat in sum."""
+    cols_to_numeric = [
+        "execution_time",
+        "cost_usd",
+        "tokens_used",
+        "tokens_per_second",
+        "load_time",
+    ]
     for col in cols_to_numeric:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
-
     if "llm_judge_score" in df.columns:
         df["llm_judge_score"] = pd.to_numeric(df["llm_judge_score"], errors="coerce")
 
-    # 1. Base Stats (Presence, Time) - From ALL valid runs (scoring + info)
 
-    # SPLIT AGGREGATION:
-    # - Execution Time: Excluding "System" probes (to avoid skewing averages with 0.1s dummy values)
-    # - Load Time: Using ALL rows (System probe carries the Max Load Time)
-
-    # A) Standard Metrics (without System Probe)
+def _agg_standard_metrics(df: pd.DataFrame) -> pd.DataFrame:
+    """Aggregates standard metrics (execution_time, cost, tokens) excluding 'System'."""
     df_metrics = df[df["category"] != "System"].copy()
-
     base_aggs = {"execution_time": "mean", "asset_id": "count"}
 
     if "cost_usd" in df_metrics.columns:
@@ -358,31 +360,27 @@ def _aggregate_basic_stats(
         )
         base_aggs["tokens_per_second"] = "mean"
 
-    stats_metrics = (
+    return (
         df_metrics.groupby(["model", "model_version", "type"])
         .agg(base_aggs)
         .reset_index()
     )
 
-    # B) Load Time (Include System Probe because it has the Cold Start data)
-    stats_load = pd.DataFrame()
-    if "load_time" in df.columns:
-        stats_load = (
-            df.groupby(["model", "model_version", "type"])["load_time"]
-            .max()
-            .reset_index()
-        )
 
-    # Merge results if load stats exist
-    if not stats_load.empty:
-        base_stats = pd.merge(
-            stats_metrics, stats_load, on=["model", "model_version", "type"], how="left"
-        )
-    else:
-        base_stats = stats_metrics
+def _agg_load_time(df: pd.DataFrame) -> pd.DataFrame:
+    """Aggregates max load_time per (model, version, type); empty DF if no column."""
+    if "load_time" not in df.columns:
+        return pd.DataFrame()
+    return (
+        df.groupby(["model", "model_version", "type"])["load_time"]
+        .max()
+        .reset_index()
+    )
 
-    # Enhanced Time Stats (Max, P95, P99, Timeouts)
-    # Define custom aggregation functions
+
+def _agg_time_stats(df: pd.DataFrame) -> pd.DataFrame:
+    """Aggregates rigorous execution_time stats (mean, max, p95, p99, timeouts)."""
+
     def p95(x):
         return x.quantile(0.95)
 
@@ -392,13 +390,7 @@ def _aggregate_basic_stats(
     def count_timeouts(x):
         return (x > 120.0).sum()
 
-    # Create separate stats for time to avoid complex multi-index flattening
-    # time_aggs = {
-    #    "execution_time": ["mean", "max", p95, p99, count_timeouts]
-    # }
-
-    # Calculate rigorous time stats
-    time_stats = (
+    return (
         df.groupby(["model", "model_version", "type"])["execution_time"]
         .agg(
             Avg_Time="mean",
@@ -410,12 +402,13 @@ def _aggregate_basic_stats(
         .reset_index()
     )
 
-    # Merge time stats into base stats
-    base_stats = pd.merge(base_stats, time_stats, on=["model", "model_version", "type"])
 
-    # 2. Scoring Stats (Percentage) - From SCORING runs only
-    scoring_df = df[df.apply(is_scoring_asset, axis=1)]
-
+def _merge_scoring_stats(
+    base_stats: pd.DataFrame,
+    df: pd.DataFrame,
+    scoring_df: pd.DataFrame,
+) -> pd.DataFrame:
+    """Merges scoring-only percentage stats into base_stats; fills default 0.0 fallback."""
     if not scoring_df.empty:
         score_aggs = {"percentage": "mean"}
         if "performance_ratio" in df.columns:
@@ -426,64 +419,118 @@ def _aggregate_basic_stats(
             .agg(score_aggs)
             .reset_index()
         )
-        # Merge scoring stats into base stats
         stats = pd.merge(
             base_stats, score_stats, on=["model", "model_version", "type"], how="left"
         )
     else:
-        stats = base_stats
+        stats = base_stats.copy()
         stats["percentage"] = 0.0
         if "performance_ratio" in df.columns:
             stats["performance_ratio"] = 0.0
 
-    # Fill NaNs (for models with only info modules)
     if "percentage" in stats.columns:
         stats["percentage"] = stats["percentage"].fillna(0.0)
     if "performance_ratio" in stats.columns:
         stats["performance_ratio"] = stats["performance_ratio"].fillna(0.0)
+    return stats
 
-    # 3. Judge Stats - From valid/applicable runs only
-    if "llm_judge_score" in df.columns:
-        # Load applicable_modules from config
-        llm_judge_cfg = config.get("llm_judge", {})
-        applicable_modules = llm_judge_cfg.get("applicable_modules", [])
 
-        # Map module UUIDs to their category names
-        applicable_categories = set()
-        for mod_key, mod_data in modules_config.items():
-            if mod_key in applicable_modules:
-                name = mod_data.get("name", mod_key)
-                applicable_categories.add(name)
+def _build_judge_applicable_categories(
+    modules_config: dict[str, Any]
+) -> set[str]:
+    """Returns set of category names whose module UUID is in llm_judge.applicable_modules."""
+    llm_judge_cfg = config.get("llm_judge", {})
+    applicable_modules = llm_judge_cfg.get("applicable_modules", [])
+    applicable_categories: set[str] = set()
+    for mod_key, mod_data in modules_config.items():
+        if mod_key in applicable_modules:
+            name = mod_data.get("name", mod_key)
+            applicable_categories.add(name)
+    return applicable_categories
 
-        # Filter dataframe for coverage and mean computation
-        df_judge = df[df["category"].isin(applicable_categories)]
 
-        # Judge-Skip-Zeilen aus Coverage-Berechnung ausschließen:
-        # judge_progress_status=⚠️ Judge: skip (zu kurz/abgelehnt) bedeutet absichtlich
-        # übersprungen, nicht fehlgeschlagen → zählt nicht gegen Coverage.
-        if "judge_progress_status" in df_judge.columns:
-            df_judge = df_judge[
-                ~df_judge["judge_progress_status"].str.contains("skip", na=False, case=False)
-            ]
-
-        def calc_coverage(x):
-            return x.notna().sum() / len(x) if len(x) > 0 else 0.0
-
-        judge_stats = (
-            df_judge.groupby(["model", "model_version", "type"])["llm_judge_score"]
-            .agg(llm_judge_avg="mean", judge_coverage=calc_coverage)
-            .reset_index()
-        )
-        stats = pd.merge(
-            stats, judge_stats, on=["model", "model_version", "type"], how="left"
-        )
-        # Ensure we fill judge_coverage with 0.0 if not available for a model
-        stats["judge_coverage"] = stats["judge_coverage"].fillna(0.0)
-    else:
+def _merge_judge_stats(
+    stats: pd.DataFrame,
+    df: pd.DataFrame,
+    modules_config: dict[str, Any],
+) -> pd.DataFrame:
+    """Merges llm_judge avg+coverage stats; skips rows with judge_progress_status=skip."""
+    if "llm_judge_score" not in df.columns:
         stats["llm_judge_avg"] = None
         stats["judge_coverage"] = 0.0
+        return stats
 
+    applicable_categories = _build_judge_applicable_categories(modules_config)
+    df_judge = df[df["category"].isin(applicable_categories)]
+
+    # Judge-Skip-Zeilen aus Coverage-Berechnung ausschließen:
+    # judge_progress_status=⚠️ Judge: skip (zu kurz/abgelehnt) bedeutet absichtlich
+    # übersprungen, nicht fehlgeschlagen → zählt nicht gegen Coverage.
+    if "judge_progress_status" in df_judge.columns:
+        df_judge = df_judge[
+            ~df_judge["judge_progress_status"].str.contains("skip", na=False, case=False)
+        ]
+
+    def calc_coverage(x):
+        return x.notna().sum() / len(x) if len(x) > 0 else 0.0
+
+    judge_stats = (
+        df_judge.groupby(["model", "model_version", "type"])["llm_judge_score"]
+        .agg(llm_judge_avg="mean", judge_coverage=calc_coverage)
+        .reset_index()
+    )
+    stats = pd.merge(
+        stats, judge_stats, on=["model", "model_version", "type"], how="left"
+    )
+    # Ensure we fill judge_coverage with 0.0 if not available for a model
+    stats["judge_coverage"] = stats["judge_coverage"].fillna(0.0)
     return stats
+
+
+def _aggregate_basic_stats(
+    df: pd.DataFrame, modules_config: dict[str, Any]
+) -> pd.DataFrame:
+    """Aggregates percentage, time and counts. Handles non-scoring modules correctly."""
+
+    cat_to_scoring = _build_scoring_category_map(modules_config)
+
+    def is_scoring_asset(row):
+        cat = row.get("category", "")
+        return cat_to_scoring.get(cat, True)
+
+    _normalize_numeric_columns(df)
+
+    # 1. Base Stats (Presence, Time) - From ALL valid runs (scoring + info)
+
+    # SPLIT AGGREGATION:
+    # - Execution Time: Excluding "System" probes (to avoid skewing averages with 0.1s dummy values)
+    # - Load Time: Using ALL rows (System probe carries the Max Load Time)
+
+    # A) Standard Metrics (without System Probe)
+    stats_metrics = _agg_standard_metrics(df)
+
+    # B) Load Time (Include System Probe because it has the Cold Start data)
+    stats_load = _agg_load_time(df)
+
+    # Merge results if load stats exist
+    if not stats_load.empty:
+        base_stats = pd.merge(
+            stats_metrics, stats_load, on=["model", "model_version", "type"], how="left"
+        )
+    else:
+        base_stats = stats_metrics
+
+    # Calculate rigorous time stats
+    time_stats = _agg_time_stats(df)
+    # Merge time stats into base stats
+    base_stats = pd.merge(base_stats, time_stats, on=["model", "model_version", "type"])
+
+    # 2. Scoring Stats (Percentage) - From SCORING runs only
+    scoring_df = df[df.apply(is_scoring_asset, axis=1)]
+    stats = _merge_scoring_stats(base_stats, df, scoring_df)
+
+    # 3. Judge Stats - From valid/applicable runs only
+    return _merge_judge_stats(stats, df, modules_config)
 
 
 def _calculate_run_counts(
@@ -595,81 +642,76 @@ def _calculate_stability_score(df: pd.DataFrame) -> pd.DataFrame:
 # ==============================================================================
 
 
-def calculate_scores(
+# Statuses counted as valid completions (treated as non-error by the runner).
+_VALID_STATUSES = frozenset(
+    {"success", "language_mismatch", "truncated", "verbose_outlier", "refusal"}
+)
+
+
+def _resolve_category_for_asset(asset_id: str, modules_config: dict[str, Any]) -> str:
+    """Map asset_id to its module category name; special-case System probes."""
+    # Special Case: System Probes
+    if asset_id in ("system_warmup_probe", "warmup_probe"):
+        return "System"
+
+    for mod_key, mod_data in modules_config.items():
+        if "prefix" in mod_data and str(asset_id).startswith(
+            str(mod_data["prefix"])
+        ):
+            return str(mod_data.get("name", mod_key))
+        if str(asset_id).startswith(mod_key):
+            return str(mod_data.get("name", mod_key))
+    return "Other"
+
+
+def _prepare_input_data(
     df: pd.DataFrame, modules_config: dict[str, Any]
-) -> tuple[pd.DataFrame, pd.DataFrame]:
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    """Returns (df_all, df_success, scoring_df) after category+status filtering.
+
+    - df_all: all rows with assigned category and 'Other' filtered out
+    - df_success: subset with status in _VALID_STATUSES, plus performance_ratio
+    - scoring_df: subset of df_success with enable_scoring=True (same base as Total Score)
     """
-    Main entry point for scoring calculations.
-
-    Args:
-        df: Raw benchmark data (pandas DataFrame)
-        modules_config: Configuration dictionary for active modules
-
-    Returns:
-        Tuple[pd.DataFrame, pd.DataFrame]:
-            1. Main leaderboard stats (model-level)
-            2. Category stats (stats per module category)
-    """
-
     df_all = df.copy()
-
-    # --- Assign Categories ---
-    def get_category_name(asset_id: str) -> str:
-        # Special Case: System Probes
-        if asset_id in ("system_warmup_probe", "warmup_probe"):
-            return "System"
-
-        for mod_key, mod_data in modules_config.items():
-            if "prefix" in mod_data and str(asset_id).startswith(
-                str(mod_data["prefix"])
-            ):
-                return str(mod_data.get("name", mod_key))
-            if str(asset_id).startswith(mod_key):
-                return str(mod_data.get("name", mod_key))
-        return "Other"
-
-    df_all["category"] = df_all["asset_id"].apply(get_category_name)
+    df_all["category"] = df_all["asset_id"].apply(
+        lambda aid: _resolve_category_for_asset(aid, modules_config)
+    )
     # Filter "Other" but KEEP "System"
-    df_all = df_all[(df_all["category"] != "Other")]
+    df_all = df_all[df_all["category"] != "Other"]
 
-    # pylint: disable=too-many-locals,too-many-statements
-    # Include all valid completions in scoring (not just 'success').
-    # language_mismatch, truncated, verbose_outlier all carry real scores
-    # and are treated as non-error by the runner (unified_runner.py).
-    _valid_statuses = {"success", "language_mismatch", "truncated", "verbose_outlier", "refusal"}
-    df_success = df_all[df_all["status"].isin(_valid_statuses)].copy()
-    # --- Performance Ratio Calculation (Removed, using raw) ---
+    df_success = df_all[df_all["status"].isin(_VALID_STATUSES)].copy()
+    # Performance Ratio (kept equal to percentage; preserved for downstream compat)
     df_success["performance_ratio"] = df_success["percentage"]
 
-    # --- Aggregation ---
-    stats = _aggregate_basic_stats(df_success, modules_config)
-    # Note: uses Full DF (incl non-scoring)
-    run_counts = _calculate_run_counts(df_all, modules_config)
-
     # scoring_df: only assets from modules with enable_scoring=True (same base as Total Score)
-    cat_to_scoring = {
-        mod_data.get("name", mod_key): mod_data.get("enable_scoring", True)
-        for mod_key, mod_data in modules_config.items()
-    }
-    scoring_df = df_success[df_success["category"].map(lambda c: cat_to_scoring.get(c, True))]
+    cat_to_scoring = _build_scoring_category_map(modules_config)
+    scoring_df = df_success[
+        df_success["category"].map(lambda c: cat_to_scoring.get(c, True))
+    ]
+    return df_all, df_success, scoring_df
 
-    # Merge Counts
-    result = pd.merge(
-        stats, run_counts, on=["model", "model_version", "type"], how="left"
-    )
 
-    # Completion Status
+def _finalize_completion_status(result: pd.DataFrame) -> pd.DataFrame:
+    """Set is_complete + 'Tests Run' string column from expected_assets/logical_count."""
     # Using 'max' of expected_assets column, as it's constant
     expected = (
         result["expected_assets"].max() if "expected_assets" in result.columns else 0
     )
     result["is_complete"] = result["logical_count"] >= expected
     # Mypy safely converts logical count to string through apply to avoid + Series warning
-    result["Tests Run"] = result["logical_count"].apply(lambda x: str(int(x)) + "/" + str(expected))
+    result["Tests Run"] = result["logical_count"].apply(
+        lambda x: str(int(x)) + "/" + str(expected)
+    )
     if "expected_assets" in result.columns:
         result = result.drop(columns=["expected_assets"])
+    return result
 
-    # --- Category Stats ---
+
+def _add_category_breakdown(
+    result: pd.DataFrame, df_success: pd.DataFrame
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Adds per-category percentage breakdown; returns (result, cat_stats)."""
     cat_stats = (
         df_success.groupby(["model", "model_version", "category"])["percentage"]
         .mean()
@@ -677,11 +719,19 @@ def calculate_scores(
         .reset_index()
     )
     result = pd.merge(result, cat_stats, on=["model", "model_version"], how="left")
+    return result, cat_stats
 
-    # --- Override tokens_used with scoring-only total ---
-    # _aggregate_basic_stats() sums tokens across ALL non-system rows (incl. Political Compass).
-    # Overwrite here with scoring-only sum so that Tokens Total has the same static base
-    # as Total Score — re-test runs (e.g. Political Compass retests) don't distort the value.
+
+def _override_tokens_with_scoring_only(
+    result: pd.DataFrame, scoring_df: pd.DataFrame
+) -> pd.DataFrame:
+    """Override tokens_used total with scoring-only sum (same base as Total Score).
+
+    _aggregate_basic_stats() sums tokens across ALL non-system rows (incl. Political
+    Compass). Overwrite here with scoring-only sum so that Tokens Total has the same
+    static base as Total Score — re-test runs (e.g. Political Compass retests) don't
+    distort the value.
+    """
     if "tokens_used" in scoring_df.columns and "tokens_used" in result.columns:
         token_totals = (
             scoring_df.groupby(["model", "model_version"])["tokens_used"]
@@ -690,31 +740,95 @@ def calculate_scores(
         )
         result = result.drop(columns=["tokens_used"])
         result = pd.merge(result, token_totals, on=["model", "model_version"], how="left")
+    return result
 
-    # --- Token Stats per Module ---
-    # Uses scoring_df (same base as Total Score) to ensure a static, comparable
-    # token count. Political Compass and other non-scoring modules are excluded
-    # because they have variable re-test counts, which would distort cross-model
-    # comparisons.
-    if "tokens_used" in scoring_df.columns:
-        token_by_module = (
-            scoring_df.groupby(["model", "model_version", "category"])["tokens_used"]
-            .sum()
-            .unstack()
-            .reset_index()
-        )
-        token_by_module.columns = [
-            f"Tokens: {col}" if col not in ("model", "model_version") else col
-            for col in token_by_module.columns
-        ]
-        result = pd.merge(result, token_by_module, on=["model", "model_version"], how="left")
 
-    # --- Routine vs Reasoning (v2.1: Granular Weights) ---
-    # Calculates scores based on per-asset routine/reasoning split
+def _add_token_breakdown(
+    result: pd.DataFrame, scoring_df: pd.DataFrame
+) -> pd.DataFrame:
+    """Adds per-module token breakdown; excludes non-scoring modules for static totals."""
+    if "tokens_used" not in scoring_df.columns:
+        return result
+    token_by_module = (
+        scoring_df.groupby(["model", "model_version", "category"])["tokens_used"]
+        .sum()
+        .unstack()
+        .reset_index()
+    )
+    token_by_module.columns = [
+        f"Tokens: {col}" if col not in ("model", "model_version") else col
+        for col in token_by_module.columns
+    ]
+    return pd.merge(result, token_by_module, on=["model", "model_version"], how="left")
+
+
+def _calc_weighted_total(row: pd.Series) -> float:
+    """Volume-weighted total score from routine+reasoning contributions."""
+    w_routine = row.get("total_weight_routine", 0)
+    w_reasoning = row.get("total_weight_reasoning", 0)
+    sum_routine = row.get("sum_routine", 0)
+    sum_reasoning = row.get("sum_reasoning", 0)
+
+    total_weight = w_routine + w_reasoning
+    total_sum = sum_routine + sum_reasoning
+
+    if total_weight > 0:
+        return total_sum / total_weight
+    # Fallback if no weights (should not happen)
+    return 0.0
+
+
+def _calc_cost_per_1k_tokens_row(
+    row: pd.Series, price_lookup: dict[str, float]
+) -> float | None:
+    """Match by model_version, then full model name, then prefix (longest key first)."""
+    model_ver = str(row.get("model_version", "") or "").strip()
+    model_name = str(row.get("model", "") or "").strip()
+    return _lookup_price(model_ver, model_name, price_lookup)
+
+
+def _calc_benchmark_cost_row(row: pd.Series) -> float | None:
+    """Absolute benchmark cost in USD.
+
+    Primary:  (Tokens Total / 1000) × Cost per 1K (USD)
+    Fallback: cost_usd (sum from benchmark CSVs) for date-suffixed OpenRouter models
+              and any other model whose name doesn't match the price lookup exactly.
+    """
+    price = row.get("Cost per 1K (USD)")
+    tokens = row.get("tokens_used")
+    try:
+        price_f = float(price)  # type: ignore[arg-type]
+        tokens_f = float(tokens)  # type: ignore[arg-type]
+    except (TypeError, ValueError):
+        price_f = float("nan")
+        tokens_f = float("nan")
+    if not pd.isna(price_f) and not pd.isna(tokens_f) and tokens_f > 0:
+        return round((tokens_f / 1000) * price_f, 4)
+    # Fallback: use recorded cost_usd sum (covers OpenRouter + date-suffix models)
+    try:
+        fallback = float(row.get("cost_usd") or 0)  # type: ignore[arg-type]
+        return round(fallback, 4) if fallback > 0 else None
+    except (TypeError, ValueError):
+        return None
+
+
+def _calc_efficiency_index(row: pd.Series) -> float:
+    """Routine Score per second of Avg Task Duration; 0 if execution_time missing/0."""
+    exec_time = row.get("execution_time", 0)
+    if exec_time > 0:
+        return row["Routine Score"] / exec_time
+    return 0.0
+
+
+def _merge_granular_scores(
+    result: pd.DataFrame,
+    df_success: pd.DataFrame,
+    modules_config: dict[str, Any],
+) -> pd.DataFrame:
+    """Merges Routine/Reasoning granular scores; guarantees non-NaN columns."""
     granular_scores = _calculate_group_scores(df_success, modules_config)
 
     if not granular_scores.empty:
-        # Merge granular scores
         result = pd.merge(
             result, granular_scores, on=["model", "model_version"], how="left"
         )
@@ -723,11 +837,15 @@ def calculate_scores(
         result["Routine Score"] = 0.0
         result["Reasoning Score"] = 0.0
 
-    # Ensure they are not NaNs
     result["Routine Score"] = result["Routine Score"].fillna(0.0)
     result["Reasoning Score"] = result["Reasoning Score"].fillna(0.0)
+    return result
 
-    # --- Stability Score (New v3.1 Logic) ---
+
+def _merge_stability_score(
+    result: pd.DataFrame, df_success: pd.DataFrame
+) -> pd.DataFrame:
+    """Merges stability score (v3.1 per-asset variability); sets 0.0 default fallback."""
     stability = _calculate_stability_score(df_success)
     if not stability.empty:
         result = pd.merge(
@@ -735,77 +853,40 @@ def calculate_scores(
         )
     else:
         result["stability_score"] = 0.0
+    return result
 
-    # Total Score Calculation (Volume-Weighted)
-    # Uses the actual weight of routine vs reasoning tasks in the run benchmark
-    def calc_weighted_total(row):
-        w_routine = row.get("total_weight_routine", 0)
-        w_reasoning = row.get("total_weight_reasoning", 0)
-        sum_routine = row.get("sum_routine", 0)
-        sum_reasoning = row.get("sum_reasoning", 0)
 
-        total_weight = w_routine + w_reasoning
-        total_sum = sum_routine + sum_reasoning
-
-        if total_weight > 0:
-            return total_sum / total_weight
-        else:
-            # Fallback if no weights (should not happen)
-            return 0.0
-
-    result["Total Score"] = result.apply(calc_weighted_total, axis=1)
-
+def _add_cost_columns(
+    result: pd.DataFrame, price_lookup: dict[str, float]
+) -> pd.DataFrame:
+    """Adds Cost per 1K (USD) and Benchmark Cost (USD) columns to result in-place."""
     # Cost per 1K Output Tokens — from model cards (cost_limits.yaml as legacy fallback).
     # Uses the published output_price_per_1m for each known model, converted to per-1K.
     # Local-only models (deployment_type ∈ {"localweights", "local-weights"}) default to 0.0
     # even without an explicit price (see _build_price_lookup Defense-in-Depth).
     # Models without a card price AND not marked local-only (e.g. cloud-only,
     # hybrid cloud-and-local) receive None → empty in the leaderboard.
-    price_lookup = _get_price_lookup()
-
-    def calc_cost_per_1k_tokens(row: pd.Series) -> float | None:
-        # Match by model_version, then full model name, then prefix (longest key first)
-        model_ver = str(row.get("model_version", "") or "").strip()
-        model_name = str(row.get("model", "") or "").strip()
-        return _lookup_price(model_ver, model_name, price_lookup)
-
-    result["Cost per 1K (USD)"] = result.apply(calc_cost_per_1k_tokens, axis=1)
-
-    # Benchmark Cost (USD) — absolute cost for the full benchmark run.
-    # Primary:  (Tokens Total / 1000) × Cost per 1K (USD)  [known price from model card or cost_limits.yaml]
-    # Fallback: cost_usd (sum from benchmark CSVs) — covers date-suffixed OpenRouter models
-    #           and any other model whose name doesn't match the price lookup exactly.
-    if "tokens_used" in result.columns:
-        def calc_benchmark_cost(row: pd.Series) -> float | None:
-            price = row.get("Cost per 1K (USD)")
-            tokens = row.get("tokens_used")
-            try:
-                price_f = float(price)  # type: ignore[arg-type]
-                tokens_f = float(tokens)  # type: ignore[arg-type]
-            except (TypeError, ValueError):
-                price_f = float("nan")
-                tokens_f = float("nan")
-            if not pd.isna(price_f) and not pd.isna(tokens_f) and tokens_f > 0:
-                return round((tokens_f / 1000) * price_f, 4)
-            # Fallback: use recorded cost_usd sum (covers OpenRouter + date-suffix models)
-            try:
-                fallback = float(row.get("cost_usd") or 0)  # type: ignore[arg-type]
-                return round(fallback, 4) if fallback > 0 else None
-            except (TypeError, ValueError):
-                return None
-
-        result["Benchmark Cost (USD)"] = result.apply(calc_benchmark_cost, axis=1)
-
-    # Efficiency Index
-    result["Efficiency_Index"] = result.apply(
-        lambda row: (
-            row["Routine Score"] / row["execution_time"]
-            if row.get("execution_time", 0) > 0
-            else 0
-        ),
-        axis=1,
+    result["Cost per 1K (USD)"] = result.apply(
+        lambda r: _calc_cost_per_1k_tokens_row(r, price_lookup), axis=1
     )
 
+    # Benchmark Cost (USD) — absolute cost for the full benchmark run.
+    if "tokens_used" in result.columns:
+        result["Benchmark Cost (USD)"] = result.apply(
+            _calc_benchmark_cost_row, axis=1
+        )
+
+    return result
+
+
+def _add_efficiency_index(result: pd.DataFrame) -> pd.DataFrame:
+    """Adds Efficiency_Index column (Routine Score / execution_time)."""
+    result["Efficiency_Index"] = result.apply(_calc_efficiency_index, axis=1)
+    return result
+
+
+def _finalize_leaderboard_columns(result: pd.DataFrame) -> pd.DataFrame:
+    """Drops temp columns, renames to display labels, and sorts by Total Score."""
     # Remove temporary calculation columns
     cols_to_drop = [
         "sum_routine",
@@ -816,7 +897,7 @@ def calculate_scores(
     ]
     result = result.drop(columns=[c for c in cols_to_drop if c in result.columns])
 
-    # --- Cleanup Renaming ---
+    # Cleanup Renaming
     result = result.rename(
         columns={
             "percentage": "Overall Score",
@@ -837,8 +918,65 @@ def calculate_scores(
 
     # Sort by Total Score (v1.1)
     if "Total Score" in result.columns:
-        result = result.sort_values("Total Score", ascending=False)
-    elif "Overall Score" in result.columns:
-        result = result.sort_values("Overall Score", ascending=False)
+        return result.sort_values("Total Score", ascending=False)
+    if "Overall Score" in result.columns:
+        return result.sort_values("Overall Score", ascending=False)
+    return result
+
+
+def calculate_scores(
+    df: pd.DataFrame, modules_config: dict[str, Any]
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    Main entry point for scoring calculations.
+
+    Args:
+        df: Raw benchmark data (pandas DataFrame)
+        modules_config: Configuration dictionary for active modules
+
+    Returns:
+        Tuple[pd.DataFrame, pd.DataFrame]:
+            1. Main leaderboard stats (model-level)
+            2. Category stats (stats per module category)
+    """
+    df_all, df_success, scoring_df = _prepare_input_data(df, modules_config)
+
+    # Aggregation
+    stats = _aggregate_basic_stats(df_success, modules_config)
+    # Note: uses Full DF (incl non-scoring)
+    run_counts = _calculate_run_counts(df_all, modules_config)
+
+    # Merge Counts
+    result = pd.merge(
+        stats, run_counts, on=["model", "model_version", "type"], how="left"
+    )
+
+    # Completion Status
+    result = _finalize_completion_status(result)
+
+    # Category Stats
+    result, cat_stats = _add_category_breakdown(result, df_success)
+
+    # Tokens: override total + per-module breakdown
+    result = _override_tokens_with_scoring_only(result, scoring_df)
+    result = _add_token_breakdown(result, scoring_df)
+
+    # Routine vs Reasoning (v2.1: Granular Weights)
+    result = _merge_granular_scores(result, df_success, modules_config)
+
+    # Stability Score (v3.1 Logic)
+    result = _merge_stability_score(result, df_success)
+
+    # Total Score Calculation (Volume-Weighted)
+    result["Total Score"] = result.apply(_calc_weighted_total, axis=1)
+
+    # Cost columns from model cards + cost_limits.yaml fallback
+    result = _add_cost_columns(result, _get_price_lookup())
+
+    # Efficiency Index
+    result = _add_efficiency_index(result)
+
+    # Cleanup + Rename + Sort
+    result = _finalize_leaderboard_columns(result)
 
     return result, cat_stats

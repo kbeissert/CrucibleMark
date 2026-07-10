@@ -375,6 +375,415 @@ def _ensure_dependencies(
     return {}
 
 
+def _extract_audit_logs(model_dir: Path, review_type: str) -> list[str]:
+    """Sammelt relevante Audit-Log-Snippets aus ``model_dir``.
+
+    Berücksichtigt ``review_type`` ('bias' vs 'benchmark'), entfernt
+    per-Task-Metriken (Drift-Vermeidung) und kapselt Safety/Warning-Hints
+    im System-Info-Block. Returns leere Liste, wenn keine passenden Logs.
+    """
+    extracted_logs: list[str] = []
+    for md_file in model_dir.rglob("*.md"):
+        try:
+            content = md_file.read_text(encoding="utf-8")
+            is_bias_file = md_file.name in ("00_bias_report.md", "pol_comp_report.md")
+
+            if review_type == "bias" and not is_bias_file:
+                continue
+            if review_type == "benchmark" and is_bias_file:
+                continue
+
+            # Per-Task Metriken entfernen — sie weichen vom Leaderboard-Aggregat
+            # ab und würden Drift in der Review-Prosa erzeugen (Export-Vertrag).
+            content = _strip_metric_lines(content)
+
+            system_info_text = _extract_system_info_block(content)
+            safety_filter_match = re.search(
+                r"## 2\. Model.*?Error: Content blocked by safety filters\.",
+                content,
+                re.DOTALL,
+            )
+            if safety_filter_match:
+                system_info_text += (
+                    "\n\n> ⚠️ **[SAFETY FILTER TRIGGERED]** "
+                    "The model refused to answer due to extreme safety filters."
+                )
+
+            if is_bias_file:
+                extracted_logs.append(f"--- Datei: {md_file.name} ---\n{content}")
+                continue
+
+            judge_section_match = re.search(r"## 3\. Evaluation.*", content, re.DOTALL)
+            if judge_section_match:
+                extracted = judge_section_match.group(0).strip()
+                extracted_logs.append(
+                    f"--- Datei: {md_file.name} ---{system_info_text}\n{extracted}"
+                )
+            else:
+                extracted_logs.append(
+                    f"--- Datei: {md_file.name} ---{system_info_text}\n{content[-1500:]}"
+                )
+        except Exception:
+            continue
+    return extracted_logs
+
+
+def _extract_system_info_block(content: str) -> str:
+    """Extrahiert WARNING/CAUTION/ERROR-Hinweise aus Audit-Log-Inhalt."""
+    system_info_match = re.search(
+        r"> \[!(?:WARNING|CAUTION|ERROR)\].*?(?=\n\n|$)", content, re.DOTALL
+    )
+    return f"\n\n{system_info_match.group(0)}" if system_info_match else ""
+
+
+def _truncate_log_data(log_data: str, review_type: str) -> str:
+    """Kuerzt ``log_data`` auf ``_MAX_LOG_CHARS`` (Head fuer bias, Tail sonst)."""
+    if len(log_data) <= _MAX_LOG_CHARS:
+        return log_data
+    return log_data[:_MAX_LOG_CHARS] if review_type == "bias" else log_data[-_MAX_LOG_CHARS:]
+
+
+def _verify_bias_card_prereqs(tested_model_name: str) -> bool:
+    """Prueft, dass Bias-Review-Voraussetzungen (Card-Felder) erfuellt sind.
+
+    Returns True wenn die Card vorhanden und alle Bias-Felder befuellt sind,
+    sonst False (Skip-Signal).
+    """
+    bias_card_path = _find_card(tested_model_name)
+    if not bias_card_path.exists():
+        print(f"⚠️ Keine Model Card für {tested_model_name} — Bias-Review wird übersprungen.")
+        return False
+    try:
+        bias_card = json.loads(bias_card_path.read_text(encoding="utf-8"))
+    except Exception:
+        print(f"⚠️ Model Card für {tested_model_name} nicht lesbar — Bias-Review wird übersprungen.")
+        return False
+    missing = {
+        k for k in ("developer", "origin_country", "developer_jurisdiction")
+        if not bias_card.get(k)
+    }
+    if missing:
+        print(
+            f"⚠️ Model Card für {tested_model_name} fehlt Felder {missing} "
+            "— Bias-Review wird übersprungen."
+        )
+        return False
+    return True
+
+
+def _resolve_commercial_run_type(
+    tested_model_name: str, validator_config: dict
+) -> tuple[str, str]:
+    """Klassifiziert ein Modell als 'local', 'commercial' oder 'cloud_open_weights'.
+
+    Returns (run_type, model_type). Letzteres wird fuer die Open-Weights-Cloud-Heuristik
+    benoetigt; ist leer wenn das Modell nur als reines Local/Commercial auftaucht.
+    """
+    from utils.constants import MODEL_TYPE_OPEN_WEIGHTS_CLOUD
+
+    commercial_providers = validator_config.get("providers", {}).get("commercial", {})
+
+    resolved_provider_key: str | None = None
+    resolved_model_type: str = ""
+    target_safe = _safe_name(tested_model_name)
+
+    for prov_key, prov_cfg in commercial_providers.items():
+        if not isinstance(prov_cfg, dict) or not prov_cfg.get("enabled", False):
+            continue
+        for m in prov_cfg.get("models", []):
+            if not isinstance(m, dict):
+                continue
+            raw_id = m.get("id")
+            if not raw_id:
+                continue
+            if _safe_name(raw_id) == target_safe:
+                resolved_provider_key = prov_key
+                # Per-Model-Override schlägt Provider-Default.
+                resolved_model_type = m.get("model_type") or prov_cfg.get("model_type", "")
+                break
+        if resolved_provider_key:
+            break
+
+    if resolved_provider_key and resolved_model_type == MODEL_TYPE_OPEN_WEIGHTS_CLOUD:
+        return "cloud_open_weights", resolved_model_type
+    if resolved_provider_key:
+        # Jeder andere aktive commercial-Eintrag ist proprietäre API oder
+        # als proprietary_api markierter OpenRouter-Endpoint.
+        return "commercial", resolved_model_type
+    # Modell ist in keinem commercial-Provider gelistet → lokales Deployment.
+    return "local", resolved_model_type
+
+
+def _build_hardware_context(tested_model_name: str, run_type: str, validator_config: dict) -> str:
+    """Ermittelt den hardware-spezifischen Review-Prompt-Injection-Block."""
+    from utils.system_context import SystemContextManager
+
+    try:
+        # SSOT: hardware_profile aus provider_config.yaml für lokale Modelle lesen.
+        # Damit wird das Testsystem des Modells beschrieben, nicht der Review-Rechner.
+        # Fallback: wenn Provider-Config-Lookup leer ist (Modell auskommentiert oder
+        # umbenannt), lies hardware_profile aus der rohen Benchmark-CSV.
+        hw_profile_key = ""
+        if run_type == "local":
+            hw_profile_key = _get_hardware_profile_for_model(tested_model_name, validator_config)
+            if not hw_profile_key:
+                hw_profile_key = _get_hardware_profile_from_csv(tested_model_name)
+        context_manager = SystemContextManager()
+        return context_manager.get_editor_prompt_injection(
+            run_type, hardware_profile_key=hw_profile_key
+        )
+    except Exception:
+        return "Achte auf Performance und Effizienz bezüglich Token-Kosten."
+
+
+_DEFAULT_TIER_METAPHOR_RULES = (
+    "- **Ab 95%:** Platin\n"
+    "- **Ab 80% bis unter 95%:** Gold\n"
+    "- **Ab 65% bis unter 80%:** Silber\n"
+    "- **Ab 50% bis unter 65%:** Bronze\n"
+    "- **Unter 50%:** Standard"
+)
+
+
+def _build_tier_metaphor_rules() -> str:
+    """Baut die Tier-Metapher-Regeln aus scoring_tiers zusammen."""
+    try:
+        _config = load_config()
+        _tiers = _config.get("scoring_tiers", {})
+        sorted_tiers = sorted(
+            _tiers.items(),
+            key=lambda item: item[1].get("threshold", 0.0),
+            reverse=True,
+        )
+        tier_lines: list[str] = []
+        for i, (_, data) in enumerate(sorted_tiers):
+            threshold = data.get("threshold", 0.0)
+            desc = data.get("prompt_description", "")
+            next_threshold = (
+                sorted_tiers[i - 1][1].get("threshold", 100.0) if i > 0 else 100.0
+            )
+            desc = desc.replace("{threshold}", str(threshold)).replace(
+                "{next_threshold}", str(next_threshold)
+            )
+            tier_lines.append(desc)
+        return "\n".join(tier_lines)
+    except Exception:
+        return _DEFAULT_TIER_METAPHOR_RULES
+
+
+def _load_review_prompt_template(review_type: str) -> str:
+    """Laedt den system_instructions-Text des Prompt-Templates."""
+    prompt_key = "bias_reviewer" if review_type == "bias" else "meta_reviewer"
+    try:
+        with open(ROOT_DIR / "config" / "meta_reviewer_prompt.yaml", encoding="utf-8") as f:
+            prompt_yaml = yaml.safe_load(f)
+        return prompt_yaml.get(prompt_key, {}).get("system_instructions", "")
+    except Exception as e:
+        print(f"⚠️ Warnung: Konnte config/meta_reviewer_prompt.yaml nicht laden: {e}")
+        return "Fehler beim Laden des Prompts."
+
+
+def _resolve_model_metrics_with_alias(tested_model_name: str) -> dict:
+    """Holt model_metrics; bei leerem Treffer Alias-Fallback via Card.model_id.
+
+    Returns leeres Dict, wenn keine Metriken gefunden wurden (Ghost-Model-Skip-Signal).
+    """
+    model_metrics = get_model_metrics(tested_model_name)
+    if model_metrics:
+        return model_metrics
+    alias_card = _find_card(tested_model_name)
+    if alias_card.exists():
+        try:
+            alias_data = json.loads(alias_card.read_text(encoding="utf-8"))
+            alias_id = alias_data.get("model_id")
+            if alias_id and alias_id != tested_model_name:
+                model_metrics = get_model_metrics(alias_id)
+                if model_metrics:
+                    print(f"ℹ️ Alias-Auflösung: {tested_model_name} → {alias_id}")
+                    return model_metrics
+        except Exception:
+            pass
+    return {}
+
+
+def _safe_round(val: object) -> str:
+    """Rundet ``val`` auf 2 Nachkommastellen oder gibt 'n/a' zurueck."""
+    try:
+        return str(round(float(val), 2))  # type: ignore[arg-type]
+    except (ValueError, TypeError):
+        return "n/a"
+
+
+def _timeout_rate_string(model_metrics: dict) -> str:
+    """Berechnet 'timeout/tests'-Rate oder 'n/a' wenn nicht verfuegbar."""
+    timeout_count = model_metrics.get("Timeout Count", "n/a")
+    tests_run = model_metrics.get("Tests Run", "n/a")
+    if tests_run != "n/a" and "/" in tests_run:
+        tests_run = tests_run.split("/")[-1]
+    if timeout_count == "n/a":
+        return "n/a"
+    return f"{timeout_count}/{tests_run}"
+
+
+def _enrich_identity_from_card(tested_model_name: str, identity: dict) -> dict:
+    """Reichert Identity um Tags/display_name aus der Model Card an."""
+    card_path = _find_card(tested_model_name)
+    if not card_path.exists():
+        return identity
+    try:
+        card_data = json.loads(card_path.read_text(encoding="utf-8"))
+    except Exception:
+        return identity
+    card_tags = card_data.get("architecture_tags")
+    if card_tags and isinstance(card_tags, list) and len(card_tags) > 0:
+        identity = {**identity, "tags": card_tags}
+    card_display_name = card_data.get("display_name")
+    if card_display_name:
+        identity = {**identity, "display_name": card_display_name}
+    return identity
+
+
+def _build_bias_csv_data(tested_model_name: str) -> str:
+    """Baut den Political-Compass-CSV-Block fuer Bias-Review-Prompt."""
+    import csv as _csv
+    pc_csv_path = ROOT_DIR / "benchmark_scores" / "political_compass_leaderboard.csv"
+    if not pc_csv_path.exists():
+        return ""
+    with open(pc_csv_path, encoding="utf-8") as _f:
+        for _row in _csv.DictReader(_f):
+            _safe = _safe_name(_row.get("model", ""))
+            if _safe == tested_model_name or _row.get("model") == tested_model_name:
+                return (
+                    f"- Vanilla X (Ökonomisch): {_row.get('vanilla_x', 'n/a')}\n"
+                    f"- Vanilla Y (Gesellschaftlich): {_row.get('vanilla_y', 'n/a')}\n"
+                    f"- Vanilla Label: {_row.get('vanilla_label', 'n/a')}\n"
+                    f"- Forced X (Ökonomisch): {_row.get('forced_x', 'n/a')}\n"
+                    f"- Forced Y (Gesellschaftlich): {_row.get('forced_y', 'n/a')}\n"
+                    f"- Forced Label: {_row.get('forced_label', 'n/a')}\n"
+                    f"- Shift X: {_row.get('shift_x', 'n/a')}, Shift Y: {_row.get('shift_y', 'n/a')}\n"
+                    f"- Shift Distance (euklidisch): {_row.get('shift_distance', 'n/a')}\n"
+                    f"- Polarity Flip Rate: {_row.get('polarity_flip_rate', 'n/a')}%\n"
+                    f"- Verhaltens-Archetyp: {_row.get('behavior_archetype', 'n/a')}\n"
+                    f"- Extremismus-Status: {_row.get('extremism_status', 'n/a')}"
+                )
+    return ""
+
+
+def _build_review_template_vars(
+    tested_model_name: str,
+    identity: dict,
+    csv_data: str,
+    log_data: str,
+    hardware_context: str,
+    tier_metaphor_rules: str,
+    model_metrics: dict,
+    model_dir: Path,
+    review_type: str,
+) -> dict:
+    """Baut das template_vars-Dict fuer den system_instructions-Formatter."""
+    _config = load_config()
+    token_efficiency_context = build_token_efficiency_context(
+        tested_model_name, _config.get("token_budgets", {})
+    )
+    constraint_violations_context = (
+        build_constraint_violations_summary(model_dir) if review_type == "benchmark" else ""
+    )
+    empty_response_context = (
+        build_empty_response_context(tested_model_name) if review_type == "benchmark" else ""
+    )
+    non_success_context = (
+        build_non_success_context(tested_model_name) if review_type == "benchmark" else ""
+    )
+
+    _taxonomy = _load_classification_taxonomy()
+    _use_case = get_use_case_primary(tested_model_name)
+    _size_class = model_metrics.get("Size Class") or get_model_size_class(tested_model_name)
+    _param_arch = _get_card_field(tested_model_name, "parameter_architecture", "dense")
+    _thinking_mode = model_metrics.get("Thinking Mode") or _resolve_thinking_mode_for_review(
+        tested_model_name
+    )
+
+    return {
+        "tested_model_name": tested_model_name,
+        "display_model_name": identity["display_name"],
+        "model_tags": ", ".join(identity["tags"]),
+        "hardware_context": hardware_context,
+        "csv_data": csv_data,
+        "log_data": log_data,
+        "tier_metaphor_rules": tier_metaphor_rules,
+        "model_specialization": get_model_specialization(tested_model_name),
+        "model_p95_time": _safe_round(model_metrics.get("P95 Time (s)")),
+        "model_timeout_rate": _timeout_rate_string(model_metrics),
+        "model_provider_type": model_metrics.get("Type", "n/a"),
+        "model_size_class": _size_class,
+        "model_thinking_mode": _thinking_mode,
+        "model_card_context": get_model_card_context(tested_model_name),
+        "vendor_card_context": get_vendor_card_context(tested_model_name),
+        "token_efficiency_context": token_efficiency_context,
+        "constraint_violations_context": constraint_violations_context,
+        "empty_response_context": empty_response_context,
+        "non_success_context": non_success_context,
+        "use_case_classification_context": format_classification_context(
+            _use_case, _size_class, _param_arch, _taxonomy
+        ),
+    }
+
+
+def _format_review_prompt(prompt_template: str, template_vars: dict) -> str:
+    """Formatiert den Review-Prompt; setzt fehlende Variablen auf 'n/a' (Fallback)."""
+    try:
+        return prompt_template.format(**template_vars)
+    except KeyError as e:
+        print(f"⚠️ Warnung im Prompt-Template: Fehlende Variable {e}")
+        template_vars[e.args[0]] = "n/a"
+        return prompt_template.format(**template_vars)
+
+
+def _call_review_llm(
+    client: LLMClient,
+    provider: str,
+    model_id: str,
+    prompt: str,
+    max_tokens: int,
+    tested_model_name: str,
+) -> str | None:
+    """Ruft den Reviewer-LLM auf. Returns Response-Text oder None bei Fehler."""
+    try:
+        response = client.query(
+            model=model_id,
+            prompt=prompt,
+            provider=provider,
+            temperature=0.7,
+            max_tokens=max_tokens,
+        )
+        return response
+    except Exception as e:
+        print(f"❌ Fehler bei der Generierung für {tested_model_name}: {e}")
+        return None
+
+
+def _write_review_output(
+    tested_model_name: str, response: str, review_type: str
+) -> None:
+    """Schreibt das Review in docs/reviews/<slug>/ und fuegt Erstellt-am-Header ein."""
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    out_dir = ROOT_DIR / "docs" / "reviews" / _safe_name(tested_model_name)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    prefix = "bias_review" if review_type == "bias" else "review"
+    out_file = out_dir / f"{prefix}_{timestamp}.md"
+
+    display_time = datetime.now().strftime("%d.%m.%Y, %H:%M:%S")
+    lines = response.splitlines()
+    if lines:
+        lines.insert(1, f"\n> **Erstellt am:** {display_time}\n")
+    else:
+        lines.append(f"\n> **Erstellt am:** {display_time}\n")
+
+    out_file.write_text("\n".join(lines), encoding="utf-8")
+    print(f"✅ Review gespeichert unter: {out_file.relative_to(ROOT_DIR)}")
+
+
 def process_model_review(
     model_dir: Path,
     csv_data: str,
@@ -394,6 +803,8 @@ def process_model_review(
             umbenannte Card über ``find_card_by_heritage_id`` gefunden wurde.
             Die Audit-Log-Dateien werden weiterhin aus ``model_dir`` gelesen.
     """
+    from utils.config_validator import ConfigValidator
+
     # Heritage-ID-Fallback: wenn canonical_model_id gesetzt, nutzen wir sie
     # für Card-/Metriken-Lookups und den Output-Pfad. model_dir.name bleibt
     # für die tatsächlichen Audit-Log-Dateien (die liegen noch unter dem alten Namen).
@@ -405,289 +816,201 @@ def process_model_review(
     )
     print(f"\n📥 Sammle Logs für Modell: {_log_label} (Typ: {review_type})...")
 
-    extracted_logs = []
-    for md_file in model_dir.rglob("*.md"):
-        try:
-            content = md_file.read_text(encoding="utf-8")
-            is_bias_file = md_file.name in ("00_bias_report.md", "pol_comp_report.md")
-
-            if review_type == "bias" and not is_bias_file:
-                continue
-            if review_type == "benchmark" and is_bias_file:
-                continue
-
-            # Per-Task Metriken entfernen — sie weichen vom Leaderboard-Aggregat
-            # ab und würden Drift in der Review-Prosa erzeugen (Export-Vertrag).
-            content = _strip_metric_lines(content)
-
-            judge_section_match = re.search(r"## 3\. Evaluation.*", content, re.DOTALL)
-            system_info_match = re.search(r"> \[!(?:WARNING|CAUTION|ERROR)\].*?(?=\n\n|$)", content, re.DOTALL)
-            system_info_text = f"\n\n{system_info_match.group(0)}" if system_info_match else ""
-
-            safety_filter_match = re.search(r"## 2\. Model.*?Error: Content blocked by safety filters\.", content, re.DOTALL)
-            if safety_filter_match:
-                system_info_text += "\n\n> ⚠️ **[SAFETY FILTER TRIGGERED]** The model refused to answer due to extreme safety filters."
-
-            if is_bias_file:
-                extracted_logs.append(f"--- Datei: {md_file.name} ---\n{content}")
-            elif judge_section_match:
-                extracted = judge_section_match.group(0).strip()
-                extracted_logs.append(f"--- Datei: {md_file.name} ---{system_info_text}\n{extracted}")
-            else:
-                extracted_logs.append(f"--- Datei: {md_file.name} ---{system_info_text}\n{content[-1500:]}")
-        except Exception:
-            continue
-
+    extracted_logs = _extract_audit_logs(model_dir, review_type)
     if not extracted_logs:
-        print(f"⚠️ Keine zutreffenden Logs gefunden für {tested_model_name} im Modus {review_type}, überspringe.")
+        print(
+            f"⚠️ Keine zutreffenden Logs gefunden für {tested_model_name} "
+            f"im Modus {review_type}, überspringe."
+        )
         return
 
-    if review_type == "bias":
-        bias_card_path = _find_card(tested_model_name)
-        if not bias_card_path.exists():
-            print(f"⚠️ Keine Model Card für {tested_model_name} — Bias-Review wird übersprungen.")
-            return
-        try:
-            bias_card = json.loads(bias_card_path.read_text(encoding="utf-8"))
-            missing = {k for k in ("developer", "origin_country", "developer_jurisdiction") if not bias_card.get(k)}
-            if missing:
-                print(f"⚠️ Model Card für {tested_model_name} fehlt Felder {missing} — Bias-Review wird übersprungen.")
-                return
-        except Exception:
-            print(f"⚠️ Model Card für {tested_model_name} nicht lesbar — Bias-Review wird übersprungen.")
-            return
+    if review_type == "bias" and not _verify_bias_card_prereqs(tested_model_name):
+        return
 
-    log_data = "\n\n".join(extracted_logs)
-    if len(log_data) > _MAX_LOG_CHARS:
-        log_data = log_data[:_MAX_LOG_CHARS] if review_type == "bias" else log_data[-_MAX_LOG_CHARS:]
+    log_data = _truncate_log_data("\n\n".join(extracted_logs), review_type)
 
     try:
-        from utils.config_validator import ConfigValidator
-        from utils.constants import MODEL_TYPE_OPEN_WEIGHTS_CLOUD
-        from utils.system_context import SystemContextManager
-
-        # Auflösung über ConfigValidator, damit benchmark_config.yaml UND
-        # config/provider_config.yaml (OpenRouter, Groq) gemerged berücksichtigt werden.
         validator = ConfigValidator()
-        commercial_providers = validator.config.get("providers", {}).get("commercial", {})
-
-        resolved_provider_key: str | None = None
-        resolved_model_type: str = ""
-        # `tested_model_name` ist hier bereits der safe_name (kommt aus model_dir.name),
-        # z.B. "minimax_minimax-m3" für die Config-ID "minimax/minimax-m3".
-        # Wir vergleichen deshalb beide Seiten safe-normalisiert.
-        target_safe = _safe_name(tested_model_name)
-
-        for prov_key, prov_cfg in commercial_providers.items():
-            if not isinstance(prov_cfg, dict) or not prov_cfg.get("enabled", False):
-                continue
-            for m in prov_cfg.get("models", []):
-                if not isinstance(m, dict):
-                    continue
-                raw_id = m.get("id")
-                if not raw_id:
-                    continue
-                if _safe_name(raw_id) == target_safe:
-                    resolved_provider_key = prov_key
-                    # Per-Model-Override schlägt Provider-Default.
-                    resolved_model_type = m.get("model_type") or prov_cfg.get("model_type", "")
-                    break
-            if resolved_provider_key:
-                break
-
-        if resolved_provider_key and resolved_model_type == MODEL_TYPE_OPEN_WEIGHTS_CLOUD:
-            run_type = "cloud_open_weights"
-        elif resolved_provider_key:
-            # Jeder andere aktive commercial-Eintrag ist proprietäre API oder
-            # als proprietary_api markierter OpenRouter-Endpoint (z.B. GLM, Kimi, DeepSeek via OR).
-            run_type = "commercial"
-        else:
-            # Modell ist in keinem commercial-Provider gelistet → lokales Deployment.
-            run_type = "local"
-
-        context_manager = SystemContextManager()
-        # SSOT: hardware_profile aus provider_config.yaml für lokale Modelle lesen.
-        # Damit wird das Testsystem des Modells beschrieben, nicht der Review-Rechner.
-        # Fallback: wenn Provider-Config-Lookup leer ist (Modell auskommentiert oder
-        # umbenannt), lies hardware_profile aus der rohen Benchmark-CSV.
-        hw_profile_key = ""
-        if run_type == "local":
-            hw_profile_key = _get_hardware_profile_for_model(tested_model_name, validator.config)
-            if not hw_profile_key:
-                hw_profile_key = _get_hardware_profile_from_csv(tested_model_name)
-        hardware_context = context_manager.get_editor_prompt_injection(
-            run_type, hardware_profile_key=hw_profile_key
-        )
+        run_type, _ = _resolve_commercial_run_type(tested_model_name, validator.config)
+        hardware_context = _build_hardware_context(tested_model_name, run_type, validator.config)
     except Exception:
         hardware_context = "Achte auf Performance und Effizienz bezüglich Token-Kosten."
 
-    tier_metaphor_rules = ""
-    try:
-        _config = load_config()
-        _tiers = _config.get("scoring_tiers", {})
-        sorted_tiers = sorted(_tiers.items(), key=lambda item: item[1].get("threshold", 0.0), reverse=True)
-        tier_lines = []
-        for i, (_, data) in enumerate(sorted_tiers):
-            threshold = data.get("threshold", 0.0)
-            desc = data.get("prompt_description", "")
-            next_threshold = sorted_tiers[i - 1][1].get("threshold", 100.0) if i > 0 else 100.0
-            desc = desc.replace("{threshold}", str(threshold)).replace("{next_threshold}", str(next_threshold))
-            tier_lines.append(desc)
-        tier_metaphor_rules = "\n".join(tier_lines)
-    except Exception:
-        tier_metaphor_rules = "- **Ab 95%:** Platin\n- **Ab 80% bis unter 95%:** Gold\n- **Ab 65% bis unter 80%:** Silber\n- **Ab 50% bis unter 65%:** Bronze\n- **Unter 50%:** Standard"
+    tier_metaphor_rules = _build_tier_metaphor_rules()
+    prompt_template = _load_review_prompt_template(review_type)
 
-    prompt_key = "bias_reviewer" if review_type == "bias" else "meta_reviewer"
-    try:
-        with open(ROOT_DIR / "config" / "meta_reviewer_prompt.yaml", encoding="utf-8") as f:
-            prompt_yaml = yaml.safe_load(f)
-        prompt_template = prompt_yaml.get(prompt_key, {}).get("system_instructions", "")
-    except Exception as e:
-        print(f"⚠️ Warnung: Konnte config/meta_reviewer_prompt.yaml nicht laden: {e}")
-        prompt_template = "Fehler beim Laden des Prompts."
-
-    model_metrics = get_model_metrics(tested_model_name)
-    if not model_metrics:
-        alias_card = _find_card(tested_model_name)
-        if alias_card.exists():
-            try:
-                alias_data = json.loads(alias_card.read_text(encoding="utf-8"))
-                alias_id = alias_data.get("model_id")
-                if alias_id and alias_id != tested_model_name:
-                    model_metrics = get_model_metrics(alias_id)
-                    if model_metrics:
-                        print(f"ℹ️ Alias-Auflösung: {tested_model_name} → {alias_id}")
-            except Exception:
-                pass
+    model_metrics = _resolve_model_metrics_with_alias(tested_model_name)
     if not model_metrics:
         print(f"👻 Ghost Model erkannt oder keine Metriken für {tested_model_name} gefunden, überspringe.")
         return
 
-    def safe_round(val: object) -> str:
-        try:
-            return str(round(float(val), 2))  # type: ignore[arg-type]
-        except (ValueError, TypeError):
-            return "n/a"
-
-    timeout_count = model_metrics.get("Timeout Count", "n/a")
-    tests_run = model_metrics.get("Tests Run", "n/a")
-    if tests_run != "n/a" and "/" in tests_run:
-        tests_run = tests_run.split("/")[-1]
-    timeout_rate_str = f"{timeout_count}/{tests_run}" if timeout_count != "n/a" else "n/a"
-
     original_model_name = model_metrics.get("Model Name", tested_model_name)
-    identity = get_model_identity(original_model_name)
-
-    card_path = _find_card(tested_model_name)
-    if card_path.exists():
-        try:
-            card_data = json.loads(card_path.read_text(encoding="utf-8"))
-            card_tags = card_data.get("architecture_tags")
-            if card_tags and isinstance(card_tags, list) and len(card_tags) > 0:
-                identity = {**identity, "tags": card_tags}
-            card_display_name = card_data.get("display_name")
-            if card_display_name:
-                identity = {**identity, "display_name": card_display_name}
-        except Exception:
-            pass
-
-    _config = load_config()
-    token_efficiency_context = build_token_efficiency_context(
-        tested_model_name, _config.get("token_budgets", {})
+    identity = _enrich_identity_from_card(
+        tested_model_name, get_model_identity(original_model_name)
     )
-    constraint_violations_context = build_constraint_violations_summary(model_dir) if review_type == "benchmark" else ""
-    empty_response_context = build_empty_response_context(tested_model_name) if review_type == "benchmark" else ""
-    non_success_context = build_non_success_context(tested_model_name) if review_type == "benchmark" else ""
 
     if review_type == "bias":
-        import csv as _csv
-        pc_csv_path = ROOT_DIR / "benchmark_scores" / "political_compass_leaderboard.csv"
-        if pc_csv_path.exists():
-            with open(pc_csv_path, encoding="utf-8") as _f:
-                for _row in _csv.DictReader(_f):
-                    _safe = _safe_name(_row.get("model", ""))
-                    if _safe == tested_model_name or _row.get("model") == tested_model_name:
-                        csv_data = (
-                            f"- Vanilla X (Ökonomisch): {_row.get('vanilla_x', 'n/a')}\n"
-                            f"- Vanilla Y (Gesellschaftlich): {_row.get('vanilla_y', 'n/a')}\n"
-                            f"- Vanilla Label: {_row.get('vanilla_label', 'n/a')}\n"
-                            f"- Forced X (Ökonomisch): {_row.get('forced_x', 'n/a')}\n"
-                            f"- Forced Y (Gesellschaftlich): {_row.get('forced_y', 'n/a')}\n"
-                            f"- Forced Label: {_row.get('forced_label', 'n/a')}\n"
-                            f"- Shift X: {_row.get('shift_x', 'n/a')}, Shift Y: {_row.get('shift_y', 'n/a')}\n"
-                            f"- Shift Distance (euklidisch): {_row.get('shift_distance', 'n/a')}\n"
-                            f"- Polarity Flip Rate: {_row.get('polarity_flip_rate', 'n/a')}%\n"
-                            f"- Verhaltens-Archetyp: {_row.get('behavior_archetype', 'n/a')}\n"
-                            f"- Extremismus-Status: {_row.get('extremism_status', 'n/a')}"
-                        )
-                        break
+        csv_data = _build_bias_csv_data(tested_model_name)
 
-    _taxonomy = _load_classification_taxonomy()
-    _use_case = get_use_case_primary(tested_model_name)
-    _size_class = model_metrics.get("Size Class") or get_model_size_class(tested_model_name)
-    _param_arch = _get_card_field(tested_model_name, "parameter_architecture", "dense")
-    _thinking_mode = model_metrics.get("Thinking Mode") or _resolve_thinking_mode_for_review(tested_model_name)
-
-    template_vars = {
-        "tested_model_name": tested_model_name,
-        "display_model_name": identity["display_name"],
-        "model_tags": ", ".join(identity["tags"]),
-        "hardware_context": hardware_context,
-        "csv_data": csv_data,
-        "log_data": log_data,
-        "tier_metaphor_rules": tier_metaphor_rules,
-        "model_specialization": get_model_specialization(tested_model_name),
-        "model_p95_time": safe_round(model_metrics.get("P95 Time (s)")),
-        "model_timeout_rate": timeout_rate_str,
-        "model_provider_type": model_metrics.get("Type", "n/a"),
-        "model_size_class": _size_class,
-        "model_thinking_mode": _thinking_mode,
-        "model_card_context": get_model_card_context(tested_model_name),
-        "vendor_card_context": get_vendor_card_context(tested_model_name),
-        "token_efficiency_context": token_efficiency_context,
-        "constraint_violations_context": constraint_violations_context,
-        "empty_response_context": empty_response_context,
-        "non_success_context": non_success_context,
-        "use_case_classification_context": format_classification_context(_use_case, _size_class, _param_arch, _taxonomy),
-    }
-
-    try:
-        prompt = prompt_template.format(**template_vars)
-    except KeyError as e:
-        print(f"⚠️ Warnung im Prompt-Template: Fehlende Variable {e}")
-        template_vars[e.args[0]] = "n/a"
-        prompt = prompt_template.format(**template_vars)
+    template_vars = _build_review_template_vars(
+        tested_model_name,
+        identity,
+        csv_data,
+        log_data,
+        hardware_context,
+        tier_metaphor_rules,
+        model_metrics,
+        model_dir,
+        review_type,
+    )
+    prompt = _format_review_prompt(prompt_template, template_vars)
 
     print(f"🤖 Generiere {review_type.capitalize()}-Review für {tested_model_name} mit {provider}/{model_id}...")
-
-    try:
-        response = client.query(
-            model=model_id,
-            prompt=prompt,
-            provider=provider,
-            temperature=0.7,
-            max_tokens=max_tokens,
-        )
-    except Exception as e:
-        print(f"❌ Fehler bei der Generierung für {tested_model_name}: {e}")
+    response = _call_review_llm(
+        client, provider, model_id, prompt, max_tokens, tested_model_name
+    )
+    if response is None:
         return
+    _write_review_output(tested_model_name, response, review_type)
 
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    out_dir = ROOT_DIR / "docs" / "reviews" / _safe_name(tested_model_name)
+
+def _load_tooluse_prompt_template() -> str:
+    """Laedt den system_instructions-Text fuer tooluse_reviewer. '' wenn fehlend."""
+    try:
+        with open(ROOT_DIR / "config" / "meta_reviewer_prompt.yaml", encoding="utf-8") as f:
+            prompt_yaml = yaml.safe_load(f)
+        return prompt_yaml.get("tooluse_reviewer", {}).get("system_instructions", "")
+    except Exception as e:
+        print(f"❌ Fehler beim Laden des tooluse_reviewer-Prompts: {e}")
+        return ""
+
+
+def _is_tooluse_review_current(slug: str, mid: str) -> bool:
+    """Prueft, ob die Tool-Use-Review unter ``slug`` aktueller als die Audit-Logs ist.
+
+    audit_dir verwendet slug (_safe_name), weil audit_logs-Verzeichnisse
+    per SSoT mit _safe_name angelegt werden (Punkte/Slashes → Underscores).
+    Rohe mid (z.B. "xiaomi/mimo-v2.5") würde einen verschachtelten Pfad
+    erzeugen, der nie existiert → Recency-Check wäre immer False.
+    """
+    out_dir = ROOT_DIR / "docs" / "reviews" / slug
+    existing_reviews = (
+        sorted(out_dir.glob("tooluse_narrative_review_*.md"))
+        if out_dir.exists()
+        else []
+    )
+    if not existing_reviews:
+        return False
+    latest_review_mtime = existing_reviews[-1].stat().st_mtime
+    audit_dir = ROOT_DIR / "outputs" / "audit_logs" / slug
+    tooluse_audit_files = (
+        list(audit_dir.glob("tooluse*.md")) if audit_dir.exists() else []
+    )
+    latest_audit_mtime = max(
+        (f.stat().st_mtime for f in tooluse_audit_files), default=0
+    )
+    if latest_review_mtime >= latest_audit_mtime:
+        print(f"⏩ Tool-Use-Review für {mid} aktuell – überspringe.")
+        return True
+    return False
+
+
+def _load_card_data_for_model(mid: str) -> dict:
+    """Laedt Model-Card-JSON fuer ``mid``; leeres Dict, wenn keine oder fehlerhaft."""
+    card = _find_card(mid)
+    if not card.exists():
+        return {}
+    try:
+        return json.loads(card.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def _should_skip_tooluse_for_supports_flag(mid: str, card_data: dict) -> bool:
+    """Prueft supports_tool_use Tri-State und gibt Skip-Signal zurueck.
+
+      true       → skip=False (Review wird generiert)
+      false      → skip=True (Modell kann keine Tools — gewollt)
+      "untested"/None/sonst → skip=True (Benchmark erst ausfuehren)
+    """
+    if not card_data:
+        return False
+    stu = card_data.get("supports_tool_use")
+    if stu is False:
+        print(f"⏩ {mid}: supports_tool_use=false in Model Card — überspringe.")
+        return True
+    if stu is not True:  # None, "untested", oder sonstiger Wert
+        print(
+            f"⏩ {mid}: supports_tool_use={stu!r} (nicht getestet) "
+            f"— Tool-Use-Benchmark zuerst ausführen."
+        )
+        return True
+    return False
+
+
+def _enrich_tooluse_identity(mid: str, identity: dict) -> dict:
+    """Reichert Tool-Use-Identity um Tags/display_name aus Card an."""
+    card_data = _load_card_data_for_model(mid)
+    if not card_data:
+        return identity
+    card_tags = card_data.get("architecture_tags")
+    if card_tags and isinstance(card_tags, list):
+        identity = {**identity, "tags": card_tags}
+    card_display = card_data.get("display_name")
+    if card_display:
+        identity = {**identity, "display_name": card_display}
+    return identity
+
+
+def _enrich_tooluse_context(mid: str, ctx: dict, taxonomy: dict) -> None:
+    """Reichert Tool-Use-Context-Dict um Prompt-Variablen an (in-place)."""
+    identity = _enrich_tooluse_identity(mid, get_model_identity(mid))
+    _use_case = get_use_case_primary(mid)
+    _size_class = get_model_size_class(mid)
+    _param_arch = _get_card_field(mid, "parameter_architecture", "dense")
+
+    ctx["model_tags"] = ", ".join(identity["tags"])
+    ctx["display_model_name"] = identity["display_name"]
+    ctx["model_thinking_mode"] = _resolve_thinking_mode_for_review(mid)
+    ctx["model_card_context"] = get_model_card_context(mid)
+    ctx["use_case_classification_context"] = format_classification_context(
+        _use_case, _size_class, _param_arch, taxonomy
+    )
+
+
+def _format_tooluse_prompt(prompt_template: str, mid: str, ctx: dict) -> str:
+    """Formatiert Tool-Use-Prompt; setzt fehlende Variablen auf 'n/a'."""
+    try:
+        return prompt_template.format(**ctx)
+    except KeyError as e:
+        print(f"⚠️ Fehlende Template-Variable {e} für {mid} — setze 'n/a'.")
+        ctx[e.args[0]] = "n/a"
+        return prompt_template.format(**ctx)
+
+
+def _write_tooluse_review_output(slug: str, response: str) -> None:
+    """Schreibt Tool-Use-Review in docs/reviews/<slug>/."""
+    out_dir = ROOT_DIR / "docs" / "reviews" / slug
     out_dir.mkdir(parents=True, exist_ok=True)
-
-    prefix = "bias_review" if review_type == "bias" else "review"
-    out_file = out_dir / f"{prefix}_{timestamp}.md"
-
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    out_file = out_dir / f"tooluse_narrative_review_{timestamp}.md"
     display_time = datetime.now().strftime("%d.%m.%Y, %H:%M:%S")
     lines = response.splitlines()
     if lines:
         lines.insert(1, f"\n> **Erstellt am:** {display_time}\n")
-    else:
-        lines.append(f"\n> **Erstellt am:** {display_time}\n")
-
     out_file.write_text("\n".join(lines), encoding="utf-8")
-    print(f"✅ Review gespeichert unter: {out_file.relative_to(ROOT_DIR)}")
+    print(f"✅ Tool-Use-Review gespeichert unter: {out_file.relative_to(ROOT_DIR)}")
+
+
+def _should_skip_tooluse_for_blacklist(mid: str, card_data: dict, slug: str, args, blacklist: set[str]) -> bool:
+    """Prueft Webexport-Blacklist per SSOT (Card.model_id || slug)."""
+    if not (args.auto and blacklist):
+        return False
+    bl_id = card_data.get("model_id") or slug
+    if bl_id in blacklist:
+        print(f"⏩ {mid}: Auf Webexport-Blacklist ({bl_id}) → Tool-Use-Review wird übersprungen.")
+        return True
+    return False
 
 
 def _run_tooluse_reviews(
@@ -704,13 +1027,7 @@ def _run_tooluse_reviews(
         get_tooluse_leaderboard_row,
     )
 
-    try:
-        with open(ROOT_DIR / "config" / "meta_reviewer_prompt.yaml", encoding="utf-8") as f:
-            prompt_yaml = yaml.safe_load(f)
-        prompt_template = prompt_yaml.get("tooluse_reviewer", {}).get("system_instructions", "")
-    except Exception as e:
-        print(f"❌ Fehler beim Laden des tooluse_reviewer-Prompts: {e}")
-        return
+    prompt_template = _load_tooluse_prompt_template()
     if not prompt_template:
         print("❌ 'tooluse_reviewer' nicht in config/meta_reviewer_prompt.yaml gefunden.")
         return
@@ -731,22 +1048,9 @@ def _run_tooluse_reviews(
 
     for mid in model_ids:
         slug = _safe_name(mid)
-        out_dir = ROOT_DIR / "docs" / "reviews" / slug
 
-        if args.auto and not args.force:
-            existing_reviews = sorted(out_dir.glob("tooluse_narrative_review_*.md")) if out_dir.exists() else []
-            if existing_reviews:
-                latest_review_mtime = existing_reviews[-1].stat().st_mtime
-                # audit_dir verwendet slug (_safe_name), weil audit_logs-Verzeichnisse
-                # per SSoT mit _safe_name angelegt werden (Punkte/Slashes → Underscores).
-                # Rohe mid (z.B. "xiaomi/mimo-v2.5") würde einen verschachtelten Pfad
-                # erzeugen, der nie existiert → Recency-Check wäre immer False.
-                audit_dir = ROOT_DIR / "outputs" / "audit_logs" / slug
-                tooluse_audit_files = list(audit_dir.glob("tooluse*.md")) if audit_dir.exists() else []
-                latest_audit_mtime = max((f.stat().st_mtime for f in tooluse_audit_files), default=0)
-                if latest_review_mtime >= latest_audit_mtime:
-                    print(f"⏩ Tool-Use-Review für {mid} aktuell – überspringe.")
-                    continue
+        if args.auto and not args.force and _is_tooluse_review_current(slug, mid):
+            continue
 
         # Guard 1: model must have data in tooluse_leaderboard.csv
         if not get_tooluse_leaderboard_row(mid):
@@ -754,102 +1058,35 @@ def _run_tooluse_reviews(
             continue
 
         # Guard 2: Card laden — model_id daraus ist SSOT für Blacklist + supports_tool_use
-        _card = _find_card(mid)
-        _card_data: dict = {}
-        if _card.exists():
-            try:
-                _card_data = json.loads(_card.read_text(encoding="utf-8"))
-            except Exception:
-                pass
+        card_data = _load_card_data_for_model(mid)
 
         # Blacklist-Check: SSOT ist die model_id aus der Card (nicht der Tooluse-Leaderboard-Key)
-        if args.auto and blacklist:
-            _bl_id = _card_data.get("model_id") or slug
-            if _bl_id in blacklist:
-                print(f"⏩ {mid}: Auf Webexport-Blacklist ({_bl_id}) → Tool-Use-Review wird übersprungen.")
-                continue
+        if _should_skip_tooluse_for_blacklist(mid, card_data, slug, args, blacklist):
+            continue
 
-        # supports_tool_use prüfen (Tri-State):
-        #   true       → Tool-Use-Review wird generiert
-        #   false      → Modell kann keine Tools — Review übersprungen (gewollt)
-        #   "untested" → noch kein Benchmark gelaufen — Review übersprungen
-        #   null/fehlt → wie "untested" behandelt
-        if _card_data:
-            stu = _card_data.get("supports_tool_use")
-            if stu is False:
-                print(f"⏩ {mid}: supports_tool_use=false in Model Card — überspringe.")
-                continue
-            if stu is not True:  # None, "untested", oder sonstiger Wert
-                print(
-                    f"⏩ {mid}: supports_tool_use={stu!r} (nicht getestet) "
-                    f"— Tool-Use-Benchmark zuerst ausführen."
-                )
-                continue
+        # supports_tool_use Tri-State pruefen
+        if _should_skip_tooluse_for_supports_flag(mid, card_data):
+            continue
 
         ctx = build_tooluse_context(mid)
         if not ctx:
             print(f"⚠️ Keine Leaderboard-Daten für {mid} — überspringe.")
             continue
 
-        identity = get_model_identity(mid)
-        card_path = _find_card(mid)
-        if card_path.exists():
-            try:
-                card_data = json.loads(card_path.read_text(encoding="utf-8"))
-                card_tags = card_data.get("architecture_tags")
-                if card_tags and isinstance(card_tags, list):
-                    identity = {**identity, "tags": card_tags}
-                card_display = card_data.get("display_name")
-                if card_display:
-                    identity = {**identity, "display_name": card_display}
-            except Exception:
-                pass
-
-        _use_case = get_use_case_primary(mid)
-        _size_class = get_model_size_class(mid)
-        _param_arch = _get_card_field(mid, "parameter_architecture", "dense")
-
-        ctx["model_tags"] = ", ".join(identity["tags"])
-        ctx["display_model_name"] = identity["display_name"]
-        ctx["model_thinking_mode"] = _resolve_thinking_mode_for_review(mid)
-        ctx["model_card_context"] = get_model_card_context(mid)
-        ctx["use_case_classification_context"] = format_classification_context(
-            _use_case, _size_class, _param_arch, _taxonomy
-        )
-
-        try:
-            prompt = prompt_template.format(**ctx)
-        except KeyError as e:
-            print(f"⚠️ Fehlende Template-Variable {e} für {mid} — setze 'n/a'.")
-            ctx[e.args[0]] = "n/a"
-            prompt = prompt_template.format(**ctx)
+        _enrich_tooluse_context(mid, ctx, _taxonomy)
+        prompt = _format_tooluse_prompt(prompt_template, mid, ctx)
 
         if getattr(args, "dry_run", False):
             print(f"  [DRY-RUN] Würde Tool-Use-Review für {mid} generieren.")
             continue
 
         print(f"🤖 Generiere Tool-Use-Review für {mid} mit {provider}/{model_id}...")
-        try:
-            response = client.query(
-                model=model_id,
-                prompt=prompt,
-                provider=provider,
-                temperature=0.7,
-                max_tokens=max_tokens,
-            )
-        except Exception as e:
-            print(f"❌ Fehler bei der Generierung für {mid}: {e}")
+        response = _call_review_llm(
+            client, provider, model_id, prompt, max_tokens, mid
+        )
+        if response is None:
             continue
-
-        out_dir.mkdir(parents=True, exist_ok=True)
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        out_file = out_dir / f"tooluse_narrative_review_{timestamp}.md"
-        display_time = datetime.now().strftime("%d.%m.%Y, %H:%M:%S")
-        lines = response.splitlines()
-        if lines:
-            lines.insert(1, f"\n> **Erstellt am:** {display_time}\n")
-        out_file.write_text("\n".join(lines), encoding="utf-8")
-        print(f"✅ Tool-Use-Review gespeichert unter: {out_file.relative_to(ROOT_DIR)}")
+        _write_tooluse_review_output(slug, response)
 
 
 def _is_valid_audit_dir(path: Path) -> bool:
@@ -976,6 +1213,190 @@ def _run_per_model_all_reviews(
     print("\n✅ Per-Model-Reviews abgeschlossen.")
 
 
+def _collect_configured_model_ids() -> set[str]:
+    """Sammelt alle safe-normalisierten Modell-IDs aus commercial+local Providers."""
+    out: set[str] = set()
+    try:
+        cfg = load_config()
+        providers = cfg.get("providers", {})
+        for section in (providers.get("commercial"), providers.get("local")):
+            if not isinstance(section, dict):
+                continue
+            for prov in section.values():
+                if not isinstance(prov, dict):
+                    continue
+                for m in prov.get("models", []):
+                    if isinstance(m, dict) and "id" in m:
+                        out.add(_safe_name(m["id"]))
+    except Exception:
+        pass
+    return out
+
+
+def _resolve_effective_model_id(subdir_name: str) -> str:
+    """Heritage-ID-Fallback: gibt canonical model_id zurueck falls umbenannt.
+
+    Sonst ``subdir_name``. In diesem Fall nutzt der nachgelagerte Code die
+    raw-Form fuer Card-/Metriken-Lookups, waehrend die Audit-Log-Dateien
+    weiterhin aus subdir gelesen werden.
+    """
+    if _find_card(subdir_name).exists():
+        return subdir_name
+    heritage_path = find_card_by_heritage_id(subdir_name)
+    if heritage_path is None:
+        return subdir_name
+    try:
+        h_data = json.loads(heritage_path.read_text(encoding="utf-8"))
+        h_canonical = h_data.get("model_id")
+    except Exception:
+        return subdir_name
+    if isinstance(h_canonical, str) and h_canonical:
+        print(f"ℹ️ Heritage-ID: {subdir_name} → {h_canonical}")
+        return h_canonical
+    return subdir_name
+
+
+def _warn_if_orphaned_dir(
+    subdir_name: str, effective_model_id: str, configured_safe_ids: set[str]
+) -> None:
+    """Warnt, wenn das Audit-Dir zu keiner konfigurierten Modell-ID passt.
+
+    Ueberspringt date-suffixed Stubs und Faelle mit Heritage-Fund.
+    """
+    if not configured_safe_ids or subdir_name in configured_safe_ids:
+        return
+    if effective_model_id != subdir_name:
+        return  # Heritage-Fund — alter Name intentional
+    if re.search(r"-\d{8}$|-\d{6}$", subdir_name):
+        return  # date-suffix stub ist kein Duplikat
+    print(
+        f"⚠️  Verzeichnis '{subdir_name}' entspricht keiner konfigurierten "
+        "Modell-ID — mögliches Duplikat."
+    )
+
+
+def _audit_files_for_type(subdir: Path, effective_type: str) -> list[Path]:
+    """Filtert Audit-Files fuer den Review-Typ (Modul-Reports vs PC-Bias-Report)."""
+    if effective_type == "benchmark":
+        # Nur Modul-Reports: kein 00_bias_report.md, kein tooluse*.md
+        return [
+            f for f in subdir.iterdir()
+            if f.is_file() and f.name != "00_bias_report.md"
+            and not f.name.startswith("tooluse")
+        ]
+    # bias: nur 00_bias_report.md
+    return [f for f in subdir.iterdir() if f.is_file() and f.name == "00_bias_report.md"]
+
+
+def _is_audit_review_current(
+    subdir: Path, effective_type: str, args: argparse.Namespace
+) -> bool:
+    """Prueft, ob die bestehende Review aktueller als die Audit-Files ist.
+
+    Returns True wenn skip (Review aktuell), False wenn Neugenerierung noetig.
+    """
+    if not (args.auto and not getattr(args, "force", False)):
+        return False
+    review_prefix = "bias_review" if effective_type == "bias" else "review"
+    review_out_dir = ROOT_DIR / "docs" / "reviews" / _safe_name(subdir.name)
+    existing = (
+        sorted(review_out_dir.glob(f"{review_prefix}_*.md"))
+        if review_out_dir.exists()
+        else []
+    )
+    if not existing:
+        return False
+    latest_review_mtime = existing[-1].stat().st_mtime
+    audit_files = _audit_files_for_type(subdir, effective_type)
+    latest_audit_mtime = max((f.stat().st_mtime for f in audit_files), default=0)
+    if latest_review_mtime >= latest_audit_mtime:
+        print(f"⏩ Review für {subdir.name} aktuell – überspringe.")
+        return True
+    return False
+
+
+def _ensure_benchmark_deps_or_skip(
+    effective_model_id: str,
+    args: argparse.Namespace,
+    client: LLMClient,
+    provider: str,
+    model_id: str,
+) -> bool:
+    """Stellt sicher, dass Cards/Dependencies fuer Benchmark-Review vorhanden sind.
+
+    Returns True wenn das Modell uebersprungen werden soll (Nutzer-Ablehnung
+    oder Dry-Run nach Dep-Check). Sonst False (weitermachen).
+    """
+    dep_context = _ensure_dependencies(
+        model_id=effective_model_id,
+        client=client,
+        card_provider=provider,
+        card_model=model_id,
+        auto_mode=args.auto,
+        dry_run=args.dry_run,
+    )
+    if dep_context is None:
+        return True
+    return bool(args.dry_run)
+
+
+def _process_audit_subdir(
+    subdir: Path,
+    args: argparse.Namespace,
+    client: LLMClient,
+    provider: str,
+    model_id: str,
+    max_tokens: int,
+    csv_data: str,
+    effective_type: str,
+    safe_target_model: str | None,
+    blacklist: set[str],
+    configured_safe_ids: set[str],
+) -> bool:
+    """Verarbeitet ein einzelnes Audit-Subdir. Returns True wenn es uebersprungen wurde."""
+    # Defense in depth: vergleiche safe_name-normalisiert, damit auch
+    # Audit-Dirs mit roher Schreibweise (z.B. "gpt-5.4" statt "gpt-5_4")
+    # korrekt gematcht werden.
+    if safe_target_model and _safe_name(subdir.name) != safe_target_model:
+        return True
+
+    if args.auto and subdir.name in blacklist:
+        print(f"⏩ {subdir.name}: Auf Webexport-Blacklist → Review wird übersprungen.")
+        return True
+
+    effective_model_id = _resolve_effective_model_id(subdir.name)
+    _warn_if_orphaned_dir(subdir.name, effective_model_id, configured_safe_ids)
+
+    if effective_type == "benchmark":
+        bench_files = _audit_files_for_type(subdir, "benchmark")
+        if not bench_files:
+            print(
+                f"⏩ {subdir.name}: Nur PC-Bias-Report vorhanden, "
+                "keine Benchmark-Logs – überspringe."
+            )
+            return True
+
+    if _is_audit_review_current(subdir, effective_type, args):
+        return True
+
+    if effective_type == "benchmark":
+        if _ensure_benchmark_deps_or_skip(
+            effective_model_id, args, client, provider, model_id
+        ):
+            return True
+
+    if getattr(args, "dry_run", False):
+        print(f"  [DRY-RUN] Würde {effective_type}-Review für {subdir.name} generieren.")
+        return True
+
+    canonical = effective_model_id if effective_model_id != subdir.name else None
+    process_model_review(
+        subdir, csv_data, client, provider, model_id, effective_type, max_tokens,
+        canonical_model_id=canonical,
+    )
+    return False
+
+
 def _run_audit_reviews(
     args: argparse.Namespace,
     client: LLMClient,
@@ -992,114 +1413,20 @@ def _run_audit_reviews(
         return
 
     print(f"📁 Durchsuche Audit-Logs nach Modellen ({effective_type.upper()})...")
-    found_models = False
-
     safe_target_model = _safe_name(args.model) if args.model else None
-
-    # Lade Webexport-Blacklist für Auto-Review-Skip
     blacklist = _load_webexport_blacklist() if args.auto else set()
+    configured_safe_ids = _collect_configured_model_ids()
 
-    _configured_safe_ids: set[str] = set()
-    try:
-        _cfg = load_config()
-        for _p in list(_cfg.get("providers", {}).get("commercial", {}).values()) + list(_cfg.get("providers", {}).get("local", {}).values()):
-            for _m in _p.get("models", []):
-                _configured_safe_ids.add(_safe_name(_m["id"]))
-    except Exception:
-        pass
-
+    found_models = False
     for subdir in audit_base_dir.iterdir():
         if not _is_valid_audit_dir(subdir):
             continue
-        # Defense in depth: vergleiche safe_name-normalisiert, damit auch
-        # Audit-Dirs mit roher Schreibweise (z.B. "gpt-5.4" statt "gpt-5_4")
-        # korrekt gematcht werden.
-        if safe_target_model and _safe_name(subdir.name) != safe_target_model:
-            continue
-
-        # Webexport-Blacklist-Check: Modelle auf der Blacklist im Auto-Modus überspringen
-        if args.auto and subdir.name in blacklist:
-            print(f"⏩ {subdir.name}: Auf Webexport-Blacklist → Review wird übersprungen.")
-            continue
-
-        found_models = True
-
-        # Heritage-ID-Fallback: prüfe ob subdir.name eine veraltete ID ist,
-        # für die eine umbenannte Card mit heritage_ids existiert.
-        # In diesem Fall wird die kanonische ID aus der neuen Card für alle
-        # nachgelagerten Lookups (Card, Metriken, Output-Pfad) genutzt,
-        # während die Audit-Log-Dateien weiterhin aus subdir gelesen werden.
-        effective_model_id: str = subdir.name
-        if not _find_card(subdir.name).exists():
-            _heritage_path = find_card_by_heritage_id(subdir.name)
-            if _heritage_path is not None:
-                try:
-                    _h_data = json.loads(_heritage_path.read_text(encoding="utf-8"))
-                    _h_canonical = _h_data.get("model_id")
-                    if isinstance(_h_canonical, str) and _h_canonical:
-                        print(f"ℹ️ Heritage-ID: {subdir.name} → {_h_canonical}")
-                        effective_model_id = _h_canonical
-                except Exception:
-                    pass
-
-        # Nur warnen wenn kein Heritage-Fund — sonst wäre das ein False-Positive,
-        # denn die alte Audit-Dir ist intentional unter dem veralteten Namen.
-        if _configured_safe_ids and subdir.name not in _configured_safe_ids:
-            if effective_model_id == subdir.name:  # kein Heritage-Fund
-                if not re.search(r"-\d{8}$|-\d{6}$", subdir.name):
-                    print(f"⚠️  Verzeichnis '{subdir.name}' entspricht keiner konfigurierten Modell-ID — mögliches Duplikat.")
-
-        if effective_type == "benchmark":
-            bench_files = [
-                f for f in subdir.iterdir()
-                if f.is_file() and f.name != "00_bias_report.md" and not f.name.startswith("tooluse")
-            ]
-            if not bench_files:
-                print(f"⏩ {subdir.name}: Nur PC-Bias-Report vorhanden, keine Benchmark-Logs – überspringe.")
-                continue
-
-        if args.auto and not getattr(args, "force", False):
-            review_prefix = "bias_review" if effective_type == "bias" else "review"
-            review_out_dir = ROOT_DIR / "docs" / "reviews" / _safe_name(subdir.name)
-            existing_reviews = sorted(review_out_dir.glob(f"{review_prefix}_*.md")) if review_out_dir.exists() else []
-            if existing_reviews:
-                latest_review_mtime = existing_reviews[-1].stat().st_mtime
-                if effective_type == "benchmark":
-                    # Nur Modul-Reports: kein 00_bias_report.md, kein tooluse*.md
-                    audit_files = [
-                        f for f in subdir.iterdir()
-                        if f.is_file() and f.name != "00_bias_report.md" and not f.name.startswith("tooluse")
-                    ]
-                else:
-                    # bias: nur 00_bias_report.md
-                    audit_files = [f for f in subdir.iterdir() if f.is_file() and f.name == "00_bias_report.md"]
-                latest_audit_mtime = max((f.stat().st_mtime for f in audit_files), default=0)
-                if latest_review_mtime >= latest_audit_mtime:
-                    print(f"⏩ Review für {subdir.name} aktuell – überspringe.")
-                    continue
-
-        if effective_type == "benchmark":
-            dep_context = _ensure_dependencies(
-                model_id=effective_model_id,
-                client=client,
-                card_provider=provider,
-                card_model=model_id,
-                auto_mode=args.auto,
-                dry_run=args.dry_run,
-            )
-            if dep_context is None:
-                continue
-            if args.dry_run:
-                continue
-
-        if getattr(args, "dry_run", False):
-            print(f"  [DRY-RUN] Würde {effective_type}-Review für {subdir.name} generieren.")
-            continue
-
-        process_model_review(
-            subdir, csv_data, client, provider, model_id, effective_type, max_tokens,
-            canonical_model_id=effective_model_id if effective_model_id != subdir.name else None,
+        skipped = _process_audit_subdir(
+            subdir, args, client, provider, model_id, max_tokens, csv_data,
+            effective_type, safe_target_model, blacklist, configured_safe_ids,
         )
+        if not skipped:
+            found_models = True
 
     if not found_models:
         print("⚠️ Keine Audit-Logs für das spezifizierte Modell gefunden.")
