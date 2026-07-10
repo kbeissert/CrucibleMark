@@ -386,6 +386,12 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
 
     def _get_existing(self, provider: str) -> dict:
         """Ermittelt das passende Cache-Dictionary basierend auf dem Provider."""
+        # PITFALL: Ollama ist der kanonische lokale Inferenz-Provider — sein Cache
+        # liegt immer in ``local_models_benchmark.csv``, unabhängig davon ob
+        # ``ollama_local`` oder ``ollama_cloud`` aktiv ist. Der ``model_type``-Lookup
+        # unten gilt nur für kommerzielle Provider. Eine Vereinheitlichung via
+        # ``provider_config.yaml`` → ``benchmark_csv:`` pro Provider würde die
+        # Default-Trennung (local/cloud/commercial CSVs) brechen — bewusst lokal.
         if provider == "ollama":
             return self.existing_local_benchmarks
 
@@ -397,6 +403,12 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
 
     def _get_existing_for_model(self, provider: str, model: str) -> dict:
         """Wie _get_existing(), aber beachtet auch :cloud-Suffix bei Ollama-Proxies."""
+        # PITFALL: Ollama-Cloud-Proxies vergeben ein ``:cloud``-Tag im Modellnamen.
+        # Solche Modelle sind technisch lokal inferiert, gehören aber benchmark­
+        # taxonomisch zur Cloud-Spalte (paywall-finanziert). Die Suffix-Heuristik
+        # ist bewusst lokal gehalten — eine Verschiebung in provider_config.yaml
+        # würde voraussetzen, dass Auto-Discovery die Tags beim ersten Lookup
+        # materialisiert; aktuell ist das pattern nur an dieser einen Stelle nötig.
         if provider == "ollama":
             if ":cloud" in model.lower() or model.lower().endswith("-cloud"):
                 return self.existing_cloud_benchmarks
@@ -802,6 +814,12 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
                 "response_length": result.get("tokens_used", 0) * 4,
             })
         if is_local and provider == "ollama":
+            # PITFALL: Ollama-API-spezifisches Model-Unload (``keep_alive: 0``) vor
+            # dem Judge, um VRAM für das Judge-Modell freizugeben. llama.cpp/
+            # vLLM-Provider verwalten ihren Lifecycle selbst (siehe
+            # ``_local_memory_reset``); ein generisches ``unload_provider: ollama``
+            # Config-Feld würde nur diesen einen Endpoint-Aufruf parametrisieren
+            # und keine analoge Semantik für andere Backends mitbringen.
             with contextlib.suppress(Exception):
                 requests.post(
                     f"{OLLAMA_DEFAULT_BASE_URL}/api/generate",
@@ -1031,6 +1049,13 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
     def _collect_warmup_result(self, model: str, provider: str) -> list[dict[str, Any]]:
         """Cold-Start Probe für Ollama, in results-Liste eingebettet."""
         results: list[dict[str, Any]] = []
+        # PITFALL: Ollama lädt Modelle on-demand in den VRAM und braucht einen
+        # Warmup-Request (``/api/generate``), um den ersten Token-Stream zu
+        # vermeiden. llama.cpp/vLLM-Server starten bereits mit einem geladenen
+        # Modell (Lifecycle via Connector ``start_server``) und brauchen diese
+        # Heuristik nicht — eine Verallgemeinerung wäre ``warmup_endpoint:``/
+        # ``warmup_payload:`` pro Provider, hat aber für die einzige relevante
+        # Backend (Ollama) keinen zusätzlichen Nutzen.
         if provider != "ollama":
             return results
         warmup_result = self._measure_cold_start(model)
@@ -1046,8 +1071,15 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         pause_calculator = (
             AdaptivePauseCalculator(model, self.mode) if is_local else None
         )
-        # Free-tier OpenRouter models (model-id ends with ":free") nutzen ein
-        # konservativeres Profil (18 RPM / 200 RPD).
+        # PITFALL: Free-Tier OpenRouter-Modelle enden mit ":free" und benötigen
+        # ein konservativeres Rate-Limit-Profil (18 RPM / 200 RPD). Die Mapping-
+        # Logik (SSoT: config/rate_limits.yaml → Block ``openrouter_free``) liegt
+        # hier im Runner und nicht im RateLimiter, weil die Limit-Auswahl vom
+        # Modellnamen abhängt — der RateLimiter bekommt nur einen Lookup-Key.
+        # Eine rein config-getriebene Lösung würde voraussetzen, dass
+        # provider_config.yaml pro OpenRouter-Modell einen ``rate_limit_key``
+        # führt; aktuell reicht die Suffix-Heuristik für den einzigen
+        # Free-Tier-Fall.
         _limiter_key = (
             "openrouter_free"
             if (provider == "openrouter" and model.endswith(":free"))
