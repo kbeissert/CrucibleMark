@@ -82,7 +82,7 @@
   "quantization_format": null,
   "tooluse_runs": {
     "google/gemma-4-31b-it": {
-      "tested_at": "2026-07-10T07:21:11Z",
+      "tested_at": "2026-07-10T08:45:08Z",
       "score_p1": 90.0,
       "score_p2": 60.0
     }

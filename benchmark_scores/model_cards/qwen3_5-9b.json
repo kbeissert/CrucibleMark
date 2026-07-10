@@ -80,7 +80,7 @@
   "quantization_format": "UD-Q6_K_XL GGUF",
   "tooluse_runs": {
     "qwen3_5-9b": {
-      "tested_at": "2026-07-10T07:21:10Z",
+      "tested_at": "2026-07-10T08:45:08Z",
       "score_p1": 68.33,
       "score_p2": 46.67
     }

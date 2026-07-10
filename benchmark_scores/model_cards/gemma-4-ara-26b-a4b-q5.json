@@ -81,7 +81,7 @@
   "heritage_ids": [],
   "tooluse_runs": {
     "gemma-4-ara-26b-a4b-q5": {
-      "tested_at": "2026-07-10T07:21:10Z",
+      "tested_at": "2026-07-10T08:45:08Z",
       "score_p1": 90.0,
       "score_p2": 63.33
     }

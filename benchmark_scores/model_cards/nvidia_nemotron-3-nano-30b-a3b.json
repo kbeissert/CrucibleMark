@@ -81,7 +81,7 @@
   "community": null,
   "tooluse_runs": {
     "nvidia/nemotron-3-nano-30b-a3b": {
-      "tested_at": "2026-07-10T07:21:11Z",
+      "tested_at": "2026-07-10T08:45:09Z",
       "score_p1": 82.5,
       "score_p2": 51.67
     }

@@ -81,7 +81,7 @@
   "quantization_format": "Q8_K_XL GGUF",
   "tooluse_runs": {
     "gemma-4-12b-it-ud-q8_k_xl": {
-      "tested_at": "2026-07-10T07:21:10Z",
+      "tested_at": "2026-07-10T08:45:08Z",
       "score_p1": 83.33,
       "score_p2": 43.33
     }

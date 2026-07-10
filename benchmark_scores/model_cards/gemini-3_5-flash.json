@@ -81,7 +81,7 @@
   "community": null,
   "tooluse_runs": {
     "gemini-3.5-flash": {
-      "tested_at": "2026-07-10T07:21:11Z",
+      "tested_at": "2026-07-10T08:45:09Z",
       "score_p1": 83.33,
       "score_p2": 63.33
     }

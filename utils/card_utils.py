@@ -321,7 +321,12 @@ _CARD_TEMPLATE: dict[str, Any] = {
     "tooluse_tested_at": None,
     "tooluse_score_p1": None,
     "tooluse_score_p2": None,
+    "tooluse_runs": None,
     "tooluse_recommendation": None,
+    # ---- Dual-Profile-Markierung ---------------------------------------
+    # dual_profile: true → Card ist Shared zwischen Standard- und Thinking-Profil
+    # (vLLM Dual-Thinking-Profile). Wird vom Config-Expander gesetzt.
+    "dual_profile": None,
     # ---- Sampling-Parameter --------------------------------------------
     "temperature": None,
     "system_prompt_override": None,

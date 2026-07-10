@@ -174,6 +174,94 @@ def test_resolve_canonical_model_id_falls_back_to_safename(
 
 
 # ---------------------------------------------------------------------------
+# 2b. resolve_canonical_model_id: dual_profile Card-Feld (v4.10.18)
+# ---------------------------------------------------------------------------
+
+
+def test_dual_profile_card_keeps_profile_id(isolated_card_dir: Path) -> None:
+    """Shared-Card mit ``dual_profile: true`` → Profil-ID bleibt erhalten.
+
+    Regression für vLLM Dual-Thinking-Profile: Thinking-Profil teilt sich
+    eine Card mit dem Basis-Modell. Die kanonische ID muss die EIGENE
+    Profil-ID sein (z.B. ``qwen3_6-27B-thinking``), nicht die Basis-ID
+    (``qwen3_6-27B``). Das ``dual_profile``-Feld ersetzt die frühere
+    ``-thinking``-Suffix-Heuristik.
+    """
+    # Shared-Card mit dual_profile=true
+    target = isolated_card_dir / "qwen3_6-27B--VSPK.json"
+    target.write_text(
+        json.dumps({
+            "model_id": "qwen3_6-27B",
+            "dual_profile": True,
+        }),
+        encoding="utf-8",
+    )
+
+    # Thinking-Profil ohne model_cfg — _find_card nutzt Suffix-Fallback
+    canonical = resolve_canonical_model_id("qwen3_6-27B-thinking")
+    assert canonical == "qwen3_6-27B-thinking"
+
+
+def test_standalone_thinking_card_returns_card_model_id(
+    isolated_card_dir: Path,
+) -> None:
+    """Standalone-Thinking-Card ohne ``dual_profile`` → card.model_id zurückgeben.
+
+    Regression für moonshotai_kimi-k2-thinking: Modell hat EIGENE Card
+    (nicht geteilt). Die kanonische ID muss ``card.model_id`` sein, damit
+    der Leaderboard-Merge korrekt matcht. Ohne ``dual_profile``-Feld
+    greift der Normalfall (card.model_id zurückgeben).
+    """
+    target = isolated_card_dir / "moonshotai_kimi-k2-thinking-20251106.json"
+    target.write_text(
+        json.dumps({
+            "model_id": "moonshotai/kimi-k2-thinking-20251106",
+            # KEIN dual_profile — eigenständige Card
+        }),
+        encoding="utf-8",
+    )
+
+    canonical = resolve_canonical_model_id("moonshotai_kimi-k2-thinking")
+    assert canonical == "moonshotai/kimi-k2-thinking-20251106"
+
+
+def test_dual_profile_via_model_cfg(isolated_card_dir: Path) -> None:
+    """``dual_profile: true`` in model_cfg → Profil-ID, auch ohne Card-Feld.
+
+    Runtime-Pfad: Config-Expansion setzt dual_profile in model_cfg.
+    resolve_canonical_model_id nutzt model_cfg.dual_profile als Primär-Quelle.
+    """
+    target = isolated_card_dir / "gemma-4-31B--VSPK.json"
+    target.write_text(
+        json.dumps({"model_id": "Gemma-4-31B"}),  # Kein dual_profile in Card
+        encoding="utf-8",
+    )
+
+    profile_cfg = {
+        "card_model_id": "Gemma-4-31B",
+        "dual_profile": True,
+    }
+    canonical = resolve_canonical_model_id(
+        "Gemma-4-31B-thinking", model_cfg=profile_cfg,
+    )
+    assert canonical == "Gemma-4-31B-thinking"
+
+
+def test_no_dual_profile_no_suffix_returns_card_model_id(
+    isolated_card_dir: Path,
+) -> None:
+    """Normale Card ohne dual_profile → card.model_id (Standard-Verhalten)."""
+    target = isolated_card_dir / "gpt-4o.json"
+    target.write_text(
+        json.dumps({"model_id": "gpt-4o"}),
+        encoding="utf-8",
+    )
+
+    canonical = resolve_canonical_model_id("gpt-4o")
+    assert canonical == "gpt-4o"
+
+
+# ---------------------------------------------------------------------------
 # 3. resolve_model_cfg_for: SSoT-Helper für Config-Lookup
 # ---------------------------------------------------------------------------
 
@@ -330,15 +418,23 @@ def test_resolve_canonical_thinking_without_cfg_preserves_thinking_id(
     resolve_canonical_model_id NICHT card.model_id (Basis-ID) zurückgeben.
     Die kanonische ID des Thinking-Profils bleibt ``{id}-thinking`` —
     sonst verschmelzen Basis- und Thinking-Ergebnis im Leaderboard.
+
+    v4.10.18: Voraussetzung ist ``dual_profile: true`` in der Card (SSoT
+    für Shared-Card-Markierung). Ohne dieses Feld wird die Card als
+    eigenständig behandelt und card.model_id zurückgegeben.
     """
     shared_card = isolated_card_dir / "ornith-1_0-35B-FP8--VSPK.json"
     shared_card.write_text(
-        json.dumps({"model_id": "ornith-1_0-35B-FP8", "model_version": "1.0"}),
+        json.dumps({
+            "model_id": "ornith-1_0-35B-FP8",
+            "model_version": "1.0",
+            "dual_profile": True,
+        }),
         encoding="utf-8",
     )
 
     # Ohne model_cfg: Card wird gefunden (Suffix-Fallback), aber kanonische
-    # ID bleibt die Thinking-Profil-ID
+    # ID bleibt die Thinking-Profil-ID (dual_profile=true → Shared-Card)
     canonical = resolve_canonical_model_id("ornith-1_0-35B-FP8-thinking")
     assert canonical == "ornith-1_0-35B-FP8-thinking"
 

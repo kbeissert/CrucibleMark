@@ -209,14 +209,16 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         # SSoT-Override-Guard: Bei Dual-Thinking-Profilen teilen sich Profil und
         # Basis eine Card. Das Card-``model_id``-Feld zeigt auf die Basis-ID,
         # das Profil behält aber seine eigene ID im Pipeline-State.
-        # Detection: card_model_id-Redirect ODER -thinking-Suffix.
-        _is_thinking_redirect = (
+        # Detection (v4.10.18): ``dual_profile``-Feld in Card ODER
+        # ``card_model_id``-Redirect in model_cfg. Ersetzt die frühere
+        # ``-thinking``-Suffix-Heuristik (fragil bei Standalone-Thinking-Modellen
+        # wie moonshotai_kimi-k2-thinking).
+        _is_dual_profile = bool(loaded.get("dual_profile")) or (
             model_cfg is not None
             and isinstance(model_cfg.get("card_model_id"), str)
             and bool(model_cfg["card_model_id"])
         )
-        _is_thinking_suffix = model.endswith("-thinking")
-        if _is_thinking_redirect or _is_thinking_suffix:
+        if _is_dual_profile:
             canonical_model = model
         else:
             canonical_model = loaded.get("model_id") or model

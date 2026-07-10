@@ -81,7 +81,7 @@
   "stop_sequences": null,
   "tooluse_runs": {
     "hermes-4.3-36b-q6": {
-      "tested_at": "2026-07-10T07:21:10Z",
+      "tested_at": "2026-07-10T08:45:08Z",
       "score_p1": 90.0,
       "score_p2": 36.67
     }

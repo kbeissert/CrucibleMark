@@ -82,7 +82,7 @@
   "community": null,
   "tooluse_runs": {
     "o4-mini": {
-      "tested_at": "2026-07-10T07:21:11Z",
+      "tested_at": "2026-07-10T08:45:09Z",
       "score_p1": 85.0,
       "score_p2": 40.83
     }

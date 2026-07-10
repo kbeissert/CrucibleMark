@@ -72,7 +72,7 @@
   "community": null,
   "tooluse_runs": {
     "nvidia/llama-3.3-nemotron-super-49b-v1.5": {
-      "tested_at": "2026-07-10T07:21:11Z",
+      "tested_at": "2026-07-10T08:45:09Z",
       "score_p1": 90.0,
       "score_p2": 55.83
     }

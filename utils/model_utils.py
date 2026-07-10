@@ -421,34 +421,41 @@ def resolve_canonical_model_id(
         and model_cfg["card_model_id"] != model_id
     )
 
-    # Thinking-Profile ohne model_cfg: ``_find_card`` findet die Basis-Card
-    # via ``-thinking``-Suffix-Fallback. In diesem Fall MUSS die kanonische
-    # ID die EIGENE (Profil-ID, z.B. ``{id}-thinking``) bleiben — NICHT
-    # ``card.model_id`` der Basis-Card. Sonst verschmelzen Basis- und
-    # Thinking-Profil im Leaderboard zu einer ID.
-    _is_thinking_suffix = (
-        model_cfg is None
-        and base.endswith("-thinking")
-    )
+    # Dual-Profile-Erkennung (v4.10.18):
+    # SSoT für "diese Card ist Shared zwischen Standard- und Thinking-Profil"
+    # ist das Card-Feld ``dual_profile: true``. Es wird vom Config-Expander
+    # gesetzt und ersetzt die frühere ``-thinking``-Suffix-Heuristik.
+    # model_cfg.dual_profile hat Priorität (Runtime-Config), danach Card-Feld.
+    _is_dual_profile = False
+    if model_cfg is not None and model_cfg.get("dual_profile"):
+        _is_dual_profile = True
 
     try:
         card_path = _find_card(base, model_cfg=model_cfg)
     except Exception:  # noqa: BLE001
         card_path = None
     if card_path is not None and card_path.exists():
-        # Bei card_model_id-Redirect ODER -thinking-Suffix-Fallback:
-        # Card-Existenz bestätigt, aber die kanonische ID ist die EIGENE
-        # (Profil-ID), nicht die der Card.
-        if _used_card_redirect or _is_thinking_suffix:
-            return _safe_name(base)
+        # Card laden — wird für dual_profile-Check und model_id benötigt.
         try:
             data = json.loads(card_path.read_text(encoding="utf-8"))
-            if isinstance(data, dict):
-                canonical = data.get("model_id")
-                if isinstance(canonical, str) and canonical:
-                    return canonical
         except (OSError, json.JSONDecodeError):  # noqa: PERF203
-            pass
+            data = None
+
+        # Card-Feld dual_profile als Fallback wenn model_cfg fehlt
+        if not _is_dual_profile and isinstance(data, dict) and data.get("dual_profile"):
+            _is_dual_profile = True
+
+        # Bei Dual-Profile (Shared-Card): kanonische ID ist die EIGENE
+        # Profil-ID, NICHT card.model_id der Basis-Card. Sonst verschmelzen
+        # Basis- und Thinking-Profil im Leaderboard zu einer ID.
+        if _used_card_redirect or _is_dual_profile:
+            return _safe_name(base)
+
+        # Standalone-Card: card.model_id zurückgeben (kanonische Form)
+        if isinstance(data, dict):
+            canonical = data.get("model_id")
+            if isinstance(canonical, str) and canonical:
+                return canonical
     # Fallback: _safe_name anwenden (systemweite Konvention: Punkte/Doppelpunkte/Slashes → Underscores).
     # Modelle MIT Card nutzen card.model_id (Pfad 3), das auch Punkte enthalten kann
     # (z.B. gpt-5.4-nano, wenn die Card das explizit so definiert).

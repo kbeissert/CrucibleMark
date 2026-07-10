@@ -83,7 +83,7 @@
   "system_prompt_override": null,
   "tooluse_runs": {
     "qwen3_6-35b-a3b-q8": {
-      "tested_at": "2026-07-10T07:21:11Z",
+      "tested_at": "2026-07-10T08:45:08Z",
       "score_p1": 78.33,
       "score_p2": 65.83
     }

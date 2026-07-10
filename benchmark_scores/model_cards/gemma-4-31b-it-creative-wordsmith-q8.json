@@ -84,7 +84,7 @@
   "quantization_format": "Q8_0 GGUF",
   "tooluse_runs": {
     "gemma-4-31b-it-creative-wordsmith-q8": {
-      "tested_at": "2026-07-10T07:21:10Z",
+      "tested_at": "2026-07-10T08:45:08Z",
       "score_p1": 83.33,
       "score_p2": 50.0
     }

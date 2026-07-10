@@ -94,14 +94,15 @@
   "community": null,
   "tooluse_runs": {
     "qwen3_6-27B": {
-      "tested_at": "2026-07-10T07:21:11Z",
+      "tested_at": "2026-07-10T08:45:08Z",
       "score_p1": 72.5,
       "score_p2": 56.67
     },
     "qwen3_6-27B-thinking": {
-      "tested_at": "2026-07-10T07:21:11Z",
+      "tested_at": "2026-07-10T08:45:08Z",
       "score_p1": 19.17,
       "score_p2": 22.5
     }
-  }
+  },
+  "dual_profile": true
 }

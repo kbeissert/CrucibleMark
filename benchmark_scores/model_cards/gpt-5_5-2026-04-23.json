@@ -79,7 +79,7 @@
   "community": null,
   "tooluse_runs": {
     "gpt-5_5-2026-04-23": {
-      "tested_at": "2026-07-10T07:21:11Z",
+      "tested_at": "2026-07-10T08:45:09Z",
       "score_p1": 83.33,
       "score_p2": 62.5
     }

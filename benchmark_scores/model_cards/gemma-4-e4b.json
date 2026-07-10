@@ -85,7 +85,7 @@
   "quantization_format": "GGUF",
   "tooluse_runs": {
     "gemma-4-e4b": {
-      "tested_at": "2026-07-10T07:21:11Z",
+      "tested_at": "2026-07-10T08:45:08Z",
       "score_p1": 90.0,
       "score_p2": 56.67
     }

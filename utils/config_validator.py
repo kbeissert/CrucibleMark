@@ -135,9 +135,11 @@ class ConfigValidator:
 
                     # Original-Eintrag: enable_thinking konsumieren,
                     # explizit auf False in chat_template_kwargs setzen.
+                    # dual_profile markiert beide Einträge als Shared-Card-Profile.
                     standard = dict(model)
                     standard.pop("enable_thinking", None)
                     standard["chat_template_kwargs"] = {"enable_thinking": False}
+                    standard["dual_profile"] = True
                     expanded.append(standard)
 
                     # Thinking-Eintrag: eigener id-Suffix, gleiche Card,
@@ -149,6 +151,7 @@ class ConfigValidator:
                     thinking_entry["card_model_id"] = original_id
                     thinking_entry["chat_template_kwargs"] = {"enable_thinking": True}
                     thinking_entry["max_tokens"] = thinking_max_tokens
+                    thinking_entry["dual_profile"] = True
                     expanded.append(thinking_entry)
 
                 prov_cfg["models"] = expanded

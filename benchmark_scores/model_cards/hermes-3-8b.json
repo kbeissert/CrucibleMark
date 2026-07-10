@@ -79,7 +79,7 @@
   "quantization_format": "Q6_K_L GGUF",
   "tooluse_runs": {
     "hermes-3-8b": {
-      "tested_at": "2026-07-10T07:21:11Z",
+      "tested_at": "2026-07-10T08:45:08Z",
       "score_p1": 83.33,
       "score_p2": 30.0
     }

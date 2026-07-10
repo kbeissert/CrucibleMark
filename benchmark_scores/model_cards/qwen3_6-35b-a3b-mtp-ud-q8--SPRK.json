@@ -84,7 +84,7 @@
   "quantization_format": null,
   "tooluse_runs": {
     "qwen3_6-35b-a3b-mtp-ud-q8": {
-      "tested_at": "2026-07-10T07:21:10Z",
+      "tested_at": "2026-07-10T08:45:08Z",
       "score_p1": 68.33,
       "score_p2": 63.68
     }

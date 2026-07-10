@@ -78,7 +78,7 @@
   "heritage_ids": [],
   "tooluse_runs": {
     "qwen3-coder-next-q8": {
-      "tested_at": "2026-07-10T07:21:10Z",
+      "tested_at": "2026-07-10T08:45:08Z",
       "score_p1": 74.62,
       "score_p2": 74.62
     }

@@ -85,7 +85,7 @@
   "stop_sequences": null,
   "tooluse_runs": {
     "qwen3_6-35b-a3b-uncensored": {
-      "tested_at": "2026-07-10T07:21:10Z",
+      "tested_at": "2026-07-10T08:45:08Z",
       "score_p1": 81.67,
       "score_p2": 40.83
     }

@@ -91,9 +91,15 @@
   "community": null,
   "tooluse_runs": {
     "Gemma-4-31B": {
-      "tested_at": "2026-07-10T07:21:11Z",
+      "tested_at": "2026-07-10T08:45:08Z",
       "score_p1": 90.0,
       "score_p2": 49.17
+    },
+    "Gemma-4-31B-thinking": {
+      "tested_at": "2026-07-10T08:45:08Z",
+      "score_p1": 83.33,
+      "score_p2": 56.67
     }
-  }
+  },
+  "dual_profile": true
 }
