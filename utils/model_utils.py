@@ -23,6 +23,55 @@ from utils.constants import (
 
 T = TypeVar("T")
 
+
+# ---------------------------------------------------------------------------
+# Size-Class Taxonomy Loader (SSoT: config/classification_taxonomy.json)
+# ---------------------------------------------------------------------------
+# Tier-Reihenfolge, Schwellwerte und Reviewer-Labels werden in einer einzigen
+# Konfigurationsdatei gepflegt. Konsumenten: get_model_size_class(),
+# Card-Vocabulary-Validierung, Reviewer-Prompt-Generator.
+
+from functools import lru_cache  # noqa: E402  (nach T-TypeVar platziert, harmlos)
+
+_SIZE_CLASS_TAXONOMY_PATH = (
+    Path(__file__).resolve().parent.parent / "config" / "classification_taxonomy.json"
+)
+
+
+@lru_cache(maxsize=1)
+def _load_size_class_taxonomy() -> dict:
+    """Laedt die size_class-Sektion aus classification_taxonomy.json (SSoT).
+
+    Wirft RuntimeError, wenn die Datei fehlt oder die Struktur unvollstaendig
+    ist — ein fehlender Tier-Tuple ist ein harter Build-Fehler, kein Fallback.
+
+    Returns:
+        dict mit Schluesseln 'thresholds_b' (list[float]), 'tier_order'
+        (list[str]) und 'values' (dict[str, dict]). Struktur siehe
+        config/classification_taxonomy.json#size_class.
+    """
+    try:
+        data = json.loads(_SIZE_CLASS_TAXONOMY_PATH.read_text(encoding="utf-8"))
+    except FileNotFoundError as e:
+        raise RuntimeError(
+            f"Size-Class-Taxonomie nicht gefunden: {_SIZE_CLASS_TAXONOMY_PATH}"
+        ) from e
+    except json.JSONDecodeError as e:
+        raise RuntimeError(
+            f"Size-Class-Taxonomie in {_SIZE_CLASS_TAXONOMY_PATH} ist kein gueltiges JSON: {e}"
+        ) from e
+
+    sc = data.get("size_class")
+    if not isinstance(sc, dict):
+        raise RuntimeError(
+            f"size_class-Sektion fehlt in {_SIZE_CLASS_TAXONOMY_PATH}"
+        )
+    if "thresholds_b" not in sc or "tier_order" not in sc:
+        raise RuntimeError(
+            f"size_class in {_SIZE_CLASS_TAXONOMY_PATH} braucht 'thresholds_b' und 'tier_order'"
+        )
+    return sc
+
 # Provider short codes — mirrors benchmark_config.yaml → providers.<name>.short_code
 # This dict provides fast in-process lookup without YAML I/O on every call.
 #
@@ -1779,16 +1828,15 @@ def is_reasoning_model(model_name: str) -> bool:
     return any(t in model_name.lower() for t in triggers)
 
 
-_SIZE_CLASS_VALID = {"Nano", "Edge", "Desktop", "Workstation", "Server", "Frontier"}
+_sc = _load_size_class_taxonomy()
+_SIZE_CLASS_VALID = set(_sc["tier_order"])
 
 # Parameter-to-size-class mapping (upper bound in billions, class name).
-# Reflects real-world RAM requirements at Q4 quantization; order matters (smallest first).
-_SIZE_CLASS_THRESHOLDS: tuple[tuple[float, str], ...] = (
-    (4.0, "Nano"),
-    (9.0, "Edge"),
-    (22.0, "Desktop"),
-    (35.0, "Workstation"),
-    (75.0, "Server"),
+# Aus SSoT (classification_taxonomy.json#size_class) abgeleitet; Frontier ist
+# Fallback und hat keine obere Schwelle.
+_SIZE_CLASS_THRESHOLDS: tuple[tuple[float, str], ...] = tuple(
+    (float(threshold), tier)
+    for threshold, tier in zip(_sc["thresholds_b"], _sc["tier_order"][:-1])
 )
 
 
@@ -1803,26 +1851,19 @@ def get_model_size_class(model_name: str) -> str:
     """
     Determines the hardware-deployment size class of a model based on its name tag.
 
+    Tier-Reihenfolge, Schwellwerte und Reviewer-Labels werden aus
+    ``config/classification_taxonomy.json`` geladen (SSoT). Tier-Namen und
+    Spannen sind dort pflegbar; diese Funktion nimmt keine Hardcodes mehr an.
+
     Priority:
         1. Model-Card field ``size_class`` (single source of truth for overrides)
         2. Ollama-style tag regex (e.g. 'qwen3:4b', 'phi3.5:3.8b', 'gemma4:E4B')
         3. Dash/dot-separated size suffix (e.g. 'llama-3.3-70b', 'qwen3-32b')
         4. Fallback: 'Frontier' (API-only or size unknown)
 
-    Tiers reflect real-world RAM requirements at Q4 quantization:
-
-        Nano        ≤ 4B    < 4 GB    Smartphone, Raspberry Pi, autocomplete-only
-        Edge        5–9B    4–8 GB    Any laptop, MacBook Air M-Series
-        Desktop     10–22B  8–16 GB   MacBook Pro, 14–36 GB Unified Memory
-        Workstation 20–35B  14–24 GB  M4 Pro/Max, RTX 4090, high-end consumer
-        Server      36–75B  24–48 GB  Mac Studio, dedicated GPU node
-        Frontier    >75B / API-only   Cloud-only, no practical local deployment
-
-    Args:
-        model_name: Raw model name string (e.g. 'qwen3:4b', 'mistral-large-latest')
-
     Returns:
-        One of: 'Nano', 'Edge', 'Desktop', 'Workstation', 'Server', 'Frontier'
+        Ein Tier aus tier_order in classification_taxonomy.json (z.B.
+        'Nano', 'Edge', 'Desktop', 'Workstation', 'Server', 'Frontier').
     """
     # 1. Model-Card override (SSoT for models whose name doesn't carry a clear size tag)
     card_path = _find_card(model_name)

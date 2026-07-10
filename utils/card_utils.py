@@ -100,11 +100,59 @@ def clear_taxonomy_cache() -> None:
 #           deprecated_tags, reasoning_triggers.
 
 _VOCABULARY_PATH = Path(__file__).resolve().parent.parent / "config" / "card_vocabulary.yaml"
+_TAXONOMY_PATH = Path(__file__).resolve().parent.parent / "config" / "classification_taxonomy.json"
 _VOCABULARY_CACHE: dict[str, Any] | None = None
+
+
+def _resolve_taxonomy_field(values_from: str) -> list[str]:
+    """Liest einen Wert aus classification_taxonomy.json via Pfad-Ausdruck.
+
+    Unterstuetzte Formate:
+      - 'tier_order' (Sektion size_class.tier_order)
+      - 'size_class.tier_order' (Sektion + Pfad)
+      - 'use_case.<key>.label' (beliebiger Pfad innerhalb size_class oder use_case)
+
+    Wirft RuntimeError, wenn die Quelle fehlt oder der Pfad nicht aufgeloest
+    werden kann — das ist ein Konfig-Fehler, kein Fallback.
+    """
+    try:
+        data = json.loads(_TAXONOMY_PATH.read_text(encoding="utf-8"))
+    except FileNotFoundError as e:
+        raise RuntimeError(
+            f"Taxonomie-Datei fehlt: {_TAXONOMY_PATH}"
+        ) from e
+    except json.JSONDecodeError as e:
+        raise RuntimeError(
+            f"Taxonomie-Datei {_TAXONOMY_PATH} ist kein gueltiges JSON: {e}"
+        ) from e
+
+    parts = values_from.split(".")
+    if len(parts) == 1:
+        # Direkter Zugriff auf size_class-Sektion
+        section = data.get("size_class", {})
+        value = section.get(parts[0])
+    elif len(parts) == 2:
+        section = data.get(parts[0], {})
+        value = section.get(parts[1])
+    else:
+        raise RuntimeError(
+            f"values_from-Ausdruck '{values_from}' hat zu viele Pfad-Komponenten"
+        )
+
+    if value is None:
+        raise RuntimeError(
+            f"values_from '{values_from}' konnte in {_TAXONOMY_PATH} nicht aufgeloest werden"
+        )
+    return value
 
 
 def load_vocabulary() -> dict[str, Any]:
     """Lädt die Card-Vokabular-Registry (SSoT) mit Caching.
+
+    Controlled-Field-Definitionen koennen 'values_from: <taxonomy.path>' nutzen,
+    um ihre Werteliste aus classification_taxonomy.json abzuleiten statt sie zu
+    duplizieren. Aufgeloeste Werte werden unter dem gleichen 'values'-Schluessel
+    zurueckgegeben, den Konsumenten bereits erwarten.
 
     Returns:
         Dict mit Sektionen: controlled_fields, reserved_tags,
@@ -122,6 +170,24 @@ def load_vocabulary() -> dict[str, Any]:
             )
         with _VOCABULARY_PATH.open(encoding="utf-8") as f:
             _VOCABULARY_CACHE = yaml.safe_load(f)
+
+        # values_from-Aufloesung fuer controlled_fields (Backward-Compat: 'values'
+        # bleibt der Standard-Schluessel fuer Konsumenten)
+        controlled = _VOCABULARY_CACHE.get("controlled_fields", {}) or {}
+        for _field_name, _field_def in controlled.items():
+            if not isinstance(_field_def, dict):
+                continue
+            if "values_from" not in _field_def:
+                continue
+            resolved = _resolve_taxonomy_field(_field_def["values_from"])
+            _field_def["values"] = resolved
+            logger.debug(
+                "Vokabular-Registry: %s.values aus taxonomy (%s) abgeleitet: %s",
+                _field_name,
+                _field_def["values_from"],
+                resolved,
+            )
+
     assert _VOCABULARY_CACHE is not None
     return _VOCABULARY_CACHE
 

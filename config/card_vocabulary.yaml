@@ -37,7 +37,7 @@ controlled_fields:
 
   size_class:
     source: classification_taxonomy.json#size_class
-    values: [Nano, Edge, Desktop, Workstation, Server, Frontier]
+    values_from: tier_order
 
   input_modalities:
     description: "Welche Eingabe-Modalitäten das Modell nativ verarbeitet. text ist immer implizit."

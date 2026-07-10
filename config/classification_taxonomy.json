@@ -54,36 +54,51 @@
     }
   },
   "size_class": {
-    "description": "Deployment-Hardware-Tier des Modells – leitet sich aus Parameteranzahl oder API-Only-Status ab.",
+    "description": "Deployment-Hardware-Tier des Modells – leitet sich aus Parameteranzahl oder API-Only-Status ab. SSoT für Tier-Reihenfolge, Schwellwerte und Reviewer-Hinweise. Konsumiert von utils.model_utils.get_model_size_class(), Card-Vocabulary-Validierung und Reviewer-Prompt-Generator (format_classification_context).",
     "field_name": "size_class",
+    "thresholds_b": [4, 9, 22, 35, 75],
+    "tier_order": ["Nano", "Edge", "Desktop", "Workstation", "Server", "Frontier"],
     "values": {
       "Nano": {
         "label": "Nano (≤4B Parameter)",
+        "min_params_b": 0,
+        "max_params_b": 4,
         "description": "Kleinstmodelle für Embedded/Mobile-Einsatz. Sehr geringer Speicherbedarf.",
         "reviewer_guidance": "Maßstab ist Kompetenz relativ zur Parameterzahl. Tiefes Reasoning oder breites Weltwissen sind strukturell nicht zu erwarten."
       },
       "Edge": {
         "label": "Edge (5–9B Parameter)",
+        "min_params_b": 5,
+        "max_params_b": 9,
         "description": "Consumer-GPU-Klasse. Läuft auf Standard-Laptops (z.B. MacBook M-Serie, RTX 3060).",
         "reviewer_guidance": "Gutes Preis-Leistungs-Verhältnis ist die Messlatte. Vergleiche primär mit anderen Edge-Modellen, nicht mit Frontier."
       },
       "Desktop": {
         "label": "Desktop (10–22B Parameter)",
+        "min_params_b": 10,
+        "max_params_b": 22,
         "description": "Gehobene Consumer-Hardware oder kleine Workstations. Gute Balance aus Leistung und Ressourcenverbrauch.",
         "reviewer_guidance": "Solide Allround-Leistung ist erwartbar. Schwächen gegenüber 70B+ Modellen sind strukturbedingt."
       },
       "Workstation": {
         "label": "Workstation (23–35B Parameter)",
+        "min_params_b": 23,
+        "max_params_b": 35,
         "description": "Professionelle Workstations oder dedizierte GPU-Server.",
         "reviewer_guidance": "Gehobene Leistung auf breiter Aufgabenbasis. Direkter Vergleich mit Cloud-Modellen mid-tier ist legitim."
       },
       "Server": {
         "label": "Server (36–75B Parameter)",
+        "min_params_b": 36,
+        "max_params_b": 75,
         "description": "Multi-GPU-Server oder High-End-Cloud-Instanzen. Hoher Ressourcenbedarf.",
         "reviewer_guidance": "Benchmark-Ergebnisse sollten mit Frontier-Modellen konkurrieren. Deutliche Schwächen sind kritisch zu benennen."
       },
       "Frontier": {
         "label": "Frontier (>75B / API-Only)",
+        "min_params_b": 76,
+        "max_params_b": null,
+        "is_fallback": true,
         "description": "Größte verfügbare Modelle oder proprietäre Cloud-Modelle ohne bekannte Parameterzahl.",
         "reviewer_guidance": "Höchste Erwartungen. Dies ist die Referenzklasse des Benchmarks. Vergleiche mit anderen Frontier-Modellen sind der primäre Bewertungsrahmen."
       }
