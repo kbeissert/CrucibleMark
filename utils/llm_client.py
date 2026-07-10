@@ -203,7 +203,7 @@ class LLMClient:
         ):
 
             def _default_stream_printer(chunk: str) -> None:
-                print(chunk, end="", flush=True)
+                logger.info("%s", chunk)
 
             stream_handler = _default_stream_printer
             use_default_stream = True
@@ -266,7 +266,7 @@ class LLMClient:
             logger.debug("Cost for request: $%.6f", cost)
 
         if use_default_stream:
-            print()
+            logger.info("")
 
         return response_text
 

@@ -242,7 +242,7 @@ class ResultManager:
             csv_path.parent.mkdir(parents=True, exist_ok=True)
         except OSError as e:
             logger.error("Could not create directory %s: %s", csv_path.parent, e)
-            print(f"❌ Fehler beim Erstellen des Verzeichnisses: {e}")
+            logger.error("❌ Fehler beim Erstellen des Verzeichnisses: %s", e)
             return None
 
         # Collect keys from current results
@@ -294,7 +294,7 @@ class ResultManager:
             return csv_path
         except (OSError, csv.Error) as e:
             logger.error("Failed to save results to %s: %s", csv_path, e)
-            print(f"❌ Fehler beim Speichern: {e}")
+            logger.error("❌ Fehler beim Speichern: %s", e)
             return None
 
     def _write_to_csv(
@@ -327,7 +327,7 @@ class ResultManager:
                 skipped_new += 1
 
         if skipped_new:
-            print(
+            logger.info(
                 f"   🛡️  Hard-Fail-Guard: {skipped_new} neue Zeile(n) übersprungen"
             )
 
@@ -353,13 +353,13 @@ class ResultManager:
             os.replace(str(tmp_path), str(csv_path))
             tmp_path = None  # erfolgreich ersetzt, nicht löschen
 
-            print(
+            logger.info(
                 f"\n💾 Ergebnisse gespeichert in: {csv_path} "
                 f"(Upsert: {len(valid_new)} neu/updated, {skipped_new} übersprungen)"
             )
         except (OSError, csv.Error) as e:
             logger.error("Failed to write CSV atomically to %s: %s", csv_path, e)
-            print(f"❌ Fehler beim atomaren Schreiben: {e}")
+            logger.error("❌ Fehler beim atomaren Schreiben: %s", e)
             # Cleanup: tmp-Datei löschen wenn vorhanden
             if tmp_fd is not None:
                 try:
@@ -415,11 +415,11 @@ class ResultManager:
             # pylint: disable=import-outside-toplevel
             from scripts.core import generate_leaderboard
 
-            print("🔄 Aktualisiere Leaderboard...")
+            logger.info("🔄 Aktualisiere Leaderboard...")
             sys.stdout.flush()
             # Suppress console output for automation calls
             generate_leaderboard.main(print_table=False)
             sys.stdout.flush()
         except (ImportError, OSError, ValueError) as e:
             logger.error("Failed to update leaderboard: %s", e)
-            print(f"⚠️  Konnte Leaderboard nicht aktualisieren: {e}")
+            logger.warning("⚠️  Konnte Leaderboard nicht aktualisieren: %s", e)

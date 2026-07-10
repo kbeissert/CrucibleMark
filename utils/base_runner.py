@@ -231,8 +231,7 @@ class BaseBenchmarkRunner:
 
         path = self.result_manager.save_results(results, result_type=result_type)
         if path:
-            print(f"\n💾 Ergebnisse gespeichert: {path}")
-
+            logger.info(f"\n💾 Ergebnisse gespeichert: {path}")
     def print_summary(self, results: list, model: str) -> None:
         """Einheitliche Zusammenfassungs-Ausgabe."""
         if not results:
@@ -250,8 +249,8 @@ class BaseBenchmarkRunner:
         ]
 
         if not scoring_candidates and not probe_result:
-            print(f"\n{'=' * 60}\n📈 BENCHMARK ZUSAMMENFASSUNG\n{'=' * 60}")
-            print(f"Modell: {model}\n❌ Alle {len(results)} Tests fehlgeschlagen!")
+            logger.info(f"\n{'=' * 60}\n📈 BENCHMARK ZUSAMMENFASSUNG\n{'=' * 60}")
+            logger.error(f"Modell: {model}\n❌ Alle {len(results)} Tests fehlgeschlagen!")
             return
 
         scored_results = [
@@ -262,11 +261,11 @@ class BaseBenchmarkRunner:
         if not scored_results:
             if scoring_candidates:
                 avg_time = sum(r.get("execution_time", 0) for r in scoring_candidates) / len(scoring_candidates)
-                print("\n✅ Benchmark abgeschlossen für Modul: Political Compass")
-                print(f"   Modell: {model}")
-                print(f"   Dauer:  {avg_time:.1f}s")
+                logger.info("\n✅ Benchmark abgeschlossen für Modul: Political Compass")
+                logger.info(f"   Modell: {model}")
+                logger.info(f"   Dauer:  {avg_time:.1f}s")
             elif probe_result:
-                print("\n⚠️ Nur System Probe ausgeführt.")
+                logger.warning("\n⚠️ Nur System Probe ausgeführt.")
             return
 
         def safe_float(val):
@@ -284,68 +283,61 @@ class BaseBenchmarkRunner:
 
         quality = self.get_quality_badge(avg_pct)
 
-        print(f"\n✅ Modul abgeschlossen: {model}")
-        print(f"Tests: {len(scoring_candidates)} ({len(scoring_candidates)} ✅, {len(failed)} ❌)")
-        print("\n📊 Durchschnitt (erfolgreiche Tests des Moduls):")
-        print(f"   Dein Modell: {avg_score:.2f}/{avg_max:.0f} ({avg_pct:.2f}%) {quality}")
-        print(f"   Avg Speed:   {avg_time:.1f}s (Execution)")
-
+        logger.info(f"\n✅ Modul abgeschlossen: {model}")
+        logger.info(f"Tests: {len(scoring_candidates)} ({len(scoring_candidates)} ✅, {len(failed)} ❌)")
+        logger.info("\n📊 Durchschnitt (erfolgreiche Tests des Moduls):")
+        logger.info(f"   Dein Modell: {avg_score:.2f}/{avg_max:.0f} ({avg_pct:.2f}%) {quality}")
+        logger.info(f"   Avg Speed:   {avg_time:.1f}s (Execution)")
         # Commercial costs
         total_cost = sum(safe_float(r.get("cost_usd")) for r in results)
         if total_cost > 0:
-            print(f"   Modul Kosten: ${total_cost:.4f}")
-
+            logger.info(f"   Modul Kosten: ${total_cost:.4f}")
         if probe_result:
             load_time = safe_float(probe_result.get("load_time", 0))
-            print(f"   Cold Start:  {load_time:.2f}s (Initial Load)")
-
+            logger.info(f"   Cold Start:  {load_time:.2f}s (Initial Load)")
         self._print_reference_comparison(scored_results)
         self._print_best_worst(scored_results)
         self._print_tiered_analysis(scored_results)
 
         if failed:
-            print("\n❌ Fehlgeschlagen:")
+            logger.error("\n❌ Fehlgeschlagen:")
             for r in failed:
-                print(f"   {r.get('asset_name', 'Unknown')[:40]}: {r.get('error_message', 'No details')}")
-        print(f"{'=' * 60}")
-
+                logger.info(f"   {r.get('asset_name', 'Unknown')[:40]}: {r.get('error_message', 'No details')}")
+        logger.info(f"{'=' * 60}")
     def _print_reference_comparison(self, results: list):
         if not results or results[0].get("reference_score", 0) <= 0:
             return
         avg_ref = sum(r.get("reference_score", 0) for r in results) / len(results)
         avg_diff = sum(r.get("score_difference", 0) for r in results) / len(results)
 
-        print(f"   Referenz:    {avg_ref:.2f}/100")
+        logger.info(f"   Referenz:    {avg_ref:.2f}/100")
         if avg_diff > 0:
-            print(f"   🎯 Differenz: +{avg_diff:.2f} (besser!)")
+            logger.info(f"   🎯 Differenz: +{avg_diff:.2f} (besser!)")
         elif avg_diff < 0:
-            print(f"   📉 Differenz: {avg_diff:.2f} (Gap)")
+            logger.info(f"   📉 Differenz: {avg_diff:.2f} (Gap)")
         else:
-            print("   ⚖️  Differenz: ±0")
-
+            logger.info("   ⚖️  Differenz: ±0")
     def _print_best_worst(self, results: list):
         if not results:
             return
         sorted_res = sorted(results, key=lambda x: x.get("percentage", 0), reverse=True)
-        print("\n🏆 Beste Tests:")
+        logger.info("\n🏆 Beste Tests:")
         for r in sorted_res[:3]:
             q = self.get_quality_badge(r.get("percentage", 0))
             d = r.get("score_difference", 0)
             diff_str = f" ({d:+.2f})" if d != 0 else ""
-            print(f"   {r.get('asset_name', 'Unknown')[:35]:<35}: {r.get('percentage', 0):.2f}% {q}{diff_str}")
-
-        print("\n⚠️  Schwächste Tests:")
+            logger.info(f"   {r.get('asset_name', 'Unknown')[:35]:<35}: {r.get('percentage', 0):.2f}% {q}{diff_str}")
+        logger.warning("\n⚠️  Schwächste Tests:")
         for r in sorted_res[-3:]:
             q = self.get_quality_badge(r.get("percentage", 0))
             d = r.get("score_difference", 0)
             diff_str = f" ({d:+.2f})" if d != 0 else ""
-            print(f"   {r.get('asset_name', 'Unknown')[:35]:<35}: {r.get('percentage', 0):.2f}% {q}{diff_str}")
-
+            logger.info(f"   {r.get('asset_name', 'Unknown')[:35]:<35}: {r.get('percentage', 0):.2f}% {q}{diff_str}")
     def _print_tiered_analysis(self, results: list):
         reasoning_res = [r for r in results if str(r.get("details", {}).get("asset_id", "")).startswith("reasoning_")]
         if not reasoning_res:
             return
-        print(f"\n🧠 REASONING ANALYSIS (Tiered)\n{'-' * 60}")
+        logger.info(f"\n🧠 REASONING ANALYSIS (Tiered)\n{'-' * 60}")
         t1_scores = [r.get("total_score", 0) for r in reasoning_res if "Tier 1" in str(r.get("details", {}).get("tier", "Tier 1"))]
         t2_scores = [r.get("total_score", 0) for r in reasoning_res if "Tier 2" in str(r.get("details", {}).get("tier", ""))]
 
@@ -361,10 +353,9 @@ class BaseBenchmarkRunner:
         elif t1_avg < 60:
             profile = "⚠️  Needs Improvement"
 
-        print(f"   Tier 1 (Operational): {t1_avg:.2f}%")
-        print(f"   Tier 2 (Deep Logic):  {t2_avg:.2f}%")
-        print(f"   Profile: {profile}\n{'-' * 60}")
-
+        logger.info(f"   Tier 1 (Operational): {t1_avg:.2f}%")
+        logger.info(f"   Tier 2 (Deep Logic):  {t2_avg:.2f}%")
+        logger.info(f"   Profile: {profile}\n{'-' * 60}")
     def execute_batch_module(
         self,
         model: str,
@@ -400,7 +391,7 @@ class BaseBenchmarkRunner:
             cached_res = existing_benchmarks.get((model, batch_asset_id))
             if cached_res and not PoliticalCompassHandler.is_political_compass(benchmark_info):
                 # Standardpfad für nicht-PC-Batch-Module: 3-CSV-Cache reicht als Beweis.
-                print(f"⏩ Überspringe {benchmark_info.get('name', '')} (Batch-Modus; Bereits im Cache vorhanden)")
+                logger.warning(f"⏩ Überspringe {benchmark_info.get('name', '')} (Batch-Modus; Bereits im Cache vorhanden)")
                 return [cached_res.copy()]
             if cached_res:
                 # PC: Cache vorhanden, aber Leaderboard-Check unten ist maßgeblich.
@@ -427,7 +418,7 @@ class BaseBenchmarkRunner:
                     with pc_leaderboard.open("r", encoding="utf-8") as _f:
                         pc_models = {row.get("model") for row in _csv.DictReader(_f)}
                     if model in pc_models or model_normalized in pc_models:
-                        print(
+                        logger.warning(
                             f"⏩ Überspringe {benchmark_info.get('name', '')} "
                             f"(PC-Leaderboard; {model} bereits bewertet)"
                         )
@@ -451,19 +442,19 @@ class BaseBenchmarkRunner:
             logging.getLogger(__name__).error("Failed to load batch module %s: %s", benchmark_info.get("name"), e)
             return []
 
-        print(f"🛠️  Initialisiere Batch-Test: {benchmark_info.get('name')} ({provider}:{model})")
+        logger.info(f"🛠️  Initialisiere Batch-Test: {benchmark_info.get('name')} ({provider}:{model})")
         test = test_class_type()
 
         assets_dir = module_path / "assets"
         if not assets_dir.exists():
-            print(f"❌ Assets directory not found: {assets_dir}")
+            logger.error(f"❌ Assets directory not found: {assets_dir}")
             return []
 
         if hasattr(test, "load_questions"):
             test.load_questions(str(assets_dir))
 
         if hasattr(test, "questions") and not test.questions:
-            print("❌ Keine Fragen geladen!")
+            logger.error("❌ Keine Fragen geladen!")
             return []
 
         min_runs = benchmark_info.get("min_runs", 1)
@@ -474,19 +465,19 @@ class BaseBenchmarkRunner:
 
         # Propagate quota/budget exhaustion detected inside the module
         if getattr(test, "_quota_exhausted", False):
-            print("   💸 Budget-/Quota-Fehler in Batch-Modul erkannt. Provider wird als erschöpft markiert.")
+            logger.error("   💸 Budget-/Quota-Fehler in Batch-Modul erkannt. Provider wird als erschöpft markiert.")
             self.provider_quota_exhausted = True
             return []
 
         # Systematic failure: model refused/failed all questions in a block → skip this model
         if getattr(test, "_systematic_failure", False):
-            print(f"   ⚠️  Systematischer API-Fehler für {model} — Modell antwortet nicht. Überspringe.")
+            logger.error(f"   ⚠️  Systematischer API-Fehler für {model} — Modell antwortet nicht. Überspringe.")
             return []
 
         try:
             report = json.loads(result_wrapper.raw_response)
         except (json.JSONDecodeError, TypeError) as e:
-            print(f"❌ Batch Execution Failed: Invalid JSON response ({e})")
+            logger.error(f"❌ Batch Execution Failed: Invalid JSON response ({e})")
             return []
 
         model_version = get_model_version(model, provider=provider, client=self.client)
@@ -501,13 +492,12 @@ class BaseBenchmarkRunner:
                 provider_type=provider
             )
         else:
-            print(f"\n📊 {benchmark_info.get('name', 'Batch Module')} Summary:")
-            print(f"Modell: {model}")
-            print(f"Score: {report.get('score', report.get('total_score', 0.0)):.2f}/100")
-            print(f"Erfolgsrate: {report.get('success_rate', 'N/A')}")
+            logger.info(f"\n📊 {benchmark_info.get('name', 'Batch Module')} Summary:")
+            logger.info(f"Modell: {model}")
+            logger.info(f"Score: {report.get('score', report.get('total_score', 0.0)):.2f}/100")
+            logger.info(f"Erfolgsrate: {report.get('success_rate', 'N/A')}")
             if "badge" in report:
-                print(f"Badge: {report['badge']}\n")
-
+                logger.info(f"Badge: {report['badge']}\n")
         std_result = {
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "status": report.get("status", "success"),

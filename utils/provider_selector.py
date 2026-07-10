@@ -1,9 +1,12 @@
 import sys
+import logging
 import importlib.util
 
 from utils.benchmark_utils import select_from_list
 from utils.constants import MODEL_TYPE_OPEN_WEIGHTS_CLOUD
 from utils.model_utils import is_cloud_model, get_ollama_models_info
+
+logger = logging.getLogger(__name__)
 
 
 class ProviderSelector:
@@ -36,7 +39,7 @@ class ProviderSelector:
         if selected:
             # Shorten display for UX
             short_name = selected[1].split(" - ")[0]
-            print(f"✓  {short_name}")
+            logger.info(f"✓  {short_name}")
             return self._select_provider_models(selected[0])
 
         sys.exit(0)
@@ -91,9 +94,9 @@ class ProviderSelector:
             pass
 
         if not models_flat:
-            print("\n⚠️  Keine Cloud-Modelle gefunden.")
-            print("Stelle sicher, dass OpenRouter/Groq in benchmark_config.yaml aktiviert sind")
-            print("oder lade Ollama Cloud-Proxy-Modelle (z.B. 'ollama pull minimax-m2:cloud').")
+            logger.warning("\n⚠️  Keine Cloud-Modelle gefunden.")
+            logger.info("Stelle sicher, dass OpenRouter/Groq in benchmark_config.yaml aktiviert sind")
+            logger.info("oder lade Ollama Cloud-Proxy-Modelle (z.B. 'ollama pull minimax-m2:cloud').")
             sys.exit(1)
 
         def display_model(m):
@@ -110,7 +113,7 @@ class ProviderSelector:
         )
 
         if selected:
-            print(f"✓ Ausgewählt: {selected['name']}")
+            logger.info(f"✓ Ausgewählt: {selected['name']}")
             return str(selected["provider"]), str(selected["id"])
 
         sys.exit(0)
@@ -153,15 +156,14 @@ class ProviderSelector:
         )
 
         if selected:
-            print(f"✓ Ausgewählt: {selected['name']}")
+            logger.info(f"✓ Ausgewählt: {selected['name']}")
             return str(selected["provider"]), str(selected["id"])
 
         sys.exit(0)
 
     def _select_local_model(self) -> tuple[str, str]:
         """Wählt lokales Modell — nur aus aktivierten Providern (enabled: true in Config)."""
-        print("\nLade verfügbare lokale Modelle...")
-
+        logger.info("\nLade verfügbare lokale Modelle...")
         local_cfg = self.config.get("providers", {}).get("local", {})
         llamacpp_cfg = local_cfg.get("llamacpp", {})
         llamacpp_spark_cfg = local_cfg.get("llamacpp_spark", {})
@@ -204,8 +206,8 @@ class ProviderSelector:
             return self._select_vllm_model(vllm_spark_cfg, "vllm_spark")
         if use_ollama:
             return self._select_ollama_model()
-        print("\n❌ Kein lokaler Provider aktiv. Bitte 'enabled: true' in benchmark_config.yaml setzen.")
-        print("   providers.local.ollama_local.enabled oder providers.local.llamacpp.enabled")
+        logger.error("\n❌ Kein lokaler Provider aktiv. Bitte 'enabled: true' in benchmark_config.yaml setzen.")
+        logger.info("   providers.local.ollama_local.enabled oder providers.local.llamacpp.enabled")
         sys.exit(1)
 
     def _select_vllm_model(self, vllm_cfg: dict, provider_name: str = "vllm_spark") -> tuple[str, str]:
@@ -249,8 +251,8 @@ class ProviderSelector:
             pass
 
         if not config_models:
-            print("\n⚠️  Keine vLLM-Modelle in benchmark_config.yaml konfiguriert.")
-            print(f"Ergänze Modelle unter providers.local.{provider_name}.models")
+            logger.warning("\n⚠️  Keine vLLM-Modelle in benchmark_config.yaml konfiguriert.")
+            logger.info(f"Ergänze Modelle unter providers.local.{provider_name}.models")
             sys.exit(1)
 
         title = "LOKALE MODELLE (vLLM — asusGX10)"
@@ -269,7 +271,7 @@ class ProviderSelector:
         )
 
         if selected:
-            print(f"✓ Ausgewählt: {selected['name']}")
+            logger.info(f"✓ Ausgewählt: {selected['name']}")
             return provider_name, str(selected["id"])
         sys.exit(0)
 
@@ -315,8 +317,8 @@ class ProviderSelector:
             pass
 
         if not config_models:
-            print("\n⚠️  Keine llama.cpp-Modelle in benchmark_config.yaml konfiguriert.")
-            print(f"Ergänze Modelle unter providers.local.{provider_name}.models")
+            logger.warning("\n⚠️  Keine llama.cpp-Modelle in benchmark_config.yaml konfiguriert.")
+            logger.info(f"Ergänze Modelle unter providers.local.{provider_name}.models")
             sys.exit(1)
 
         # Titel anpassen je nach Provider
@@ -340,7 +342,7 @@ class ProviderSelector:
         )
 
         if selected:
-            print(f"✓ Ausgewählt: {selected['name']}")
+            logger.info(f"✓ Ausgewählt: {selected['name']}")
             return provider_name, str(selected["id"])
 
         sys.exit(0)
@@ -352,13 +354,13 @@ class ProviderSelector:
 
         if not local_models:
             if importlib.util.find_spec("ollama") is None:
-                print("\n❌ Ollama Python-Bibliothek nicht installiert.")
-                print("Bitte installieren: pip install ollama")
+                logger.error("\n❌ Ollama Python-Bibliothek nicht installiert.")
+                logger.info("Bitte installieren: pip install ollama")
                 sys.exit(1)
 
-            print("\n⚠️  Keine geeigneten lokalen Ollama-Modelle gefunden (oder Ollama läuft nicht)!")
-            print("Installiere Modelle mit: ollama pull qwen2.5-coder:7b")
-            print("Befehl zum Starten: ollama serve")
+            logger.warning("\n⚠️  Keine geeigneten lokalen Ollama-Modelle gefunden (oder Ollama läuft nicht)!")
+            logger.info("Installiere Modelle mit: ollama pull qwen2.5-coder:7b")
+            logger.info("Befehl zum Starten: ollama serve")
             sys.exit(1)
 
         def display_model(m):
@@ -375,7 +377,7 @@ class ProviderSelector:
         )
 
         if selected:
-            print(f"✓ Ausgewählt: {selected['name']}")
+            logger.info(f"✓ Ausgewählt: {selected['name']}")
             return "ollama", selected["name"]
 
         sys.exit(0)

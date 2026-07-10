@@ -59,7 +59,7 @@ class SemanticSimilarity:
             try:
                 from sentence_transformers import SentenceTransformer
 
-                print(
+                logger.info(
                     "⏳ Lade KI-Modell für semantische Vergleiche (kann beim ersten Mal dauern)..."
                 )
 

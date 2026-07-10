@@ -7,7 +7,10 @@ The framework asks the modules how they want to be integrated.
 
 from pathlib import Path
 from typing import Any
+import logging
 import yaml  # pylint: disable=import-error
+
+logger = logging.getLogger(__name__)
 
 
 def load_module_config(module_path: Path) -> dict[str, Any]:
@@ -24,7 +27,7 @@ def load_module_config(module_path: Path) -> dict[str, Any]:
         with open(config_file, encoding="utf-8") as f:
             return yaml.safe_load(f) or {}
     except Exception as e:  # pylint: disable=broad-exception-caught
-        print(f"Warning: Could not load config for module at {module_path}: {e}")
+        logger.warning("Could not load config for module at %s: %s", module_path, e)
         return {}
 
 

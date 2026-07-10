@@ -294,9 +294,8 @@ def _probe_single(
         "[ThinkingProbe] Probing %s via %s (prompt=%s, %d chars) ...",
         model_id, provider_key, prompt_name, len(prompt_text),
     )
-    print(
-        f"   \u23f3 Sende Reasoning-Probe an '{model_id}' (prompt={prompt_name})...",
-        flush=True,
+    logger.info(
+        f"   ⏳ Sende Reasoning-Probe an '{model_id}' (prompt={prompt_name})..."
     )
 
     client = LLMClient(config)
@@ -307,9 +306,8 @@ def _probe_single(
             provider=provider_key,
             max_tokens=_PROBE_MAX_TOKENS,
         )
-        print(
-            f"   \u2713 Antwort erhalten ({len(raw)} Zeichen) -- analysiere...",
-            flush=True,
+        logger.info(
+            f"   ✓ Antwort erhalten ({len(raw)} Zeichen) -- analysiere..."
         )
     except Exception as exc:
         raise RuntimeError(

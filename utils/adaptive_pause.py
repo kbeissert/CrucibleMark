@@ -7,8 +7,11 @@ based on model size, previous task intensity, and benchmark mode.
 
 import time
 import gc
+import logging
 from enum import Enum
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 
 class BenchmarkMode(Enum):
@@ -181,7 +184,7 @@ class AdaptivePauseCalculator:
 
         if verbose:
             reason = self._get_reason(previous_test, pause)
-            print(f"   ⏸️  Memory Recovery: {pause}s ({reason})")
+            logger.info(f"   ⏸️  Memory Recovery: {pause}s ({reason})")
 
         # 1. Python GC
         gc.collect()

@@ -13,9 +13,12 @@ Design Principles:
 
 import time
 import sys
+import logging
 import unicodedata
 from typing import TypeVar
 from collections.abc import Callable
+
+logger = logging.getLogger(__name__)
 
 # Constants
 VARIATION_SELECTOR_16 = 0xFE0F
@@ -45,10 +48,9 @@ class TerminalUI:
     @staticmethod
     def print_header(title: str, width: int = 60) -> None:
         """Prints a formatted header."""
-        print(f"\n{'=' * width}", flush=True)
-        print(title, flush=True)
-        print(f"{'=' * width}", flush=True)
-
+        logger.info(f"\n{'=' * width}", flush=True)
+        logger.info(title, flush=True)
+        logger.info(f"{'=' * width}", flush=True)
     @staticmethod
     def select_from_list(
         items: list[T],
@@ -70,7 +72,7 @@ class TerminalUI:
             Selected item or None if aborted
         """
         if not items:
-            print("❌ Keine Einträge verfügbar.")
+            logger.error("❌ Keine Einträge verfügbar.")
             return None
 
         if title:
@@ -80,12 +82,10 @@ class TerminalUI:
             display = display_func(item)
             if isinstance(display, tuple):
                 for line in display:
-                    print(f"  {i}. {line}" if line == display[0] else f"     {line}")
+                    logger.info(f"  {i}. {line}" if line == display[0] else f"     {line}")
             else:
-                print(f"  {i}. {display}")
-
-        print("  0. Abbrechen")
-
+                logger.info(f"  {i}. {display}")
+        logger.info("  0. Abbrechen")
         while True:
             try:
                 choice = input(f"\n{prompt} (0-{len(items)}): ").strip()
@@ -94,10 +94,9 @@ class TerminalUI:
                 idx = int(choice)
                 if 1 <= idx <= len(items):
                     return items[idx - 1]
-                print("⚠️  Ungültige Auswahl.")
+                logger.warning("⚠️  Ungültige Auswahl.")
             except ValueError:
-                print("⚠️  Bitte eine Zahl eingeben.")
-
+                logger.warning("⚠️  Bitte eine Zahl eingeben.")
     # --- Instance Methods ---
 
     def _get_display_width(self, text: str) -> int:
@@ -136,21 +135,17 @@ class TerminalUI:
         # ║__CONTENT__║
         inner_width = content_width + 4
 
-        print(f"\n╔{'═' * inner_width}╗")
-
+        logger.info(f"\n╔{'═' * inner_width}╗")
         if title:
             vis_w = self._get_display_width(title)
             pad = max(0, content_width - vis_w)
-            print(f"║  {title}{' ' * pad}  ║")
-            print(f"║{' ' * inner_width}║")
-
+            logger.info(f"║  {title}{' ' * pad}  ║")
+            logger.info(f"║{' ' * inner_width}║")
         for line in lines:
             vis_w = self._get_display_width(line)
             pad = max(0, content_width - vis_w)
-            print(f"║  {line}{' ' * pad}  ║")
-
-        print(f"╚{'═' * inner_width}╝\n")
-
+            logger.info(f"║  {line}{' ' * pad}  ║")
+        logger.info(f"╚{'═' * inner_width}╝\n")
     def print_intro(
         self,
         module_name: str,
@@ -167,27 +162,24 @@ class TerminalUI:
             f"Runs: {num_runs}",
         ]
 
-        print("\n" + "=" * self.terminal_width, flush=True)
-        print(f"🌐 STARTE BENCHMARK: {module_name.upper()}", flush=True)
-        print("=" * self.terminal_width, flush=True)
+        logger.info("\n" + "=" * self.terminal_width, flush=True)
+        logger.info(f"🌐 STARTE BENCHMARK: {module_name.upper()}", flush=True)
+        logger.info("=" * self.terminal_width, flush=True)
         for line in lines:
-            print(line, flush=True)
-        print("=" * self.terminal_width + "\n", flush=True)
-
+            logger.info(line, flush=True)
+        logger.info("=" * self.terminal_width + "\n", flush=True)
         if extra_info:
             self._print_box(extra_info, title=f"{module_name.upper()} INFO")
 
     def start_run(self, run_idx: int, total_runs: int, model: str, provider: str):
         """Announces the start of a specific run."""
-        print(f"\n{'=' * self.terminal_width}", flush=True)
-        print(f"🌐 RUN {run_idx}/{total_runs} - {model} ({provider})", flush=True)
-        print(f"{'=' * self.terminal_width}", flush=True)
-        print("📍 FORTSCHRITT:", flush=True)
-
+        logger.info(f"\n{'=' * self.terminal_width}", flush=True)
+        logger.info(f"🌐 RUN {run_idx}/{total_runs} - {model} ({provider})", flush=True)
+        logger.info(f"{'=' * self.terminal_width}", flush=True)
+        logger.info("📍 FORTSCHRITT:", flush=True)
     def start_block(self, block_id: str, title: str, count: int):
         """Announces a new question block."""
-        print(f"📂 Starte Block: {block_id} {title} ({count} Fragen)", flush=True)
-
+        logger.info(f"📂 Starte Block: {block_id} {title} ({count} Fragen)", flush=True)
     def update_progress(
         self,
         current: int,
@@ -208,7 +200,7 @@ class TerminalUI:
         msg = f"   {icon} {current}/{total}  ({token_str}){suffix}"
 
         # Pad with spaces to overwrite previous line completely if shrinking
-        print(f"{msg:<60}", end=end_char)
+        logger.info(f"{msg:<60}", end=end_char)
         if not finished:
             sys.stdout.flush()
 
@@ -231,15 +223,12 @@ class TerminalUI:
         # Clean up block name for display (e.g. 7.1_Title -> 7.1 Title)
         display_name = block_name.replace("_", " ").title()
 
-        print("-" * 50)
-        print(f"📦 Sub-Modul abgeschlossen: {display_name}")
+        logger.info("-" * 50)
+        logger.info(f"📦 Sub-Modul abgeschlossen: {display_name}")
         if refusals > 0:
-            print(f"   ⚠️ Ausgeschlossen (API-Fehler/Verweigerung): {refusals} Fragen")
-        print(f"   Zeit: {elapsed:.1f}s | Tokens: {token_k}{cost_str}")
-        print("-" * 50)
-
-
-
+            logger.error(f"   ⚠️ Ausgeschlossen (API-Fehler/Verweigerung): {refusals} Fragen")
+        logger.info(f"   Zeit: {elapsed:.1f}s | Tokens: {token_k}{cost_str}")
+        logger.info("-" * 50)
     def print_asset_result(
         self,
         index: int,
@@ -258,19 +247,18 @@ class TerminalUI:
         judge_str = f" | {judge_status}" if judge_status else ""
 
         # Clear the "Running..." line
-        print(" " * 100, end="\r")
-
+        logger.info(" " * 100)
         if is_commercial:
             token_str = f"{tokens} t" if tokens > 0 else "0 t"
             cost_str = f" | Cost: ${cost:.4f}"
-            print(
+            logger.info(
                 f"[{index}/{total}] {asset_id:<15} | {asset_name[:20]:<20} {badge} "
                 f"Score: {percentage:>6.2f}{cost_str} | "
                 f"{token_str:>7} | Time: {execution_time:.1f}s{judge_str}"
             )
         else:
             token_str = f"{tokens:>6} t"
-            print(
+            logger.info(
                 f"   [{index}/{total}] {asset_id[:15]:<15} | {asset_name[:20]:<20} "
                 f"{badge} "
                 f"Score: {percentage:>6.2f} "
@@ -287,9 +275,8 @@ class TerminalUI:
         """Prints result of a single run (Political Compass specific but adaptable)."""
         # pylint: disable=line-too-long
         text = f"\n[RUN {run_idx}] Result: ({coords[0]:.2f}, {coords[1]:.2f}) [Legacy: {legacy_coords[0]:.2f}, {legacy_coords[1]:.2f}]"
-        print(text)
-        print(f"   ↳ Bonus: X={bonus[0]:.2f}, Y={bonus[1]:.2f}\n")
-
+        logger.info(text)
+        logger.info(f"   ↳ Bonus: X={bonus[0]:.2f}, Y={bonus[1]:.2f}\n")
     def print_final_summary(
         self,
         model: str,
@@ -327,28 +314,25 @@ class TerminalUI:
 
         token_str = f"{total_tokens / 1000:.1f}k" if total_tokens > 0 else "0"
 
-        print("\n" + "=" * 80)
-        print("BENCHMARK TEST - ERGEBNIS")
-        print("=" * 80)
-        print(f"\nModell: {model}")
-        print(f"Datum: {date_str}")
-
+        logger.info("\n" + "=" * 80)
+        logger.info("BENCHMARK TEST - ERGEBNIS")
+        logger.info("=" * 80)
+        logger.info(f"\nModell: {model}")
+        logger.info(f"Datum: {date_str}")
         if chart:
-            print("\n" + chart + "\n")
-
-        print("🏁 Ergebnis:")
-        print(f"   X: {x} (σ={sigma[0]}) -> {x_label}")
-        print(f"   Y: {y} (σ={sigma[1]}) -> {y_label}")
-        print(f"   Archetyp: {archetype}")
-        print(f"   Tokens: {token_str} | Zeit: {total_time:.1f}s")
-
+            logger.info("\n" + chart + "\n")
+        logger.info("🏁 Ergebnis:")
+        logger.info(f"   X: {x} (σ={sigma[0]}) -> {x_label}")
+        logger.info(f"   Y: {y} (σ={sigma[1]}) -> {y_label}")
+        logger.info(f"   Archetyp: {archetype}")
+        logger.info(f"   Tokens: {token_str} | Zeit: {total_time:.1f}s")
         avg_tokens = int(total_tokens / 3) if total_tokens > 0 else 0
         avg_cost = stats.get("total_cost", 0) / 3
 
-        print("\n" + "─" * 60)
-        print(f"✅ Leaderboard updated: {model}")
-        print(f"   Ideologie: {x_label} ({x})")
-        print(f"   Haltung:   {y_label} ({y})")
-        print(f"   Ø Tokens:  {avg_tokens}")
-        print(f"   Ø Cost:    ${avg_cost:.5f}")
-        print("─" * 60 + "\n")
+        logger.info("\n" + "─" * 60)
+        logger.info(f"✅ Leaderboard updated: {model}")
+        logger.info(f"   Ideologie: {x_label} ({x})")
+        logger.info(f"   Haltung:   {y_label} ({y})")
+        logger.info(f"   Ø Tokens:  {avg_tokens}")
+        logger.info(f"   Ø Cost:    ${avg_cost:.5f}")
+        logger.info("─" * 60 + "\n")

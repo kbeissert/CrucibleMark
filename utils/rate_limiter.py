@@ -60,7 +60,7 @@ class RateLimiter:
             # Wait for remainder of minute
             sleep_time = 60 - (now - self.minute_window_start).total_seconds() + 1
             if sleep_time > 0:
-                print(
+                logger.info(
                     f"   ⏳ Rate Limit ({self.rpm} RPM) reached. Waiting {sleep_time:.1f}s..."
                 )
                 time.sleep(sleep_time)
