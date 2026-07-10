@@ -70,6 +70,10 @@ def export_leaderboard_compact(leaderboard: pd.DataFrame, cat_cols: List[str]) -
     """
     df_export = leaderboard.copy()
 
+    # thinking_mode (lowercase aus Pipeline) → "Thinking Mode" (Display-Spalte)
+    if "thinking_mode" in df_export.columns and "Thinking Mode" not in df_export.columns:
+        df_export = df_export.rename(columns={"thinking_mode": "Thinking Mode"})
+
     # Compact display: combine 'Version' and 'Provider Code' into a single column (e.g. "k2/OR")
     if "Provider Code" in df_export.columns and "Version" in df_export.columns:
         def _combine_version_code(row: pd.Series) -> str:
@@ -139,6 +143,10 @@ def export_leaderboard_detailed(leaderboard: pd.DataFrame, cat_cols: List[str]) 
     Includes P95, Max Time, Timeout Count, Routine/Reasoning aggregates.
     """
     df_export = leaderboard.copy()
+
+    # thinking_mode (lowercase aus Pipeline) → "Thinking Mode" (Display-Spalte)
+    if "thinking_mode" in df_export.columns and "Thinking Mode" not in df_export.columns:
+        df_export = df_export.rename(columns={"thinking_mode": "Thinking Mode"})
 
     detailed_csv = OUTPUT_CSV.parent / f"{OUTPUT_CSV.stem}_detailed{OUTPUT_CSV.suffix}"
 

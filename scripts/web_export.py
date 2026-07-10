@@ -62,6 +62,7 @@ class LdbCols:
     VERSION = "Version"
     PROVIDER_CODE = "Provider Code"
     HARDWARE_PROFILE = "Hardware Profile"
+    THINKING_MODE = "Thinking Mode"
     # Scores-Dict-Spalten (innerhalb der Modul-Scores)
     CODE_QUALITY = "Code Quality Audit"
     CLI_BADGE = "CLI Badge"
@@ -1874,7 +1875,23 @@ def _process_leaderboard(
         community_card_ref = community_card_id_lookup.get(community) if community else None
 
         _arch_tags: list = (card.get("architecture_tags") or []) if card else []
-        if "Thinking-Optional" in _arch_tags:
+
+        # Thinking-Mode: primär aus CSV-Spalte (per-Run, von base_runner erfasst),
+        # Fallback auf architecture_tags (Capability-basiert) für Cloud-Modelle
+        # ohne Thinking-Toggle (CSV-Wert "n/a" oder Spalte fehlt).
+        #
+        # Dual-Profile-Fallback: alte Runs (vor Dual-Profile-Config) haben
+        # thinking_mode="n/a"/leer. Für dual_profile-Cards vergleichen wir
+        # raw_model_id mit card.model_id: Match → Standard-Profil, kein Match
+        # → Thinking-Profil. Kein Suffix-Heuristik — nutzt die bereits korrekt
+        # aufgelöste kanonische Model-ID.
+        _csv_thinking = str(row.get(LdbCols.THINKING_MODE, "")).strip().lower()
+        if _csv_thinking in ("thinking", "standard"):
+            _thinking_mode = _csv_thinking
+        elif card and card.get("dual_profile"):
+            _card_mid = str(card.get("model_id", "")).strip()
+            _thinking_mode = "standard" if raw_model_id == _card_mid else "thinking"
+        elif "Thinking-Optional" in _arch_tags:
             _thinking_mode = "partial"
         elif "Thinking" in _arch_tags:
             _thinking_mode = "thinking"

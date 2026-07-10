@@ -82,7 +82,7 @@ class TestLeaderboardScoreMapping:
             c for c in csv_cols
             if c not in (
                 "Rank", "Model Name", "Model ID", "model_id_raw", "Version", "Provider Code",
-                "Badge", "Speed Profile", "Performance Tier", "Total Score",
+                "Badge", "Speed Profile", "Thinking Mode", "Performance Tier", "Total Score",
                 "Routine Score", "Reasoning Score", "Tokens/s", "Avg Task Duration (s)",
                 "Initial Load Time (s)", "P95 Time (s)", "P95", "Max Time (s)",
                 "Timeout Count", "Tokens Total", "Cost per 1K (USD)", "Benchmark Cost (USD)",

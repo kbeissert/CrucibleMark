@@ -152,10 +152,19 @@ def main(print_table: bool = True) -> Optional[pd.DataFrame]:
         leaderboard = leaderboard.merge(provider_map, on="model", how="left")
 
     # 3a.1 Re-attach thinking_mode column (vLLM dual-profile / llama.cpp)
+    # "n/a" und Leerstring bedeuten "nicht konfiguriert" (alte Runs vor
+    # Dual-Profile-Config) — sie dürfen einen expliziten "Standard"/"Thinking"-
+    # Wert nicht überstimmen. Daher: nur explizite Werte für die Mode nutzen.
     if "thinking_mode" in df.columns and "thinking_mode" not in leaderboard.columns:
+        def _thinking_mode_mode(s: pd.Series) -> str:
+            explicit = s[s.isin(["Thinking", "Standard"])]
+            if not explicit.empty:
+                return explicit.mode().iloc[0]
+            # Fallback: "n/a" oder Leerstring → "n/a"
+            return "n/a"
         mode_map = (
             df.groupby("model")["thinking_mode"]
-            .agg(lambda s: s.mode().iloc[0] if not s.mode().empty else "n/a")
+            .agg(_thinking_mode_mode)
             .reset_index()
         )
         leaderboard = leaderboard.merge(mode_map, on="model", how="left")
