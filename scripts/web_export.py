@@ -27,7 +27,6 @@ if str(_ROOT_DIR) not in sys.path:
 
 import pandas as pd
 import yaml
-from utils.config_validator import ConfigValidator
 from utils.model_utils import _find_card, _safe_name, WEIGHTS_TIER_DISPLAY
 from utils.card_utils import normalize_tags, get_tag_display_roles, get_tag_labels
 
@@ -86,9 +85,9 @@ def build_provider_map(config_path: Path) -> dict[str, str]:
     mapping: dict[str, str] = {}
 
     try:
-        with config_path.open("r", encoding="utf-8") as f:
-            cfg = yaml.safe_load(f)
-    except (OSError, yaml.YAMLError):
+        from utils.config_validator import ConfigValidator
+        cfg = ConfigValidator(str(config_path)).config
+    except (OSError, FileNotFoundError):
         return mapping
 
     providers_block = cfg.get("providers", {})

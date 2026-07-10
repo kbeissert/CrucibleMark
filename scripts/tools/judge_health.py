@@ -26,6 +26,7 @@ except ImportError as exc:
     print(f"ERROR: 'pyyaml' not installed. Run: pip install pyyaml\n{exc}")
     sys.exit(1)
 
+from utils.config_validator import ConfigValidator
 from utils.scoring.llm_judge.judge_config import (
     DEFAULT_OLLAMA_BASE_URL,
     LLMJudgeConfig,
@@ -109,7 +110,13 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.config.exists():
-        raw = yaml.safe_load(args.config.read_text(encoding="utf-8"))
+        # Use ConfigValidator to load benchmark_config.yaml consistently with
+        # the rest of the codebase. Falls back to raw yaml.safe_load for
+        # custom paths (e.g. user-supplied override files).
+        if args.config.resolve() == _DEFAULT_CONFIG.resolve():
+            raw = ConfigValidator(str(args.config)).config
+        else:
+            raw = yaml.safe_load(args.config.read_text(encoding="utf-8"))
         if not raw or "llm_judge" not in raw:
             print(f"ERROR: Could not read llm_judge from {args.config}")
             sys.exit(1)

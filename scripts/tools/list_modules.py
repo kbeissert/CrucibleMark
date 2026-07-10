@@ -12,7 +12,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 # pylint: disable=wrong-import-position, wrong-import-order
-import yaml
+from utils.config_validator import ConfigValidator  # noqa: E402
 from utils.module_registry import get_active_modules  # noqa: E402
 
 # pylint: enable=wrong-import-position, wrong-import-order
@@ -27,8 +27,7 @@ def main():
         return
 
     try:
-        with open(CONFIG_PATH, encoding="utf-8") as f:
-            config = yaml.safe_load(f)
+        config = ConfigValidator(str(CONFIG_PATH)).config
 
         print("\n📋 Checking Active Modules:")
         active = get_active_modules(config)

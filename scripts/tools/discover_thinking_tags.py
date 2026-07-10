@@ -37,7 +37,7 @@ from datetime import datetime, UTC
 from pathlib import Path
 from typing import Any
 
-import yaml
+from utils.config_validator import ConfigValidator  # noqa: E402
 
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 if str(ROOT_DIR) not in sys.path:
@@ -56,7 +56,6 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
 CONFIG_PATH = ROOT_DIR / "benchmark_config.yaml"
-PROVIDER_CONFIG_PATH = ROOT_DIR / "config" / "provider_config.yaml"
 DEFAULT_OUTPUT = ROOT_DIR / "docs" / "THINKING_TAGS_INVENTORY.md"
 
 # Provider-Prioritaet: lokal > openrouter > rest
@@ -118,20 +117,13 @@ def identify_family(model_id: str) -> str:
 # Config + Modell-Sammlung
 # ---------------------------------------------------------------------------
 def load_merged_config() -> dict[str, Any]:
-    """Laedt benchmark_config.yaml + provider_config.yaml, provider_config hat Vorrang."""
-    cfg: dict[str, Any] = {}
-    for path in (CONFIG_PATH, PROVIDER_CONFIG_PATH):
-        if not path.exists():
-            continue
-        with open(path, encoding="utf-8") as f:
-            data = yaml.safe_load(f) or {}
-        for section in ("providers", "defaults", "local", "modules", "reasoning"):
-            if section in data:
-                cfg.setdefault(section, {})
-                if isinstance(data[section], dict):
-                    for k, v in data[section].items():
-                        cfg[section][k] = v
-    return cfg
+    """Laedt benchmark_config.yaml + provider_config.yaml via ConfigValidator.
+
+    ConfigValidator merged automatisch das providers-Block aus provider_config.yaml
+    (SSoT: Thinking-Profile-Expansion, Duplicate-ID-Checks). benchmark_config.yaml
+    liefert alle anderen Top-Level-Sektionen (defaults, modules, etc.).
+    """
+    return ConfigValidator(str(CONFIG_PATH)).config
 
 
 def _is_ollama_cloud_model(entry: dict[str, Any]) -> bool:

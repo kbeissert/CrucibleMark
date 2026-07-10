@@ -33,8 +33,6 @@ import sys
 from pathlib import Path
 from typing import Any
 
-import yaml
-
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
@@ -139,9 +137,9 @@ def _resolve_provider_arg(arg: str, manufacturers: list[tuple[str, str]]) -> tup
 
 
 def _load_config() -> dict[str, Any]:
+    from utils.config_validator import ConfigValidator
     config_path = ROOT_DIR / "benchmark_config.yaml"
-    with open(config_path, encoding="utf-8") as f:
-        return yaml.safe_load(f)
+    return ConfigValidator(str(config_path)).config
 
 
 def _parse_json_from_response(response: str) -> dict[str, Any]:

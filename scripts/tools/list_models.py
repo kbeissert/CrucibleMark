@@ -14,7 +14,6 @@ from typing import Any
 
 # Third-party imports
 # pylint: disable=import-error
-import yaml
 from dotenv import load_dotenv
 
 try:
@@ -30,6 +29,7 @@ sys.path.insert(0, str(ROOT_DIR))
 
 from utils.model_utils import is_model_suitable_for_benchmark  # noqa: E402
 from utils.llm_client import LLMClient  # noqa: E402
+from utils.config_validator import ConfigValidator  # noqa: E402
 from utils.constants import Colors, MODEL_TYPE_OPEN_WEIGHTS_CLOUD  # noqa: E402
 from utils.model_utils import is_cloud_model  # noqa: E402
 
@@ -48,7 +48,7 @@ logging.getLogger("openai").setLevel(logging.CRITICAL)
 
 
 def load_config() -> dict[str, Any]:
-    """Lädt die benchmark_config.yaml."""
+    """Lädt die benchmark_config.yaml via ConfigValidator (merged provider_config.yaml)."""
     config_path = Path("benchmark_config.yaml")
     if not config_path.exists():
         print(
@@ -56,8 +56,7 @@ def load_config() -> dict[str, Any]:
         )
         sys.exit(1)
 
-    with open(config_path, encoding="utf-8") as f:
-        return yaml.safe_load(f)
+    return ConfigValidator(str(config_path)).config
 
 
 def _print_ollama_model_row(model: Any) -> None:

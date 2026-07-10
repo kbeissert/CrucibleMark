@@ -22,7 +22,8 @@ from datetime import datetime, UTC
 from pathlib import Path
 
 import pandas as pd
-import yaml
+
+from utils.config_validator import ConfigValidator  # noqa: E402
 
 # Sicherstellen, dass das Projekt-Root im Pfad ist.
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -41,41 +42,41 @@ CSV_ID_COLUMNS: dict[str, list[str]] = {
     "tooluse_leaderboard.csv": ["model", "model_id"],
 }
 
-# Provider-Config lebt in config/provider_config.yaml.
-# benchmark_config.yaml (Root) enthaelt keine Provider-Definitionen,
-# sondern Module/Defaults/Logging.
-CONFIG_PATHS = [
-    _PROJECT_ROOT / "config" / "provider_config.yaml",
-    _PROJECT_ROOT / "benchmark_config.yaml",
-]
+# Provider-Config lebt in config/provider_config.yaml, Benchmark-Config im Root.
+# ConfigValidator merged beide automatisch (SSoT, ersetzt direkten yaml.safe_load).
+BENCHMARK_CONFIG_PATH = _PROJECT_ROOT / "benchmark_config.yaml"
 CARD_DIR = _PROJECT_ROOT / "benchmark_scores" / "model_cards"
 SCORES_DIR = _PROJECT_ROOT / "benchmark_scores"
 
 
 def _collect_config_ids() -> list[str]:
-    """Sammelt alle model_id-Eintraege aus den Provider-Config-YAMLs."""
+    """Sammelt alle model_id-Eintraege aus den Provider-Configs.
+
+    Nutzt ConfigValidator als SSoT zum Laden + Mergen von benchmark_config.yaml
+    und config/provider_config.yaml (inkl. Thinking-Profile-Expansion und
+    Duplicate-ID-Checks).
+    """
+    if not BENCHMARK_CONFIG_PATH.exists():
+        return []
+    try:
+        cfg = ConfigValidator(str(BENCHMARK_CONFIG_PATH)).config
+    except Exception:
+        return []
+    providers = cfg.get("providers", {})
+    if not isinstance(providers, dict):
+        return []
     ids: list[str] = []
-    for config_path in CONFIG_PATHS:
-        if not config_path.exists():
+    # Struktur: providers.<kategorie>.<vendor>.models[].id
+    # (kategorie in {commercial, cloud, local, …})
+    for _category_name, category_cfg in providers.items():
+        if not isinstance(category_cfg, dict):
             continue
-        with config_path.open(encoding="utf-8") as f:
-            data = yaml.safe_load(f)
-        if not isinstance(data, dict):
-            continue
-        providers = data.get("providers", {})
-        if not isinstance(providers, dict):
-            continue
-        # Struktur: providers.<kategorie>.<vendor>.models[].id
-        # (kategorie in {commercial, cloud, local, …})
-        for _category_name, category_cfg in providers.items():
-            if not isinstance(category_cfg, dict):
+        for _vendor_name, vendor_cfg in category_cfg.items():
+            if not isinstance(vendor_cfg, dict):
                 continue
-            for _vendor_name, vendor_cfg in category_cfg.items():
-                if not isinstance(vendor_cfg, dict):
-                    continue
-                for model in vendor_cfg.get("models", []) or []:
-                    if isinstance(model, dict) and isinstance(model.get("id"), str):
-                        ids.append(model["id"])
+            for model in vendor_cfg.get("models", []) or []:
+                if isinstance(model, dict) and isinstance(model.get("id"), str):
+                    ids.append(model["id"])
     return ids
 
 
@@ -201,7 +202,7 @@ def _render_report(
     cfg_count = len(config_ids)
     card_count = len(card_ids)
     csv_count = len(csv_collected)
-    lines.append(f"- `benchmark_config.yaml`: {cfg_count} model_id-Eintraege")
+    lines.append(f"- `benchmark_config.yaml` (incl. provider_config merge): {cfg_count} model_id-Eintraege")
     lines.append(f"- `benchmark_scores/model_cards/*.json`: {card_count} model_id-Felder")
     lines.append(f"- Leaderboard-CSVs: {csv_count} Zellen (Filme x Spalten)")
     lines.append("")

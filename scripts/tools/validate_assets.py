@@ -5,14 +5,12 @@ import sys
 from pathlib import Path
 from typing import Any
 
-# pylint: disable=import-error
-import yaml
-
 # Add project root to path
 ROOT_DIR = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(ROOT_DIR))
 
 from utils.asset_validator import AssetValidator  # noqa: E402
+from utils.config_validator import ConfigValidator  # noqa: E402
 
 
 class CLIAssetValidator:
@@ -78,8 +76,7 @@ class CLIAssetValidator:
             print("❌ benchmark_config.yaml nicht gefunden.")
             sys.exit(1)
 
-        with open(config_path, encoding="utf-8") as f:
-            config = yaml.safe_load(f)
+        config = ConfigValidator(str(config_path)).config
 
         aggregated_results: dict[str, Any] = {"valid": 0, "invalid": 0, "details": []}
 

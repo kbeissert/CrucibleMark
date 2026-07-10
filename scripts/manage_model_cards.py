@@ -257,9 +257,9 @@ def _setup_logging() -> None:
 
 
 def _load_benchmark_config() -> dict:
+    from utils.config_validator import ConfigValidator
     path = ROOT_DIR / "benchmark_config.yaml"
-    with open(path, encoding="utf-8") as f:
-        return yaml.safe_load(f)
+    return ConfigValidator(str(path)).config
 
 
 def _resolve_llm_spec(args: argparse.Namespace, config: dict) -> LLMSpec:

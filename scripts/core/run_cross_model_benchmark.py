@@ -18,12 +18,13 @@ import subprocess
 from pathlib import Path
 
 # pylint: disable=import-error
-import yaml
 from rich.console import Console
 from rich.table import Table
 from rich import print as rprint
 
 # pylint: enable=import-error
+
+from utils.config_validator import ConfigValidator
 
 # Add project root to path
 ROOT_DIR = Path(__file__).parent.parent.parent
@@ -57,8 +58,7 @@ def get_commercial_models(
     Delegates to shared utility.
     """
     try:
-        with open(config_path, encoding="utf-8") as f:
-            config = yaml.safe_load(f)
+        config = ConfigValidator(config_path).config
         return get_commercial_models_from_config(config)
     except Exception as e:  # pylint: disable=broad-exception-caught
         logger.error("Failed to load commercial models: %s", e)
@@ -90,8 +90,7 @@ def check_provider_health(
 
     # Retrieve config
     try:
-        with open(config_path, encoding="utf-8") as f:
-            config = yaml.safe_load(f)
+        config = ConfigValidator(config_path).config
     except Exception as e:  # pylint: disable=broad-exception-caught
         logger.error("Fehler beim Laden der Konfiguration: %s", e)
         return list(providers_to_check)
@@ -141,12 +140,10 @@ def get_local_models() -> list[tuple[str, str, str]]:
     llama.cpp: only when llamacpp.enabled = true (explicit config list).
     Returns list of (id, pretty_name, provider_key)
     """
-    import yaml
     models = []
 
     try:
-        with open("benchmark_config.yaml", encoding="utf-8") as _f:
-            _cfg = yaml.safe_load(_f)
+        _cfg = ConfigValidator("benchmark_config.yaml").config
         local_cfg = _cfg.get("providers", {}).get("local", {})
     except Exception as exc:  # pylint: disable=broad-exception-caught
         logger.error("Fehler beim Laden der Provider-Config: %s", exc)
@@ -227,8 +224,7 @@ def select_benchmark_module(args_module: str | None = None) -> str:
         # But maybe select_benchmark_module calls something incorrectly?
 
         # Let's just load yaml directly to be safe and simple here
-        with open("benchmark_config.yaml", encoding="utf-8") as f:
-            config = yaml.safe_load(f)
+        config = ConfigValidator("benchmark_config.yaml").config
 
         modules_list = get_active_modules(config)
 
@@ -285,15 +281,13 @@ def select_model_category() -> str:
 
 def gather_models(category: str) -> list[tuple[str, str, str]]:
     """Sammelt alle zu testenden Modelle basierend auf der Kategorie."""
-    import yaml
     all_models = []
 
     try:
-        with open("benchmark_config.yaml", encoding="utf-8") as f:
-            config = yaml.safe_load(f)
+        config = ConfigValidator("benchmark_config.yaml").config
     except Exception as e:
         logger.error("Fehler beim Laden der Konfiguration: %s", e)
-        return []
+        return []  
 
     commercial = []
     open_weight_cloud = []
@@ -387,8 +381,7 @@ def main() -> None:
         # Pre-check: is this model known as open_weights_cloud in config? Then keep p_type = "local".
         _known_cloud_model_ids: set[str] = set()
         try:
-            with open("benchmark_config.yaml", encoding="utf-8") as _f:
-                _cfg = yaml.safe_load(_f)
+            _cfg = ConfigValidator("benchmark_config.yaml").config
             for _prov_conf in _cfg.get("providers", {}).get("commercial", {}).values():
                 if _prov_conf.get("model_type") == MODEL_TYPE_OPEN_WEIGHTS_CLOUD:
                     for _m in _prov_conf.get("models", []):

@@ -27,8 +27,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
 
-import yaml  # noqa: E402
-
+from utils.config_validator import ConfigValidator  # noqa: E402
 from utils.providers.vllm_spark import VllmSparkClient  # noqa: E402
 
 
@@ -60,14 +59,16 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    config_path = ROOT / "config" / "provider_config.yaml"
-    with open(config_path, encoding="utf-8") as fh:
-        config = yaml.safe_load(fh)
-
+    # ConfigValidator merged bereits provider_config.yaml automatisch ein
+    # (SSoT, ersetzt direkten yaml.safe_load).
+    config = ConfigValidator(str(ROOT / "benchmark_config.yaml")).config
     provider_cfg = config.get("providers", {}).get("local", {}).get("vllm_spark", {})
     if not provider_cfg.get("enabled", False):
         print("❌ vllm_spark ist nicht aktiviert (enabled: false).")
-        print(f"   Setze 'providers.local.vllm_spark.enabled: true' in {config_path}.")
+        print(
+            "   Setze 'providers.local.vllm_spark.enabled: true' in "
+            "config/provider_config.yaml."
+        )
         return 2
 
     client = VllmSparkClient(config)

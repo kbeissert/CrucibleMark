@@ -52,9 +52,12 @@ def load_config_models() -> dict[str, set[str]]:
     Liest alle explizit gelisteten Modell-IDs aus benchmark_config.yaml.
     Providers mit auto_discover=True werden übersprungen (kommen aus CSV).
     Gibt {section_key: {model_id, ...}} zurück.
+
+    SSoT: ConfigValidator merged provider_config.yaml automatisch ein
+    (Thinking-Profile-Expansion, Duplicate-ID-Checks).
     """
-    with open(BENCHMARK_CONFIG, encoding="utf-8") as f:
-        cfg = yaml.safe_load(f)
+    from utils.config_validator import ConfigValidator
+    cfg = ConfigValidator(str(BENCHMARK_CONFIG)).config
 
     result: dict[str, set[str]] = {}
 

@@ -5,14 +5,13 @@ Handles badge assignment, speed classification, skill profiling, and console out
 
 import pandas as pd
 
-import yaml
 from pathlib import Path
 
-# Load config
+# Load config (SSoT: ConfigValidator merged benchmark_config + provider_config).
 try:
-    with open(Path("benchmark_config.yaml"), encoding="utf-8") as f:
-        _config = yaml.safe_load(f)
-        _tiers = _config.get("scoring_tiers", {})
+    from utils.config_validator import ConfigValidator
+    _config = ConfigValidator(str(Path("benchmark_config.yaml"))).config
+    _tiers = _config.get("scoring_tiers", {})
 except Exception:
     _tiers = {}
 

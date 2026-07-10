@@ -20,11 +20,10 @@ import shutil
 import sys
 from pathlib import Path
 
-import yaml
-
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
+from utils.config_validator import ConfigValidator  # noqa: E402
 from utils.model_utils import _safe_name  # noqa: E402
 
 if str(ROOT_DIR) not in sys.path:
@@ -47,8 +46,7 @@ def load_known_model_ids() -> set[str]:
 
     config_path = ROOT_DIR / "benchmark_config.yaml"
     try:
-        with open(config_path, encoding="utf-8") as f:
-            config = yaml.safe_load(f)
+        config = ConfigValidator(str(config_path)).config
         for section in config.get("providers", {}).values():
             for provider_cfg in section.values():
                 if isinstance(provider_cfg, dict):

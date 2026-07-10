@@ -96,9 +96,9 @@ def _strip_metric_lines(content: str) -> str:
 
 
 def load_config() -> dict:
+    from utils.config_validator import ConfigValidator
     config_path = ROOT_DIR / "benchmark_config.yaml"
-    with open(config_path, encoding="utf-8") as f:
-        return yaml.safe_load(f)
+    return ConfigValidator(str(config_path)).config
 
 
 def _load_webexport_blacklist() -> set[str]:
