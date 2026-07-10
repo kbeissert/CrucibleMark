@@ -124,7 +124,9 @@ class TestCreateCard:
         """Neue Karte wird im isolierten tmp_path erzeugt."""
         # CARD_DIR auf tmp_path patchen
         import utils.model_utils
+        import utils.model_card_io
         monkeypatch.setattr(utils.model_utils, "CARD_DIR", tmp_path)
+        monkeypatch.setattr(utils.model_card_io, "CARD_DIR", tmp_path)
 
         report = create_card("test-model-x", force=False)
         assert report.action == "created"
@@ -141,7 +143,9 @@ class TestCreateCard:
     ) -> None:
         """Bestehende Karte wird ohne --force übersprungen."""
         import utils.model_utils
+        import utils.model_card_io
         monkeypatch.setattr(utils.model_utils, "CARD_DIR", tmp_path)
+        monkeypatch.setattr(utils.model_card_io, "CARD_DIR", tmp_path)
 
         # Erstmal erzeugen
         create_card("test-model-y")
@@ -155,7 +159,9 @@ class TestCreateCard:
     ) -> None:
         """Mit --force wird die bestehende Karte gelöscht und neu erzeugt."""
         import utils.model_utils
+        import utils.model_card_io
         monkeypatch.setattr(utils.model_utils, "CARD_DIR", tmp_path)
+        monkeypatch.setattr(utils.model_card_io, "CARD_DIR", tmp_path)
 
         create_card("test-model-z")
         report = create_card("test-model-z", force=True)
@@ -167,7 +173,9 @@ class TestCreateCard:
     ) -> None:
         """Mit provider= greift das {base}--{shortcode}-Schema."""
         import utils.model_utils
+        import utils.model_card_io
         monkeypatch.setattr(utils.model_utils, "CARD_DIR", tmp_path)
+        monkeypatch.setattr(utils.model_card_io, "CARD_DIR", tmp_path)
 
         report = create_card("gemma-3-4b", provider="ollama_local", force=False)
         assert report.action == "created"

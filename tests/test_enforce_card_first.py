@@ -18,6 +18,7 @@ from utils.model_utils import (  # noqa: E402
 def isolated_card_dir(monkeypatch, tmp_path):
     """CARD_DIR auf tmp_path umlenken, damit Tests keine echten Karten anlegen."""
     monkeypatch.setattr("utils.model_utils.CARD_DIR", tmp_path)
+    monkeypatch.setattr("utils.model_card_io.CARD_DIR", tmp_path)
     yield tmp_path
 
 

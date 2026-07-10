@@ -18,7 +18,8 @@ from pathlib import Path
 
 import pytest
 
-import utils.model_utils as model_utils_module
+import utils.model_utils
+import utils.model_card_io as model_card_io_module
 from utils.model_utils import _card_path, _find_card, build_card_id
 
 
@@ -27,7 +28,8 @@ def isolated_card_dir(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     """Biegt CARD_DIR auf tmp_path um."""
     card_dir = tmp_path / "cards"
     card_dir.mkdir()
-    monkeypatch.setattr(model_utils_module, "CARD_DIR", card_dir)
+    monkeypatch.setattr(utils.model_utils, "CARD_DIR", card_dir)
+    monkeypatch.setattr(model_card_io_module, "CARD_DIR", card_dir)
     return card_dir
 
 

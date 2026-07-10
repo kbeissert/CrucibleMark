@@ -12,7 +12,8 @@ from pathlib import Path
 import pytest
 
 import utils.card_utils as card_utils_module
-import utils.model_utils as model_utils_module
+import utils.model_utils
+import utils.model_card_io as model_card_io_module
 from utils.card_utils import ensure_card
 
 
@@ -20,14 +21,15 @@ from utils.card_utils import ensure_card
 def isolated_card_dir(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     """Biegt CARD_DIR in BEIDEN Modulen auf tmp_path um.
 
-    `ensure_card` ruft `model_utils._card_path` (was `CARD_DIR` aus
-    `model_utils` liest) UND `resolve_unique_card_id` (was ebenfalls
-    `CARD_DIR` aus `model_utils` liest). Beide muessen auf das gleiche
-    Test-Verzeichnis zeigen, sonst sucht der Resolver am falschen Ort.
+    `ensure_card` ruft `model_card_io._card_path` und
+    `model_card_io.resolve_unique_card_id`, die `CARD_DIR` aus dem
+    `model_card_io`-Modul lesen. Auch `model_utils` wird gepatcht, weil
+    die Bridge denselben Pfad-Konstanten re-exportiert.
     """
     card_dir = tmp_path / "cards"
     card_dir.mkdir()
-    monkeypatch.setattr(model_utils_module, "CARD_DIR", card_dir)
+    monkeypatch.setattr(utils.model_utils, "CARD_DIR", card_dir)
+    monkeypatch.setattr(model_card_io_module, "CARD_DIR", card_dir)
     return card_dir
 
 

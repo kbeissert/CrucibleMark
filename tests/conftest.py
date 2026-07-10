@@ -63,4 +63,7 @@ def _isolate_card_dir(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, request: 
         yield
         return
     monkeypatch.setattr("utils.model_utils.CARD_DIR", tmp_path)
+    # CARD_DIR lives in utils.model_card_io after the Sektion-A refactor;
+    # _find_card/_card_path/read CARD_DIR from there at call-time.
+    monkeypatch.setattr("utils.model_card_io.CARD_DIR", tmp_path)
     yield

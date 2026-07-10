@@ -37,6 +37,11 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from utils import model_utils  # noqa: E402
+import utils.model_card_io as model_card_io_module  # noqa: E402
+import utils.model_thinking as model_thinking_module  # noqa: E402
+import utils.model_id as model_id_module  # noqa: E402
+import utils.model_size_class as model_size_class_module  # noqa: E402
+import utils.model_token_budget as model_token_budget_module  # noqa: E402
 from utils.model_utils import resolve_token_budget  # noqa: E402
 
 
@@ -121,6 +126,19 @@ def stub_card_loader(monkeypatch, tmp_path):
 
     # _find_card ist im resolve_token_budget()-Scope per Modul-Name auflösbar.
     monkeypatch.setattr(model_utils, "_find_card", fake_find_card)
+    # Sektion-A-Refactor: _find_card wurde aus model_utils nach model_card_io
+    # verschoben. Konsumenten (model_thinking, model_id, model_size_class,
+    # model_token_budget) haben jeweils eine eigene Namespace-Bindung
+    # (from utils.model_card_io import _find_card), die NICHT automatisch
+    # aktualisiert wird, wenn model_card_io._find_card gepatcht wird. Daher
+    # alle Namespaces patchen.
+    monkeypatch.setattr(model_card_io_module, "_find_card", fake_find_card)
+    monkeypatch.setattr(model_thinking_module, "_find_card", fake_find_card)
+    monkeypatch.setattr(model_id_module, "_find_card", fake_find_card)
+    monkeypatch.setattr(model_size_class_module, "_find_card", fake_find_card)
+    monkeypatch.setattr(model_token_budget_module, "_find_card", fake_find_card)
+    monkeypatch.setattr(model_card_io_module, "CARD_DIR", tmp_path)
+    monkeypatch.setattr(model_utils, "CARD_DIR", tmp_path)
 
     # load_vendor_card wird IN resolve_token_budget importiert, daher müssen
     # wir den Import-Pfad in utils.vendor_card_template patchen, das ist
@@ -236,7 +254,8 @@ def test_override_logs_audit_trail(stub_card_loader, caplog):
         "value": False,
         "reason": "Cost-Benchmark Q3 2026",
     })
-    with caplog.at_level(logging.INFO, logger="utils.model_utils"):
+    with caplog.at_level(logging.INFO, logger="utils.model_utils"), \
+         caplog.at_level(logging.INFO, logger="utils.model_thinking"):
         resolve_token_budget(
             NON_REASONING_MODEL, 2000, _config(), "code_quality",
             provider="test-provider",

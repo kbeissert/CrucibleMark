@@ -16,6 +16,7 @@ from pathlib import Path
 import pytest
 
 from utils import model_utils as model_utils_module
+import utils.model_card_io as model_card_io_module
 from utils.card_utils import ensure_card
 from utils.model_utils import ThinkingProbeResult, _find_card
 
@@ -47,6 +48,7 @@ class TestWriteProbeToCardSuffixSsot:
         card_dir = tmp_path / "cards"
         card_dir.mkdir()
         monkeypatch.setattr(model_utils_module, "CARD_DIR", card_dir)
+        monkeypatch.setattr(model_card_io_module, "CARD_DIR", card_dir)
         return card_dir
 
     @staticmethod

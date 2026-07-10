@@ -47,6 +47,7 @@ from utils.model_utils import (  # noqa: E402
 def test_enforce_card_first_matches_resolve_canonical(monkeypatch, tmp_path, raw):
     """enforce_card_first() liefert dieselbe kanonische Form wie resolve_canonical_model_id()."""
     monkeypatch.setattr("utils.model_utils.CARD_DIR", tmp_path)
+    monkeypatch.setattr("utils.model_card_io.CARD_DIR", tmp_path)
     expected = resolve_canonical_model_id(raw)
     actual, _has_card = enforce_card_first(raw)
     assert actual == expected
@@ -80,6 +81,7 @@ def test_safe_name_handles_all_separators(raw, expected):
 def test_enforce_card_first_idempotent(monkeypatch, tmp_path):
     """Auch nach 10 Aufrufen bleibt die kanonische Form stabil."""
     monkeypatch.setattr("utils.model_utils.CARD_DIR", tmp_path)
+    monkeypatch.setattr("utils.model_card_io.CARD_DIR", tmp_path)
     raw = "wiederholungs-test-001"
     first, _ = enforce_card_first(raw)
     for _ in range(10):
@@ -93,6 +95,8 @@ def test_enforce_card_first_idempotent(monkeypatch, tmp_path):
 
 _ALLOWED_FILES = {
     Path("utils/model_utils.py").resolve(),
+    Path("utils/model_id_base.py").resolve(),
+    Path("utils/model_card_io.py").resolve(),
     Path("utils/card_utils.py").resolve(),
 }
 
