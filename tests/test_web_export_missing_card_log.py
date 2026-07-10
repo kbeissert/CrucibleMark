@@ -7,26 +7,16 @@ zu liefern).
 """
 from __future__ import annotations
 
-import importlib.util
 import logging
 import sys
-from io import StringIO
 from pathlib import Path
 
 import pandas as pd
 import pytest
 
 
-WEB_EXPORT_PATH = (
-    Path(__file__).resolve().parent.parent / "scripts" / "web_export.py"
-)
-
-
 def _load_module():
-    """Lade web_export.py als Modul (CLI-Skript, kein Package)."""
-    spec = importlib.util.spec_from_file_location("_web_export_mod", WEB_EXPORT_PATH)
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)  # type: ignore[union-attr]
+    import scripts.web_export as mod
     return mod
 
 
@@ -35,7 +25,7 @@ class TestLoadModelCardLogging:
 
     def test_warning_logged_when_card_missing(self, caplog):
         """Wenn load_model_card() None liefert, soll ein WARNING erscheinen."""
-        mod = _load_module()
+        _load_module()
 
         with caplog.at_level(logging.WARNING, logger="root"):
             # Dummy-Aufruf: card ist None, raw_model_id + model_name gesetzt

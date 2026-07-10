@@ -554,12 +554,12 @@ benchmark-tooluse-force:
 
 web-export:
 	@echo "Starte Web Export..."
-	$(PYTHON) scripts/web_export.py $(if $(WEB_DATA_DIR),--output $(WEB_DATA_DIR),)
+	$(PYTHON) -m scripts.web_export $(if $(WEB_DATA_DIR),--output $(WEB_DATA_DIR),)
 	@echo "Export abgeschlossen."
 
 web-export-dev:
 	@echo "Exportiere direkt ins 11ty-Projekt..."
-	$(PYTHON) scripts/web_export.py --output ../cruciblemark-web/src/_data/raw/
+	$(PYTHON) -m scripts.web_export --output ../cruciblemark-web/src/_data/raw/
 	@echo "Dev-Export abgeschlossen."
 
 # === PHASE 9: CSV HYGIENE (Defense-in-Depth) ===

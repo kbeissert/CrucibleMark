@@ -145,10 +145,12 @@ class TestNoSilentPass:
         intentional (das eigentliche Error wird durch raise propagiert).
         """
         import re
-        web_export = ROOT / "scripts" / "web_export.py"
-        text = web_export.read_text()
+        web_export_dir = ROOT / "scripts" / "web_export"
+        text = "\n".join(
+            path.read_text(encoding="utf-8")
+            for path in sorted(web_export_dir.glob("*.py"))
+        )
 
-        # Extrahiere alle Atomic-Helper (BUG 3: 3 Helper mit silent pass fuer Temp-Cleanup)
         atomic_bodies = []
         for func_name in ("_atomic_write_json", "_atomic_write_text", "_atomic_copy"):
             m = re.search(
@@ -157,12 +159,10 @@ class TestNoSilentPass:
             )
             if m:
                 atomic_bodies.append(m.group(0))
-        # Rest = alles ausser den Atomic-Helpern
         rest = text
         for body in atomic_bodies:
             rest = rest.replace(body, "")
 
-        # Suche 'except ...:' gefolgt von 'pass'
         pattern = re.compile(
             r'except\s+[^:]+:\s*\n\s*pass\b',
             re.MULTILINE
@@ -173,6 +173,9 @@ class TestNoSilentPass:
         )
 
     def test_logging_used_in_web_export(self):
-        web_export = ROOT / "scripts" / "web_export.py"
-        text = web_export.read_text()
+        web_export_dir = ROOT / "scripts" / "web_export"
+        text = "\n".join(
+            path.read_text(encoding="utf-8")
+            for path in sorted(web_export_dir.glob("*.py"))
+        )
         assert "logging.warning" in text or "logging.error" in text

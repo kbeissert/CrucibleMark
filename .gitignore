@@ -91,6 +91,8 @@ REF_TODO.md
 
 # Web Export
 web_export/
+!scripts/web_export/
+!scripts/web_export/*.py
 
 # Unfertige Draft- / TODO-Cards und Backups (nicht committen)
 *.bak
