@@ -12,19 +12,21 @@ to know what reference files exist.
 ---
 
 # Active Context
-## Aktueller Status (2026-07-10, Session 57 — Local-Model Price = 0.0)
+## Aktueller Status (2026-07-10, Session 58 — Web-Export Blacklist-Restructure + Slug-SSoT)
 
-- **Session 57 (DONE, uncommitted):** Local-Model-Preis-Bug behoben. 3 Cards (`Gemma-4-26B`, `Gemma-4-31B`, `qwen3_6-27B`) hatten `output_price_per_1m=null` + Whitelist-fremdes `deployment_type="local-weights"`. Leaderboard zeigte leere Cost-Spalte. Fixes:
-  1. **Cards:** `output_price_per_1m` + `input_price_per_1m` = 0.0; `deployment_type` → `"localweights"`.
-  2. **Defense-in-Depth** (`scripts/leaderboard/score_calculator.py:_build_price_lookup`): Whitelist `LOCAL_DEPLOYMENT_TYPES = {"localweights", "local-weights"}` → Karte mit lokalem Typ aber fehlendem Preis → `lookup[model_id] = 0.0`. Hybrid (`cloud-only`/`cloud-and-local`/`open-weights-cloud-available`) bleibt korrekt **leer**.
-  3. **Test-Suite NEU** (`tests/test_score_calculator_price_lookup.py`, 12 Tests): lokale Karten mit/ohne Preis (beide Schreibweisen), Cloud/Hybrid-Karten, Edge Cases (kein model_id), 3 Regressionstests auf echte Cards, Cloud-Sanity.
-- **Code-Quality "Pending" geklärt — KEIN Orchestrator-Bug:** Die 08:59-Session war separater `scripts/run_tooluse_benchmark.py`. `code_quality` wurde nie für Thinking-Profile geplant. Drei separate Runner (`run_score_benchmark.py` / `run_tooluse_benchmark.py` / `run_political_compass_benchmark.py`). Partielle Runs → stille Coverage-Lücken.
-- **Tests:** 1148 passed (+12 neu), 1 skipped, 1 pre-existing failure (`qwen3_5-35b-a3b-q8`, dokumentiert). `make validate` exit 0.
+- **Session 58 (DONE, uncommitted):** Web-Export-Qualität verbessert — Blacklist-Restructure, Slug-SSoT, `normalize_pending`-Hardening, `leaderboard.json` Scores-Contract. 4 Änderungen:
+  1. **Blacklist-Restructure** (`config/web_export_blacklist.yaml`): Zwei-Sektion-Layout (`blacklist:` 24 aktiv + `kept_overrides:` 22 dokumentierte Ausnahmen in 5 Gruppen). Eliminiert `# -`-Kommentar-Konvention. Loader ignoriert `kept_overrides` (reine Audit-Doku).
+  2. **Slug-SSoT** (`scripts/web_export.py:_process_leaderboard`): `slugify(model_name)` → `slugify(raw_model_id)`. `model_id` = stabile Identität (eindeutig pro CSV-Zeile), `model_name` = veränderlicher Display-Wert. Eliminiert 5 Hybrid-Pair-Slug-Kollisionen (Thinking/Standard).
+  3. **`normalize_pending()` Hardening**: `_PENDING_SENTINELS` frozenset (En-Dash U+2013, `n/a`, `N/A`, `null`, `None`, `none`, `nan` zusätzlich zu Em-Dash/`Pending`/`""`). O(1)-Lookup. Verhindert String-Leaks im JSON-Export.
+  4. **`leaderboard.json` Scores-Contract**: `_write_top_level_outputs` erzwingt 10-Key Contract via `setdefault`/`dict.fromkeys` (zuvor nur `data.json`).
+  - **Validierung:** 88 Modelle exportiert, 23 blacklisted, 0 Slug-Kollisionen, 88/88 Scores-Contract, 97 tests passed.
+  - **Code-Review:** APPROVE (uncommitted).
+- **Session 57 (DONE, uncommitted):** Local-Model-Preis-Bug behoben. 3 Cards (`Gemma-4-26B`, `Gemma-4-31B`, `qwen3_6-27B`) hatten `output_price_per_1m=null` + Whitelist-fremdes `deployment_type="local-weights"`. Leaderboard zeigte leere Cost-Spalte. Defense-in-Depth in `score_calculator.py:_build_price_lookup` + 12 neue Tests.
 - **Session 56 (DONE, uncommitted):** `{hardware_context}`-Datenfeld pro-Modell korrekt befüllt.
 - **Session 55 (DONE, uncommitted):** `thinking_mode` dreifach sichtbar (CSV, Audit-Log, Review-Prompt).
 - **Session 54 (DONE, uncommitted):** Display-Name-Fix + `thinking_mode`-Spalte + `-thinking`-Suffix-Fallback.
 - **Session 53 (DONE, uncommitted):** card_model_id-Drift im Web-Export behoben.
 - **Session 52 (DONE, uncommitted):** vLLM Dual-Thinking-Profile implementiert.
-- **Session 57 Folge-Auftrag (DONE, uncommitted):** Kosmetische `deployment_type`-Migration für 5 Cards (`local-weights` → `localweights`) + `ornith-1-0-35b` auf `localweights` (nur lokal getestet via llamacpp_spark). `command-a-plus-05-2026` NICHT geändert (nur Cohere Cloud).
-- **Nächster Schritt:** Working Tree committen (Sessions 52–57-Folge, v4.10.15-Bump). Thematische Aufteilung, nur auf explizite Anfrage.
-- **Offen/Risiko:** Working Tree uncommitted (alle 7+ Sessions, jetzt ~7 Tage alt). 3 Gemma Thinking-Profile brauchen `code_quality`-Re-Run (operativ, dokumentiert in progress.md Session 57). Pre-existing uncommitted: `qwen3_5-35b-a3b-q8` + `gemma-4-26B-A4B-it-UD-Q8_K_XL` auskommentiert.
+- **Session 57 Folge-Auftrag (DONE, uncommitted):** Kosmetische `deployment_type`-Migration für 5 Cards (`local-weights` → `localweights`) + `ornith-1-0-35b` auf `localweights`.
+- **Nächster Schritt:** Working Tree committen (Sessions 52–58, v4.10.16-Bump). Thematische Aufteilung, nur auf explizite Anfrage. Danach `make web-export-dev` um aktualisierten Export ins Web-Projekt zu pushen.
+- **Offen/Risiko:** Working Tree uncommitted (alle 8+ Sessions, jetzt ~8 Tage alt). 3 Gemma Thinking-Profile brauchen `code_quality`-Re-Run (operativ, dokumentiert in progress.md Session 57). Pre-existing uncommitted: `qwen3_5-35b-a3b-q8` + `gemma-4-26B-A4B-it-UD-Q8_K_XL` auskommentiert. Benchmark-Daten-Fixes (nicht Export-Code): Ornith CSV `44/43`→`43/43`, Codestral `thinking_probe_confidence` fehlt, `llm_judge_coverage` 100% uniform verifizieren. 7 vLLM + 2 SPRK Modelle ohne Political Compass.

@@ -354,10 +354,22 @@ _SCORE_COLUMN_TO_KEY: dict[str, str] = {
 _SCORES_CONTRACT_KEYS: tuple[str, ...] = tuple(_SCORE_COLUMN_TO_KEY.values())
 
 
-def normalize_pending(val: Any) -> str | None:
+_PENDING_SENTINELS = frozenset({
+    "Pending", "—", "–", "", "n/a", "N/A", "NA", "null", "None", "none",
+})
+
+
+def normalize_pending(val: Any) -> float | str | None:
+    """Normalisiert CSV-Werte zu Zahlen oder None.
+
+    Bekannte Sentinel-Strings (em-dash, en-dash, n/a, etc.) werden zu None.
+    Zahlen werden als float zurückgegeben. Alles andere durchgereicht — aber
+    das sollte nicht passieren, da nicht-numerische Strings in Score-Spalten
+    ein CSV-Datenproblem sind.
+    """
     if pd.isna(val): return None
     val_str = str(val).strip()
-    if val_str in ("Pending", "—", ""): return None
+    if val_str in _PENDING_SENTINELS: return None
     try:
         f = float(val)
         return None if math.isnan(f) else f
@@ -1504,6 +1516,17 @@ def _write_top_level_outputs(
         geblockt wurden. Plus blacklist_total_entries (SSoT-Anzahl in der Config)
         und blacklist_source (Dateipfad) landen im meta.json fuer Audit-Zwecke.
     """
+    # Scores-Contract für leaderboard.json durchsetzen: _strip_none hat null-Werte
+    # aus den Model-Einträgen entfernt, aber der Contract verlangt alle 10 Score-Keys
+    # (auch null) — sonst sieht das Frontend im Leaderboard-Index 7-9 Keys statt 10.
+    for _m in models_list:
+        _scores = _m.get("scores")
+        if isinstance(_scores, dict):
+            for _k in _SCORES_CONTRACT_KEYS:
+                _scores.setdefault(_k, None)
+        elif _scores is None:
+            _m["scores"] = dict.fromkeys(_SCORES_CONTRACT_KEYS, None)
+
     _atomic_write_json(
         out_dir / "leaderboard.json",
         _strip_emojis({"generated_at": generated_at, "total_models": len(models_list), "models": models_list}),
@@ -1797,15 +1820,20 @@ def _process_leaderboard(
         if not model_name or str(model_name) == "nan": continue
         count += 1
 
-        slug = slugify(model_name)
+        raw_model_id = str(row.get(LdbCols.MODEL_ID, row.get("model_id_raw", row.get("model_id", "")))).strip()
+        _has_raw = bool(raw_model_id) and raw_model_id != "nan"
+
+        # SSoT: Slug aus model_id (stabile Identität), nicht aus model_name
+        # (veränderlicher Display-Name). Hybrid-Paare (Thinking/Standard)
+        # haben unterschiedliche model_ids → keine Slug-Kollision mehr.
+        # Fallback auf model_name nur wenn model_id fehlt (Defensiv, sollte
+        # bei benchmarked models nicht vorkommen).
+        slug = slugify(raw_model_id) if _has_raw else slugify(model_name)
         if filter_slug and slugify(filter_slug) != slug:
             continue
 
-        raw_model_id = str(row.get(LdbCols.MODEL_ID, row.get("model_id_raw", row.get("model_id", "")))).strip()
-
-        # F1: Slug uniquifizieren bei Collision (verschiedene Quants/Provider,
-        # gleicher Display-Name). Erste Occurrence behält den cleanen Slug,
-        # weitere bekommen provider_code-Suffix, bei gleicher Provider ein Counter.
+        # Safety-Net: Slug-Kollision bei identischen model_ids (sollte bei
+        # korrekter CSV nicht vorkommen). Provider-Suffix als Disambiguator.
         if slug in _seen_slugs:
             _pc = str(row.get(LdbCols.PROVIDER_CODE, "")).strip().lower()
             _base = f"{slug}-{_pc}" if _pc else f"{slug}-2"

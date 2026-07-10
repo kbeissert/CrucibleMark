@@ -1,84 +1,279 @@
 # Web Export Blacklist
-# ====================
-# Modelle in dieser Liste werden von `make web-export` komplett uebersprungen
-# (kein models/{slug}/data.json, kein Eintrag in leaderboard.json).
+# =====================
+# Konfiguration welche Modelle vom Web-Export (`make web-export`) ausgeschlossen
+# werden — d.h. es wird KEIN models/{slug}/data.json erzeugt und KEIN Eintrag
+# in der leaderboard.json aufgenommen.
 #
-# Match-Modus: Exakte model_id (Leaderboard-Spalte "Model ID").
-# Gruppierung nach Provider + Modellfamilie. Alle Quantisierungen und
-# Server-Varianten eines Modells sind zusammengefasst.
+# Struktur
+# --------
+#   1) blacklist        — aktive Filterliste (exakte model_ids, Loader liest nur
+#                         diese Liste). Match via raw id ODER _safe_name().
+#   2) kept_overrides   — Dokumentation bewusst BEHALTENER Modelle. Wird vom
+#                         Loader IGNORIERT; dient nur der Audit-Sicht, damit
+#                         klar ist, was explizit NICHT gefiltert wurde und warum.
 #
-# Verwendung: Standardmäßig stehen ALLE Varianten in der Blacklist. Um ein
-# Modell im Web-Export zu behalten, einfach die entsprechende Zeile auskommentieren
-# (mit `# - "..."` versehen). Alle anderen bleiben gelistet und werden übersprungen.
+# Match-Modus
+# -----------
+#   - exakte model_id (Leaderboard-Spalte "Model ID"), normalisiert via
+#     scripts/web_export._safe_name() (Slashes, Punkte → Underscores).
+#   - fnmatch-Patterns sind erlaubt (Sonderzeichen * ? [ erkennen via _is_blacklisted()).
 #
+# Filter-Regeln (Audit-Stand 2026-07-10)
+# --------------------------------------
+#   - Gleiche Param-Größe, schwächere Quant/Variante → blacklist.
+#   - Ausnahmen die explizit behalten werden:
+#       * Thinking-Variante eines Modells (vs. Standard-Mode)
+#       * Wordsmith-Tune (Unsloth-Creative-Wordsmith)
+#       * Abliterated-Finetune (Abliterated / Aramia-Abliterated)
+#       * Uncensored-Community-Finetune
+#       * Pro Param-Klasse der/die stärkste(n) Variante(n).
+
 blacklist:
 
+  # -----------------------------------------------------------------
   # DeepSeek
-  - "deepseek_deepseek-chat-v3_1"
-  - "deepseek-r1-distill-qwen-32b"
+  # -----------------------------------------------------------------
+  - "deepseek_deepseek-chat-v3_1"           # Rank 22, ersetzt durch V3.2 / V4
+  - "deepseek-r1-distill-qwen-32b"          # Rank 108, distil veraltet
 
-  # Google
-  # === Gemini ===
+  # -----------------------------------------------------------------
+  # Google — Gemini
+  # -----------------------------------------------------------------
   - "gemini-3.1-pro-preview"
 
-  # === Gemma ===
-  # --- gemma-3-12b ---
-  - "gemma-3-12b-it"
-  - "gemma-3-12b-it-q8"
-  - "gemma-3-12b-it-q8-spark"       # [Spark]
-  # - "gemma-3-12b-it-spark"         # [Spark]
+  # -----------------------------------------------------------------
+  # Google — Gemma 3
+  # -----------------------------------------------------------------
+  - "gemma-3-12b-it"                        # Rank 101, schwächer als Q4-K_M
+  - "gemma-3-12b-it-q8"                     # Rank 83
+  - "gemma-3-12b-it-q8-spark"               # [Spark] Q8 — Q4-Spark (89.64) behalten
 
-  # --- gemma-4-12b ---
-  - "gemma-4-12b-it-ud-q4_k_xl"     # UndiX-Derivat
-  - "gemma-4-12b-it-ud-q6_k_xl"     # UndiX-Derivat
-  # - "gemma-4-12b-it-ud-q8_k_xl"    # UndiX-Derivat
+  # -----------------------------------------------------------------
+  # Google — Gemma 4 (12B Q8 stärkster; E4B/26B/31B Base NVFP4 stärkste)
+  # -----------------------------------------------------------------
+  # 12B
+  - "gemma-4-12b-it-ud-q4_k_xl"             # schwächer als q8 (Rank 67, 72.03)
+  - "gemma-4-12b-it-ud-q6_k_xl"             # schwächer als q8
 
-  # --- gemma-4-26b ---
-  # - "gemma-4-26B-A4B-it-UD-Q5_K_XL-mtp"  # UD-Q5_K_XL, MTP [Spark]
-  - "gemma-4-26B-A4B-it-qat-ud-q4"   # QAT, UD-Q4 [Spark]
-  - "gemma-4-26b-a4b-q8"
-  - "gemma-4-26B-A4B-it-UD-Q8_K_XL"  # UD-Q8_K_XL [Spark]
+  # 26B-A4B (MoE) — alle schwächer als Gemma-4-26B NVFP4 (Rank 37, 74.21)
+  - "gemma-4-26b-a4b-q8"                    # Standard-q8 (74)
+  - "gemma-4-26B-A4B-it-UD-Q8_K_XL"         # UD-Q8_K_XL [Spark]
+  - "gemma-4-26B-A4B-it-UD-Q5_K_XL-mtp"     # UD-Q5, MTP [Spark]
+  - "gemma-4-26B-A4B-it-qat-ud-q4"          # QAT, UD-Q4 [Spark]
 
-  # --- gemma-4-31b ---
-  - "gemma-4-31B-it-qat-ud-q4"       # QAT, UD-Q4 [Spark]
-  # - "gemma-4-31B-it-UD-Q8_K_XL-mtp" # UD-Q8_K_XL, MTP
-  # - "google/gemma-4-31b-it"         # API-Modell
-  - "gemma-4-31b-it-creative-wordsmith-q8"  # uncensored
+  # 31B — alle schwächer als Gemma-4-31B NVFP4 (Rank 18, 76.03)
+  - "gemma-4-31B-it-qat-ud-q4"              # QAT, UD-Q4 [Spark]
+  - "gemma-4-31B-it-UD-Q8_K_XL-mtp"         # UD-Q8, MTP [Spark]
 
-  # GLM (Zhipu AI)
-
+  # -----------------------------------------------------------------
   # Hermes (NousResearch)
-  - "hermes-4_3-36b-q6"  # Dense 36B Q6_K auf Spark ~3 tok/s, bremst Auto-Benchmark aus
+  # -----------------------------------------------------------------
+  - "hermes-4_3-36b-q6"                     # ~3 tok/s auf Spark → bremst Auto-Benchmark
 
+  # -----------------------------------------------------------------
   # Mistral AI
-  - "mistral-medium-2312"             # Legacy, ersetzt durch Medium 3.5
+  # -----------------------------------------------------------------
+  - "mistral-medium-2312"                   # Legacy, ersetzt durch Medium 3.5
 
+  # -----------------------------------------------------------------
   # Moonshot AI
-  - "moonshotai/kimi-k2.7-code"
+  # -----------------------------------------------------------------
+  - "moonshotai/kimi-k2.7-code"             # Spezialisiert, ersetzt durch K2.6 / K2 Thinking
 
+  # -----------------------------------------------------------------
   # Qwable (Qwen-Derivat, Fable5-tune)
+  # -----------------------------------------------------------------
   - "qwable-3_6-27b-q4"
 
-  # Qwen (Alibaba)
-  # --- qwen3_5-35b ---
-  - "qwen3_5-35b-a3b-q8"
-  - "qwen3_5-35b-a3b-q4"              # [Spark]
-  - "qwen3_5-35b-a3b-q8"              # [Spark]
+  # -----------------------------------------------------------------
+  # Qwen 3.5 (35B-q4 stärkster, 4B-q6 stärkster)
+  # -----------------------------------------------------------------
+  # 35B-A3B (MoE)
+  - "qwen3_5-35b-a3b-q8"                    # schwächer + langsamer als q4 (74.66 vs 74.72)
 
-  # --- qwen3.5-397b ---
-  # - "qwen/qwen3.5-397b-a17b"         # OpenRouter
+  # 4B
+  - "qwen3_5-4b-q4"                         # schwächer als q6 (68.09)
+  - "qwen3_5-4b-q8"                         # schwächster 4B (67.69)
 
-  # --- qwen3_5-4b ---
-  - "qwen3_5-4b-q4"
-  # - "qwen3_5-4b-q6"
-  - "qwen3_5-4b-q8"
+  # -----------------------------------------------------------------
+  # Qwen 3.6 (35B-A3B: mtp-ud-q8 stärkster Standard; Uncensored als Ausnahme)
+  # -----------------------------------------------------------------
+  - "qwen3_6-35b-a3b-mtp-ud-q4"             # schwächster 35B (72.58)
+  - "qwen3_6-35b-a3b-q8"                    # schwächer als mtp-ud-q8 (73.17)
 
-  # --- qwen3_6-35b ---
-  - "qwen3_6-35b-a3b-mtp-ud-q4"       # MTP, UD-Q4 [Spark]
-  - "qwen3_6-35b-a3b-q8"              # [Spark]
-  - "qwen3_6-35b-a3b-uncensored"      # [Spark]
-  # - "qwen3_6-35b-a3b-mtp-ud-q8"      # MTP, UD-Q8
+  # -----------------------------------------------------------------
+  # Qwen 3 Coder (q8 schwächer + langsamer als q4)
+  # -----------------------------------------------------------------
+  - "qwen3-coder-next-q8"                   # q4 (Rank 34) schneller UND stärker
 
-  # --- qwen3-coder-next ---
-  # - "qwen3-coder-next-q4"
-  - "qwen3-coder-next-q8"
+
+# ============================================================================
+# KEPT OVERRIDES (informational, Loader ignoriert diesen Block)
+# ============================================================================
+# Dokumentation bewusst BEHALTENER Modelle mit Begründung.
+# Modell-IDs müssen zukünftig NICHT in `blacklist` ergänzt werden, solange
+# sie hier dokumentiert sind — alle anderen (nicht hier gelisteten, nicht in
+# `blacklist` enthaltenen) Modell-IDs werden automatisch exportiert.
+#
+# Stand: 2026-07-10 — Gemma-4 / Qwen 3.5 / 3.6 Konsolidierung
+# Quelle: benchmark_scores/benchmark_leaderboard.csv
+
+kept_overrides:
+
+  # -----------------------------------------------------------------
+  # Gemma 3
+  # -----------------------------------------------------------------
+  gemma_3:
+    rationale: "Pro Quant eine Referenz behalten; Q4-K_M als Spark-Variante."
+    models:
+      - id: gemma-3-12b-it-spark
+        rank: 87
+        score: 69.64
+        reason: "Q4-K_M Spark — Performance-Vergleich Q4 vs Q8"
+
+  # -----------------------------------------------------------------
+  # Gemma 4 — pro Param-Klasse der/die stärkste(n); Thinking/Wordsmith/Abliterated
+  # -----------------------------------------------------------------
+  gemma_4:
+    rationale: "Stärkster pro Param-Größe + Ausnahmen (Thinking, Wordsmith, Abliterated)."
+    models:
+      - id: gemma-4-e4b
+        rank: 68
+        score: 71.69
+        size: Edge
+        reason: "einzige E4B-Variante"
+
+      # 12B Desktop
+      - id: gemma-4-12b-it-ud-q8_k_xl
+        rank: 67
+        score: 72.03
+        size: Desktop
+        reason: "stärkster 12B"
+
+      # 26B-A4B Workstation
+      - id: Gemma-4-26B
+        rank: 37
+        score: 74.21
+        size: Workstation
+        mode: Standard
+        reason: "stärkster 26B (Base NVFP4)"
+      - id: Gemma-4-26B-thinking
+        rank: 79
+        score: 70.47
+        size: Workstation
+        mode: Thinking
+        reason: "Thinking-Variante 26B (Base NVFP4)"
+      - id: gemma-4-ara-26b-a4b-q5
+        rank: 52
+        score: 72.89
+        size: Workstation
+        reason: "Aramia-Abliterated (Uncensored-Ausnahme)"
+
+      # 31B Workstation
+      - id: Gemma-4-31B
+        rank: 18
+        score: 76.03
+        size: Workstation
+        mode: Standard
+        reason: "stärkster 31B (Base NVFP4)"
+      - id: Gemma-4-31B-thinking
+        rank: 66
+        score: 72.06
+        size: Workstation
+        mode: Thinking
+        reason: "Thinking-Variante 31B"
+      - id: Gemma-4-31B-Wordsmith-NVFP4
+        rank: 43
+        score: 73.67
+        size: Workstation
+        mode: Standard
+        reason: "Wordsmith-Tune (Unsloth Creative-Wordsmith)"
+      - id: Gemma-4-31B-Wordsmith-NVFP4-thinking
+        rank: 51
+        score: 72.9
+        size: Workstation
+        mode: Thinking
+        reason: "Wordsmith + Thinking"
+      - id: gemma-4-31b-it-creative-wordsmith-q8
+        rank: 73
+        score: 70.93
+        size: Workstation
+        reason: "Wordsmith alternative Quant (Q8 vs NVFP4)"
+      - id: google/gemma-4-31b-it
+        rank: 47
+        score: 73.24
+        size: Workstation
+        reason: "API-Modell (OpenRouter) — schnellste 31B-Variante (31 tok/s)"
+
+  # -----------------------------------------------------------------
+  # Qwen 3.5
+  # -----------------------------------------------------------------
+  qwen3_5:
+    rationale: "Stärkster pro Param-Größe."
+    models:
+      - id: qwen3_5-35b-a3b-q4
+        rank: 32
+        score: 74.72
+        size: Workstation
+        reason: "stärkster 35B + schnellster (70 tok/s vs q8 46)"
+      - id: qwen/qwen3.5-397b-a17b
+        rank: 50
+        score: 73.00
+        size: Frontier
+        reason: "einzige 397B-Variante (OpenRouter)"
+      - id: qwen3_5-9b
+        rank: 80
+        score: 70.46
+        size: Edge
+        reason: "einzige 9B-Variante"
+      - id: qwen3_5-4b-q6
+        rank: 90
+        score: 68.56
+        size: Nano
+        reason: "stärkster 4B"
+
+  # -----------------------------------------------------------------
+  # Qwen 3.6
+  # -----------------------------------------------------------------
+  qwen3_6:
+    rationale: "Stärkster pro Param-Größe; Thinking-Variante und Uncensored-Finetune als Ausnahmen."
+    models:
+      - id: qwen/qwen3.6-plus
+        rank: 15
+        score: 76.26
+        size: Frontier
+        reason: "Frontier-API (OpenRouter)"
+      - id: qwen3_6-27B-thinking
+        rank: 19
+        score: 75.52
+        size: Workstation
+        mode: Thinking
+        reason: "27B dense Thinking-Mode"
+      - id: qwen3_6-27B
+        rank: 63
+        score: 72.27
+        size: Workstation
+        mode: Standard
+        reason: "27B dense Standard-Mode"
+      - id: qwen3_6-35b-a3b-uncensored
+        rank: 44
+        score: 73.55
+        size: Desktop
+        reason: "Uncensored Community-Finetune (Highest-Score 35B-Variante)"
+      - id: qwen3_6-35b-a3b-mtp-ud-q8
+        rank: 45
+        score: 73.52
+        size: Desktop
+        reason: "stärkster 35B Standard-Mode (MTP, UD-Q8)"
+
+  # -----------------------------------------------------------------
+  # Qwen 3 Coder
+  # -----------------------------------------------------------------
+  qwen3_coder:
+    rationale: "Pro Quant eine Referenz (q4 schneller UND stärker)."
+    models:
+      - id: qwen3-coder-next-q4
+        rank: 34
+        score: 74.56
+        size: Workstation
+        reason: "q4-Spark schneller und stärker als q8"

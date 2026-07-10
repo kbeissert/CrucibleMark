@@ -351,7 +351,8 @@ def test_main_loop_skips_blacklisted_model(tmp_path: Path) -> None:
         we.main()
 
     # Nur Model B wurde exportiert (Model A ist blacklisted)
-    assert written_data == ["model-b"], f"Erwartet nur 'model-b', geschrieben: {written_data}"
+    # Slug wird aus model_id gebildet (SSoT), nicht aus model_name
+    assert written_data == ["ok-id"], f"Erwartet nur 'ok-id', geschrieben: {written_data}"
     # models_skipped_blacklist wurde an _write_top_level_outputs uebergeben
     assert mock_write.call_args.kwargs["models_skipped_blacklist"] == 1
     assert mock_write.call_args.kwargs["blacklist_total_entries"] == 1

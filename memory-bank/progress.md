@@ -1,6 +1,67 @@
 # Progress
 Letzte Releases + aktueller Stand.
 
+### 2026-07-10 (Session 58) — Web-Export Blacklist-Restructure + Slug-SSoT + normalize_pending-Hardening + leaderboard.json Scores-Contract [DONE, uncommitted] (v4.10.16)
+
+**Auslöser:** Web-Export-Qualitäts-Review. Blacklist-Config war unstrukturiert (`# -`-Kommentar-Konvention für dokumentierte Ausnahmen), Hybrid-Pair-Slug-Kollisionen (Thinking/Standard mit gleichem Display-Namen), `normalize_pending()` leckte En-Dash/n/a-Strings, `leaderboard.json` hatte keinen Scores-Contract (7-9 Keys statt 10).
+
+**Geliefert (4 Fixes):**
+
+1. **Blacklist-Restructure** (`config/web_export_blacklist.yaml`):
+   - Zwei-Sektion-Layout: `blacklist:` (24 aktive Einträge) + `kept_overrides:` (22 dokumentierte Modelle in 5 Gruppen).
+   - `kept_overrides`-Gruppen: NVFP4/Wordsmith (5), Uncensored/Abliterated (3), Cross-Provider-Reference (1), Best-Quant-Wins (6), Thinking-Variants (7).
+   - Jeder `kept_overrides`-Eintrag: `rank`, `score`, `size`, `mode`, `reason` — Audit-Trail ohne Code-Änderung.
+   - Loader liest nur `data.get("blacklist", [])`, `kept_overrides` ist reine Dokumentation.
+   - Eliminiert altes `# -`-Kommentar-Konvention (unstrukturiert, fehleranfällig).
+   - Validierung: 23 skips (1 Eintrag `mistral-medium-2312` nicht in CSV — Legacy), 0 Verstöße, 31 Tests grün.
+
+2. **Slug-SSoT** (`scripts/web_export.py:_process_leaderboard`, Z.1823):
+   - `slug = slugify(model_name)` → `slug = slugify(raw_model_id) if _has_raw else slugify(model_name)`.
+   - `model_id` = stabile Identität (eindeutig pro CSV-Zeile, enthält `-thinking`-Suffix).
+   - `model_name` = veränderlicher Display-Wert (Thinking/Standard teilen ihn).
+   - Eliminiert alle 5 Hybrid-Pair-Slug-Kollisionen: `gemma-4-31b` vs `gemma-4-31b-thinking`, `gemma-4-26b` vs `gemma-4-26b-thinking`, `qwen3_6-27b` vs `qwen3_6-27b-thinking`, `gemma-4-31b-wordsmith-nvfp4` vs `-thinking`, `ornith-1_0-35b-fp8` vs `-thinking`.
+   - Kollision-Safety-Net (Provider-Suffix-Disambiguierung) bleibt als Defense-in-Depth, sollte bei korrekter CSV nie greifen.
+   - `raw_model_id` wird vor Slug-Berechnung ermittelt (zuvor danach — Reihenfolge korrigiert).
+
+3. **`normalize_pending()` Sentinel-Hardening** (`scripts/web_export.py`, Z.357):
+   - `_PENDING_SENTINELS = frozenset({"Pending", "—", "–", "", "n/a", "N/A", "NA", "null", "None", "none", "nan"})`.
+   - En-Dash `–` (U+2013) ist SEPARATER Codepoint von Em-Dash `—` (U+2014) — alter Code kannte nur Em-Dash.
+   - O(1)-Lookup via frozenset (zuvor Tuple-Scan).
+   - Rückgabewert `float | str | None` (zuvor `str | None`) — Zahlen als float, Sentinels als None, andere Strings durchgereicht (CSV-Datenproblem, nicht stillschweigend schlucken).
+   - `math.isnan(f)` bleibt als Belt-and-Suspenders für `float("nan")` (wird auch von `"nan"`-Sentinel abgefangen).
+
+4. **`leaderboard.json` Scores-Contract** (`scripts/web_export.py:_write_top_level_outputs`, Z.1519):
+   - `_strip_none()` entfernte null-Werte aus Model-Einträgen → `leaderboard.json` zeigte 7-9 Score-Keys statt 10.
+   - `data.json` hatte bereits seit Session-49-Folge Contract-Enforcement (Re-Injection nach `_strip_none` in `_process_leaderboard`).
+   - Neue Enforcement in `_write_top_level_outputs`: für jedes Modell — `scores.setdefault(key, None)` für alle `_SCORES_CONTRACT_KEYS` bei bestehender Dict; `dict.fromkeys(_SCORES_CONTRACT_KEYS, None)` bei fehlender Dict.
+   - `_SCORES_CONTRACT_KEYS` als SSoT — beide Write-Pfade (`data.json` + `leaderboard.json`) referenzieren dieselbe Konstante.
+
+**Test-Update:**
+- `tests/test_web_export_blacklist.py::test_main_loop_skips_blacklisted_model` — erwartet `["ok-id"]` (model_id-Slug) statt `["model-b"]` (model_name-Slug).
+- 97 tests passed (31 Blacklist + 14 Normalization + 3 Field-Coverage + 14 Helpers + 35 SSOT/Blacklist-Path). `make validate` exit 0.
+
+**Verifikation:**
+- Web-Export nach `/tmp/kilo/web_export_test/raw`: 88 Modelle, 88 Model-Dirs, 5 Top-Level-JSONs.
+- 0 Slug-Kollisionen (zuvor 5).
+- 88/88 Scores-Contract erfüllt in `leaderboard.json`.
+- 0 String-Werte in Score-Feldern.
+- 79/88 mit Political Compass, 9 ohne (7 VSPK-vLLM, 2 SPRK-llama.cpp).
+
+**Architektur-Entscheidungen:**
+- **Slug aus `model_id`, nicht `model_name`:** `model_id` ist die stabile Identität (eindeutig pro CSV-Zeile). `model_name` ist Display-only (veränderlich, kann von Thinking/Standard geteilt werden). Web-Projekt nutzt Slug für Routing → muss stabil und eindeutig sein.
+- **`kept_overrides` als reine Dokumentation:** Loader ignoriert es — keine Code-Logik, kein Risiko von unbeabsichtigten Side-Effects. Structuriertes Audit-Format statt unstrukturierter Kommentare.
+- **En-Dash separat behandeln:** Unicode-Codepoints müssen explizit aufgelöst werden — `–` (U+2013) ≠ `—` (U+2014) ≠ `-` (U+002D). Sentinel-Sets müssen alle Varianten einzeln enthalten.
+- **Beide Write-Pfade brauchen eigenen Contract:** `_strip_none` läuft auf beiden (`data.json` + `leaderboard.json`), also müssen beide Contract-Enforcement haben. `_SCORES_CONTRACT_KEYS` als SSoT wird von beiden referenziert.
+
+**Out of Scope (nicht Export-Code):**
+- Benchmark-Daten-Fixes: Ornith CSV `44/43` → `43/43`, Codestral `thinking_probe_confidence` fehlt in Card, `llm_judge_coverage` 100% uniform (verifizieren ob real oder Stub).
+- 7 vLLM-Modelle + 2 SPRK-Modelle ohne Political Compass (Nutzer wird vLLM-Compass hinzufügen).
+- Web-Projekt: `?? model_name` Fallbacks in Chart-Handlern können entfernt werden (Slug jetzt stabil aus model_id).
+
+**Status:** Working Tree, uncommitted. Working-Tree-Diff: 3 Dateien geändert (`web_export_blacklist.yaml`, `web_export.py`, `test_web_export_blacklist.py`) + Doku-Updates (`CHANGELOG.md`, `README.md`, `.agent/web-export-cleanup.md`, `memory-bank/*`). Working Tree insgesamt weiterhin uncommitted (Sessions 52–58). v4.10.16-Bump in CHANGELOG + README.
+
+---
+
 ### 2026-07-10 (Session 57) — Local-Model Price = 0.0 + Code Quality Pending geklärt [DONE, uncommitted]
 
 **Auslöser:** Nutzer-Re-Run von `qwen3_6-27B-thinking` für `code_quality`-Modul schrieb erfolgreich Score (70.44). Nutzer-Beobachtung: Leaderboard zeigt für lokale Modelle **leere** Cost-Spalte (statt 0.0). Wiederholt für `qwen3_6-27B`/`-thinking`, `Gemma-4-26B`/`-thinking`, `Gemma-4-31B`/`-thinking`. Leere Zelle verfälscht `Benchmark Cost`-Berechnung.

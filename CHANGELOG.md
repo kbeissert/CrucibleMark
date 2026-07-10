@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v4.10.16] - 2026-07-10
+
+**Web-Export Blacklist-Restructure + Slug-SSoT + `normalize_pending`-Hardening + `leaderboard.json` Scores-Contract.**
+
+### Changed
+
+- **Blacklist-Restructure — `config/web_export_blacklist.yaml`:** Zwei-Sektion-Layout eingeführt: `blacklist:` (24 aktive Einträge) + `kept_overrides:` (22 dokumentierte Modelle in 5 Gruppen mit rank/score/size/mode/reason). Eliminiert das alte `# -`-Kommentar-Konvention für dokumentierte Ausnahmen. Jeder `kept_overrides`-Eintrag dokumentiert warum ein Modell trotz Filter-Logik (gleiche Param-Size, stärkere Quant) behalten wurde — Audit-Trail ohne Code-Änderung. Loader liest nur `data.get("blacklist", [])`, `kept_overrides` ist reine Dokumentation (zusätzliche Top-Level-Keys werden ignoriert).
+
+- **Slug-SSoT — `scripts/web_export.py:_process_leaderboard`:** Slug-Generierung von `slugify(model_name)` auf `slugify(raw_model_id)` umgestellt. `model_id` ist die stabile Identität (eindeutig pro CSV-Zeile), `model_name` ist ein veränderlicher Display-Wert. Eliminiert alle 5 Hybrid-Pair-Slug-Kollisionen (Thinking/Standard-Varianten mit gleichem Display-Namen aber unterschiedlichen model_ids). Fallback auf `model_name` nur wenn `model_id` fehlt (defensiv, sollte bei benchmarked Models nicht vorkommen). Web-Projekt nutzt `model_id`/`slug` für Routing (Identität), `model_name`/`display_name` für Display nur.
+
+### Fixed
+
+- **`normalize_pending()` Sentinel-Set erweitert — `scripts/web_export.py`:** Alter Code kannte nur `("Pending", "—", "")` als Sentinels. En-Dash `–` (U+2013, verschieden von Em-Dash `—` U+2014), `n/a`, `N/A`, `NA`, `null`, `None`, `none`, `nan` leckten als String-Werte in den JSON-Export. Neue `_PENDING_SENTINELS` frozenset (O(1)-Lookup) fängt alle bekannten CSV-Platzhalter-Strings ab. Rückgabewert `float | str | None` (zuvor `str | None`) — Zahlen werden als float durchgereicht, nicht-numerische Strings sind ein CSV-Datenproblem (werden durchgereicht, nicht stillgeschluckt).
+
+- **`leaderboard.json` Scores-Contract — `scripts/web_export.py:_write_top_level_outputs`:** `_strip_none()` entfernte null-Werte aus Model-Einträgen im `leaderboard.json`, aber der Contract verlangt alle 10 Score-Keys (auch null). Vorher sah das Frontend im Leaderboard-Index 7-9 Keys statt 10. Neue Contract-Enforcement direkt vor dem `leaderboard.json`-Write: `setdefault` für bestehende `scores`-Dicts, `dict.fromkeys` für fehlende. Konsistent mit `data.json` (das bereits seit Session-49-Folge den Contract erzwingt).
+
+### Tests
+
+- `test_web_export_blacklist.py::test_main_loop_skips_blacklisted_model` — erwartet `["ok-id"]` (model_id-Slug) statt `["model-b"]` (model_name-Slug). `make validate` exit 0. **97 tests passed** (31 Blacklist + 14 Normalization + 3 Field-Coverage + 14 Helpers + 35 SSOT/Blacklist-Path).
+
+### Out of Scope
+
+- 88 Modelle exportiert, 23 blacklisted (24 Config-Einträge, 1 nicht in CSV: `mistral-medium-2312` Legacy). 79/88 mit Political Compass, 9 ohne (7 VSPK-vLLM, 2 SPRK-llama.cpp).
+- Benchmark-Daten-Fixes (nicht Export-Code): Ornith CSV `44/43` → `43/43`, Codestral `thinking_probe_confidence` fehlt in Card, `llm_judge_coverage` 100% uniform (verifizieren ob real oder Stub).
+- Web-Projekt: `?? model_name` Fallbacks in Chart-Handlern können entfernt werden (Slug jetzt stabil aus model_id).
+
+---
+
 ## [v4.10.15] - 2026-07-08
 
 **Baustellen-Cleanup: Sampling-Drift, vLLM-Extensions-Whitelist, Card-Vocabulary, Sub-Family-LB-Entfernung, 2 pre-existing Test-Failures behoben, 2 Live-Runs.**

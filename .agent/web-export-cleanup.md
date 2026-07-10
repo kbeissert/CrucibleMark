@@ -50,6 +50,47 @@ Die Blacklist (`config/web_export_blacklist.yaml`) enthält Einträge in der kan
 
 **Caveat:** 100% Effektivität nicht erreichbar, weil einige Blacklist-Einträge Tippfehler enthalten (`gpt-5_5-pro-2026-04-23` statt `gpt-5_5-2026-04-23`) oder auf nicht-existierende Modelle zeigen.
 
+## WebExport Blacklist-Restructure (ab v4.10.16)
+
+`config/web_export_blacklist.yaml` hat ein Zwei-Sektion-Layout:
+
+- **`blacklist:`** — 24 aktive Einträge, vom Loader gelesen via `data.get("blacklist", [])`.
+- **`kept_overrides:`** — 22 dokumentierte Modelle in 5 Gruppen (NVFP4/Wordsmith, Uncensored/Abliterated, Cross-Provider-Reference, Best-Quant-Wins, Thinking-Variant). Jeder Eintrag hat `rank`, `score`, `size`, `mode`, `reason` — dokumentiert WARUM ein Modell trotz Filter-Logik (gleiche Param-Size, stärkere Quant) behalten wurde.
+
+`kept_overrides` ist reine Audit-Dokumentation — der Loader ignoriert zusätzliche Top-Level-Keys. Eliminiert das alte `# -`-Kommentar-Konvention für dokumentierte Ausnahmen (war unstrukturiert und fehleranfällig).
+
+**Filter-Logik (im Kopf des Nutzers, NICHT im Code):** Für jede Param-Size-Klasse wird die stärkste Quant behalten. Ausnahmen: Thinking/Non-Thinking-Varianten beide behalten; Uncensored/Abliterated/Wordsmith-Finetunes behalten; Cross-Provider-Referenz (z.B. `google/gemma-4-31b-it` API neben vLLM-lokal) behalten.
+
+## WebExport Slug-SSoT (ab v4.10.16)
+
+Slug-Generierung in `_process_leaderboard` nutzt `slugify(raw_model_id)` statt `slugify(model_name)`.
+
+**Warum:** `model_id` ist die stabile Identität (eindeutig pro CSV-Zeile), `model_name` ist ein veränderlicher Display-Wert. Hybrid-Paare (Thinking/Standard) haben denselben Display-Namen aber unterschiedliche model_ids — z.B. `gemma-4-31b` (Standard) vs `gemma-4-31b-thinking` (Thinking). Mit `model_name`-Slugs kollidierten beide → `data.json`-Überschreibung (last-row-wins). Mit `model_id`-Slugs sind beide eindeutig.
+
+**Kollision-Safety-Net:** Wenn identische `model_id`s auftreten (sollte bei korrekter CSV nicht vorkommen), greift Provider-Suffix-Disambiguierung (`_seen_slugs`-Set, Provider-Code-Suffix, dann Counter). Defense-in-Depth, kein Normalfall.
+
+**Web-Projekt-Konsequenz:** `slug` = `model_id` (Routing/Identität), `model_name`/`display_name` = Display nur. Web-Projekt kann `?? model_name` Fallbacks in Chart-Handlern entfernen — Slug ist jetzt stabil.
+
+## WebExport `normalize_pending` Sentinel-Hardening (ab v4.10.16)
+
+`normalize_pending()` nutzt `_PENDING_SENTINELS` frozenset statt hardcoded Tuple. Bekannte CSV-Platzhalter-Strings werden zu `None`:
+
+`Pending`, `—` (Em-Dash U+2014), `–` (En-Dash U+2013, separater Codepoint!), `""`, `n/a`, `N/A`, `NA`, `null`, `None`, `none`, `nan`
+
+**Wichtig:** En-Dash (`–` U+2013) und Em-Dash (`—` U+2014) sind verschiedene Unicode-Codepoints. Der alte Code kannte nur Em-Dash — En-Dash leckte als String in den JSON-Export. Beide müssen separat in der Sentinel-Set stehen.
+
+Rückgabewert: `float | str | None`. Zahlen → `float`. Sentinels → `None`. Andere Strings → durchgereicht (CSV-Datenproblem, nicht stillschweigend schlucken).
+
+## WebExport `leaderboard.json` Scores-Contract (ab v4.10.16)
+
+`_write_top_level_outputs()` erzwingt den 10-Key Scores-Contract für `leaderboard.json` direkt vor dem Write (zuvor nur `data.json` hatte Contract-Enforcement).
+
+**Problem:** `_strip_none()` entfernte null-Werte aus Model-Einträgen. `leaderboard.json` zeigte dann 7-9 Score-Keys statt 10. `data.json` hatte bereits seit Session-49-Folge Contract-Enforcement via `_SCORES_CONTRACT_KEYS` Re-Injection nach `_strip_none`.
+
+**Fix:** In `_write_top_level_outputs`: für jedes Modell in `models_list` — `scores.setdefault(key, None)` für alle `_SCORES_CONTRACT_KEYS` bei bestehender Dict; `dict.fromkeys(_SCORES_CONTRACT_KEYS, None)` bei fehlender Dict.
+
+**SSoT:** `_SCORES_CONTRACT_KEYS` (abgeleitet aus `_SCORE_COLUMN_TO_KEY`) ist die einzige Quelle für die 10 Modul-Keys. Beide Write-Pfade (`data.json` via `_process_leaderboard`, `leaderboard.json` via `_write_top_level_outputs`) referenzieren dieselbe Konstante.
+
 ## WebExport Score-Spalten-Vollständigkeit (ab v4.10.11)
 
 `LdbCols` in `scripts/web_export.py` (Z. 35-70) MUSS eine Konstante für JEDE CSV-Modul-Spalte in `benchmark_scores/benchmark_leaderboard_detailed.csv` haben, sonst wird die Spalte stillschweigend ignoriert und landet nicht in `data.json.leaderboard.scores`.
