@@ -314,9 +314,6 @@ class OpenAIClient(BaseProviderClient):
         except Exception as e:
             logger.error("OpenAI query failed: %s", e)
             raise
-    def _extract_reasoning_tokens(self, usage) -> int | None:
-        """Delegiert an BaseProviderClient._extract_reasoning_tokens (SSoT)."""
-        return super()._extract_reasoning_tokens(usage)
 
     def get_available_models(self) -> list[str]:
         """List available OpenAI models"""

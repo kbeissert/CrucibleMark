@@ -353,8 +353,15 @@ class CohereClient(BaseProviderClient):
             raise
 
     def _extract_reasoning_tokens(self, usage: Any) -> int | None:
-        """Cohere usage format: {tokens: {input_tokens, output_tokens}}.
-        Reasoning tokens are available in tokens.reasoning_tokens for reasoning models.
+        """Genuine Cohere-spezifische Override (KEIN dead stub).
+
+        Cohere nutzt ein abweichendes Usage-Format:
+        ``{tokens: {input_tokens, output_tokens, reasoning_tokens}}``.
+        Die Base-Methode in ``base.py`` prueft OpenAI/Anthropic/Mistral-Pfade,
+        die bei Cohere nicht zutreffen. Daher ist diese Override noetig.
+
+        Siehe auch: ``tests/test_provider_reasoning_ssot.py`` (Guardrail-Test
+        der sicherstellt, dass nur ``cohere.py`` eine Override definiert).
         """
         if isinstance(usage, dict):
             tokens = usage.get("tokens", {})

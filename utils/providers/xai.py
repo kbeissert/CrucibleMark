@@ -180,9 +180,6 @@ class XAIClient(BaseProviderClient):
             logger = logging.getLogger(__name__)
             logger.error("XAI API Error: %s", e)
             raise e
-    def _extract_reasoning_tokens(self, usage) -> int | None:
-        """Delegiert an BaseProviderClient._extract_reasoning_tokens (SSoT)."""
-        return super()._extract_reasoning_tokens(usage)
 
     def get_available_models(self) -> list:
         try:

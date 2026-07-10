@@ -187,10 +187,6 @@ class GroqClient(BaseProviderClient):
             logger.debug(f"Groq API Error: {str(e)}")
             raise
 
-    def _extract_reasoning_tokens(self, usage) -> int | None:
-        """Delegiert an BaseProviderClient._extract_reasoning_tokens (SSoT)."""
-        return super()._extract_reasoning_tokens(usage)
-
     def get_available_models(self) -> list:
         try:
             models = self.client.models.list()

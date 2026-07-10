@@ -162,14 +162,6 @@ class AnthropicClient(BaseProviderClient):
             # Let RetryHandler handle logging
             raise
 
-    def _extract_reasoning_tokens(self, usage) -> int | None:
-        """Delegiert an BaseProviderClient._extract_reasoning_tokens (SSoT).
-
-        Anthropic nutzt ``output_tokens_details`` statt ``completion_tokens_details``.
-        Die Base-Methode prüft beide Pfade.
-        """
-        return super()._extract_reasoning_tokens(usage)
-
     def _extract_think_content(self, content_blocks) -> str | None:
         """Extrahiere thinking-Content aus Anthropic ContentBlock-Liste."""
         think_parts: list[str] = []
