@@ -383,6 +383,13 @@
           "Mia AI Lab"
         ],
         "speciality": "finetune"
+      },
+      "llmfan46": {
+        "label": "llmfan46",
+        "vendor_card_id": "llmfan46",
+        "description": "llmfan46 — Einzel-Community-Contributor, spezialisiert auf Abliteration (Heretic v1.2.0, ARA-Methode) und Creative-Writing-Fine-Tunes (Wordsmith/Ortenzya) auf Google-Gemma-Basismodellen. Verwendet Unsloth Studio. Keine dokumentierte Jurisdiktion (HF-Profil ohne Länderangabe).",
+        "aliases": [],
+        "speciality": "finetune_uncensored"
       }
     }
   }

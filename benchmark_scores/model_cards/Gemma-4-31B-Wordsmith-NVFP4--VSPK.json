@@ -9,7 +9,7 @@
   "weights_provenance_risk": "medium",
   "weights_provenance_risk_rationale": "Google DeepMind ist ein US-Unternehmen (CLOUD-Act-Exposition primär bei Cloud-/API-Nutzung, nicht bei lokalem Betrieb). Die Basisgewichte stehen unter Apache-2.0. Linienbaum: google/gemma-4-31B → google/gemma-4-31B-it → llmfan46/gemma-4-31B-it-uncensored-heretic (Abliteration via Heretic v1.2.0, ARA-Methode) → llmfan46/.../Ortenzya-Creative-Wordsmith (Fine-Tune via Unsloth Studio) → NVFP4-Quantisierung desselben Autors. Der Fine-Tune-Autor llmfan46 ist ein Einzel-Contributor ohne dokumentierte Jurisdiktion (HF-Profil nennt kein Land). Relevanter Risikofaktor: Das Modell wurde gezielt abliteriert (91 % weniger Refusals, 9/100 vs. 99/100 beim Original), was Sicherheits-Guardrails des Basismodells gezielt entfernt – bei rein lokalem Betrieb ohne Cloud-Anbindung bleibt das Risiko technisch/inhaltlich, nicht datenschutzrechtlich.",
   "model_family": "Gemma",
-  "vendor": "llmfan46",
+  "vendor": "Google",
   "primary_focus": "creative-writing",
   "use_case_primary": "generalist",
   "parameter_architecture": "dense",
@@ -90,7 +90,7 @@
   "heritage_ids": [
     "gemma-4-31b"
   ],
-  "community": true,
+  "community": "llmfan46",
   "tooluse_runs": {
     "Gemma-4-31B-Wordsmith-NVFP4": {
       "tested_at": "2026-07-10T08:45:08Z",
