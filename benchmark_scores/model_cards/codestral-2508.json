@@ -63,7 +63,7 @@
   "temperature": null,
   "thinking_probe_at": null,
   "thinking_probe_confidence": null,
-  "thinking_probe_detected": false,
+  "thinking_probe_detected": null,
   "thinking_probe_evidence": null,
   "tooluse_recommendation": null,
   "top_k": null,
