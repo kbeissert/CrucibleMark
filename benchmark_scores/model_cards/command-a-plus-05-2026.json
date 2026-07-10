@@ -52,9 +52,6 @@
     "text"
   ],
   "supports_tool_use": false,
-  "tooluse_tested_at": null,
-  "tooluse_score_p1": null,
-  "tooluse_score_p2": null,
   "tooluse_recommendation": null,
   "temperature": null,
   "system_prompt_override": null,
@@ -90,5 +87,12 @@
   "heritage_ids": [
     "command-a-03-2025"
   ],
-  "community": null
+  "community": null,
+  "tooluse_runs": {
+    "command-a-plus-05-2026": {
+      "tested_at": "2026-07-10T07:30:25Z",
+      "score_p1": 0.0,
+      "score_p2": 13.33
+    }
+  }
 }

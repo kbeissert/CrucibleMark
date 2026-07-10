@@ -69,5 +69,12 @@
   "profile_verified_by": "llm:perplexity",
   "last_modified_at": "2026-06-21",
   "heritage_ids": [],
-  "community": null
+  "community": null,
+  "tooluse_runs": {
+    "nvidia/llama-3.3-nemotron-super-49b-v1.5": {
+      "tested_at": "2026-07-10T07:21:11Z",
+      "score_p1": 90.0,
+      "score_p2": 55.83
+    }
+  }
 }

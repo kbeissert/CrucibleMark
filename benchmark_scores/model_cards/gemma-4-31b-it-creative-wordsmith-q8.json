@@ -64,9 +64,6 @@
   "profile_verified": true,
   "profile_verified_at": "2026-06-20",
   "community": "mradermacher",
-  "tooluse_tested_at": null,
-  "tooluse_score_p1": null,
-  "tooluse_score_p2": null,
   "tooluse_recommendation": null,
   "temperature": null,
   "system_prompt_override": null,
@@ -84,5 +81,12 @@
   "heritage_ids": [],
   "presence_penalty": null,
   "model_variant": "Ortenzya Creative-Wordsmith-uncensored-heretic",
-  "quantization_format": "Q8_0 GGUF"
+  "quantization_format": "Q8_0 GGUF",
+  "tooluse_runs": {
+    "gemma-4-31b-it-creative-wordsmith-q8": {
+      "tested_at": "2026-07-10T07:21:10Z",
+      "score_p1": 83.33,
+      "score_p2": 50.0
+    }
+  }
 }

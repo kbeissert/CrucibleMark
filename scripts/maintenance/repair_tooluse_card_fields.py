@@ -114,10 +114,19 @@ def main() -> int:
             continue
 
         current_val = card.get("supports_tool_use")
-        tested_at = card.get("tooluse_tested_at")
+        # v4.10.16: Pro-Profil-Check statt flach. Wenn bereits ein Eintrag in
+        # tooluse_runs.{model_id} existiert (Standard-Profil oder Single-Profil),
+        # ist die Card bereits aktuell — überspringen.
+        runs = card.get("tooluse_runs") or {}
+        run_entry = runs.get(model_id) if isinstance(runs, dict) else None
+        tested_at = (run_entry or {}).get("tested_at") if isinstance(run_entry, dict) else None
 
-        # Bereits korrekt gesetzt → überspringen
-        if current_val is True and tested_at:
+        # v4.10.16+: Capability-Flag respektieren. ``supports_tool_use`` ist eine
+        # manuelle/auto-generierte Capability-Aussage über das Modell. Nur reparieren,
+        # wenn aktueller Wert null/"untested" (kein Claim gesetzt). Bei True/False
+        # überspringen — der Test-Indikator ist tooluse_runs.{profile_id}.tested_at,
+        # und das Pass/Fail-Signal lebt im Leaderboard.
+        if current_val is True or current_val is False:
             skipped += 1
             continue
 
@@ -131,7 +140,7 @@ def main() -> int:
         else:
             correct_val = "untested"
 
-        # Überschreiben nur wenn aktueller Wert falsch/fehlt
+        # Überschreiben nur wenn aktueller Wert null/untested ist und correct_val abweicht
         if current_val == correct_val:
             skipped += 1
             continue
@@ -142,32 +151,41 @@ def main() -> int:
         )
 
         if not args.dry_run:
-            if correct_val is True:
-                from datetime import datetime, timezone
+            from datetime import datetime, timezone
 
+            now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+            if correct_val is True:
                 card["supports_tool_use"] = True
-                card["tooluse_tested_at"] = datetime.now(timezone.utc).strftime(
-                    "%Y-%m-%dT%H:%M:%SZ"
-                )
             elif correct_val is False:
                 card["supports_tool_use"] = False
-                card["tooluse_tested_at"] = datetime.now(timezone.utc).strftime(
-                    "%Y-%m-%dT%H:%M:%SZ"
-                )
             else:
                 card["supports_tool_use"] = "untested"
 
+            # v4.10.16: Nested-Write in tooluse_runs.{model_id}.
+            tooluse_runs = card.get("tooluse_runs")
+            if not isinstance(tooluse_runs, dict):
+                tooluse_runs = {}
+            entry = tooluse_runs.get(model_id) or {}
+            entry["tested_at"] = now_iso
             if has_p1_data:
                 try:
-                    card["tooluse_score_p1"] = round(float(p1_str), 2)
+                    entry["score_p1"] = round(float(p1_str), 2)
                 except (ValueError, TypeError):
                     pass
                 p2_str = row.get("p2_score", "")
                 if p2_str not in ("", "nan", "None"):
                     try:
-                        card["tooluse_score_p2"] = round(float(p2_str), 2)
+                        entry["score_p2"] = round(float(p2_str), 2)
                     except (ValueError, TypeError):
                         pass
+            tooluse_runs[model_id] = entry
+            if tooluse_runs:
+                card["tooluse_runs"] = tooluse_runs
+
+            # Legacy-Felder entfernen — Migration auf nested-Schema.
+            card.pop("tooluse_tested_at", None)
+            card.pop("tooluse_score_p1", None)
+            card.pop("tooluse_score_p2", None)
 
             _save_card(model_id, card)
 

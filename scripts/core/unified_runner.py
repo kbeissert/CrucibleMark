@@ -130,7 +130,7 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
 
         card_path, _safe = self._resolve_model_card_path(model, model_cfg=model_cfg)
         needs_probe, card_loaded, canonical_model = self._read_card_probe_state(
-            model, card_path
+            model, card_path, model_cfg=model_cfg,
         )
 
         if not needs_probe:
@@ -168,9 +168,20 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         return card_path, ""
 
     def _read_card_probe_state(
-        self, model: str, card_path: Path
+        self, model: str, card_path: Path,
+        *,
+        model_cfg: dict[str, Any] | None = None,
     ) -> tuple[bool, bool, str]:
-        """Lädt Card-Inhalt. Returns (needs_probe, card_loaded, canonical_model)."""
+        """Lädt Card-Inhalt. Returns (needs_probe, card_loaded, canonical_model).
+
+        Args:
+            model_cfg: Optionaler Config-Eintrag für ``card_model_id``-Redirect
+                (Dual-Thinking-Profile). Bei Thinking-Profilen zeigt die Card
+                per Suffix-Fallback auf die Basis-Card, deren ``model_id``-Feld
+                die Basis-ID trägt — das darf den Profil-Identifier im
+                Pipeline-State NICHT überschreiben (sonst verschmelzen
+                Standard- und Thinking-Profil im Leaderboard).
+        """
         needs_probe = False
         card_loaded = False
         canonical_model = model
@@ -189,12 +200,26 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         except Exception as e:
             print(f"   ⚠️ Card konnte nicht gelesen werden: {e}", flush=True)
             logger.warning(
-                "[Card-First] Card für '%s' konnte nicht gelesen werden: %s", model, e,
+                "[Card-First] Card für '%s' konnte nicht gelesen werden: %s",
+                model, e,
             )
             return True, False, model
 
         card_loaded = True
-        canonical_model = loaded.get("model_id") or model
+        # SSoT-Override-Guard: Bei Dual-Thinking-Profilen teilen sich Profil und
+        # Basis eine Card. Das Card-``model_id``-Feld zeigt auf die Basis-ID,
+        # das Profil behält aber seine eigene ID im Pipeline-State.
+        # Detection: card_model_id-Redirect ODER -thinking-Suffix.
+        _is_thinking_redirect = (
+            model_cfg is not None
+            and isinstance(model_cfg.get("card_model_id"), str)
+            and bool(model_cfg["card_model_id"])
+        )
+        _is_thinking_suffix = model.endswith("-thinking")
+        if _is_thinking_redirect or _is_thinking_suffix:
+            canonical_model = model
+        else:
+            canonical_model = loaded.get("model_id") or model
         # Pitfall-Diagnose 2026-06-10: Draft-Cards aus ensure_card() haben
         # ``thinking_probe_detected: null`` (explizit auf None gesetzt), nicht
         # "Feld fehlt komplett". ``not in loaded`` würde das übersehen und

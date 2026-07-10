@@ -79,9 +79,13 @@
   "profile_verified_by": "llm:perplexity",
   "last_modified_at": "2026-06-21",
   "heritage_ids": [],
-  "tooluse_tested_at": null,
-  "tooluse_score_p1": null,
-  "tooluse_score_p2": null,
   "tooluse_recommendation": null,
-  "system_prompt_override": null
+  "system_prompt_override": null,
+  "tooluse_runs": {
+    "qwen3_6-35b-a3b-q8": {
+      "tested_at": "2026-07-10T07:21:11Z",
+      "score_p1": 78.33,
+      "score_p2": 65.83
+    }
+  }
 }

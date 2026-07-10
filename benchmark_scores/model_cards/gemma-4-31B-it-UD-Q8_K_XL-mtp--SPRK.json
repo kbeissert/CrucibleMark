@@ -66,9 +66,6 @@
   "profile_verified_at": "2026-06-20",
   "profile_verified_by": "llm:perplexity",
   "last_modified_at": "2026-06-20",
-  "tooluse_tested_at": null,
-  "tooluse_score_p1": null,
-  "tooluse_score_p2": null,
   "tooluse_recommendation": null,
   "temperature": null,
   "system_prompt_override": null,
@@ -82,5 +79,12 @@
   "seed": null,
   "stop_sequences": null,
   "model_variant": "MTP",
-  "quantization_format": "UD-Q8_K_XL GGUF"
+  "quantization_format": "UD-Q8_K_XL GGUF",
+  "tooluse_runs": {
+    "gemma-4-31B-it-UD-Q8_K_XL-mtp": {
+      "tested_at": "2026-07-10T07:21:11Z",
+      "score_p1": 83.33,
+      "score_p2": 56.67
+    }
+  }
 }

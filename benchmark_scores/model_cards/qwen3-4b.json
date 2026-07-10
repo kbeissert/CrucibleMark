@@ -43,7 +43,7 @@
     "Kontextfenster von 128.000 Tokens für ein Nano-Modell grosszügig"
   ],
   "summary": "Vier Milliarden Parameter, Apache-2.0-Lizenz und ein optionaler Thinking-Modus: Qwen 3 4B ist für mobile Anwendungen und Edge-Setups gedacht, wo jedes Watt zählt. Lokal betreibbar unter Q6-Quantisierung, mit 128.000 Tokens Kontextfenster für ein Nano-Modell dieser Klasse grosszügig dimensioniert. Die Hersteller-Jurisdiktion China bringt bei politisch sensiblen Themen gelegentlich zensierte oder ausweichende Antworten mit sich.",
-  "supports_tool_use": false,
+  "supports_tool_use": true,
   "thinking_probe_at": "2026-06-03T12:00:00.000000+00:00",
   "thinking_probe_confidence": "low",
   "thinking_probe_detected": false,
@@ -66,9 +66,6 @@
   ],
   "profile_verified": true,
   "profile_verified_at": "2026-06-20",
-  "tooluse_tested_at": null,
-  "tooluse_score_p1": null,
-  "tooluse_score_p2": null,
   "tooluse_recommendation": null,
   "temperature": null,
   "system_prompt_override": null,
@@ -79,5 +76,12 @@
   "heritage_ids": [],
   "community": null,
   "model_variant": null,
-  "quantization_format": "Q6_K GGUF"
+  "quantization_format": "Q6_K GGUF",
+  "tooluse_runs": {
+    "qwen3-4b": {
+      "tested_at": "2026-07-10T07:21:10Z",
+      "score_p1": 90.0,
+      "score_p2": 51.67
+    }
+  }
 }

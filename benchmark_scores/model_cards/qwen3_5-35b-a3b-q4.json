@@ -73,9 +73,6 @@
   "stop_sequences": null,
   "temperature": 1.0,
   "system_prompt_override": null,
-  "tooluse_tested_at": null,
-  "tooluse_score_p1": null,
-  "tooluse_score_p2": null,
   "tooluse_recommendation": null,
   "profile_verified": true,
   "profile_verified_at": "2026-06-21",
@@ -84,5 +81,12 @@
   "heritage_ids": [],
   "community": "Unsloth",
   "model_variant": null,
-  "quantization_format": "Q4_K_XL GGUF"
+  "quantization_format": "Q4_K_XL GGUF",
+  "tooluse_runs": {
+    "qwen3_5-35b-a3b-q4": {
+      "tested_at": "2026-07-10T07:21:10Z",
+      "score_p1": 90.0,
+      "score_p2": 55.83
+    }
+  }
 }

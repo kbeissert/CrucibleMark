@@ -10,28 +10,57 @@
 
 ## Card-Flag-Tri-State
 
-Das Feld `supports_tool_use` in der Model Card hat drei kanonische Zustände:
+Das Feld `supports_tool_use` in der Model Card hat drei kanonische Zustände (Capability-Flag, **manuell/auto-gesetzt**):
 
-| Wert | Bedeutung | Empirisch verifiziert? | `tooluse_tested_at` |
-|---|---|---|---|
-| `true` | Modell kann Tools aufrufen | ✅ ja (mean P1 > 0) | gesetzt |
-| `false` | Modell kann keine Tools aufrufen | ✅ ja (mean P1 == 0) | gesetzt |
-| `"untested"` | Tool-Use-Benchmark noch nicht gelaufen | ❌ nein | entfernt |
+| Wert | Bedeutung | Test-Indikator |
+|---|---|---|
+| `true` | Modell kann Tools aufrufen (Capability) | `tooluse_runs.{profile_id}.tested_at` |
+| `false` | Modell kann keine Tools aufrufen (Capability) | `tooluse_runs.{profile_id}.tested_at` |
+| `"untested"` | Keine Capability-Aussage getroffen | — |
+
+**Wichtig (v4.10.16+):** `supports_tool_use` ist eine **Capability-Aussage über das Modell**, nicht über einen einzelnen Test-Run. Path B (Re-Aggregation) nutzt `preserve_supports_tool_use=True` und überschreibt das Flag NICHT. Ein Mock-Run mit p1=0 setzt das Flag nicht auf `false` — der Test-Indikator `tooluse_runs.{profile_id}.tested_at` zeigt, dass getestet wurde, und die Score-Felder dokumentieren das Resultat. Path A (`finalize_model`) darf das Flag weiterhin überschreiben (empirische Verifikation).
 
 **Quellen:**
 
 1. **Manuelle Vorab-Klassifikation** über `scripts/dev/patch_tool_use.py` (einmalig 2026-05)
-2. **Empirische Verifikation** über `scripts/core/tooluse_exporter.py:finalize_model()` — schreibt nach jedem Tool-Use-Lauf `supports_tool_use`, `tooluse_tested_at`, `tooluse_score_p1` und `tooluse_score_p2` zurück in die Card
-3. **Migration** über `scripts/dev/migrate_supports_tool_use_tri_state.py` — setzt `null` → `"untested"` für Cards ohne Feld
+2. **Empirische Verifikation** über `scripts/core/tooluse_exporter.py:finalize_model()` — schreibt nach jedem Tool-Use-Lauf `supports_tool_use` und `tooluse_runs.{profile_id}` zurück in die Card
+3. **Path B Sync** über `scripts/core/tooluse_exporter.py:aggregate_from_benchmark_csvs()` — schreibt Card pro Modell nach jeder Re-Aggregation des Leaderboards (verhindert No-Op-Failure-Mode), respektiert aber bestehende Capability-Flags
+4. **Migration** über `scripts/dev/migrate_supports_tool_use_tri_state.py` — setzt `null` → `"untested"` für Cards ohne Feld
 
-**Score-Felder in der Card:**
+**Score-Felder in der Card (per-Profil-Run-State, v4.10.16):**
 
-| Feld | Typ | Beschreibung |
-|---|---|---|
-| `tooluse_score_p1` | float | ∅ Phase-1-Score des letzten verifizierten Runs |
-| `tooluse_score_p2` | float | ∅ Phase-2-Score des letzten verifizierten Runs |
+Ab v4.10.16 wird der per-Profil-Run-State unter `tooluse_runs.{profile_id}` (nested) persistiert. Bei Dual-Thinking-Profilen (`qwen3_6-27B` + `qwen3_6-27B-thinking`) teilen sich beide Profile dieselbe Card (via `card_model_id`-Redirect), schreiben aber in separate Slots:
 
-Diese Felder sind die **SSoT für Leaderboard-Rebuilds**: `aggregate_from_benchmark_csvs()` bevorzugt Card-Werte vor einer Neuberechnung aus den Benchmark-CSVs. Damit überschreibt `make tooluse-leaderboard` niemals manuell validierte Scores.
+```json
+{
+  "supports_tool_use": true,
+  "tooluse_runs": {
+    "qwen3_6-27B": {
+      "tested_at": "2026-07-10T07:20:52Z",
+      "score_p1": 72.5,
+      "score_p2": 56.67
+    },
+    "qwen3_6-27B-thinking": {
+      "tested_at": "2026-07-10T07:20:46Z",
+      "score_p1": 19.17,
+      "score_p2": 22.5
+    }
+  }
+}
+```
+
+`supports_tool_use` bleibt flach — das ist eine Capability-Aussage über das Modell (kann es Tools?), nicht über einen einzelnen Run.
+
+**Score-Lookup-Reihenfolge** (in `_get_run_p1_from_card()` / `_get_run_p2_from_card()`):
+
+1. `tooluse_runs.{profile_id}.score_p1` (nested, neuere Schema)
+2. Flach `tooluse_score_p1` (Legacy-Fallback, nur für Basis-Profil = Card-Base-ID)
+
+**Migration Legacy → Nested:**
+
+- Script: `scripts/dev/migrate_tooluse_runs_nested.py`
+- Idempotent: bereits migrierte Cards werden nicht erneut angefasst
+- Konvertiert flache Top-Level-Felder in `tooluse_runs.{card.model_id}`, entfernt Legacy-Felder
 
 **Konsumenten der Tri-State-Semantik:**
 

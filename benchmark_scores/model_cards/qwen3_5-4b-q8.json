@@ -42,7 +42,7 @@
   "output_modalities": [
     "text"
   ],
-  "supports_tool_use": false,
+  "supports_tool_use": true,
   "license": "Apache 2.0",
   "license_url": "https://opensource.org/licenses/Apache-2.0",
   "commercial_use_allowed": true,
@@ -69,9 +69,6 @@
   "stop_sequences": null,
   "temperature": null,
   "system_prompt_override": null,
-  "tooluse_tested_at": null,
-  "tooluse_score_p1": null,
-  "tooluse_score_p2": null,
   "tooluse_recommendation": null,
   "profile_verified": true,
   "profile_verified_at": "2026-06-21",
@@ -80,5 +77,12 @@
   "heritage_ids": [],
   "community": "Unsloth",
   "model_variant": null,
-  "quantization_format": "UD-Q8_K_XL GGUF"
+  "quantization_format": "UD-Q8_K_XL GGUF",
+  "tooluse_runs": {
+    "qwen3_5-4b-q8": {
+      "tested_at": "2026-07-10T07:21:10Z",
+      "score_p1": 88.33,
+      "score_p2": 59.17
+    }
+  }
 }

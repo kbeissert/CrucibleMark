@@ -50,10 +50,7 @@
   "output_modalities": [
     "text"
   ],
-  "supports_tool_use": null,
-  "tooluse_tested_at": null,
-  "tooluse_score_p1": null,
-  "tooluse_score_p2": null,
+  "supports_tool_use": true,
   "tooluse_recommendation": null,
   "temperature": 1.0,
   "system_prompt_override": null,
@@ -91,5 +88,12 @@
   "profile_verified_by": null,
   "last_modified_at": "2026-07-07",
   "heritage_ids": [],
-  "community": null
+  "community": null,
+  "tooluse_runs": {
+    "Gemma-4-31B": {
+      "tested_at": "2026-07-10T07:21:11Z",
+      "score_p1": 90.0,
+      "score_p2": 49.17
+    }
+  }
 }

@@ -68,9 +68,6 @@
   ],
   "profile_verified": true,
   "profile_verified_at": "2026-06-20",
-  "tooluse_tested_at": "2026-06-11T17:49:32Z",
-  "tooluse_score_p1": 90.0,
-  "tooluse_score_p2": 36.67,
   "tooluse_recommendation": null,
   "temperature": null,
   "system_prompt_override": null,
@@ -86,5 +83,12 @@
   "heritage_ids": [],
   "community": null,
   "model_variant": "Abliterated",
-  "quantization_format": "Q6_K GGUF"
+  "quantization_format": "Q6_K GGUF",
+  "tooluse_runs": {
+    "hermes-4-14b-abliterated": {
+      "tested_at": "2026-07-10T07:21:11Z",
+      "score_p1": 90.0,
+      "score_p2": 36.67
+    }
+  }
 }

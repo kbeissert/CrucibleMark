@@ -70,9 +70,6 @@
     "text"
   ],
   "profile_verified": true,
-  "tooluse_tested_at": null,
-  "tooluse_score_p1": null,
-  "tooluse_score_p2": null,
   "tooluse_recommendation": null,
   "temperature": null,
   "system_prompt_override": null,
@@ -82,5 +79,12 @@
   "profile_verified_by": "llm:gemma-4-26B-A4B-it-UD-Q5_K_XL",
   "last_modified_at": "2026-06-20",
   "heritage_ids": [],
-  "community": null
+  "community": null,
+  "tooluse_runs": {
+    "gemini-3.1-pro-preview": {
+      "tested_at": "2026-07-10T07:21:11Z",
+      "score_p1": 83.33,
+      "score_p2": 41.67
+    }
+  }
 }

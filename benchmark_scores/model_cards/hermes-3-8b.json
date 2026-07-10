@@ -66,9 +66,6 @@
   ],
   "profile_verified": true,
   "profile_verified_at": "2026-06-20",
-  "tooluse_tested_at": null,
-  "tooluse_score_p1": null,
-  "tooluse_score_p2": null,
   "tooluse_recommendation": null,
   "temperature": null,
   "system_prompt_override": null,
@@ -79,5 +76,12 @@
   "heritage_ids": [],
   "community": null,
   "model_variant": null,
-  "quantization_format": "Q6_K_L GGUF"
+  "quantization_format": "Q6_K_L GGUF",
+  "tooluse_runs": {
+    "hermes-3-8b": {
+      "tested_at": "2026-07-10T07:21:11Z",
+      "score_p1": 83.33,
+      "score_p2": 30.0
+    }
+  }
 }

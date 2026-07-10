@@ -71,9 +71,6 @@
   "profile_verified": true,
   "profile_verified_at": "2026-06-20",
   "community": "Unsloth",
-  "tooluse_tested_at": null,
-  "tooluse_score_p1": null,
-  "tooluse_score_p2": null,
   "tooluse_recommendation": null,
   "temperature": null,
   "system_prompt_override": null,
@@ -83,5 +80,12 @@
   "last_modified_at": "2026-06-20",
   "heritage_ids": [],
   "model_variant": null,
-  "quantization_format": "Q6_K_XL GGUF"
+  "quantization_format": "Q6_K_XL GGUF",
+  "tooluse_runs": {
+    "gemma-4-12b-it-ud-q6_k_xl": {
+      "tested_at": "2026-07-10T07:21:10Z",
+      "score_p1": 82.5,
+      "score_p2": 46.67
+    }
+  }
 }

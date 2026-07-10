@@ -48,10 +48,7 @@
   "output_modalities": [
     "text"
   ],
-  "supports_tool_use": null,
-  "tooluse_tested_at": null,
-  "tooluse_score_p1": null,
-  "tooluse_score_p2": null,
+  "supports_tool_use": true,
   "tooluse_recommendation": null,
   "temperature": 0.6,
   "system_prompt_override": null,
@@ -90,5 +87,17 @@
   ],
   "community": null,
   "model_variant": null,
-  "quantization_format": "FP8"
+  "quantization_format": "FP8",
+  "tooluse_runs": {
+    "ornith-1_0-35B-FP8": {
+      "tested_at": "2026-07-10T07:21:11Z",
+      "score_p1": 80.83,
+      "score_p2": 62.5
+    },
+    "ornith-1_0-35B-FP8-thinking": {
+      "tested_at": "2026-07-10T07:21:11Z",
+      "score_p1": 89.17,
+      "score_p2": 60.0
+    }
+  }
 }

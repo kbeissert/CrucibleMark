@@ -48,7 +48,7 @@
   "weights_license_tier": "open-weights",
   "model_version": "20B",
   "input_price_per_1m": 0.075,
-  "output_price_per_1m": 0.30,
+  "output_price_per_1m": 0.3,
   "unknown": false,
   "card_status": "complete",
   "size_class": "Desktop",
@@ -68,9 +68,6 @@
   "stop_sequences": null,
   "temperature": null,
   "system_prompt_override": null,
-  "tooluse_tested_at": null,
-  "tooluse_score_p1": null,
-  "tooluse_score_p2": null,
   "tooluse_recommendation": null,
   "profile_verified": true,
   "profile_verified_at": "2026-06-24",
@@ -79,5 +76,12 @@
   "heritage_ids": [
     "gpt-oss:20b-cloud"
   ],
-  "community": null
+  "community": null,
+  "tooluse_runs": {
+    "openai/gpt-oss-20b": {
+      "tested_at": "2026-07-10T07:44:33Z",
+      "score_p1": 0.0,
+      "score_p2": 0.0
+    }
+  }
 }

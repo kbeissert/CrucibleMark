@@ -61,9 +61,6 @@
   ],
   "profile_verified": true,
   "profile_verified_at": "2026-06-20",
-  "tooluse_tested_at": null,
-  "tooluse_score_p1": null,
-  "tooluse_score_p2": null,
   "tooluse_recommendation": null,
   "temperature": null,
   "system_prompt_override": null,
@@ -79,5 +76,12 @@
   "frequency_penalty": null,
   "presence_penalty": null,
   "seed": null,
-  "stop_sequences": null
+  "stop_sequences": null,
+  "tooluse_runs": {
+    "mistral-large-2512": {
+      "tested_at": "2026-07-10T07:21:11Z",
+      "score_p1": 90.0,
+      "score_p2": 30.0
+    }
+  }
 }

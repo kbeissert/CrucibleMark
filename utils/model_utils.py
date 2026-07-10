@@ -1597,25 +1597,46 @@ def update_model_card_tooluse_fields(
     tested_at: str | None,
     p1_score: float | None = None,
     p2_score: float | None = None,
+    *,
+    profile_id: str | None = None,
+    preserve_supports_tool_use: bool = False,
 ) -> bool:
     """Schreibt Tooluse-Benchmark-Ergebnisse direkt in die Model Card.
 
-    Wird von ``tooluse_exporter.finalize_model()`` nach jedem erfolgreichen
-    Benchmark-Run aufgerufen, damit die Card immer den aktuellen verifizierten
+    Wird von ``tooluse_exporter.finalize_model()`` (Path A) und von
+    ``aggregate_from_benchmark_csvs()`` (Path B) nach erfolgreichen
+    Tool-Use-Runs aufgerufen, damit die Card immer den aktuellen verifizierten
     Stand widerspiegelt.
 
-    Tri-State-Semantik für ``supports_tool_use``:
-    - ``True``         — Tool-Use funktioniert (empirisch verifiziert, mean P1 > 0).
-    - ``False``        — Modell kann keine Tools aufrufen (empirisch verifiziert).
+    Tri-State-Semantik für ``supports_tool_use`` (Capability-Flag, flach):
+    - ``True``         — Modell kann Tools aufrufen (Capability oder empirisch verifiziert).
+    - ``False``        — Modell kann keine Tools aufrufen (Capability oder empirisch verifiziert).
     - ``"untested"``   — noch kein Tool-Use-Benchmark gelaufen.
-                         ``tested_at`` ist in diesem Fall ``None`` und das Feld
-                         ``tooluse_tested_at`` wird aus der Card entfernt.
+                         ``tested_at`` ist in diesem Fall ``None`` und der
+                         entsprechende ``tooluse_runs.{profile_id}``-Eintrag
+                         wird aus der Card entfernt.
 
-    Felder, die aktualisiert werden:
-    - ``supports_tool_use``  : True / False / "untested"
-    - ``tooluse_tested_at``  : ISO-8601-Timestamp (oder Feld entfernt)
-    - ``tooluse_score_p1``   : mittlerer P1-Score (Phase 1), optional
-    - ``tooluse_score_p2``   : mittlerer P2-Score (Phase 2), optional
+    Pro-Profil-Run-State (nested unter ``tooluse_runs``):
+    - ``tooluse_runs.{profile_id}.tested_at``     : ISO-8601-Timestamp
+    - ``tooluse_runs.{profile_id}.score_p1``      : mittlerer P1-Score (Phase 1)
+    - ``tooluse_runs.{profile_id}.score_p2``      : mittlerer P2-Score (Phase 2)
+
+    Args:
+        model_id: Kanonische Modell-ID (SSoT für Card-Lookup, bleibt unverändert).
+        profile_id: Kanonische Profil-ID des konkreten Runs. Default = ``model_id``.
+                    Für Dual-Thinking-Profile (z.B. ``qwen3_6-27B-thinking``)
+                    MUSS die Profil-ID übergeben werden, damit Standard- und
+                    Thinking-Run getrennt persistiert werden und sich nicht
+                    gegenseitig überschreiben. ``qwen3_6-27B-thinking`` und
+                    ``qwen3_6-27B`` schreiben in zwei separate Slots auf der
+                    SELBEN Card.
+        preserve_supports_tool_use: Wenn True, wird der bestehende
+            ``supports_tool_use``-Wert der Card beibehalten. Path B
+            (Re-Aggregation) nutzt das, weil ein Mock-Run mit p1=0 nicht
+            bedeutet dass das Modell keine Tools kann (Capability-Flag aus
+            dem Card-Setup ist die maßgebliche Quelle). Path A (finalize_model)
+            setzt False (Default) und überschreibt das Flag mit dem verifizierten
+            Test-Result.
 
     Returns:
         True wenn die Card erfolgreich aktualisiert wurde, False bei Fehler.
@@ -1626,31 +1647,81 @@ def update_model_card_tooluse_fields(
             f"bekommen: {supports_tool_use!r}"
         )
 
+    effective_profile_id = profile_id if profile_id else model_id
+
     card_path = _find_card(model_id)
     if not card_path.exists():
         logger.debug("update_model_card_tooluse_fields: Keine Card gefunden für '%s'", model_id)
         return False
     try:
         data = json.loads(card_path.read_text(encoding="utf-8"))
-        data["supports_tool_use"] = (
-            supports_tool_use
-            if not isinstance(supports_tool_use, str)
-            else SUPPORT_TOOL_USE_UNTESTED
-        )
+        if not preserve_supports_tool_use:
+            data["supports_tool_use"] = (
+                supports_tool_use
+                if not isinstance(supports_tool_use, str)
+                else SUPPORT_TOOL_USE_UNTESTED
+            )
+        # Sonst: bestehenden Wert in data["supports_tool_use"] unverändert lassen.
+        # Wenn die Card noch kein Feld hat (Draft), bleibt sie flag-los — das ist
+        # OK weil tooluse_runs.{profile_id}.tested_at der Test-Indikator ist.
+
+        # SSoT: Per-Profil-Run-State unter tooluse_runs.{profile_id} (nested).
+        # Verhindert Race Condition zwischen Standard- und Thinking-Profil, die sich
+        # eine Card teilen (card_model_id-Redirect). Legacy-Felder tooluse_tested_at,
+        # tooluse_score_p1, tooluse_score_p2 werden nur noch als Fallback für
+        # noch-nicht-migrierte Cards geschrieben — bei Migration verschwinden sie.
+        tooluse_runs = data.get("tooluse_runs") or {}
+        if not isinstance(tooluse_runs, dict):
+            tooluse_runs = {}
+
+        if tested_at is None:
+            # Profile-spezifischer Eintrag entfernen, falls vorhanden
+            tooluse_runs.pop(effective_profile_id, None)
+        else:
+            run_entry = tooluse_runs.get(effective_profile_id) or {}
+            run_entry["tested_at"] = tested_at
+            if p1_score is not None:
+                run_entry["score_p1"] = round(float(p1_score), 2)
+            if p2_score is not None:
+                run_entry["score_p2"] = round(float(p2_score), 2)
+            tooluse_runs[effective_profile_id] = run_entry
+
+        if tooluse_runs:
+            data["tooluse_runs"] = tooluse_runs
+        else:
+            data.pop("tooluse_runs", None)
+
+        # Backwards-Compat-Schreiber: flache Legacy-Felder werden NUR dann
+        # synchron gehalten, wenn sie bereits in der Card existieren (d.h. die
+        # Card wurde noch nicht migriert). Migrierte Cards (flache Felder
+        # entfernt) bekommen sie NICHT re-kreiert — sonst würde die Migration
+        # permanent sabotiert (siehe migrate_tooluse_runs_nested.py).
+        # Pitfall-Diagnose 2026-07-10: unbedingter Schreiber re-kreierte
+        # flache Felder nach jeder Migration → 103/108 Cards hatten BEIDE
+        # Schemata. Fix: konditionaler Schreiber (nur wenn Feld vorhanden).
         if tested_at is None:
             data.pop("tooluse_tested_at", None)
+            data.pop("tooluse_score_p1", None)
+            data.pop("tooluse_score_p2", None)
         else:
-            data["tooluse_tested_at"] = tested_at
-        # Scores persistent schreiben — SSoT für spätere aggregate_from_benchmark_csvs()-Läufe.
-        # Verhindert, dass Leaderboard-Regenerierung manuell validierte Werte überschreibt.
-        if p1_score is not None:
-            data["tooluse_score_p1"] = round(float(p1_score), 2)
-        if p2_score is not None:
-            data["tooluse_score_p2"] = round(float(p2_score), 2)
+            # Legacy-Felder werden NUR dann aktualisiert, wenn der Run zur
+            # Basis-ID der Card gehört (kein Thinking-Profil) UND die Felder
+            # bereits existieren (Card noch nicht migriert).
+            base_id = data.get("model_id")
+            if base_id and effective_profile_id == base_id:
+                if "tooluse_tested_at" in data:
+                    data["tooluse_tested_at"] = tested_at
+                if "tooluse_score_p1" in data and p1_score is not None:
+                    data["tooluse_score_p1"] = round(float(p1_score), 2)
+                if "tooluse_score_p2" in data and p2_score is not None:
+                    data["tooluse_score_p2"] = round(float(p2_score), 2)
+
         card_path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
         logger.debug(
-            "Model Card aktualisiert: %s → supports_tool_use=%s, tooluse_tested_at=%s, p1=%s, p2=%s",
-            model_id, supports_tool_use, tested_at, p1_score, p2_score,
+            "Model Card aktualisiert: model=%s profile=%s → supports_tool_use=%s, "
+            "tooluse_runs[%s]=%s",
+            model_id, effective_profile_id, supports_tool_use,
+            effective_profile_id, tooluse_runs.get(effective_profile_id),
         )
         return True
     except Exception:

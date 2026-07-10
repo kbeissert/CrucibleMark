@@ -76,8 +76,5 @@
   "stop_sequences": null,
   "temperature": null,
   "system_prompt_override": null,
-  "tooluse_tested_at": null,
-  "tooluse_score_p1": null,
-  "tooluse_score_p2": null,
   "tooluse_recommendation": null
 }

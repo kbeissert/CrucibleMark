@@ -65,9 +65,6 @@
   ],
   "profile_verified": true,
   "profile_verified_at": "2026-06-20",
-  "tooluse_tested_at": null,
-  "tooluse_score_p1": null,
-  "tooluse_score_p2": null,
   "tooluse_recommendation": null,
   "temperature": null,
   "system_prompt_override": null,
@@ -76,5 +73,12 @@
   "profile_verified_by": "llm:perplexity",
   "last_modified_at": "2026-06-20",
   "heritage_ids": [],
-  "community": null
+  "community": null,
+  "tooluse_runs": {
+    "minimax/minimax-m2.7-20260318": {
+      "tested_at": "2026-07-10T07:21:11Z",
+      "score_p1": 57.5,
+      "score_p2": 43.33
+    }
+  }
 }

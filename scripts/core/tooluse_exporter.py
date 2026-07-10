@@ -212,14 +212,17 @@ class ToolUseExporter:
             # SSoT: Card-Werte für P1/P2 bevorzugen wenn manuell oder per finalize_model()
             # gesetzt. Verhindert dass aggregate_from_benchmark_csvs() validierte Werte
             # überschreibt (z.B. nach Benchmark-Regenerierung).
+            # v4.10.16: Per-Profil-Lookup (tooluse_runs.{profile_id}.score_p1) statt
+            # flachem Feld — Dual-Thinking-Profile schreiben in separate Slots auf
+            # derselben Card.
             "p1_score": (
-                _fmt_score(card.get("tooluse_score_p1"))
-                if isinstance(card.get("tooluse_score_p1"), (int, float))
+                _fmt_score(_get_run_p1_from_card(card, model_id))
+                if _get_run_p1_from_card(card, model_id) is not None
                 else _fmt_score(_mean(p1_scores))
             ),
             "p2_score": (
-                _fmt_score(card.get("tooluse_score_p2"))
-                if isinstance(card.get("tooluse_score_p2"), (int, float))
+                _fmt_score(_get_run_p2_from_card(card, model_id))
+                if _get_run_p2_from_card(card, model_id) is not None
                 else _fmt_score(_mean(p2_scores))
             ),
             "combined_score": _fmt_score(_mean(combined_scores)),
@@ -263,8 +266,11 @@ class ToolUseExporter:
         try:
             # P1/P2 persistent in der Card speichern — SSoT für spätere
             # aggregate_from_benchmark_csvs()-Läufe (verhindert Überschreiben).
+            # v4.10.16: profile_id=model_id für Dual-Thinking-Profile, damit
+            # Standard- und Thinking-Run getrennte Slots auf der Card nutzen.
             update_model_card_tooluse_fields(
                 model_id=model_id,
+                profile_id=model_id,
                 supports_tool_use=card_supports_tool_use,
                 tested_at=timestamp if card_supports_tool_use != "untested" else None,
                 p1_score=_p1_mean,
@@ -420,9 +426,59 @@ class ToolUseExporter:
             row = self._aggregate_asset_rows(model_id, asset_rows)
             self._upsert_row(row, model_id)
             ToolUseIOManager.print_run_summary_from_row(row, model_id)
+            # v4.10.16: Card-Update pro Profil-Run, damit die Card-Live-Spiegel
+            # des Leaderboards bleibt. Verhindert den No-Op-Failure-Mode
+            # (tooluse_tested_at blieb vorher dauerhaft null weil finalize_model
+            # nicht in Path B aufgerufen wurde).
+            try:
+                self._write_card_from_aggregated_row(model_id, row)
+            except Exception as exc:  # noqa: BLE001 — Card-Update darf Aggregation nie crashen
+                logger.warning(
+                    "Card-Update nach Aggregation fehlgeschlagen für %s: %s",
+                    model_id, exc,
+                )
             written += 1
 
         return written
+
+    def _write_card_from_aggregated_row(
+        self, model_id: str, row: dict[str, Any],
+    ) -> None:
+        """Persistiert einen aggregierten Tool-Use-Run in der Card (Path B).
+
+        Schreibt nach ``tooluse_runs.{model_id}`` (nested, profil-spezifisch).
+        v4.10.16+: ``supports_tool_use`` wird NICHT überschrieben — Capability-Flag
+        aus dem Card-Setup (manuell oder auto-generiert) ist die maßgebliche
+        Quelle. Ein Mock-Run mit p1=0 (z.B. ``openai/gpt-oss-20b``) bedeutet nicht,
+        dass das Modell keine Tools kann — es bedeutet nur, dass der Mock-Test
+        keine echten Tool-Calls ausführen konnte. Der Test-Indikator ist
+        ``tooluse_runs.{profile_id}.tested_at``: ist er gesetzt, wurde getestet;
+        sonst nicht. Das eigentliche Pass/Fail-Signal lebt im Leaderboard.
+        """
+        try:
+            p1 = float(row.get("p1_score", "") or 0.0)
+        except (ValueError, TypeError):
+            p1 = 0.0
+        try:
+            p2 = float(row.get("p2_score", "") or 0.0)
+        except (ValueError, TypeError):
+            p2 = 0.0
+        timestamp = row.get("timestamp") or datetime.now(timezone.utc).strftime(
+            "%Y-%m-%dT%H:%M:%SZ",
+        )
+
+        update_model_card_tooluse_fields(
+            model_id=model_id,
+            profile_id=model_id,
+            # Arg-Wert ist irrelevant bei preserve=True, muss aber einen validen
+            # Tri-State-Wert haben damit die Value-Validation in update_model_card_tooluse_fields
+            # durchläuft. Wir wählen "untested" als neutralen Default.
+            supports_tool_use="untested",
+            tested_at=timestamp,
+            p1_score=p1,
+            p2_score=p2,
+            preserve_supports_tool_use=True,
+        )
 
     def _aggregate_asset_rows(
         self, model_id: str, rows: list[dict[str, Any]],
@@ -614,14 +670,17 @@ class ToolUseExporter:
             # SSoT: Card-Werte für P1/P2 bevorzugen wenn manuell oder per finalize_model()
             # gesetzt. Verhindert dass aggregate_from_benchmark_csvs() validierte Werte
             # überschreibt (z.B. nach Benchmark-Regenerierung).
+            # v4.10.16: Per-Profil-Lookup (tooluse_runs.{profile_id}.score_p1) statt
+            # flachem Feld — Dual-Thinking-Profile schreiben in separate Slots auf
+            # derselben Card.
             "p1_score": (
-                _fmt_score(card.get("tooluse_score_p1"))
-                if isinstance(card.get("tooluse_score_p1"), (int, float))
+                _fmt_score(_get_run_p1_from_card(card, model_id))
+                if _get_run_p1_from_card(card, model_id) is not None
                 else _fmt_score(_mean(p1_scores))
             ),
             "p2_score": (
-                _fmt_score(card.get("tooluse_score_p2"))
-                if isinstance(card.get("tooluse_score_p2"), (int, float))
+                _fmt_score(_get_run_p2_from_card(card, model_id))
+                if _get_run_p2_from_card(card, model_id) is not None
                 else _fmt_score(_mean(p2_scores))
             ),
             "combined_score": _fmt_score(_mean(combined_scores)),
@@ -804,4 +863,46 @@ def _load_card_data(model_id: str) -> dict[str, Any] | None:
             return json.loads(card_path.read_text(encoding="utf-8"))
     except Exception as exc:  # noqa: BLE001 — card loading boundary (card may not exist)
         logger.debug("Could not load card for %s: %s", model_id, exc)
+    return None
+
+
+def _get_run_p1_from_card(card: dict[str, Any], profile_id: str) -> float | None:
+    """Liest P1-Score für ein Profil aus der Card.
+
+    SSoT-Lookup-Reihenfolge:
+    1. ``tooluse_runs.{profile_id}.score_p1`` (nested, neuere Schema)
+    2. Flach ``tooluse_score_p1`` (Legacy-Fallback, nur für Basis-Profil = Card-Base-ID)
+    """
+    if not isinstance(card, dict):
+        return None
+    runs = card.get("tooluse_runs")
+    if isinstance(runs, dict):
+        run = runs.get(profile_id)
+        if isinstance(run, dict):
+            val = run.get("score_p1")
+            if isinstance(val, (int, float)):
+                return float(val)
+    # Legacy-Fallback: flaches Feld nur für Basis-Profil (= Card-Base-ID)
+    if card.get("model_id") == profile_id:
+        val = card.get("tooluse_score_p1")
+        if isinstance(val, (int, float)):
+            return float(val)
+    return None
+
+
+def _get_run_p2_from_card(card: dict[str, Any], profile_id: str) -> float | None:
+    """Liest P2-Score für ein Profil aus der Card. (Siehe _get_run_p1_from_card.)"""
+    if not isinstance(card, dict):
+        return None
+    runs = card.get("tooluse_runs")
+    if isinstance(runs, dict):
+        run = runs.get(profile_id)
+        if isinstance(run, dict):
+            val = run.get("score_p2")
+            if isinstance(val, (int, float)):
+                return float(val)
+    if card.get("model_id") == profile_id:
+        val = card.get("tooluse_score_p2")
+        if isinstance(val, (int, float)):
+            return float(val)
     return None

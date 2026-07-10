@@ -48,9 +48,6 @@
     "text"
   ],
   "supports_tool_use": true,
-  "tooluse_tested_at": null,
-  "tooluse_score_p1": null,
-  "tooluse_score_p2": null,
   "tooluse_recommendation": null,
   "temperature": null,
   "system_prompt_override": null,
@@ -86,5 +83,12 @@
   "heritage_ids": [
     "claude-sonnet-4-6"
   ],
-  "community": null
+  "community": null,
+  "tooluse_runs": {
+    "claude-sonnet-5": {
+      "tested_at": "2026-07-10T07:21:11Z",
+      "score_p1": 83.33,
+      "score_p2": 66.67
+    }
+  }
 }

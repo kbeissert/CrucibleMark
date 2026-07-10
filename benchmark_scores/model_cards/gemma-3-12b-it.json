@@ -69,9 +69,6 @@
   ],
   "profile_verified": true,
   "profile_verified_at": "2026-06-20",
-  "tooluse_tested_at": null,
-  "tooluse_score_p1": null,
-  "tooluse_score_p2": null,
   "tooluse_recommendation": null,
   "temperature": null,
   "system_prompt_override": null,
@@ -82,5 +79,12 @@
   "heritage_ids": [],
   "community": null,
   "model_variant": null,
-  "quantization_format": "Q4_K_M GGUF"
+  "quantization_format": "Q4_K_M GGUF",
+  "tooluse_runs": {
+    "gemma-3-12b-it": {
+      "tested_at": "2026-07-10T07:21:11Z",
+      "score_p1": 90.0,
+      "score_p2": 49.17
+    }
+  }
 }

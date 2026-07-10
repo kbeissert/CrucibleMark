@@ -66,9 +66,6 @@
   "thinking_probe_detected": false,
   "thinking_probe_evidence": null,
   "tooluse_recommendation": null,
-  "tooluse_score_p1": null,
-  "tooluse_score_p2": null,
-  "tooluse_tested_at": null,
   "top_k": null,
   "top_p": null,
   "unknown": false,
@@ -76,5 +73,12 @@
   "vendor": "Mistral AI",
   "weights_license_tier": "restricted-weights",
   "weights_provenance_risk": "low",
-  "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU und unterliegt keiner staatlichen Zugriffspflicht auf Modellgewichte wie dem US CLOUD Act oder dem chinesischen NSL."
+  "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU und unterliegt keiner staatlichen Zugriffspflicht auf Modellgewichte wie dem US CLOUD Act oder dem chinesischen NSL.",
+  "tooluse_runs": {
+    "codestral-2508": {
+      "tested_at": "2026-07-10T07:21:11Z",
+      "score_p1": 83.33,
+      "score_p2": 56.67
+    }
+  }
 }

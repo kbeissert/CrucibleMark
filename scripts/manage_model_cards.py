@@ -83,6 +83,7 @@ OPERATOR_PROTECTED_FIELDS: tuple[str, ...] = (
     "tooluse_tested_at",
     "tooluse_score_p1",
     "tooluse_score_p2",
+    "tooluse_runs",
     "tooluse_recommendation",
     "temperature",
     "top_p",

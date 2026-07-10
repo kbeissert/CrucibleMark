@@ -45,9 +45,6 @@
     "text"
   ],
   "supports_tool_use": true,
-  "tooluse_tested_at": null,
-  "tooluse_score_p1": null,
-  "tooluse_score_p2": null,
   "tooluse_recommendation": null,
   "temperature": null,
   "system_prompt_override": null,
@@ -81,5 +78,12 @@
   "profile_verified_by": null,
   "last_modified_at": "2026-07-04T15:16:00Z",
   "heritage_ids": [],
-  "community": null
+  "community": null,
+  "tooluse_runs": {
+    "openai/gpt-oss-120b": {
+      "tested_at": "2026-07-10T07:21:11Z",
+      "score_p1": 87.5,
+      "score_p2": 52.5
+    }
+  }
 }

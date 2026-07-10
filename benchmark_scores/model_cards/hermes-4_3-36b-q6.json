@@ -60,9 +60,6 @@
   ],
   "profile_verified": true,
   "profile_verified_at": "2026-06-20",
-  "tooluse_tested_at": "2026-06-11T17:49:32Z",
-  "tooluse_score_p1": 90.0,
-  "tooluse_score_p2": 36.67,
   "tooluse_recommendation": null,
   "temperature": null,
   "system_prompt_override": null,
@@ -81,5 +78,12 @@
   "frequency_penalty": null,
   "presence_penalty": null,
   "seed": null,
-  "stop_sequences": null
+  "stop_sequences": null,
+  "tooluse_runs": {
+    "hermes-4.3-36b-q6": {
+      "tested_at": "2026-07-10T07:21:10Z",
+      "score_p1": 90.0,
+      "score_p2": 36.67
+    }
+  }
 }

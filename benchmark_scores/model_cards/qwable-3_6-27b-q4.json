@@ -50,9 +50,6 @@
     "text"
   ],
   "supports_tool_use": false,
-  "tooluse_tested_at": null,
-  "tooluse_score_p1": null,
-  "tooluse_score_p2": null,
   "tooluse_recommendation": null,
   "temperature": 0.6,
   "system_prompt_override": null,
