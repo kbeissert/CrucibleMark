@@ -7,12 +7,9 @@ Transforms benchmark data into structured JSON/Markdown for the 11ty web project
 import sys
 import json
 import shutil
-import os
-import tempfile
 import logging
 import argparse
 import datetime
-import math
 import re
 from fnmatch import fnmatch
 from pathlib import Path
@@ -29,6 +26,24 @@ import pandas as pd
 import yaml
 from utils.model_utils import _find_card, _safe_name, WEIGHTS_TIER_DISPLAY
 from utils.card_utils import normalize_tags, get_tag_display_roles, get_tag_labels
+from utils.text_helpers import (
+    slugify,
+    sanitize_audit_log,  # noqa: F401 — re-exported for test backward compat
+    normalize_pending,
+    parse_compact_number,
+    parse_percent,
+    parse_int,
+    parse_star_float,
+    extract_badge_tier,
+    extract_version,
+    strip_emojis as _strip_emojis,
+    strip_none as _strip_none,
+)
+from utils.io_helpers import (
+    atomic_write_json as _atomic_write_json,
+    atomic_write_text as _atomic_write_text,  # noqa: F401 — re-exported for test backward compat
+    atomic_copy as _atomic_copy,
+)
 
 
 # ------------------------------------------------------------------
@@ -145,15 +160,6 @@ def resolve_inference_provider(model_name: str, provider_map: dict[str, str]) ->
     fallbacks: dict[str, str] = provider_map.get("__fallbacks__", {})  # type: ignore[arg-type]
     return fallbacks.get(api_type)
 
-
-def slugify(s: str) -> str:
-    """URL-safe slug fuer Strings (kein SSoT fuer sicheres File-Naming).
-
-    Verwendungszweck: Hugo-Web-URL-Pfade. Bindestriche aus Sonderzeichen,
-    Slash-Suffix wird abgeschnitten (rsplit auf letztes Segment).
-    """
-    name = str(s).rsplit('/', maxsplit=1)[-1].lower()
-    return re.sub(r'[^a-z0-9]+', '-', name).strip('-')
 
 
 def _build_vendor_alias_map(config_dir: Path) -> dict[str, str]:
@@ -308,21 +314,6 @@ def _collect_community_cards(root_dir: Path) -> list[dict[str, Any]]:
     """Gibt alle Vendor-Cards mit card_subtype == 'community' zurück."""
     return [c for c in _collect_vendor_cards(root_dir) if c.get("card_subtype") == "community"]
 
-def sanitize_audit_log(content: str) -> str:
-    """Removes Section 3 (LLM-Judge evaluation) from audit logs before web export.
-    Preserves header, prompt, model response, and Modul-Metriken block.
-    Handles two cases: section 3 followed by Modul-Metriken, or section 3 at EOF."""
-    # Case 1: Modul-Metriken block follows section 3
-    result = re.sub(
-        r'## 3\. Evaluation / LLM-Judge / Scorer.*?(?=\n---\n\n### 📦 Modul-Metriken)',
-        '', content, flags=re.DOTALL
-    )
-    # Case 2: section 3 runs to EOF (no Modul-Metriken block)
-    result = re.sub(
-        r'\n*## 3\. Evaluation / LLM-Judge / Scorer.*$',
-        '', result, flags=re.DOTALL
-    )
-    return result
 
 def parse_tests_run(val) -> dict | None:
     if pd.isna(val) or not isinstance(val, str): return None
@@ -356,213 +347,6 @@ _SCORE_COLUMN_TO_KEY: dict[str, str] = {
 _SCORES_CONTRACT_KEYS: tuple[str, ...] = tuple(_SCORE_COLUMN_TO_KEY.values())
 
 
-_PENDING_SENTINELS = frozenset({
-    "Pending", "—", "–", "", "n/a", "N/A", "NA", "null", "None", "none",
-})
-
-
-def normalize_pending(val: Any) -> float | str | None:
-    """Normalisiert CSV-Werte zu Zahlen oder None.
-
-    Bekannte Sentinel-Strings (em-dash, en-dash, n/a, etc.) werden zu None.
-    Zahlen werden als float zurückgegeben. Alles andere durchgereicht — aber
-    das sollte nicht passieren, da nicht-numerische Strings in Score-Spalten
-    ein CSV-Datenproblem sind.
-    """
-    if pd.isna(val): return None
-    val_str = str(val).strip()
-    if val_str in _PENDING_SENTINELS: return None
-    try:
-        f = float(val)
-        return None if math.isnan(f) else f
-    except (ValueError, TypeError):
-        return val_str
-
-
-def parse_compact_number(val: Any) -> float | int | None:
-    """Parst kompakte Zahlen mit Suffix (z.B. '83.7K' → 83700, '1.2M' → 1200000).
-    Liefert immer eine Zahl — nie einen String. Das ist Vertrags-Pflicht für den
-    Web-Export: Formatierung gehört in die Darstellungsschicht, nicht ins JSON.
-    """
-    if pd.isna(val): return None
-    val_str = str(val).strip()
-    if val_str in ("Pending", "—", ""): return None
-    multiplier = 1
-    upper = val_str.upper()
-    if upper.endswith("K"):
-        multiplier = 1_000
-        val_str = val_str[:-1]
-    elif upper.endswith("M"):
-        multiplier = 1_000_000
-        val_str = val_str[:-1]
-    try:
-        f = float(val_str) * multiplier
-        if math.isnan(f): return None
-        return int(f) if f == int(f) else f
-    except (ValueError, TypeError):
-        return None
-
-
-def parse_percent(val: Any) -> float | None:
-    """Parst Prozent-Strings (z.B. '100%' → 100.0) zu Zahlen."""
-    if pd.isna(val): return None
-    val_str = str(val).strip().rstrip("%")
-    if val_str in ("Pending", "—", ""): return None
-    try:
-        f = float(val_str)
-        return None if math.isnan(f) else f
-    except (ValueError, TypeError):
-        return None
-
-
-def parse_int(val: Any) -> int | None:
-    """Parst Ganzzahlen — liefert int, nie float (z.B. Timeout Count)."""
-    if pd.isna(val): return None
-    val_str = str(val).strip()
-    if val_str in ("Pending", "—", ""): return None
-    try:
-        return int(float(val_str))
-    except (ValueError, TypeError):
-        return None
-
-def parse_star_float(val) -> float | None:
-    """Parst '4.0 ★' oder '3.8 ★' zu einem float. Gibt None bei fehlenden Werten zurück."""
-    if pd.isna(val): return None
-    val_str = str(val).strip().replace('★', '').strip()
-    if val_str in ("Pending", "—", ""): return None
-    try:
-        f = float(val_str)
-        return None if math.isnan(f) else f
-    except (ValueError, TypeError):
-        return None
-
-def extract_badge_tier(val) -> str | None:
-    if pd.isna(val) or not str(val).strip(): return None
-    val_str = str(val).strip()
-    return val_str.rsplit(' ', maxsplit=1)[-1] if ' ' in val_str else val_str
-
-def extract_version(val) -> str | None:
-    if pd.isna(val): return None
-    v = str(val).strip()
-    return None if not v or v == "unknown" else v
-
-
-# Emoji-Bereinigung: entfernt alle Unicode-Emoji-Zeichen aus String-Werten.
-# Wird rekursiv auf alle exportierten JSON-Datenstrukturen angewendet.
-# Begründung: Die Website nutzt eigene Icon-Sets — Emojis im JSON-Payload
-# sind redundant und können Frontend-Rendering-Probleme verursachen.
-_EMOJI_RE = re.compile(
-    "["
-    "\U00002300-\U000027BF"  # Diverse technische/sonstige Symbole, Dingbats
-    "\U00002600-\U000026FF"  # Verschiedene Symbole (Sonne, Wolke, Uhren …)
-    "\U00002700-\U000027BF"  # Dingbats-Block
-    "\U0001F300-\U0001F5FF"  # Sonstige Symbole & Piktogramme
-    "\U0001F600-\U0001F64F"  # Emoticons
-    "\U0001F680-\U0001F6FF"  # Transport & Karten-Symbole
-    "\U0001F700-\U0001F77F"  # Alchemistische Symbole
-    "\U0001F900-\U0001FAFF"  # Ergänzende Symbole
-    "\U0001FA00-\U0001FA9F"  # Schachsymbole & weitere
-    "\U0000FE0F"  # Variation Selector-16 (VS16) — Emoji-Praesentation
-    "\U0000FE0E"  # Variation Selector-15 (VS15) — Text-Praesentation
-    "\U0000200D"  # Zero Width Joiner (ZWJ) — verbindet Emoji-Sequenzen
-    "]",
-    flags=re.UNICODE,
-)
-
-def _atomic_write_json(path: Path, data: Any, *, indent: int = 2, ensure_ascii: bool = False) -> None:
-    """Atomar JSON schreiben: erst in Temp-Datei, dann os.replace.
-
-    Hintergrund: Direktes open(path, "w") ist nicht atomar — bei Crash mid-write
-    ist die Zieldatei korrupt und der Web-Build rendert unvollstaendige JSON-Listen.
-    Mit Temp-Datei + os.replace ist der Wechsel atomar auf POSIX-Dateisystemen.
-
-    Tests: tests/test_web_export_atomic_writes.py
-    """
-    target_dir = path.parent
-    target_dir.mkdir(parents=True, exist_ok=True)
-    fd, tmp_path = tempfile.mkstemp(
-        prefix=f".{path.name}.",
-        suffix=".tmp",
-        dir=str(target_dir),
-    )
-    try:
-        with os.fdopen(fd, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=indent, ensure_ascii=ensure_ascii)
-            f.write("\n")
-        os.replace(tmp_path, path)
-    except Exception:
-        try:
-            os.unlink(tmp_path)
-        except OSError:
-            pass
-        raise
-
-
-def _atomic_write_text(path: Path, content: str, *, encoding: str = "utf-8") -> None:
-    """Atomar Text schreiben (analog _atomic_write_json, aber fuer Markdown/Text).
-
-    Hintergrund: write_text() ist nicht atomar — bei Crash mid-write ist die
-    Zieldatei korrupt (z.B. halber Audit-Log). Mit Temp-Datei + os.replace
-    ist der Wechsel atomar auf POSIX-Dateisystemen.
-    """
-    target_dir = path.parent
-    target_dir.mkdir(parents=True, exist_ok=True)
-    fd, tmp_path = tempfile.mkstemp(
-        prefix=f".{path.name}.",
-        suffix=".tmp",
-        dir=str(target_dir),
-    )
-    try:
-        with os.fdopen(fd, "w", encoding=encoding) as f:
-            f.write(content)
-        os.replace(tmp_path, path)
-    except Exception:
-        try:
-            os.unlink(tmp_path)
-        except OSError:
-            pass
-        raise
-
-
-def _atomic_copy(src: Path, dst: Path) -> None:
-    """Atomar Datei kopieren (analog shutil.copy2, aber atomic auf Ziel-Seite).
-
-    shutil.copy2 schreibt direkt in die Zieldatei — bei Crash mid-copy ist
-    die Zieldatei korrupt. Diese Funktion kopiert erst in eine Temp-Datei
-    im Zielverzeichnis und ersetzt dann atomar via os.replace.
-    Erhält File-Mode (wie copy2) via shutil.copymode nach dem Replace.
-    """
-    target_dir = dst.parent
-    target_dir.mkdir(parents=True, exist_ok=True)
-    fd, tmp_path = tempfile.mkstemp(
-        prefix=f".{dst.name}.",
-        suffix=".tmp",
-        dir=str(target_dir),
-    )
-    try:
-        with os.fdopen(fd, "wb") as f_out, open(src, "rb") as f_in:
-            shutil.copyfileobj(f_in, f_out)
-        os.replace(tmp_path, dst)
-        # copy2-Verhalten: Permissions vom Source uebernehmen
-        shutil.copymode(src, dst)
-    except Exception:
-        try:
-            os.unlink(tmp_path)
-        except OSError:
-            pass
-        raise
-
-
-def _strip_emojis(obj: Any) -> Any:
-    """Entfernt Emojis rekursiv aus dicts, lists und strings."""
-    if isinstance(obj, str):
-        cleaned = _EMOJI_RE.sub("", obj).strip()
-        return cleaned
-    if isinstance(obj, dict):
-        return {k: _strip_emojis(v) for k, v in obj.items()}
-    if isinstance(obj, list):
-        return [_strip_emojis(item) for item in obj]
-    return obj
 
 
 def load_model_card(
@@ -2075,13 +1859,6 @@ def _normalize_export_tags(tags: list[str]) -> list[str]:
     return normalize_tags(tags)[0]
 
 
-def _strip_none(obj: Any) -> Any:
-    """Entfernt None-Werte rekursiv aus dicts. Listen und Skalare bleiben erhalten."""
-    if isinstance(obj, dict):
-        return {k: _strip_none(v) for k, v in obj.items() if v is not None}
-    if isinstance(obj, list):
-        return [_strip_none(item) for item in obj]
-    return obj
 
 
 if __name__ == "__main__":
