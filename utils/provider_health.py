@@ -56,34 +56,30 @@ _OLLAMA_MODEL_CACHE = _OllamaModelCache()
 
 def _infer_provider_from_config(model_id: str) -> str | None:
     """Infer provider only via exact ID matches in config files (no heuristics)."""
-    config_paths = (Path("benchmark_config.yaml"), Path("config/provider_config.yaml"))
-    for config_path in config_paths:
-        if not config_path.exists():
-            continue
-        try:
-            with config_path.open("r", encoding="utf-8") as handle:
-                cfg = yaml.safe_load(handle) or {}
-        except (OSError, yaml.YAMLError):
-            continue
+    try:
+        from utils.config_validator import ConfigValidator
+        cfg = ConfigValidator("benchmark_config.yaml").config
+    except (FileNotFoundError, OSError, yaml.YAMLError):
+        return None
 
-        providers = cfg.get("providers", {})
-        commercial = providers.get("commercial", {})
-        if isinstance(commercial, dict):
-            for provider_key, provider_cfg in commercial.items():
-                if not isinstance(provider_cfg, dict):
-                    continue
-                for model_entry in provider_cfg.get("models", []):
-                    if isinstance(model_entry, dict) and model_entry.get("id") == model_id:
-                        return provider_key
+    providers = cfg.get("providers", {})
+    commercial = providers.get("commercial", {})
+    if isinstance(commercial, dict):
+        for provider_key, provider_cfg in commercial.items():
+            if not isinstance(provider_cfg, dict):
+                continue
+            for model_entry in provider_cfg.get("models", []):
+                if isinstance(model_entry, dict) and model_entry.get("id") == model_id:
+                    return provider_key
 
-        local = providers.get("local", {})
-        if isinstance(local, dict):
-            for provider_key, provider_cfg in local.items():
-                if not isinstance(provider_cfg, dict):
-                    continue
-                for model_entry in provider_cfg.get("models", []):
-                    if isinstance(model_entry, dict) and model_entry.get("id") == model_id:
-                        return provider_key
+    local = providers.get("local", {})
+    if isinstance(local, dict):
+        for provider_key, provider_cfg in local.items():
+            if not isinstance(provider_cfg, dict):
+                continue
+            for model_entry in provider_cfg.get("models", []):
+                if isinstance(model_entry, dict) and model_entry.get("id") == model_id:
+                    return provider_key
 
     return None
 

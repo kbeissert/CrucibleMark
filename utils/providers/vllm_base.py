@@ -308,30 +308,56 @@ class VllmBaseClient(BaseProviderClient):
         defaults = self._vllm_defaults()
         out: dict[str, Any] = {}
 
-        # temperature: gesonderter Pfad, weil passed_temperature als
-        # Framework-Fallback dient (die anderen Keys haben keinen solchen
-        # Fallback — dort bedeutet "nicht konfiguriert" = vLLM-TOML-Default).
-        temp = cfg.get("temperature", defaults.get("temperature"))
+        temp = self._resolve_temperature(cfg, defaults, passed_temperature)
         if temp is not None:
             out["temperature"] = temp
-        elif passed_temperature is not None:
-            out["temperature"] = passed_temperature
 
-        # top_p: Standard-OpenAI, direkt im Body (kein extra_body).
+        self._resolve_top_p(cfg, defaults, out)
+        self._resolve_vllm_extensions(cfg, defaults, out)
+        return out
+
+    @staticmethod
+    def _resolve_temperature(
+        cfg: dict[str, Any],
+        defaults: dict[str, Any],
+        passed_temperature: float | None,
+    ) -> float | None:
+        """temperature: gesonderter Pfad, weil passed_temperature als
+        Framework-Fallback dient (die anderen Keys haben keinen solchen
+        Fallback — dort bedeutet "nicht konfiguriert" = vLLM-TOML-Default).
+        """
+        temp = cfg.get("temperature", defaults.get("temperature"))
+        if temp is not None:
+            return temp
+        return passed_temperature
+
+    @staticmethod
+    def _resolve_top_p(
+        cfg: dict[str, Any],
+        defaults: dict[str, Any],
+        out: dict[str, Any],
+    ) -> None:
+        """top_p: Standard-OpenAI, direkt im Body (kein extra_body)."""
         top_p_value = cfg.get("top_p", defaults.get("top_p"))
         if top_p_value is not None:
             out["top_p"] = top_p_value
 
-        # vLLM-Extensions: generische Whitelist-Schleife über
-        # _VLLM_EXTRA_BODY_KEYS. Neue Extensions werden durch einen Eintrag
-        # in der Konstante bekannt — kein Code-Churn hier (DRY gegen
-        # Mapping-Drift, gleiche Bug-Klasse wie der ehemalige top_k-Only-Hack).
+    @staticmethod
+    def _resolve_vllm_extensions(
+        cfg: dict[str, Any],
+        defaults: dict[str, Any],
+        out: dict[str, Any],
+    ) -> None:
+        """vLLM-Extensions: generische Whitelist-Schleife über
+        ``_VLLM_EXTRA_BODY_KEYS``. Neue Extensions werden durch einen
+        Eintrag in der Konstante bekannt — kein Code-Churn hier (DRY
+        gegen Mapping-Drift, gleiche Bug-Klasse wie der ehemalige
+        top_k-Only-Hack).
+        """
         for ext_key in _VLLM_EXTRA_BODY_KEYS:
             value = cfg.get(ext_key, defaults.get(ext_key))
             if value is not None:
                 out.setdefault("extra_body", {})[ext_key] = value
-
-        return out
 
     def _discover_remote_tomls(self) -> list[str]:
         """TOML-Dateinamen (ohne Endung) vom Remote-Host listen.
