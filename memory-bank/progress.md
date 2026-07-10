@@ -1,7 +1,78 @@
 # Progress
 Letzte Releases + aktueller Stand.
 
-### 2026-07-10 (Session 58) — Web-Export Blacklist-Restructure + Slug-SSoT + normalize_pending-Hardening + leaderboard.json Scores-Contract [DONE, uncommitted] (v4.10.16)
+### 2026-07-10 (Session 58 Folge) — Web-Export Datenqualitäts-Fixes + Vendor-Taxonomy-Korrekturen + Dead-Code-Bug + Framework-Refactoring-Plan [DONE, committed] (v4.10.17)
+
+**Auslöser:** 9 Folge-Commits nach v4.10.16. Web-Export-Verifikation deckte Datenqualitätsprobleme auf (Phantom-Key, Dead-Code, Vendor-Fehlklassifikationen). Dual-Profile Thinking-Varianten hatten identische Display-Namen im Scoreboard.
+
+**Geliefert (9 Commits):**
+
+1. **`political_bias` Phantom-Key aus Scores-Contract entfernt** (`d4dce41`):
+   - `political_bias` war Forward-Looking-Platzhalter für nie implementiertes Bias-Modul.
+   - CSV hatte nie `Political Bias`-Spalte → `row.get()` → immer `None` → Contract injizierte `political_bias: null` in alle 88 Modelle.
+   - Web-Projekt erwartet 9 Modul-Keys (9 echte Module + `tooluse_combined` vom Frontend), nicht 10.
+   - `LdbCols.POLITICAL_BIAS` + `_SCORE_COLUMN_TO_KEY`-Eintrag entfernt. `_SCORES_CONTRACT_KEYS`: 10→9.
+   - Neue Pitfall in `systemPatterns.md`: Phantom-Contract-Keys (Forward-Looking-Platzhalter).
+   - 93 tests passed, 0 `political_bias` in Export (88/88 verifiziert).
+
+2. **`judge_prog` → `judge_progress_status` (Dead-Code-Bug)** (`0d60b78`):
+   - `score_calculator.py:464` Skip-Row-Filter prüfte auf `judge_prog` (existiert nicht im CSV).
+   - Tatsächliche Spalte: `judge_progress_status` (CSV-Header, `unified_runner.py:762`, `judge_evaluator.py:205`).
+   - `if`-Bedingung war immer `False` → Skip-Zeilen nie ausgefiltert.
+   - Aktuell 0 Skip-Rows → keine Score-Veränderung, aber Filter greift jetzt korrekt.
+
+3. **Codestral `thinking_probe_detected` false→null** (`a40c29d`):
+   - `codestral-2508.json`: `false` mit `confidence=null`+`probe_at=null` = inkonsistent.
+   - `false` impliziert „probed and not detected", aber Felder fehlen → nie probed.
+   - Korrekt: `null` = nicht probed.
+
+4. **Community-Fine-Tuner aus vendor→community korrigiert** (`933d33d`):
+   - `qwable-3_6-35b-q5--SPRK.json`: vendor Mia-AiLab→Alibaba, community null→Mia-AiLab.
+   - `Gemma-4-31B-Wordsmith-NVFP4--VSPK.json`: vendor llmfan46→Google, community true(boolean!)→llmfan46.
+   - `llmfan46` in `classification_taxonomy.json/community_groups` eingetragen (`speciality: finetune_uncensored`, analog HauhauCS).
+
+5. **Variantenbewusster `display_name` für Thinking-Varianten** (`2210bd5`):
+   - Neues top-level `display_name`-Feld im Leaderboard-Eintrag.
+   - Dual-Profile Thinking-Varianten (Slug endet auf `-thinking` UND `thinking_mode=="thinking"`) bekommen ` (Thinking)`-Suffix.
+   - Thinking-only Modelle (Claude Opus 4.8, o4-mini) ohne Standard-Gegenpart: kein Suffix.
+   - `model_name` bleibt karteinvariant. `display_name` = variantenbewusst für UIs.
+   - Web-Projekt: `leaderboard-builder.js` bevorzugt Export-`display_name`; `data-utils.js` `leaderboardById` → Multi-Map.
+
+6. **DeepReinforce als Hersteller eingetragen** (`94b4bb0`):
+   - Ornith-Modelle hatten `vendor='DeepReinforce'`, aber Hersteller fehlte in `manufacturers`.
+   - Vendor-Card `deepreinforce.json` existierte bereits. Jetzt in Taxonomy registriert (`jurisdiction=US`).
+
+7. **Framework-Refactoring Scope-Plan** (`ad8839e`):
+   - Strukturelle Analyse + Sektionen: God-Script-Zerlegung, tote-Stubs-Entfernung, Config-SSoT-Migration, `print`→`logging` in `utils/`.
+   - Keine Verhaltensänderung.
+
+8. **Reviews + Bias-Reviews + ToolUse-Narratives regeneriert** (`a4ba3bc`):
+   - 31 Review-Dateien am 2026-07-10 regeneriert.
+   - Erstmals Reviews für Thinking-Profile: Gemma-4-26B-thinking, Gemma-4-31B-thinking, Gemma-4-31B-Wordsmith-NVFP4-thinking, qwen3_6-27B-thinking.
+
+9. **`tooluse_runs` `tested_at` Timestamps aktualisiert** (`7ad3e03`):
+   - 29 Cards mit aktualisierten Zeitstempeln vom ToolUse-Re-Run am 2026-07-10. Keine Score-Änderungen.
+
+**Verifikation:**
+- Web-Export: 88 Modelle, 0 Vendor-Warnungen, 9 Score-Keys (0 `political_bias`), Eleventy-Build 366 Dateien, 0 Errors, 0 Warnings.
+- Ornith CSV: 6 Error-Rows entfernt (44/43 → 43/43), Leaderboard regeneriert.
+- Political Compass: 79/88 haben PC-Daten, 9 fehlen operational (7 VSPK + 2 SPRK).
+- `llm_judge_coverage` 100% verifiziert REAL — Error-Rows korrekt gefiltert.
+
+**Architektur-Entscheidungen:**
+- **Community-Fine-Tuner gehören ins `community`-Feld, nicht `vendor`:** vendor = Basis-Modell-Hersteller (Alibaba, Google). community = Fine-Tune-Autor (Mia-AiLab, llmfan46). Analog zu HauhauCS (bereits korrekt).
+- **`llmfan46` als `finetune_uncensored`:** Abliteration via Heretic v1.2.0, ARA-Methode — analog HauhauCS.
+- **`display_name` vs `model_name`:** `model_name` = karteinvariant (Card-Identifikation). `display_name` = variantenbewusst (UI-Scoreboard, unterscheidet Thinking/Standard).
+- **Phantom-Contract-Keys:** Forward-Looking-Platzhalter für geplante Module erzeugen Phantom-Keys, die vom Frontend nicht erwartet werden. Geplante Module erst bei CSV-Implementierung in den Contract aufnehmen.
+
+**Doku-Sync (in diesem Schritt):**
+- CHANGELOG v4.10.17-Eintrag, README Badge+Recent Versions, PROJECT_STATUS Header+Aktueller Stand, REF_TODO Abgeschlossen-Sektion, Memory Bank (activeContext + progress) aktualisiert.
+
+**Status:** Committed (`933d33d` ist letzter Code-Commit). Working Tree clean nach Doku-Commit.
+
+---
+
+### 2026-07-10 (Session 58) — Web-Export Blacklist-Restructure + Slug-SSoT + normalize_pending-Hardening + leaderboard.json Scores-Contract [DONE, committed] (v4.10.16)
 
 **Auslöser:** Web-Export-Qualitäts-Review. Blacklist-Config war unstrukturiert (`# -`-Kommentar-Konvention für dokumentierte Ausnahmen), Hybrid-Pair-Slug-Kollisionen (Thinking/Standard mit gleichem Display-Namen), `normalize_pending()` leckte En-Dash/n/a-Strings, `leaderboard.json` hatte keinen Scores-Contract (7-9 Keys statt 10).
 
@@ -58,7 +129,7 @@ Letzte Releases + aktueller Stand.
 - 7 vLLM-Modelle + 2 SPRK-Modelle ohne Political Compass (Nutzer wird vLLM-Compass hinzufügen).
 - Web-Projekt: `?? model_name` Fallbacks in Chart-Handlern können entfernt werden (Slug jetzt stabil aus model_id).
 
-**Status:** Working Tree, uncommitted. Working-Tree-Diff: 3 Dateien geändert (`web_export_blacklist.yaml`, `web_export.py`, `test_web_export_blacklist.py`) + Doku-Updates (`CHANGELOG.md`, `README.md`, `.agent/web-export-cleanup.md`, `memory-bank/*`). Working Tree insgesamt weiterhin uncommitted (Sessions 52–58). v4.10.16-Bump in CHANGELOG + README.
+**Status:** Committed (`ab701fd`). Working Tree war uncommitted (Sessions 52–58), jetzt alle committed.
 
 ---
 

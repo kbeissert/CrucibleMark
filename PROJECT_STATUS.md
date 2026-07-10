@@ -1,34 +1,23 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-07-08
-**Current Version:** 4.10.15 — Baustellen-Cleanup (Sampling-Drift, vLLM-Extensions-Whitelist, Card-Vocabulary, ThinkingProbe, Sub-Family-LB)
+**Last Updated:** 2026-07-10
+**Current Version:** 4.10.17 — Web-Export Datenqualitäts-Fixes + Vendor-Taxonomy-Korrekturen + Dead-Code-Bug + Framework-Refactoring-Plan
 **Status:** ✅ Production-Ready
 
 > **Hinweis:** Die Executive Summary weiter unten historisch auf v4.6.1.
-> Die Sub-Versionen v4.6.2–v4.10.13 sind im CHANGELOG.md vollständig dokumentiert.
+> Die Sub-Versionen v4.6.2–v4.10.17 sind im CHANGELOG.md vollständig dokumentiert.
 > Dieser Header wird bei jedem Phase-Commit nachgezogen,
 > die Executive Summary nur bei Major-Milestones.
 >
-> **Aktueller Stand (v4.10.13, 2026-07-05):**
-> - **WebExport-Konsistenz-Fixes (Session 47)** — `scripts/web_export.py:_build_leaderboard_entry()` exportiert `synthesis_quality` (ToolUse P1) / `tool_execution` (ToolUse P2) jetzt datenbasiert statt hinter `supports_tool_use=true`-Gate (7 Modelle mit echten ToolUse-Daten aber `supports_tool_use:false` waren fälschlich ohne Scores: command-a-plus-05-2026, openai_gpt-oss-20b, qwen2_5-coder-7b, qwen3-4b/14b, qwen3_5-4b-*/9b). `_EMOJI_RE` um VS16/VS15/ZWJ erweitert (`⏱\ufe0f Interactive` → `Interactive`). Dead-Code `_supports_tool_use` entfernt. 5 neue Regressionstests in `tests/test_web_export_helpers.py`. 1002 passed / 1 skipped / 2 pre-existing failures. Code-Review APPROVE.
-> - **Nicht behoben (out of scope Python-Repo):** `price-comparison-row.njk` Null-Guard für null-Preise, `model-header.njk` Doppel-Rendering architecture_tags/features, Frontend stu=false-Score-Anzeige (`scoreboard-table.js:toolsBadge()`).
+> **Aktueller Stand (v4.10.17, 2026-07-10):**
+> - **Web-Export Datenqualitäts-Fixes + Vendor-Taxonomy-Korrekturen (Session 58 Folge):** `political_bias` Phantom-Key aus Scores-Contract entfernt (10→9 Keys — war Forward-Looking-Platzhalter für nie implementiertes Bias-Modul). `judge_prog`→`judge_progress_status` Dead-Code-Bug im Judge-Coverage-Filter (`score_calculator.py:464`). Variantenbewusster `display_name` für Thinking-Varianten (Dual-Profile bekommen ` (Thinking)`-Suffix). DeepReinforce als Hersteller in Taxonomy eingetragen. Community-Fine-Tuner (Mia-AiLab, llmfan46) aus `vendor`→`community` migriert. Codestral `thinking_probe_detected` false→null (nie probed). Framework-Refactoring-Scope-Plan. 31 Reviews regeneriert (inkl. erstmals 4 Thinking-Profile). Web-Export: 88 Modelle, 0 Vendor-Warnungen, 9 Score-Keys, Eleventy-Build 366 Dateien, 0 Errors.
+> - **Nicht behoben (out of scope Python-Repo):** `price-comparison-row.njk` Null-Guard für null-Preise, `model-header.njk` Doppel-Rendering architecture_tags/features, Frontend stu=false-Score-Anzeige (`scoreboard-table.js:toolsBadge()`). LCL-Code-Duplikation in 3 Templates (Suggestion: `is_local_code()`-Macro extrahieren).
 >
-> **Aktueller Stand (v4.10.8, 2026-06-23):**
-> - **Cohere Native ToolUse Connector**: `utils/providers/cohere.py` umgestellt auf nativen `tools`-API-Parameter (statt Prompt-basierter JSON-Schemas). `command-a-reasoning` 6/6 live (P1=90.0, P2=51.7), `command-a-03-2025` 4/6 live. `command-a-plus-05-2026` MoE-Instabilität (HTTP 500 bei Benchmark-Prompts) → `supports_tool_use=false` markiert.
-> - **Doku-Stempel-Drift-Schutz (Session 40)**: Zwei neue Makefile-Targets `docs-version-check` + `docs-version-sync` verhindern Drift zwischen `CHANGELOG.md` und `**Dokumenten-Version:**`-Stempeln. 5 veraltete Stempel angeglichen (USER_GUIDE v3.1.0, ARCHITECTURE/DEVELOPER_GUIDE v3.8.1, BACKUP_STRATEGY v3.2.0, MODEL_CLASSIFICATION v3.0.0 → alle v4.10.8). Workflow-Regel in `CLAUDE.md` ergänzt.
+> **Aktueller Stand (v4.10.16, 2026-07-10):**
+> - **Web-Export Blacklist-Restructure + Slug-SSoT (Session 58):** Blacklist-Config in zwei Sektionen geteilt (`blacklist:` 24 aktiv + `kept_overrides:` 22 dokumentierte Ausnahmen). Slug-Generierung von `model_name` auf `model_id` umgestellt (SSoT — eliminiert 5 Hybrid-Pair-Kollisionen). `normalize_pending()` um en-dash/n/a/null-Sentinel erweitert. `leaderboard.json` Scores-Contract. 97 tests passed.
 >
-> **Aktueller Stand (v4.10.7, 2026-06-22):**
-> - **clean-results Variant-Handling** (v4.10.7): `clean_results.py` bereinigt jetzt ALLE ID-Varianten (Underscore, Hyphen, Punkt). Neue SSoT `_collect_model_id_variants()`. `--dry-run` in `clean.py` ergänzt. Dead-Model `grok-4.1-fast-reasoning` vollständig entfernt.
-> - **`_rebuild_index()` Fix** (v4.10.7): Verwaister `mc_gen._rebuild_index()`-Aufruf + unbenutzter Import in `generate_review.py` entfernt. `reviews-auto` Crash bei Modell 54/118 behoben.
->
-> **Aktueller Stand (v4.10.6):**
-> - **Anthropic Token-Cap + Benchmark-Cleanup** (v4.10.6): Anthropic `max_tokens` 8192→32768. `fallback_max_tokens` entfernt (Dead Config). Per-Model Override für Haiku 4.5 (8192). 144 verfälschte Benchmark-Zeilen entfernt (MAX_TOKENS + CI@500). 27 Modelle mit fehlenden Tasks im Leaderboard. Backup: `.bak_token_cleanup_20260622`.
-> - **Provider-Connector SSoT-Utilities** (v4.10.5): 3 Reasoning/Thinking-Extraktions-Utilities in `utils/providers/base.py`: `_extract_reasoning_tokens()`, `_extract_think_from_message()`, `ThinkAccumulator`. 9 Provider migriert. Streaming-Bugs in OpenRouter + llamacpp gefixt.
-> - **Judge Token Usage Context** (v4.10.5): LLM-Judge erhält universelle Token-Verbrauchsinformation (tokens_used, reasoning_tokens, token_budget, module_budget, truncated) für JEDE Aufgabe. Neue `### TOKEN USAGE ###` Section im Judge-System-Prompt.
-> - **CSV-Write-Through Bug Fix** (v4.10.4): Atomare Schreibvorgänge via `tempfile.mkstemp()` + `os.replace()`. 10 Modelle mit 0 CSV-Einträgen identifiziert (Root-Cause: Full-Rewrite-Überschreibung bei Kill/Crash). Existing Rows werden NICHT re-validiert.
-> - **Token-Budget-Refactoring** (v4.10.3): SSoT `_resolve_request_tokens()` in `base.py`, 7 Provider migriert, Provider-Kaskade `max_tokens`, Token-Budget-Optimierung (code_quality 65536→20000, cultural_intelligence 1000→3000, documentation_quality 6000→8000).
-> - **Provider-Connector Thinking/Reasoning-Fix** (v4.10.1): Alle 7 Provider-Connectors extrahieren jetzt konsistent `reasoning_tokens`, `think_content` und `usage`. Anthropic Streaming komplett neu implementiert.
-> - **Card-Research Force-Run** (v4.10.0): 110/110 Cards `profile_verified=true`. Template von 42 auf 37 required Felder reduziert (6 → optional). `MODEL=all` Support, `MAX_CARDS=N` für Batch-Processing.
+> **Aktueller Stand (v4.10.15, 2026-07-08):**
+> - **Baustellen-Cleanup (Session 50):** Sampling-vs-Card-Drift bei 4 vllm_spark-Modellen behoben. vLLM-Extensions-Whitelist. Card-Vocabulary: `Dense`/`Tool-Use` deprecated. 2 pre-existing Test-Failures behoben. Gemma-4-26B--VSPK ThinkingProbe live. ux_writing_002 ornith Re-Run. 1079 passed, 0 failures.
 
 
 ---

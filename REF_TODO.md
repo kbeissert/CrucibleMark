@@ -5,6 +5,21 @@
 
 ## Abgeschlossen
 
+### Web-Export Datenqualitäts-Fixes + Vendor-Taxonomy-Korrekturen (v4.10.17 – 10.07.26, Session 58 Folge)
+
+9 Folge-Commits nach v4.10.16 — Datenqualitäts-Fixes aus Web-Export-Verifikation, Vendor-Taxonomy-Korrekturen, Dead-Code-Bug, variantenbewusster `display_name` und Framework-Refactoring-Plan.
+
+- [x] **`political_bias` Phantom-Key aus Scores-Contract entfernt** — `scripts/web_export.py`: `political_bias` war Forward-Looking-Platzhalter für nie implementiertes Bias-Modul. CSV hatte nie `Political Bias`-Spalte → `row.get()` → immer `None` → Contract injizierte `political_bias: null` in alle 88 Modelle. Web-Projekt erwartet 9 Modul-Keys, nicht 10. `LdbCols.POLITICAL_BIAS` + `_SCORE_COLUMN_TO_KEY`-Eintrag entfernt. `_SCORES_CONTRACT_KEYS`: 10→9. Neue Pitfall in `systemPatterns.md`: Phantom-Contract-Keys. 93 tests passed, 0 `political_bias` in Export.
+- [x] **`judge_prog` → `judge_progress_status` (Dead-Code-Bug)** — `scripts/leaderboard/score_calculator.py:464`: Skip-Row-Filter prüfte auf `judge_prog` (existiert nicht im CSV — tatsächliche Spalte: `judge_progress_status`). `if`-Bedingung war immer `False` → Skip-Zeilen nie ausgefiltert. Aktuell 0 Skip-Rows → keine Score-Veränderung, aber Filter greift jetzt korrekt.
+- [x] **Codestral `thinking_probe_detected` false→null** — `codestral-2508.json`: `false` mit `confidence=null`+`probe_at=null` war inkonsistent (`false` impliziert „probed and not detected", aber Felder fehlen). Korrekt: `null` = nicht probed.
+- [x] **Community-Fine-Tuner aus vendor→community korrigiert** — 2 Karten: `qwable-3_6-35b-q5--SPRK.json` (vendor: Mia-AiLab→Alibaba, community: null→Mia-AiLab) und `Gemma-4-31B-Wordsmith-NVFP4--VSPK.json` (vendor: llmfan46→Google, community: true(boolean!)→llmfan46). `llmfan46` in `classification_taxonomy.json/community_groups` eingetragen (`speciality: finetune_uncensored`, analog HauhauCS).
+- [x] **Variantenbewusster `display_name` für Thinking-Varianten** — `scripts/web_export.py`: Neues top-level `display_name`-Feld. Dual-Profile Thinking-Varianten (Slug endet auf `-thinking` UND `thinking_mode=="thinking"`) bekommen ` (Thinking)`-Suffix. Thinking-only Modelle ohne Standard-Gegenpart kein Suffix. `model_name` bleibt karteinvariant. Web-Projekt: `leaderboard-builder.js` bevorzugt Export-`display_name`; `data-utils.js` `leaderboardById` → Multi-Map (`Map<id,entry[]>`).
+- [x] **DeepReinforce als Hersteller eingetragen** — `config/classification_taxonomy.json`: Ornith-Modelle hatten `vendor='DeepReinforce'`, aber Hersteller fehlte in `manufacturers` → Web-Export-Warnung. Vendor-Card `deepreinforce.json` existierte bereits. Jetzt in Taxonomy registriert (`jurisdiction=US`).
+- [x] **Framework-Refactoring Scope-Plan** — Strukturelle Analyse + Sektionen: God-Script-Zerlegung, tote-Stubs-Entfernung, Config-SSoT-Migration, `print`→`logging` in `utils/`. Keine Verhaltensänderung.
+- [x] **Reviews + Bias-Reviews + ToolUse-Narratives regeneriert** — 31 Review-Dateien am 2026-07-10 regeneriert (6 Reviews, 3 Bias-Reviews, 13 ToolUse-Narratives, 5 Thinking-Profil-Dirs + qwable-3_6-35b-q5). Erstmals Reviews für Thinking-Profile.
+- [x] **`tooluse_runs` `tested_at` Timestamps aktualisiert** — 29 Cards mit aktualisierten Zeitstempeln vom ToolUse-Re-Run am 2026-07-10. Keine Score-Änderungen.
+- [x] **Verifikation:** Web-Export 88 Modelle, 0 Vendor-Warnungen, 9 Score-Keys, Eleventy-Build 366 Dateien, 0 Errors. Ornith CSV 44/43→43/43. Political Compass 79/88 (9 operational fehlend). `llm_judge_coverage` 100% verifiziert REAL.
+
 ### Baustellen-Cleanup (v4.10.15 – 08.07.26, Session 50)
 
 User-Auftrag: alle bekannten offenen Baustellen aus der v4.10.14-Session-Reihe schließen.

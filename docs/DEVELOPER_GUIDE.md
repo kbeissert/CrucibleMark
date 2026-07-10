@@ -1682,5 +1682,5 @@ python run_benchmark.py --debug-responses
 
 ---
 
-**Dokumenten-Version:** 4.10.13 (Ueberarbeitung 2026-07)\
+**Dokumenten-Version:** 4.10.17 (Ueberarbeitung 2026-07)\
 **Kompatibel mit:** CrucibleMark v3.8.2+

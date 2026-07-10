@@ -5,6 +5,50 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v4.10.17] - 2026-07-10
+
+**Web-Export Datenqualitäts-Fixes + Vendor-Taxonomy-Korrekturen + Dead-Code-Bug + Framework-Refactoring-Plan.**
+
+9 Folge-Commits nach v4.10.16 — Datenqualitäts-Fixes aus Web-Export-Verifikation, Vendor-Taxonomy-Korrekturen, ein Dead-Code-Bug im Judge-Coverage-Filter, variantenbewusster `display_name` für Thinking-Varianten und ein Framework-Refactoring-Scope-Plan.
+
+### Fixed
+
+- **`political_bias` Phantom-Key aus Scores-Contract entfernt — `scripts/web_export.py`:** `political_bias` war ein Forward-Looking-Platzhalter für ein nie implementiertes Bias-Modul. Die CSV hatte nie eine `Political Bias`-Spalte → `row.get()` → immer `None` → Contract injizierte `political_bias: null` in alle 88 Modelle. Das Web-Projekt erwartet 9 Modul-Keys (9 echte Module + `tooluse_combined` vom Frontend injiziert), nicht 10. `LdbCols.POLITICAL_BIAS` + `_SCORE_COLUMN_TO_KEY`-Eintrag entfernt. `_SCORES_CONTRACT_KEYS`: 10 → 9 Keys. Political Compass-Daten bleiben in `data.json.political_compass` (separate Section). Neue Pitfall in `systemPatterns.md`: Phantom-Contract-Keys (Forward-Looking-Platzhalter). 93 tests passed, 0 `political_bias` in Export (88/88 verifiziert).
+
+- **`judge_prog` → `judge_progress_status` (Dead-Code-Bug) — `scripts/leaderboard/score_calculator.py:464`:** Der Skip-Row-Filter in `_aggregate_basic_stats()` prüfte auf die Spalte `judge_prog`, die im CSV nicht existiert. Die tatsächliche Spalte heißt `judge_progress_status` (CSV-Header, siehe `unified_runner.py:762` und `judge_evaluator.py:205`). Dadurch war die `if`-Bedingung immer `False` und Skip-Zeilen (`⚠️ Judge: skip`) wurden nie aus der Judge-Coverage-Berechnung ausgefiltert. Aktuell 0 Skip-Rows in der CSV → keine Score-Veränderung, aber der Filter greift jetzt korrekt, sobald Skip-Rows auftreten.
+
+- **Codestral `thinking_probe_detected` false→null — `benchmark_scores/model_cards/codestral-2508.json`:** Codestral 25.08 ist ein spezialisiertes Code-Modell, kein Thinking-Modell. `thinking_probe_detected=false` mit `confidence=null`+`probe_at=null` war inkonsistent — `false` impliziert „probed and not detected", aber `confidence`/`probe_at` fehlen (nie probed). Korrekt: `null` = nicht probed.
+
+- **Community-Fine-Tuner aus vendor→community korrigiert — 2 Modellkarten:** Zwei Karten hatten Community-Fine-Tuner fälschlich als `vendor` gesetzt statt als `community` — führte zu Web-Export-Warnungen.
+  - `qwable-3_6-35b-q5--SPRK.json`: `vendor: Mia-AiLab → Alibaba` (Basis: Qwen3.6-35B-A3B), `community: null → Mia-AiLab`.
+  - `Gemma-4-31B-Wordsmith-NVFP4--VSPK.json`: `vendor: llmfan46 → Google` (Basis: Gemma 4 31B), `community: true (boolean!) → llmfan46`.
+  - Zusätzlich: `llmfan46` in `classification_taxonomy.json/community_groups` eingetragen (`speciality: finetune_uncensored`, analog HauhauCS).
+
+### Changed
+
+- **Variantenbewusster `display_name` für Thinking-Varianten — `scripts/web_export.py`:** Dual-Profile-Modelle (5 Basis-Modelle mit Standard + Thinking-Variante) hatten identische `model_name`/`display_name` — im Scoreboard standen zwei Zeilen mit demselben Namen, nur an Score/Slug unterscheidbar. Neues top-level `display_name`-Feld im Leaderboard-Eintrag. Für Thinking-Varianten (Slug endet auf `-thinking` UND `thinking_mode=="thinking"`) wird ` (Thinking)`-Suffix angehängt. Thinking-only Modelle (Claude Opus 4.8, o4-mini, etc.) ohne Standard-Gegenpart bekommen keinen Suffix. `model_name` bleibt unverändert (karteinvariant, für Card-Identifikation). `display_name` ist der variantenbewusste Name für UIs. Web-Projekt: `leaderboard-builder.js` bevorzugt Export-`display_name` über `model_card.display_name` (Fallback für Backward-Compat); `data-utils.js` `leaderboardById` von `Map<id,entry>` zu `Map<id,entry[]>` (Multi-Map — keine Silent Data Loss bei Duplikat-IDs).
+
+### Added
+
+- **DeepReinforce als Hersteller eingetragen — `config/classification_taxonomy.json`:** Ornith-Modellkarten hatten `vendor='DeepReinforce'`, aber der Hersteller fehlte in `manufacturers` → Web-Export-Warnung bei jedem Lauf. Vendor-Card `deepreinforce.json` existierte bereits (`vendor_id='deepreinforce'`). Jetzt auch in der Taxonomy registriert mit `jurisdiction=US`.
+
+- **Framework-Refactoring Scope-Plan — `docs/`:** Plan zur systematischen Prüfung des Framework-Codes gegen Architektur-Regeln: God-Script-Zerlegung, tote-Stubs-Entfernung, Config-SSoT-Migration, `print`→`logging` in `utils/`. Keine Verhaltensänderung an Scoring/Token-Budget/Provider-Logik.
+
+### Maintenance
+
+- **Reviews + Bias-Reviews + ToolUse-Narratives regeneriert (Session 58):** 31 Review-Dateien (6 Reviews, 3 Bias-Reviews, 13 ToolUse-Narratives, 5 neue Thinking-Profil-Dirs + `qwable-3_6-35b-q5`) am 2026-07-10 regeneriert. Enthält erstmals Reviews für Thinking-Profile: `Gemma-4-26B-thinking`, `Gemma-4-31B-thinking`, `Gemma-4-31B-Wordsmith-NVFP4-thinking`, `qwen3_6-27B-thinking`.
+
+- **`tooluse_runs` `tested_at` Timestamps aktualisiert (Session 58 Re-Run):** 29 Cards mit aktualisierten `tested_at`-Zeitstempeln im `tooluse_runs`-Block vom ToolUse-Benchmark-Re-Run am 2026-07-10 (08:45 → 14:20-14:21 UTC). Keine Score-Änderungen — nur Timestamp-Updates.
+
+### Verifikation
+
+- Web-Export: 88 Modelle, 0 Vendor-Warnungen, 9 Score-Keys (0 `political_bias`), Eleventy-Build 366 Dateien, 0 Errors, 0 Warnings.
+- Ornith CSV: 6 Error-Rows entfernt (44/43 → 43/43), Leaderboard regeneriert.
+- Political Compass: 79/88 haben PC-Daten, 9 fehlen operational (7 VSPK + 2 SPRK).
+- `llm_judge_coverage` 100% verifiziert REAL — Error-Rows korrekt gefiltert.
+
+---
+
 ## [v4.10.16] - 2026-07-10
 
 **Web-Export Blacklist-Restructure + Slug-SSoT + `normalize_pending`-Hardening + `leaderboard.json` Scores-Contract.**
