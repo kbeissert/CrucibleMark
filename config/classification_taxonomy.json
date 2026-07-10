@@ -204,6 +204,15 @@
         "aliases": [],
         "jurisdiction": "CN"
       },
+      "DeepReinforce": {
+        "label": "DeepReinforce",
+        "vendor_card_id": "deepreinforce",
+        "description": "DeepReinforce (DeepReinforce AI) — US-basierte RL-Forschungsorganisation (Santa Clara, CA). Entwickler der Ornith-Modellreihe (RL-Fine-Tunes auf Gemma 4 und Qwen-Basis). Open-Weights unter MIT-Lizenz, kein eigener Cloud-API-Dienst.",
+        "aliases": [
+          "deepreinforce-ai"
+        ],
+        "jurisdiction": "US"
+      },
       "Google": {
         "label": "Google",
         "vendor_card_id": "google_deepmind",
