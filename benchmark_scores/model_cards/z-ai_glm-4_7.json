@@ -82,7 +82,7 @@
   "community": null,
   "tooluse_runs": {
     "z-ai/glm-4.7": {
-      "tested_at": "2026-07-10T08:45:09Z",
+      "tested_at": "2026-07-10T14:21:27Z",
       "score_p1": 83.33,
       "score_p2": 42.5
     }
