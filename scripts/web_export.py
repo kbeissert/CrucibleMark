@@ -1126,6 +1126,14 @@ def _build_leaderboard_entry(
     _raw_model_id = str(row.get(LdbCols.MODEL_ID, row.get("model_id_raw", row.get("model_id", "")))).strip()
     _normalized_tags = _normalize_export_tags(card.get("architecture_tags") or []) if card else []
     _characteristics = _build_characteristics(card, thinking_mode, _normalized_tags)
+    # Variant-aware display name: Dual-Profile-Thinking-Varianten (Slug endet
+    # auf "-thinking") bekommen " (Thinking)"-Suffix, um sie im Scoreboard von
+    # der Standard-Variante zu unterscheiden. Thinking-only Modelle (Claude
+    # Opus 4.8, o4-mini, etc.) haben keinen Standard-Gegenpart und brauchen
+    # keinen Suffix — ihr Slug endet nicht auf "-thinking".
+    _base_name = (card.get("display_name") if card else None) or str(row.get(LdbCols.MODEL_NAME, ""))
+    _is_dual_thinking = thinking_mode == "thinking" and slug.endswith("-thinking")
+    _display_name = f"{_base_name} (Thinking)" if _is_dual_thinking else _base_name
     # synthesis_quality (ToolUse P1) und tool_execution (ToolUse P2) werden
     # datenbasiert exportiert: sobald das Modell einen Wert im Leaderboard
     # hat, wird der Score gezeigt — unabhaengig vom supports_tool_use-Flag.
@@ -1140,6 +1148,7 @@ def _build_leaderboard_entry(
         "slug": slug,
         "model_id": (card.get("model_id") if card else None) or (_raw_model_id or None),
         "model_name": (card.get("display_name") if card else None) or str(row.get(LdbCols.MODEL_NAME, "")),
+        "display_name": _display_name,
         "vendor": vendor,
         # SSoT-Link zum Vendor-Profil (v4.9.1): vendor_card_id aus classification_taxonomy.json
         "vendor_card_ref": vendor_card_ref,
