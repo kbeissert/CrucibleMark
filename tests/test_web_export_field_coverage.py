@@ -1,11 +1,15 @@
 """Tests fuer vollstaendige Score- und Vendor-Field-Konsistenz im WebExport.
 
 Hintergrund: Audit in Session 38 (2026-06-26) ergab Luecken:
-  LdbCols hatte nur 7 von 10 CSV-Score-Spalten
-  (Synthesis Quality, Tool Execution, Political Bias fehlten)
+  LdbCols hatte nur 7 von 9 CSV-Score-Spalten
+  (Synthesis Quality, Tool Execution fehlten)
 
 Diese Tests sichern ab, dass keine CSV-Spalte mehr stillschweigend
 verloren geht.
+
+Hinweis: political_bias ist KEIN Score-Modul (Session 58, v4.10.16).
+Political Compass-Daten kommen aus political_compass_results.csv und
+landen in data.json.political_compass als separate Top-Level-Section.
 """
 
 from __future__ import annotations
@@ -30,10 +34,10 @@ EXPECTED_SCORE_KEYS: set[str] = set(
 
 
 class TestLeaderboardScoreMapping:
-    """Prueft, dass alle 10 CSV-Modul-Spalten in data.json.leaderboard.scores landen."""
+    """Prueft, dass alle 9 CSV-Modul-Spalten in data.json.leaderboard.scores landen."""
 
     def test_ldbcols_has_all_score_columns(self):
-        """LdbCols muss Konstanten fuer alle 10 CSV-Modul-Spalten haben."""
+        """LdbCols muss Konstanten fuer alle 9 CSV-Modul-Spalten haben."""
         from scripts.web_export import LdbCols
         expected_csv_cols = [
             "Code Quality Audit",
@@ -45,7 +49,6 @@ class TestLeaderboardScoreMapping:
             "Logical Reasoning",
             "Synthesis Quality",
             "Tool Execution",
-            "Political Bias",
         ]
         for csv_col in expected_csv_cols:
             # Suche nach Konstanten mit diesem Wert
@@ -59,7 +62,7 @@ class TestLeaderboardScoreMapping:
             assert found, f"LdbCols fehlt Konstante fuer CSV-Spalte: {csv_col!r}"
 
     def test_all_scores_keys_present_in_export(self):
-        """data.json.leaderboard.scores muss alle 10 Keys enthalten."""
+        """data.json.leaderboard.scores muss alle 9 Keys enthalten."""
         m_dir = ROOT.parent / "CrucibleMark-Web" / "src" / "_data" / "raw" / "models"
         if not (m_dir / "claude-haiku-4-5" / "data.json").exists():
             pytest.skip("Web-Export noch nicht erstellt")
@@ -87,7 +90,7 @@ class TestLeaderboardScoreMapping:
                 "Initial Load Time (s)", "P95 Time (s)", "P95", "Max Time (s)",
                 "Timeout Count", "Tokens Total", "Cost per 1K (USD)", "Benchmark Cost (USD)",
                 "LLM Judge Avg", "LLM Judge Avg (raw)", "LLM Judge Coverage",
-                "Vendor", "Size Class", "Type", "Political Bias",
+                "Vendor", "Size Class", "Type",
                 "Code Quality Audit", "CLI Badge", "Logical Reasoning",
                 "UX Writing & Microcopy", "Documentation Quality",
                 "Content Transformation & Adaption", "Cultural Intelligence",
@@ -103,7 +106,7 @@ class TestLeaderboardScoreMapping:
         score_attrs = {
             "CODE_QUALITY", "CLI_BADGE", "UX_WRITING", "DOCUMENTATION_QUALITY",
             "CONTENT_TRANSFORMATION", "CULTURAL_INTELLIGENCE", "LOGICAL_REASONING",
-            "SYNTHESIS_QUALITY", "TOOL_EXECUTION", "POLITICAL_BIAS",
+            "SYNTHESIS_QUALITY", "TOOL_EXECUTION",
         }
         for attr in score_attrs:
             assert hasattr(LdbCols, attr), f"LdbCols.{attr} fehlt"

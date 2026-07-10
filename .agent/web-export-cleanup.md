@@ -83,13 +83,13 @@ Rückgabewert: `float | str | None`. Zahlen → `float`. Sentinels → `None`. A
 
 ## WebExport `leaderboard.json` Scores-Contract (ab v4.10.16)
 
-`_write_top_level_outputs()` erzwingt den 10-Key Scores-Contract für `leaderboard.json` direkt vor dem Write (zuvor nur `data.json` hatte Contract-Enforcement).
+`_write_top_level_outputs()` erzwingt den 9-Key Scores-Contract für `leaderboard.json` direkt vor dem Write (zuvor nur `data.json` hatte Contract-Enforcement).
 
 **Problem:** `_strip_none()` entfernte null-Werte aus Model-Einträgen. `leaderboard.json` zeigte dann 7-9 Score-Keys statt 10. `data.json` hatte bereits seit Session-49-Folge Contract-Enforcement via `_SCORES_CONTRACT_KEYS` Re-Injection nach `_strip_none`.
 
 **Fix:** In `_write_top_level_outputs`: für jedes Modell in `models_list` — `scores.setdefault(key, None)` für alle `_SCORES_CONTRACT_KEYS` bei bestehender Dict; `dict.fromkeys(_SCORES_CONTRACT_KEYS, None)` bei fehlender Dict.
 
-**SSoT:** `_SCORES_CONTRACT_KEYS` (abgeleitet aus `_SCORE_COLUMN_TO_KEY`) ist die einzige Quelle für die 10 Modul-Keys. Beide Write-Pfade (`data.json` via `_process_leaderboard`, `leaderboard.json` via `_write_top_level_outputs`) referenzieren dieselbe Konstante.
+**SSoT:** `_SCORES_CONTRACT_KEYS` (abgeleitet aus `_SCORE_COLUMN_TO_KEY`) ist die einzige Quelle für die 9 Modul-Keys. Beide Write-Pfade (`data.json` via `_process_leaderboard`, `leaderboard.json` via `_write_top_level_outputs`) referenzieren dieselbe Konstante. `political_bias` ist KEIN Score-Modul (v4.10.16 entfernt) — Political Compass-Daten in separater `data.json.political_compass` Section.
 
 ## WebExport Score-Spalten-Vollständigkeit (ab v4.10.11)
 

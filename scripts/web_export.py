@@ -73,7 +73,6 @@ class LdbCols:
     LOGICAL_REASONING = "Logical Reasoning"
     SYNTHESIS_QUALITY = "Synthesis Quality"
     TOOL_EXECUTION = "Tool Execution"
-    POLITICAL_BIAS = "Political Bias"
 
 
 def build_provider_map(config_path: Path) -> dict[str, str]:
@@ -331,11 +330,15 @@ def parse_tests_run(val) -> dict | None:
     if match: return {"completed": int(match.group(1)), "total": int(match.group(2))}
     return None
 
-# Scores-Contract: SSoT für die 10 Modul-Keys in data.json.leaderboard.scores.
+# Scores-Contract: SSoT für die 9 Modul-Keys in data.json.leaderboard.scores.
 # Alle Keys müssen IMMER vorhanden sein — auch wenn der Wert null ist
 # (Modul nicht benchmarked). _strip_none würde null-Values entfernen;
 # dieser Contract stellt sicher, dass das Web-Frontend alle Module rendern
 # kann (test_web_export_field_coverage.py).
+#
+# 9 echte Module. Political Compass ist KEIN Score-Modul — die Daten
+# kommen aus political_compass_results.csv und landen in data.json.
+# political_compass als separate Top-Level-Section, nicht im scores-Dict.
 #
 # Neue Module hier ergänzen — _SCORES_CONTRACT_KEYS, _build_leaderboard_entry
 # und test_web_export_field_coverage.py derivieren automatisch.
@@ -349,7 +352,6 @@ _SCORE_COLUMN_TO_KEY: dict[str, str] = {
     LdbCols.LOGICAL_REASONING:     "logical_reasoning",
     LdbCols.SYNTHESIS_QUALITY:     "synthesis_quality",
     LdbCols.TOOL_EXECUTION:        "tool_execution",
-    LdbCols.POLITICAL_BIAS:        "political_bias",
 }
 _SCORES_CONTRACT_KEYS: tuple[str, ...] = tuple(_SCORE_COLUMN_TO_KEY.values())
 
@@ -1517,7 +1519,7 @@ def _write_top_level_outputs(
         und blacklist_source (Dateipfad) landen im meta.json fuer Audit-Zwecke.
     """
     # Scores-Contract für leaderboard.json durchsetzen: _strip_none hat null-Werte
-    # aus den Model-Einträgen entfernt, aber der Contract verlangt alle 10 Score-Keys
+    # aus den Model-Einträgen entfernt, aber der Contract verlangt alle 9 Score-Keys
     # (auch null) — sonst sieht das Frontend im Leaderboard-Index 7-9 Keys statt 10.
     for _m in models_list:
         _scores = _m.get("scores")
@@ -1986,7 +1988,7 @@ def _process_leaderboard(
 
         _model_data = _strip_emojis(_strip_none(model_json))
         # Scores-Contract: _strip_none (Z.1956) hat null-Values entfernt — aber
-        # alle 10 Modul-Keys müssen im scores-Dict vorhanden sein (Frontend-Vertrag,
+        # alle 9 Modul-Keys müssen im scores-Dict vorhanden sein (Frontend-Vertrag,
         # test_web_export_field_coverage.py). Re-Injection nach dem letzten Strip.
         _lb = _model_data.get("leaderboard")
         if isinstance(_lb, dict):
