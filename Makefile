@@ -2,7 +2,7 @@
 	help install install-dev \
 	benchmark political-compass political-compass-safe benchmark-cross-model benchmark-auto benchmark-human \
 	review reviews-auto reviews-auto-legacy reviews-bias-auto reviews-tooluse-auto reviews-all reviews-check review-new model-cards model-card vendor-cards leaderboard \
-	validate validate-single validate-assets validate-structure validate-cards validate-cards-template cards-sync card-create card-validate card-research vendor-cards-update model-cards-update test diff-results analyze-costs update-prices sync-cost-limits \
+	validate validate-single validate-assets validate-structure validate-cards validate-cards-template cards-sync card-create card-validate card-research vendor-cards-update model-cards-update test lint diff-results analyze-costs update-prices sync-cost-limits \
 	list-models judge-health list-modules \
 	probe-thinking probe-all-thinking \
 	ensure-card ensure-cards \
@@ -104,6 +104,11 @@ help:
 	@printf "\033[1;32mInstallation\033[0m\n"
 	@printf "  %-25s %s\n" "install"      "Runtime-Deps installieren (.venv erforderlich)"
 	@printf "  %-25s %s\n" "install-dev"  "Dev-Tools (pytest, ruff, mypy) zusaetzlich"
+	@printf "\n"
+	@printf "\033[1;32mQA & Lint\033[0m\n"
+	@printf "  %-25s %s\n" "validate"     "Asset-Schema-Pruefung (Module/Cards)"
+	@printf "  %-25s %s\n" "test"         "pytest (Module + tests/ + llm_judge)"
+	@printf "  %-25s %s\n" "lint"         "Ruff (Gate) + Pylint (Review, E-Level)"
 
 
 # === BENCHMARKING ===
@@ -319,7 +324,19 @@ validate-cards:
 
 test: validate
 	@echo "Running Unit Tests..."
-	$(PYTHON) -m pytest benchmark_modules/ utils/scoring/llm_judge/tests/ -v --tb=short
+	$(PYTHON) -m pytest benchmark_modules/ tests/ utils/scoring/llm_judge/tests/ -v --tb=short
+
+# === LINT (Ruff + Pylint) ===
+# Ruff ist der harte Gate (C901 max-complexity=12 via .ruff.toml).
+# Pylint laeuft lenient (.pylintrc, viele Regeln disabled); nur E-Level
+# blockiert (--fail-on=E), W/C/R sind Review-Punkte (--fail-under=0).
+# Baseline eingefroren: 1148 Ruff-Verstoesse (576 auto-fixable).
+# Policy: keine neuen Verstoesse; auto-fixable duerfen vorab bereinigt werden.
+lint:
+	@echo "=== Ruff (Lint-Gate, .ruff.toml) ==="
+	$(PYTHON) -m ruff check scripts/ utils/ run_benchmark.py
+	@echo "=== Pylint (Review, nur E-Level blockiert) ==="
+	$(PYTHON) -m pylint scripts/ utils/ run_benchmark.py --rcfile=.pylintrc --fail-on=E --fail-under=0
 
 diff-results:
 	@echo "Comparing Benchmark Results..."
