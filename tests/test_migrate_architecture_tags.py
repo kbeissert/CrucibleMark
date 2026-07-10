@@ -1,4 +1,4 @@
-"""Regression-Tests fuer scripts/dev/migrate_architecture_tags.py.
+"""Regression-Tests fuer scripts/legacy/migrate_architecture_tags.py.
 
 Insbesondere der Bug, dass das Walrus-Pattern `data := json.loads(...)` die
 in-Memory normalisierten Tags ueberschrieb und die Karte un-migriert
@@ -15,7 +15,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 _MIGRATE_PATH = (
     Path(__file__).resolve().parents[1]
-    / "scripts" / "dev" / "migrate_architecture_tags.py"
+    / "scripts" / "legacy" / "migrate_architecture_tags.py"
 )
 _spec = importlib.util.spec_from_file_location(
     "migrate_architecture_tags", _MIGRATE_PATH

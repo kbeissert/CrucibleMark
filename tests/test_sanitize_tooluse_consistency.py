@@ -1,5 +1,5 @@
 """Tests fuer die Tool-Use-Sanity-Pruefung in
-``scripts/maintenance/sanitize_8_models_tooluse.py``.
+``scripts/legacy/sanitize_8_models_tooluse.py``.
 
 Stellt sicher dass:
 - Konsistente Reviews + LB-Eintraege als OK erkannt werden.
@@ -20,7 +20,7 @@ sys.path.insert(0, str(ROOT))
 
 # Skip wenn sanitize nicht importierbar (z.B. ohne venv)
 try:
-    from scripts.maintenance.sanitize_8_models_tooluse import (
+    from scripts.legacy.sanitize_8_models_tooluse import (
         step5_consistency_check,
     )
 except ImportError as e:

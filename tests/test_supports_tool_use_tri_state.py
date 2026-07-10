@@ -1,6 +1,6 @@
 """Tests für die Tri-State-Semantik von ``supports_tool_use``.
 
-Siehe Plan: ``scripts/dev/migrate_supports_tool_use_tri_state.py`` und
+Siehe Plan: ``scripts/legacy/migrate_supports_tool_use_tri_state.py`` und
 ``utils/model_utils.normalize_supports_tool_use``.
 """
 

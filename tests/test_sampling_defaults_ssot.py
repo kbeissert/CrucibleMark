@@ -126,7 +126,7 @@ def test_add_sampling_keys_script_idempotent(tmp_path, monkeypatch):
         (dst / p.name).write_text(p.read_text(encoding="utf-8"), encoding="utf-8")
 
     # Patche CARDS_DIR im Script
-    script = Path("scripts/dev/add_sampling_keys.py").read_text(encoding="utf-8")
+    script = Path("scripts/legacy/add_sampling_keys.py").read_text(encoding="utf-8")
     patched = script.replace(
         'CARDS_DIR = Path("benchmark_scores/model_cards")',
         f'CARDS_DIR = Path("{dst}")',
