@@ -4,6 +4,9 @@
 line-length = 100
 target-version = "py312"
 
+# Exclude: Legacy-Migrationsskripte (einmalig, nicht aktiv gewartet)
+exclude = ["scripts/legacy"]
+
 # Selektierte Regelsätze (schlank gehalten)
 # E/W = pycodestyle errors/warnings, F = pyflakes, UP = pyupgrade,
 # SIM = simplify, B = bugbear, C901 = complexity, PLR = pylint refactor
