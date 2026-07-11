@@ -94,6 +94,7 @@ class TestLeaderboardScoreMapping:
                 "Code Quality Audit", "CLI Badge", "Logical Reasoning",
                 "UX Writing & Microcopy", "Documentation Quality",
                 "Content Transformation & Adaption", "Cultural Intelligence",
+                "Political Bias",
                 "Tool Execution", "Synthesis Quality", "ToolUse Score",
                 "Tests Run",
             )

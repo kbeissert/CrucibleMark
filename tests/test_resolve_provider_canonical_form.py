@@ -33,9 +33,11 @@ from utils.model_utils import resolve_provider
         # Qwen3.6-27B — Canonicalisierung qwen3_6-27B (Underscore-Form)
         ("qwen3.6-27B", "vllm_spark"),
         ("qwen3_6-27B", "vllm_spark"),
-        # llama.cpp Spark — Config-Eintrag nutzt bereits Canonical-Underscore.
-        # Verifiziert, dass resolve_provider() exakt matcht (kein Drift).
-        ("qwen3_5-35b-a3b-q8", "llamacpp_spark"),
+        # qwen3_5-35b-a3b-q8: am 2026-07-08 aus llamacpp_spark auskommentiert
+        # (GGUF-Dateien fehlen auf der Spark). Fällt jetzt auf Heuristik
+        # 'qwen'-Präfix → groq zurück. Canonical-Form wird weiterhin korrekt
+        # aufgelöst, nur der Provider hat sich geändert.
+        ("qwen3_5-35b-a3b-q8", "groq"),
     ],
 )
 def test_resolve_provider_matches_canonical_underscore_against_dot_config(
