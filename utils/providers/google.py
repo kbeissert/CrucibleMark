@@ -94,7 +94,7 @@ class GoogleClient(BaseProviderClient):
             )
             if stream_handler:
                 return self._process_google_stream(
-                    response_or_stream, used_max_tokens, fallback_triggered,
+                    response_or_stream, used_max_tokens, fallback_triggered, stream_handler,
                 )
             return self._process_google_blocking(
                 response_or_stream, used_max_tokens, fallback_triggered,
@@ -148,6 +148,7 @@ class GoogleClient(BaseProviderClient):
         response: Any,
         used_max_tokens: int,
         fallback_triggered: bool,
+        stream_handler: Callable[[str], None] | None = None,
     ) -> str:
         """Verarbeitet die Gemini-Streaming-Antwort."""
         full_text = ""
@@ -158,7 +159,7 @@ class GoogleClient(BaseProviderClient):
             "token_limit_used": used_max_tokens,
         }
         for chunk in response:
-            full_text = self._apply_google_stream_chunk(chunk, full_text, think)
+            full_text = self._apply_google_stream_chunk(chunk, full_text, think, stream_handler)
         if think.has_content:
             self.last_response_metadata["think_content"] = think.content
         return full_text
@@ -168,6 +169,7 @@ class GoogleClient(BaseProviderClient):
         chunk: Any,
         full_text: str,
         think: Any,
+        stream_handler: Callable[[str], None] | None = None,
     ) -> str:
         """Verarbeitet einen einzelnen Gemini-Stream-Chunk und liefert aktualisierten Text."""
         # chunk.text can throw if blocked by safety settings

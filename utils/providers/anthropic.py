@@ -126,7 +126,7 @@ class AnthropicClient(BaseProviderClient):
             if stream_handler:
                 func_kwargs["stream"] = True
                 return self._query_streaming(
-                    model, max_tokens, func_kwargs, fallback_triggered=False
+                    model, max_tokens, func_kwargs, fallback_triggered=False, stream_handler=stream_handler
                 )
             response, used_max_tokens, fallback_triggered = self._execute_with_token_fallback(
                 func=self.client.messages.create,
@@ -178,6 +178,7 @@ class AnthropicClient(BaseProviderClient):
         max_tokens: int,
         func_kwargs: dict[str, Any],
         fallback_triggered: bool = False,
+        stream_handler=None,
     ) -> str:
         """Streaming-Query für Anthropic mit Thinking-Extraktion."""
         from utils.providers.base import ThinkAccumulator

@@ -148,7 +148,7 @@ def compare_standard_benchmark(
         print(f"\n{Colors.GREEN}✅ Results correspond to baseline.{Colors.ENDC}")
 
 
-def _select_runs_from_files(files: list[Path]) -> tuple[str, str]:
+def _select_runs_from_files(files: list[Path], TerminalUI) -> tuple[str, str]:
     """Manueller Modus: zwei Dateien direkt aus der Liste wählen."""
     print(f"\n{Colors.CYAN}--- SCHRITT 1: Referenz-Datei ---{Colors.ENDC}")
     ref_file = TerminalUI.select_from_list(files, lambda x: x.name, prompt="Wähle Referenz-Datei:")
@@ -269,7 +269,7 @@ def interactive_selection() -> tuple[str, str]:
     elif mode_name == "Modell-Vergleich":
         model_list = sorted(list(models_to_files.keys()))
         return _select_modell_vergleich(model_list, models_to_files, TerminalUI)
-    return _select_runs_from_files(files)
+    return _select_runs_from_files(files, TerminalUI)
 
 
 def main():

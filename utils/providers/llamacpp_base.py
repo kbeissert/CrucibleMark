@@ -822,7 +822,7 @@ class LlamaCppBaseClient(BaseProviderClient):
         }
 
         if stream_handler:
-            return self._process_llamacpp_stream(response_or_stream)
+            return self._process_llamacpp_stream(response_or_stream, stream_handler)
 
         return self._extract_response_content(response_or_stream, model)
 
@@ -854,7 +854,7 @@ class LlamaCppBaseClient(BaseProviderClient):
             params["stream"] = True
         return initial_tokens, token_param_name, params
 
-    def _process_llamacpp_stream(self, response_or_stream: Any) -> str:
+    def _process_llamacpp_stream(self, response_or_stream: Any, stream_handler=None) -> str:
         """Verarbeitet die llama.cpp-Streaming-Antwort."""
         full_content = ""
         from utils.providers.base import ThinkAccumulator
@@ -864,7 +864,7 @@ class LlamaCppBaseClient(BaseProviderClient):
                 self.last_response_metadata["usage"] = chunk.usage
             if chunk.choices:
                 self._apply_llamacpp_stream_chunk(chunk, think)
-                full_content_chunk = self._apply_llamacpp_stream_choices(chunk, think)
+                full_content_chunk = self._apply_llamacpp_stream_choices(chunk, think, stream_handler)
                 full_content += full_content_chunk
 
         if think.has_content:
@@ -884,7 +884,7 @@ class LlamaCppBaseClient(BaseProviderClient):
         if finish:
             self.last_response_metadata["finish_reason"] = finish
 
-    def _apply_llamacpp_stream_choices(self, chunk: Any, think: Any) -> str:
+    def _apply_llamacpp_stream_choices(self, chunk: Any, think: Any, stream_handler=None) -> str:
         """Verarbeitet Content + Reasoning/Thinking aus llama.cpp-Delta-Chunks."""
         delta = chunk.choices[0].delta
         content_piece = getattr(delta, "content", None)

@@ -4,6 +4,7 @@ OpenAI-compatible endpoint — https://openrouter.ai/api/v1
 """
 
 import logging
+from typing import Any
 
 # Optional Provider Imports
 try:
@@ -116,7 +117,7 @@ class OpenRouterClient(BaseProviderClient):
             )
 
             if stream_handler:
-                return self._process_openrouter_stream(response, used_max_tokens, fallback_triggered)
+                return self._process_openrouter_stream(response, used_max_tokens, fallback_triggered, stream_handler)
             return self._process_openrouter_blocking(response, used_max_tokens, fallback_triggered)
 
         except Exception as e:
@@ -156,6 +157,7 @@ class OpenRouterClient(BaseProviderClient):
         response: Any,
         used_max_tokens: int,
         fallback_triggered: bool,
+        stream_handler=None,
     ) -> str:
         """Verarbeitet den OpenRouter-Streaming-Response."""
         full_content = ""

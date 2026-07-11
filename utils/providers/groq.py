@@ -4,6 +4,7 @@ Ollama / OpenAI compatible endpoint
 """
 
 import logging
+from typing import Any
 
 # Optional Provider Imports
 try:
@@ -110,7 +111,7 @@ class GroqClient(BaseProviderClient):
             )
 
             if stream_handler:
-                return self._process_groq_stream(response, used_max_tokens, fallback_triggered)
+                return self._process_groq_stream(response, used_max_tokens, fallback_triggered, stream_handler)
             return self._process_groq_blocking(response, used_max_tokens, fallback_triggered)
 
         except Exception as e:
@@ -147,6 +148,7 @@ class GroqClient(BaseProviderClient):
         response: Any,
         used_max_tokens: int,
         fallback_triggered: bool,
+        stream_handler=None,
     ) -> str:
         """Verarbeitet den Groq-Streaming-Response."""
         full_content = ""

@@ -3,6 +3,7 @@ Provider-spezifische LLM Clients
 Getrennte Implementierungen für Ollama, Anthropic, Mistral
 """
 import logging
+from typing import Any
 # Optional Provider Imports
 try:
     pass
@@ -106,7 +107,7 @@ class XAIClient(BaseProviderClient):
                 func_kwargs=params
             )
             if stream_handler:
-                return self._process_xai_stream(response, used_max_tokens, fallback_triggered)
+                return self._process_xai_stream(response, used_max_tokens, fallback_triggered, stream_handler)
             return self._process_xai_blocking(response, used_max_tokens, fallback_triggered)
         except Exception as e:
             import logging
@@ -144,6 +145,7 @@ class XAIClient(BaseProviderClient):
         response: Any,
         used_max_tokens: int,
         fallback_triggered: bool,
+        stream_handler=None,
     ) -> str:
         """Verarbeitet den XAI-Streaming-Response."""
         full_content = ""
