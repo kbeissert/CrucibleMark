@@ -229,83 +229,94 @@ class ToolUseReportGenerator:
         return _build_deployment_recommendation(row)
 
     # ------------------------------------------------------------------
-    # Report generation
+    # Report generation — model report helpers
     # ------------------------------------------------------------------
 
-    def generate_model_report(self, model_id: str) -> str:
-        """Generate Markdown report string for one model."""
-        df = self.load_leaderboard()
-        if df.empty or "model" not in df.columns:
-            return f"# Tool Use Review — {model_id}\n\nKeine Daten vorhanden.\n"
+    def _extract_model_report_metrics(self, row: dict[str, Any]) -> dict[str, float]:
+        return {
+            "p1": _safe_float(row.get("p1_score", "")) or 0.0,
+            "p2": _safe_float(row.get("p2_score", "")) or 0.0,
+            "combined": _safe_float(row.get("combined_score", "")) or 0.0,
+            "call1": _safe_float(row.get("call1_time_s", "")) or 0.0,
+            "mcp_lat": _safe_float(row.get("mcp_latency_s", "")) or 0.0,
+            "call2": _safe_float(row.get("call2_time_s", "")) or 0.0,
+            "total_t": _safe_float(row.get("total_time_s", "")) or 0.0,
+            "total_tok": _safe_int(row.get("total_tokens", 0)),
+        }
 
-        matching = df[df["model"] == model_id]
-        if matching.empty:
-            return f"# Tool Use Review — {model_id}\n\nModell nicht im Leaderboard gefunden.\n"
-
-        row = matching.iloc[0].to_dict()
-        asset_details = self.load_asset_details(model_id)
-
+    def _render_model_report_header(
+        self,
+        model_id: str,
+        row: dict[str, Any],
+        metrics: dict[str, float],
+    ) -> list[str]:
         display_name = row.get("display_name") or model_id
         date_str = datetime.now().strftime(self.report_cfg.get("date_format", "%Y-%m-%d"))
+        return [
+            f"# Tool Use Review — {display_name}",
+            f"**Generated:** {date_str} | "
+            f"**MCP Mode:** {row.get('mcp_mode', 'n/a')} | "
+            f"**Assets Run:** {row.get('assets_run', 'n/a')}",
+            "",
+        ]
 
-        p1 = _safe_float(row.get("p1_score", "")) or 0.0
-        p2 = _safe_float(row.get("p2_score", "")) or 0.0
-        combined = _safe_float(row.get("combined_score", "")) or 0.0
-        call1 = _safe_float(row.get("call1_time_s", "")) or 0.0
-        mcp_lat = _safe_float(row.get("mcp_latency_s", "")) or 0.0
-        call2 = _safe_float(row.get("call2_time_s", "")) or 0.0
-        total_t = _safe_float(row.get("total_time_s", "")) or 0.0
-        total_tok = _safe_int(row.get("total_tokens", 0))
+    def _render_score_overview(self, lines: list[str], metrics: dict[str, float]) -> None:
+        lines.append("## Score Overview")
+        lines.append("| Metric | Score | Rating |")
+        lines.append("|---|---|---|")
+        lines.append(f"| Tool Execution (P1) | {metrics['p1']:.2f} | {self._get_score_label(metrics['p1'])} |")
+        lines.append(f"| Synthesis Quality (P2) | {metrics['p2']:.2f} | {self._get_score_label(metrics['p2'])} |")
+        lines.append(f"| **Combined Score** | **{metrics['combined']:.2f}** | **{self._get_score_label(metrics['combined'])}** |")
+        lines.append("")
+
+    def _render_performance_table(
+        self,
+        lines: list[str],
+        metrics: dict[str, float],
+        row: dict[str, Any],
+    ) -> None:
         cost_str = row.get("cost_usd") or "0.0"
+        lines.append("## Performance")
+        lines.append("| Metric | Value |")
+        lines.append("|---|---|")
+        lines.append(f"| Tool-Call Time (Ø) | {metrics['call1']:.2f}s |")
+        lines.append(f"| MCP Latency (Ø) | {metrics['mcp_lat']:.2f}s |")
+        lines.append(f"| Synthesis Time (Ø) | {metrics['call2']:.2f}s |")
+        lines.append(f"| **Total Time** | **{metrics['total_t']:.2f}s** |")
+        lines.append(f"| Total Tokens | {metrics['total_tok']} |")
+        lines.append(f"| Estimated Cost | ${cost_str} |")
+        lines.append("")
+
+    def _render_reliability(self, lines: list[str], row: dict[str, Any]) -> None:
         tool_call_valid = row.get("tool_call_valid", "false")
         attempts = row.get("tool_call_attempts", "1")
         parse_error = row.get("retry_required", "false")
         hallucination = row.get("hallucination_flag", "false")
-
-        lines: list[str] = []
-        lines.append(f"# Tool Use Review — {display_name}")
-        lines.append(
-            f"**Generated:** {date_str} | "
-            f"**MCP Mode:** {row.get('mcp_mode', 'n/a')} | "
-            f"**Assets Run:** {row.get('assets_run', 'n/a')}",
-        )
-        lines.append("")
-
-        # Score Overview
-        lines.append("## Score Overview")
-        lines.append("| Metric | Score | Rating |")
-        lines.append("|---|---|---|")
-        lines.append(f"| Tool Execution (P1) | {p1:.2f} | {self._get_score_label(p1)} |")
-        lines.append(f"| Synthesis Quality (P2) | {p2:.2f} | {self._get_score_label(p2)} |")
-        lines.append(f"| **Combined Score** | **{combined:.2f}** | **{self._get_score_label(combined)}** |")
-        lines.append("")
-
-        # Performance
-        lines.append("## Performance")
-        lines.append("| Metric | Value |")
-        lines.append("|---|---|")
-        lines.append(f"| Tool-Call Time (Ø) | {call1:.2f}s |")
-        lines.append(f"| MCP Latency (Ø) | {mcp_lat:.2f}s |")
-        lines.append(f"| Synthesis Time (Ø) | {call2:.2f}s |")
-        lines.append(f"| **Total Time** | **{total_t:.2f}s** |")
-        lines.append(f"| Total Tokens | {total_tok} |")
-        lines.append(f"| Estimated Cost | ${cost_str} |")
-        lines.append("")
-
-        # Reliability
         lines.append("## Reliability")
         lines.append(f"- **Tool Call Valid:** {tool_call_valid}")
         lines.append(f"- **Parse Errors:** {parse_error} ({attempts} attempts)")
         lines.append(f"- **Hallucination Flag:** {hallucination}")
         lines.append("")
 
-        # Anomaly callouts — must use GitHub Alert syntax for generate_review.py regex pickup
-        # Count assets with hard parse-error (tool call never parsed, not just retried)
+    def _render_anomaly_callouts(
+        self,
+        lines: list[str],
+        row: dict[str, Any],
+        asset_details: list[dict[str, Any]],
+        metrics: dict[str, float],
+    ) -> None:
+        # Anomaly callouts — must use GitHub Alert syntax for generate_review.py regex pickup.
+        # Count assets with hard parse-error (tool call never parsed, not just retried).
         parse_error_asset_ids = [
             a["asset_id"] for a in asset_details
             if (a.get("data", {}).get("tool_transcript") or {}).get("status") in ("parse_error", "blocked")
         ]
+        tool_call_valid = row.get("tool_call_valid", "false")
         tool_call_valid_bool = str(tool_call_valid).lower() == "true"
+        hallucination = row.get("hallucination_flag", "false")
+        parse_error = row.get("retry_required", "false")
+        p1 = metrics["p1"]
+        p2 = metrics["p2"]
 
         if str(hallucination).lower() == "true":
             lines.append("> [!WARNING]")
@@ -317,34 +328,52 @@ class ToolUseReportGenerator:
             lines.append("")
 
         if str(parse_error).lower() == "true":
-            if not tool_call_valid_bool and len(parse_error_asset_ids) >= 2:
-                lines.append("> [!CAUTION]")
-                lines.append("> **Proprietäres Tool-Call-Format:** Das Modell erzeugt statt des CrucibleMark-Custom-JSON-Schemas")
-                lines.append("> ein natives, modellspezifisches Tool-Call-Format (z. B. `{\"tool_call\": {\"name\": ...,")
-                lines.append("> \"parameters\": ...}}`), das vom MCP-Stack nicht geparst werden kann. Im Benchmark-Kontext")
-                lines.append(f"> ist das Modell auf {len(parse_error_asset_ids)}/6 Assets nicht MCP-kompatibel (betroffen:")
-                lines.append(f"> {', '.join(parse_error_asset_ids)}). Über die native Modell-API (SDK-Level) ist das Modell")
-                lines.append("> vollständig tool-use-fähig — das Problem ist ein Benchmark-Artefakt.")
-                lines.append("")
-            else:
-                lines.append("> [!NOTE]")
-                lines.append("> **Retry erforderlich:** Das Modell benötigte auf mindestens einem Asset einen zweiten")
-                lines.append("> Versuch, um einen validen Tool-Call im CrucibleMark-Custom-JSON-Schema zu erzeugen")
-                lines.append("> (`retry_required: true`). P1 misst das Ergebnis nach erfolgtem Tool-Call — der Retry")
-                lines.append("> erhöht Token-Verbrauch und Latenz, beeinflusst aber P1 nicht direkt.")
-                lines.append("")
+            self._render_parse_error_callout(lines, tool_call_valid_bool, parse_error_asset_ids)
 
         # Synthesis Gap: strong P1 but very weak P2
         if p1 >= 70.0 and p2 < 35.0:
-            _gap = p1 - p2
-            lines.append("> [!CAUTION]")
-            lines.append(f"> **Synthesis-Gap erkannt ({_gap:.0f} Punkte):** Das Modell führt Tool-Calls zuverlässig")
-            lines.append(f"> aus (P1={p1:.1f}), kann die abgerufenen Ergebnisse aber nicht in eine kohärente")
-            lines.append(f"> Antwort übersetzen (P2={p2:.1f}). In produktiven Agentic-Workflows reicht ein valider")
-            lines.append("> Tool-Call allein nicht aus — die Synthesequalität ist der eigentliche Bottleneck.")
-            lines.append("")
+            self._render_synthesis_gap_callout(lines, p1, p2)
 
         # Judge Fallback: P2 scores are less reliable
+        self._render_judge_fallback_callout(lines, asset_details)
+
+    def _render_parse_error_callout(
+        self,
+        lines: list[str],
+        tool_call_valid_bool: bool,
+        parse_error_asset_ids: list[str],
+    ) -> None:
+        if not tool_call_valid_bool and len(parse_error_asset_ids) >= 2:
+            lines.append("> [!CAUTION]")
+            lines.append("> **Proprietäres Tool-Call-Format:** Das Modell erzeugt statt des CrucibleMark-Custom-JSON-Schemas")
+            lines.append("> ein natives, modellspezifisches Tool-Call-Format (z. B. `{\"tool_call\": {\"name\": ...,")
+            lines.append("> \"parameters\": ...}}`), das vom MCP-Stack nicht geparst werden kann. Im Benchmark-Kontext")
+            lines.append(f"> ist das Modell auf {len(parse_error_asset_ids)}/6 Assets nicht MCP-kompatibel (betroffen:")
+            lines.append(f"> {', '.join(parse_error_asset_ids)}). Über die native Modell-API (SDK-Level) ist das Modell")
+            lines.append("> vollständig tool-use-fähig — das Problem ist ein Benchmark-Artefakt.")
+            lines.append("")
+        else:
+            lines.append("> [!NOTE]")
+            lines.append("> **Retry erforderlich:** Das Modell benötigte auf mindestens einem Asset einen zweiten")
+            lines.append("> Versuch, um einen validen Tool-Call im CrucibleMark-Custom-JSON-Schema zu erzeugen")
+            lines.append("> (`retry_required: true`). P1 misst das Ergebnis nach erfolgtem Tool-Call — der Retry")
+            lines.append("> erhöht Token-Verbrauch und Latenz, beeinflusst aber P1 nicht direkt.")
+            lines.append("")
+
+    def _render_synthesis_gap_callout(
+        self, lines: list[str], p1: float, p2: float,
+    ) -> None:
+        _gap = p1 - p2
+        lines.append("> [!CAUTION]")
+        lines.append(f"> **Synthesis-Gap erkannt ({_gap:.0f} Punkte):** Das Modell führt Tool-Calls zuverlässig")
+        lines.append(f"> aus (P1={p1:.1f}), kann die abgerufenen Ergebnisse aber nicht in eine kohärente")
+        lines.append(f"> Antwort übersetzen (P2={p2:.1f}). In produktiven Agentic-Workflows reicht ein valider")
+        lines.append("> Tool-Call allein nicht aus — die Synthesequalität ist der eigentliche Bottleneck.")
+        lines.append("")
+
+    def _render_judge_fallback_callout(
+        self, lines: list[str], asset_details: list[dict[str, Any]],
+    ) -> None:
         judge_fallback_assets = [
             a["asset_id"] for a in asset_details
             if a.get("data", {}).get("judge_fallback")
@@ -359,7 +388,9 @@ class ToolUseReportGenerator:
             lines.append("> sollten mit Vorbehalt interpretiert werden.")
             lines.append("")
 
-        # Asset Breakdown
+    def _render_asset_breakdown(
+        self, lines: list[str], asset_details: list[dict[str, Any]],
+    ) -> None:
         asset_by_id = {a["asset_id"]: a for a in asset_details}
         lines.append("## Asset Breakdown")
         lines.append("| Asset | Name | P1 | P2 | Combined | Tool Call | Notes |")
@@ -367,29 +398,46 @@ class ToolUseReportGenerator:
         for asset_id, asset_name in _ASSET_NAMES.items():
             a = asset_by_id.get(asset_id)
             if a:
-                d = a.get("data", {})
-                a_p1 = _safe_float(d.get("p1_score", "")) or 0.0
-                a_p2 = _safe_float(d.get("p2_score", "")) or 0.0
-                a_combined = _safe_float(d.get("combined_score", "")) or 0.0
-                tc = d.get("tool_transcript") or {}
-                tc_valid = "✓" if tc.get("status") not in ("parse_error", "blocked", None, "") else "✗"
-                _notes_parts = []
-                if d.get("hallucination_flag"):
-                    _notes_parts.append("⚠ Halluzination")
-                if tc.get("status") == "parse_error":
-                    _notes_parts.append("✗ Parse-Fehler")
-                _cv = (d.get("content_verification") or {}).get("state", "")
-                if _cv == "C":
-                    _notes_parts.append("✗ Kein Tool-Call")
-                elif (d.get("content_verification") or {}).get("tool_result_ignored"):
-                    _notes_parts.append("B2: Tool ignoriert")
-                notes = ", ".join(_notes_parts)
-                lines.append(f"| {asset_id} | {asset_name} | {a_p1:.1f} | {a_p2:.1f} | {a_combined:.1f} | {tc_valid} | {notes} |")
+                self._append_asset_breakdown_row(lines, asset_id, asset_name, a)
             else:
                 lines.append(f"| {asset_id} | {asset_name} | — | — | — | — | Nicht ausgeführt |")
         lines.append("")
 
-        # Tool Call Transcripts
+    def _append_asset_breakdown_row(
+        self,
+        lines: list[str],
+        asset_id: str,
+        asset_name: str,
+        a: dict[str, Any],
+    ) -> None:
+        d = a.get("data", {})
+        a_p1 = _safe_float(d.get("p1_score", "")) or 0.0
+        a_p2 = _safe_float(d.get("p2_score", "")) or 0.0
+        a_combined = _safe_float(d.get("combined_score", "")) or 0.0
+        tc = d.get("tool_transcript") or {}
+        tc_valid = "✓" if tc.get("status") not in ("parse_error", "blocked", None, "") else "✗"
+        notes = self._build_asset_breakdown_notes(d, tc)
+        lines.append(f"| {asset_id} | {asset_name} | {a_p1:.1f} | {a_p2:.1f} | {a_combined:.1f} | {tc_valid} | {notes} |")
+
+    def _build_asset_breakdown_notes(
+        self, d: dict[str, Any], tc: dict[str, Any],
+    ) -> str:
+        parts: list[str] = []
+        if d.get("hallucination_flag"):
+            parts.append("⚠ Halluzination")
+        if tc.get("status") == "parse_error":
+            parts.append("✗ Parse-Fehler")
+        cv = (d.get("content_verification") or {}).get("state", "")
+        if cv == "C":
+            parts.append("✗ Kein Tool-Call")
+        elif (d.get("content_verification") or {}).get("tool_result_ignored"):
+            parts.append("B2: Tool ignoriert")
+        return ", ".join(parts)
+
+    def _render_transcripts(
+        self, lines: list[str], asset_details: list[dict[str, Any]],
+    ) -> None:
+        asset_by_id = {a["asset_id"]: a for a in asset_details}
         lines.append("## Tool Call Transcripts")
         lines.append("")
         for asset_id, asset_name in _ASSET_NAMES.items():
@@ -399,49 +447,61 @@ class ToolUseReportGenerator:
                 lines.append("_Nicht ausgeführt._")
                 lines.append("")
                 continue
+            self._render_single_transcript(lines, a)
+        lines.append("")
 
-            d = a.get("data", {})
-            transcript = d.get("tool_transcript") or {}
-            response_1 = d.get("response_1", "")
-            synthesis = a.get("raw_response", "")
-            a_p1 = _safe_float(d.get("p1_score", "")) or 0.0
-            a_p2 = _safe_float(d.get("p2_score", "")) or 0.0
-            a_combined = _safe_float(d.get("combined_score", "")) or 0.0
+    def _render_single_transcript(self, lines: list[str], a: dict[str, Any]) -> None:
+        d = a.get("data", {})
+        transcript = d.get("tool_transcript") or {}
+        response_1 = d.get("response_1", "")
+        synthesis = a.get("raw_response", "")
+        a_p1 = _safe_float(d.get("p1_score", "")) or 0.0
+        a_p2 = _safe_float(d.get("p2_score", "")) or 0.0
+        a_combined = _safe_float(d.get("combined_score", "")) or 0.0
 
-            lines.append("**Model Tool Call (Response 1):**")
-            lines.append("```json")
-            lines.append(response_1[:400] if response_1 else "(kein Tool-Call)")
-            lines.append("```")
+        lines.append("**Model Tool Call (Response 1):**")
+        lines.append("```json")
+        lines.append(response_1[:400] if response_1 else "(kein Tool-Call)")
+        lines.append("```")
+        lines.append("")
+
+        lines.append("**MCP Result:**")
+        lines.append(f"- Status: {transcript.get('status', 'n/a')} | Provider: {transcript.get('provider', 'n/a')}")
+        self._render_mcp_result_excerpt(lines, transcript)
+        lines.append("")
+
+        if synthesis:
+            lines.append("**Model Synthesis (Response 2, gekürzt):**")
+            lines.append(f"> {synthesis[:400]}...")
             lines.append("")
 
-            lines.append("**MCP Result:**")
-            lines.append(f"- Status: {transcript.get('status', 'n/a')} | Provider: {transcript.get('provider', 'n/a')}")
-            results_list = transcript.get("results", [])
-            if results_list and isinstance(results_list, list):
-                first = results_list[0] if results_list else {}
-                source_url = first.get("url", "n/a")
-                excerpt = str(first.get("excerpt", first.get("content", "")))[:300]
-                lines.append(f"- Source: {source_url}")
-                lines.append(f"- Excerpt: _{excerpt}_")
-            elif transcript.get("content_excerpt"):
-                lines.append(f"- Content: _{str(transcript.get('content_excerpt', ''))[:300]}_")
-            elif transcript.get("status") == "error":
-                lines.append(f"- Error: {transcript.get('error', 'n/a')}")
-            lines.append("")
+        lines.append(f"**Scores:** P1={a_p1:.1f} | P2={a_p2:.1f} | Combined={a_combined:.1f}")
+        lines.append("")
 
-            if synthesis:
-                lines.append("**Model Synthesis (Response 2, gekürzt):**")
-                lines.append(f"> {synthesis[:400]}...")
-                lines.append("")
+    def _render_mcp_result_excerpt(
+        self, lines: list[str], transcript: dict[str, Any],
+    ) -> None:
+        results_list = transcript.get("results", [])
+        if results_list and isinstance(results_list, list):
+            first = results_list[0] if results_list else {}
+            source_url = first.get("url", "n/a")
+            excerpt = str(first.get("excerpt", first.get("content", "")))[:300]
+            lines.append(f"- Source: {source_url}")
+            lines.append(f"- Excerpt: _{excerpt}_")
+        elif transcript.get("content_excerpt"):
+            lines.append(f"- Content: _{str(transcript.get('content_excerpt', ''))[:300]}_")
+        elif transcript.get("status") == "error":
+            lines.append(f"- Error: {transcript.get('error', 'n/a')}")
 
-            lines.append(f"**Scores:** P1={a_p1:.1f} | P2={a_p2:.1f} | Combined={a_combined:.1f}")
-            lines.append("")
-
-        # Assessment
+    def _render_assessment(
+        self,
+        lines: list[str],
+        row: dict[str, Any],
+        asset_details: list[dict[str, Any]],
+    ) -> None:
         strengths = self._build_strengths(row, asset_details)
         weaknesses = self._build_weaknesses(row)
         recommendation = self._build_deployment_recommendation(row)
-
         lines.append("## Assessment")
         lines.append("")
         lines.append("**Strengths:**")
@@ -455,6 +515,7 @@ class ToolUseReportGenerator:
         lines.append(f"**Deployment Recommendation:** {recommendation}")
         lines.append("")
 
+    def _render_methodology_notes(self, lines: list[str], row: dict[str, Any]) -> None:
         # Methodology notes — deterministic context annotations for reviewers
         methodology_notes = get_applicable_notes(row)
         if methodology_notes:
@@ -470,29 +531,23 @@ class ToolUseReportGenerator:
                 lines.append(note.render_markdown())
                 lines.append("")
 
-        lines.append("---")
-        lines.append("*CrucibleMark Tool Use Module v1.0 — Statischer Report*")
+    # ------------------------------------------------------------------
+    # Report generation — fleet summary helpers
+    # ------------------------------------------------------------------
 
-        return "\n".join(lines)
+    def _sort_leaderboard_by_combined(self, df: pd.DataFrame) -> pd.DataFrame:
+        sorted_df = df.copy()
+        sorted_df["_cs_sort"] = sorted_df["combined_score"].apply(
+            lambda v: _safe_float(v) or -1.0,
+        )
+        return sorted_df.sort_values("_cs_sort", ascending=False)
 
-    def generate_fleet_summary(self) -> str:
-        """Generate Markdown fleet summary string."""
-        df = self.load_leaderboard()
-        date_str = datetime.now().strftime(self.report_cfg.get("date_format", "%Y-%m-%d"))
-        total_models = len(df)
-
-        lines: list[str] = []
-        lines.append("# CrucibleMark Tool Use — Fleet Summary")
-        lines.append(f"**Generated:** {date_str} | **Models Evaluated:** {total_models}")
-        lines.append("")
-
-        if df.empty:
-            lines.append("_Keine Modelle im Leaderboard._")
-            return "\n".join(lines)
-
-        # Leaderboard table (sorted by combined_score desc)
-        score_labels = self.report_cfg.get("score_labels", {})
-
+    def _render_leaderboard_table(
+        self,
+        lines: list[str],
+        sorted_df: pd.DataFrame,
+        score_labels: dict[str, float],
+    ) -> None:
         def _tier(row: dict[str, Any]) -> str:
             cs = _safe_float(row.get("combined_score", "")) or 0.0
             return _score_label(cs, score_labels)
@@ -500,13 +555,6 @@ class ToolUseReportGenerator:
         lines.append("## Leaderboard")
         lines.append("| Model | Tier | P1 | P2 | Combined | ToolCall | Time | Mode | Group |")
         lines.append("|---|---|---|---|---|---|---|---|---|")
-
-        sorted_df = df.copy()
-        sorted_df["_cs_sort"] = sorted_df["combined_score"].apply(
-            lambda v: _safe_float(v) or -1.0,
-        )
-        sorted_df = sorted_df.sort_values("_cs_sort", ascending=False)
-
         for _, r in sorted_df.iterrows():
             row = r.to_dict()
             cs = _safe_float(row.get("combined_score", "")) or 0.0
@@ -521,73 +569,128 @@ class ToolUseReportGenerator:
             lines.append(f"| {disp} | {tier} | {p1_v} | {p2_v} | {cs:.2f} | {tc} | {tt} | {mode} | {grp} |")
         lines.append("")
 
-        # Sovereignty Gap
-        local_rows = df[df.get("fleet_group", pd.Series()) == "local_sovereign"] if "fleet_group" in df.columns else pd.DataFrame()
-        all_combined = [_safe_float(v) for v in df.get("combined_score", pd.Series())]
-        all_combined = [v for v in all_combined if v is not None]
-        local_combined = [
-            _safe_float(v) for v in local_rows.get("combined_score", pd.Series())
-        ] if not local_rows.empty else []
-        local_combined = [v for v in local_combined if v is not None]
+    def _get_local_sovereign_rows(self, df: pd.DataFrame) -> pd.DataFrame:
+        if "fleet_group" not in df.columns:
+            return pd.DataFrame()
+        return df[df.get("fleet_group", pd.Series()) == "local_sovereign"]
 
+    def _compute_sovereignty_gap(
+        self,
+        df: pd.DataFrame,
+        local_rows: pd.DataFrame,
+    ) -> dict[str, float | None]:
+        all_combined = [
+            v for v in (_safe_float(v) for v in df.get("combined_score", pd.Series()))
+            if v is not None
+        ]
+        if local_rows.empty:
+            local_combined: list[float] = []
+        else:
+            local_combined = [
+                v for v in (_safe_float(v) for v in local_rows.get("combined_score", pd.Series()))
+                if v is not None
+            ]
         avg_all = round(sum(all_combined) / len(all_combined), 2) if all_combined else None
         avg_local = round(sum(local_combined) / len(local_combined), 2) if local_combined else None
-        gap = round(avg_all - avg_local, 2) if avg_all is not None and avg_local is not None else None
+        gap = (
+            round(avg_all - avg_local, 2)
+            if avg_all is not None and avg_local is not None
+            else None
+        )
+        return {"avg_all": avg_all, "avg_local": avg_local, "gap": gap}
+
+    def _render_sovereignty_gap(
+        self,
+        lines: list[str],
+        gap_data: dict[str, float | None],
+    ) -> None:
+        avg_all = gap_data["avg_all"]
+        avg_local = gap_data["avg_local"]
+        gap = gap_data["gap"]
+        avg_local_str = avg_local if avg_local is not None else "n/a"
+        avg_all_str = avg_all if avg_all is not None else "n/a"
+        gap_str = gap if gap is not None else "n/a"
 
         lines.append("## Sovereignty Gap Analysis")
         lines.append("| Metric | Value |")
         lines.append("|---|---|")
-        lines.append(f"| Fleet Avg — Local Sovereign | {avg_local if avg_local is not None else 'n/a'} |")
-        lines.append(f"| Fleet Avg — Full Fleet | {avg_all if avg_all is not None else 'n/a'} |")
-        lines.append(f"| **Sovereignty Gap** | **{gap if gap is not None else 'n/a'}** |")
+        lines.append(f"| Fleet Avg — Local Sovereign | {avg_local_str} |")
+        lines.append(f"| Fleet Avg — Full Fleet | {avg_all_str} |")
+        lines.append(f"| **Sovereignty Gap** | **{gap_str}** |")
         lines.append("")
 
         if gap is not None:
-            if gap < 5:
-                interp = "Lokale Modelle erreichen vergleichbare Tool-Use-Kompetenz."
-            elif gap <= 15:
-                interp = "Moderate Lücke — lokale Modelle für Basis-Tool-Use geeignet."
-            else:
-                interp = "Signifikante Lücke — kommerzielle Modelle klar überlegen."
+            interp = self._interpret_sovereignty_gap(gap)
             lines.append(f"_{interp}_")
             lines.append("")
 
-        # Performance stats per group
+    @staticmethod
+    def _interpret_sovereignty_gap(gap: float) -> str:
+        if gap < 5:
+            return "Lokale Modelle erreichen vergleichbare Tool-Use-Kompetenz."
+        if gap <= 15:
+            return "Moderate Lücke — lokale Modelle für Basis-Tool-Use geeignet."
+        return "Signifikante Lücke — kommerzielle Modelle klar überlegen."
+
+    def _render_performance_stats(
+        self,
+        lines: list[str],
+        df: pd.DataFrame,
+        local_rows: pd.DataFrame,
+    ) -> None:
+        def _stats(lst: list[float]) -> str:
+            if not lst:
+                return "n/a | n/a | n/a"
+            return f"{sum(lst)/len(lst):.2f} | {min(lst):.2f} | {max(lst):.2f}"
+
         for grp_label, grp_df in [("Local Sovereign", local_rows), ("All Models", df)]:
             if grp_df.empty:
                 continue
             rows_dicts = [r.to_dict() for _, r in grp_df.iterrows()]
-            scores_p1 = [_safe_float(r.get("p1_score", "")) for r in rows_dicts]
-            scores_p1 = [v for v in scores_p1 if v is not None]
-            scores_p2 = [_safe_float(r.get("p2_score", "")) for r in rows_dicts]
-            scores_p2 = [v for v in scores_p2 if v is not None]
-            scores_cs = [_safe_float(r.get("combined_score", "")) for r in rows_dicts]
-            scores_cs = [v for v in scores_cs if v is not None]
-            times = [_safe_float(r.get("total_time_s", "")) for r in rows_dicts]
-            times = [v for v in times if v is not None]
-            tokens = [_safe_int(r.get("total_tokens", 0)) for r in rows_dicts]
+            stats = self._collect_group_stats(rows_dicts)
+            self._render_group_stats_block(lines, grp_label, stats)
 
-            def _stats(lst: list[float]) -> str:
-                if not lst:
-                    return "n/a | n/a | n/a"
-                return f"{sum(lst)/len(lst):.2f} | {min(lst):.2f} | {max(lst):.2f}"
+    def _collect_group_stats(self, rows_dicts: list[dict[str, Any]]) -> dict[str, list[float]]:
+        return {
+            "p1": [v for v in (_safe_float(r.get("p1_score", "")) for r in rows_dicts) if v is not None],
+            "p2": [v for v in (_safe_float(r.get("p2_score", "")) for r in rows_dicts) if v is not None],
+            "cs": [v for v in (_safe_float(r.get("combined_score", "")) for r in rows_dicts) if v is not None],
+            "times": [v for v in (_safe_float(r.get("total_time_s", "")) for r in rows_dicts) if v is not None],
+            "tokens": [_safe_int(r.get("total_tokens", 0)) for r in rows_dicts],
+        }
 
-            lines.append(f"## Performance Overview ({grp_label})")
-            lines.append("| Metric | Avg | Min | Max |")
-            lines.append("|---|---|---|---|")
-            lines.append(f"| P1 Score | {_stats(scores_p1)} |")
-            lines.append(f"| P2 Score | {_stats(scores_p2)} |")
-            lines.append(f"| Combined Score | {_stats(scores_cs)} |")
-            lines.append(f"| Total Time (s) | {_stats(times)} |")
-            avg_tok = int(sum(tokens) / len(tokens)) if tokens else 0
-            lines.append(f"| Total Tokens | {avg_tok} | {min(tokens) if tokens else 0} | {max(tokens) if tokens else 0} |")
-            lines.append("")
+    def _render_group_stats_block(
+        self,
+        lines: list[str],
+        grp_label: str,
+        stats: dict[str, list[float]],
+    ) -> None:
+        def _stats(lst: list[float]) -> str:
+            if not lst:
+                return "n/a | n/a | n/a"
+            return f"{sum(lst)/len(lst):.2f} | {min(lst):.2f} | {max(lst):.2f}"
 
-        # Reliability overview
+        lines.append(f"## Performance Overview ({grp_label})")
+        lines.append("| Metric | Avg | Min | Max |")
+        lines.append("|---|---|---|---|")
+        lines.append(f"| P1 Score | {_stats(stats['p1'])} |")
+        lines.append(f"| P2 Score | {_stats(stats['p2'])} |")
+        lines.append(f"| Combined Score | {_stats(stats['cs'])} |")
+        lines.append(f"| Total Time (s) | {_stats(stats['times'])} |")
+        if stats["tokens"]:
+            avg_tok = int(sum(stats["tokens"]) / len(stats["tokens"]))
+            min_tok = min(stats["tokens"])
+            max_tok = max(stats["tokens"])
+        else:
+            avg_tok = min_tok = max_tok = 0
+        lines.append(f"| Total Tokens | {avg_tok} | {min_tok} | {max_tok} |")
+        lines.append("")
+
+    def _render_reliability_overview(self, lines: list[str], df: pd.DataFrame) -> None:
         total = len(df)
-        valid_count = int(df.get("tool_call_valid", pd.Series()).apply(lambda v: str(v).lower() == "true").sum()) if "tool_call_valid" in df.columns else 0
-        parse_count = int(df.get("retry_required", pd.Series()).apply(lambda v: str(v).lower() == "true").sum()) if "retry_required" in df.columns else 0
-        halluc_count = int(df.get("hallucination_flag", pd.Series()).apply(lambda v: str(v).lower() == "true").sum()) if "hallucination_flag" in df.columns else 0
+        valid_count = self._count_true_in_column(df, "tool_call_valid")
+        parse_count = self._count_true_in_column(df, "retry_required")
+        halluc_count = self._count_true_in_column(df, "hallucination_flag")
 
         lines.append("## Reliability Overview")
         lines.append(f"- Models with valid tool calls: {valid_count}/{total}")
@@ -595,6 +698,17 @@ class ToolUseReportGenerator:
         lines.append(f"- Models with hallucination flag: {halluc_count}/{total}")
         lines.append("")
 
+    def _count_true_in_column(self, df: pd.DataFrame, col: str) -> int:
+        if col not in df.columns:
+            return 0
+        return int(df[col].apply(lambda v: str(v).lower() == "true").sum())
+
+    def _render_methodology_notes_fleet(
+        self,
+        lines: list[str],
+        sorted_df: pd.DataFrame,
+        total: int,
+    ) -> None:
         # Methodology notes — fleet-level summary of triggered annotations
         lines.append("## Methodologische Anmerkungen (Fleet)")
         lines.append("")
@@ -611,7 +725,11 @@ class ToolUseReportGenerator:
             lines.append("_Keine methodologischen Anmerkungen ausgelöst._")
         lines.append("")
 
-        # Deployment recommendations
+    def _render_deployment_recommendations(
+        self,
+        lines: list[str],
+        sorted_df: pd.DataFrame,
+    ) -> None:
         lines.append("## Deployment Recommendations")
         for _, r in sorted_df.iterrows():
             row = r.to_dict()
@@ -619,9 +737,65 @@ class ToolUseReportGenerator:
             rec = _build_deployment_recommendation(row)
             lines.append(f"- **{disp}:** {rec}")
         lines.append("")
+
+    def generate_model_report(self, model_id: str) -> str:
+        """Generate Markdown report string for one model."""
+        df = self.load_leaderboard()
+        if df.empty or "model" not in df.columns:
+            return f"# Tool Use Review — {model_id}\n\nKeine Daten vorhanden.\n"
+
+        matching = df[df["model"] == model_id]
+        if matching.empty:
+            return f"# Tool Use Review — {model_id}\n\nModell nicht im Leaderboard gefunden.\n"
+
+        row = matching.iloc[0].to_dict()
+        asset_details = self.load_asset_details(model_id)
+        metrics = self._extract_model_report_metrics(row)
+
+        lines = self._render_model_report_header(model_id, row, metrics)
+        self._render_score_overview(lines, metrics)
+        self._render_performance_table(lines, metrics, row)
+        self._render_reliability(lines, row)
+        self._render_anomaly_callouts(lines, row, asset_details, metrics)
+        self._render_asset_breakdown(lines, asset_details)
+        self._render_transcripts(lines, asset_details)
+        self._render_assessment(lines, row, asset_details)
+        self._render_methodology_notes(lines, row)
+
+        lines.append("---")
+        lines.append("*CrucibleMark Tool Use Module v1.0 — Statischer Report*")
+        return "\n".join(lines)
+
+    def generate_fleet_summary(self) -> str:
+        """Generate Markdown fleet summary string."""
+        df = self.load_leaderboard()
+        date_str = datetime.now().strftime(self.report_cfg.get("date_format", "%Y-%m-%d"))
+        total_models = len(df)
+
+        lines = [
+            "# CrucibleMark Tool Use — Fleet Summary",
+            f"**Generated:** {date_str} | **Models Evaluated:** {total_models}",
+            "",
+        ]
+
+        if df.empty:
+            lines.append("_Keine Modelle im Leaderboard._")
+            return "\n".join(lines)
+
+        sorted_df = self._sort_leaderboard_by_combined(df)
+        score_labels = self.report_cfg.get("score_labels", {})
+        self._render_leaderboard_table(lines, sorted_df, score_labels)
+
+        local_rows = self._get_local_sovereign_rows(df)
+        gap_data = self._compute_sovereignty_gap(df, local_rows)
+        self._render_sovereignty_gap(lines, gap_data)
+        self._render_performance_stats(lines, df, local_rows)
+        self._render_reliability_overview(lines, df)
+        self._render_methodology_notes_fleet(lines, sorted_df, total_models)
+        self._render_deployment_recommendations(lines, sorted_df)
+
         lines.append("---")
         lines.append("*CrucibleMark Tool Use Module v1.0*")
-
         return "\n".join(lines)
 
     def generate_web_json(self, model_id: str) -> dict[str, Any]:
