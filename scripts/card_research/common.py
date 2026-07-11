@@ -950,3 +950,64 @@ def _stop_mcp_server() -> None:
     except (subprocess.TimeoutExpired, OSError) as exc:
         logger.warning("    ⚠️ MCP-Server stop fehlgeschlagen: %s", exc)
 
+
+def _call_mcp_tool(base_url: str, tool_name: str, params: dict[str, Any]) -> dict[str, Any]:
+    body = json.dumps({
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "tools/call",
+        "params": {
+            "name": tool_name,
+            "arguments": params,
+        },
+    }).encode("utf-8")
+    req = urllib.request.Request(
+        base_url,
+        data=body,
+        method="POST",
+        headers={"Content-Type": "application/json"},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            rpc_response = json.loads(resp.read().decode("utf-8"))
+        if "error" in rpc_response:
+            err = rpc_response["error"]
+            return {"status": "error", "status_code": err.get("code"), "error": err.get("message", "JSON-RPC error")}
+        return rpc_response.get("result", {})
+    except urllib.error.HTTPError as exc:
+        return {"status": "error", "status_code": exc.code, "error": str(exc)}
+    except urllib.error.URLError as exc:
+        return {"status": "error", "status_code": None, "error": str(exc.reason)}
+    except Exception as exc:
+        return {"status": "error", "status_code": None, "error": str(exc)}
+
+
+def _extract_tool_content(transcript: dict[str, Any]) -> str:
+    content_list = transcript.get("content")
+    if content_list and isinstance(content_list, list):
+        for item in content_list:
+            if isinstance(item, dict) and item.get("type") == "text":
+                text = item.get("text", "").strip()
+                if text:
+                    return text
+    results = transcript.get("results")
+    if results and isinstance(results, list):
+        parts = []
+        for r in results:
+            if not isinstance(r, dict):
+                continue
+            title = r.get("title", "")
+            url = r.get("url", "")
+            excerpt = r.get("excerpt") or r.get("content", "")
+            line = "\n".join(filter(None, [title, url, excerpt]))
+            if line.strip():
+                parts.append(line.strip())
+        if parts:
+            return "\n\n".join(parts)
+    excerpt = transcript.get("content_excerpt")
+    if excerpt:
+        return str(excerpt)
+    status = transcript.get("status", "unknown")
+    error = transcript.get("error", "")
+    return f"[Tool status: {status}]" + (f" — {error}" if error else "")
+

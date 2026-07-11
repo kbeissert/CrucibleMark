@@ -37,7 +37,6 @@ ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-from utils.card_template import rebuild_card_index  # noqa: E402
 from utils.card_utils import ensure_card, load_taxonomy  # noqa: E402
 from utils.config_validator import ConfigValidator  # noqa: E402
 from utils.model_utils import _card_path  # noqa: E402
@@ -262,7 +261,6 @@ def main() -> int:  # noqa: C901 — Komplexitaet akzeptabel nach Split in Hilfe
     else:
         logger.info("ℹ️  Keine Pre-Fill-Aenderung noetig (Werte bereits gesetzt).")
 
-    rebuild_card_index("model")
     logger.info("✅ Card erstellt: %s", target_path)
     return 0
 

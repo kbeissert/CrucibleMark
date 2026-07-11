@@ -344,7 +344,9 @@ def _build_row_compass_data(
     pc_row = _lookup_pc_row(pc_id, pc_slug, pc)
     if pc_row is None:
         return None
-    lb_row = ctx["pc_lb_map"].get(pc_id) or ctx["pc_lb_slug_map"].get(pc_slug)
+    lb_row = ctx["pc_lb_map"].get(pc_id)
+    if lb_row is None:
+        lb_row = ctx["pc_lb_slug_map"].get(pc_slug)
     card_id = (card.get("model_id") if card else None) or (raw_model_id if raw_model_id and raw_model_id != "nan" else None)
     return _build_compass_entry(pc_row, lb_row, slug, model_name, model_type, ctx["block_meta"], card_id=card_id)
 

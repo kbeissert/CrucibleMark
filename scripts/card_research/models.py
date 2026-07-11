@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import time
-from dataclasses import field
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -14,6 +14,7 @@ MAX_RETRIES = 3
 RETRY_BACKOFF_BASE = 2.0
 PER_CALL_TIMEOUT_S = 60
 
+@dataclass
 class CardFinding:
     field: str
     severity: str
@@ -22,6 +23,7 @@ class CardFinding:
     suggested: Any = None
 
 
+@dataclass
 class CardCheckReport:
     model_id: str
     card_path: Path
@@ -33,6 +35,7 @@ class CardCheckReport:
     would_write: bool = False
 
 
+@dataclass
 class CardMakeReport:
     model_id: str
     card_path: Path
@@ -45,6 +48,7 @@ class CardMakeReport:
     wrote: bool = False
 
 
+@dataclass
 class RunSummary:
     processed: int = 0
     skipped: int = 0
@@ -54,6 +58,7 @@ class RunSummary:
     research_reports: list[ResearchReport] = field(default_factory=list)
 
 
+@dataclass
 class ResearchReport:
     model_id: str
     card_path: Path
@@ -70,6 +75,7 @@ class ResearchReport:
     backup_path: Path | None = None
 
 
+@dataclass
 class LLMSpec:
     provider_name: str
     model: str

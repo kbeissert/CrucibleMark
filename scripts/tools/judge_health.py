@@ -57,8 +57,6 @@ def _check_provider(
     # Map name to proper model based on config first, then defaults
     if name == config.provider.name:
         cfg_copy.provider.model = config.provider.model
-    elif config.provider.fallback and name == config.provider.fallback.name:
-        cfg_copy.provider.model = config.provider.fallback.model
     elif name == "anthropic":
         from utils.scoring.llm_judge.judge_config import DEFAULT_ANTHROPIC_MODEL
 

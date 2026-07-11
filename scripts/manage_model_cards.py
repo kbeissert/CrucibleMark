@@ -12,8 +12,6 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from scripts.card_research.common import (
-    MAX_RETRIES,
-    PER_CALL_TIMEOUT_S,
     _load_benchmark_config,
     _load_editor_prompt,
     _resolve_llm_spec,
@@ -26,6 +24,8 @@ from scripts.card_research.models import (
     CardMakeReport,
     LLMSession,
     LLMSpec,
+    MAX_RETRIES,
+    PER_CALL_TIMEOUT_S,
     ResearchReport,
     RunSummary,
 )
