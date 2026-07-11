@@ -12,19 +12,21 @@ to know what reference files exist.
 ---
 
 # Active Context
-## Aktueller Status (2026-07-11, Session 59 — ensure_card_structure Duplicate-Fix)
+## Aktueller Status (2026-07-11, Session 59 — v4.10.18 committed)
 
-- **Abgeschlossen:** `ensure_card_structure.py` Duplicate-Base-Card-Fix — `run_for_card()` reicht `card_path` an `ensure_card()` durch (in-place statt Neu-Erstellung), `--model`-Modus via `_find_card()` vereinheitlicht, Filename-Fallback stript Provider-Shortcodes. 7 Regression-Tests neu, 1316 passed/0 failed, ruff clean. **Uncommitted.**
-- **v4.10.17 (DONE, committed `933d33d`):** Web-Export Datenqualitäts-Fixes, Vendor-Taxonomy, Dead-Code-Bug, variantenbewusster `display_name`, Framework-Refactoring-Plan.
+- **v4.10.18 (DONE, committed):** Framework-Refactoring (Sektion A–M) — `model_utils` in 7 Submodule + Bridge, `web_export.py`→Package, Helper-SSoT, `yaml.safe_load`→`ConfigValidator`, 131 `print`→`logging`, C901/Ruff 0-Violations, 27 Legacy-Skripte verschoben. Bugfix: `ensure_card_structure` Duplicate-Base-Cards. Web LCL-Duplikation via `is_local_provider`-Macro. Doku-Sync auf Package-Struktur. Verhaltenserhaltend.
+- **v4.10.17 (DONE, committed):** Web-Export Datenqualitäts-Fixes, Vendor-Taxonomy, variantenbewusster `display_name`.
 
 ### Aktueller Zustand
-- **Working Tree:** `scripts/dev/ensure_card_structure.py` modifiziert + `tests/test_ensure_card_structure.py` neu (uncommitted). Keine JSON-Dateien in `model_cards/` verändert.
-- **Version:** v4.10.17 — Production-Ready.
+- **Working Tree:** clean. Docs-Sync committed (`57147cdb`). Memory-Bank-Update committed.
+- **Version:** v4.10.18 — Production-Ready. 24 Commits seit v4.10.17.
+- **Tests:** 1316 passed, 21 skipped, 0 failed. Ruff: 0 Violations.
 - **Export-Stats:** 88 Modelle, 23 blacklisted, 9 Score-Keys, 0 Vendor-Warnungen.
+- **Branch:** 25 Commits ahead of `origin/main` (unpushed).
 
 ### Offen/Risiko
-- 7 vLLM + 2 SPRK Modelle ohne Political Compass (Nutzer fügt vLLM-Compass hinzu).
-- Web-Projekt: LCL-Code-Duplikation in 3 Templates (Suggestion: `is_local_code()`-Macro extrahieren).
+- 7 vLLM + 2 SPRK Modelle ohne Political Compass (Nutzer-Aktion — vLLM-Compass-Daten erfassen, nicht code-seitig lösbar).
+- Branch ist 25 Commits ahead of `origin/main` — Push ausstehend.
 
 ### Nächster Schritt
-- ensure_card_structure-Fix committen. Framework-Refactoring bei Bedarf starten.
+- Kein offener Dev-Auftrag. Political-Compass-Daten für vLLM durch Nutzer erfassen. Push nach `origin/main` bei Freigabe.

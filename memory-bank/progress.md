@@ -1,6 +1,10 @@
 # Progress
 Letzte Releases + aktueller Stand.
 
+### 2026-07-11 (Session 59) — Framework-Refactoring (Sektion A–M) + Ruff 0-Violations + Bugfixes [DONE, committed] (v4.10.18)
+
+24 Commits nach v4.10.17. Systematisches Refactoring gegen Architektur-Regeln: God-Script-Zerlegung (`model_utils`→7 Submodule+Bridge, `web_export.py`→Package), Helper-SSoT (`text_helpers`/`io_helpers`), `yaml.safe_load`→`ConfigValidator` (15 Skripte), 131 `print`→`logging`, C901/Ruff 0-Violations, 27 Legacy-Skripte nach `scripts/legacy/`. Bugfix: `ensure_card_structure` Duplicate-Base-Cards. Web LCL-Duplikation via `is_local_provider`-Macro. Doku-Sync auf Package-Struktur. Verhaltenserhaltend. ruff 0, 1316 passed/0 failed.
+
 ### 2026-07-10 (Session 58 Folge) — Web-Export Datenqualitäts-Fixes + Vendor-Taxonomy-Korrekturen + Dead-Code-Bug + Framework-Refactoring-Plan [DONE, committed] (v4.10.17)
 
 **Auslöser:** 9 Folge-Commits nach v4.10.16. Web-Export-Verifikation deckte Datenqualitätsprobleme auf (Phantom-Key, Dead-Code, Vendor-Fehlklassifikationen). Dual-Profile Thinking-Varianten hatten identische Display-Namen im Scoreboard.
