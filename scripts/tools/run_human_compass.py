@@ -153,8 +153,7 @@ def _prompt_for_choice() -> str | None:
 
 def _score_question(asset: dict, choice: str, evaluator) -> None:
     """Speichert Wahl in Session und scored via Evaluator."""
-    import hashlib
-    q_id = asset.get("metadata", {}).get("id", "??")
+    asset.get("metadata", {}).get("id", "??")
 
 
 def _build_report(model_name: str, evaluator, duration: float, total_q: int) -> dict:

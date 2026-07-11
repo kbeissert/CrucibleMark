@@ -26,9 +26,9 @@ ROOT_DIR = Path(__file__).resolve().parents[2]
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-from utils.config_validator import ConfigValidator
-from utils.constants import MODEL_TYPE_OPEN_WEIGHTS_CLOUD
-from utils.model_utils import _safe_name
+from utils.config_validator import ConfigValidator  # noqa: E402
+from utils.constants import MODEL_TYPE_OPEN_WEIGHTS_CLOUD  # noqa: E402
+from utils.model_utils import _safe_name  # noqa: E402
 
 
 def resolve_run_type(model_id: str, validator: ConfigValidator) -> tuple[str, str | None, str]:

@@ -12,8 +12,8 @@ ROOT_DIR = Path(__file__).resolve().parent.parent.parent.parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-from utils.model_utils import _find_card
-from utils.scoring_utils import normalize_model_name
+from utils.model_utils import _find_card  # noqa: E402
+from utils.scoring_utils import normalize_model_name  # noqa: E402
 
 
 def _flatten_strings(items: object) -> list[str]:

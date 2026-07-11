@@ -99,7 +99,7 @@ class ConfigValidator:
         mit abweichender Semantik — eine automatische Expansion würde dort
         fehlerhafte Einträge erzeugen.
         """
-        for section_key, section in providers.items():
+        for _section_key, section in providers.items():
             if not isinstance(section, dict):
                 continue
             for prov_key, prov_cfg in section.items():

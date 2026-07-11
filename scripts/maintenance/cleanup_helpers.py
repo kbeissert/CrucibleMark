@@ -102,7 +102,7 @@ def canonicalize_run_grouping(files: list[Path]) -> dict[str, list[Path]]:
         grouped.setdefault(canon, []).append(f)
 
     # Innerhalb jeder Gruppe nach mtime sortieren (neueste zuerst)
-    for canon, paths in grouped.items():
+    for _, paths in grouped.items():
         paths.sort(key=lambda p: p.stat().st_mtime, reverse=True)
     return grouped
 

@@ -72,9 +72,11 @@ def normalize_pending(val: Any) -> float | str | None:
     das sollte nicht passieren, da nicht-numerische Strings in Score-Spalten
     ein CSV-Datenproblem sind.
     """
-    if pd.isna(val): return None
+    if pd.isna(val):
+        return None
     val_str = str(val).strip()
-    if val_str in _PENDING_SENTINELS: return None
+    if val_str in _PENDING_SENTINELS:
+        return None
     try:
         f = float(val)
         return None if math.isnan(f) else f
@@ -87,9 +89,11 @@ def parse_compact_number(val: Any) -> float | int | None:
     Liefert immer eine Zahl — nie einen String. Das ist Vertrags-Pflicht fuer den
     Web-Export: Formatierung gehoert in die Darstellungsschicht, nicht ins JSON.
     """
-    if pd.isna(val): return None
+    if pd.isna(val):
+        return None
     val_str = str(val).strip()
-    if val_str in ("Pending", "—", ""): return None
+    if val_str in ("Pending", "—", ""):
+        return None
     multiplier = 1
     upper = val_str.upper()
     if upper.endswith("K"):
@@ -100,7 +104,8 @@ def parse_compact_number(val: Any) -> float | int | None:
         val_str = val_str[:-1]
     try:
         f = float(val_str) * multiplier
-        if math.isnan(f): return None
+        if math.isnan(f):
+            return None
         return int(f) if f == int(f) else f
     except (ValueError, TypeError):
         return None
@@ -108,9 +113,11 @@ def parse_compact_number(val: Any) -> float | int | None:
 
 def parse_percent(val: Any) -> float | None:
     """Parst Prozent-Strings (z.B. '100%' → 100.0) zu Zahlen."""
-    if pd.isna(val): return None
+    if pd.isna(val):
+        return None
     val_str = str(val).strip().rstrip("%")
-    if val_str in ("Pending", "—", ""): return None
+    if val_str in ("Pending", "—", ""):
+        return None
     try:
         f = float(val_str)
         return None if math.isnan(f) else f
@@ -120,9 +127,11 @@ def parse_percent(val: Any) -> float | None:
 
 def parse_int(val: Any) -> int | None:
     """Parst Ganzzahlen — liefert int, nie float (z.B. Timeout Count)."""
-    if pd.isna(val): return None
+    if pd.isna(val):
+        return None
     val_str = str(val).strip()
-    if val_str in ("Pending", "—", ""): return None
+    if val_str in ("Pending", "—", ""):
+        return None
     try:
         return int(float(val_str))
     except (ValueError, TypeError):
@@ -131,9 +140,11 @@ def parse_int(val: Any) -> int | None:
 
 def parse_star_float(val) -> float | None:
     """Parst '4.0 ★' oder '3.8 ★' zu einem float. Gibt None bei fehlenden Werten zurueck."""
-    if pd.isna(val): return None
+    if pd.isna(val):
+        return None
     val_str = str(val).strip().replace('★', '').strip()
-    if val_str in ("Pending", "—", ""): return None
+    if val_str in ("Pending", "—", ""):
+        return None
     try:
         f = float(val_str)
         return None if math.isnan(f) else f
@@ -142,13 +153,15 @@ def parse_star_float(val) -> float | None:
 
 
 def extract_badge_tier(val) -> str | None:
-    if pd.isna(val) or not str(val).strip(): return None
+    if pd.isna(val) or not str(val).strip():
+        return None
     val_str = str(val).strip()
     return val_str.rsplit(' ', maxsplit=1)[-1] if ' ' in val_str else val_str
 
 
 def extract_version(val) -> str | None:
-    if pd.isna(val): return None
+    if pd.isna(val):
+        return None
     v = str(val).strip()
     return None if not v or v == "unknown" else v
 

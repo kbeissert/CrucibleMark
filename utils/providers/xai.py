@@ -4,6 +4,7 @@ Getrennte Implementierungen für Ollama, Anthropic, Mistral
 """
 import logging
 from typing import Any
+from utils.providers.base import BaseProviderClient
 # Optional Provider Imports
 try:
     pass
@@ -24,10 +25,6 @@ except ImportError:
 # Configure logging
 logger = logging.getLogger(__name__)
 
-# Configure logging
-logger = logging.getLogger(__name__)
-
-from utils.providers.base import BaseProviderClient
 class XAIClient(BaseProviderClient):
     """XAI Provider Client"""
     PROVIDER_NAMES = ["xai"]

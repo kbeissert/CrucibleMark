@@ -5,6 +5,7 @@ OpenAI-compatible endpoint — https://openrouter.ai/api/v1
 
 import logging
 from typing import Any
+from utils.providers.base import BaseProviderClient
 
 # Optional Provider Imports
 try:
@@ -25,8 +26,6 @@ _OPENROUTER_ID_ALIASES: dict[str, str] = {
     "z-ai/glm_4_7": "z-ai/glm-4.7",
     "z-ai/glm_4_6": "z-ai/glm-4.6",
 }
-
-from utils.providers.base import BaseProviderClient
 
 
 class OpenRouterClient(BaseProviderClient):

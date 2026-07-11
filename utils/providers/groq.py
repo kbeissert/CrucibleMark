@@ -5,6 +5,7 @@ Ollama / OpenAI compatible endpoint
 
 import logging
 from typing import Any
+from utils.providers.base import BaseProviderClient
 
 # Optional Provider Imports
 try:
@@ -14,8 +15,6 @@ except ImportError:
 
 # Configure logging
 logger = logging.getLogger(__name__)
-
-from utils.providers.base import BaseProviderClient
 
 
 class GroqClient(BaseProviderClient):

@@ -1,4 +1,3 @@
-from utils.constants import MS_PER_SECOND
 """
 OpenAI provider for the LLM Judge.
 Uses the official openai Python SDK.
@@ -6,17 +5,17 @@ Auth: OPENAI_API_KEY environment variable.
 """
 
 import logging
+import contextlib
 import time
 from typing import Any
 
+from utils.constants import MS_PER_SECOND
 from .base_provider import JudgeProviderResponse, LLMJudgeProvider
 
 # Optional import guard: declared before try-block as per project convention
 openai_module: Any | None = None
-try:
+with contextlib.suppress(ImportError):
     import openai as openai_module  # type: ignore[no-redef]
-except ImportError:
-    pass
 
 logger = logging.getLogger(__name__)
 

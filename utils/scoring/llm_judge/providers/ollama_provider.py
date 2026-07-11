@@ -8,6 +8,7 @@ from utils.constants import DEFAULT_UNLOAD_DELAY_MS
 from utils.constants import MS_PER_SECOND
 
 import logging
+import contextlib
 import time
 from typing import Any
 
@@ -16,10 +17,8 @@ from .base_provider import JudgeProviderResponse, LLMJudgeProvider
 
 # Optional import guard: declared before try-block as per project convention
 requests_module: Any | None = None
-try:
+with contextlib.suppress(ImportError):
     import requests as requests_module  # type: ignore[no-redef]
-except ImportError:
-    pass
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +78,8 @@ class OllamaProvider(LLMJudgeProvider):
         }
         url = self._base_url + _CHAT_ENDPOINT
         start = time.monotonic()
-        assert requests_module is not None; response = requests_module.post(url, json=payload, timeout=self._timeout)
+        assert requests_module is not None
+        response = requests_module.post(url, json=payload, timeout=self._timeout)
         response.raise_for_status()
         latency_ms = (time.monotonic() - start) * MS_PER_SECOND
         data = response.json()

@@ -28,6 +28,7 @@ Usage
 from __future__ import annotations
 
 import argparse
+import contextlib
 import csv
 import json
 import logging
@@ -39,7 +40,7 @@ ROOT_DIR = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(ROOT_DIR))
 
 from utils.model_utils import _find_card, resolve_canonical_model_id  # noqa: E402
-from datetime import UTC
+from datetime import UTC  # noqa: E402
 
 logging.basicConfig(
     level=logging.INFO,
@@ -118,16 +119,12 @@ def _apply_tooluse_update(card: dict, model_id: str, row: dict, has_p1_data: boo
     entry["tested_at"] = now_iso
     if has_p1_data:
         p1_str = row.get("p1_score", "")
-        try:
+        with contextlib.suppress(ValueError, TypeError):
             entry["score_p1"] = round(float(p1_str), 2)
-        except (ValueError, TypeError):
-            pass
         p2_str = row.get("p2_score", "")
         if p2_str not in ("", "nan", "None"):
-            try:
+            with contextlib.suppress(ValueError, TypeError):
                 entry["score_p2"] = round(float(p2_str), 2)
-            except (ValueError, TypeError):
-                pass
     tooluse_runs[model_id] = entry
     if tooluse_runs:
         card["tooluse_runs"] = tooluse_runs

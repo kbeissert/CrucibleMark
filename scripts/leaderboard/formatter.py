@@ -173,10 +173,7 @@ def format_speed_profile(row: pd.Series) -> str:
     tier_name = parts[1] if len(parts) > 1 else ""
 
     # Construct Base Profile
-    if tier_name and role:
-        profile = f"{emoji} {tier_name} {role}"
-    else:
-        profile = f"{tier_raw} {role}".strip()
+    profile = f"{emoji} {tier_name} {role}" if tier_name and role else f"{tier_raw} {role}".strip()
 
     # Add Stability Warning (v3.1 Category-Aware Variance)
     try:

@@ -12,8 +12,8 @@ ROOT_DIR = Path(__file__).resolve().parent.parent.parent.parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-from utils.constants import TOKEN_VERBOSITY_BUDGET_MULTIPLIER
-from utils.scoring_utils import normalize_model_name
+from utils.constants import TOKEN_VERBOSITY_BUDGET_MULTIPLIER  # noqa: E402
+from utils.scoring_utils import normalize_model_name  # noqa: E402
 
 # Maps asset_id prefixes to module config keys.
 # '__exempt__' means the module has no token budget (excluded from overhead analysis).

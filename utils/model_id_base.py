@@ -291,7 +291,7 @@ def find_model_in_provider_cfg(
     for entry in provider_cfg.get("models", []):
         if isinstance(entry, dict):
             entry_id = entry.get("id", "")
-            if entry_id == model_id or entry_id == config_form:
+            if entry_id in (model_id, config_form):
                 return entry
     return None
 
@@ -403,10 +403,7 @@ def is_cloud_model(model_name: str, size_gb: float | None = None) -> bool:
         return True
 
     # Rule 3: Size-based heuristic (proxy models have minimal/no local storage)
-    if size_gb is not None and size_gb < 0.01:
-        return True
-
-    return False
+    return bool(size_gb is not None and size_gb < 0.01)
 
 
 def _load_provider_sources() -> list[dict]:
@@ -452,7 +449,7 @@ def _lookup_model_in_section(
         for _m in _prov_cfg.get("models", []):
             if isinstance(_m, dict):
                 _m_id = _m.get("id", "")
-                if _m_id == model_name or _m_id == config_form:
+                if _m_id in (model_name, config_form):
                     return _prov_key, model_name
     return None
 

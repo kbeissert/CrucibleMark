@@ -92,9 +92,8 @@ def _detailed_apply_display_mutations(df_export: pd.DataFrame) -> pd.DataFrame:
     if "thinking_mode" in df_export.columns and "Thinking Mode" not in df_export.columns:
         df_export = df_export.rename(columns={"thinking_mode": "Thinking Mode"})
 
-    if "Overall Score" in df_export.columns:
-        if "Total Score" not in df_export.columns:
-            df_export = df_export.rename(columns={"Overall Score": "Total Score"})
+    if "Overall Score" in df_export.columns and "Total Score" not in df_export.columns:
+        df_export = df_export.rename(columns={"Overall Score": "Total Score"})
 
     # Expose raw model ID as SSOT for downstream tools (web_export, dir lookups)
     if "model" in df_export.columns:

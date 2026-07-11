@@ -8,9 +8,11 @@ for f in files:
             reader = csv.DictReader(csvf)
             for row in reader:
                 model = row.get('model', row.get('model_name'))
-                if not model: continue
+                if not model:
+                    continue
                 version = row.get('model_version', 'k.A.')
-                if not version: version = 'k.A.'
+                if not version:
+                    version = 'k.A.'
                 if model not in model_versions:
                     model_versions[model] = set()
                 model_versions[model].add(version)

@@ -7,6 +7,7 @@ from typing import Any
 from collections.abc import Callable
 from utils.ollama_config import CODING_BENCHMARK_OPTIONS, CREATIVE_BENCHMARK_OPTIONS, get_num_ctx_for_model
 from utils.model_utils import is_reasoning_model
+from utils.providers.base import BaseProviderClient
 # Optional Provider Imports
 try:
     import ollama
@@ -26,7 +27,6 @@ except ImportError:
     OpenAI = None
 # Configure logging
 logger = logging.getLogger(__name__)
-from utils.providers.base import BaseProviderClient
 class OllamaClient(BaseProviderClient):
     """Ollama Provider Client"""
     PROVIDER_NAMES = ["ollama", "ollama_local", "ollama_cloud"]

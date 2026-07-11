@@ -7,7 +7,7 @@ def _collect_target_files() -> tuple[list[str], list[str]]:
     files_to_check_md: list[str] = []
     files_to_check_yaml: list[str] = []
 
-    for root, dirs, files in os.walk('.'):
+    for root, _dirs, files in os.walk('.'):
         if '.venv' in root or '.git' in root or 'node_modules' in root:
             continue
         for f in files:
@@ -15,9 +15,8 @@ def _collect_target_files() -> tuple[list[str], list[str]]:
             if f.endswith('.md'):
                 if root.startswith('./memory-bank') or root.startswith('./docs') or root.startswith('./.github') or (root == '.' and f in ['README.md', 'CHANGELOG.md']):
                     files_to_check_md.append(path)
-            elif f.endswith('.yaml') or f.endswith('.yml'):
-                if 'config' in f or 'asset' in f or 'prompt' in f:
-                    files_to_check_yaml.append(path)
+            elif (f.endswith('.yaml') or f.endswith('.yml')) and ('config' in f or 'asset' in f or 'prompt' in f):
+                files_to_check_yaml.append(path)
 
     files_to_check_md.sort()
     files_to_check_yaml.sort()
@@ -118,9 +117,8 @@ def _scan_md_code_and_links(path: str, lines: list[str], add_finding) -> bool:
 
         _check_heading_hierarchy(path, line, line_no, i, lines, last_lvl, add_finding)
 
-        if line.endswith(' ') or line.endswith('\t'):
-            if line.strip() != '' and not line.endswith('  '):
-                add_finding(path, "FORMATIERUNG", line_no, "Trailing Whitespace")
+        if (line.endswith(' ') or line.endswith('\t')) and line.strip() != '' and not line.endswith('  '):
+            add_finding(path, "FORMATIERUNG", line_no, "Trailing Whitespace")
 
         if "konfiguartion" in line.lower():
             add_finding(path, "TYPO", line_no, "Rechtschreibfehler: Konfiguartion")
@@ -216,9 +214,8 @@ def _scan_target_scalar_body(
                 new_lines.append('\n')
                 state["needs_fix"] = True
 
-    if not state["in_code_block_yaml"] and re.match(r'^\s*#{1,3}\s', line):
-        if len(new_lines) > 0 and new_lines[-1].strip() != '':
-            add_finding(path, "FORMATIERUNG", line_no, f"Fehlende Leerzeile vor Heading in '{current_field}'", is_yaml=True)
+    if not state["in_code_block_yaml"] and re.match(r'^\s*#{1,3}\s', line) and len(new_lines) > 0 and new_lines[-1].strip() != '':
+        add_finding(path, "FORMATIERUNG", line_no, f"Fehlende Leerzeile vor Heading in '{current_field}'", is_yaml=True)
 
 
 def _scan_yaml_scalar_block(

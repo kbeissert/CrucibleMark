@@ -1,4 +1,3 @@
-from utils.constants import MS_PER_SECOND
 """
 Anthropic provider for the LLM Judge.
 Uses the official anthropic Python SDK.
@@ -6,10 +5,12 @@ Auth: ANTHROPIC_API_KEY environment variable.
 """
 
 import logging
+import contextlib
 import os
 import time
 from typing import Any
 
+from utils.constants import MS_PER_SECOND
 from .base_provider import JudgeProviderResponse, LLMJudgeProvider
 
 _TRANSIENT_STATUS_CODES = frozenset({408, 409, 429, 500, 502, 503, 504, 529})
@@ -36,10 +37,8 @@ def _is_transient_error(exc: BaseException) -> bool:
 
 # Optional import guard: declared before try-block as per project convention
 anthropic_module: Any | None = None
-try:
+with contextlib.suppress(ImportError):
     import anthropic as anthropic_module  # type: ignore[no-redef]
-except ImportError:
-    pass
 
 logger = logging.getLogger(__name__)
 

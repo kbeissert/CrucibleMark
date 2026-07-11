@@ -203,9 +203,7 @@ def _is_card_file(path: Path) -> bool:
     if path.stem.startswith("_"):
         return False
     # Bekannte Müll-Filenames (z.B. versehentlich gespeicherte Boolean-Werte)
-    if path.stem in {"True", "False", "null", "None"}:
-        return False
-    return True
+    return path.stem not in {"True", "False", "null", "None"}
 
 
 def format_text_report(reports: list[CardReport], card_type: str) -> str:

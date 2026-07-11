@@ -26,13 +26,13 @@ except ImportError as exc:
     print(f"ERROR: 'pyyaml' not installed. Run: pip install pyyaml\n{exc}")
     sys.exit(1)
 
-from utils.config_validator import ConfigValidator
-from utils.scoring.llm_judge.judge_config import (
+from utils.config_validator import ConfigValidator  # noqa: E402
+from utils.scoring.llm_judge.judge_config import (  # noqa: E402
     DEFAULT_OLLAMA_BASE_URL,
     LLMJudgeConfig,
     ProviderName,
 )
-from utils.scoring.llm_judge.judge_runner import _build_provider
+from utils.scoring.llm_judge.judge_runner import _build_provider  # noqa: E402
 
 logging.basicConfig(level=logging.WARNING, format="%(message)s")
 

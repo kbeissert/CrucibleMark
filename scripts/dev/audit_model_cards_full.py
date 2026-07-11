@@ -28,7 +28,7 @@ _PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
-import yaml
+import yaml  # noqa: E402
 
 logger = logging.getLogger(__name__)
 
@@ -78,8 +78,7 @@ def _check_required_fields(data: dict, add) -> None:
             continue
         if value is None and spec.get("default") == "TODO":
             continue
-        if expected_type and expected_type != "null":
-            if not _check_type(value, expected_type):
+        if expected_type and expected_type != "null" and not _check_type(value, expected_type):
                 add("CRITICAL", "WRONG_TYPE",
                     f"Feld '{field_name}' hat falschen Typ: erwartet {expected_type}, "
                     f"erhalten {type(value).__name__}",

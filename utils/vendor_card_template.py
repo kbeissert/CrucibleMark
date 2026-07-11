@@ -289,9 +289,7 @@ def _is_deployment_field_unknown(card: dict[str, Any], field: str) -> bool:
         return True
     if field == "data_retention_days" and value == -1:
         return True
-    if field == "chinese_nsl_risk" and value == "unknown":
-        return True
-    return False
+    return bool(field == "chinese_nsl_risk" and value == "unknown")
 
 
 def get_vendor_card_status(stale_days: int = 90) -> dict[str, Any]:

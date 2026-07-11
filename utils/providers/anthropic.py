@@ -8,6 +8,7 @@ from typing import Any
 from collections.abc import Callable
 from utils.constants import TIMEOUT_ANTHROPIC_API, ANTHROPIC_NO_TEMPERATURE_MODELS
 from utils.env_utils import get_required_env
+from utils.providers.base import BaseProviderClient
 # Optional Provider Imports
 try:
     pass
@@ -27,7 +28,6 @@ except ImportError:
     OpenAI = None
 # Configure logging
 logger = logging.getLogger(__name__)
-from utils.providers.base import BaseProviderClient
 class AnthropicClient(BaseProviderClient):
     """Anthropic Claude Provider Client"""
     PROVIDER_NAMES = ["anthropic"]
@@ -236,9 +236,8 @@ class AnthropicClient(BaseProviderClient):
     def _apply_anthropic_block_start(self, event: Any, state: dict[str, Any]) -> None:
         """Initialisiert Thinking-Content aus einem content_block_start Event."""
         block = event.content_block
-        if getattr(block, "type", None) == "thinking":
-            if hasattr(block, "thinking") and block.thinking:
-                state["think"].add(block.thinking)
+        if getattr(block, "type", None) == "thinking" and hasattr(block, "thinking") and block.thinking:
+            state["think"].add(block.thinking)
 
     def _apply_anthropic_block_delta(
         self, event: Any, state: dict[str, Any], stream_handler: Any,
@@ -250,11 +249,10 @@ class AnthropicClient(BaseProviderClient):
                 state["think"].add(delta.thinking)
                 if stream_handler:
                     stream_handler(delta.thinking)
-        elif hasattr(delta, "type") and delta.type == "input_delta":
-            if hasattr(delta, "partial_json") and delta.partial_json:
-                state["full_content"] += delta.partial_json
-                if stream_handler:
-                    stream_handler(delta.partial_json)
+        elif hasattr(delta, "type") and delta.type == "input_delta" and hasattr(delta, "partial_json") and delta.partial_json:
+            state["full_content"] += delta.partial_json
+            if stream_handler:
+                stream_handler(delta.partial_json)
 
     def _apply_anthropic_message_delta(self, event: Any, state: dict[str, Any]) -> None:
         """Übernimmt stop_reason/usage aus einem message_delta Event."""
@@ -268,7 +266,7 @@ class AnthropicClient(BaseProviderClient):
         """Ermittle tatsächliche max_tokens und ob Fallback ausgelöst wurde."""
         if not usage:
             return initial, False
-        output = getattr(usage, "output_tokens", 0) or 0
+        getattr(usage, "output_tokens", 0) or 0
         # Fallback: wenn output_tokens < initial, aber kein explizites Fallback-Signal
         return initial, False
     def get_available_models(self) -> list[str]:

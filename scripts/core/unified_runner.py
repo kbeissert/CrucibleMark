@@ -218,10 +218,7 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
             and isinstance(model_cfg.get("card_model_id"), str)
             and bool(model_cfg["card_model_id"])
         )
-        if _is_dual_profile:
-            canonical_model = model
-        else:
-            canonical_model = loaded.get("model_id") or model
+        canonical_model = model if _is_dual_profile else loaded.get("model_id") or model
         # Pitfall-Diagnose 2026-06-10: Draft-Cards aus ensure_card() haben
         # ``thinking_probe_detected: null`` (explizit auf None gesetzt), nicht
         # "Feld fehlt komplett". ``not in loaded`` würde das übersehen und

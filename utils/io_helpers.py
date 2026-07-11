@@ -14,6 +14,7 @@ import shutil
 import tempfile
 from pathlib import Path
 from typing import Any
+import contextlib
 
 logger = logging.getLogger(__name__)
 
@@ -46,10 +47,8 @@ def atomic_write_json(
             f.write("\n")
         os.replace(tmp_path, path)
     except Exception:
-        try:
+        with contextlib.suppress(OSError):
             os.unlink(tmp_path)
-        except OSError:
-            pass
         raise
 
 
@@ -77,10 +76,8 @@ def atomic_write_text(
             f.write(content)
         os.replace(tmp_path, path)
     except Exception:
-        try:
+        with contextlib.suppress(OSError):
             os.unlink(tmp_path)
-        except OSError:
-            pass
         raise
 
 
@@ -105,8 +102,6 @@ def atomic_copy(src: Path, dst: Path) -> None:
         os.replace(tmp_path, dst)
         shutil.copymode(src, dst)
     except Exception:
-        try:
+        with contextlib.suppress(OSError):
             os.unlink(tmp_path)
-        except OSError:
-            pass
         raise

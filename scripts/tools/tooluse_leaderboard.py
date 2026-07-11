@@ -11,8 +11,8 @@ _ROOT = Path(__file__).resolve().parents[2]
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
-from scripts.core.tooluse_exporter import ToolUseExporter
-from utils.config_validator import ConfigValidator
+from scripts.core.tooluse_exporter import ToolUseExporter  # noqa: E402
+from utils.config_validator import ConfigValidator  # noqa: E402
 
 
 def main() -> None:

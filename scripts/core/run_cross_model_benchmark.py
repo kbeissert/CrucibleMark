@@ -287,7 +287,7 @@ def gather_models(category: str) -> list[tuple[str, str, str]]:
         config = ConfigValidator("benchmark_config.yaml").config
     except Exception as e:
         logger.error("Fehler beim Laden der Konfiguration: %s", e)
-        return []  
+        return []
 
     commercial = []
     open_weight_cloud = []

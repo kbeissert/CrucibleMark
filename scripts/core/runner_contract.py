@@ -67,8 +67,7 @@ def update_leaderboard(root_dir: Path | None = None) -> bool:
             [sys.executable, LEADERBOARD_GENERATOR],
             cwd=str(cwd),
             check=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            capture_output=True,
             text=True,
         )
     except (OSError, subprocess.SubprocessError) as exc:

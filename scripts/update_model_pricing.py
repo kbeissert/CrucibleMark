@@ -13,6 +13,7 @@ import json
 import logging
 from pathlib import Path
 from datetime import datetime
+import sys
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 logger = logging.getLogger(__name__)
@@ -106,7 +107,7 @@ def find_matching_price(model_id: str) -> dict | None:
 
 def update_pricing(cards_dir: Path) -> tuple[int, int, int]:
     """Aktualisiert Preise in allen Modellkarten.
-    
+
     Returns:
         (updated_count, skipped_count, error_count)
     """
@@ -164,7 +165,7 @@ if __name__ == "__main__":
 
     if not cards_dir.exists():
         logger.error(f"Verzeichnis nicht gefunden: {cards_dir}")
-        exit(1)
+        sys.exit(1)
 
     logger.info("🔄 Aktualisiere Modellkarten-Preise...")
     logger.info(f"📂 Quelle: {cards_dir}")
@@ -183,4 +184,4 @@ if __name__ == "__main__":
     else:
         logger.info("\n⚠️  Keine Preisänderungen vorgenommen.")
 
-    exit(0 if errors == 0 else 1)
+    sys.exit(0 if errors == 0 else 1)

@@ -33,6 +33,7 @@ ignore = [
     "PLR0904", # too-many-public-methods — Mixin-Pattern nicht bestrafen
     "B008",    # do-not-perform-function-call-in-argument-defaults (pydantic etc.)
     "B904",    # raise-without-from-inside-except — historisch, in Cleanup-Phase
+    "PLR2004", # magic-value-comparison — Benchmark-Framework mit vielen numerischen Vergleichen (HTTP-Status, Thresholds, Längen)
 ]
 
 # Komplexitätslimit pro Funktion (Mccabe)

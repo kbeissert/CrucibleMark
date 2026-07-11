@@ -38,7 +38,7 @@ def get_anomalies(threshold=1.0, provider_filter=None, model_id=None):
 
             if model_id and model_name != model_id:
                 continue
-            if provider_filter and provider_filter != "all" and row_provider != provider_filter:
+            if provider_filter and provider_filter not in ("all", row_provider):
                 continue
 
             model_files.setdefault(model_name, []).append((json_file.stat().st_mtime, data))

@@ -101,7 +101,7 @@ def _collect_card_ids() -> list[str]:
 # einen Buchstaben enthalten UND typische Modell-Namensmuster (Bindestrich,
 # Doppelpunkt, Slash oder Punkt in einer Versionsnummer) tragen. Sonst
 # handelt es sich um numerische Felder (z. B. token-Werte, scores, max-Werte).
-import re
+import re  # noqa: E402
 
 _MODEL_ID_HEURISTIC = re.compile(r"[A-Za-z]")
 # Mindestens eines dieser Trennzeichen (typisch fuer Modellnamen):
@@ -118,9 +118,7 @@ def _looks_like_model_id(value: str) -> bool:
         return False
     if not _MODEL_ID_HEURISTIC.search(value):
         return False
-    if not _MODEL_ID_SEPARATORS.search(value):
-        return False
-    return True
+    return _MODEL_ID_SEPARATORS.search(value)
 
 
 def _collect_csv_ids() -> list[tuple[str, str]]:

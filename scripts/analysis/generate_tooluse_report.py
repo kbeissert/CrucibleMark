@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+import contextlib
 import csv
 import json
 import logging
@@ -189,10 +190,8 @@ class ToolUseReportGenerator:
                         data_dict: dict[str, Any] = {}
                         raw = row.get("score_contributions", "")
                         if raw:
-                            try:
+                            with contextlib.suppress(ValueError, SyntaxError):
                                 data_dict = ast.literal_eval(raw)
-                            except (ValueError, SyntaxError):
-                                pass
                         results.append({
                             "asset_id": row.get("asset_id", ""),
                             "asset_name": row.get("asset_name", ""),

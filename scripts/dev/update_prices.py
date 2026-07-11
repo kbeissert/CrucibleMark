@@ -14,7 +14,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
-from utils.pricing_updater import PricingUpdater, CACHE_PATH
+from utils.pricing_updater import PricingUpdater, CACHE_PATH  # noqa: E402
 
 p = PricingUpdater()
 

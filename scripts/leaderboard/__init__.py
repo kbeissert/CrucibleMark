@@ -15,7 +15,6 @@ Usage:
 """
 
 from pathlib import Path
-from typing import Optional
 
 import pandas as pd
 import re
@@ -263,7 +262,7 @@ def _format_version_column(leaderboard: pd.DataFrame) -> pd.DataFrame:
 
         base_name = str(row.get("model", ""))
         canonical_name = _resolve_to_canonical_id(base_name)
-        if version == base_name or version == canonical_name:
+        if version in (base_name, canonical_name):
             version = "k.A."
 
         model_type = str(row.get("type", row.get("Type", ""))).strip().lower()

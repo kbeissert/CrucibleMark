@@ -350,7 +350,7 @@ def is_model_suitable_for_benchmark(model_name: str) -> bool:
         return False
     if "-vl" in name_lower:
         return False
-    if "vision" in name_lower:
+    if "vision" in name_lower:  # noqa: SIM103
         return False
 
     # Add more exclusion criteria here if needed in the future

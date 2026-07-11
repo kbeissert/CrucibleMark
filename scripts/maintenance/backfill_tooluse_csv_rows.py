@@ -307,10 +307,7 @@ def main() -> None:
             log.info("  %s", m)
         return
 
-    if args.model:
-        target_models = [args.model]
-    else:
-        target_models = _find_models_missing_detail_rows()
+    target_models = [args.model] if args.model else _find_models_missing_detail_rows()
 
     if not target_models:
         log.info("Keine Modelle mit fehlenden Detailzeilen gefunden — alles OK.")

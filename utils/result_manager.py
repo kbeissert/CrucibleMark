@@ -32,6 +32,7 @@ from scripts.maintenance.sanitize_benchmark_csvs import (
     _is_narrative_asset_id,
     _is_invalid_model,
 )
+import contextlib
 
 logger = logging.getLogger(__name__)
 
@@ -388,15 +389,11 @@ class ResultManager:
             logger.error("❌ Fehler beim atomaren Schreiben: %s", e)
             # Cleanup: tmp-Datei löschen wenn vorhanden
             if tmp_fd is not None:
-                try:
+                with contextlib.suppress(OSError):
                     os.close(tmp_fd)
-                except OSError:
-                    pass
             if tmp_path is not None and tmp_path.exists():
-                try:
+                with contextlib.suppress(OSError):
                     tmp_path.unlink()
-                except OSError:
-                    pass
             raise  # Caller (save_results) fängt OSError/csv.Error ab
 
     @staticmethod

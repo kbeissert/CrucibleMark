@@ -6,6 +6,7 @@ import os
 import logging
 from typing import Any
 from collections.abc import Callable
+from utils.providers.base import BaseProviderClient
 # Optional Provider Imports
 try:
     pass
@@ -25,7 +26,6 @@ except ImportError:
     OpenAI = None
 # Configure logging
 logger = logging.getLogger(__name__)
-from utils.providers.base import BaseProviderClient
 class MistralClient(BaseProviderClient):
     """Mistral AI Provider Client"""
     PROVIDER_NAMES = ["mistral"]

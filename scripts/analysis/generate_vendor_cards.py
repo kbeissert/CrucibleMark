@@ -37,8 +37,8 @@ ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-from utils.llm_client import LLMClient
-from utils.vendor_card_template import (
+from utils.llm_client import LLMClient  # noqa: E402
+from utils.vendor_card_template import (  # noqa: E402
     CARDS_DIR,
     _safe_id,
     normalize_vendor_card_data,
@@ -131,7 +131,7 @@ def _resolve_provider_arg(arg: str, manufacturers: list[tuple[str, str]]) -> tup
     """
     arg_normalized = _safe_id(arg)
     for label, vid in manufacturers:
-        if label == arg or vid == arg or _safe_id(label) == arg_normalized:
+        if arg in (label, vid) or _safe_id(label) == arg_normalized:
             return (label, vid)
     return None
 

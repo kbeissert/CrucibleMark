@@ -251,7 +251,7 @@ def clean_tooluse_metrics_jsonl(model: str | None = None, dry_run: bool = False)
         return
 
     raw_lines = jsonl_path.read_text(encoding="utf-8").splitlines()
-    initial_count = sum(1 for l in raw_lines if l.strip())
+    initial_count = sum(1 for ln in raw_lines if ln.strip())
 
     if model is None:
         kept: list[str] = []

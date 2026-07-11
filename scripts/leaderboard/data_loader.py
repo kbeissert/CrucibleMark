@@ -164,7 +164,7 @@ def _coerce_dataframe_metrics(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def _strip_date_suffixes(df: pd.DataFrame) -> pd.DataFrame:
-    """Normalize model_version: Remove date suffix via SSoT `strip_date_suffix()`.
+    r"""Normalize model_version: Remove date suffix via SSoT `strip_date_suffix()`.
     SSoT unterstuetzt -YYYYMMDD (8-stellig) und -MMDD mit gueltigem Monat 01-12.
     Damit decken wir OpenRouter-Datesuffixes (z.B. kimi-k2-20260211) ab, die
     der alte regex -\d{4}-\d{2}-\d{2}$ nicht gefunden hat.

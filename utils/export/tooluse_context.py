@@ -8,6 +8,7 @@ import math
 import sys
 from pathlib import Path
 from typing import Any
+import contextlib
 
 # SSOT: Spaltennamen aus benchmark_modules/tooluse/core/constants.py
 _FIELD_P1 = "p1_score"
@@ -108,10 +109,8 @@ def _load_asset_details(model_id: str) -> list[dict[str, Any]]:
                     contribs: dict[str, Any] = {}
                     raw = row.get("score_contributions", "")
                     if raw:
-                        try:
+                        with contextlib.suppress(ValueError, SyntaxError):
                             contribs = ast.literal_eval(raw)
-                        except (ValueError, SyntaxError):
-                            pass
                     # Fallback: score_contributions leer → direkte CSV-Spalten verwenden
                     if not contribs:
                         contribs = {

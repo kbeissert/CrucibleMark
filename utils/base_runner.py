@@ -53,10 +53,7 @@ class BaseBenchmarkRunner:
         if "path" in benchmark_info:
             # z.B. benchmark_modules/code_quality/assets -> benchmark_modules/code_quality/test.py
             path = Path(benchmark_info["path"])
-            if path.name == "assets":
-                module_path = path.parent / "test.py"
-            else:
-                module_path = path / "test.py"
+            module_path = path.parent / "test.py" if path.name == "assets" else path / "test.py"
         else:
             # Fallback für Local Runner Config-Stil
             module_path = (

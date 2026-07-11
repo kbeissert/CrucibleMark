@@ -38,10 +38,7 @@ def setup_logging(log_file: Path | None = None):
     if log_file is None:
         # Resolve path relative to root if not absolute
         p = Path(config.get("file_path", "logs/crucible.log"))
-        if not p.is_absolute():
-            log_file = ROOT_DIR / p
-        else:
-            log_file = p
+        log_file = ROOT_DIR / p if not p.is_absolute() else p
 
     # 2. Determine Levels
     console_lvl_str = config.get("console_level", "INFO").upper()

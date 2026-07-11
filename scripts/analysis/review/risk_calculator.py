@@ -10,9 +10,9 @@ ROOT_DIR = Path(__file__).resolve().parent.parent.parent.parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-from utils.model_utils import _find_card
-from utils.vendor_card_template import _safe_id, load_vendor_card
-from utils.provider_detection import detect_provider_from_model_id
+from utils.model_utils import _find_card  # noqa: E402
+from utils.vendor_card_template import _safe_id, load_vendor_card  # noqa: E402
+from utils.provider_detection import detect_provider_from_model_id  # noqa: E402
 
 _RISK_ORDER = {"low": 0, "medium": 1, "high": 2}
 

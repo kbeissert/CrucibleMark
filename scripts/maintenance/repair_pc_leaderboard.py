@@ -90,7 +90,7 @@ def _module_block_coords(stats_block: dict[str, Any], axis: str) -> float | None
     if not stats_block:
         return None
     values: list[float] = []
-    for block_id, coords in stats_block.items():
+    for _block_id, coords in stats_block.items():
         if not isinstance(coords, dict):
             continue
         val = coords.get(axis)

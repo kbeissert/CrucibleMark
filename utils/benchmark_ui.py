@@ -213,10 +213,7 @@ class TerminalUI:
         refusals: int = 0
     ):
         """Prints summary of completed block."""
-        if tokens > TOKEN_K_THRESHOLD:
-            token_k = f"{tokens / 1000:.1f}k"
-        else:
-            token_k = str(tokens)
+        token_k = f"{tokens / 1000:.1f}k" if tokens > TOKEN_K_THRESHOLD else str(tokens)
 
         cost_str = f" | ${cost:.4f}" if cost > 0 else ""
 

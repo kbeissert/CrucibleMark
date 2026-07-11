@@ -512,7 +512,7 @@ def _run_module_for_model(
     Erfolgsmeldung (Score existiert bereits) und darf den Loop NICHT
     abbrechen — sonst wird der llama.cpp-Server fälschlich gestoppt.
     """
-    module_key = module.get("key")
+    module.get("key")
 
     # Autoritative Per-Asset-Pruefung: get_startable_assets() liest die
     # Detail-CSVs und ermittelt welche Assets fehlen. Ein Leaderboard-Score

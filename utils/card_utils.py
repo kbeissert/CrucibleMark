@@ -601,7 +601,7 @@ def _validate_controlled_fields(model_id: str, result: dict[str, Any]) -> None:
     """
     for card_field, taxonomy_section in _CONTROLLED_FIELDS.items():
         value = result.get(card_field)
-        if value is None or value == "TODO" or value == "":
+        if value is None or value in ("TODO", ""):
             continue
         # Listen-Felder (Modalitäten) vs. Skalar-Felder
         if isinstance(value, list):

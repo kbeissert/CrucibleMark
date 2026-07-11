@@ -28,6 +28,7 @@ from benchmark_modules.tooluse.core.constants import (
 from benchmark_modules.tooluse.core.io_manager import ToolUseIOManager, _log_metrics_to_json
 from schemas.result import BenchmarkResult
 from utils.model_utils import resolve_canonical_model_id, update_model_card_tooluse_fields
+import contextlib
 
 logger = logging.getLogger(__name__)
 
@@ -281,13 +282,11 @@ class ToolUseExporter:
     ) -> None:
         state["assets_error"] += 1
         state["tool_call_valid_all"] = False
-        try:
+        with contextlib.suppress(ValueError, TypeError):
             state["tool_call_attempts_max"] = max(
                 state["tool_call_attempts_max"],
                 int(result.data.get("tool_call_attempts", 0)),
             )
-        except (ValueError, TypeError):
-            pass
         if result.data.get("retry_required") or result.data.get("parse_error_flag"):
             state["parse_error_any"] = True
 
@@ -345,10 +344,8 @@ class ToolUseExporter:
         # nicht korrigieren, würde historische Benchmark-Werte verändern.
         combined_raw = data_dict.get("combined_score") or row.get("total_score")
         if combined_raw is not None:
-            try:
+            with contextlib.suppress(ValueError, TypeError):
                 state["combined_scores"].append(float(combined_raw))
-            except (ValueError, TypeError):
-                pass
 
     def _extract_metric_with_fallback(
         self,
@@ -419,10 +416,8 @@ class ToolUseExporter:
         ):
             v = row.get(flat_key)
             if v not in (None, ""):
-                try:
+                with contextlib.suppress(ValueError, TypeError):
                     data[flat_key] = float(v)
-                except (ValueError, TypeError):
-                    pass
         for bk in ("hallucination_flag", "retry_required"):
             bv = row.get(bk)
             if bv not in (None, ""):
@@ -592,12 +587,12 @@ class ToolUseExporter:
         asset_id = str(row.get("asset_id", ""))
         key = (model_id, asset_id)
         existing = best_rows.get(key)
-        if existing is None or row.get("timestamp", "") > existing.get("timestamp", ""):
+        if existing is None or row.get("timestamp", "") > existing.get("timestamp", "") or (
+            row.get("timestamp", "") == existing.get("timestamp", "")
+            and row.get("status") == "success"
+            and existing.get("status") != "success"
+        ):
             best_rows[key] = row
-        elif row.get("timestamp", "") == existing.get("timestamp", ""):
-            # Gleichzeitig: success > error
-            if row.get("status") == "success" and existing.get("status") != "success":
-                best_rows[key] = row
 
     def _group_rows_by_model(
         self, best_rows: dict[tuple[str, str], dict[str, Any]],
@@ -657,10 +652,8 @@ class ToolUseExporter:
         ]:
             v = data.get(key)
             if v is not None:
-                try:
+                with contextlib.suppress(ValueError, TypeError):
                     lst.append(float(v))
-                except (ValueError, TypeError):
-                    pass
 
     def _collect_transcript_flags(
         self,
@@ -693,32 +686,22 @@ class ToolUseExporter:
         ]:
             v = data.get(key)
             if v is not None:
-                try:
+                with contextlib.suppress(ValueError, TypeError):
                     lst.append(float(v))
-                except (ValueError, TypeError):
-                    pass
         v = data.get("total_time_s")
         if v is not None:
-            try:
+            with contextlib.suppress(ValueError, TypeError):
                 state["total_times"].append(float(v))
-            except (ValueError, TypeError):
-                pass
 
     def _collect_sums_and_attempts(
         self, data: dict[str, Any], state: dict[str, Any],
     ) -> None:
-        try:
+        with contextlib.suppress(ValueError, TypeError):
             state["call1_tokens_sum"] += int(data.get("call1_tokens", 0))
-        except (ValueError, TypeError):
-            pass
-        try:
+        with contextlib.suppress(ValueError, TypeError):
             state["call2_tokens_sum"] += int(data.get("call2_tokens", 0))
-        except (ValueError, TypeError):
-            pass
-        try:
+        with contextlib.suppress(ValueError, TypeError):
             state["cost_usd_sum"] += float(data.get("cost_usd", 0.0))
-        except (ValueError, TypeError):
-            pass
         try:
             state["tool_call_attempts_max"] = max(
                 state["tool_call_attempts_max"],
@@ -823,10 +806,8 @@ def _fmt_score(val: Any) -> str:
 def _avg_combined(rows: list[dict[str, Any]]) -> float | None:
     scores = []
     for row in rows:
-        try:
+        with contextlib.suppress(ValueError, TypeError, KeyError):
             scores.append(float(row["combined_score"]))
-        except (ValueError, TypeError, KeyError):
-            pass
     return round(sum(scores) / len(scores), 2) if scores else None
 
 
@@ -859,10 +840,8 @@ def _avg_float_col(rows: list[dict[str, Any]], col: str) -> float | None:
 def _sum_int_col(rows: list[dict[str, Any]], col: str) -> int:
     total = 0
     for row in rows:
-        try:
+        with contextlib.suppress(ValueError, TypeError):
             total += int(row.get(col, 0))
-        except (ValueError, TypeError):
-            pass
     return total
 
 

@@ -18,10 +18,10 @@ from pathlib import Path
 ROOT_DIR = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(ROOT_DIR))
 
-from utils.benchmark_ui import TerminalUI
+from utils.benchmark_ui import TerminalUI  # noqa: E402
 from utils.backup_targets import RUNS_KEEP_DEFAULT  # noqa: E402
-from scripts.maintenance.cleanup_runs import cleanup_runs
-from scripts.maintenance.clean_results import clean_checkpoints
+from scripts.maintenance.cleanup_runs import cleanup_runs  # noqa: E402
+from scripts.maintenance.clean_results import clean_checkpoints  # noqa: E402
 
 
 def clean_pycache():

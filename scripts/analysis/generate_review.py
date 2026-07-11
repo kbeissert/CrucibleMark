@@ -23,8 +23,8 @@ ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-from utils.llm_client import LLMClient
-from utils.model_utils import (
+from utils.llm_client import LLMClient  # noqa: E402
+from utils.model_utils import (  # noqa: E402
     _find_card,
     _safe_name,
     find_card_by_heritage_id,
@@ -33,9 +33,9 @@ from utils.model_utils import (
     get_model_specialization,
     get_use_case_primary,
 )
-from utils.vendor_card_template import load_vendor_card
-from utils.model_utils import resolve_model_cfg_for
-from scripts.analysis.review import (
+from utils.vendor_card_template import load_vendor_card  # noqa: E402
+from utils.model_utils import resolve_model_cfg_for  # noqa: E402
+from scripts.analysis.review import (  # noqa: E402
     _resolve_vendor_card_id,
     build_constraint_violations_summary,
     build_empty_response_context,
@@ -103,7 +103,7 @@ def load_config() -> dict:
 
 def _load_webexport_blacklist() -> set[str]:
     """Load web export blacklist model IDs.
-    
+
     Returns set of blacklisted model_ids that should be skipped in auto-review.
     """
     blacklist_path = ROOT_DIR / "config" / "web_export_blacklist.yaml"
@@ -1379,11 +1379,10 @@ def _process_audit_subdir(
     if _is_audit_review_current(subdir, effective_type, args):
         return True
 
-    if effective_type == "benchmark":
-        if _ensure_benchmark_deps_or_skip(
-            effective_model_id, args, client, provider, model_id
-        ):
-            return True
+    if effective_type == "benchmark" and _ensure_benchmark_deps_or_skip(
+        effective_model_id, args, client, provider, model_id
+    ):
+        return True
 
     if getattr(args, "dry_run", False):
         print(f"  [DRY-RUN] Würde {effective_type}-Review für {subdir.name} generieren.")

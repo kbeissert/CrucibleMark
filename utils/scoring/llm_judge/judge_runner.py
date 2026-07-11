@@ -1,5 +1,3 @@
-from __future__ import annotations
-from utils.constants import MS_PER_SECOND
 """
 LLM Judge Runner — orchestration layer.
 
@@ -17,7 +15,7 @@ New in Phase 2:
 Provider selection is driven entirely by config; no branching on provider
 name happens here beyond the lazy-import factory.
 """
-
+from __future__ import annotations
 
 import importlib
 import logging
@@ -25,7 +23,7 @@ import os
 import time
 from typing import Any
 
-from utils.constants import OLLAMA_DEFAULT_BASE_URL
+from utils.constants import MS_PER_SECOND, OLLAMA_DEFAULT_BASE_URL
 from .judge_config import LLMJudgeConfig
 from .judge_parser import JudgeResult, parse
 from .judge_prompt_builder import build_prompts
@@ -276,9 +274,8 @@ class JudgeRunner:
             else self._config.provider.model
         )
 
-        if env_key := _ENV_KEY_MAP.get(primary_name):
-            if not os.getenv(env_key):
-                raise JudgeUnavailableError(f"{env_key} not found. Skipping primary provider '{primary_name}'.")
+        if (env_key := _ENV_KEY_MAP.get(primary_name)) and not os.getenv(env_key):
+            raise JudgeUnavailableError(f"{env_key} not found. Skipping primary provider '{primary_name}'.")
         try:
             if not self.provider.health_check():
                 raise JudgeUnavailableError(f"LLM Judge: primary provider '{primary_name}' health_check() returned False.")
@@ -529,9 +526,8 @@ class JudgeRunner:
         )
         scale = self._config.scoring.scale
         normalised: float | None = None
-        if judge_result.score is not None:
-            if scale > 0:
-                normalised = round((judge_result.score / scale) * 100.0, 2)
+        if judge_result.score is not None and scale > 0:
+            normalised = round((judge_result.score / scale) * 100.0, 2)
 
         return {
             "score": judge_result.score,

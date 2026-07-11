@@ -31,9 +31,9 @@ ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-from utils.card_utils import ensure_card
-from utils.config_validator import ConfigValidator
-from utils.model_utils import (
+from utils.card_utils import ensure_card  # noqa: E402
+from utils.config_validator import ConfigValidator  # noqa: E402
+from utils.model_utils import (  # noqa: E402
     ThinkingProbeResult,
     _find_card,
     probe_thinking_model,

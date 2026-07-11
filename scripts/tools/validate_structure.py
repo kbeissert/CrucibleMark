@@ -63,11 +63,10 @@ def _check_root_files(module_path: Path) -> list[str]:
         if not item.is_file() or item.name in IGNORED_FILES:
             continue
 
-        if item.name not in ALLOWED_ROOT_FILES:
-            if item.suffix == ".py":
-                # pylint: disable=line-too-long
-                msg = f"⚠️  File '{item.name}' should likely be moved to 'core/' or 'scripts/'."
-                errors.append(msg)
+        if item.name not in ALLOWED_ROOT_FILES and item.suffix == ".py":
+            # pylint: disable=line-too-long
+            msg = f"⚠️  File '{item.name}' should likely be moved to 'core/' or 'scripts/'."
+            errors.append(msg)
     return errors
 
 

@@ -8,6 +8,7 @@ import logging
 from typing import Any
 from collections.abc import Callable
 from utils.env_utils import get_required_env
+from utils.providers.base import BaseProviderClient
 # Optional Provider Imports
 try:
     pass
@@ -35,7 +36,6 @@ except ImportError:
 # Configure logging
 logger = logging.getLogger(__name__)
 
-from utils.providers.base import BaseProviderClient
 class GoogleClient(BaseProviderClient):
     """Google Gemini Provider Client"""
     PROVIDER_NAMES = ["google"]

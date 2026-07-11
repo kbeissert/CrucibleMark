@@ -96,9 +96,7 @@ def _is_narrative_asset_id(asset_id: str) -> bool:
     lowered = aid.lower()
     if any(lowered.startswith(p) for p in NARRATIVE_PREFIXES):
         return True
-    if any(marker in aid for marker in MARKDOWN_MARKERS):
-        return True
-    return False
+    return bool(any(marker in aid for marker in MARKDOWN_MARKERS))
 
 
 def _is_invalid_model(model: str) -> tuple[bool, str]:

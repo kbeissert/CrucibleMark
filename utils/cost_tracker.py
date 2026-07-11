@@ -2,6 +2,7 @@ import csv
 import logging
 from pathlib import Path
 from datetime import datetime
+import contextlib
 
 
 
@@ -190,12 +191,10 @@ class CostTracker:
                     if row.get("date") != date_str or row.get("provider") != provider:
                         continue
                     ctype = row.get("call_type", "benchmark")
-                    try:
+                    with contextlib.suppress(ValueError, KeyError):
                         breakdown[ctype] = breakdown.get(ctype, 0.0) + float(
                             row["cost_usd"]
                         )
-                    except (ValueError, KeyError):
-                        pass
         except Exception as e:
             logging.error(f"Error reading cost log for breakdown: {e}")
 

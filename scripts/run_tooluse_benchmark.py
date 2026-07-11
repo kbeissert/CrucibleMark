@@ -145,7 +145,7 @@ def _stop_mcp_if_managed() -> None:
     if not _mcp_managed[0]:
         return
     _mcp_managed[0] = False  # Idempotenz: verhindert Doppel-Stop
-    try:
+    try:  # noqa: SIM105
         subprocess.run(
             ["make", "mcp-stop"],
             cwd=str(_ROOT), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False,
@@ -396,10 +396,9 @@ def _run_batch(
 
     for i, (model_id, display_name) in enumerate(models, 1):
         # MCP health-gated restart: only restart if server is down or explicitly requested
-        if restart_mcp:
-            if not _mcp_is_up():
-                print(f"\n  ↻ MCP nicht erreichbar — Neustart vor [{i}/{len(models)}]...")
-                _restart_mcp(mcp_mode)
+        if restart_mcp and not _mcp_is_up():
+            print(f"\n  ↻ MCP nicht erreichbar — Neustart vor [{i}/{len(models)}]...")
+            _restart_mcp(mcp_mode)
             # else: server is healthy, skip restart
         print(f"\n[{i}/{len(models)}] {display_name}")
         if _run_model(model_id, force=force, silent=silent):
@@ -417,7 +416,7 @@ def _run_batch(
                 written = exporter.aggregate_from_benchmark_csvs(target_model_ids=tested_so_far)
                 if written > 0:
                     print(f"  ↻ Leaderboard zwischenstand: {written} Modell(e) | {i}/{len(models)} abgeschlossen")
-            except Exception:  # noqa: BLE001
+            except Exception:  # noqa: BLE001,SIM105
                 pass
 
     print(f"\n{_SEP}")

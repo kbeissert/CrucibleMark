@@ -512,11 +512,12 @@ def enrich_with_module_data(
     active_modules_data = get_active_modules(full_config)
 
     for mod_id, _, mod_int_config in active_modules_data:
-        if not mod_int_config.get("enabled", True):
-            if modules_config and not modules_config.get(mod_id, {}).get(
-                "enabled", True
-            ):
-                continue
+        if (
+            not mod_int_config.get("enabled", True)
+            and modules_config
+            and not modules_config.get(mod_id, {}).get("enabled", True)
+        ):
+            continue
 
         integration = mod_int_config.get("integration", {})
         lb_config = integration.get("leaderboard", {})
