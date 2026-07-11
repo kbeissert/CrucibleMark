@@ -12,7 +12,6 @@ Design Principles:
 """
 
 import time
-import sys
 import logging
 import unicodedata
 from typing import TypeVar
@@ -48,9 +47,9 @@ class TerminalUI:
     @staticmethod
     def print_header(title: str, width: int = 60) -> None:
         """Prints a formatted header."""
-        logger.info(f"\n{'=' * width}", flush=True)
-        logger.info(title, flush=True)
-        logger.info(f"{'=' * width}", flush=True)
+        logger.info(f"\n{'=' * width}")
+        logger.info(title)
+        logger.info(f"{'=' * width}")
     @staticmethod
     def select_from_list(
         items: list[T],
@@ -162,24 +161,24 @@ class TerminalUI:
             f"Runs: {num_runs}",
         ]
 
-        logger.info("\n" + "=" * self.terminal_width, flush=True)
-        logger.info(f"🌐 STARTE BENCHMARK: {module_name.upper()}", flush=True)
-        logger.info("=" * self.terminal_width, flush=True)
+        logger.info("\n" + "=" * self.terminal_width)
+        logger.info(f"🌐 STARTE BENCHMARK: {module_name.upper()}")
+        logger.info("=" * self.terminal_width)
         for line in lines:
-            logger.info(line, flush=True)
-        logger.info("=" * self.terminal_width + "\n", flush=True)
+            logger.info(line)
+        logger.info("=" * self.terminal_width + "\n")
         if extra_info:
             self._print_box(extra_info, title=f"{module_name.upper()} INFO")
 
     def start_run(self, run_idx: int, total_runs: int, model: str, provider: str):
         """Announces the start of a specific run."""
-        logger.info(f"\n{'=' * self.terminal_width}", flush=True)
-        logger.info(f"🌐 RUN {run_idx}/{total_runs} - {model} ({provider})", flush=True)
-        logger.info(f"{'=' * self.terminal_width}", flush=True)
-        logger.info("📍 FORTSCHRITT:", flush=True)
+        logger.info(f"\n{'=' * self.terminal_width}")
+        logger.info(f"🌐 RUN {run_idx}/{total_runs} - {model} ({provider})")
+        logger.info(f"{'=' * self.terminal_width}")
+        logger.info("📍 FORTSCHRITT:")
     def start_block(self, block_id: str, title: str, count: int):
         """Announces a new question block."""
-        logger.info(f"📂 Starte Block: {block_id} {title} ({count} Fragen)", flush=True)
+        logger.info(f"📂 Starte Block: {block_id} {title} ({count} Fragen)")
     def update_progress(
         self,
         current: int,
@@ -194,15 +193,12 @@ class TerminalUI:
 
         icon = "✅" if finished else "⏳"
         suffix = " - Fertig" if finished else ""
-        end_char = "\n" if finished else "\r"
 
         # Format: "   ⏳ 5/9  (Tokens: 5631)     "
         msg = f"   {icon} {current}/{total}  ({token_str}){suffix}"
 
         # Pad with spaces to overwrite previous line completely if shrinking
-        logger.info(f"{msg:<60}", end=end_char)
-        if not finished:
-            sys.stdout.flush()
+        logger.info(f"{msg:<60}")
 
     def finish_block(
         self,
