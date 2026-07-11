@@ -187,7 +187,7 @@ class TerminalUI:
         cost: float = 0.0,
         finished: bool = False,
     ):
-        """Updates the progress line in-place."""
+        """Updates the progress line in-place (Carriage Return, keine Log-Zeile)."""
         cost_str = f" | ${cost:.4f}" if cost > 0 else ""
         token_str = f"Tokens: {tokens}{cost_str}"
 
@@ -197,8 +197,10 @@ class TerminalUI:
         # Format: "   ⏳ 5/9  (Tokens: 5631)     "
         msg = f"   {icon} {current}/{total}  ({token_str}){suffix}"
 
-        # Pad with spaces to overwrite previous line completely if shrinking
-        logger.info(f"{msg:<60}")
+        # print() mit end='\r' überschreibt die Zeile live (logging kann kein end=).
+        # \n bei finished, damit die fertige Zeile stehen bleibt.
+        end_char = "\n" if finished else "\r"
+        print(f"{msg:<60}", end=end_char, flush=True)
 
     def finish_block(
         self,

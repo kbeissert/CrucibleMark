@@ -12,7 +12,12 @@ import pytest
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 UTILS_DIR = REPO_ROOT / "utils"
-EXCLUDED_FILES = {"logging_config.py"}
+
+# logging_config.py: konfiguriert das Logging selbst (braucht print für Test-Output).
+# benchmark_ui.py: Terminal-UI-Komponente — print(end='\r') für Live-Progress
+#   ist ein legitimer UI-Anwendungsfall, den logging nicht abbilden kann
+#   (logging unterstützt kein Carriage-Return-Zeilenüberschreiben).
+EXCLUDED_FILES = {"logging_config.py", "benchmark_ui.py"}
 
 
 def _collect_top_level_utils_py() -> list[Path]:
