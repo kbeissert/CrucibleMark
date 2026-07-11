@@ -65,7 +65,7 @@ Ab v4.10.16 wird der per-Profil-Run-State unter `tooluse_runs.{profile_id}` (nes
 **Konsumenten der Tri-State-Semantik:**
 
 - `scripts/analysis/generate_review.py:570-589` — überspringt Tool-Use-Reviews mit unterschiedlichen Meldungen für `false` vs. `untested`
-- `scripts/web_export.py:_supports_tool_use_state()` — normalisiert für 11ty-Frontend
+- `scripts/web_export/entry_builders.py:_supports_tool_use_state()` — normalisiert für 11ty-Frontend
 - `scripts/run_tooluse_benchmark.py:152-161` — lädt nur Modelle mit `true` für neue Läufe
 - `benchmark_modules/tooluse/config.yaml:73` (`skip_if_card_false`) — überspringt `false`/`untested` im Auto-Batch
 

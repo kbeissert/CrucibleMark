@@ -200,14 +200,14 @@ Die Registry wird von folgenden Modulen konsumiert:
 - `scripts/dev/validate_model_cards.py` — Tag-Whitelist-Check
 - `scripts/dev/migrate_architecture_tags.py` — Tag-Normalisierung beim Card-Update
 - `utils/model_utils.py` — `is_reasoning_model()` Trigger-Liste
-- `scripts/web_export.py` — Tag-Filter via `_normalize_export_tags()`
+- `scripts/web_export/entry_builders.py` — Tag-Filter via `_normalize_export_tags()`
 
 ### Workflow: Neuen Tag einführen
 
 1. Prüfen, ob der Tag semantisch zur bestehenden Registry passt.
 2. Entscheiden, ob `reserved` (Code-Effekt) oder `informational` (nur Filter).
 3. Eintrag in `config/card_vocabulary.yaml` mit Beschreibung und `since`-Version.
-4. Bei `reserved`: Konsument-Code (z.B. `web_export.py`, `model_utils.py`) implementieren.
+4. Bei `reserved`: Konsument-Code (z.B. `scripts/web_export/`, `model_utils.py`) implementieren.
 5. Test anpassen in `tests/test_card_vocabulary_ssot.py` (z.B. `must_have`).
 6. Bei Bedarf Bulk-Migration: `python scripts/dev/migrate_architecture_tags.py --dry-run`.
 
@@ -1058,7 +1058,7 @@ ist SSoT in `config/classification_taxonomy.json → manufacturers → values`.
 
 ### Normalisierung im Web-Export
 
-`scripts/web_export.py` normalisiert das `vendor`-Feld zur Laufzeit via
+`scripts/web_export/filters.py` normalisiert das `vendor`-Feld zur Laufzeit via
 `_normalize_vendor()` — übersetzt bekannte Alias-Strings auf den kanonischen
 Wert. Unbekannte Werte werden mit `WARNING` geloggt. Die Alias-Map wird einmalig
 aus der Taxonomy geladen (`_build_vendor_alias_map()`).

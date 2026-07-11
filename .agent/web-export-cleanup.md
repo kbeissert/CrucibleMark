@@ -4,13 +4,13 @@ Web-Export-Subsystem, Cleanup-Workflows, ID-Migration.
 
 ## WebExport None-Stripping
 
-`_strip_none()` in `web_export.py` entfernt `None`-Werte rekursiv aus allen exportierten Dicts. Neue Felder zum Export hinzufügen: `card.get("feld")` reicht — `None` wird automatisch entfernt.
+`strip_none()` in `utils/text_helpers.py` entfernt `None`-Werte rekursiv aus allen exportierten Dicts. Neue Felder zum Export hinzufügen: `card.get("feld")` reicht — `None` wird automatisch entfernt.
 
 Test `test_web_export_card_field_coverage.py` prüft Required-Felder gegen Sample-Card — wenn ein Required-Feld `None` sein kann, muss es in der Sample-Card einen Wert haben.
 
 ## WebExport Vendor-Dedup Defense-in-Depth (ab v4.10.11)
 
-`_collect_vendor_cards()` in `scripts/web_export.py` filtert **immer** Placeholder-Karten (`unknown=true` ODER `vendor_id in _PLACEHOLDER_VENDOR_IDS = {"todo", "unknown"}`). Community-Karten gehen über `exclude_community=True` ausschließlich in `community_cards.json`.
+`_collect_vendor_cards()` in `scripts/web_export/filters.py` filtert **immer** Placeholder-Karten (`unknown=true` ODER `vendor_id in _PLACEHOLDER_VENDOR_IDS = {"todo", "unknown"}`). Community-Karten gehen über `exclude_community=True` ausschließlich in `community_cards.json`.
 
 Symptom bei Bruch: Wenn `vendor_cards.json` Placeholder oder Community enthält, ist die SSoT-Filter-Pipeline gebrochen — entweder Caller nutzt `exclude_community=False` falsch, oder neue Card-Generierung umgeht die Validierung.
 
@@ -46,7 +46,7 @@ Die Blacklist (`config/web_export_blacklist.yaml`) enthält Einträge in der kan
 
 **Symptom:** 12/34 Blacklist-Einträge (~35%) matchten NICHT und Modelle wurden trotz Blacklist-Eintrag exportiert (z.B. DeepSeek V3.1 wurde 4 Tool-Use-Monate lang ungewollt im Web-Export angezeigt).
 
-**Fix:** `_is_blacklist()` in `web_export.py` normalisiert BEIDE Seiten via `_safe_name()` und prüft Wildcard-Patterns in beiden Formen (roh + normalisiert). Tests in `tests/test_web_export_blacklist_normalization.py` (11 Tests).
+**Fix:** `_is_blacklist()` in `scripts/web_export/filters.py` normalisiert BEIDE Seiten via `_safe_name()` und prüft Wildcard-Patterns in beiden Formen (roh + normalisiert). Tests in `tests/test_web_export_blacklist_normalization.py` (11 Tests).
 
 **Caveat:** 100% Effektivität nicht erreichbar, weil einige Blacklist-Einträge Tippfehler enthalten (`gpt-5_5-pro-2026-04-23` statt `gpt-5_5-2026-04-23`) oder auf nicht-existierende Modelle zeigen.
 
@@ -85,7 +85,7 @@ Rückgabewert: `float | str | None`. Zahlen → `float`. Sentinels → `None`. A
 
 `_write_top_level_outputs()` erzwingt den 9-Key Scores-Contract für `leaderboard.json` direkt vor dem Write (zuvor nur `data.json` hatte Contract-Enforcement).
 
-**Problem:** `_strip_none()` entfernte null-Werte aus Model-Einträgen. `leaderboard.json` zeigte dann 7-9 Score-Keys statt 10. `data.json` hatte bereits seit Session-49-Folge Contract-Enforcement via `_SCORES_CONTRACT_KEYS` Re-Injection nach `_strip_none`.
+**Problem:** `strip_none()` entfernte null-Werte aus Model-Einträgen. `leaderboard.json` zeigte dann 7-9 Score-Keys statt 10. `data.json` hatte bereits seit Session-49-Folge Contract-Enforcement via `_SCORES_CONTRACT_KEYS` Re-Injection nach `strip_none`.
 
 **Fix:** In `_write_top_level_outputs`: für jedes Modell in `models_list` — `scores.setdefault(key, None)` für alle `_SCORES_CONTRACT_KEYS` bei bestehender Dict; `dict.fromkeys(_SCORES_CONTRACT_KEYS, None)` bei fehlender Dict.
 
@@ -93,7 +93,7 @@ Rückgabewert: `float | str | None`. Zahlen → `float`. Sentinels → `None`. A
 
 ## WebExport Score-Spalten-Vollständigkeit (ab v4.10.11)
 
-`LdbCols` in `scripts/web_export.py` (Z. 35-70) MUSS eine Konstante für JEDE CSV-Modul-Spalte in `benchmark_scores/benchmark_leaderboard_detailed.csv` haben, sonst wird die Spalte stillschweigend ignoriert und landet nicht in `data.json.leaderboard.scores`.
+`LdbCols` in `scripts/web_export/constants.py` MUSS eine Konstante für JEDE CSV-Modul-Spalte in `benchmark_scores/benchmark_leaderboard_detailed.csv` haben, sonst wird die Spalte stillschweigend ignoriert und landet nicht in `data.json.leaderboard.scores`.
 
 Stand v4.10.11: 10 Spalten (Code Quality, CLI Badge, UX Writing, Documentation Quality, Content Transformation, Cultural Intelligence, Logical Reasoning, Synthesis Quality, Tool Execution, Political Bias).
 

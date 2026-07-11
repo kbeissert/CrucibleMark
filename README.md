@@ -1,6 +1,6 @@
 # CrucibleMark
 
-[![Version](https://img.shields.io/badge/version-4.10.17-blue)](.)
+[![Version](https://img.shields.io/badge/version-4.10.18-blue)](.)
 
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](.)
 [![License](https://img.shields.io/badge/license-MIT-green)](.)
@@ -163,6 +163,7 @@ Tiefergehende Einblicke in die Methodik findest du im `docs/` Verzeichnis:
 
 Die vollständige Versionshistorie steht in [CHANGELOG.md](CHANGELOG.md). Kurzfassung der letzten drei Releases:
 
+- **v4.10.18 (2026-07-11) — Framework-Refactoring (Sektion A–M) + Ruff 0-Violations:** Systematisches Refactoring gegen Architektur-Regeln: `model_utils.py` in 7 Submodule + Re-Export-Bridge (A), Judge-Caching→Singleton (B), Provider-Dead-Stubs (C), `web_export.py`→Package (D), `benchmark_auto` Aufspaltung (E+J), Helper-SSoT `text_helpers.py`/`io_helpers.py` (F), `yaml.safe_load`→`ConfigValidator` in 15 Skripten (G), 27 Legacy-Skripte nach `scripts/legacy/` (H), 131 `print`→`logging` (I), C901-Komplexität 0 (K+L+M). Ruff 252→0. Bugfix: `ensure_card_structure` doppelte Base-Cards für suffixed Modelle. Verhaltenserhaltend. 1316 passed, 0 failed.
 - **v4.10.17 (2026-07-10) — Web-Export Datenqualitäts-Fixes + Vendor-Taxonomy-Korrekturen:** `political_bias` Phantom-Key aus Scores-Contract entfernt (10→9 Keys — war Forward-Looking-Platzhalter für nie implementiertes Bias-Modul). `judge_prog`→`judge_progress_status` Dead-Code-Bug im Judge-Coverage-Filter. Variantenbewusster `display_name` für Thinking-Varianten (` (Thinking)`-Suffix für Dual-Profile). DeepReinforce als Hersteller in Taxonomy eingetragen. Community-Fine-Tuner (Mia-AiLab, llmfan46) aus `vendor`→`community` migriert. Codestral `thinking_probe_detected` false→null. Framework-Refactoring-Scope-Plan. 31 Reviews regeneriert (inkl. 4 Thinking-Profile).
 - **v4.10.16 (2026-07-10) — Web-Export Blacklist-Restructure + Slug-SSoT:** Blacklist-Config in zwei Sektionen geteilt (`blacklist:` 24 aktiv + `kept_overrides:` 22 dokumentierte Ausnahmen). Slug-Generierung von `model_name` auf `model_id` umgestellt (SSoT — eliminiert 5 Hybrid-Pair-Kollisionen). `normalize_pending()` um en-dash/n/a/null-Sentinel erweitert. `leaderboard.json` Scores-Contract (alle 10 Keys garantiert). 97 tests passed.
 - **v4.10.15 (2026-07-08) — Baustellen-Cleanup:** Sampling-vs-Card-Drift bei 4 vllm_spark-Modellen behoben (Cards→provider_config: Gemma 1.0/0.95/64, qwen3.6-27B 0.6/0.95/20). vLLM-Extensions-Whitelist in `_resolve_sampling` (generische `_VLLM_EXTRA_BODY_KEYS` statt hardcodiertem top_k). Card-Vocabulary: `Dense`/`Tool-Use` deprecated. Verwaistes Sub-Family-Leaderboard-Konzept entfernt. 2 pre-existing Test-Failures behoben (`test_card_vocabulary_ssot`, `test_clean_results_arch_coverage`). Gemma-4-26B--VSPK ThinkingProbe live (detected=true/medium). ux_writing_002 ornith Re-Run (78.75%, vormals 1.1% Reasoning-Loop). 1079 passed, 0 failures.
@@ -175,5 +176,5 @@ Die vollständige Versionshistorie steht in [CHANGELOG.md](CHANGELOG.md). Kurzfa
 
 - **Maintainer:** kbeissert
 - **Repository:** [github.com/kbeissert/cruciblemark](https://github.com/kbeissert/cruciblemark)
-- **Status:** ✅ Production-Ready (v4.10.17)
+- **Status:** ✅ Production-Ready (v4.10.18)
 

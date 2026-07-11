@@ -94,7 +94,7 @@ CrucibleMark folgt einer **Plugin-basierten Architektur**, bei der Benchmark-Mod
 ┌─────────────────────────────────────────────────────┐
 │ Layer 5: Publishing (Downstream, entkoppelt)        │
 │ - Meta-Reviewer (generate_review.py)               │
-│ - Web Export Pipeline (web_export.py)              │
+│ - Web Export Pipeline (scripts/web_export/)        │
 │ - Judge-Flow → verdichtet in Review-Artikel        │
 └─────────────────────────────────────────────────────┘
 ```
@@ -642,7 +642,7 @@ SSoT: `_PROVIDER_SHORTCODES`-Dict in `utils/model_utils.py` + `short_code`-Feld 
 
 ### Web Export Pipeline
 
-**Einstiegspunkt:** `make web-export` → `scripts/web_export.py`
+**Einstiegspunkt:** `make web-export` → `python -m scripts.web_export` (Package `scripts/web_export/`, aufgespalten ab v4.10.18)
 
 Der Web Exporter ist ein eigenständiger Publishing-Schritt (Layer 4 Downstream), der vollständig vom Core-Benchmark-Loop entkoppelt ist. Er liest ausschließlich aus bereits generierten Artefakten und schreibt in das externe Frontend-Repository.
 
@@ -665,9 +665,9 @@ Der Web Exporter ist ein eigenständiger Publishing-Schritt (Layer 4 Downstream)
 | `_build_compass_entry(pc_row, lb_row, ..., block_meta)` | Baut den Political-Compass-Dict inkl. Archetyp-Felder |
 | `_write_top_level_outputs(...)` | Schreibt `leaderboard.json`, `political_compass.json`, `provider_stats.json`, `meta.json` |
 
-`WEIGHTS_TIER_DISPLAY` (Tier-String-Mapping) ist als öffentliche Konstante aus `utils/model_utils.py` importiert — `web_export.py` führt kein Duplikat mehr. `load_model_card()` delegiert die Card-Pfad-Auflösung an `_find_card(card_dir=card_dir)` (SSoT) und behält nur die zwei web-spezifischen Fallbacks (Display-Name-Vollscan, hf.co-Suffix-Match). Block-Metadaten für den Political Compass kommen via `_load_pc_block_meta()` aus `benchmark_modules/political_compass/config.yaml` (Fallback: statisches Dict) — kein hardcodiertes Python-Dict mehr.
+`WEIGHTS_TIER_DISPLAY` (Tier-String-Mapping) ist als öffentliche Konstante aus `utils/model_utils.py` importiert — `scripts/web_export/` führt kein Duplikat mehr. `load_model_card()` delegiert die Card-Pfad-Auflösung an `_find_card(card_dir=card_dir)` (SSoT) und behält nur die zwei web-spezifischen Fallbacks (Display-Name-Vollscan, hf.co-Suffix-Match). Block-Metadaten für den Political Compass kommen via `_load_pc_block_meta()` aus `benchmark_modules/political_compass/config.yaml` (Fallback: statisches Dict) — kein hardcodiertes Python-Dict mehr.
 
-**Nullwert-Entfernung (ab v4.10.0):** `_strip_none()` entfernt `None`-Werte rekursiv aus allen exportierten Dicts (`leaderboard`-Entry, `model_card`-Sub-Dict, `political_compass`-Entry, `data.json`). Felder mit Wert (`0`, `False`, `""`, `[]`) bleiben erhalten. `"model_card": null` wird komplett entfernt (Key fehlt im JSON statt `null` zu exportieren). Verhindert Nullwert-Noise im Frontend-Payload.
+**Nullwert-Entfernung (ab v4.10.0):** `strip_none()` (in `utils/text_helpers.py`, Sektion-F-Refactor) entfernt `None`-Werte rekursiv aus allen exportierten Dicts (`leaderboard`-Entry, `model_card`-Sub-Dict, `political_compass`-Entry, `data.json`). Felder mit Wert (`0`, `False`, `""`, `[]`) bleiben erhalten. `"model_card": null` wird komplett entfernt (Key fehlt im JSON statt `null` zu exportieren). Verhindert Nullwert-Noise im Frontend-Payload.
 
 **Model Cards & Vendor Cards:** Strukturierte JSON-Steckbriefe pro Modell (`benchmark_scores/model_cards/`) und pro Provider (`benchmark_scores/vendor_cards/`). Vendor Cards enthalten ausschließlich Deployment- und Datenschutz-Metadaten (CLOUD Act, GDPR, Datenstandort, NSL-Risiko) — **keine** Preise und **keine** Stärken/Schwächen. Letztere leben in den Model Cards. Die Cards werden (a) als Kontext-Block in den Meta-Reviewer injiziert, (b) als eigenständige JSON-API für das Web-Frontend bereitgestellt und (c) von `risk_calculator.py` für die Sovereign-Risk-Berechnung genutzt. Preisinformationen (`input_price_per_1m`, `output_price_per_1m`) sind alleiniges SSoT-Feld der Model Cards (ab v3.7.5).
 
@@ -692,7 +692,7 @@ Model Card (weights_license_tier)  →  get_model_category()  →  Display-Strin
 
 Die Funktion `get_model_category()` in `utils/model_utils.py` ist der einzige Einstiegspunkt. Sie versucht zuerst den Card-Lookup — fällt sie zurück auf Config-Heuristiken (kein Card-Feld vorhanden), liefert sie ebenfalls einen der drei obigen Strings. Niemand darf diese Strings hardcodieren oder selbst ableiten.
 
-`web_export.py` überschreibt das `type`-Feld im Export zur Laufzeit aus der Model Card, so dass auch ältere Leaderboard-CSV-Zeilen (die noch alte Strings wie `"Open Weights (Cloud)"` enthalten können) sofort die korrekten Werte liefern — ohne CSV-Rebuild.
+`scripts/web_export/` überschreibt das `type`-Feld im Export zur Laufzeit aus der Model Card, so dass auch ältere Leaderboard-CSV-Zeilen (die noch alte Strings wie `"Open Weights (Cloud)"` enthalten können) sofort die korrekten Werte liefern — ohne CSV-Rebuild.
 
 **Verbotene Altstrings (seit v3.7.0 abgelöst):** `"Open Weights (Cloud)"`, `"Open Weights (Local)"`, `"Commercial"`, `"Local"`, `"cloud"`, `"local"` als Kategorie-Display-Strings dürfen nicht mehr vergeben werden. Sie können in historischen CSVs noch vorkommen — das Frontend behandelt sie via Legacy-Fallback.
 

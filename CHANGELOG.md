@@ -5,6 +5,47 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v4.10.18] - 2026-07-11
+
+**Framework-Refactoring (Sektion A–M) + Ruff-Cleanup + Bugfixes + Doku-Sync.**
+
+24 Commits nach v4.10.17 — systematisches Refactoring des Framework-Codes gegen die Architektur-Regeln: God-Script-Zerlegung, Helper-SSoT-Konsolidierung, `print`→`logging`, `yaml.safe_load`→`ConfigValidator`, C901-Komplexitäts-Auflösung, Ruff-0-Violations, Dead-Code-Entfernung. Verhaltenserhaltend — keine Änderungen an Scoring/Token-Budget/Provider-Logik. Zusätzlich Bugfixes (ensure_card Duplicate-Cards, Runtime-Bugs) und Doku-Sync auf die neue Package-Struktur.
+
+### Changed — Refactoring (Sektion A–M)
+
+- **Sektion A — `utils/model_utils.py` Aufspaltung:** Monolithisches `model_utils.py` in 7 fokussierte Submodule zerlegt (`model_card_io.py`, `model_id_base.py`, `model_id.py`, `model_size_class.py`, `model_thinking.py`, `model_token_budget.py`, `model_version.py`) + Re-Export-Bridge in `model_utils.py` (rückwärtskompatibel — alle `from utils.model_utils import X`-Imports funktionieren unverändert).
+- **Sektion B — Judge-Caching refactor:** Function-Attribute-Caching (`functools`-Decorator auf Instanzmethoden) → Modul-Level-Singleton. C901-Auflösung + Tests harmonisiert.
+- **Sektion C — Provider-Connectors:** 4 dead no-op `_extract_reasoning_tokens`-Stubs gelöscht. `vllm_base.py` Methoden-Extraktion + `provider_health` ConfigValidator.
+- **Sektion D — `scripts/web_export.py` Aufspaltung:** God-Script in Package `scripts/web_export/` zerlegt (`constants.py`, `entry_builders.py`, `filters.py`, `loader.py`, `main.py`, `top_level.py`). Einstiegspunkt: `python -m scripts.web_export`. `manage_model_cards.py` analog aufgespalten.
+- **Sektion E+J — `benchmark_auto` Aufspaltung + Provider-Branch Pitfall-Doku.**
+- **Sektion F — Helper-SSoT:** Neue `utils/text_helpers.py` (`strip_none`, `slugify`, `normalize_pending`, `parse_star_float`, etc.) + `utils/io_helpers.py` (`atomic_write_json`, `atomic_copy`, etc.). Eliminiert Duplikate über Web-Export, Card-Utils, Maintenance-Skripte.
+- **Sektion G — Config-SSoT:** 18 raw `yaml.safe_load`-Aufrufe → `ConfigValidator` in 15 Skripten.
+- **Sektion H — Legacy-Cleanup:** 27 Migrationsskripte nach `scripts/legacy/` verschoben (von Lint-Checks excludiert).
+- **Sektion I — Logging-SSoT:** 131 `print()` → `logging` in Framework-Utils.
+- **Sektion K+L+M — C901-Auflösung:** ToolUse Exporter, Report, Leaderboard, Review/Cleanup Komplexitäts-Reduktion. Alle C901-Verstöße aufgelöst (gesamt 0).
+
+### Fixed
+
+- **`ensure_card_structure.py` doppelte Base-Cards für suffixed Modelle:** `run_for_card()` erzeugte beim Batch-Modus (`--all`/`--missing`) doppelte Base-Cards für provider-suffixed Modelle (`--SPRK`, `--VSPK`, `--M4APL`, `--GR`), weil `ensure_card(model_id)` ohne `card_path` aufgerufen wurde → `_card_path()` erzeugte den unprefixed Pfad → neue Base-Card statt in-place Patch. Fix: `card_path` wird durchgereicht (`ensure_card(model_id, card_path=card_path)`). `--model`-Modus via `_find_card()` vereinheitlicht. Filename-Fallback stript Shortcode-Suffix. 7 Regression-Tests neu.
+- **4 Runtime-Bugs + 3 verlorene Refactor-Artefakte** aus Makefile-Audit korrigiert.
+- **2 pre-existing Test-Failures** korrigiert.
+- **F821:** Fehlende `stream_handler`-Parameter + `Any`-Importe in C901-Helpern ergänzt.
+
+### Maintenance
+
+- **Ruff 0-Violations:** 711 auto-fixable Verstöße bereinigt + alle verbleibenden 252 manuellen Verstöße aufgelöst (gesamt 0).
+- **QA-Härtung:** `make lint` + `make test` um `tests/` erweitert (Framework-Refactor Phase 0).
+- **Web-Projekt LCL-Duplikation behoben:** `is_local_provider`-Macro in `_badges.njk` als SSoT für `LCL|SPRK|M4APL|VSPK`-Check, 3 Templates refactored (CrucibleMark-Web Commit `1b12fbd`).
+
+### Docs
+
+- **Doku-Sync auf Package-Struktur:** `.agent/web-export-cleanup.md`, `docs/ARCHITECTURE.md`, `docs/TOOLUSE_MODULE.md`, `docs/CARD_MANAGEMENT.md` — verwaiste `scripts/web_export.py`-Referenzen auf `scripts/web_export/`-Submodule aktualisiert. `_strip_none` → `strip_none` in `utils/text_helpers.py`.
+
+### Verifikation
+
+- `ruff check`: 0 violations. `make test`: 1316 passed, 21 skipped, 0 failed. `make validate`: clean. Eleventy-Build (Web): 366 Dateien, 0 Errors.
+
+
 ## [v4.10.17] - 2026-07-10
 
 **Web-Export Datenqualitäts-Fixes + Vendor-Taxonomy-Korrekturen + Dead-Code-Bug + Framework-Refactoring-Plan.**

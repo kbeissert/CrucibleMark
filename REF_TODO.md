@@ -5,6 +5,28 @@
 
 ## Abgeschlossen
 
+### Framework-Refactoring (Sektion A–M) + Ruff 0-Violations (v4.10.18 – 11.07.26, Session 59)
+
+24 Commits nach v4.10.17 — systematisches Refactoring des Framework-Codes gegen die Architektur-Regeln. Verhaltenserhaltend — keine Änderungen an Scoring/Token-Budget/Provider-Logik.
+
+- [x] **Sektion A — `model_utils.py` Aufspaltung** — Monolith in 7 Submodule (`model_card_io`, `model_id_base`, `model_id`, `model_size_class`, `model_thinking`, `model_token_budget`, `model_version`) + Re-Export-Bridge (rückwärtskompatibel).
+- [x] **Sektion B — Judge-Caching refactor** — Function-Attribute-Caching → Modul-Level-Singleton.
+- [x] **Sektion C — Provider-Connectors** — 4 dead no-op `_extract_reasoning_tokens`-Stubs gelöscht. `vllm_base` Methoden-Extraktion + `provider_health` ConfigValidator.
+- [x] **Sektion D — `web_export.py` Aufspaltung** — God-Script in Package `scripts/web_export/` (`constants`, `entry_builders`, `filters`, `loader`, `main`, `top_level`). `manage_model_cards.py` analog.
+- [x] **Sektion E+J — `benchmark_auto` Aufspaltung** + Provider-Branch Pitfall-Doku.
+- [x] **Sektion F — Helper-SSoT** — `utils/text_helpers.py` (`strip_none`, `slugify`, `normalize_pending`, etc.) + `utils/io_helpers.py` (`atomic_write_json`, etc.).
+- [x] **Sektion G — Config-SSoT** — 18 raw `yaml.safe_load` → `ConfigValidator` in 15 Skripten.
+- [x] **Sektion H — Legacy-Cleanup** — 27 Migrationsskripte nach `scripts/legacy/`.
+- [x] **Sektion I — Logging-SSoT** — 131 `print()` → `logging` in Framework-Utils.
+- [x] **Sektion K+L+M — C901-Auflösung** — ToolUse Exporter, Report, Leaderboard, Review/Cleanup. C901 gesamt 0.
+- [x] **Ruff 0-Violations** — 711 auto-fixable + 252 manuelle Verstöße aufgelöst.
+- [x] **QA-Härtung** — `make lint` + `make test` um `tests/` erweitert.
+- [x] **`ensure_card_structure.py` Duplicate-Base-Card-Fix** — `run_for_card()` reicht `card_path` durch, `--model` via `_find_card()`, Filename-Fallback stript Shortcodes. 7 Regression-Tests.
+- [x] **4 Runtime-Bugs + 3 Refactor-Artefakte + 2 Test-Failures + F821** korrigiert.
+- [x] **Web-Projekt LCL-Duplikation** — `is_local_provider`-Macro als SSoT, 3 Templates refactored (CrucibleMark-Web `1b12fbd`).
+- [x] **Doku-Sync** — verwaiste `web_export.py`-Referenzen auf Package-Struktur aktualisiert.
+- [x] **Verifikation:** ruff 0 violations, 1316 passed/0 failed, `make validate` clean, Eleventy-Build 366 Dateien/0 Errors.
+
 ### Web-Export Datenqualitäts-Fixes + Vendor-Taxonomy-Korrekturen (v4.10.17 – 10.07.26, Session 58 Folge)
 
 9 Folge-Commits nach v4.10.16 — Datenqualitäts-Fixes aus Web-Export-Verifikation, Vendor-Taxonomy-Korrekturen, Dead-Code-Bug, variantenbewusster `display_name` und Framework-Refactoring-Plan.

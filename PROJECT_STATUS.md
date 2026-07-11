@@ -1,11 +1,11 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-07-10
-**Current Version:** 4.10.17 — Web-Export Datenqualitäts-Fixes + Vendor-Taxonomy-Korrekturen + Dead-Code-Bug + Framework-Refactoring-Plan
+**Last Updated:** 2026-07-11
+**Current Version:** 4.10.18 — Framework-Refactoring (Sektion A–M) + Ruff 0-Violations + Bugfixes
 **Status:** ✅ Production-Ready
 
 > **Hinweis:** Die Executive Summary weiter unten historisch auf v4.6.1.
-> Die Sub-Versionen v4.6.2–v4.10.17 sind im CHANGELOG.md vollständig dokumentiert.
+> Die Sub-Versionen v4.6.2–v4.10.18 sind im CHANGELOG.md vollständig dokumentiert.
 > Dieser Header wird bei jedem Phase-Commit nachgezogen,
 > die Executive Summary nur bei Major-Milestones.
 >
