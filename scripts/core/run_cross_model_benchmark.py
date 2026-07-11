@@ -329,8 +329,103 @@ def gather_models(category: str) -> list[tuple[str, str, str]]:
 
 
 
-def main() -> None:
-    """Main execution flow for cross-model benchmark."""
+def _resolve_single_model_provider(model_id: str) -> str:
+    """Bestimmt den Provider-Typ ('local'|'commercial') fuer ein einzelnes Modell."""
+    p_type = "local"
+    _known_cloud_model_ids: set[str] = set()
+    try:
+        _cfg = ConfigValidator("benchmark_config.yaml").config
+        for _prov_conf in _cfg.get("providers", {}).get("commercial", {}).values():
+            if _prov_conf.get("model_type") == MODEL_TYPE_OPEN_WEIGHTS_CLOUD:
+                for _m in _prov_conf.get("models", []):
+                    if isinstance(_m, dict) and _m.get("id"):
+                        _known_cloud_model_ids.add(_m["id"])
+    except Exception:
+        pass
+
+    import requests
+    try:
+        from utils.constants import OLLAMA_DEFAULT_BASE_URL
+        resp = requests.get(f"{OLLAMA_DEFAULT_BASE_URL}/api/tags", timeout=TIMEOUT_OLLAMA_HEALTH)
+        ollama_models = [m["name"] for m in resp.json().get("models", [])]
+        if model_id not in ollama_models and "/" in model_id and model_id not in _known_cloud_model_ids:
+            p_type = "commercial"
+    except Exception:
+        if model_id not in _known_cloud_model_ids and ("/" in model_id or model_id.startswith("gpt-") or model_id.startswith("claude-")):
+            p_type = "commercial"
+    return p_type
+
+
+def _select_single_model_target(args) -> tuple[list[tuple[str, str, str]], str]:
+    """Liefert (all_models, selected_category) fuer den --model-Fall."""
+    p_type = _resolve_single_model_provider(args.model)
+    all_models = [(args.model, args.model, p_type)]
+    return all_models, "-1"
+
+
+def _apply_health_filter(all_models: list) -> list:
+    """Health-Check + Filter; beendet das Programm bei leeren Modell-Listen."""
+    failed_providers = check_provider_health(all_models)
+    if not failed_providers:
+        return all_models
+
+    rprint(
+        f"\n[bold red]⚠️  Überspringe Provider mit Fehlern: {', '.join(failed_providers)}[/bold red]"
+    )
+    filtered = [m for m in all_models if m[2] not in failed_providers]
+    if not filtered:
+        rprint(
+            "[bold red]❌ Alle Modelle aufgrund von Provider-Fehlern übersprungen. Beende.[/bold red]"
+        )
+        sys.exit(1)
+    return filtered
+
+
+def _print_config_table(selected_module: str, all_models: list) -> None:
+    rprint("\n[bold]⚙️  Konfiguration:[/bold]")
+    rprint(f"  Modul:       [cyan]{selected_module}[/cyan]")
+    rprint(f"  Modelle:     [cyan]{len(all_models)}[/cyan]")
+
+    table = Table(title="Ziel-Modelle")
+    table.add_column("Provider", style="dim")
+    table.add_column("Modell ID", style="bold")
+
+    for m_id, _, p_type in all_models:
+        table.add_row(p_type, m_id)
+
+    console.print(table)
+
+
+def _run_benchmark_loop(selected_module: str, all_models: list, audit: bool, force: bool) -> dict:
+    results = {"success": [], "failure": []}
+    for i, (m_id, m_name, p_type) in enumerate(all_models):
+        console.rule(
+            f"[yellow]🚀 Starte Lauf {i + 1}/{len(all_models)}: {m_name}[/yellow]"
+        )
+
+        success = run_benchmark(
+            selected_module, m_id, p_type, audit=audit, force=force
+        )
+
+        if success:
+            results["success"].append(m_id)
+            rprint(f"[green]✅ Benchmark für {m_id} erfolgreich.[/green]")
+        else:
+            results["failure"].append(m_id)
+            rprint(f"[red]❌ Benchmark für {m_id} fehlgeschlagen.[/red]")
+    return results
+
+
+def _print_summary(results: dict) -> None:
+    console.rule("[bold]📝 Zusammenfassung[/bold]")
+    rprint(f"[green]Erfolgreich:   {len(results['success'])}[/green]")
+    rprint(f"[red]Fehlgeschlagen: {len(results['failure'])}[/red]")
+
+    if results["failure"]:
+        rprint("Fehlgeschlagene Modelle:", ", ".join(results["failure"]))
+
+
+def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Run a benchmark module against ALL models."
     )
@@ -366,108 +461,33 @@ def main() -> None:
     )
 
     args = parser.parse_args()
-
     if args.force_rerun:
         args.force = True
+    return args
+
+
+def main() -> None:
+    """Main execution flow for cross-model benchmark."""
+    args = _parse_args()
 
     selected_module = select_benchmark_module(args.module)
 
     if args.model:
-        # Determine provider automatically for this model
-        p_type = "local"
-        if not (args.model.startswith("ollama/") or ":cloud" in args.model or ":latest" in args.model or "-" in args.model):
-            # heuristic: if no common ollama trait, maybe commercial, but we'll try to find it
-            pass
-        # Pre-check: is this model known as open_weights_cloud in config? Then keep p_type = "local".
-        _known_cloud_model_ids: set[str] = set()
-        try:
-            _cfg = ConfigValidator("benchmark_config.yaml").config
-            for _prov_conf in _cfg.get("providers", {}).get("commercial", {}).values():
-                if _prov_conf.get("model_type") == MODEL_TYPE_OPEN_WEIGHTS_CLOUD:
-                    for _m in _prov_conf.get("models", []):
-                        if isinstance(_m, dict) and _m.get("id"):
-                            _known_cloud_model_ids.add(_m["id"])
-        except Exception:
-            pass
-
-        import requests
-        try:
-            from utils.constants import OLLAMA_DEFAULT_BASE_URL
-            resp = requests.get(f"{OLLAMA_DEFAULT_BASE_URL}/api/tags", timeout=TIMEOUT_OLLAMA_HEALTH)
-            ollama_models = [m["name"] for m in resp.json().get("models", [])]
-            if args.model not in ollama_models and "/" in args.model and args.model not in _known_cloud_model_ids:
-                p_type = "commercial"
-        except Exception:
-            if args.model not in _known_cloud_model_ids and ("/" in args.model or args.model.startswith("gpt-") or args.model.startswith("claude-")):
-                p_type = "commercial"
-
-        # Output is (model_id, display_name, provider)
-        all_models = [(args.model, args.model, p_type)]
-        selected_category = "-1"
+        all_models, _selected_category = _select_single_model_target(args)
     else:
-        selected_category = select_model_category()
-        all_models = gather_models(selected_category)
+        all_models = gather_models(select_model_category())
 
     if not all_models:
         rprint("[red]❌ Keine Modelle gefunden! Config und Ollama prüfen.[/red]")
         sys.exit(1)
 
-    # 1.5 Health Check / Pre-flight Ping
-    failed_providers = check_provider_health(all_models)
+    all_models = _apply_health_filter(all_models)
+    _print_config_table(selected_module, all_models)
 
-    if failed_providers:
-        # pylint: disable=line-too-long
-        rprint(
-            f"\n[bold red]⚠️  Überspringe Provider mit Fehlern: {', '.join(failed_providers)}[/bold red]"
-        )
-        all_models = [m for m in all_models if m[2] not in failed_providers]
-
-        if not all_models:
-            rprint(
-                "[bold red]❌ Alle Modelle aufgrund von Provider-Fehlern übersprungen. Beende.[/bold red]"
-            )
-            sys.exit(1)
-
-    # 2. Confirm
-    rprint("\n[bold]⚙️  Konfiguration:[/bold]")
-    rprint(f"  Modul:       [cyan]{selected_module}[/cyan]")
-    rprint(f"  Modelle:     [cyan]{len(all_models)}[/cyan]")
-
-    table = Table(title="Ziel-Modelle")
-    table.add_column("Provider", style="dim")
-    table.add_column("Modell ID", style="bold")
-
-    for m_id, _, p_type in all_models:
-        table.add_row(p_type, m_id)
-
-    console.print(table)
-
-    # 3. Execution Loop
-    results = {"success": [], "failure": []}
-
-    for i, (m_id, m_name, p_type) in enumerate(all_models):
-        console.rule(
-            f"[yellow]🚀 Starte Lauf {i + 1}/{len(all_models)}: {m_name}[/yellow]"
-        )
-
-        success = run_benchmark(
-            selected_module, m_id, p_type, audit=args.audit, force=args.force
-        )
-
-        if success:
-            results["success"].append(m_id)
-            rprint(f"[green]✅ Benchmark für {m_id} erfolgreich.[/green]")
-        else:
-            results["failure"].append(m_id)
-            rprint(f"[red]❌ Benchmark für {m_id} fehlgeschlagen.[/red]")
-
-    # 4. Summary
-    console.rule("[bold]📝 Zusammenfassung[/bold]")
-    rprint(f"[green]Erfolgreich:   {len(results['success'])}[/green]")
-    rprint(f"[red]Fehlgeschlagen: {len(results['failure'])}[/red]")
-
-    if results["failure"]:
-        rprint("Fehlgeschlagene Modelle:", ", ".join(results["failure"]))
+    results = _run_benchmark_loop(
+        selected_module, all_models, audit=args.audit, force=args.force
+    )
+    _print_summary(results)
 
 
 if __name__ == "__main__":

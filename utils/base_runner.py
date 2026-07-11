@@ -116,19 +116,48 @@ class BaseBenchmarkRunner:
             if tlu is not None:
                 exec_result.token_limit_used = tlu
 
-            tps_eval = self.client.last_response_metadata.get("tps_eval")
-            if tps_eval is not None:
-                exec_result.tps_eval = tps_eval
-
-            rt = self.client.last_response_metadata.get("reasoning_tokens")
-            if rt is not None:
-                exec_result.reasoning_tokens = rt
-
-            tc = self.client.last_response_metadata.get("think_content")
-            if tc is not None:
-                exec_result.think_content = tc
+            self._inject_client_metadata(exec_result)
 
         return test_instance, exec_result
+
+    def _inject_client_metadata(self, exec_result: BenchmarkResult) -> None:
+        """Überträgt relevante Client-/Response-Metadaten in das Exec-Result.
+
+        Setzt token_limit_fallback, finish_reason, token_limit_cutoff,
+        token_limit_used, tps_eval, reasoning_tokens und think_content aus
+        ``self.client.last_response_metadata``, falls vorhanden.
+        """
+        if not hasattr(self.client, "last_response_metadata"):
+            return
+        meta = self.client.last_response_metadata
+
+        # Check token_limit_fallback FIRST: a ctx_overflow (fallback=True) must prevent
+        # token_limit_cutoff from being set, even if finish_reason="length".
+        fb = meta.get("token_limit_fallback")
+        if fb:
+            exec_result.token_limit_fallback = True
+
+        fr = meta.get("finish_reason")
+        if fr:
+            exec_result.finish_reason = str(fr)
+            if str(fr).lower() in ["length", "max_tokens"] and not getattr(exec_result, "token_limit_fallback", False):
+                exec_result.token_limit_cutoff = True
+
+        tlu = meta.get("token_limit_used")
+        if tlu is not None:
+            exec_result.token_limit_used = tlu
+
+        tps_eval = meta.get("tps_eval")
+        if tps_eval is not None:
+            exec_result.tps_eval = tps_eval
+
+        rt = meta.get("reasoning_tokens")
+        if rt is not None:
+            exec_result.reasoning_tokens = rt
+
+        tc = meta.get("think_content")
+        if tc is not None:
+            exec_result.think_content = tc
 
     # pylint: disable=too-many-arguments, too-many-positional-arguments
     def build_base_result(
@@ -366,13 +395,6 @@ class BaseBenchmarkRunner:
         existing_benchmarks: dict | None = None
     ) -> list:
         """Führt Batch-Module (z.B. Political Compass) zentral aus."""
-        import json
-        from datetime import datetime
-        from pathlib import Path
-        from utils.module_loader import load_test_class
-        from utils.model_utils import get_model_version
-        from utils.scoring.political_compass_handler import PoliticalCompassHandler
-
         # SSoT für Batch-Module: Skip-Logik ausschließlich über das modul-spezifische
         # Leaderboard (z.B. political_compass_leaderboard.csv), NICHT über die 3-CSVs.
         #
@@ -387,44 +409,105 @@ class BaseBenchmarkRunner:
         # Der Fallback-Check unten prüft das autarke PC-Leaderboard und ist die
         # einzige verlässliche Quelle der Wahrheit für Batch-Module.
         batch_asset_id = str(benchmark_info.get("id", "batch_module"))
-        if existing_benchmarks and not force:
-            cached_res = existing_benchmarks.get((model, batch_asset_id))
-            if cached_res and not PoliticalCompassHandler.is_political_compass(benchmark_info):
-                # Standardpfad für nicht-PC-Batch-Module: 3-CSV-Cache reicht als Beweis.
-                logger.warning(f"⏩ Überspringe {benchmark_info.get('name', '')} (Batch-Modus; Bereits im Cache vorhanden)")
-                return [cached_res.copy()]
-            if cached_res:
-                # PC: Cache vorhanden, aber Leaderboard-Check unten ist maßgeblich.
-                logger.debug(
-                    "PC-Cache-Treffer in 3-CSVs für %s — prüfe pc_leaderboard.csv als SSoT.",
-                    model,
-                )
+
+        cached_result = self._check_batch_cache_skip(
+            model, batch_asset_id, benchmark_info, existing_benchmarks, force,
+        )
+        if cached_result is not None:
+            return cached_result
+
+        if self._check_pc_leaderboard_skip(model, benchmark_info, force):
+            return []
+
+        test = self._load_batch_test(benchmark_info, model, provider)
+        if test is None:
+            return []
+
+        return self._run_batch_test(test, model, benchmark_info, provider, num_runs, batch_asset_id)
+
+    def _check_batch_cache_skip(
+        self,
+        model: str,
+        batch_asset_id: str,
+        benchmark_info: dict,
+        existing_benchmarks: dict | None,
+        force: bool,
+    ) -> list | None:
+        """Prüft den 3-CSV-Cache auf einen vorhandenen Batch-Eintrag.
+
+        Returns:
+            Liste mit Kopie des Cache-Eintrags bei Skip (nicht-PC-Module),
+            sonst None — fällt zur PC-Leaderboard-Prüfung durch.
+        """
+        from utils.scoring.political_compass_handler import PoliticalCompassHandler
+
+        if not existing_benchmarks or force:
+            return None
+
+        cached_res = existing_benchmarks.get((model, batch_asset_id))
+        if cached_res is None:
+            return None
+
+        if not PoliticalCompassHandler.is_political_compass(benchmark_info):
+            # Standardpfad für nicht-PC-Batch-Module: 3-CSV-Cache reicht als Beweis.
+            logger.warning(
+                f"⏩ Überspringe {benchmark_info.get('name', '')} "
+                "(Batch-Modus; Bereits im Cache vorhanden)"
+            )
+            return [cached_res.copy()]
+
+        # PC: Cache vorhanden, aber Leaderboard-Check unten ist maßgeblich.
+        logger.debug(
+            "PC-Cache-Treffer in 3-CSVs für %s — prüfe pc_leaderboard.csv als SSoT.",
+            model,
+        )
+        return None
+
+    def _check_pc_leaderboard_skip(self, model: str, benchmark_info: dict, force: bool) -> bool:
+        """Prüft das autarke PC-Leaderboard (SSoT für Political-Compass-Cache)."""
+        from pathlib import Path
+        from utils.scoring.political_compass_handler import PoliticalCompassHandler
+
+        if force or not PoliticalCompassHandler.is_political_compass(benchmark_info):
+            return False
 
         # Fallback-Check: political_compass_leaderboard.csv direkt prüfen.
         # Die Standard-CSVs können nach einem Reset leer sein, während PC-Ergebnisse
         # autark im Leaderboard fortbestehen. Verhindert teure Re-Runs via `make political-compass`.
-        if not force and PoliticalCompassHandler.is_political_compass(benchmark_info):
-            import csv as _csv
-            import re as _re_pc
-            pc_leaderboard = Path("benchmark_scores/political_compass_leaderboard.csv")
-            if pc_leaderboard.exists():
-                try:
-                    # save_leaderboard_csv() strips OpenRouter date suffixes:
-                    # -YYYYMMDD (8-digit) and -MMDD with valid months 01-12 (e.g. -0127).
-                    # Version suffixes like -2503 / -2411 are intentionally NOT stripped.
-                    # Normalize identically so the lookup matches dated config aliases.
-                    model_normalized = _re_pc.sub(r"-\d{8}$", "", model)
-                    model_normalized = _re_pc.sub(r"-(0[1-9]|1[0-2])\d{2}$", "", model_normalized)
-                    with pc_leaderboard.open("r", encoding="utf-8") as _f:
-                        pc_models = {row.get("model") for row in _csv.DictReader(_f)}
-                    if model in pc_models or model_normalized in pc_models:
-                        logger.warning(
-                            f"⏩ Überspringe {benchmark_info.get('name', '')} "
-                            f"(PC-Leaderboard; {model} bereits bewertet)"
-                        )
-                        return []
-                except (OSError, _csv.Error):
-                    pass  # Bei Lesefehler: sicher durchlaufen und normal ausführen
+        import csv as _csv
+        import re as _re_pc
+
+        pc_leaderboard = Path("benchmark_scores/political_compass_leaderboard.csv")
+        if not pc_leaderboard.exists():
+            return False
+
+        try:
+            # save_leaderboard_csv() strips OpenRouter date suffixes:
+            # -YYYYMMDD (8-digit) and -MMDD with valid months 01-12 (e.g. -0127).
+            # Version suffixes like -2503 / -2411 are intentionally NOT stripped.
+            # Normalize identically so the lookup matches dated config aliases.
+            model_normalized = _re_pc.sub(r"-\d{8}$", "", model)
+            model_normalized = _re_pc.sub(r"-(0[1-9]|1[0-2])\d{2}$", "", model_normalized)
+            with pc_leaderboard.open("r", encoding="utf-8") as _f:
+                pc_models = {row.get("model") for row in _csv.DictReader(_f)}
+            if model in pc_models or model_normalized in pc_models:
+                logger.warning(
+                    f"⏩ Überspringe {benchmark_info.get('name', '')} "
+                    f"(PC-Leaderboard; {model} bereits bewertet)"
+                )
+                return True
+        except (OSError, _csv.Error):
+            pass  # Bei Lesefehler: sicher durchlaufen und normal ausführen
+        return False
+
+    def _load_batch_test(self, benchmark_info: dict, model: str, provider: str):
+        """Lädt die Batch-Test-Klasse und bereitet sie vor.
+
+        Returns:
+            Test-Instanz oder None bei Setup-Fehler.
+        """
+        from pathlib import Path
+        from utils.module_loader import load_test_class
 
         module_path = Path(str(benchmark_info.get("module_path", "")))
         test_file = module_path / "test.py"
@@ -432,30 +515,50 @@ class BaseBenchmarkRunner:
 
         if not test_class_name:
             import logging
-            logging.getLogger(__name__).error("Keine gültige Test-Klasse für %s definiert.", benchmark_info.get("name"))
-            return []
+            logging.getLogger(__name__).error(
+                "Keine gültige Test-Klasse für %s definiert.", benchmark_info.get("name")
+            )
+            return None
 
         try:
             test_class_type = load_test_class(test_file, test_class_name)
         except Exception as e:
             import logging
-            logging.getLogger(__name__).error("Failed to load batch module %s: %s", benchmark_info.get("name"), e)
-            return []
+            logging.getLogger(__name__).error(
+                "Failed to load batch module %s: %s", benchmark_info.get("name"), e
+            )
+            return None
 
-        logger.info(f"🛠️  Initialisiere Batch-Test: {benchmark_info.get('name')} ({provider}:{model})")
+        logger.info(
+            f"🛠️  Initialisiere Batch-Test: {benchmark_info.get('name')} ({provider}:{model})"
+        )
         test = test_class_type()
 
         assets_dir = module_path / "assets"
         if not assets_dir.exists():
             logger.error(f"❌ Assets directory not found: {assets_dir}")
-            return []
+            return None
 
         if hasattr(test, "load_questions"):
             test.load_questions(str(assets_dir))
 
         if hasattr(test, "questions") and not test.questions:
             logger.error("❌ Keine Fragen geladen!")
-            return []
+            return None
+
+        return test
+
+    def _run_batch_test(
+        self,
+        test: Any,
+        model: str,
+        benchmark_info: dict,
+        provider: str,
+        num_runs: int,
+        batch_asset_id: str,
+    ) -> list:
+        """Führt Batch-Test aus, prüft Fehler-Flags und baut das std_result."""
+        import json
 
         min_runs = benchmark_info.get("min_runs", 1)
         test.num_runs = max(num_runs, min_runs)
@@ -479,6 +582,25 @@ class BaseBenchmarkRunner:
         except (json.JSONDecodeError, TypeError) as e:
             logger.error(f"❌ Batch Execution Failed: Invalid JSON response ({e})")
             return []
+
+        return self._finalize_batch_result(
+            test, result_wrapper, report, model, benchmark_info, provider, batch_asset_id,
+        )
+
+    def _finalize_batch_result(
+        self,
+        test: Any,
+        result_wrapper: Any,
+        report: dict,
+        model: str,
+        benchmark_info: dict,
+        provider: str,
+        batch_asset_id: str,
+    ) -> list:
+        """Verarbeitet Report (PC-Handler oder Summary-Log) und baut std_result."""
+        from datetime import datetime
+        from utils.model_utils import get_model_version
+        from utils.scoring.political_compass_handler import PoliticalCompassHandler
 
         model_version = get_model_version(model, provider=provider, client=self.client)
 

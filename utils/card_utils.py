@@ -489,11 +489,33 @@ def ensure_card(
     Returns:
         Pfad zur Card-Datei (nach Aufruf garantiert vorhanden).
     """
-    # Importiert hier lokal, um Circular-Import-Risiko zu minimieren.
-    from utils.model_utils import (  # noqa: PLC0415
+    card_path, model_id = _resolve_card_path_for(model_id, card_path, provider)
+
+    existing = _load_existing_card(card_path)
+    result = _build_card_result(model_id, existing)
+    _validate_controlled_fields(model_id, result)
+
+    card_path.parent.mkdir(parents=True, exist_ok=True)
+    card_path.write_text(
+        json.dumps(result, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    return card_path
+
+
+def _resolve_card_path_for(
+    model_id: str,
+    card_path: Path | None,
+    provider: str | None,
+) -> tuple[Path, str]:
+    """Ermittelt den kanonischen Card-Pfad unter Berücksichtigung von Provider/Resolver.
+
+    Returns:
+        (card_path, model_id) – model_id kann bei Konflikt-Resolver-Auflösung wechseln.
+    """
+    from utils.model_utils import (  # noqa: PLC0415  (Circular-Import-Schutz)
         _card_path,
         build_card_id,
-        get_model_size_class,
         resolve_unique_card_id,
     )
 
@@ -510,31 +532,38 @@ def ensure_card(
         if unique_id != model_id:
             # Pfad explizit auf die kanonische Card-Datei des unique_id legen
             # (kein Provider-Shortcode, weil unique_id schon eindeutig ist).
-            card_path = _card_path(unique_id, provider=None, for_write=True)
-            model_id = unique_id
-        else:
-            card_path = _card_path(model_id, provider=provider, for_write=True)
-    elif card_path is None:
-        card_path = _card_path(model_id, for_write=True)
+            return _card_path(unique_id, provider=None, for_write=True), unique_id
+        return _card_path(model_id, provider=provider, for_write=True), model_id
 
-    # Bestehende Card laden (oder leer starten)
-    existing: dict[str, Any] = {}
-    if card_path.exists():
-        try:
-            existing = json.loads(card_path.read_text(encoding="utf-8"))
-            if not isinstance(existing, dict):
-                existing = {}
-        except (json.JSONDecodeError, OSError):
-            existing = {}
+    if card_path is None:
+        return _card_path(model_id, for_write=True), model_id
 
-    # Ergebnis aufbauen: Template-Felder in kanonischer Reihenfolge
+    return card_path, model_id
+
+
+def _load_existing_card(card_path: Path) -> dict[str, Any]:
+    """Lädt eine bestehende Card-Datei (oder liefert leeres Dict bei Fehler/Fehlen)."""
+    if not card_path.exists():
+        return {}
+    try:
+        existing = json.loads(card_path.read_text(encoding="utf-8"))
+        if not isinstance(existing, dict):
+            return {}
+        return existing
+    except (json.JSONDecodeError, OSError):
+        return {}
+
+
+def _build_card_result(model_id: str, existing: dict[str, Any]) -> dict[str, Any]:
+    """Baut die Card-Struktur aus dem Template und hängt Nicht-Template-Felder an."""
+    from utils.model_utils import get_model_size_class  # noqa: PLC0415  (Circular-Import-Schutz)
+
     result: dict[str, Any] = {}
 
     for key, default in _CARD_TEMPLATE.items():
         if key in existing:
             # Bestehenden Wert beibehalten
             result[key] = existing[key]
-        # Fehlende Felder mit berechneten oder statischen Defaults ergänzen
         elif key == "model_id":
             result[key] = model_id
         elif key == "size_class":
@@ -560,10 +589,16 @@ def ensure_card(
         if key not in result:
             result[key] = value
 
-    # Whitelist-Check für kontrollierte Vokabulare (SSoT: classification_taxonomy).
-    # "TODO" ist explizit als "noch zu befüllen"-Platzhalter erlaubt — keine Warnung.
-    # Andere Werte, die nicht in der Taxonomie stehen, lösen eine WARN aus.
-    # Das ist ein Hinweis, kein Hard-Error: der Autor kann bewusst abweichen.
+    return result
+
+
+def _validate_controlled_fields(model_id: str, result: dict[str, Any]) -> None:
+    """Whitelist-Check für kontrollierte Vokabulare (SSoT: classification_taxonomy).
+
+    "TODO" ist explizit als "noch zu befüllen"-Platzhalter erlaubt — keine Warnung.
+    Andere Werte, die nicht in der Taxonomie stehen, lösen eine WARN aus.
+    Das ist ein Hinweis, kein Hard-Error: der Autor kann bewusst abweichen.
+    """
     for card_field, taxonomy_section in _CONTROLLED_FIELDS.items():
         value = result.get(card_field)
         if value is None or value == "TODO" or value == "":
@@ -578,18 +613,11 @@ def ensure_card(
                     "Erlaubte Werte: %s.",
                     model_id, card_field, invalid_items, sorted(valid),
                 )
-        else:
-            valid = get_valid_values(taxonomy_section)
-            if valid and value not in valid:
-                logger.warning(
-                    "Card '%s': %s='%s' ist nicht in der Taxonomie-Section '%s'. "
-                    "Erlaubte Werte: %s. 'TODO' ist explizit als Platzhalter erlaubt.",
-                    model_id, card_field, value, taxonomy_section, sorted(valid),
-                )
-
-    card_path.parent.mkdir(parents=True, exist_ok=True)
-    card_path.write_text(
-        json.dumps(result, ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
-    )
-    return card_path
+            continue
+        valid = get_valid_values(taxonomy_section)
+        if valid and value not in valid:
+            logger.warning(
+                "Card '%s': %s='%s' ist nicht in der Taxonomie-Section '%s'. "
+                "Erlaubte Werte: %s. 'TODO' ist explizit als Platzhalter erlaubt.",
+                model_id, card_field, value, taxonomy_section, sorted(valid),
+            )

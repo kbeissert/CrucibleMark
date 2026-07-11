@@ -174,30 +174,16 @@ class ProviderSelector:
         use_vllm_spark = vllm_spark_cfg.get("enabled", False)
         use_ollama = ollama_cfg.get("enabled", False)
 
-        enabled_runtimes: list[tuple[str, str]] = []
-        if use_llamacpp:
-            enabled_runtimes.append(("llamacpp", "llama.cpp (MacBook Pro)"))
-        if use_llamacpp_spark:
-            enabled_runtimes.append(("llamacpp_spark", "llama.cpp (DGX Spark)"))
-        if use_vllm_spark:
-            enabled_runtimes.append(("vllm_spark", "vLLM (asusGX10)"))
+        enabled_runtimes = self._build_enabled_local_runtimes(
+            use_llamacpp, use_llamacpp_spark, use_vllm_spark,
+        )
 
         if len(enabled_runtimes) > 1:
-            runtime = select_from_list(
-                enabled_runtimes,
-                display_func=lambda x: x[1],
-                prompt="Wähle lokale Runtime",
-                title="LOKALE PROVIDER",
+            return self._prompt_local_runtime(
+                enabled_runtimes, llamacpp_cfg, llamacpp_spark_cfg, vllm_spark_cfg,
             )
-            if runtime:
-                if runtime[0] == "llamacpp":
-                    return self._select_llamacpp_model(llamacpp_cfg, "llamacpp")
-                if runtime[0] == "llamacpp_spark":
-                    return self._select_llamacpp_model(llamacpp_spark_cfg, "llamacpp_spark")
-                if runtime[0] == "vllm_spark":
-                    return self._select_vllm_model(vllm_spark_cfg, "vllm_spark")
-            sys.exit(0)
 
+        # Single-runtime path: direkt dispatchen, kein Prompt
         if use_llamacpp:
             return self._select_llamacpp_model(llamacpp_cfg, "llamacpp")
         if use_llamacpp_spark:
@@ -209,6 +195,44 @@ class ProviderSelector:
         logger.error("\n❌ Kein lokaler Provider aktiv. Bitte 'enabled: true' in benchmark_config.yaml setzen.")
         logger.info("   providers.local.ollama_local.enabled oder providers.local.llamacpp.enabled")
         sys.exit(1)
+
+    @staticmethod
+    def _build_enabled_local_runtimes(
+        use_llamacpp: bool, use_llamacpp_spark: bool, use_vllm_spark: bool,
+    ) -> list[tuple[str, str]]:
+        """Sammelt die aktivierten lokalen Runtime-Paare (key, display)."""
+        enabled: list[tuple[str, str]] = []
+        if use_llamacpp:
+            enabled.append(("llamacpp", "llama.cpp (MacBook Pro)"))
+        if use_llamacpp_spark:
+            enabled.append(("llamacpp_spark", "llama.cpp (DGX Spark)"))
+        if use_vllm_spark:
+            enabled.append(("vllm_spark", "vLLM (asusGX10)"))
+        return enabled
+
+    def _prompt_local_runtime(
+        self,
+        enabled_runtimes: list[tuple[str, str]],
+        llamacpp_cfg: dict,
+        llamacpp_spark_cfg: dict,
+        vllm_spark_cfg: dict,
+    ) -> tuple[str, str]:
+        """Fragt den User nach einer lokalen Runtime und routet entsprechend."""
+        runtime = select_from_list(
+            enabled_runtimes,
+            display_func=lambda x: x[1],
+            prompt="Wähle lokale Runtime",
+            title="LOKALE PROVIDER",
+        )
+        if runtime is None:
+            sys.exit(0)
+        if runtime[0] == "llamacpp":
+            return self._select_llamacpp_model(llamacpp_cfg, "llamacpp")
+        if runtime[0] == "llamacpp_spark":
+            return self._select_llamacpp_model(llamacpp_spark_cfg, "llamacpp_spark")
+        if runtime[0] == "vllm_spark":
+            return self._select_vllm_model(vllm_spark_cfg, "vllm_spark")
+        sys.exit(0)
 
     def _select_vllm_model(self, vllm_cfg: dict, provider_name: str = "vllm_spark") -> tuple[str, str]:
         """Wählt Modell aus der vLLM-Konfiguration.

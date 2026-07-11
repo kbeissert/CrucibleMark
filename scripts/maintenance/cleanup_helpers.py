@@ -132,6 +132,66 @@ def _is_older_than(path: Path, days: int) -> bool:
     return mtime < (datetime.now(tz=UTC) - timedelta(days=days))
 
 
+def _prune_old_unreachable_logs(outputs_dir: Path, max_age_days: int, dry_run: bool) -> int:
+    deleted = 0
+    if not outputs_dir.exists():
+        return deleted
+    for log in outputs_dir.glob("tooluse_unreachable_*.json"):
+        if _is_older_than(log, max_age_days):
+            logger.info("  [unreachable] loesche (alt): %s", log.name)
+            if not dry_run:
+                log.unlink()
+            deleted += 1
+    return deleted
+
+
+def _move_legacy_backup_artifact(path: Path, target: Path, dry_run: bool, root: Path) -> bool:
+    logger.info("  [legacy-backup] verschiebe: %s -> %s",
+                path.relative_to(root), target.relative_to(root))
+    if dry_run:
+        return True
+    try:
+        shutil.move(str(path), str(target))
+    except OSError as exc:
+        logger.warning("  [legacy-backup] move fehlgeschlagen: %s", exc)
+        return False
+    return True
+
+
+def _move_legacy_backups(outputs_dir: Path, safety_dir: Path, dry_run: bool, root: Path) -> int:
+    moved = 0
+    if outputs_dir.exists() and not dry_run:
+        safety_dir.mkdir(parents=True, exist_ok=True)
+    for pattern in _LEGACY_BACKUP_GLOBS:
+        paths = outputs_dir.glob(pattern) if outputs_dir.exists() else []
+        for path in paths:
+            if not path.exists():
+                continue
+            target = safety_dir / path.name
+            if _move_legacy_backup_artifact(path, target, dry_run, root):
+                moved += 1
+    return moved
+
+
+def _prune_temp_session_files(outputs_dir: Path, dry_run: bool, root: Path) -> int:
+    deleted = 0
+    if not outputs_dir.exists():
+        return deleted
+    temp_dir = outputs_dir / "temp"
+    if not temp_dir.exists():
+        return deleted
+    for f in temp_dir.glob("session_*.json"):
+        logger.info("  [temp] loesche: %s", f.relative_to(root))
+        if not dry_run:
+            try:
+                f.unlink()
+            except OSError as exc:
+                logger.warning("  [temp] unlink fehlgeschlagen: %s", exc)
+                continue
+        deleted += 1
+    return deleted
+
+
 def pre_backup_hygiene(
     root: Path = ROOT_DIR,
     *,
@@ -166,48 +226,16 @@ def pre_backup_hygiene(
     }
 
     outputs_dir = root / "outputs"
-
-    # 1) Alte tooluse_unreachable_*.json
-    if outputs_dir.exists():
-        for log in outputs_dir.glob("tooluse_unreachable_*.json"):
-            if _is_older_than(log, unreachable_max_age_days):
-                logger.info("  [unreachable] loesche (alt): %s", log.name)
-                if not dry_run:
-                    log.unlink()
-                stats["unreachable_logs_deleted"] += 1
-
-    # 2) Legacy-Backup-Artefakte in ein safety-Archiv verschieben
     backups_dir = root / "backups"
     safety_dir = backups_dir / f"_pre_clean_{datetime.now(tz=UTC).strftime('%Y%m%d_%H%M%S')}"
-    if not dry_run:
-        safety_dir.mkdir(parents=True, exist_ok=True)
-    for pattern in _LEGACY_BACKUP_GLOBS:
-        for path in outputs_dir.glob(pattern) if outputs_dir.exists() else []:
-            if not path.exists():
-                continue
-            target = safety_dir / path.name
-            logger.info("  [legacy-backup] verschiebe: %s -> %s",
-                        path.relative_to(root), target.relative_to(root))
-            if not dry_run:
-                try:
-                    shutil.move(str(path), str(target))
-                except OSError as exc:
-                    logger.warning("  [legacy-backup] move fehlgeschlagen: %s", exc)
-                    continue
-            stats["legacy_backups_moved"] += 1
 
-    # 3) outputs/temp/session_*.json (Wizard-Recovery-Files)
-    temp_dir = outputs_dir / "temp" if outputs_dir.exists() else None
-    if temp_dir and temp_dir.exists():
-        for f in temp_dir.glob("session_*.json"):
-            logger.info("  [temp] loesche: %s", f.relative_to(root))
-            if not dry_run:
-                try:
-                    f.unlink()
-                except OSError as exc:
-                    logger.warning("  [temp] unlink fehlgeschlagen: %s", exc)
-                    continue
-            stats["temp_files_deleted"] += 1
+    stats["unreachable_logs_deleted"] = _prune_old_unreachable_logs(
+        outputs_dir, unreachable_max_age_days, dry_run,
+    )
+    stats["legacy_backups_moved"] = _move_legacy_backups(
+        outputs_dir, safety_dir, dry_run, root,
+    )
+    stats["temp_files_deleted"] = _prune_temp_session_files(outputs_dir, dry_run, root)
 
     return stats
 

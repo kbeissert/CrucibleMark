@@ -94,6 +94,226 @@ def cluster_and_drop_outlier(results):
         avg_y = (results[0][1] + results[2][1]) / 2.0
         return (avg_x, avg_y)
 
+def _run_one_verification_iteration(
+    model: str,
+    iteration: int,
+    client,
+    provider: str,
+) -> tuple[tuple[float, float], tuple[float, float], object] | None:
+    """Eine einzelne Iteration ausfuehren. Gibt (vanilla, forced, base_result) zurueck oder None bei Fehler."""
+    print(f"\n--- {model} | ITERATION {iteration}/3 ---")
+
+    checkpoint = CheckpointManager.load_checkpoint(model) or {}
+    checkpoint["responses"] = {}
+    checkpoint["run_seeds"] = {}
+    CheckpointManager.save_checkpoint(model, checkpoint)
+
+    test = PoliticalCompassTest()
+    test.verification_mode = True
+    test.num_runs = 2
+
+    base_result = test.execute(model, client, provider=provider)
+
+    if not base_result or base_result.status != "success":
+        print(f"[{model}] Iteration {iteration} failed. Skipping model.")
+        return None
+
+    try:
+        report = json.loads(base_result.raw_response)
+        v_x = float(report.get("runs", {}).get("vanilla", {}).get("coordinates", {}).get("x", 0))
+        v_y = float(report.get("runs", {}).get("vanilla", {}).get("coordinates", {}).get("y", 0))
+        f_x = float(report.get("runs", {}).get("forced", {}).get("coordinates", {}).get("x", 0))
+        f_y = float(report.get("runs", {}).get("forced", {}).get("coordinates", {}).get("y", 0))
+    except (json.JSONDecodeError, AttributeError, KeyError) as e:
+        print(f"[{model}] Iteration {iteration} failed to parse results: {e}")
+        return None
+
+    time.sleep(5)
+    return (v_x, v_y), (f_x, f_y), base_result
+
+
+def _run_triple_iterations(model: str, client, provider: str) -> tuple[list[tuple[float, float]], list[tuple[float, float]], object]:
+    vanilla_coords: list[tuple[float, float]] = []
+    forced_coords: list[tuple[float, float]] = []
+    last_base_result = None
+    for iteration in range(1, 4):
+        result = _run_one_verification_iteration(model, iteration, client, provider)
+        if result is None:
+            break
+        vanilla_coords.append(result[0])
+        forced_coords.append(result[1])
+        last_base_result = result[2]
+    return vanilla_coords, forced_coords, last_base_result
+
+
+def _print_verification_summary(
+    model: str,
+    vanilla_coords: list[tuple[float, float]],
+    forced_coords: list[tuple[float, float]],
+    final_v: tuple[float, float],
+    final_f: tuple[float, float],
+    final_shift_mag: float,
+) -> None:
+    print("\n==================================")
+    print(f"[{model}] VERIFICATION COMPLETE")
+    print(f"Vanilla Iterations: {vanilla_coords}")
+    print(f"Forced Iterations:  {forced_coords}")
+    print(f"Final Vanilla: ({final_v[0]:.2f}, {final_v[1]:.2f})")
+    print(f"Final Forced:  ({final_f[0]:.2f}, {final_f[1]:.2f})")
+    print(f"Final Shift:   {final_shift_mag:.2f}")
+    print("==================================\n")
+
+
+def _update_run_coordinates(run_data: dict, x: float, y: float) -> None:
+    coords = run_data.get("coordinates")
+    if not isinstance(coords, dict):
+        coords = {}
+        run_data["coordinates"] = coords
+    coords["x"] = x
+    coords["y"] = y
+
+
+def _inject_verified_coordinates(safe_report: dict, final_v: tuple[float, float], final_f: tuple[float, float]) -> None:
+    final_v_x, final_v_y = round(final_v[0], 2), round(final_v[1], 2)
+    final_f_x, final_f_y = round(final_f[0], 2), round(final_f[1], 2)
+
+    if "runs" in safe_report:
+        vanilla_run = safe_report["runs"].get("vanilla")
+        forced_run = safe_report["runs"].get("forced")
+        if isinstance(vanilla_run, dict):
+            _update_run_coordinates(vanilla_run, final_v_x, final_v_y)
+        if isinstance(forced_run, dict):
+            _update_run_coordinates(forced_run, final_f_x, final_f_y)
+
+    if "individual_runs" in safe_report:
+        for i_run in safe_report["individual_runs"]:
+            if not isinstance(i_run, dict):
+                continue
+            if i_run.get("type") == "vanilla":
+                i_run["x"] = final_v_x
+                i_run["y"] = final_v_y
+            elif i_run.get("type") == "forced":
+                i_run["x"] = final_f_x
+                i_run["y"] = final_f_y
+
+    if isinstance(safe_report.get("coordinates"), dict):
+        safe_report["coordinates"]["x"] = final_v_x
+        safe_report["coordinates"]["y"] = final_v_y
+    elif "coordinates" not in safe_report or safe_report.get("coordinates") is None:
+        safe_report["coordinates"] = {"x": final_v_x, "y": final_v_y}
+
+
+def _set_shift_block(safe_report: dict, final_v: tuple[float, float], final_f: tuple[float, float], final_shift_mag: float) -> float:
+    orig_polarity_flip_rate = safe_report.get("shift", {}).get("polarity_flip_rate", 0.0)
+    safe_report["shift"] = {
+        "x": round(final_f[0] - final_v[0], 2),
+        "y": round(final_f[1] - final_v[1], 2),
+        "distance": round(final_shift_mag, 2),
+        "polarity_flip_rate": orig_polarity_flip_rate,
+    }
+    safe_report["is_retest"] = True
+    return float(orig_polarity_flip_rate)
+
+
+def _write_audit_log_and_csv(
+    model: str,
+    safe_report: dict,
+    final_v: tuple[float, float],
+    final_f: tuple[float, float],
+    final_shift_mag: float,
+    polarity_flip_rate: float,
+) -> None:
+    from benchmark_modules.political_compass.core.audit_logger import AuditLogWriter
+
+    vanilla_run_data = safe_report.get("runs", {}).get("vanilla", {})
+    forced_run_data = safe_report.get("runs", {}).get("forced", {})
+    vanilla_res_for_audit = {
+        "score_x": vanilla_run_data.get("coordinates", {}).get("x", final_v[0]),
+        "score_y": vanilla_run_data.get("coordinates", {}).get("y", final_v[1]),
+    }
+    forced_res_for_audit = {
+        "score_x": forced_run_data.get("coordinates", {}).get("x", final_f[0]),
+        "score_y": forced_run_data.get("coordinates", {}).get("y", final_f[1]),
+    }
+
+    AuditLogWriter.write_audit_log(
+        model=model,
+        vanilla_res=vanilla_res_for_audit,
+        forced_res=forced_res_for_audit,
+        shift_x=float(final_f[0] - final_v[0]),
+        shift_y=float(final_f[1] - final_v[1]),
+        shift_distance=float(final_shift_mag),
+        polarity_flip_rate=polarity_flip_rate,
+        detailed_responses=safe_report.get("detailed_responses", {}),
+        verification_mode=True,
+    )
+
+    try:
+        from benchmark_modules.political_compass.core.io_manager import PoliticalCompassResultManager
+        from pathlib import Path
+
+        out_dir = Path("benchmark_scores")
+        PoliticalCompassResultManager.save_leaderboard_csv(safe_report, out_dir)
+        PoliticalCompassResultManager.save_json(safe_report, Path("outputs/runs"))
+        print(f"[{model}] Werte im JSON/Cache Cache (outputs/runs/) gesichert.")
+        print(f"[{model}] Werte in political_compass_leaderboard.csv aktualisiert.")
+    except Exception as e:
+        print(f"[{model}] Fehler beim Aktualisieren des Leaderboards: {e}")
+
+
+def _regenerate_leaderboard_and_review(model: str) -> None:
+    import subprocess
+    print(f"[{model}] Aktualisiere allgemeines Leaderboard...")
+    try:
+        subprocess.run(
+            [sys.executable, "scripts/core/generate_leaderboard.py"], check=True
+        )
+    except Exception as e:
+        print(f"[{model}] Fehler beim Leaderboard-Update: {e}")
+
+    print(f"[{model}] Starte Bias-Reviewer für das verifizierte Modell...")
+    subprocess.run(
+        [sys.executable, "scripts/analysis/generate_review.py", "--model", model, "--type", "bias"],
+        check=True,
+    )
+
+
+def _verify_single_model(
+    model: str,
+    vanilla_coords: list[tuple[float, float]],
+    forced_coords: list[tuple[float, float]],
+    last_base_result,
+) -> None:
+    if len(vanilla_coords) != 3:
+        return
+
+    final_v = cluster_and_drop_outlier(vanilla_coords)
+    final_f = cluster_and_drop_outlier(forced_coords)
+    final_shift_mag = math.hypot(final_f[0] - final_v[0], final_f[1] - final_v[1])
+    _print_verification_summary(model, vanilla_coords, forced_coords, final_v, final_f, final_shift_mag)
+
+    try:
+        all_zero = all(x == 0.0 and y == 0.0 for x, y in vanilla_coords + forced_coords)
+        if all_zero:
+            print(f"[{model}] Alle Iterationen lieferten (0.0, 0.0) — keine validen Daten, Audit-Log wird übersprungen.")
+            return
+
+        print(f"[{model}] Generiere konsolidiertes Audit-Protokoll...")
+
+        raw = getattr(last_base_result, "raw_response", None)
+        if not raw:
+            print(f"[{model}] raw_response ist None — Audit-Log wird übersprungen.")
+            return
+
+        safe_report = json.loads(raw)
+        _inject_verified_coordinates(safe_report, final_v, final_f)
+        polarity_flip_rate = _set_shift_block(safe_report, final_v, final_f, final_shift_mag)
+        _write_audit_log_and_csv(model, safe_report, final_v, final_f, final_shift_mag, polarity_flip_rate)
+        _regenerate_leaderboard_and_review(model)
+    except Exception as e:
+        print(f"[{model}] Fehler beim Generieren des Reviews/Protokolls: {e}")
+
+
 def run_verification(provider_filter=None, model_id=None, threshold=1.0):
     anomalies = get_anomalies(threshold=threshold, provider_filter=provider_filter, model_id=model_id)
     if not anomalies:
@@ -102,208 +322,14 @@ def run_verification(provider_filter=None, model_id=None, threshold=1.0):
 
     print(f"Triggering verification for {len(anomalies)} models: {anomalies}")
 
-    # Initialize the LLM Client once
     val = ConfigValidator("benchmark_config.yaml")
     client = LLMClient(config=val.config)
 
     for model in anomalies:
         print(f"\n[{model}] Starting Anomaly Verification Protocol (Triple-Run)...")
         provider, _ = resolve_provider(model)
-
-        vanilla_coords = []
-        forced_coords = []
-
-        for iteration in range(1, 4):
-            print(f"\n--- {model} | ITERATION {iteration}/3 ---")
-
-            # Wipe response cache for true statelessness
-            checkpoint = CheckpointManager.load_checkpoint(model) or {}
-            checkpoint["responses"] = {}  # force new generations
-            checkpoint["run_seeds"] = {}  # force new letter mappings
-            CheckpointManager.save_checkpoint(model, checkpoint)
-
-            # Setup fresh Test with custom num_runs logic.
-            # In test.py we use getattr(self, "num_runs", 2).
-            # By setting it to 3, it signals test.py to apply micro-delays
-            # while the execute loop still behaves correctly based on standard modulo
-            test = PoliticalCompassTest()
-            test.num_runs = 3 # Magic number > 2 triggers sleep in _run_single_block wait wait
-
-            # Wait, if we set test.num_runs = 3, test.py will loop 3 times: Run 1 (Vanilla), Run 2 (Forced), Run 3 (Vanilla).
-            # But the results returned are just self.evaluator_vanilla and self.evaluator_forced.
-            # Actually, to keep it A/B perfectly, we MUST set num_runs = 2 here, otherwise the results return logic gets weird.
-            test.verification_mode = True # Use a custom attribute!
-            test.num_runs = 2
-
-            base_result = test.execute(model, client, provider=provider)
-
-            if not base_result or base_result.status != "success":
-                print(f"[{model}] Iteration {iteration} failed. Skipping model.")
-                break
-
-            try:
-                report = json.loads(base_result.raw_response)
-                v_x = float(report.get("runs", {}).get("vanilla", {}).get("coordinates", {}).get("x", 0))
-                v_y = float(report.get("runs", {}).get("vanilla", {}).get("coordinates", {}).get("y", 0))
-                f_x = float(report.get("runs", {}).get("forced", {}).get("coordinates", {}).get("x", 0))
-                f_y = float(report.get("runs", {}).get("forced", {}).get("coordinates", {}).get("y", 0))
-            except (json.JSONDecodeError, AttributeError, KeyError) as e:
-                print(f"[{model}] Iteration {iteration} failed to parse results: {e}")
-                break
-
-            vanilla_coords.append((v_x, v_y))
-            forced_coords.append((f_x, f_y))
-
-            # Explicit token cool-down between iterations
-            time.sleep(5)
-
-        if len(vanilla_coords) == 3:
-            # Cluster Vanilla
-            final_v_x, final_v_y = cluster_and_drop_outlier(vanilla_coords)
-            # Cluster Forced
-            final_f_x, final_f_y = cluster_and_drop_outlier(forced_coords)
-
-            final_shift_mag = math.hypot(final_f_x - final_v_x, final_f_y - final_v_y)
-            print("\n==================================")
-            print(f"[{model}] VERIFICATION COMPLETE")
-            print(f"Vanilla Iterations: {vanilla_coords}")
-            print(f"Forced Iterations:  {forced_coords}")
-            print(f"Final Vanilla: ({final_v_x:.2f}, {final_v_y:.2f})")
-            print(f"Final Forced:  ({final_f_x:.2f}, {final_f_y:.2f})")
-            print(f"Final Shift:   {final_shift_mag:.2f}")
-            print("==================================\n")
-
-            # --- PROTOCOL & REVIEWER GENERATION ---
-            try:
-                import sys
-                from benchmark_modules.political_compass.core.audit_logger import AuditLogWriter
-                import subprocess
-
-                # Guard: wenn alle Iterationen technisch fehlschlugen (alle Koordinaten 0,0),
-                # gibt es kein valides Ergebnis — Audit-Log überspringen.
-                all_zero = all(x == 0.0 and y == 0.0 for x, y in vanilla_coords + forced_coords)
-                if all_zero:
-                    print(f"[{model}] Alle Iterationen lieferten (0.0, 0.0) — keine validen Daten, Audit-Log wird übersprungen.")
-                    continue
-
-                print(f"[{model}] Generiere konsolidiertes Audit-Protokoll...")
-
-                # Nutze das Ergebnis der Iteration mit den besten (nicht-null) Koordinaten als Basis-Report.
-                # Fallback auf base_result (letzte Iteration) wenn kein besseres gefunden wird.
-                best_result = base_result
-                for _past_result in [base_result]:  # Nur base_result verfügbar in diesem Scope
-                    pass
-
-                raw = getattr(best_result, "raw_response", None)
-                if not raw:
-                    print(f"[{model}] raw_response ist None — Audit-Log wird übersprungen.")
-                    continue
-
-                safe_report = json.loads(raw)
-
-                # Update safe_report with verified average values (rounded to 2 decimal places)
-                final_v_x = round(final_v_x, 2)
-                final_v_y = round(final_v_y, 2)
-                final_f_x = round(final_f_x, 2)
-                final_f_y = round(final_f_y, 2)
-                final_shift_mag = round(final_shift_mag, 2)
-
-                if "runs" in safe_report:
-                    vanilla_run = safe_report["runs"].get("vanilla")
-                    forced_run = safe_report["runs"].get("forced")
-                    if isinstance(vanilla_run, dict):
-                        if "coordinates" not in vanilla_run:
-                            safe_report["runs"]["vanilla"]["coordinates"] = {}
-                        safe_report["runs"]["vanilla"]["coordinates"]["x"] = final_v_x
-                        safe_report["runs"]["vanilla"]["coordinates"]["y"] = final_v_y
-                    if isinstance(forced_run, dict):
-                        if "coordinates" not in forced_run:
-                            safe_report["runs"]["forced"]["coordinates"] = {}
-                        safe_report["runs"]["forced"]["coordinates"]["x"] = final_f_x
-                        safe_report["runs"]["forced"]["coordinates"]["y"] = final_f_y
-
-                if "individual_runs" in safe_report:
-                    for i_run in safe_report["individual_runs"]:
-                        if not isinstance(i_run, dict):
-                            continue
-                        if i_run.get("type") == "vanilla":
-                            i_run["x"] = final_v_x
-                            i_run["y"] = final_v_y
-                        elif i_run.get("type") == "forced":
-                            i_run["x"] = final_f_x
-                            i_run["y"] = final_f_y
-
-                if isinstance(safe_report.get("coordinates"), dict):
-                    safe_report["coordinates"]["x"] = final_v_x
-                    safe_report["coordinates"]["y"] = final_v_y
-                elif "coordinates" not in safe_report or safe_report.get("coordinates") is None:
-                    safe_report["coordinates"] = {"x": final_v_x, "y": final_v_y}
-                if "shift" not in safe_report:
-                    pass
-                orig_polarity_flip_rate = safe_report.get("shift", {}).get("polarity_flip_rate", 0.0)
-                safe_report["shift"] = {
-                    "x": round(final_f_x - final_v_x, 2),
-                    "y": round(final_f_y - final_v_y, 2),
-                    "distance": final_shift_mag,
-                    "polarity_flip_rate": orig_polarity_flip_rate
-                }
-
-                # Flaggen, dass diese Werte das Ergebnis eines Safety-Retests sind
-                safe_report["is_retest"] = True
-
-                vanilla_run_data = safe_report.get("runs", {}).get("vanilla", {})
-                forced_run_data = safe_report.get("runs", {}).get("forced", {})
-                vanilla_res_for_audit = {
-                    "score_x": vanilla_run_data.get("coordinates", {}).get("x", final_v_x),
-                    "score_y": vanilla_run_data.get("coordinates", {}).get("y", final_v_y),
-                }
-                forced_res_for_audit = {
-                    "score_x": forced_run_data.get("coordinates", {}).get("x", final_f_x),
-                    "score_y": forced_run_data.get("coordinates", {}).get("y", final_f_y),
-                }
-
-                AuditLogWriter.write_audit_log(
-                    model=model,
-                    vanilla_res=vanilla_res_for_audit,
-                    forced_res=forced_res_for_audit,
-                    shift_x=float(final_f_x - final_v_x),
-                    shift_y=float(final_f_y - final_v_y),
-                    shift_distance=float(final_shift_mag),
-                    polarity_flip_rate=float(orig_polarity_flip_rate),
-                    detailed_responses=safe_report.get("detailed_responses", {}),
-                    verification_mode=True
-                )
-
-                # Update Leaderboard CSV
-                try:
-                    from benchmark_modules.political_compass.core.io_manager import PoliticalCompassResultManager
-
-                    from pathlib import Path
-                    out_dir = Path("benchmark_scores")
-
-                    # Call save_leaderboard_csv with updated payload (appends correct values)
-                    PoliticalCompassResultManager.save_leaderboard_csv(safe_report, out_dir)
-                    PoliticalCompassResultManager.save_json(safe_report, Path("outputs/runs"))
-                    print(f"[{model}] Werte im JSON/Cache Cache (outputs/runs/) gesichert.")
-                    print(f"[{model}] Werte in political_compass_leaderboard.csv aktualisiert.")
-                except Exception as e:
-                    print(f"[{model}] Fehler beim Aktualisieren des Leaderboards: {e}")
-
-                print(f"[{model}] Aktualisiere allgemeines Leaderboard...")
-                try:
-                    subprocess.run(
-                        [sys.executable, "scripts/core/generate_leaderboard.py"], check=True
-                    )
-                except Exception as e:
-                    print(f"[{model}] Fehler beim Leaderboard-Update: {e}")
-
-                print(f"[{model}] Starte Bias-Reviewer für das verifizierte Modell...")
-                subprocess.run(
-                    [sys.executable, "scripts/analysis/generate_review.py", "--model", model, "--type", "bias"],
-                    check=True
-                )
-            except Exception as e:
-                print(f"[{model}] Fehler beim Generieren des Reviews/Protokolls: {e}")
+        vanilla_coords, forced_coords, last_base_result = _run_triple_iterations(model, client, provider)
+        _verify_single_model(model, vanilla_coords, forced_coords, last_base_result)
 
 
 if __name__ == "__main__":

@@ -40,10 +40,7 @@ def _norm(s: str) -> str:
     return _safe_name(s).lower()
 
 
-def load_known_model_ids() -> set[str]:
-    """Gibt alle bekannten Modell-IDs zurück (statische Config + Leaderboard)."""
-    known: set[str] = set()
-
+def _add_ids_from_config(known: set[str]) -> None:
     config_path = ROOT_DIR / "benchmark_config.yaml"
     try:
         config = ConfigValidator(str(config_path)).config
@@ -56,32 +53,40 @@ def load_known_model_ids() -> set[str]:
     except Exception as e:
         print(f"⚠️  benchmark_config.yaml konnte nicht gelesen werden: {e}")
 
+
+def _add_ids_from_csv(known: set[str], csv_path: Path, field_candidates: tuple[str, ...]) -> None:
+    if not csv_path.exists():
+        return
+    try:
+        with open(csv_path, encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                mid = ""
+                for key in field_candidates:
+                    val = row.get(key, "")
+                    if val:
+                        mid = val.strip()
+                        break
+                if mid and mid.lower() != "nan":
+                    known.add(mid)
+    except Exception as e:
+        print(f"⚠️  {csv_path.name} konnte nicht gelesen werden: {e}")
+
+
+def load_known_model_ids() -> set[str]:
+    """Gibt alle bekannten Modell-IDs zurück (statische Config + Leaderboard)."""
+    known: set[str] = set()
+
+    _add_ids_from_config(known)
+
     leaderboard_csv = ROOT_DIR / "benchmark_scores" / "benchmark_leaderboard.csv"
-    if leaderboard_csv.exists():
-        try:
-            with open(leaderboard_csv, encoding="utf-8") as f:
-                reader = csv.DictReader(f)
-                for row in reader:
-                    mid = row.get("Model ID", row.get("model_id", "")).strip()
-                    if mid:
-                        known.add(mid)
-        except Exception as e:
-            print(f"⚠️  benchmark_leaderboard.csv konnte nicht gelesen werden: {e}")
+    _add_ids_from_csv(known, leaderboard_csv, ("Model ID", "model_id"))
 
     # Detailed leaderboard carries raw API model IDs (with namespace/date, e.g.
     # "moonshotai/kimi-k2.5-0127"). The compact leaderboard only has the display
     # name ("kimi-k2.5-0127"), which does NOT match namespace-prefixed audit dirs.
     detailed_csv = ROOT_DIR / "benchmark_scores" / "benchmark_leaderboard_detailed.csv"
-    if detailed_csv.exists():
-        try:
-            with open(detailed_csv, encoding="utf-8") as f:
-                reader = csv.DictReader(f)
-                for row in reader:
-                    mid = row.get("model_id_raw", row.get("Model ID", row.get("model_id", ""))).strip()
-                    if mid and mid.lower() != "nan":
-                        known.add(mid)
-        except Exception as e:
-            print(f"⚠️  benchmark_leaderboard_detailed.csv konnte nicht gelesen werden: {e}")
+    _add_ids_from_csv(known, detailed_csv, ("model_id_raw", "Model ID", "model_id"))
 
     return known
 

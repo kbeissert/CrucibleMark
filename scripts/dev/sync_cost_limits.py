@@ -184,18 +184,7 @@ def find_missing(
     return missing
 
 
-def insert_placeholders(missing: dict[str, set[str]]) -> int:
-    """
-    Fügt Platzhalter-Einträge (null-Preise) in cost_limits.yaml ein.
-    Erhält Kommentare durch Text-Level-Insertion statt YAML-Serialisierung.
-    Sucht Sektionen nur innerhalb des providers:-Blocks um Fehlzuordnungen
-    zu anderen Top-Level-Keys (z.B. settings:) zu vermeiden.
-    Gibt die Anzahl eingefügter Einträge zurück.
-    """
-    text = COST_LIMITS.read_text(encoding="utf-8")
-    lines = text.splitlines(keepends=True)
-
-    # providers:-Block begrenzen: Start- und End-Index ermitteln
+def _find_providers_block(lines: list[str]) -> tuple[int | None, int]:
     providers_start: int | None = None
     providers_end: int = len(lines)
     for i, line in enumerate(lines):
@@ -209,59 +198,89 @@ def insert_placeholders(missing: dict[str, set[str]]) -> int:
         ):
             providers_end = i
             break
+    return providers_start, providers_end
 
+
+def _find_section_line(lines: list[str], section_header: str, start: int, end: int) -> int | None:
+    for i in range(start, end):
+        if lines[i].rstrip() == section_header:
+            return i
+    return None
+
+
+def _find_insert_index(lines: list[str], section_line_idx: int, providers_end: int) -> int:
+    insert_before: int | None = None
+    for i in range(section_line_idx + 1, providers_end):
+        line = lines[i]
+        stripped = line.lstrip()
+        indent = len(line) - len(stripped)
+        if stripped.startswith("daily_budget:"):
+            insert_before = i
+            break
+        if indent <= 2 and stripped and not stripped.startswith("#"):
+            insert_before = i
+            break
+    return providers_end if insert_before is None else insert_before
+
+
+def _build_placeholder_lines(model_ids: set[str]) -> tuple[list[str], int]:
+    new_lines: list[str] = []
+    inserted = 0
+    for model_id in sorted(model_ids):
+        new_lines.extend([
+            f"    {model_id}:\n",
+            "      input_cost_per_1k: null  # TODO: Preis nachtragen\n",
+            "      output_cost_per_1k: null  # TODO: Preis nachtragen\n",
+        ])
+        inserted += 1
+        print(f"  ✅ [{model_id}] → Platzhalter eingetragen")
+    return new_lines, inserted
+
+
+def _insert_section_placeholders(
+    lines: list[str],
+    providers_start: int,
+    providers_end: int,
+    section: str,
+    model_ids: set[str],
+) -> tuple[int, int]:
+    section_header = f"  {section}:"
+    section_line_idx = _find_section_line(lines, section_header, providers_start, providers_end)
+    if section_line_idx is None:
+        print(
+            f"  ⚠️  Sektion '{section}' fehlt in providers: — "
+            f"bitte manuell anlegen für: {sorted(model_ids)}"
+        )
+        return providers_end, 0
+
+    insert_before = _find_insert_index(lines, section_line_idx, providers_end)
+    new_lines, inserted = _build_placeholder_lines(model_ids)
+    lines[insert_before:insert_before] = new_lines
+    return providers_end + len(new_lines), inserted
+
+
+def insert_placeholders(missing: dict[str, set[str]]) -> int:
+    """
+    Fügt Platzhalter-Einträge (null-Preise) in cost_limits.yaml ein.
+    Erhält Kommentare durch Text-Level-Insertion statt YAML-Serialisierung.
+    Sucht Sektionen nur innerhalb des providers:-Blocks um Fehlzuordnungen
+    zu anderen Top-Level-Keys (z.B. settings:) zu vermeiden.
+    Gibt die Anzahl eingefügter Einträge zurück.
+    """
+    text = COST_LIMITS.read_text(encoding="utf-8")
+    lines = text.splitlines(keepends=True)
+
+    providers_start, providers_end = _find_providers_block(lines)
     if providers_start is None:
         print("  ❌ providers:-Block nicht gefunden in cost_limits.yaml")
         return 0
 
     total_inserted = 0
-
     for section, model_ids in sorted(missing.items()):
-        section_header = f"  {section}:"
-        section_line_idx: int | None = None
-
-        # Nur im providers:-Block suchen (verhindert Match in settings: o.ä.)
-        for i in range(providers_start, providers_end):
-            if lines[i].rstrip() == section_header:
-                section_line_idx = i
-                break
-
-        if section_line_idx is None:
-            print(
-                f"  ⚠️  Sektion '{section}' fehlt in providers: — "
-                f"bitte manuell anlegen für: {sorted(model_ids)}"
-            )
-            continue
-
-        # Einfügen vor daily_budget oder vor dem nächsten Sektion-Header (2-Leerzeichen-Einzug)
-        insert_before: int | None = None
-        for i in range(section_line_idx + 1, providers_end):
-            line = lines[i]
-            stripped = line.lstrip()
-            indent = len(line) - len(stripped)
-            if stripped.startswith("daily_budget:"):
-                insert_before = i
-                break
-            if indent <= 2 and stripped and not stripped.startswith("#"):
-                insert_before = i
-                break
-
-        if insert_before is None:
-            insert_before = providers_end
-
-        new_lines: list[str] = []
-        for model_id in sorted(model_ids):
-            new_lines.extend([
-                f"    {model_id}:\n",
-                "      input_cost_per_1k: null  # TODO: Preis nachtragen\n",
-                "      output_cost_per_1k: null  # TODO: Preis nachtragen\n",
-            ])
-            total_inserted += 1
-            print(f"  ✅ [{section}] {model_id} → Platzhalter eingetragen")
-
-        lines[insert_before:insert_before] = new_lines
-        # providers_end verschieben, da Zeilen eingefügt wurden
-        providers_end += len(new_lines)
+        providers_end, inserted = _insert_section_placeholders(
+            lines, providers_start, providers_end, section, model_ids,
+        )
+        total_inserted += inserted
 
     COST_LIMITS.write_text("".join(lines), encoding="utf-8")
     return total_inserted

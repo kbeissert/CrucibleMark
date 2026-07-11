@@ -148,9 +148,72 @@ def compare_standard_benchmark(
         print(f"\n{Colors.GREEN}✅ Results correspond to baseline.{Colors.ENDC}")
 
 
-def interactive_selection() -> tuple[str, str]:
-    """Provides an interactive CLI to select reference and test result files."""
-    from utils.benchmark_ui import TerminalUI
+def _select_runs_from_files(files: list[Path]) -> tuple[str, str]:
+    """Manueller Modus: zwei Dateien direkt aus der Liste wählen."""
+    print(f"\n{Colors.CYAN}--- SCHRITT 1: Referenz-Datei ---{Colors.ENDC}")
+    ref_file = TerminalUI.select_from_list(files, lambda x: x.name, prompt="Wähle Referenz-Datei:")
+    if not ref_file:
+        sys.exit(0)
+
+    print(f"\n{Colors.CYAN}--- SCHRITT 2: Test-Datei ---{Colors.ENDC}")
+    test_file = TerminalUI.select_from_list(files, lambda x: x.name, prompt="Wähle Test-Datei:")
+    if not test_file:
+        sys.exit(0)
+
+    return str(ref_file), str(test_file)
+
+
+def _select_interne_vergleich(model_list, models_to_files, TerminalUI) -> tuple[str, str]:
+    selected_model = TerminalUI.select_from_list(
+        model_list,
+        lambda x: f"{x} ({len(models_to_files[x])} Läufe vorhanden)",
+        prompt="Wähle das Modell:",
+        title="Modell-Auswahl"
+    )
+    if not selected_model:
+        sys.exit(0)
+
+    runs = models_to_files[selected_model]
+    if len(runs) < 2:
+        print(f"{Colors.WARNING}Nicht genug Läufe für {selected_model} (Mindestens 2 benötigt).{Colors.ENDC}")
+        sys.exit(1)
+
+    print(f"\n{Colors.CYAN}--- SCHRITT 1: Referenz (Zumeist der ältere Lauf) ---{Colors.ENDC}")
+    ref_file = TerminalUI.select_from_list(runs, lambda x: x.name, prompt="Wähle Referenz-Lauf (Basis):")
+    if not ref_file:
+        sys.exit(0)
+
+    print(f"\n{Colors.CYAN}--- SCHRITT 2: Test (Zumeist der neuere Lauf) ---{Colors.ENDC}")
+    test_file = TerminalUI.select_from_list(runs, lambda x: x.name, prompt="Wähle Test-Lauf (Neuer Wert):")
+    if not test_file:
+        sys.exit(0)
+
+    return str(ref_file), str(test_file)
+
+
+def _select_modell_vergleich(model_list, models_to_files, TerminalUI) -> tuple[str, str]:
+    print(f"\n{Colors.CYAN}--- SCHRITT 1: Referenz-Modell (Zumeist das bekannte/kommerzielle Modell) ---{Colors.ENDC}")
+    ref_model = TerminalUI.select_from_list(model_list, lambda x: x, prompt="Wähle Referenz-Modell:")
+    if not ref_model:
+        sys.exit(0)
+
+    print(f"\n{Colors.CYAN}--- SCHRITT 2: Test-Modell (Zumeist das neue/lokale Modell) ---{Colors.ENDC}")
+    test_model = TerminalUI.select_from_list(model_list, lambda x: x, prompt="Wähle Test-Modell:")
+    if not test_model:
+        sys.exit(0)
+
+    ref_file = models_to_files[ref_model][0]
+    test_file = models_to_files[test_model][0]
+
+    print(f"\n{Colors.HEADER}Ausgewählte Dateien:{Colors.ENDC}")
+    print(f"Referenz ({ref_model}): {ref_file.name}")
+    print(f"Test ({test_model}):     {test_file.name}\n")
+
+    return str(ref_file), str(test_file)
+
+
+def _discover_run_files() -> tuple[list[Path], dict[str, list[Path]]]:
+    """Liest outputs/runs/results_*.json und gruppiert nach Modell-Slug."""
     import re
 
     runs_dir = ROOT_DIR / "outputs" / "runs"
@@ -159,7 +222,6 @@ def interactive_selection() -> tuple[str, str]:
         sys.exit(1)
 
     files = list(runs_dir.glob("results_*.json"))
-    # Sort files from newest to oldest
     files.sort(key=lambda x: x.stat().st_mtime, reverse=True)
 
     if not files:
@@ -167,13 +229,20 @@ def interactive_selection() -> tuple[str, str]:
         sys.exit(1)
 
     pattern = re.compile(r"results_(.*)_(\d{8}_\d{6})\.json")
-
-    models_to_files = {}
+    models_to_files: dict[str, list[Path]] = {}
     for f in files:
         match = pattern.match(f.name)
         if match:
             model_name = match.group(1)
             models_to_files.setdefault(model_name, []).append(f)
+    return files, models_to_files
+
+
+def interactive_selection() -> tuple[str, str]:
+    """Provides an interactive CLI to select reference and test result files."""
+    from utils.benchmark_ui import TerminalUI
+
+    files, models_to_files = _discover_run_files()
 
     modes = [
         ("Interner Vergleich", "Gleiches Modell - 2 verschiedene Läufe vergleichen"),
@@ -183,7 +252,7 @@ def interactive_selection() -> tuple[str, str]:
 
     selected_mode = TerminalUI.select_from_list(
         modes,
-        lambda m: m,  # tuple displays header + description in TerminalUI
+        lambda m: m,
         prompt="Was möchtest du vergleichen?",
         title="Vergleichs-Modus wählen"
     )
@@ -196,58 +265,11 @@ def interactive_selection() -> tuple[str, str]:
 
     if mode_name == "Interner Vergleich":
         model_list = sorted(list(models_to_files.keys()))
-        selected_model = TerminalUI.select_from_list(
-            model_list,
-            lambda x: f"{x} ({len(models_to_files[x])} Läufe vorhanden)",
-            prompt="Wähle das Modell:",
-            title="Modell-Auswahl"
-        )
-        if not selected_model: sys.exit(0)
-
-        runs = models_to_files[selected_model]
-        if len(runs) < 2:
-            print(f"{Colors.WARNING}Nicht genug Läufe für {selected_model} (Mindestens 2 benötigt).{Colors.ENDC}")
-            sys.exit(1)
-
-        print(f"\n{Colors.CYAN}--- SCHRITT 1: Referenz (Zumeist der ältere Lauf) ---{Colors.ENDC}")
-        ref_file = TerminalUI.select_from_list(runs, lambda x: x.name, prompt="Wähle Referenz-Lauf (Basis):")
-        if not ref_file: sys.exit(0)
-
-        print(f"\n{Colors.CYAN}--- SCHRITT 2: Test (Zumeist der neuere Lauf) ---{Colors.ENDC}")
-        test_file = TerminalUI.select_from_list(runs, lambda x: x.name, prompt="Wähle Test-Lauf (Neuer Wert):")
-        if not test_file: sys.exit(0)
-
-        return str(ref_file), str(test_file)
-
+        return _select_interne_vergleich(model_list, models_to_files, TerminalUI)
     elif mode_name == "Modell-Vergleich":
         model_list = sorted(list(models_to_files.keys()))
-        print(f"\n{Colors.CYAN}--- SCHRITT 1: Referenz-Modell (Zumeist das bekannte/kommerzielle Modell) ---{Colors.ENDC}")
-        ref_model = TerminalUI.select_from_list(model_list, lambda x: x, prompt="Wähle Referenz-Modell:")
-        if not ref_model: sys.exit(0)
-
-        print(f"\n{Colors.CYAN}--- SCHRITT 2: Test-Modell (Zumeist das neue/lokale Modell) ---{Colors.ENDC}")
-        test_model = TerminalUI.select_from_list(model_list, lambda x: x, prompt="Wähle Test-Modell:")
-        if not test_model: sys.exit(0)
-
-        ref_file = models_to_files[ref_model][0]
-        test_file = models_to_files[test_model][0]
-
-        print(f"\n{Colors.HEADER}Ausgewählte Dateien:{Colors.ENDC}")
-        print(f"Referenz ({ref_model}): {ref_file.name}")
-        print(f"Test ({test_model}):     {test_file.name}\n")
-
-        return str(ref_file), str(test_file)
-
-    else:
-        print(f"\n{Colors.CYAN}--- SCHRITT 1: Referenz-Datei ---{Colors.ENDC}")
-        ref_file = TerminalUI.select_from_list(files, lambda x: x.name, prompt="Wähle Referenz-Datei:")
-        if not ref_file: sys.exit(0)
-
-        print(f"\n{Colors.CYAN}--- SCHRITT 2: Test-Datei ---{Colors.ENDC}")
-        test_file = TerminalUI.select_from_list(files, lambda x: x.name, prompt="Wähle Test-Datei:")
-        if not test_file: sys.exit(0)
-
-        return str(ref_file), str(test_file)
+        return _select_modell_vergleich(model_list, models_to_files, TerminalUI)
+    return _select_runs_from_files(files)
 
 
 def main():

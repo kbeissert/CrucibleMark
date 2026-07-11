@@ -219,136 +219,14 @@ def build_prompts(
         )
 
     system_prompt = _SYSTEM_TEMPLATE.substitute(domain=domain, scale=scale)
+    system_prompt = _append_identity_context(system_prompt, tested_model_id)
+    system_prompt = _append_language_compliance(system_prompt, required_language, language_weight)
+    system_prompt = _append_token_budget_note(system_prompt, token_budget_context)
+    system_prompt = _append_truncation_note(system_prompt, truncation_context)
+    system_prompt = _append_token_usage_block(system_prompt, token_usage_context)
+    system_prompt = _append_small_model_note(system_prompt, small_model_token_context)
 
-    if tested_model_id:
-        identity = get_model_identity(tested_model_id)
-        if identity.get("tags"):
-            tags_str = ", ".join(identity["tags"])
-            system_prompt += (
-                f"\n\n### EVALUATION CONTEXT ###\n"
-                f"The model being evaluated is tagged with: {tags_str}.\n"
-                "Take this into account when evaluating responses:\n"
-                "- **Coder**: May be excused for ignoring socio-political nuance or failing pure writing tasks, but must excel at logic.\n"
-                "- **Thinking / Reasoning**: Extremely long, thorough chain-of-thought answers are expected and should NOT be penalized for verbosity. (e.g. o1, o3, DeepSeek R1, QwQ, Magistral, GLM-5.x — models with fixed internal Chain-of-Thought)\n"
-                "- **Instruct**: Focused on direct instruction following. Answers might be shorter and more direct; they lack deep reasoning steps.\n"
-                "- **Preview / Test**: Experimental phase. Minor formatting or minor coherence drops might be expected.\n"
-                "- **Uncensored-Abliterated**: Vector surgery might cause abrupt context termination, loop errors, or reasoning collapse.\n"
-                "- **Uncensored-Finetuned**: Safe architectural baseline but may show sampling instability under complex reasoning pressure.\n"
-                "- **Agentic-Orchestrator**: This model is designed as an orchestrator in multi-agent pipelines (spawning sub-agents for concrete subtasks). It may underperform on strict single-turn format tasks (e.g. exact CLI one-liners) that would normally be delegated to a specialized sub-agent. Do not penalize orchestration-style verbosity or meta-level framing.\n"
-                "- **Thinking-Optional**: This model supports toggleable extended thinking (e.g. Qwen3, Gemini 2.5) but runs in standard mode here (no explicit thinking budget passed). Evaluate output quality only — do not penalize if the answer is thorough without visible chain-of-thought tags. Latency may be higher than comparable models due to internal planning steps even in standard mode."
-            )
-
-    if required_language:
-        _LANG_LABELS: dict[str, str] = {"de": "German (Deutsch)", "en": "English"}
-        lang_label = _LANG_LABELS.get(required_language, required_language.upper())
-        system_prompt += (
-            f"\n\n## LANGUAGE COMPLIANCE (Mandatory \u2013 {int(language_weight * 100)}% of total score) ##\n"
-            f"The task prompt explicitly requires the response to be in **{lang_label}**. "
-            f"Check the response language **before** evaluating content quality "
-            f"and apply the following deductions to `task_compliance`:\n"
-            f"- Response is primarily in a **different language**: deduct **1.5 points**.\n"
-            f"- Response **mixes languages** (e.g. English explanations with {lang_label} output): deduct **0.5 points**.\n"
-            f"- Response is correctly and consistently in {lang_label}: no deduction."
-        )
-
-    if token_budget_context:
-        _tb_standard = token_budget_context.get("standard")
-        _tb_elevated = token_budget_context.get("elevated")
-        if _tb_standard and _tb_elevated:
-            system_prompt += (
-                f"\n\n### TOKEN BUDGET NOTE (VERBOSITY PENALTY) ###\n"
-                f"This is a reasoning model. An elevated token budget of **{_tb_elevated} tokens** "
-                f"was granted (standard for this module: {_tb_standard} tokens) to accommodate "
-                f"internal chain-of-thought / thinking tokens.\n"
-                f"The elevated budget exists for internal reasoning only — it must **not** produce "
-                f"a longer visible response than the task requires.\n"
-                f"Apply the following deduction to `output_quality`:\n"
-                f"- Visible response exceeds **{_tb_standard * 2} tokens** AND the excess is padding, "
-                f"repetition, or reformatting rather than substantive quality: "
-                f"**deduct 1 point from output_quality**.\n"
-                f"- Concise, focused response within approximately {_tb_standard} tokens that fully "
-                f"addresses the task: no deduction."
-            )
-
-    clean_response = model_response.strip()
-    if not clean_response:
-        clean_response = "[ERROR: THE MODEL GENERATED AN EMPTY OR INVALID RESPONSE. SCORE MUST BE 1.]"
-
-    if truncation_context:
-        system_prompt += (
-            "\n\n### TRUNCATION NOTE ###\n"
-            "The model response below was cut off due to token budget limits. "
-            "Evaluate the **quality of the provided content independently of its completeness** — "
-            "do not penalize because the response is shorter than expected or ends abruptly. "
-            "Score what is present on its own merits."
-        )
-
-    # Universelle Token-Verbrauchsinformation für JEDE Aufgabe.
-    # Der Judge sieht: Budget, Verbrauch, Thinking-Tokens, Truncation.
-    if token_usage_context:
-        _tu_used = token_usage_context.get("tokens_used")
-        _tu_reasoning = token_usage_context.get("reasoning_tokens")
-        _tu_budget = token_usage_context.get("token_budget")
-        _tu_module = token_usage_context.get("module_budget")
-        _tu_truncated = token_usage_context.get("truncated", False)
-
-        _lines: list[str] = []
-        if _tu_budget is not None:
-            _lines.append(f"- **Applied token budget** (max_tokens sent to API): **{_tu_budget:,} tokens**")
-        if _tu_module is not None and _tu_module != _tu_budget:
-            _lines.append(f"- **Module default budget** (from config): {_tu_module:,} tokens")
-        if _tu_used is not None:
-            _lines.append(f"- **Total tokens consumed**: **{_tu_used:,} tokens**")
-            if _tu_budget and _tu_budget > 0:
-                _pct = round(_tu_used / _tu_budget * 100)
-                if _pct > 100:
-                    _lines.append(f"  (⚠️ **{_pct}%** of budget — exceeded allocated budget)")
-                else:
-                    _lines.append(f"  ({_pct}% of budget)")
-        if _tu_reasoning is not None and _tu_reasoning > 0:
-            _lines.append(f"- **Thinking / reasoning tokens**: **{_tu_reasoning:,} tokens**")
-            if _tu_used and _tu_used > 0:
-                _think_pct = round(_tu_reasoning / _tu_used * 100)
-                _lines.append(f"  ({_think_pct}% of total consumption)")
-            if _tu_used and _tu_reasoning:
-                _visible = _tu_used - _tu_reasoning
-                _lines.append(f"- **Visible output tokens** (approx.): {_visible:,} tokens")
-        if _tu_truncated:
-            _lines.append("- **Truncated**: YES (response was cut off at budget limit)")
-
-        if _lines:
-            _usage_block = "\n".join(_lines)
-            system_prompt += (
-                f"\n\n### TOKEN USAGE ###\n"
-                f"Resource consumption for this specific task:\n"
-                f"{_usage_block}\n\n"
-                f"Use this information to assess whether the model followed its token budget:\n"
-                f"- If the model **exceeded its budget**, consider whether the extra tokens added "
-                f"substantive quality or were wasted on padding, repetition, or excessive reasoning.\n"
-                f"- If **thinking tokens are very high** relative to visible output, the model may have "
-                f"over-reasoned — the visible response should still be evaluated on its own merits.\n"
-                f"- A model that **stays within budget** while delivering quality content demonstrates "
-                f"good resource discipline."
-            )
-
-    if small_model_token_context:
-        _smc_size = small_model_token_context.get("size_class")
-        _smc_standard = small_model_token_context.get("standard_budget")
-        _smc_applied = small_model_token_context.get("applied_budget")
-        if _smc_size and _smc_standard and _smc_applied:
-            system_prompt += (
-                f"\n\n### SMALL MODEL CONTEXT NOTE ###\n"
-                f"This model belongs to the **{_smc_size}** size class (a compact quantized GGUF model "
-                f"with a shorter effective output window). An elevated token budget of "
-                f"**{_smc_applied} tokens** was applied (standard for this module: {_smc_standard} tokens) "
-                f"to reduce output truncation.\n"
-                f"**Evaluate the response fairly given these constraints:**\n"
-                f"- Do NOT penalize for minor completeness gaps that are likely due to model size limits.\n"
-                f"- Focus on the quality and accuracy of the content that IS present.\n"
-                f"- A response that addresses all core task requirements, even if slightly less "
-                f"exhaustive than the golden standard, should be rated on content quality — "
-                f"not penalized for brevity relative to larger models."
-            )
+    clean_response = _normalize_response(model_response)
 
     user_prompt = _USER_TEMPLATE.substitute(
         task_prompt=task_prompt.strip(),
@@ -358,50 +236,247 @@ def build_prompts(
         scale=scale,
     )
 
-    if tool_content:
-        quality_note = f" [content quality: {tool_content_quality}]" if tool_content_quality else ""
-        tool_section = (
-            f"### TOOL RESULT (actual content returned by the tool){quality_note}\n"
-            f"{tool_content.strip()}\n\n"
-        )
-        user_prompt = tool_section + user_prompt
-        # Replace JSON schema to include content_grounding and hallucination_detected
-        old_schema = (
-            '```json\n'
-            '{\n'
-            f'  "score": <0-{scale}>,\n'
-            '  "sub_scores": {\n'
-            '    "task_compliance": <0-5>,\n'
-            '    "output_quality": <0-5>,\n'
-            '    "standard_adherence": <0-5>\n'
-            '  }\n'
-            '}\n'
-            '```'
-        )
-        new_schema = (
-            '```json\n'
-            '{\n'
-            f'  "score": <0-{scale}>,\n'
-            '  "sub_scores": {\n'
-            '    "task_compliance": <0-5>,\n'
-            '    "output_quality": <0-5>,\n'
-            '    "standard_adherence": <0-5>,\n'
-            '    "content_grounding": <0-5>\n'
-            '  },\n'
-            '  "hallucination_detected": <true|false>\n'
-            '}\n'
-            '```'
-        )
-        user_prompt = user_prompt.replace(old_schema, new_schema)
-        system_prompt += (
-            "\n\n### CONTENT GROUNDING (tool_content provided) ###\n"
-            "A TOOL RESULT section is included above the task prompt. Use it to assess grounding:\n"
-            "- **content_grounding** (0-5): How well does the model's answer draw on the tool result?\n"
-            "  0 = entirely fabricated / ignores tool result; 5 = fully grounded in tool content.\n"
-            "- **hallucination_detected** (true/false): Set true if the response asserts specific facts\n"
-            "  that are NOT present in the tool result AND are not general common knowledge.\n"
-            "  Note: if tool content quality is 'navigation_only' or 'error', the model cannot be\n"
-            "  expected to ground its response — evaluate transparency behaviour instead."
-        )
+    user_prompt, system_prompt = _apply_tool_content_section(
+        user_prompt, system_prompt, tool_content, tool_content_quality, scale,
+    )
 
     return system_prompt, user_prompt
+
+
+def _append_identity_context(system_prompt: str, tested_model_id: str | None) -> str:
+    """Hängt den EVALUATION-CONTEXT-Block (Modell-Tag-Hinweise) an, wenn vorhanden."""
+    if not tested_model_id:
+        return system_prompt
+    identity = get_model_identity(tested_model_id)
+    if not identity.get("tags"):
+        return system_prompt
+    tags_str = ", ".join(identity["tags"])
+    system_prompt += (
+        f"\n\n### EVALUATION CONTEXT ###\n"
+        f"The model being evaluated is tagged with: {tags_str}.\n"
+        "Take this into account when evaluating responses:\n"
+        "- **Coder**: May be excused for ignoring socio-political nuance or failing pure writing tasks, but must excel at logic.\n"
+        "- **Thinking / Reasoning**: Extremely long, thorough chain-of-thought answers are expected and should NOT be penalized for verbosity. (e.g. o1, o3, DeepSeek R1, QwQ, Magistral, GLM-5.x — models with fixed internal Chain-of-Thought)\n"
+        "- **Instruct**: Focused on direct instruction following. Answers might be shorter and more direct; they lack deep reasoning steps.\n"
+        "- **Preview / Test**: Experimental phase. Minor formatting or minor coherence drops might be expected.\n"
+        "- **Uncensored-Abliterated**: Vector surgery might cause abrupt context termination, loop errors, or reasoning collapse.\n"
+        "- **Uncensored-Finetuned**: Safe architectural baseline but may show sampling instability under complex reasoning pressure.\n"
+        "- **Agentic-Orchestrator**: This model is designed as an orchestrator in multi-agent pipelines (spawning sub-agents for concrete subtasks). It may underperform on strict single-turn format tasks (e.g. exact CLI one-liners) that would normally be delegated to a specialized sub-agent. Do not penalize orchestration-style verbosity or meta-level framing.\n"
+        "- **Thinking-Optional**: This model supports toggleable extended thinking (e.g. Qwen3, Gemini 2.5) but runs in standard mode here (no explicit thinking budget passed). Evaluate output quality only — do not penalize if the answer is thorough without visible chain-of-thought tags. Latency may be higher than comparable models due to internal planning steps even in standard mode."
+    )
+    return system_prompt
+
+
+def _append_language_compliance(
+    system_prompt: str, required_language: str | None, language_weight: float,
+) -> str:
+    """Hängt den LANGUAGE-COMPLIANCE-Block an, wenn eine Sprache gefordert ist."""
+    if not required_language:
+        return system_prompt
+    _LANG_LABELS: dict[str, str] = {"de": "German (Deutsch)", "en": "English"}
+    lang_label = _LANG_LABELS.get(required_language, required_language.upper())
+    system_prompt += (
+        f"\n\n## LANGUAGE COMPLIANCE (Mandatory \u2013 {int(language_weight * 100)}% of total score) ##\n"
+        f"The task prompt explicitly requires the response to be in **{lang_label}**. "
+        f"Check the response language **before** evaluating content quality "
+        f"and apply the following deductions to `task_compliance`:\n"
+        f"- Response is primarily in a **different language**: deduct **1.5 points**.\n"
+        f"- Response **mixes languages** (e.g. English explanations with {lang_label} output): deduct **0.5 points**.\n"
+        f"- Response is correctly and consistently in {lang_label}: no deduction."
+    )
+    return system_prompt
+
+
+def _append_token_budget_note(system_prompt: str, token_budget_context: dict[str, int] | None) -> str:
+    """Hängt den Verbosity-Penalty-Hinweis für Reasoning-Modelle an."""
+    if not token_budget_context:
+        return system_prompt
+    _tb_standard = token_budget_context.get("standard")
+    _tb_elevated = token_budget_context.get("elevated")
+    if _tb_standard and _tb_elevated:
+        system_prompt += (
+            f"\n\n### TOKEN BUDGET NOTE (VERBOSITY PENALTY) ###\n"
+            f"This is a reasoning model. An elevated token budget of **{_tb_elevated} tokens** "
+            f"was granted (standard for this module: {_tb_standard} tokens) to accommodate "
+            f"internal chain-of-thought / thinking tokens.\n"
+            f"The elevated budget exists for internal reasoning only — it must **not** produce "
+            f"a longer visible response than the task requires.\n"
+            f"Apply the following deduction to `output_quality`:\n"
+            f"- Visible response exceeds **{_tb_standard * 2} tokens** AND the excess is padding, "
+            f"repetition, or reformatting rather than substantive quality: "
+            f"**deduct 1 point from output_quality**.\n"
+            f"- Concise, focused response within approximately {_tb_standard} tokens that fully "
+            f"addresses the task: no deduction."
+        )
+    return system_prompt
+
+
+def _normalize_response(model_response: str) -> str:
+    """Bereinigt die Model-Response; liefert Fehler-Platzhalter bei leerem String."""
+    clean_response = model_response.strip()
+    if not clean_response:
+        clean_response = "[ERROR: THE MODEL GENERATED AN EMPTY OR INVALID RESPONSE. SCORE MUST BE 1.]"
+    return clean_response
+
+
+def _append_truncation_note(system_prompt: str, truncation_context: bool) -> str:
+    """Hängt den TRUNCATION-Hinweis an, wenn die Response abgeschnitten wurde."""
+    if not truncation_context:
+        return system_prompt
+    system_prompt += (
+        "\n\n### TRUNCATION NOTE ###\n"
+        "The model response below was cut off due to token budget limits. "
+        "Evaluate the **quality of the provided content independently of its completeness** — "
+        "do not penalize because the response is shorter than expected or ends abruptly. "
+        "Score what is present on its own merits."
+    )
+    return system_prompt
+
+
+def _format_token_usage_lines(token_usage_context: dict[str, Any]) -> list[str]:
+    """Baut die Bullet-Liste für den TOKEN-USAGE-Block aus den Verbrauchsdaten.
+
+    Universelle Token-Verbrauchsinformation für JEDE Aufgabe.
+    Der Judge sieht: Budget, Verbrauch, Thinking-Tokens, Truncation.
+    """
+    _tu_used = token_usage_context.get("tokens_used")
+    _tu_reasoning = token_usage_context.get("reasoning_tokens")
+    _tu_budget = token_usage_context.get("token_budget")
+    _tu_module = token_usage_context.get("module_budget")
+    _tu_truncated = token_usage_context.get("truncated", False)
+
+    _lines: list[str] = []
+    if _tu_budget is not None:
+        _lines.append(f"- **Applied token budget** (max_tokens sent to API): **{_tu_budget:,} tokens**")
+    if _tu_module is not None and _tu_module != _tu_budget:
+        _lines.append(f"- **Module default budget** (from config): {_tu_module:,} tokens")
+    if _tu_used is not None:
+        _lines.append(f"- **Total tokens consumed**: **{_tu_used:,} tokens**")
+        if _tu_budget and _tu_budget > 0:
+            _pct = round(_tu_used / _tu_budget * 100)
+            if _pct > 100:
+                _lines.append(f"  (⚠️ **{_pct}%** of budget — exceeded allocated budget)")
+            else:
+                _lines.append(f"  ({_pct}% of budget)")
+    if _tu_reasoning is not None and _tu_reasoning > 0:
+        _lines.append(f"- **Thinking / reasoning tokens**: **{_tu_reasoning:,} tokens**")
+        if _tu_used and _tu_used > 0:
+            _think_pct = round(_tu_reasoning / _tu_used * 100)
+            _lines.append(f"  ({_think_pct}% of total consumption)")
+        if _tu_used and _tu_reasoning:
+            _visible = _tu_used - _tu_reasoning
+            _lines.append(f"- **Visible output tokens** (approx.): {_visible:,} tokens")
+    if _tu_truncated:
+        _lines.append("- **Truncated**: YES (response was cut off at budget limit)")
+    return _lines
+
+
+def _append_token_usage_block(system_prompt: str, token_usage_context: dict[str, Any] | None) -> str:
+    """Hängt den TOKEN-USAGE-Block an, wenn Verbrauchsdaten vorhanden sind."""
+    if not token_usage_context:
+        return system_prompt
+    _lines = _format_token_usage_lines(token_usage_context)
+    if not _lines:
+        return system_prompt
+    _usage_block = "\n".join(_lines)
+    system_prompt += (
+        f"\n\n### TOKEN USAGE ###\n"
+        f"Resource consumption for this specific task:\n"
+        f"{_usage_block}\n\n"
+        f"Use this information to assess whether the model followed its token budget:\n"
+        f"- If the model **exceeded its budget**, consider whether the extra tokens added "
+        f"substantive quality or were wasted on padding, repetition, or excessive reasoning.\n"
+        f"- If **thinking tokens are very high** relative to visible output, the model may have "
+        f"over-reasoned — the visible response should still be evaluated on its own merits.\n"
+        f"- A model that **stays within budget** while delivering quality content demonstrates "
+        f"good resource discipline."
+    )
+    return system_prompt
+
+
+def _append_small_model_note(
+    system_prompt: str, small_model_token_context: dict[str, Any] | None,
+) -> str:
+    """Hängt den SMALL-MODEL-Hinweis an, wenn ein kompaktes Modell bewertet wird."""
+    if not small_model_token_context:
+        return system_prompt
+    _smc_size = small_model_token_context.get("size_class")
+    _smc_standard = small_model_token_context.get("standard_budget")
+    _smc_applied = small_model_token_context.get("applied_budget")
+    if _smc_size and _smc_standard and _smc_applied:
+        system_prompt += (
+            f"\n\n### SMALL MODEL CONTEXT NOTE ###\n"
+            f"This model belongs to the **{_smc_size}** size class (a compact quantized GGUF model "
+            f"with a shorter effective output window). An elevated token budget of "
+            f"**{_smc_applied} tokens** was applied (standard for this module: {_smc_standard} tokens) "
+            f"to reduce output truncation.\n"
+            f"**Evaluate the response fairly given these constraints:**\n"
+            f"- Do NOT penalize for minor completeness gaps that are likely due to model size limits.\n"
+            f"- Focus on the quality and accuracy of the content that IS present.\n"
+            f"- A response that addresses all core task requirements, even if slightly less "
+            f"exhaustive than the golden standard, should be rated on content quality — "
+            f"not penalized for brevity relative to larger models."
+        )
+    return system_prompt
+
+
+def _apply_tool_content_section(
+    user_prompt: str,
+    system_prompt: str,
+    tool_content: str | None,
+    tool_content_quality: str | None,
+    scale: int,
+) -> tuple[str, str]:
+    """Fügt Tool-Resultat-Bereich in User-Prompt und erweitertes JSON-Schema ein.
+
+    Ersetzt außerdem das Standard-JSON-Schema um ``content_grounding`` und
+    ``hallucination_detected`` und ergänzt das System-Prompt mit dem
+    CONTENT-GROUNDING-Hinweis.
+    """
+    if not tool_content:
+        return user_prompt, system_prompt
+    quality_note = f" [content quality: {tool_content_quality}]" if tool_content_quality else ""
+    tool_section = (
+        f"### TOOL RESULT (actual content returned by the tool){quality_note}\n"
+        f"{tool_content.strip()}\n\n"
+    )
+    user_prompt = tool_section + user_prompt
+    # Replace JSON schema to include content_grounding and hallucination_detected
+    old_schema = (
+        '```json\n'
+        '{\n'
+        f'  "score": <0-{scale}>,\n'
+        '  "sub_scores": {\n'
+        '    "task_compliance": <0-5>,\n'
+        '    "output_quality": <0-5>,\n'
+        '    "standard_adherence": <0-5>\n'
+        '  }\n'
+        '}\n'
+        '```'
+    )
+    new_schema = (
+        '```json\n'
+        '{\n'
+        f'  "score": <0-{scale}>,\n'
+        '  "sub_scores": {\n'
+        '    "task_compliance": <0-5>,\n'
+        '    "output_quality": <0-5>,\n'
+        '    "standard_adherence": <0-5>,\n'
+        '    "content_grounding": <0-5>\n'
+        '  },\n'
+        '  "hallucination_detected": <true|false>\n'
+        '}\n'
+        '```'
+    )
+    user_prompt = user_prompt.replace(old_schema, new_schema)
+    system_prompt += (
+        "\n\n### CONTENT GROUNDING (tool_content provided) ###\n"
+        "A TOOL RESULT section is included above the task prompt. Use it to assess grounding:\n"
+        "- **content_grounding** (0-5): How well does the model's answer draw on the tool result?\n"
+        "  0 = entirely fabricated / ignores tool result; 5 = fully grounded in tool content.\n"
+        "- **hallucination_detected** (true/false): Set true if the response asserts specific facts\n"
+        "  that are NOT present in the tool result AND are not general common knowledge.\n"
+        "  Note: if tool content quality is 'navigation_only' or 'error', the model cannot be\n"
+        "  expected to ground its response — evaluate transparency behaviour instead."
+    )
+    return user_prompt, system_prompt

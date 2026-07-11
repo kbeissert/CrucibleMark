@@ -199,6 +199,31 @@ class ResultManager:
         if not results:
             return None
 
+        self._enforce_card_first_for_results(results)
+
+        if not result_type:
+            result_type = self._detect_result_type(results) or RESULT_TYPE_COMMERCIAL
+
+        csv_path = self._get_csv_path(result_type)
+
+        if not self._ensure_output_dir(csv_path):
+            return None
+
+        # Collect keys from current results
+        current_keys = set().union(*(d.keys() for d in results))
+        # Bestimme finale Feldnamen
+        fieldnames = self._get_updated_fieldnames(csv_path, current_keys)
+        file_exists = csv_path.exists() and csv_path.stat().st_size > 0
+
+        existing_rows = self._read_existing_rows(csv_path, file_exists)
+        clean_existing_rows = self._dedup_existing_rows(existing_rows, results)
+
+        return self._write_results_to_csv(
+            csv_path, fieldnames, results, clean_existing_rows, existing_rows, file_exists,
+        )
+
+    def _enforce_card_first_for_results(self, results: list[dict[str, Any]]) -> None:
+        """Card-First-Vertrag: kanonische model_id garantieren (in-place)."""
         # Card-First-Vertrag: kanonische model_id garantieren und Card-Pflicht durchsetzen
         # (WARNING + ensure_card() bei fehlender Card; kein Hard-Fail)
         for r in results:
@@ -212,69 +237,71 @@ class ResultManager:
                 canonical, _has_card = enforce_card_first(r["model"], model_cfg=_model_cfg)
                 r["model"] = canonical
 
+    def _detect_result_type(self, results: list[dict[str, Any]]) -> str | None:
+        """Ermittelt den result_type anhand des ersten Eintrags (Provider/Model)."""
         # Automatisches Ermitteln des result_type anhand des ersten Eintrags, falls nicht explizit übergeben
-        if not result_type and results:
-            provider = results[0].get("provider", "unknown")
-            model_name = results[0].get("model", "")
+        if not results:
+            return None
+        provider = results[0].get("provider", "unknown")
+        model_name = results[0].get("model", "")
 
-            if provider in ("ollama", "llamacpp", "llamacpp_spark", "llama_cpp", "llamacpp_local", "vllm_spark"):
-                if ":cloud" in model_name.lower() or model_name.lower().endswith("-cloud"):
-                    result_type = RESULT_TYPE_CLOUD
-                else:
-                    result_type = RESULT_TYPE_LOCAL
-            else:
-                # Prüfe in Config, ob es Cloud/Open-Weights ist
-                provider_config = self.config.get("providers", {}).get("commercial", {}).get(provider, {})
-                model_type = provider_config.get("model_type", "")
-                if model_type == MODEL_TYPE_OPEN_WEIGHTS_CLOUD:
-                    result_type = RESULT_TYPE_CLOUD
-                else:
-                    result_type = RESULT_TYPE_COMMERCIAL
+        if provider in ("ollama", "llamacpp", "llamacpp_spark", "llama_cpp", "llamacpp_local", "vllm_spark"):
+            if ":cloud" in model_name.lower() or model_name.lower().endswith("-cloud"):
+                return RESULT_TYPE_CLOUD
+            return RESULT_TYPE_LOCAL
 
-        # Fallback
-        if not result_type:
-            result_type = RESULT_TYPE_COMMERCIAL
+        # Prüfe in Config, ob es Cloud/Open-Weights ist
+        provider_config = self.config.get("providers", {}).get("commercial", {}).get(provider, {})
+        model_type = provider_config.get("model_type", "")
+        if model_type == MODEL_TYPE_OPEN_WEIGHTS_CLOUD:
+            return RESULT_TYPE_CLOUD
+        return RESULT_TYPE_COMMERCIAL
 
-        csv_path = self._get_csv_path(result_type)
-
-        # Sicherstellen, dass das Verzeichnis existiert
+    def _ensure_output_dir(self, csv_path: Path) -> bool:
+        """Legt das Output-Verzeichnis an. False bei Fehler (Caller bricht ab)."""
         try:
             csv_path.parent.mkdir(parents=True, exist_ok=True)
+            return True
         except OSError as e:
             logger.error("Could not create directory %s: %s", csv_path.parent, e)
             logger.error("❌ Fehler beim Erstellen des Verzeichnisses: %s", e)
-            return None
+            return False
 
-        # Collect keys from current results
-        current_keys = set().union(*(d.keys() for d in results))
-
-        # Bestimme finale Feldnamen
-        fieldnames = self._get_updated_fieldnames(csv_path, current_keys)
-        file_exists = csv_path.exists() and csv_path.stat().st_size > 0
-
+    @staticmethod
+    def _read_existing_rows(csv_path: Path, file_exists: bool) -> list[dict[str, str]]:
+        """Liest existierende CSV-Zeilen (Upsert-Pattern: leere Liste bei Fehler)."""
         # Wir lesen IMMER die existierenden Zeilen, um Duplikate zu entfernen (Upsert-Pattern)
-        existing_rows = []
+        if not file_exists:
+            return []
+        try:
+            with csv_path.open("r", encoding="utf-8") as f:
+                return list(csv.DictReader(f))
+        except (OSError, csv.Error):
+            # Falls Fehler beim Lesen, fangen wir "frisch" an (überschreiben korrupte Datei)
+            return []
 
-        if file_exists:
-            try:
-                with csv_path.open("r", encoding="utf-8") as f:
-                    reader = csv.DictReader(f)
-                    existing_rows = list(reader)
-            except (OSError, csv.Error):
-                # Falls Fehler beim Lesen, fangen wir "frisch" an (überschreiben korrupte Datei)
-                existing_rows = []
-
-        # Deduplizierung: Entferne Zeilen aus 'existing_rows', wenn (model, asset_id) in 'results' enthalten ist
-        # Wir bauen ein Set von (model, asset_id) der neuen Ergebnisse
+    @staticmethod
+    def _dedup_existing_rows(
+        existing_rows: list[dict[str, str]], results: list[dict[str, Any]]
+    ) -> list[dict[str, str]]:
+        """Entfernt Zeilen, deren (model, asset_id) durch neue Ergebnisse überschrieben wird."""
         new_keys_combo = {(r.get("model", ""), r.get("asset_id", "")) for r in results}
-
-        # Behalte nur Zeilen, die NICHT überschrieben werden
-        clean_existing_rows = [
+        return [
             row
             for row in existing_rows
             if (row.get("model", ""), row.get("asset_id", "")) not in new_keys_combo
         ]
 
+    def _write_results_to_csv(
+        self,
+        csv_path: Path,
+        fieldnames: list[str],
+        results: list[dict[str, Any]],
+        clean_existing_rows: list[dict[str, str]],
+        existing_rows: list[dict[str, str]],
+        file_exists: bool,
+    ) -> Path | None:
+        """Schreibt Ergebnisse (Fast-Path Append oder vollständiger Rewrite)."""
         try:
             # Fast-path: Single-result write-through (append-only, O(1)).
             # Used by the write-through pattern in _handle_single_asset().
@@ -290,7 +317,6 @@ class ResultManager:
                 return csv_path
 
             self._write_to_csv(csv_path, fieldnames, results, clean_existing_rows)
-
             return csv_path
         except (OSError, csv.Error) as e:
             logger.error("Failed to save results to %s: %s", csv_path, e)

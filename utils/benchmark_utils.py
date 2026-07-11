@@ -7,7 +7,6 @@ import json
 import logging
 import re
 from collections.abc import Callable
-from datetime import datetime
 from pathlib import Path
 from typing import Any, TypeVar
 
@@ -280,98 +279,32 @@ def save_audit_log(
         filepath = model_dir / filename
 
         with open(filepath, "w", encoding="utf-8") as f:
-            f.write(f"# Audit Log: {asset_id}\n")
-            f.write(f"> **Erstellt am:** {datetime.now().strftime('%d.%m.%Y, %H:%M:%S')}\n")
-            f.write(f"**Model:** {model}\n")
-            if provider:
-                f.write(f"**Provider:** {provider}\n")
-            if thinking_mode:
-                f.write(f"**Thinking Mode:** {thinking_mode}\n")
-            if execution_time is not None:
-                f.write(f"**Execution Time:** {execution_time:.2f} s\n")
-            if tokens_used is not None:
-                f.write(f"**Tokens Used:** {tokens_used}")
-                if reasoning_tokens:
-                    f.write(f" _(davon {reasoning_tokens} Reasoning-Tokens, die intern verbraucht wurden)_")
-                f.write("\n")
-            if tokens_per_second is not None:
-                f.write(f"**Tokens/s:** {tokens_per_second:.2f}\n")
-            if cost is not None:
-                try:
-                    f.write(f"**Cost:** ${float(cost):.4f}\n")
-                except ValueError:
-                    f.write(f"**Cost:** ${cost}\n")
-            f.write("\n")
+            _write_audit_header(
+                f,
+                asset_id=asset_id,
+                model=model,
+                provider=provider,
+                thinking_mode=thinking_mode,
+                execution_time=execution_time,
+                tokens_used=tokens_used,
+                reasoning_tokens=reasoning_tokens,
+                tokens_per_second=tokens_per_second,
+                cost=cost,
+            )
             if token_limit_fallback:
                 f.write("> [!WARNING]\n> Das Modell (bzw. die API) hat das initial angeforderte Token-Limit abgelehnt (zu groß für die Architektur). Das System ist dynamisch auf ein kleineres 4096-Token-Fallback gewechselt. Dies zeigt, dass dieses Modell mit großen Token-Anfragen oder Kontexten Probleme hat!\n\n")
 
-            # Reasoning-Token-Budget-Block: Reasoning-Tokens haben Output verdrängt
-            if reasoning_tokens and reasoning_tokens > 0 and token_limit_cutoff:
-                output_tokens = (tokens_used or 0) - reasoning_tokens
-                f.write(
-                    f"> [!WARNING]\n"
-                    f"> **Reasoning-Tokens haben Output-Budget verdrängt:** Dieses Reasoning-Modell hat {reasoning_tokens} Tokens intern "
-                    f"für Denk-/Chain-of-Thought-Prozesse verbraucht, die nicht im Output erscheinen. "
-                    f"Verbleibende Output-Tokens: {max(0, output_tokens)}. "
-                    f"Das Token-Budget wurde erschöpft bevor die vollständige Antwort generiert werden konnte. "
-                    f"Dies ist kein Fehler, sondern eine modellspezifische Eigenschaft von Reasoning-Modellen (z.B. MiniMax M2, DeepSeek R1).\n\n"
-                )
+            _write_token_limit_warnings(
+                f,
+                model=model,
+                asset_id=asset_id,
+                tokens_used=tokens_used,
+                reasoning_tokens=reasoning_tokens,
+                token_limit_cutoff=token_limit_cutoff,
+            )
 
-            # Token-Budget-Flag: API hat das konfigurierte Output-Limit beschränkt
-            if token_limit_cutoff:
-                _module_key, _budget = _get_token_budget(str(asset_id))
-                if _budget is not None:
-                    f.write(
-                        f"> [!NOTE]\n"
-                        f"> **Token-Budget ausgeschöpft:** Das Modell hat das konfigurierte Output-Budget "
-                        f"für Modul `{_module_key}` ({_budget} Tokens) vollständig ausgeschöpft. "
-                        f"Die Antwort wurde durch dieses Limit beschränkt — der tatsächliche Output wäre länger gewesen. "
-                        f"Product Engineers: Dieser Task-Typ triggert systematisch das Output-Limit bei diesem Modell.\n\n"
-                    )
-
-                    # Unbekanntes Reasoning-Modell: actionable Hinweis für Maintainer
-                    _is_reasoning = False
-                    _is_thinking_optional = False
-                    try:
-                        from utils.model_utils import is_reasoning_model, is_thinking_optional_from_card
-                        _is_reasoning = is_reasoning_model(str(model))
-                        _is_thinking_optional = is_thinking_optional_from_card(str(model))
-                    except Exception:
-                        pass
-                    if not _is_reasoning and not reasoning_tokens and not _is_thinking_optional:
-                        f.write(
-                            f"> [!WARNING]\n"
-                            f"> **Mögliches Reasoning-Modell nicht erkannt:** `{model}` hat das Token-Budget "
-                            f"für Modul `{_module_key}` ({_budget} Tokens) vollständig ausgeschöpft, "
-                            f"ist aber weder als Reasoning-Modell klassifiziert noch wurden `reasoning_tokens > 0` "
-                            f"in den API-Metadaten gemeldet. Falls dieses Modell intern Chain-of-Thought betreibt "
-                            f"(Thinking-Tokens ohne sichtbare Tags), erklärt das den Budget-Engpass.\n"
-                            f"> \n"
-                            f"> **Empfohlene Aktion:**\n"
-                            f"> ```\n"
-                            f"> make probe-thinking MODEL={model}\n"
-                            f"> # Bei Bestätigung (detected=true):\n"
-                            f"> make run-model MODEL={model} --force\n"
-                            f"> ```\n\n"
-                        )
-
-
-            import re
-
-            def demote_headers_safe(text: str) -> str:
-                blocks = re.split(r'(```.*?```)', text, flags=re.DOTALL)
-                for i, _ in enumerate(blocks):
-                    if i % 2 == 0:
-                        # Stuft Überschriften ab, limitiert sie aber strikt auf maximal H6 und min H3
-                        blocks[i] = re.sub(
-                            r'^((?:>\s*)*)(#+)\s',
-                            lambda m: str(m.group(1)) + '#' * min(6, max(3, len(m.group(2)) + 1)) + ' ',
-                            blocks[i],
-                            flags=re.MULTILINE
-                        )
-                return "".join(blocks)
             f.write("## 1. Prompt / Fragestellung\n\n")
-            safe_prompt = demote_headers_safe(str(prompt))
+            safe_prompt = _demote_headers_safe(str(prompt))
             formatted_prompt = "\n".join([f"> {line}" for line in safe_prompt.split("\n")])
             f.write(f"{formatted_prompt}\n\n")
 
@@ -379,21 +312,156 @@ def save_audit_log(
             if token_limit_cutoff:
                 f.write("> [!CAUTION]\n> Das Modell hat das maximale Token-Limit erreicht und die Antwort abgebrochen. Die folgende Antwort ist INKOMPLETT und zeigt an, dass das Modell für diese Aufgabe zu gesprächig (verbose) war.\n\n")
 
-            safe_response = demote_headers_safe(str(response))
-            if safe_response.strip():
-                f.write(f"{safe_response}\n\n")
-            elif think_content:
-                f.write("> [!NOTE]\n> **Kein sichtbarer Output.** Das Modell hat ausschließlich intern (ThinkChunk) gearbeitet und keinen formatierten Antworttext produziert. Der Reasoning-Inhalt wird zur Information unten angezeigt — er geht nicht in die Wertung ein.\n\n")
-                safe_think = demote_headers_safe(str(think_content))
-                f.write(f"{safe_think}\n\n")
-            else:
-                f.write(f"{safe_response}\n\n")
+            _write_response_block(f, response, think_content)
 
             f.write("## 3. Evaluation / LLM-Judge / Scorer\n\n")
-            safe_judge = demote_headers_safe(str(judge_response))
+            safe_judge = _demote_headers_safe(str(judge_response))
             f.write(f"{safe_judge}\n")
     except OSError as e:
         logger.warning("Failed to save audit log for %s: %s", asset_id, e)
+
+
+def _write_audit_header(
+    f,
+    asset_id: str,
+    model: str,
+    provider: str | None,
+    thinking_mode: str | None,
+    execution_time: float | None,
+    tokens_used: int | None,
+    reasoning_tokens: int | None,
+    tokens_per_second: float | None,
+    cost: float | None,
+) -> None:
+    """Schreibt den oberen Markdown-Header eines Audit-Logs (Metadaten-Block)."""
+    from datetime import datetime  # noqa: PLC0415  (lokal: vermeidet Module-Init-Kosten)
+
+    f.write(f"# Audit Log: {asset_id}\n")
+    f.write(f"> **Erstellt am:** {datetime.now().strftime('%d.%m.%Y, %H:%M:%S')}\n")
+    f.write(f"**Model:** {model}\n")
+    if provider:
+        f.write(f"**Provider:** {provider}\n")
+    if thinking_mode:
+        f.write(f"**Thinking Mode:** {thinking_mode}\n")
+    if execution_time is not None:
+        f.write(f"**Execution Time:** {execution_time:.2f} s\n")
+    if tokens_used is not None:
+        f.write(f"**Tokens Used:** {tokens_used}")
+        if reasoning_tokens:
+            f.write(f" _(davon {reasoning_tokens} Reasoning-Tokens, die intern verbraucht wurden)_")
+        f.write("\n")
+    if tokens_per_second is not None:
+        f.write(f"**Tokens/s:** {tokens_per_second:.2f}\n")
+    if cost is not None:
+        try:
+            f.write(f"**Cost:** ${float(cost):.4f}\n")
+        except ValueError:
+            f.write(f"**Cost:** ${cost}\n")
+    f.write("\n")
+
+
+def _write_token_limit_warnings(
+    f,
+    model: str,
+    asset_id: str,
+    tokens_used: int | None,
+    reasoning_tokens: int | None,
+    token_limit_cutoff: bool,
+) -> None:
+    """Schreibt die Warn-/Hinweis-Blöcke rund um Token-Limit-Cutoff & Reasoning-Verbrauch."""
+    # Reasoning-Token-Budget-Block: Reasoning-Tokens haben Output verdrängt
+    if reasoning_tokens and reasoning_tokens > 0 and token_limit_cutoff:
+        output_tokens = (tokens_used or 0) - reasoning_tokens
+        f.write(
+            f"> [!WARNING]\n"
+            f"> **Reasoning-Tokens haben Output-Budget verdrängt:** Dieses Reasoning-Modell hat {reasoning_tokens} Tokens intern "
+            f"für Denk-/Chain-of-Thought-Prozesse verbraucht, die nicht im Output erscheinen. "
+            f"Verbleibende Output-Tokens: {max(0, output_tokens)}. "
+            f"Das Token-Budget wurde erschöpft bevor die vollständige Antwort generiert werden konnte. "
+            f"Dies ist kein Fehler, sondern eine modellspezifische Eigenschaft von Reasoning-Modellen (z.B. MiniMax M2, DeepSeek R1).\n\n"
+        )
+
+    # Token-Budget-Flag: API hat das konfigurierte Output-Limit beschränkt
+    if token_limit_cutoff:
+        _module_key, _budget = _get_token_budget(str(asset_id))
+        if _budget is not None:
+            f.write(
+                f"> [!NOTE]\n"
+                f"> **Token-Budget ausgeschöpft:** Das Modell hat das konfigurierte Output-Budget "
+                f"für Modul `{_module_key}` ({_budget} Tokens) vollständig ausgeschöpft. "
+                f"Die Antwort wurde durch dieses Limit beschränkt — der tatsächliche Output wäre länger gewesen. "
+                f"Product Engineers: Dieser Task-Typ triggert systematisch das Output-Limit bei diesem Modell.\n\n"
+            )
+
+            if _is_unknown_reasoning_model(str(model), reasoning_tokens):
+                f.write(
+                    f"> [!WARNING]\n"
+                    f"> **Mögliches Reasoning-Modell nicht erkannt:** `{model}` hat das Token-Budget "
+                    f"für Modul `{_module_key}` ({_budget} Tokens) vollständig ausgeschöpft, "
+                    f"ist aber weder als Reasoning-Modell klassifiziert noch wurden `reasoning_tokens > 0` "
+                    f"in den API-Metadaten gemeldet. Falls dieses Modell intern Chain-of-Thought betreibt "
+                    f"(Thinking-Tokens ohne sichtbare Tags), erklärt das den Budget-Engpass.\n"
+                    f"> \n"
+                    f"> **Empfohlene Aktion:**\n"
+                    f"> ```\n"
+                    f"> make probe-thinking MODEL={model}\n"
+                    f"> # Bei Bestätigung (detected=true):\n"
+                    f"> make run-model MODEL={model} --force\n"
+                    f"> ```\n\n"
+                )
+
+
+def _is_unknown_reasoning_model(model: str, reasoning_tokens: int | None) -> bool:
+    """Prüft, ob ein Modell weder als Reasoning noch als Thinking-Optional erkannt wurde.
+
+    Wird für den Maintainer-Hinweis bei unentdecktem Reasoning-Budget-Verbrauch genutzt.
+    """
+    _is_reasoning = False
+    _is_thinking_optional = False
+    try:
+        from utils.model_utils import is_reasoning_model, is_thinking_optional_from_card
+        _is_reasoning = is_reasoning_model(str(model))
+        _is_thinking_optional = is_thinking_optional_from_card(str(model))
+    except Exception:
+        pass
+    return not _is_reasoning and not reasoning_tokens and not _is_thinking_optional
+
+
+def _demote_headers_safe(text: str) -> str:
+    """Stuft Markdown-Header ab (H1/H2 → H3-H6), ohne Codeblöcke zu verändern."""
+    import re
+
+    blocks = re.split(r'(```.*?```)', text, flags=re.DOTALL)
+    for i, _ in enumerate(blocks):
+        if i % 2 == 0:
+            # Stuft Überschriften ab, limitiert sie aber strikt auf maximal H6 und min H3
+            blocks[i] = re.sub(
+                r'^((?:>\s*)*)(#+)\s',
+                lambda m: str(m.group(1)) + '#' * min(6, max(3, len(m.group(2)) + 1)) + ' ',
+                blocks[i],
+                flags=re.MULTILINE
+            )
+    return "".join(blocks)
+
+
+def _write_response_block(f, response: str, think_content: str | None) -> None:
+    """Schreibt den Model-Response-Block inkl. ThinkContent-Fallback."""
+    safe_response = _demote_headers_safe(str(response))
+    if safe_response.strip():
+        f.write(f"{safe_response}\n\n")
+        return
+
+    if think_content:
+        f.write(
+            "> [!NOTE]\n> **Kein sichtbarer Output.** Das Modell hat ausschließlich intern (ThinkChunk) "
+            "gearbeitet und keinen formatierten Antworttext produziert. Der Reasoning-Inhalt wird zur "
+            "Information unten angezeigt — er geht nicht in die Wertung ein.\n\n"
+        )
+        safe_think = _demote_headers_safe(str(think_content))
+        f.write(f"{safe_think}\n\n")
+        return
+
+    f.write(f"{safe_response}\n\n")
 
 def calculate_timeout_metrics(execution_times: list[float], timeout_count: int, total_tests: int) -> dict:
     """Berechnet globale P95-Antwortzeiten und kategorisiert die Timeout-Rate des aktuellen Modul-Durchlaufs."""

@@ -56,6 +56,92 @@ def get_model_metrics(model_name: str) -> dict:
     return {}
 
 
+def _format_params_str(card: dict) -> str:
+    arch = card.get("parameter_architecture", "")
+    total_b = card.get("params_total_b")
+    active_b = card.get("params_active_b")
+    if total_b and active_b:
+        return f"{total_b}B total / {active_b}B aktiv ({arch})"
+    if total_b:
+        return f"{total_b}B ({arch})" if arch else f"{total_b}B"
+    if arch:
+        return arch
+    return "unbekannt"
+
+
+def _format_price_str(card: dict) -> str | None:
+    price_in = card.get("input_price_per_1m")
+    price_out = card.get("output_price_per_1m")
+    if price_in and price_out:
+        return f"${price_in}/1M input, ${price_out}/1M output"
+    return None
+
+
+def _build_header_lines(card: dict, model_id: str, params_str: str, price_str: str | None) -> list[str]:
+    lines = [
+        f"### Modell-Info: {card.get('display_name', model_id)}",
+        f"- **Entwickler:** {card.get('developer', 'n/a')} ({card.get('origin_country', 'n/a')})",
+        f"- **Use Case:** {card.get('use_case_primary', 'n/a')} | "
+        f"**Size Class:** {card.get('size_class', 'n/a')} | "
+        f"**Parameter:** {params_str}",
+    ]
+    ctx_k = card.get("context_window_k")
+    if ctx_k:
+        lines.append(f"- **Kontextfenster:** {ctx_k}K Tokens")
+    cutoff = card.get("knowledge_cutoff")
+    if cutoff:
+        lines.append(f"- **Trainings-Cutoff:** {cutoff}")
+    if price_str:
+        lines.append(f"- **Preis:** {price_str}")
+    return lines
+
+
+def _build_license_line(card: dict) -> str:
+    license_name = card.get("license")
+    commercial = card.get("commercial_use_allowed")
+    license_parts = [
+        f"**Lizenz-Kategorie:** {card.get('weights_license_tier', 'n/a')}",
+        f"**Deployment:** {card.get('deployment_type', 'n/a')}",
+    ]
+    if license_name:
+        license_parts.insert(0, f"**Lizenz:** {license_name}")
+    if commercial is not None:
+        license_parts.append(f"**Kommerzielle Nutzung:** {'Ja' if commercial else 'Nein'}")
+    return (
+        f"- **Familie:** {card.get('model_family', 'n/a')} | "
+        + " | ".join(license_parts)
+    )
+
+
+def _append_optional_lines(card: dict, lines: list[str]) -> None:
+    wprov = card.get("weights_provenance_risk")
+    if wprov:
+        wprov_rationale = card.get("weights_provenance_risk_rationale")
+        lines.append(
+            f"- **Weights-Provenienz-Risiko:** `{wprov.upper()}` — {wprov_rationale or '(keine Rationale)'}"
+        )
+
+    lines.append(f"- **Zusammenfassung:** {card.get('summary', '')}")
+    strengths = ", ".join(_flatten_strings(card.get("strengths", [])))
+    if strengths:
+        lines.append(f"- **Stärken:** {strengths}")
+    limitations = ", ".join(_flatten_strings(card.get("known_limitations", [])))
+    if limitations:
+        lines.append(f"- **Einschränkungen:** {limitations}")
+    hint = card.get("judge_context_hint", "")
+    if hint:
+        lines.append(f"- **Bewertungshinweis:** {hint}")
+
+    probe_detected = card.get("thinking_probe_detected")
+    if probe_detected is not None:
+        probe_conf = card.get("thinking_probe_confidence")
+        probe_str = f"{'Ja' if probe_detected else 'Nein'} (Konfidenz: {probe_conf or 'n/a'})"
+        cot_family = card.get("cot_marker_family")
+        if cot_family:
+            probe_str += f" | CoT-Familie: `{cot_family}`"
+        lines.append(f"- **Thinking-Probe:** {probe_str}")
+
+
 def get_model_card_context(model_id: str) -> str:
     """Format model card data as a Markdown context block."""
     card_path = _find_card(model_id)
@@ -70,82 +156,11 @@ def get_model_card_context(model_id: str) -> str:
     if card.get("unknown"):
         return ""
 
-    strengths = ", ".join(_flatten_strings(card.get("strengths", [])))
-    limitations = ", ".join(_flatten_strings(card.get("known_limitations", [])))
-    hint = card.get("judge_context_hint", "")
-
-    arch = card.get("parameter_architecture", "")
-    total_b = card.get("params_total_b")
-    active_b = card.get("params_active_b")
-    if total_b and active_b:
-        params_str = f"{total_b}B total / {active_b}B aktiv ({arch})"
-    elif total_b:
-        params_str = f"{total_b}B ({arch})" if arch else f"{total_b}B"
-    elif arch:
-        params_str = arch
-    else:
-        params_str = "unbekannt"
-
-    ctx_k = card.get("context_window_k")
-    cutoff = card.get("knowledge_cutoff")
-    price_in = card.get("input_price_per_1m")
-    price_out = card.get("output_price_per_1m")
-    price_str = f"${price_in}/1M input, ${price_out}/1M output" if price_in and price_out else None
-
-    lines = [
-        f"### Modell-Info: {card.get('display_name', model_id)}",
-        f"- **Entwickler:** {card.get('developer', 'n/a')} ({card.get('origin_country', 'n/a')})",
-        f"- **Use Case:** {card.get('use_case_primary', 'n/a')} | "
-        f"**Size Class:** {card.get('size_class', 'n/a')} | "
-        f"**Parameter:** {params_str}",
-    ]
-    if ctx_k:
-        lines.append(f"- **Kontextfenster:** {ctx_k}K Tokens")
-    if cutoff:
-        lines.append(f"- **Trainings-Cutoff:** {cutoff}")
-    if price_str:
-        lines.append(f"- **Preis:** {price_str}")
-    # Lizenz-Zeile: weights_license_tier (Kategorie) + konkreter Lizenzname + kommerzielle Nutzung
-    license_name = card.get("license")
-    commercial = card.get("commercial_use_allowed")
-    license_parts = [
-        f"**Lizenz-Kategorie:** {card.get('weights_license_tier', 'n/a')}",
-        f"**Deployment:** {card.get('deployment_type', 'n/a')}",
-    ]
-    if license_name:
-        license_parts.insert(0, f"**Lizenz:** {license_name}")
-    if commercial is not None:
-        license_parts.append(f"**Kommerzielle Nutzung:** {'Ja' if commercial else 'Nein'}")
-    lines.append(
-        f"- **Familie:** {card.get('model_family', 'n/a')} | "
-        + " | ".join(license_parts)
-    )
-
-    # Weights-Provenienz: explizit für den Reviewer (nicht nur im berechneten Sovereign Risk)
-    wprov = card.get("weights_provenance_risk")
-    wprov_rationale = card.get("weights_provenance_risk_rationale")
-    if wprov:
-        lines.append(
-            f"- **Weights-Provenienz-Risiko:** `{wprov.upper()}` — {wprov_rationale or '(keine Rationale)'}"
-        )
-
-    lines.append(f"- **Zusammenfassung:** {card.get('summary', '')}")
-    if strengths:
-        lines.append(f"- **Stärken:** {strengths}")
-    if limitations:
-        lines.append(f"- **Einschränkungen:** {limitations}")
-    if hint:
-        lines.append(f"- **Bewertungshinweis:** {hint}")
-
-    # Thinking-Probe-Ergebnis: ob das Modell im Benchmark mit Thinking-Tokens arbeitete
-    probe_detected = card.get("thinking_probe_detected")
-    probe_conf = card.get("thinking_probe_confidence")
-    cot_family = card.get("cot_marker_family")
-    if probe_detected is not None:
-        probe_str = f"{'Ja' if probe_detected else 'Nein'} (Konfidenz: {probe_conf or 'n/a'})"
-        if cot_family:
-            probe_str += f" | CoT-Familie: `{cot_family}`"
-        lines.append(f"- **Thinking-Probe:** {probe_str}")
+    params_str = _format_params_str(card)
+    price_str = _format_price_str(card)
+    lines = _build_header_lines(card, model_id, params_str, price_str)
+    lines.append(_build_license_line(card))
+    _append_optional_lines(card, lines)
 
     return "\n".join(lines)
 

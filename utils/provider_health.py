@@ -21,7 +21,6 @@ import logging
 import os
 import shutil
 import subprocess
-from pathlib import Path
 from typing import Any
 
 import yaml
@@ -162,20 +161,39 @@ def validate_untested_card(card: dict[str, Any]) -> tuple[bool, str | None]:
 
     provider = (card.get("provider") or "").lower().strip()
     if not provider:
-        # 1) Exakter Config-Lookup (SSOT) für lokale/commercial Modell-IDs.
-        inferred = _infer_provider_from_config(model_id)
-        if inferred:
-            provider = inferred
-
-        # 2) Nur für klar erkennbare Namensformate heuristischer Fallback.
-        if not provider and (":" in model_id or "/" in model_id):
-            try:
-                provider, _ = resolve_provider(model_id)
-            except Exception:  # pylint: disable=broad-exception-caught
-                provider = ""
+        provider = _resolve_missing_provider(model_id)
         if not provider:
             return False, "missing_provider"
 
+    return _check_provider_reachability(provider, model_id, card)
+
+
+def _resolve_missing_provider(model_id: str) -> str:
+    """Versucht einen fehlenden Provider per Config oder Heuristik zu bestimmen.
+
+    1) Exakter Config-Lookup (SSOT) für lokale/commercial Modell-IDs.
+    2) Nur für klar erkennbare Namensformate heuristischer Fallback.
+    """
+    inferred = _infer_provider_from_config(model_id)
+    if inferred:
+        return inferred
+
+    if ":" in model_id or "/" in model_id:
+        try:
+            provider, _ = resolve_provider(model_id)
+            return provider
+        except Exception:  # pylint: disable=broad-exception-caught
+            pass
+    return ""
+
+
+def _check_provider_reachability(
+    provider: str, model_id: str, card: dict[str, Any]
+) -> tuple[bool, str | None]:
+    """Providertyp-spezifischer Erreichbarkeits-Check.
+
+    Liefert (testbar, None) bzw. (False, "Grund:Detail").
+    """
     # Lokale Ollama-Modelle: prüfen ob installiert
     if provider in ("ollama", "ollama_local"):
         if not is_ollama_model_installed(model_id):

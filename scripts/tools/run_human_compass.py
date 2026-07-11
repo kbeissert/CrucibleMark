@@ -63,10 +63,8 @@ def save_session(session: dict):
         json.dump(session, f, indent=2)
 
 
-def run_human_test():
-    """Interaktiver Test-Lauf."""
-
-    # 1. Setup & User Identification
+def _init_user_and_session() -> tuple[str, dict, PoliticalCompassTest] | None:
+    """Setup: Name, Session laden, Questions laden. Liefert None bei Abbruch/Fehler."""
     print("\n🗳️  CRUCIBLEMARK: HUMAN POLITICAL COMPASS\n" + "=" * 40)
     print(
         "Dieser Test erstellt eine 'Human Baseline' für den Vergleich mit KI-Modellen.\n"
@@ -81,11 +79,8 @@ def run_human_test():
     model_name = f"human:{name_input}"
     print(f"\n✅ Teilnehmer-ID: {model_name}")
 
-    # 1b. Init Session & Load Questions EARLY
     session = load_session(name_input)
-    is_resumed = len(session["responses"]) > 0
-
-    if is_resumed:
+    if len(session["responses"]) > 0:
         print(
             f"🔄 Bestehende Session gefunden! {len(session['responses'])} Fragen bereits beantwortet."
         )
@@ -95,10 +90,9 @@ def run_human_test():
 
     if not runner.questions:
         print("❌ Fehler: Keine Fragen gefunden in", ASSETS_DIR)
-        return
+        return None
 
     total_q = len(runner.questions)
-
     print("\nℹ️  Anleitung:")
     print(f"   - Es folgen {total_q} Fragen.")
     print("   - Antwortoptionen werden für jede Frage ZUFÄLLIG gemischt (1, 2, 3, 4).")
@@ -112,124 +106,62 @@ def run_human_test():
 
     confirm = input("Bereit? (Enter zum Starten, 'q' zum Abbrechen): ")
     if confirm.lower() == "q":
-        return
+        return None
 
-    # 3. Execution Loop
-    evaluator = PoliticalCompassEvaluator()
-    questions = runner.questions
+    return model_name, session, runner
 
-    # Use PERSISTENT seed from session
-    session_seed = session["seed"]
-    start_time = time.time()
 
-    print(f"\n🚀 Starte Test mit {total_q} Fragen...\n")
+def _display_question(asset: dict, q_id: str, mapping: dict, q_num: int, total_q: int) -> None:
+    """Zeigt Frage-Header, Inhalt und gemischte Optionen."""
+    q_content = asset.get("prompt", asset.get("question", "Frage fehlt."))
 
-    for i, asset in enumerate(questions, 1):
-        meta = asset.get("metadata", {})
-        q_id = meta.get("id", "??")
-        # q_text = asset.get("question", "")
+    print("\n" + "=" * 60)
+    print(f"FRAGE {q_num} von {total_q}  (ID: {q_id})")
+    print("=" * 60)
+    print(f"\n{q_content}\n")
+    print("-" * 60)
 
-        # Build shuffled prompt
-        import hashlib
-        determ_hash = int(hashlib.md5(q_id.encode('utf-8')).hexdigest(), 16) % (10**8)
-        seed = session_seed + determ_hash
-        prompt_text, mapping = runner._build_prompt(asset, seed, use_numeric_labels=True)
-
-        # Store mapping for evaluator (Essential for correct scoring!)
-        asset["_runtime_mapping"] = mapping
-
-        # CHECK RESUME
-        if q_id in session["responses"]:
-            choice = session["responses"][q_id]
-            # print(f"[{i}/{total_q}] Überspringe beantwortete Frage (ID: {q_id})")
-            fake_response = f"Answer: {choice}"
-            evaluator.score_response(fake_response, asset)
+    for key in ["1", "2", "3", "4"]:
+        original_key = mapping.get(key)
+        if not original_key:
             continue
+        opt_text = asset["options"][original_key]["text"].strip()
+        print(f"\n   {key}) {opt_text}")
+        print("")
 
-        # --- DISPLAY FOR HUMANS ---
+    print("-" * 60)
 
-        # 1. Header & Question/Context
-        # Use 'prompt' field which contains the full story/question in v2
-        q_content = asset.get("prompt", asset.get("question", "Frage fehlt."))
 
-        print("\n" + "=" * 60)
-        print(f"FRAGE {i} von {total_q}  (ID: {q_id})")
-        print("=" * 60)
-        print(f"\n{q_content}\n")
-        print("-" * 60)
+def _prompt_for_choice() -> str | None:
+    """User-Input fuer Antwort. Liefert '1'..'4' oder None bei Quit."""
+    choice = ""
+    while choice not in ["1", "2", "3", "4"]:
+        inp = (
+            input("👉 Ihre Wahl (1/2/3/4) [Q=Speichern & Beenden]: ")
+            .strip()
+            .upper()
+        )
+        if inp in ["1", "2", "3", "4"]:
+            choice = inp
+        elif inp == "Q":
+            print("\n💾 Fortschritt gespeichert. Bis zum nächsten Mal!")
+            return None
+        else:
+            print("   ⚠️ Ungültig. Bitte 1, 2, 3 oder 4 eingeben.")
+    return choice
 
-        # 2. Options (Reconstructed from mapping for better readability)
-        display_keys = ["1", "2", "3", "4"]
-        for key in display_keys:
-            original_key = mapping.get(key)
-            if not original_key:
-                continue
 
-            opt_text = asset["options"][original_key]["text"].strip()
+def _score_question(asset: dict, choice: str, evaluator) -> None:
+    """Speichert Wahl in Session und scored via Evaluator."""
+    import hashlib
+    q_id = asset.get("metadata", {}).get("id", "??")
 
-            # Formatting: Indent and separate explanation if possible
-            # Text often looks like: "**Bold statement.** Explanation..."
-            # We wrap it a bit for terminal readability if it's very long,
-            # but usually terminals wrap automatically.
 
-            print(f"\n   {key}) {opt_text}")
-            # Empty line for separation "auseinander ziehen"
-            print("")
-
-        print("-" * 60)
-
-        valid = ["1", "2", "3", "4"]
-        choice = ""
-        while choice not in valid:
-            inp = (
-                input("👉 Ihre Wahl (1/2/3/4) [Q=Speichern & Beenden]: ")
-                .strip()
-                .upper()
-            )
-            if inp in valid:
-                choice = inp
-            elif inp == "Q":
-                print("\n💾 Fortschritt gespeichert. Bis zum nächsten Mal!")
-                return
-            else:
-                print("   ⚠️ Ungültig. Bitte 1, 2, 3 oder 4 eingeben.")
-
-        # Save to Session
-        session["responses"][q_id] = choice
-        save_session(session)
-
-        # Simulate LLM Response for Evaluator
-        fake_response = f"Answer: {choice}"
-        evaluator.score_response(fake_response, asset)
-
-    # 4. Finish & Export
-    print("\n" + "=" * 40)
-    print("🏁 Test beendet. Berechne Ergebnisse...")
-
+def _build_report(model_name: str, evaluator, duration: float, total_q: int) -> dict:
+    """Baut den Report-Dict (gleiche Struktur wie LLM-Benchmark-Runs)."""
     final_results = evaluator.score_aggregated()
-    duration = time.time() - start_time
-
     coords = final_results.get("coordinates", {})
     archetype = final_results.get("archetype", {})
-
-    print("\n📊 ERGEBNIS:")
-    print(f"   Modell:      {model_name}")
-    print(
-        f"   Koordinaten: X={coords.get('x')} (Wirtschaft), Y={coords.get('y')} (Gesellschaft/Staat)"
-    )
-    print(f"   Archetyp:    {archetype.get('label')}")
-    print(f"   Status:      {archetype.get('status')}")
-
-    # Visualization
-    if coords.get("x") is not None and coords.get("y") is not None:
-        print(
-            "\n"
-            + PoliticalCompassVisualizer.generate_ascii_chart(coords["x"], coords["y"])
-        )
-
-    # 5. Construct Report Structure
-    # Needs to match JSON schema exactly
-
     individual_runs = [
         {
             "id": 1,
@@ -239,8 +171,7 @@ def run_human_test():
             "y_label": archetype.get("y_label"),
         }
     ]
-
-    report = {
+    return {
         "model": model_name,
         "status": "success",
         "total_score": 100,
@@ -262,26 +193,96 @@ def run_human_test():
         },
     }
 
-    # Save JSON via ResultManager
-    # rm = ResultManager() creates an object, but we implement manual saving here
-    # because ResultManager currently only supports CSV workflows in its main methods.
 
+def _save_report_json(report: dict, model_name: str) -> None:
     timestamp_str = datetime.now().strftime("%Y%m%d_%H%M%S")
-    safe_model = "".join(
-        c for c in model_name if c.isalnum() or c in ("-", "_")
-    ).lower()
+    safe_model = "".join(c for c in model_name if c.isalnum() or c in ("-", "_")).lower()
     filename = f"results_{safe_model}_{timestamp_str}.json"
-
     output_dir = Path("outputs/runs")
     output_dir.mkdir(parents=True, exist_ok=True)
     json_path = output_dir / filename
-
     with open(json_path, "w", encoding="utf-8") as f:
         json.dump(report, f, indent=2, ensure_ascii=False)
-
     print(f"\n💾 JSON gespeichert: {json_path}")
 
-    # Save to CSV (Manually appended to match run_local_benchmark schema)
+
+def _print_results(model_name: str, final_results: dict) -> None:
+    coords = final_results.get("coordinates", {})
+    archetype = final_results.get("archetype", {})
+    print("\n📊 ERGEBNIS:")
+    print(f"   Modell:      {model_name}")
+    print(
+        f"   Koordinaten: X={coords.get('x')} (Wirtschaft), Y={coords.get('y')} (Gesellschaft/Staat)"
+    )
+    print(f"   Archetyp:    {archetype.get('label')}")
+    print(f"   Status:      {archetype.get('status')}")
+    if coords.get("x") is not None and coords.get("y") is not None:
+        print(
+            "\n"
+            + PoliticalCompassVisualizer.generate_ascii_chart(coords["x"], coords["y"])
+        )
+
+
+def _process_one_question(
+    asset: dict,
+    q_num: int,
+    total_q: int,
+    session: dict,
+    session_seed: int,
+    evaluator,
+    runner,
+) -> bool:
+    """Liefert False, wenn der User mit 'Q' abgebrochen hat."""
+    import hashlib
+    q_id = asset.get("metadata", {}).get("id", "??")
+
+    determ_hash = int(hashlib.md5(q_id.encode('utf-8')).hexdigest(), 16) % (10**8)
+    seed = session_seed + determ_hash
+    _prompt_text, mapping = runner._build_prompt(asset, seed, use_numeric_labels=True)
+    asset["_runtime_mapping"] = mapping
+
+    if q_id in session["responses"]:
+        choice = session["responses"][q_id]
+        evaluator.score_response(f"Answer: {choice}", asset)
+        return True
+
+    _display_question(asset, q_id, mapping, q_num, total_q)
+    choice = _prompt_for_choice()
+    if choice is None:
+        return False
+
+    session["responses"][q_id] = choice
+    save_session(session)
+    evaluator.score_response(f"Answer: {choice}", asset)
+    return True
+
+
+def run_human_test():
+    """Interaktiver Test-Lauf."""
+    init = _init_user_and_session()
+    if init is None:
+        return
+    model_name, session, runner = init
+    total_q = len(runner.questions)
+
+    evaluator = PoliticalCompassEvaluator()
+    questions = runner.questions
+    session_seed = session["seed"]
+    start_time = time.time()
+
+    print(f"\n🚀 Starte Test mit {total_q} Fragen...\n")
+    for i, asset in enumerate(questions, 1):
+        if not _process_one_question(asset, i, total_q, session, session_seed, evaluator, runner):
+            return
+
+    print("\n" + "=" * 40)
+    print("🏁 Test beendet. Berechne Ergebnisse...")
+    duration = time.time() - start_time
+    final_results = evaluator.score_aggregated()
+    _print_results(model_name, final_results)
+
+    report = _build_report(model_name, evaluator, duration, total_q)
+    _save_report_json(report, model_name)
     save_to_csv(model_name, report)
 
 

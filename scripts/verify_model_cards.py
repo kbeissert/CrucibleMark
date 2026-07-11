@@ -55,85 +55,96 @@ def _load_vendor_card_id_map() -> dict[str, str]:
         return {}
 
 
-def verify_cards():
-    cards_dir = Path(__file__).parent.parent / "benchmark_scores" / "model_cards"
-    issues = []
-    all_model_ids = set()
+def _check_required_fields_present(card_file: Path, data: dict, issues: list) -> None:
+    for field in REQUIRED_FIELDS:
+        if field not in data:
+            issues.append(f"❌ {card_file.stem}: missing field '{field}'")
+        elif data[field] is None or (isinstance(data[field], str) and data[field].strip() == ""):
+            issues.append(f"⚠️  {card_file.stem}: empty/null value for '{field}'")
 
-    # Kanonische Hersteller-Liste + Vendor-Card-ID-Mapping laden (SSoT)
-    canonical_vendors = _load_canonical_vendors()
-    vendor_card_id_map = _load_vendor_card_id_map()
-    vendor_cards_dir = Path(__file__).parent.parent / "benchmark_scores" / "vendor_cards"
 
-    for card_file in sorted(cards_dir.glob("*.json")):
-        with open(card_file) as f:
-            data = json.load(f)
+def _check_vendor(card_file: Path, data: dict, canonical_vendors: set, vendor_card_id_map: dict, vendor_cards_dir: Path, issues: list) -> None:
+    vendor_val = data.get("vendor")
+    if canonical_vendors and vendor_val is not None and vendor_val not in canonical_vendors:
+        issues.append(
+            f"🏭 {card_file.stem}: vendor='{vendor_val}' ist nicht in der "
+            f"kanonischen Hersteller-Liste (config/classification_taxonomy.json "
+            f"→ manufacturers). Bitte Hersteller eintragen oder Alias ergänzen."
+        )
 
-        if isinstance(data, list):
-            issues.append(f"📁 {card_file.stem}: enthält Liste statt Dict, überspringe")
-            continue
-
-        model_id = data.get("model_id", card_file.stem)
-        all_model_ids.add(model_id)
-
-        # Pflichtfelder prüfen
-        for field in REQUIRED_FIELDS:
-            if field not in data:
-                issues.append(f"❌ {card_file.stem}: missing field '{field}'")
-            elif data[field] is None or (isinstance(data[field], str) and data[field].strip() == ""):
-                issues.append(f"⚠️  {card_file.stem}: empty/null value for '{field}'")
-
-        # Vendor gegen kanonische Liste validieren
-        vendor_val = data.get("vendor")
-        if canonical_vendors and vendor_val is not None and vendor_val not in canonical_vendors:
+    if vendor_val and vendor_val in vendor_card_id_map:
+        expected_file = vendor_cards_dir / f"{vendor_card_id_map[vendor_val]}.json"
+        if not expected_file.exists():
             issues.append(
-                f"🏭 {card_file.stem}: vendor='{vendor_val}' ist nicht in der "
-                f"kanonischen Hersteller-Liste (config/classification_taxonomy.json "
-                f"→ manufacturers). Bitte Hersteller eintragen oder Alias ergänzen."
+                f"🗂️  {card_file.stem}: vendor='{vendor_val}' hat vendor_card_id="
+                f"'{vendor_card_id_map[vendor_val]}' in der Taxonomy, aber keine "
+                f"Vendor Card unter benchmark_scores/vendor_cards/"
+                f"{vendor_card_id_map[vendor_val]}.json"
             )
 
-        # Vendor-Card vorhanden? (v4.9.1 SSoT-Link Taxonomy → vendor_cards/)
-        if vendor_val and vendor_val in vendor_card_id_map:
-            expected_file = vendor_cards_dir / f"{vendor_card_id_map[vendor_val]}.json"
-            if not expected_file.exists():
-                issues.append(
-                    f"🗂️  {card_file.stem}: vendor='{vendor_val}' hat vendor_card_id="
-                    f"'{vendor_card_id_map[vendor_val]}' in der Taxonomy, aber keine "
-                    f"Vendor Card unter benchmark_scores/vendor_cards/"
-                    f"{vendor_card_id_map[vendor_val]}.json"
-                )
 
-        # Verifikations-Status prüfen (optional, aber empfohlen — v4.9.0)
-        if "profile_verified" not in data:
-            issues.append(f"🔍 {card_file.stem}: profile_verified fehlt (noch nicht migriert, jq-Migration ausführen)")
-        elif not data.get("profile_verified"):
-            issues.append(f"🔍 {card_file.stem}: profile_verified=false (Inhalt noch nicht manuell verifiziert)")
+def _check_profile_verified(card_file: Path, data: dict, issues: list) -> None:
+    if "profile_verified" not in data:
+        issues.append(f"🔍 {card_file.stem}: profile_verified fehlt (noch nicht migriert, jq-Migration ausführen)")
+    elif not data.get("profile_verified"):
+        issues.append(f"🔍 {card_file.stem}: profile_verified=false (Inhalt noch nicht manuell verifiziert)")
 
-        # card_status prüfen
-        if data.get("card_status") != "complete":
-            issues.append(f"📝 {card_file.stem}: card_status='{data.get('card_status', 'MISSING')}'")
 
-    # Gegen provider_config auf fehlende Cards prüfen (grep-basiert, keine yaml-Abhängigkeit)
+def _verify_one_card(card_file: Path, canonical_vendors: set, vendor_card_id_map: dict, vendor_cards_dir: Path, all_model_ids: set, issues: list) -> None:
+    with open(card_file) as f:
+        data = json.load(f)
+
+    if isinstance(data, list):
+        issues.append(f"📁 {card_file.stem}: enthält Liste statt Dict, überspringe")
+        return
+
+    model_id = data.get("model_id", card_file.stem)
+    all_model_ids.add(model_id)
+
+    _check_required_fields_present(card_file, data, issues)
+    _check_vendor(card_file, data, canonical_vendors, vendor_card_id_map, vendor_cards_dir, issues)
+    _check_profile_verified(card_file, data, issues)
+
+    if data.get("card_status") != "complete":
+        issues.append(f"📝 {card_file.stem}: card_status='{data.get('card_status', 'MISSING')}'")
+
+
+def _check_config_coverage(all_model_ids: set, issues: list) -> None:
     config_path = Path(__file__).parent.parent / "config" / "provider_config.yaml"
-    if config_path.exists():
-        config_text = config_path.read_text()
-        import re
-        config_model_ids = set(re.findall(r'^\s+- id:\s+(.+)$', config_text, re.MULTILINE))
+    if not config_path.exists():
+        return
+    config_text = config_path.read_text()
+    import re
+    config_model_ids = set(re.findall(r'^\s+- id:\s+(.+)$', config_text, re.MULTILINE))
 
-        missing_in_cards = config_model_ids - all_model_ids
-        if missing_in_cards:
-            issues.append("\n📋 Modelle in config, aber keine Card vorhanden:")
-            for mid in sorted(missing_in_cards):
-                issues.append(f"   ❌ {mid}")
-        else:
-            issues.append(f"\n✅ Alle {len(config_model_ids)} Konfigurationsmodelle haben Cards.")
+    missing_in_cards = config_model_ids - all_model_ids
+    if missing_in_cards:
+        issues.append("\n📋 Modelle in config, aber keine Card vorhanden:")
+        for mid in sorted(missing_in_cards):
+            issues.append(f"   ❌ {mid}")
+    else:
+        issues.append(f"\n✅ Alle {len(config_model_ids)} Konfigurationsmodelle haben Cards.")
+
+
+def verify_cards():
+    cards_dir = Path(__file__).parent.parent / "benchmark_scores" / "model_cards"
+    vendor_cards_dir = Path(__file__).parent.parent / "benchmark_scores" / "vendor_cards"
+    issues: list[str] = []
+    all_model_ids: set[str] = set()
+
+    canonical_vendors = _load_canonical_vendors()
+    vendor_card_id_map = _load_vendor_card_id_map()
+
+    for card_file in sorted(cards_dir.glob("*.json")):
+        _verify_one_card(card_file, canonical_vendors, vendor_card_id_map, vendor_cards_dir, all_model_ids, issues)
+
+    _check_config_coverage(all_model_ids, issues)
 
     if issues:
         print("\n".join(issues))
         return 1
-    else:
-        print("✅ Alle Model Cards vollständig.")
-        return 0
+    print("✅ Alle Model Cards vollständig.")
+    return 0
 
 if __name__ == "__main__":
     sys.exit(verify_cards())

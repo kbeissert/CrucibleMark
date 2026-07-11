@@ -42,14 +42,8 @@ def _asset_to_module(asset_id: str) -> str | None:
     return None
 
 
-def build_token_efficiency_context(tested_model_name: str, token_budgets: dict[str, int]) -> str:
-    """Compute per-module token overhead vs. fleet median.
-
-    Returns a formatted Markdown table or an informational note if no data is available.
-    """
-    norm_target = normalize_model_name(tested_model_name)
+def _collect_fleet_tokens() -> dict[str, dict[str, list[float]]]:
     fleet_per_model: dict[str, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
-
     for csv_name in _BENCHMARK_CSV_NAMES:
         src = ROOT_DIR / "benchmark_scores" / csv_name
         if not src.exists():
@@ -71,14 +65,74 @@ def build_token_efficiency_context(tested_model_name: str, token_budgets: dict[s
                     fleet_per_model[normalize_model_name(model_name)][module_key].append(tokens)
         except Exception:
             continue
+    return fleet_per_model
+
+
+def _find_target_key(fleet_per_model: dict, norm_target: str) -> str | None:
+    return next(
+        (k for k in fleet_per_model if k == norm_target or k.startswith(norm_target) or norm_target.startswith(k)),
+        None,
+    )
+
+
+def _compute_fleet_median(fleet_per_model: dict, module_key: str) -> float | None:
+    fleet_all = [
+        statistics.mean(data[module_key])
+        for data in fleet_per_model.values()
+        if data.get(module_key)
+    ]
+    if len(fleet_all) < 2:
+        return None
+    return round(statistics.median(fleet_all), 0)
+
+
+def _module_status(
+    module_key: str,
+    target_avg: float,
+    fleet_median: float | None,
+    token_budgets: dict[str, int],
+) -> tuple[str, str, str]:
+    """Returns (status, budget_str, overhead_str) for a single module."""
+    if module_key == "__exempt__":
+        return "⚪ Exempt", "Exempt", "–"
+
+    budget = token_budgets.get(module_key)
+    budget_str = str(budget) if budget else "–"
+    overhead_str: str
+    if fleet_median and fleet_median > 0:
+        overhead = round(target_avg / fleet_median, 2)
+        overhead_str = f"{overhead}×"
+    else:
+        overhead_str = "n/a"
+
+    if budget is not None and target_avg > budget * TOKEN_VERBOSITY_BUDGET_MULTIPLIER:
+        ratio = round(target_avg / budget, 1)
+        status = f"🔴 Verbos ({ratio}× Budget)"
+    elif budget is not None and target_avg > budget:
+        status = "🟡 Erhöht"
+    else:
+        status = "🟢 OK"
+    return status, budget_str, overhead_str
+
+
+def _module_display_name(module_key: str) -> str:
+    if module_key == "__exempt__":
+        return "Reasoning / Metacog"
+    return module_key.replace("_", " ").replace("__", "").title()
+
+
+def build_token_efficiency_context(tested_model_name: str, token_budgets: dict[str, int]) -> str:
+    """Compute per-module token overhead vs. fleet median.
+
+    Returns a formatted Markdown table or an informational note if no data is available.
+    """
+    norm_target = normalize_model_name(tested_model_name)
+    fleet_per_model = _collect_fleet_tokens()
 
     if not fleet_per_model:
         return "*Keine Token-Daten in den Benchmark-CSVs vorhanden.*"
 
-    target_key: str | None = next(
-        (k for k in fleet_per_model if k == norm_target or k.startswith(norm_target) or norm_target.startswith(k)),
-        None,
-    )
+    target_key = _find_target_key(fleet_per_model, norm_target)
     if target_key is None:
         return f"*Kein CSV-Eintrag für `{tested_model_name}` gefunden — Token-Effizienz nicht berechenbar.*"
 
@@ -94,42 +148,10 @@ def build_token_efficiency_context(tested_model_name: str, token_budgets: dict[s
         if not target_vals:
             continue
         target_avg = round(statistics.mean(target_vals), 0)
-
-        fleet_all = [
-            statistics.mean(data[module_key])
-            for data in fleet_per_model.values()
-            if data.get(module_key)
-        ]
-        fleet_median = round(statistics.median(fleet_all), 0) if len(fleet_all) >= 2 else None
-
-        if module_key == "__exempt__":
-            status = "⚪ Exempt"
-            budget_str = "Exempt"
-            overhead_str = "–"
-        else:
-            budget = token_budgets.get(module_key)
-            budget_str = str(budget) if budget else "–"
-            if fleet_median and fleet_median > 0:
-                overhead = round(target_avg / fleet_median, 2)
-                overhead_str = f"{overhead}×"
-            else:
-                overhead_str = "n/a"
-                overhead = None
-
-            if budget is not None and target_avg > budget * TOKEN_VERBOSITY_BUDGET_MULTIPLIER:
-                ratio = round(target_avg / budget, 1)
-                status = f"🔴 Verbos ({ratio}× Budget)"
-            elif budget is not None and target_avg > budget:
-                status = "🟡 Erhöht"
-            else:
-                status = "🟢 OK"
-
+        fleet_median = _compute_fleet_median(fleet_per_model, module_key)
+        status, budget_str, overhead_str = _module_status(module_key, target_avg, fleet_median, token_budgets)
         fleet_str = str(int(fleet_median)) if fleet_median else "n/a"
-        display_name = (
-            "Reasoning / Metacog"
-            if module_key == "__exempt__"
-            else module_key.replace("_", " ").replace("__", "").title()
-        )
+        display_name = _module_display_name(module_key)
         lines.append(f"| {display_name} | {int(target_avg)} | {fleet_str} | {overhead_str} | {budget_str} | {status} |")
         has_data = True
 

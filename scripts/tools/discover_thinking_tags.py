@@ -69,47 +69,69 @@ _CLOUD_PRIORITY = {"openrouter": 0, "groq": 1}
 def identify_family(model_id: str) -> str:
     """Identifiziert die Modell-Familie anhand der ID."""
     mid = model_id.lower()
-    # Reihenfolge wichtig: spezifischere Marker zuerst
+    return _match_family(mid)
+
+
+# Reihenfolge wichtig: spezifischere Marker zuerst.
+# Jede Funktion liefert entweder den Familien-Namen oder None.
+def _match_mistral_family(mid: str) -> str | None:
     if "magistral" in mid:
         return "Magistral"
     if "devstral" in mid:
         return "Devstral"
     if "codestral" in mid:
         return "Codestral"
-    if "gemma" in mid:
-        return "Gemma"
+    if any(t in mid for t in ("mistral", "mixtral", "ministral")):
+        return "Mistral"
+    return None
+
+
+def _match_qwen_family(mid: str) -> str | None:
     if "qwen" in mid and "coder" in mid:
         return "Qwen-Coder"
     if "qwen" in mid:
         return "Qwen"
-    if "hermes" in mid:
-        return "Hermes"
-    if "llama" in mid or "meta-llama" in mid:
-        return "Llama"
-    if any(t in mid for t in ("mistral", "mixtral", "ministral")):
-        return "Mistral"
-    if "claude" in mid:
-        return "Claude"
+    return None
+
+
+def _match_openai_family(mid: str) -> str | None:
     if "gpt-" in mid or mid.startswith("o1") or mid.startswith("o3") or mid.startswith("o4"):
         return "OpenAI"
-    if "gemini" in mid:
-        return "Gemini"
-    if "grok" in mid:
-        return "Grok"
-    if "deepseek" in mid:
-        return "DeepSeek"
-    if "glm" in mid:
-        return "GLM"
-    if "kimi" in mid:
-        return "Kimi"
-    if "nemotron" in mid:
-        return "NVIDIA"
-    if "minimax" in mid:
-        return "MiniMax"
-    if "lfm" in mid:
-        return "Liquid"
-    if "phi" in mid:
-        return "Phi"
+    return None
+
+
+def _match_family(mid: str) -> str:
+    """Dispatch auf spezifischere Matcher-Helper in fester Reihenfolge."""
+    mistral = _match_mistral_family(mid)
+    if mistral:
+        return mistral
+    qwen = _match_qwen_family(mid)
+    if qwen:
+        return qwen
+
+    simple_markers: list[tuple[str, str]] = [
+        ("gemma", "Gemma"),
+        ("hermes", "Hermes"),
+        ("claude", "Claude"),
+        ("gemini", "Gemini"),
+        ("grok", "Grok"),
+        ("deepseek", "DeepSeek"),
+        ("glm", "GLM"),
+        ("kimi", "Kimi"),
+        ("nemotron", "NVIDIA"),
+        ("minimax", "MiniMax"),
+        ("lfm", "Liquid"),
+        ("phi", "Phi"),
+    ]
+    for marker, family in simple_markers:
+        if marker in mid:
+            return family
+
+    if "llama" in mid or "meta-llama" in mid:
+        return "Llama"
+    openai = _match_openai_family(mid)
+    if openai:
+        return openai
     return "Other"
 
 
