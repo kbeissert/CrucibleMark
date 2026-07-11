@@ -26,6 +26,7 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -83,11 +84,14 @@ def run_for_card(card_path: Path, dry_run: bool) -> bool:
         model_id = ""
 
     if not model_id:
-        # Fallback: Dateiname rücktransformieren (nur für CLI, nicht für Imports)
+        # Fallback: Dateiname rücktransformieren (nur für CLI, nicht für Imports).
+        # Provider-Shortcode-Suffix strippen (z.B. "--SPRK", "--VSPK", "--M4APL", "--GR"),
+        # damit die Base-ID als model_id verwendet wird — nicht der suffixed Dateiname.
         stem = card_path.stem
+        stem = re.sub(r"--[A-Z0-9]+$", "", stem)
         model_id = stem.replace("_", "/", 1) if "/" not in stem else stem
 
-    ensure_card(model_id)
+    ensure_card(model_id, card_path=card_path)
     logger.info("FIX %s  (+%d Felder: %s)", card_path.name, len(missing), ", ".join(missing))
     return True
 
@@ -106,19 +110,22 @@ def main() -> int:
     changed = 0
 
     if args.model:
-        if args.dry_run:
-            # Für --model --dry-run: Card-Pfad schätzen ohne zu schreiben
-            from utils.model_utils import _card_path  # noqa: PLC0415
-            try:
-                p = _card_path(args.model, for_write=True)
-            except Exception:  # noqa: BLE001
-                logger.error("Kann Pfad für '%s' nicht auflösen.", args.model)
-                return 1
-            changed += run_for_card(p, dry_run=True)
+        from utils.model_utils import _find_card  # noqa: PLC0415
+
+        existing = _find_card(args.model)
+        if existing.exists():
+            # Existierende Card (auch suffixed) → in-place patchen via run_for_card
+            if run_for_card(existing, dry_run=args.dry_run):
+                changed += 1
+        elif args.dry_run:
+            # Keine existierende Card → Vorschau (neu)
+            logger.info("DRY  (neu) %s.json", args.model)
+            changed += 1
         else:
+            # Keine existierende Card → neu erstellen (Base-Card, Provider unbekannt)
             ensure_card(args.model)
-            logger.info("FIX %s", args.model)
-            changed = 1
+            logger.info("NEW %s", args.model)
+            changed += 1
 
     else:
         cards = sorted(CARDS_DIR.glob("*.json"))
