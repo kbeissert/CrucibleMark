@@ -4,6 +4,8 @@ Handles saving the final leaderboard to CSV or other formats.
 """
 
 
+from pathlib import Path
+
 import pandas as pd
 
 from .config import OUTPUT_CSV
@@ -59,16 +61,8 @@ def _format_tokens_k(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def export_leaderboard_compact(leaderboard: pd.DataFrame, cat_cols: list[str]) -> None:
-    """
-    Exports the COMPACT leaderboard (human-readable, ~20 columns).
-    Excludes verbose metrics like P95, redundant speed columns, etc.
-
-    SSoT: Spalten-Reihenfolge ist fix:
-        Rank, Model Name (display_name), Model ID (model_id), Version, ...
-    """
-    df_export = leaderboard.copy()
-
+def _compact_apply_display_mutations(df_export: pd.DataFrame) -> pd.DataFrame:
+    """Apply display-only column renames/merges for the COMPACT export."""
     # thinking_mode (lowercase aus Pipeline) → "Thinking Mode" (Display-Spalte)
     if "thinking_mode" in df_export.columns and "Thinking Mode" not in df_export.columns:
         df_export = df_export.rename(columns={"thinking_mode": "Thinking Mode"})
@@ -89,6 +83,72 @@ def export_leaderboard_compact(leaderboard: pd.DataFrame, cat_cols: list[str]) -
             df_export = df_export.drop(columns=["Overall Score"])
         else:
             df_export = df_export.rename(columns={"Overall Score": "Total Score"})
+    return df_export
+
+
+def _detailed_apply_display_mutations(df_export: pd.DataFrame) -> pd.DataFrame:
+    """Apply display-only column renames/merges for the DETAILED export."""
+    # thinking_mode (lowercase aus Pipeline) → "Thinking Mode" (Display-Spalte)
+    if "thinking_mode" in df_export.columns and "Thinking Mode" not in df_export.columns:
+        df_export = df_export.rename(columns={"thinking_mode": "Thinking Mode"})
+
+    if "Overall Score" in df_export.columns:
+        if "Total Score" not in df_export.columns:
+            df_export = df_export.rename(columns={"Overall Score": "Total Score"})
+
+    # Expose raw model ID as SSOT for downstream tools (web_export, dir lookups)
+    if "model" in df_export.columns:
+        df_export["model_id_raw"] = df_export["model"]
+    return df_export
+
+
+def _build_vendor_map(cards_dir: Path) -> dict[str, str]:
+    """Vendor field: read from model card (SSoT) via model_id lookup."""
+    import json as _json  # noqa: PLC0415
+    vendor_map: dict = {}
+    if not cards_dir.exists():
+        return vendor_map
+    for _cf in cards_dir.glob("*.json"):
+        if _cf.name == "_index.json":
+            continue
+        try:
+            _cd = _json.loads(_cf.read_text(encoding="utf-8"))
+            _mid = _cd.get("model_id", "")
+            _v = _cd.get("vendor")
+            if _mid and _v:
+                vendor_map[_mid] = _v
+        except Exception:
+            pass
+    return vendor_map
+
+
+def _apply_vendor_column(df_export: pd.DataFrame, vendor_map: dict) -> pd.DataFrame:
+    """Lookup vendor for each row by Model ID, mit Fallback auf Date-Suffix-Strip."""
+    import re as _re  # noqa: PLC0415
+
+    def _lookup_vendor(raw_mid: str) -> str:
+        if raw_mid in vendor_map:
+            return vendor_map[raw_mid]
+        stripped = _re.sub(r"-\d{4,8}$", "", raw_mid)
+        return vendor_map.get(stripped, "")
+
+    if "Model ID" in df_export.columns:
+        df_export["Vendor"] = df_export["Model ID"].apply(
+            lambda x: _lookup_vendor(str(x)) if pd.notna(x) else ""
+        )
+    return df_export
+
+
+def export_leaderboard_compact(leaderboard: pd.DataFrame, cat_cols: list[str]) -> None:
+    """
+    Exports the COMPACT leaderboard (human-readable, ~20 columns).
+    Excludes verbose metrics like P95, redundant speed columns, etc.
+
+    SSoT: Spalten-Reihenfolge ist fix:
+        Rank, Model Name (display_name), Model ID (model_id), Version, ...
+    """
+    df_export = leaderboard.copy()
+    df_export = _compact_apply_display_mutations(df_export)
 
     # Compact Column List — Reihenfolge:
     # Rank, Model Name, Model ID, Version, Badge, Speed Profile, ...
@@ -112,7 +172,7 @@ def export_leaderboard_compact(leaderboard: pd.DataFrame, cat_cols: list[str]) -
         "Type",
     ]
 
-    final_cols = []
+    final_cols: list[str] = []
     for c in cols:
         if c in df_export.columns:
             final_cols.append(c)
@@ -142,49 +202,13 @@ def export_leaderboard_detailed(leaderboard: pd.DataFrame, cat_cols: list[str]) 
     Includes P95, Max Time, Timeout Count, Routine/Reasoning aggregates.
     """
     df_export = leaderboard.copy()
-
-    # thinking_mode (lowercase aus Pipeline) → "Thinking Mode" (Display-Spalte)
-    if "thinking_mode" in df_export.columns and "Thinking Mode" not in df_export.columns:
-        df_export = df_export.rename(columns={"thinking_mode": "Thinking Mode"})
+    df_export = _detailed_apply_display_mutations(df_export)
 
     detailed_csv = OUTPUT_CSV.parent / f"{OUTPUT_CSV.stem}_detailed{OUTPUT_CSV.suffix}"
 
-    if "Overall Score" in df_export.columns:
-        if "Total Score" not in df_export.columns:
-            df_export = df_export.rename(columns={"Overall Score": "Total Score"})
-
-    # Expose raw model ID as SSOT for downstream tools (web_export, dir lookups)
-    if "model" in df_export.columns:
-        df_export["model_id_raw"] = df_export["model"]
-
-    # Vendor field: read from model card (SSoT) via model_id lookup
     _cards_dir = OUTPUT_CSV.parent.parent / "benchmark_scores" / "model_cards"
-    _vendor_map: dict = {}
-    import json as _json
-    import re as _re
-    if _cards_dir.exists():
-        for _cf in _cards_dir.glob("*.json"):
-            if _cf.name == "_index.json":
-                continue
-            try:
-                _cd = _json.loads(_cf.read_text(encoding="utf-8"))
-                _mid = _cd.get("model_id", "")
-                _v = _cd.get("vendor")
-                if _mid and _v:
-                    _vendor_map[_mid] = _v
-            except Exception:
-                pass
-
-    def _lookup_vendor(raw_mid: str) -> str:
-        if raw_mid in _vendor_map:
-            return _vendor_map[raw_mid]
-        stripped = _re.sub(r"-\d{4,8}$", "", raw_mid)
-        return _vendor_map.get(stripped, "")
-
-    if "Model ID" in df_export.columns:
-        df_export["Vendor"] = df_export["Model ID"].apply(
-            lambda x: _lookup_vendor(str(x)) if pd.notna(x) else ""
-        )
+    _vendor_map = _build_vendor_map(_cards_dir)
+    df_export = _apply_vendor_column(df_export, _vendor_map)
 
     # Spalten-Reihenfolge: Rank, Model Name, Model ID, Version, ...
     cols = [
@@ -223,7 +247,7 @@ def export_leaderboard_detailed(leaderboard: pd.DataFrame, cat_cols: list[str]) 
             df_export["LLM Judge Avg"], errors="coerce"
         )
 
-    final_cols = []
+    final_cols: list[str] = []
     for c in cols:
         if c in df_export.columns:
             final_cols.append(c)

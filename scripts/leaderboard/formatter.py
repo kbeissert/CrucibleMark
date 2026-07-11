@@ -97,15 +97,9 @@ def get_speed_class(avg_time: float) -> str:
     return "🐢 Slow"
 
 
-def get_skill_role(row: pd.Series, cat_cols: list) -> str:
-    """
-    Determine the skill role (Specialist/All-Rounder type) based on dynamic category scores.
-    """
-    # Extract dynamic scores
-    categories = {col: row.get(col, 0) for col in cat_cols}
-
-    # Clean up NaNs and ensure floats
-    valid_categories = {}
+def _filter_valid_categories(categories: dict) -> dict:
+    """Clean up NaNs/invalid scores, ensure floats and keep only >0 values."""
+    valid_categories: dict = {}
     for k, v in categories.items():
         try:
             val = float(v)
@@ -113,45 +107,57 @@ def get_skill_role(row: pd.Series, cat_cols: list) -> str:
                 valid_categories[k] = val
         except (ValueError, TypeError):
             continue
+    return valid_categories
+
+
+def _resolve_role_from_top_category(top_cat: str) -> str:
+    """Map a top-scoring category name to a human-readable skill role label."""
+    name_lower = top_cat.lower()
+    if "code" in name_lower:
+        return "Code Reviewer"
+    if "ux" in name_lower:
+        return "UX Writer"
+    if "doc" in name_lower:
+        return "Doc Writer"
+    if "content" in name_lower:
+        return "Content Adapter"
+    if "reasoning" in name_lower:
+        return "Reasoning Expert"
+    if "cultur" in name_lower:
+        return "Cultural Expert"
+    if "cli" in name_lower or "devops" in name_lower:
+        return "DevOps Expert"
+    if "politi" in name_lower:
+        return "Policy Expert"
+    # Dynamically generate role name from category (e.g. "Security Check" -> "Security Expert")
+    first_word = top_cat.split(" ")[0]
+    return f"{first_word} Expert"
+
+
+def get_skill_role(row: pd.Series, cat_cols: list) -> str:
+    """
+    Determine the skill role (Specialist/All-Rounder type) based on dynamic category scores.
+    """
+    # Extract dynamic scores
+    categories = {col: row.get(col, 0) for col in cat_cols}
+    valid_categories = _filter_valid_categories(categories)
 
     role = "Specialist"  # Default
 
-    if valid_categories:
-        # Check if all-rounder
-        vals = list(valid_categories.values())
-        score_range = max(vals) - min(vals)
-        is_all_rounder = score_range < 12  # Slightly looser than 10
+    if not valid_categories:
+        return role
 
-        if is_all_rounder:
-            role = "All-Rounder"
-        else:
-            # Find top category dynamically
-            top_cat = max(valid_categories, key=valid_categories.get)
+    # Check if all-rounder
+    vals = list(valid_categories.values())
+    score_range = max(vals) - min(vals)
+    is_all_rounder = score_range < 12  # Slightly looser than 10
 
-            # Simple heuristic mapping for dynamic categories
-            name_lower = top_cat.lower()
-            if "code" in name_lower:
-                role = "Code Reviewer"
-            elif "ux" in name_lower:
-                role = "UX Writer"
-            elif "doc" in name_lower:
-                role = "Doc Writer"
-            elif "content" in name_lower:
-                role = "Content Adapter"
-            elif "reasoning" in name_lower:
-                role = "Reasoning Expert"
-            elif "cultur" in name_lower:
-                role = "Cultural Expert"
-            elif "cli" in name_lower or "devops" in name_lower:
-                role = "DevOps Expert"
-            elif "politi" in name_lower:
-                role = "Policy Expert"
-            else:
-                # Dynamically generate role name from category (e.g. "Security Check" -> "Security Expert")
-                first_word = top_cat.split(" ")[0]
-                role = f"{first_word} Expert"
+    if is_all_rounder:
+        return "All-Rounder"
 
-    return role
+    # Find top category dynamically
+    top_cat = max(valid_categories, key=valid_categories.get)
+    return _resolve_role_from_top_category(top_cat)
 
 
 def format_speed_profile(row: pd.Series) -> str:

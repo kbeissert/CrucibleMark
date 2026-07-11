@@ -126,23 +126,7 @@ def _enrich_with_llm_judge(leaderboard: pd.DataFrame, df: pd.DataFrame) -> pd.Da
     return leaderboard
 
 
-def main(print_table: bool = True) -> pd.DataFrame | None:
-    """Main orchestration function for leaderboard generation."""
-    print("Generating Leaderboard with Metrics...")
-
-    # 1. Load Data
-    df = load_benchmark_data()
-    if df.empty:
-        print("No data available for leaderboard.")
-        return None
-
-    # 2. Prepare Configs
-    modules_config = _build_modules_config(config)
-
-    # 3. Calculate Scores & Stats
-    leaderboard, _ = calculate_scores(df, modules_config)
-
-    # 3a. Re-attach provider column
+def _reattach_provider(leaderboard: pd.DataFrame, df: pd.DataFrame) -> pd.DataFrame:
     if "provider" in df.columns and "provider" not in leaderboard.columns:
         provider_map = (
             df.groupby("model")["provider"]
@@ -150,29 +134,31 @@ def main(print_table: bool = True) -> pd.DataFrame | None:
             .reset_index()
         )
         leaderboard = leaderboard.merge(provider_map, on="model", how="left")
+    return leaderboard
 
-    # 3a.1 Re-attach thinking_mode column (vLLM dual-profile / llama.cpp)
+
+def _thinking_mode_agg(s: pd.Series) -> str:
+    explicit = s[s.isin(["Thinking", "Standard"])]
+    if not explicit.empty:
+        return explicit.mode().iloc[0]
+    return "n/a"
+
+
+def _reattach_thinking_mode(leaderboard: pd.DataFrame, df: pd.DataFrame) -> pd.DataFrame:
     # "n/a" und Leerstring bedeuten "nicht konfiguriert" (alte Runs vor
     # Dual-Profile-Config) — sie dürfen einen expliziten "Standard"/"Thinking"-
     # Wert nicht überstimmen. Daher: nur explizite Werte für die Mode nutzen.
     if "thinking_mode" in df.columns and "thinking_mode" not in leaderboard.columns:
-        def _thinking_mode_mode(s: pd.Series) -> str:
-            explicit = s[s.isin(["Thinking", "Standard"])]
-            if not explicit.empty:
-                return explicit.mode().iloc[0]
-            # Fallback: "n/a" oder Leerstring → "n/a"
-            return "n/a"
         mode_map = (
             df.groupby("model")["thinking_mode"]
-            .agg(_thinking_mode_mode)
+            .agg(_thinking_mode_agg)
             .reset_index()
         )
         leaderboard = leaderboard.merge(mode_map, on="model", how="left")
+    return leaderboard
 
-    # 3b. Enrich with LLM Judge scores
-    leaderboard = _enrich_with_llm_judge(leaderboard, df)
 
-    # 4. Final Formatting (Rounding)
+def _round_score_columns(leaderboard: pd.DataFrame) -> pd.DataFrame:
     cols_to_round = [
         "Total Score",
         "Overall Score",
@@ -195,43 +181,47 @@ def main(print_table: bool = True) -> pd.DataFrame | None:
         leaderboard["Cost per 1K (USD)"] = pd.to_numeric(
             leaderboard["Cost per 1K (USD)"], errors="coerce"
         ).round(4)
+    return leaderboard
 
-    # 5. Format category columns
-    cat_cols = []
+
+def _collect_category_columns(leaderboard: pd.DataFrame, modules_config: dict) -> list[str]:
+    cat_cols: list[str] = []
     for _, mod_data in modules_config.items():
         if mod_data.get("enabled") and mod_data.get("enable_scoring", True):
             name = mod_data.get("name")
             if name in leaderboard.columns:
                 cat_cols.append(name)
+    return cat_cols
 
+
+def _format_category_columns(leaderboard: pd.DataFrame, cat_cols: list[str]) -> pd.DataFrame:
     for col in cat_cols:
         if col in leaderboard.columns:
             leaderboard[col] = pd.to_numeric(leaderboard[col], errors="coerce")
             leaderboard[col] = (
                 leaderboard[col].round(2).astype(object).fillna("Pending")
             )
+    return leaderboard
 
-    # 6. Enrich with Custom Data
-    leaderboard, cat_cols = enrich_with_module_data(
-        leaderboard, cat_cols, modules_config, config
-    )
 
-    # 7. Assign badges and ranks
-    leaderboard = assign_rank_and_badges(leaderboard, cat_cols)
+def _model_id_ssot(name: str) -> str:
+    return _resolve_to_canonical_id(str(name).replace("*", "").strip())
 
-    # 8. Model Name & Model ID (zwei separate Spalten, beide aus der Model Card)
+
+def _model_name_ssot(name: str) -> str:
+    return _resolve_to_display_name(str(name).replace("*", "").strip())
+
+
+def _add_model_card_identity(leaderboard: pd.DataFrame) -> pd.DataFrame:
     # SSoT: Beide Spalten kommen aus `benchmark_scores/model_cards/*.json`:
     #   - "Model Name" = display_name (z.B. "Claude Sonnet 4.5")
     #   - "Model ID"   = kanonische model_id (z.B. "claude-sonnet-4-5-20250929")
-    def _model_id_ssot(name: str) -> str:
-        return _resolve_to_canonical_id(str(name).replace("*", "").strip())
-
-    def _model_name_ssot(name: str) -> str:
-        return _resolve_to_display_name(str(name).replace("*", "").strip())
-
     leaderboard["Model ID"] = leaderboard["model"].apply(_model_id_ssot)
     leaderboard["Model Name"] = leaderboard["model"].apply(_model_name_ssot)
+    return leaderboard
 
+
+def _check_draft_cards(leaderboard: pd.DataFrame) -> None:
     # Draft-Card-Check: Warnt wenn Modelle mit display_name="TODO" im Leaderboard
     # erscheinen. ensure_card() legt draft-Karten automatisch mit display_name="TODO"
     # an — diese müssen vor der Publikation manuell vervollständigt werden.
@@ -248,6 +238,8 @@ def main(print_table: bool = True) -> pd.DataFrame | None:
         print(_draft_msg)
         _lb_logger.warning("Draft Cards im Leaderboard: %s", _draft_ids)
 
+
+def _reorder_leaderboard_columns(leaderboard: pd.DataFrame) -> pd.DataFrame:
     # Reorder: Model Name zuerst (Spalte 2), Model ID als Spalte 3
     # Wir verschieben die Spalten so, dass die Reihenfolge passt
     if "Rank" in leaderboard.columns:
@@ -256,7 +248,10 @@ def main(print_table: bool = True) -> pd.DataFrame | None:
             if col not in new_order:
                 new_order.append(col)
         leaderboard = leaderboard[new_order]
+    return leaderboard
 
+
+def _format_version_column(leaderboard: pd.DataFrame) -> pd.DataFrame:
     # 9. Size class
     leaderboard["Size Class"] = leaderboard["model"].apply(get_model_size_class)
 
@@ -275,11 +270,13 @@ def main(print_table: bool = True) -> pd.DataFrame | None:
         return format_version_hash_for_display(version, model_type)
 
     leaderboard["Version"] = leaderboard.apply(format_version_display, axis=1)
+    return leaderboard
 
-    # 10. Provider Code
+
+def _add_provider_code(leaderboard: pd.DataFrame) -> pd.DataFrame:
+    from utils.model_utils import is_cloud_model as _is_cloud_model
+
     if "provider" in leaderboard.columns:
-        from utils.model_utils import is_cloud_model as _is_cloud_model
-
         def _provider_code(row: pd.Series) -> str:
             code = get_provider_shortcode(str(row.get("provider", "")))
             if code == "LCL" and _is_cloud_model(str(row.get("model", ""))):
@@ -289,12 +286,70 @@ def main(print_table: bool = True) -> pd.DataFrame | None:
         leaderboard["Provider Code"] = leaderboard.apply(_provider_code, axis=1)
     else:
         leaderboard["Provider Code"] = "k.A."
+    return leaderboard
 
-    # LLM Judge Coverage
+
+def _format_judge_coverage(leaderboard: pd.DataFrame) -> pd.DataFrame:
     if "LLM Judge Coverage" in leaderboard.columns:
         leaderboard["LLM Judge Coverage"] = pd.to_numeric(
             leaderboard["LLM Judge Coverage"], errors="coerce"
         ).apply(lambda x: f"{x * 100:.0f}%" if pd.notnull(x) else "0%")
+    return leaderboard
+
+
+def main(print_table: bool = True) -> pd.DataFrame | None:
+    """Main orchestration function for leaderboard generation."""
+    print("Generating Leaderboard with Metrics...")
+
+    # 1. Load Data
+    df = load_benchmark_data()
+    if df.empty:
+        print("No data available for leaderboard.")
+        return None
+
+    # 2. Prepare Configs
+    modules_config = _build_modules_config(config)
+
+    # 3. Calculate Scores & Stats
+    leaderboard, _ = calculate_scores(df, modules_config)
+
+    # 3a. Re-attach provider column
+    leaderboard = _reattach_provider(leaderboard, df)
+
+    # 3a.1 Re-attach thinking_mode column (vLLM dual-profile / llama.cpp)
+    leaderboard = _reattach_thinking_mode(leaderboard, df)
+
+    # 3b. Enrich with LLM Judge scores
+    leaderboard = _enrich_with_llm_judge(leaderboard, df)
+
+    # 4. Final Formatting (Rounding)
+    leaderboard = _round_score_columns(leaderboard)
+
+    # 5. Format category columns
+    cat_cols = _collect_category_columns(leaderboard, modules_config)
+    leaderboard = _format_category_columns(leaderboard, cat_cols)
+
+    # 6. Enrich with Custom Data
+    leaderboard, cat_cols = enrich_with_module_data(
+        leaderboard, cat_cols, modules_config, config
+    )
+
+    # 7. Assign badges and ranks
+    leaderboard = assign_rank_and_badges(leaderboard, cat_cols)
+
+    # 8. Model Name & Model ID (zwei separate Spalten, beide aus der Model Card)
+    leaderboard = _add_model_card_identity(leaderboard)
+    _check_draft_cards(leaderboard)
+    leaderboard = _reorder_leaderboard_columns(leaderboard)
+
+    # 9. Size class & version
+    leaderboard = _format_version_column(leaderboard)
+
+    # 10. Provider Code
+    leaderboard = _add_provider_code(leaderboard)
+
+    # LLM Judge Coverage
+    leaderboard = _format_judge_coverage(leaderboard)
 
     # 11. Export and Display
     export_to_csv(leaderboard, cat_cols)

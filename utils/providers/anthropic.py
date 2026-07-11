@@ -180,67 +180,88 @@ class AnthropicClient(BaseProviderClient):
         fallback_triggered: bool = False,
     ) -> str:
         """Streaming-Query für Anthropic mit Thinking-Extraktion."""
-        full_content = ""
         from utils.providers.base import ThinkAccumulator
-        think = ThinkAccumulator()
-        stream_usage = None
-        model_name = None
-        response_id = None
-        stop_reason = None
-        used_max_tokens = max_tokens
+
+        state: dict[str, Any] = {
+            "full_content": "",
+            "think": ThinkAccumulator(),
+            "stream_usage": None,
+            "model_name": None,
+            "response_id": None,
+            "stop_reason": None,
+        }
 
         try:
             response_stream = self.client.messages.create(**func_kwargs)
             for event in response_stream:
-                # Capture metadata from stream events
-                if event.type == "message_start":
-                    model_name = event.message.model
-                    response_id = event.message.id
-                    stream_usage = event.message.usage
-                elif event.type == "content_block_start":
-                    block = event.content_block
-                    if getattr(block, "type", None) == "thinking":
-                        if hasattr(block, "thinking") and block.thinking:
-                            think.add(block.thinking)
-                elif event.type == "content_block_delta":
-                    delta = event.delta
-                    if hasattr(delta, "type") and delta.type == "thinking_delta":
-                        if hasattr(delta, "thinking") and delta.thinking:
-                            think.add(delta.thinking)
-                            if stream_handler:
-                                stream_handler(delta.thinking)
-                    elif hasattr(delta, "type") and delta.type == "input_delta":
-                        if hasattr(delta, "partial_json") and delta.partial_json:
-                            full_content += delta.partial_json
-                            if stream_handler:
-                                stream_handler(delta.partial_json)
-                elif event.type == "message_delta":
-                    delta = event.delta
-                    if hasattr(delta, "stop_reason"):
-                        stop_reason = delta.stop_reason
-                    if hasattr(delta, "usage"):
-                        stream_usage = delta.usage
+                self._process_anthropic_stream_event(event, state, stream_handler)
 
             used_max_tokens, fallback_triggered = self._get_used_max_tokens(
-                max_tokens, stream_usage
+                max_tokens, state["stream_usage"]
             )
 
             self.last_response_metadata = {
-                "model": model_name or model,
-                "id": response_id,
-                "usage": stream_usage,
-                "finish_reason": stop_reason,
+                "model": state["model_name"] or model,
+                "id": state["response_id"],
+                "usage": state["stream_usage"],
+                "finish_reason": state["stop_reason"],
                 "token_limit_fallback": fallback_triggered,
                 "token_limit_used": used_max_tokens,
-                "reasoning_tokens": self._extract_reasoning_tokens(stream_usage),
+                "reasoning_tokens": self._extract_reasoning_tokens(state["stream_usage"]),
             }
-            if think.has_content:
-                self.last_response_metadata["think_content"] = think.content
+            if state["think"].has_content:
+                self.last_response_metadata["think_content"] = state["think"].content
 
         except Exception:
             raise
 
-        return full_content
+        return state["full_content"]
+
+    def _process_anthropic_stream_event(
+        self, event: Any, state: dict[str, Any], stream_handler: Any,
+    ) -> None:
+        """Verarbeitet ein einzelnes Anthropic-Stream-Event und aktualisiert den State."""
+        if event.type == "message_start":
+            state["model_name"] = event.message.model
+            state["response_id"] = event.message.id
+            state["stream_usage"] = event.message.usage
+        elif event.type == "content_block_start":
+            self._apply_anthropic_block_start(event, state)
+        elif event.type == "content_block_delta":
+            self._apply_anthropic_block_delta(event, state, stream_handler)
+        elif event.type == "message_delta":
+            self._apply_anthropic_message_delta(event, state)
+
+    def _apply_anthropic_block_start(self, event: Any, state: dict[str, Any]) -> None:
+        """Initialisiert Thinking-Content aus einem content_block_start Event."""
+        block = event.content_block
+        if getattr(block, "type", None) == "thinking":
+            if hasattr(block, "thinking") and block.thinking:
+                state["think"].add(block.thinking)
+
+    def _apply_anthropic_block_delta(
+        self, event: Any, state: dict[str, Any], stream_handler: Any,
+    ) -> None:
+        """Verarbeitet ein content_block_delta Event (Thinking- oder Input-Delta)."""
+        delta = event.delta
+        if hasattr(delta, "type") and delta.type == "thinking_delta":
+            if hasattr(delta, "thinking") and delta.thinking:
+                state["think"].add(delta.thinking)
+                if stream_handler:
+                    stream_handler(delta.thinking)
+        elif hasattr(delta, "type") and delta.type == "input_delta":
+            if hasattr(delta, "partial_json") and delta.partial_json:
+                state["full_content"] += delta.partial_json
+                if stream_handler:
+                    stream_handler(delta.partial_json)
+
+    def _apply_anthropic_message_delta(self, event: Any, state: dict[str, Any]) -> None:
+        """Übernimmt stop_reason/usage aus einem message_delta Event."""
+        delta = event.delta
+        if hasattr(delta, "stop_reason"):
+            state["stop_reason"] = delta.stop_reason
+        if hasattr(delta, "usage"):
+            state["stream_usage"] = delta.usage
 
     def _get_used_max_tokens(self, initial: int, usage) -> tuple[int, bool]:
         """Ermittle tatsächliche max_tokens und ob Fallback ausgelöst wurde."""

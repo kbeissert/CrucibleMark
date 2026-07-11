@@ -73,6 +73,38 @@ def _extract_scores_from_df(df: pd.DataFrame) -> dict[str, float]:
     return refs
 
 
+def _resolve_source_context(type_label: str) -> str:
+    """Mappe type_label aus dem CSV auf den Quell-Kontext für get_model_category."""
+    if type_label == "Proprietär":
+        return "commercial"
+    if type_label == "Open Weights (Cloud)":
+        return "cloud"
+    return "local"
+
+
+def _annotate_type_column(df_new: pd.DataFrame, type_label: str) -> pd.DataFrame:
+    """Fügt source- und type-Spalten gemäß SSOT get_model_category() hinzu."""
+    if "model" not in df_new.columns:
+        df_new["type"] = type_label
+        return df_new
+
+    source_context = _resolve_source_context(type_label)
+    df_new["source"] = source_context
+
+    if "provider" in df_new.columns:
+        df_new["type"] = df_new.apply(
+            lambda row: get_model_category(
+                row["model"], source_context, provider=row.get("provider")
+            ),
+            axis=1,
+        )
+    else:
+        df_new["type"] = df_new["model"].apply(
+            lambda m: get_model_category(m, source_context)
+        )
+    return df_new
+
+
 def _process_csv(dfs: list[pd.DataFrame], filepath: Path, type_label: str) -> None:
     """
     Helper to process a single CSV File and append to list of DataFrames.
@@ -106,37 +138,99 @@ def _process_csv(dfs: list[pd.DataFrame], filepath: Path, type_label: str) -> No
 
         if rows:
             df_new = pd.DataFrame(rows)
-
-            # SSOT: Centralized Model Categorization
-            # Uses get_model_category() from model_utils.py as Single Source of Truth
-            if "model" in df_new.columns:
-                # Determine source context
-                if type_label == "Proprietär":
-                    source_context = "commercial"
-                elif type_label == "Open Weights (Cloud)":
-                    source_context = "cloud"
-                else:
-                    source_context = "local"
-
-                df_new["source"] = source_context
-
-                if "provider" in df_new.columns:
-                    df_new["type"] = df_new.apply(
-                        lambda row: get_model_category(row["model"], source_context, provider=row.get("provider")),
-                        axis=1
-                    )
-                else:
-                    df_new["type"] = df_new["model"].apply(
-                        lambda m: get_model_category(m, source_context)
-                    )
-            else:
-                df_new["type"] = type_label
+            df_new = _annotate_type_column(df_new, type_label)
             dfs.append(df_new)
     except (OSError, csv.Error) as e:
         print(f"Error parsing {filepath}: {e}")
     except Exception as e:  # pylint: disable=broad-exception-caught
         # Fallback for unexpected errors during manual parsing
         print(f"Unexpected error in {filepath}: {e}")
+
+
+def _coerce_dataframe_metrics(df: pd.DataFrame) -> pd.DataFrame:
+    """Numeric/Timestamp coercion und model_version-Default-Setzung."""
+    df["percentage"] = pd.to_numeric(df["percentage"], errors="coerce")
+    df["execution_time"] = pd.to_numeric(df["execution_time"], errors="coerce")
+    if "cost_usd" in df.columns:
+        df["cost_usd"] = pd.to_numeric(df["cost_usd"], errors="coerce").fillna(0.0)
+    df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce", utc=True)
+
+    # If model_version is missing (e.g. newly loaded CSV didn't have it yet), fill with "unknown"
+    if "model_version" not in df.columns:
+        df["model_version"] = "unknown"
+    else:
+        df["model_version"] = df["model_version"].fillna("unknown")
+    return df
+
+
+def _strip_date_suffixes(df: pd.DataFrame) -> pd.DataFrame:
+    """Normalize model_version: Remove date suffix via SSoT `strip_date_suffix()`.
+    SSoT unterstuetzt -YYYYMMDD (8-stellig) und -MMDD mit gueltigem Monat 01-12.
+    Damit decken wir OpenRouter-Datesuffixes (z.B. kimi-k2-20260211) ab, die
+    der alte regex -\d{4}-\d{2}-\d{2}$ nicht gefunden hat.
+    """
+    if "model_version" in df.columns:
+        df["model_version"] = df["model_version"].astype(str).apply(strip_date_suffix)
+    if "model" in df.columns:
+        df["model"] = df["model"].astype(str).apply(strip_date_suffix)
+    return df
+
+
+def _load_config_or_none() -> dict | None:
+    """Lädt die Config für card_model_id-Redirect (Dual-Thinking-Profile).
+    Graceful degradation: ohne Config bleibt der Lookup wie bisher (kein Redirect).
+    """
+    try:
+        from utils.config_validator import ConfigValidator  # noqa: PLC0415
+        return ConfigValidator().config
+    except Exception:  # pylint: disable=broad-except
+        return None
+
+
+def _build_card_version_map(df: pd.DataFrame, cfg: dict | None) -> dict[str, str]:
+    """Iteriert über alle Modell-Cards und sammelt model_version-Overrides."""
+    import json as _json_card  # noqa: PLC0415
+    from utils.model_utils import _find_card as _find_model_card  # noqa: PLC0415
+    _card_dir = Path(__file__).resolve().parents[2] / "benchmark_scores" / "model_cards"
+
+    card_version_map: dict = {}
+    for model_id in df["model"].unique():
+        _model_cfg = resolve_model_cfg_for(str(model_id), cfg) if cfg else None
+        card_path = _find_model_card(str(model_id), card_dir=_card_dir, model_cfg=_model_cfg)
+        if card_path and card_path.exists():
+            try:
+                card = _json_card.loads(card_path.read_text(encoding="utf-8"))
+                if isinstance(card, dict):
+                    version = card.get("model_version")
+                    if version and str(version).strip():
+                        card_version_map[str(model_id)] = str(version).strip()
+            except Exception:  # pylint: disable=broad-exception-caught
+                pass
+    return card_version_map
+
+
+def _apply_card_version_overrides(df: pd.DataFrame) -> pd.DataFrame:
+    """Model-Card-Normalisierung (SSoT) für model_id und model_version.
+    1. model_id ueber resolve_canonical_model_id() aus SSoT. Macht Card-Lookup +
+       Alias-Resolution (hf.co-Prefix-Strip, safe_name-Fallback). Damit ist die
+       'model'-Spalte nach diesem Schritt garantiert in kanonischer Schreibweise.
+    2. model_version-Override via Card-Lookup: ueberschreibt den Runtime-Wert
+       mit dem Card-Wert (falls vorhanden).
+    """
+    if "model" not in df.columns:
+        return df
+    df["model"] = df["model"].astype(str).apply(resolve_canonical_model_id)
+
+    cfg = _load_config_or_none()
+    card_version_map = _build_card_version_map(df, cfg)
+    if card_version_map:
+        df["model_version"] = df.apply(
+            lambda r: card_version_map.get(
+                str(r["model"]), r.get("model_version", "unknown")
+            ),
+            axis=1,
+        )
+    return df
 
 
 def load_benchmark_data() -> pd.DataFrame:
@@ -172,31 +266,12 @@ def load_benchmark_data() -> pd.DataFrame:
     if "model" in df.columns:
         df = df[df["model"] != "model"]
 
-    df["percentage"] = pd.to_numeric(df["percentage"], errors="coerce")
-    df["execution_time"] = pd.to_numeric(df["execution_time"], errors="coerce")
-    if "cost_usd" in df.columns:
-        df["cost_usd"] = pd.to_numeric(df["cost_usd"], errors="coerce").fillna(0.0)
-    df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce", utc=True)
-
-    # If model_version is missing (e.g. newly loaded CSV didn't have it yet), fill with "unknown"
-    if "model_version" not in df.columns:
-        df["model_version"] = "unknown"
-    else:
-        df["model_version"] = df["model_version"].fillna("unknown")
+    df = _coerce_dataframe_metrics(df)
 
     # Sort by timestamp to ensure 'last' is actually the most recent
     df = df.sort_values("timestamp")
 
-    # Normalize model_version: Remove date suffix via SSoT `strip_date_suffix()`.
-    # SSoT unterstuetzt -YYYYMMDD (8-stellig) und -MMDD mit gueltigem Monat 01-12.
-    # Damit decken wir OpenRouter-Datesuffixes (z.B. kimi-k2-20260211) ab, die
-    # der alte regex -\d{4}-\d{2}-\d{2}$ nicht gefunden hat.
-    if "model_version" in df.columns:
-        df["model_version"] = df["model_version"].astype(str).apply(strip_date_suffix)
-
-    # Also normalize model name to remove date suffixes (SSoT)
-    if "model" in df.columns:
-        df["model"] = df["model"].astype(str).apply(strip_date_suffix)
+    df = _strip_date_suffixes(df)
 
     # --- DEDUPLICATION (Latest Run Only) ---
     # Crucial for accurate metrics (e.g. Load Time on new hardware):
@@ -207,52 +282,7 @@ def load_benchmark_data() -> pd.DataFrame:
             subset=["model", "model_version", "asset_id"], keep="last"
         )
 
-    # --- MODEL CARD NORMALIZATION (SSoT) ---
-    # 1. model_id ueber resolve_canonical_model_id() aus SSoT. Macht Card-Lookup +
-    #    Alias-Resolution (hf.co-Prefix-Strip, safe_name-Fallback). Damit ist die
-    #    'model'-Spalte nach diesem Schritt garantiert in kanonischer Schreibweise
-    #    (identisch zur CSV-Repräsentation nach `enforce_card_first` im ResultManager).
-    # 2. model_version-Override via Card-Lookup: ueberschreibt den Runtime-Wert
-    #    mit dem Card-Wert (falls vorhanden). SSoT hat dafuer keinen direkten
-    #    Reader, daher bleibt eine kleine Card-Parse-Schleife — Lookup-Keys sind
-    #    aber bereits kanonisch (Schritt 1).
-    if "model" in df.columns:
-        df["model"] = df["model"].astype(str).apply(resolve_canonical_model_id)
-
-        import json as _json_card  # noqa: PLC0415
-        from utils.model_utils import _find_card as _find_model_card  # noqa: PLC0415
-        _card_dir = Path(__file__).resolve().parents[2] / "benchmark_scores" / "model_cards"
-
-        # Config einmal laden für card_model_id-Redirect (Dual-Thinking-Profile).
-        # Graceful degradation: ohne Config bleibt der Lookup wie bisher (kein Redirect).
-        _cfg: dict | None = None
-        try:
-            from utils.config_validator import ConfigValidator  # noqa: PLC0415
-            _cfg = ConfigValidator().config
-        except Exception:  # pylint: disable=broad-except
-            pass
-
-        card_version_map: dict = {}
-        for model_id in df["model"].unique():
-            _model_cfg = resolve_model_cfg_for(str(model_id), _cfg) if _cfg else None
-            card_path = _find_model_card(str(model_id), card_dir=_card_dir, model_cfg=_model_cfg)
-            if card_path and card_path.exists():
-                try:
-                    card = _json_card.loads(card_path.read_text(encoding="utf-8"))
-                    if isinstance(card, dict):
-                        version = card.get("model_version")
-                        if version and str(version).strip():
-                            card_version_map[str(model_id)] = str(version).strip()
-                except Exception:  # pylint: disable=broad-exception-caught
-                    pass
-
-        if card_version_map:
-            df["model_version"] = df.apply(
-                lambda r: card_version_map.get(
-                    str(r["model"]), r.get("model_version", "unknown")
-                ),
-                axis=1,
-            )
+    df = _apply_card_version_overrides(df)
 
     df = df.drop_duplicates(
         subset=["model", "model_version", "type", "asset_id"], keep="last"

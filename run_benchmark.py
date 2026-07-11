@@ -162,6 +162,120 @@ class BenchmarkRunner:
 
         return load_test_class(test_file, module_config["test_class"])
 
+    def _validate_requested_model(self, model_name: str) -> tuple[str, str]:
+        """Resolve a --model value to (provider, canonical_model_id).
+        Validates existence for Ollama models (Fail Fast: exits on missing).
+        """
+        # SSoT: Kanonische model_id früh im Entry-Point resolven, damit
+        # alle Sub-Prozesse (Delegate-Scripts, run_tooluse_benchmark.py)
+        # bereits die kanonisierte ID erhalten.
+        from utils.model_utils import resolve_canonical_model_id
+
+        provider, model_id = resolve_provider(model_name)
+        model_id = resolve_canonical_model_id(model_id)
+        if provider != "ollama":
+            return provider, model_id
+
+        available_models = get_ollama_models_info()
+        model_names = [m["name"] for m in available_models]
+        if model_id in model_names:
+            return provider, model_id
+
+        print(f"\n❌ Error: Local model '{model_id}' not found in Ollama!")
+        print("\n📋 Available Local Models:")
+        for m in available_models:
+            print(f"   - {m['name']} ({m['size_gb']:.1f} GB)")
+
+        print(
+            "\n💡 Tip: Provide the exact name (case-sensitive) or pull it first."
+        )
+        print(f"   ollama pull {model_id}")
+        sys.exit(1)
+        return provider, model_id  # unreachable, keeps type-checkers quiet
+
+    def _resolve_modules_to_run(
+        self, run_config: BenchmarkRunConfig
+    ) -> list[tuple[str, dict[str, Any]]]:
+        """Bestimmt die auszuführenden Modul-Liste. Setzt min_runs wenn nötig."""
+        if run_config.run_all:
+            return list(self.get_enabled_modules().items())
+
+        selected_module, module_config = self.select_module(run_config.module_name)
+        if selected_module is None:  # User selected "0. ALL MODULES"
+            return list(self.get_enabled_modules().items())
+
+        if not (selected_module and module_config):
+            return []
+
+        # Enforce multi-run policy from Config
+        min_runs = module_config.get("min_runs", 1)
+        if min_runs > 1:
+            print(
+                f"\nℹ️  Hinweis: Das Modul '{module_config['name']}' "
+                f"erfordert automatisch {min_runs} Durchläufe."
+            )
+            run_config.num_runs = max(run_config.num_runs, min_runs)
+
+        return [(selected_module, module_config)]
+
+    def _ensure_interactive_force(self, run_config: BenchmarkRunConfig) -> None:
+        """Interactive selection implies --force=True (SSOT-Konformität)."""
+        if run_config.force:
+            return
+        print(
+            "ℹ️  Interaktiver Modus: Force-Mode aktiviert für SSOT Konformität."
+        )
+        run_config.force = True
+
+    def _execute_one_module(
+        self,
+        mod_id: str,
+        module_config: dict[str, Any],
+        model_id: str,
+        provider: str,
+        run_config: BenchmarkRunConfig,
+    ) -> None:
+        """Führt ein einzelnes Modul aus — Delegate-Pfad oder direkter Run."""
+        # SSOT: Delegate-Module (z.B. tooluse, political_compass) an das
+        # zuständige Fachscript delegieren. Das Fachscript verantwortet
+        # seinen eigenen Lifecycle (MCP-Start, Judge-Auswahl, etc.).
+        # Verhindert das vergangene Problem, dass make benchmark
+        # UnifiedBenchmarkRunner direkt startete und z.B. den MCP-Server
+        # nicht initialisierte.
+        #
+        # Cycle-Detection: Wenn wir selbst von einem Delegate-Script
+        # aufgerufen wurden (CRUCIBLE_DELEGATE_PARENT=1), NICHT mehr
+        # delegieren — sonst Endlosschleife. Stattdessen den Test direkt
+        # via UnifiedBenchmarkRunner ausführen (MCP läuft bereits im
+        # Parent-Delegate).
+        in_delegate_child = os.environ.get("CRUCIBLE_DELEGATE_PARENT") == "1"
+        if module_config.get("delegate_script") and not in_delegate_child:
+            print(f"\n>>> Running Module: {module_config['name']} (Delegate)")
+            self._run_delegate(
+                module_config,
+                model_id,
+                force=run_config.force,
+                audit_mode=run_config.audit_mode,
+            )
+            return
+        print(f"\n>>> Running Module: {module_config['name']}")
+        try:
+            self._run_benchmark(
+                mod_id,
+                module_config,
+                model_id,
+                provider,
+                num_runs=run_config.num_runs,
+                force=run_config.force,
+                audit_mode=run_config.audit_mode,
+            )
+        finally:
+            # Leaderboard nach jedem Modul aktualisieren (SSoT-Parität
+            # mit benchmark_auto.py). finally stellt sicher, dass das
+            # Update auch bei Teil-Ergebnissen nach Fehlern/Timeouts
+            # stattfindet — partielle Scores sind besser als keine.
+            update_leaderboard()
+
     def run(self, run_config: BenchmarkRunConfig):
         """Führt Benchmark aus."""
         self._print_header("CRUCIBLE MARK - BENCHMARK RUNNER")
@@ -171,59 +285,15 @@ class BenchmarkRunner:
 
         # Validate Model Existence (Fail Fast)
         if run_config.model_name:
-            provider, model_id = resolve_provider(run_config.model_name)
-            # SSoT: Kanonische model_id früh im Entry-Point resolven, damit
-            # alle Sub-Prozesse (Delegate-Scripts, run_tooluse_benchmark.py)
-            # bereits die kanonisierte ID erhalten.
-            from utils.model_utils import resolve_canonical_model_id
-            model_id = resolve_canonical_model_id(model_id)
-            if provider == "ollama":
-                available_models = get_ollama_models_info()
-                model_names = [m["name"] for m in available_models]
-
-                if model_id not in model_names:
-                    print(f"\n❌ Error: Local model '{model_id}' not found in Ollama!")
-                    print("\n📋 Available Local Models:")
-                    for m in available_models:
-                        print(f"   - {m['name']} ({m['size_gb']:.1f} GB)")
-
-                    print(
-                        "\n💡 Tip: Provide the exact name (case-sensitive) or pull it first."
-                    )
-                    print(f"   ollama pull {model_id}")
-                    sys.exit(1)
+            provider, model_id = self._validate_requested_model(run_config.model_name)
 
         # Determine modules to run
-        modules_to_run = []
-        if run_config.run_all:
-            modules_to_run = list(self.get_enabled_modules().items())
-        else:
-            selected_module, module_config = self.select_module(run_config.module_name)
-            if selected_module is None:  # User selected "0. ALL MODULES"
-                modules_to_run = list(self.get_enabled_modules().items())
-            # selected_module is known to be str here
-            elif selected_module and module_config:
-                modules_to_run = [(selected_module, module_config)]
-
-                # Enforce multi-run policy from Config
-                min_runs = module_config.get("min_runs", 1)
-                if min_runs > 1:
-                    print(
-                        f"\nℹ️  Hinweis: Das Modul '{module_config['name']}' "
-                        f"erfordert automatisch {min_runs} Durchläufe."
-                    )
-                    run_config.num_runs = max(run_config.num_runs, min_runs)
+        modules_to_run = self._resolve_modules_to_run(run_config)
 
         # Determine provider and model (once for all modules if possible)
         # Note: If model_name was provided, this was already validated above
         if not run_config.model_name:
-            # Interactive selection implies --force=True since "make benchmark-auto" handles autofill
-            if not run_config.force:
-                print(
-                    "ℹ️  Interaktiver Modus: Force-Mode aktiviert für SSOT Konformität."
-                )
-                run_config.force = True
-
+            self._ensure_interactive_force(run_config)
             # Interactive selection
             provider, model_id = ProviderSelector(self.config).select_provider(run_config.provider_type)
             if not provider or not model_id:
@@ -235,45 +305,9 @@ class BenchmarkRunner:
             for mod_id, module_config in modules_to_run:
                 if not module_config:
                     continue
-                # SSOT: Delegate-Module (z.B. tooluse, political_compass) an das
-                # zuständige Fachscript delegieren. Das Fachscript verantwortet
-                # seinen eigenen Lifecycle (MCP-Start, Judge-Auswahl, etc.).
-                # Verhindert das vergangene Problem, dass make benchmark
-                # UnifiedBenchmarkRunner direkt startete und z.B. den MCP-Server
-                # nicht initialisierte.
-                #
-                # Cycle-Detection: Wenn wir selbst von einem Delegate-Script
-                # aufgerufen wurden (CRUCIBLE_DELEGATE_PARENT=1), NICHT mehr
-                # delegieren — sonst Endlosschleife. Stattdessen den Test direkt
-                # via UnifiedBenchmarkRunner ausführen (MCP läuft bereits im
-                # Parent-Delegate).
-                in_delegate_child = os.environ.get("CRUCIBLE_DELEGATE_PARENT") == "1"
-                if module_config.get("delegate_script") and not in_delegate_child:
-                    print(f"\n>>> Running Module: {module_config['name']} (Delegate)")
-                    self._run_delegate(
-                        module_config,
-                        model_id,
-                        force=run_config.force,
-                        audit_mode=run_config.audit_mode,
-                    )
-                    continue
-                print(f"\n>>> Running Module: {module_config['name']}")
-                try:
-                    self._run_benchmark(
-                        mod_id,
-                        module_config,
-                        model_id,
-                        provider,
-                        num_runs=run_config.num_runs,
-                        force=run_config.force,
-                        audit_mode=run_config.audit_mode,
-                    )
-                finally:
-                    # Leaderboard nach jedem Modul aktualisieren (SSoT-Parität
-                    # mit benchmark_auto.py). finally stellt sicher, dass das
-                    # Update auch bei Teil-Ergebnissen nach Fehlern/Timeouts
-                    # stattfindet — partielle Scores sind besser als keine.
-                    update_leaderboard()
+                self._execute_one_module(
+                    mod_id, module_config, model_id, provider, run_config
+                )
         finally:
             # Cleanup is handled by UnifiedBenchmarkRunner.run_benchmark() in its
             # own finally-block — no need to duplicate here.

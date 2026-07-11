@@ -97,73 +97,10 @@ class OllamaClient(BaseProviderClient):
                 stream=True,
             )
             for chunk in response:
-                if chunk.get("done"):
-                    # Extract metrics from final chunk
-                    total_ns = chunk.get("total_duration") or 0
-                    load_ns = chunk.get("load_duration") or 0
-                    eval_ns = chunk.get("eval_duration") or 0
-                    prompt_eval_ns = chunk.get("prompt_eval_duration") or 0
-                    eval_count = chunk.get("eval_count") or 0
-                    prompt_eval_count = chunk.get("prompt_eval_count") or 0
-                    done_reason = chunk.get("done_reason")
-                    num_predict = options.get("num_predict") or 0
-                    num_ctx = options.get("num_ctx") or 32768
-                    is_budget_length = done_reason == "length"
-                    # Heuristic: if prompt+output tokens fill ≥95% of num_ctx but finish_reason=length,
-                    # the real cause is a num_ctx overflow (context window exhausted),
-                    # not a budget hit. Document as fallback, not cutoff.
-                    ctx_overflow = is_budget_length and (prompt_eval_count + eval_count) >= num_ctx * 0.95
-                    metrics = {
-                        "total_duration": total_ns / 1e9,
-                        "load_duration": load_ns / 1e9,
-                        "eval_duration": eval_ns / 1e9,
-                        "prompt_eval_duration": prompt_eval_ns / 1e9,
-                        "eval_count": eval_count,
-                        "finish_reason": done_reason,
-                        "token_limit_used": num_predict if is_budget_length and not ctx_overflow else None,
-                        "token_limit_fallback": ctx_overflow,
-                    }
-                    metrics["pure_execution_time"] = (
-                        metrics["total_duration"] - metrics["load_duration"]
-                    )
-                    # Native generation speed: output tokens / pure eval time (excludes prefill).
-                    # None when eval_duration is unavailable (e.g. Ollama cloud proxy).
-                    if eval_ns > 0 and eval_count > 0:
-                        metrics["tps_eval"] = round(eval_count / (eval_ns / 1e9), 2)
-                    else:
-                        metrics["tps_eval"] = None
-                    # Usage-Objekt für LLMParser.extract_usage_tokens()
-                    metrics["usage"] = {
-                        "prompt_tokens": prompt_eval_count,
-                        "completion_tokens": eval_count,
-                        "total_tokens": prompt_eval_count + eval_count,
-                    }
-                    # Reasoning-Tokens: Ollama liefert keine separate Count,
-                    # aber wenn thinking_content vorhanden ist, schätzen wir
-                    # reasoning_tokens ≈ eval_count * 0.3 (typischer Anteil)
-                    # oder setzen None wenn kein Thinking erkannt wurde.
-                    if full_thinking:
-                        metrics["reasoning_tokens"] = eval_count
-                    self.last_response_metadata = metrics
-                    continue
-                msg = chunk.get("message", {})
-                # Handle diff response formats (dict vs object)
-                if isinstance(msg, dict):
-                    val_content = msg.get("content", "")
-                else:
-                    val_content = getattr(msg, "content", "")
-                # Try to extract thinking
-                val_thinking = ""
-                if hasattr(msg, "thinking"):
-                    val_thinking = msg.thinking
-                elif isinstance(msg, dict):
-                    val_thinking = msg.get("thinking", "")
-                if val_thinking:
-                    stream_handler(val_thinking)
-                    full_thinking += val_thinking
-                if val_content:
-                    stream_handler(val_content)
-                    full_content += val_content
+                state = {"full_content": full_content, "full_thinking": full_thinking}
+                state = self._process_ollama_chunk(chunk, options, stream_handler, state)
+                full_content = state["full_content"]
+                full_thinking = state["full_thinking"]
         except Exception as e:
             # Emergency Recovery for Ollama Parser Errors (e.g. XML in JSON)
             # "error parsing tool call: raw='<thought>...'"
@@ -171,15 +108,9 @@ class OllamaClient(BaseProviderClient):
             if "error parsing tool call" in err_str and "raw='" in err_str:
                 logger.warning(f"Ollama Parser Error Recovery active for: {model}")
                 try:
-                    # Extract content between raw=' and ', err=
-                    import re
-                    match = re.search(r"raw='(.*?)', err=", err_str, re.DOTALL)
-                    if match:
-                        recovered_content = match.group(1)
-                        # Fix escaped quotes if strictly necessary, but usually raw is just string
-                        full_content += "\n" + recovered_content
-                        # Stream it out for UI
-                        stream_handler(recovered_content)
+                    recovered = self._recover_ollama_parser_content(err_str, stream_handler)
+                    if recovered is not None:
+                        full_content += "\n" + recovered
                         logger.info(
                             "Successfully recovered content from Ollama parser error."
                         )
@@ -197,6 +128,93 @@ class OllamaClient(BaseProviderClient):
             )
             return full_thinking
         return full_content
+
+    def _process_ollama_chunk(
+        self,
+        chunk: dict[str, Any],
+        options: dict[str, Any],
+        stream_handler: Callable[[str], None],
+        state: dict[str, str],
+    ) -> dict[str, str]:
+        """Verarbeitet einen einzelnen Ollama-Stream-Chunk und liefert aktualisierten State."""
+        if chunk.get("done"):
+            self._capture_ollama_done_metrics(chunk, options, state["full_thinking"])
+            return state
+        msg = chunk.get("message", {})
+        if isinstance(msg, dict):
+            val_content = msg.get("content", "")
+        else:
+            val_content = getattr(msg, "content", "")
+        val_thinking = ""
+        if hasattr(msg, "thinking"):
+            val_thinking = msg.thinking
+        elif isinstance(msg, dict):
+            val_thinking = msg.get("thinking", "")
+        if val_thinking:
+            stream_handler(val_thinking)
+            state["full_thinking"] += val_thinking
+        if val_content:
+            stream_handler(val_content)
+            state["full_content"] += val_content
+        return state
+
+    def _capture_ollama_done_metrics(
+        self,
+        chunk: dict[str, Any],
+        options: dict[str, Any],
+        full_thinking: str,
+    ) -> None:
+        """Berechnet Timing/Token-Metriken aus dem finalen Ollama-Chunk."""
+        total_ns = chunk.get("total_duration") or 0
+        load_ns = chunk.get("load_duration") or 0
+        eval_ns = chunk.get("eval_duration") or 0
+        prompt_eval_ns = chunk.get("prompt_eval_duration") or 0
+        eval_count = chunk.get("eval_count") or 0
+        prompt_eval_count = chunk.get("prompt_eval_count") or 0
+        done_reason = chunk.get("done_reason")
+        num_predict = options.get("num_predict") or 0
+        num_ctx = options.get("num_ctx") or 32768
+        is_budget_length = done_reason == "length"
+        ctx_overflow = is_budget_length and (prompt_eval_count + eval_count) >= num_ctx * 0.95
+        metrics = {
+            "total_duration": total_ns / 1e9,
+            "load_duration": load_ns / 1e9,
+            "eval_duration": eval_ns / 1e9,
+            "prompt_eval_duration": prompt_eval_ns / 1e9,
+            "eval_count": eval_count,
+            "finish_reason": done_reason,
+            "token_limit_used": num_predict if is_budget_length and not ctx_overflow else None,
+            "token_limit_fallback": ctx_overflow,
+        }
+        metrics["pure_execution_time"] = (
+            metrics["total_duration"] - metrics["load_duration"]
+        )
+        if eval_ns > 0 and eval_count > 0:
+            metrics["tps_eval"] = round(eval_count / (eval_ns / 1e9), 2)
+        else:
+            metrics["tps_eval"] = None
+        metrics["usage"] = {
+            "prompt_tokens": prompt_eval_count,
+            "completion_tokens": eval_count,
+            "total_tokens": prompt_eval_count + eval_count,
+        }
+        if full_thinking:
+            metrics["reasoning_tokens"] = eval_count
+        self.last_response_metadata = metrics
+
+    def _recover_ollama_parser_content(
+        self,
+        err_str: str,
+        stream_handler: Callable[[str], None],
+    ) -> str | None:
+        """Versucht, aus einem Ollama-Parser-Fehler Content zu extrahieren."""
+        import re
+        match = re.search(r"raw='(.*?)', err=", err_str, re.DOTALL)
+        if not match:
+            return None
+        recovered_content = match.group(1)
+        stream_handler(recovered_content)
+        return recovered_content
     def query(
         self,
         model: str,

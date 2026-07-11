@@ -205,50 +205,131 @@ def get_tool_use_models(provider_filter: str = "all") -> list[tuple[str, str]]:
 # Single-model execution
 # ---------------------------------------------------------------------------
 
-def _run_model(model_id: str, force: bool = False, silent: bool = False) -> bool:
-    """Führt run_benchmark.py --module tooluse --model <id> aus. True = Erfolg.
-
-    Watchdog: kills process group if no stdout for INACTIVITY_TIMEOUT seconds.
-    Hard cap: kills after TIMEOUT_PER_MODEL seconds regardless.
-    
-    Prüft vor Ausführung ob das Modell bereits im ToolUse-Leaderboard existiert
-    (außer bei force=True).
-    """
-    # SSoT: Kanonische model_id resolven, damit der Cache-Check auf die
-    # gleiche Schreibweise wie im Leaderboard matcht (qwen3.5-… → qwen3_5-…).
+def _resolve_canonical_model_id(model_id: str) -> str:
+    """SSoT: Kanonische model_id resolven (qwen3.5-… → qwen3_5-…)."""
     from utils.model_utils import resolve_canonical_model_id
     canonical_id = resolve_canonical_model_id(model_id)
     if canonical_id != model_id:
         print(f"  [SSoT] model_id kanonisiert: '{model_id}' → '{canonical_id}'")
-        model_id = canonical_id
+        return canonical_id
+    return model_id
 
-    # Cache-Check: Überspringe wenn Modell bereits im ToolUse-Leaderboard
-    # UND Per-Asset-Detailzeilen in Benchmark-CSVs vorhanden sind (v4.10.12).
-    # Vorher wurde nur das Leaderboard geprüft — Modelle mit fehlenden
-    # Detailzeilen (Legacy-Pfad A) wurden fälschlich übersprungen.
-    if not force:
-        try:
-            from scripts.core.tooluse_exporter import ToolUseExporter
-            from utils.config_validator import ConfigValidator
-            config = ConfigValidator().config
-            exporter = ToolUseExporter(config)
-            if exporter.model_has_results(model_id):
-                if exporter.has_detail_rows(model_id):
-                    print(f"  ⏩ Überspringe {model_id} — bereits im ToolUse-Leaderboard + Benchmark-CSVs vorhanden")
-                    return True  # Als Erfolg werten, da Ergebnis vollständig existiert
-                else:
-                    print(f"  ⚠ Leaderboard-Eintrag für {model_id} existiert, aber Per-Asset-Detailzeilen fehlen in Benchmark-CSVs")
-                    print("    → Führe Benchmark aus, um Detailzeilen zu ergänzen (Cache-Check erweitert v4.10.12)")
-            # else: kein Leaderboard-Eintrag → Benchmark ausführen
-        except Exception:
-            # Bei Fehler im Cache-Check defensiv weitermachen (Benchmark ausführen)
-            pass
 
+def _should_skip_via_cache(model_id: str) -> bool:
+    """Cache-Check: True wenn Modell + Per-Asset-Detailzeilen bereits existieren.
+    Bei Fehler im Cache-Check defensiv False (Benchmark ausführen).
+    """
+    try:
+        from scripts.core.tooluse_exporter import ToolUseExporter
+        from utils.config_validator import ConfigValidator
+        config = ConfigValidator().config
+        exporter = ToolUseExporter(config)
+        if not exporter.model_has_results(model_id):
+            return False
+        if exporter.has_detail_rows(model_id):
+            print(f"  ⏩ Überspringe {model_id} — bereits im ToolUse-Leaderboard + Benchmark-CSVs vorhanden")
+            return True
+        print(f"  ⚠ Leaderboard-Eintrag für {model_id} existiert, aber Per-Asset-Detailzeilen fehlen in Benchmark-CSVs")
+        print("    → Führe Benchmark aus, um Detailzeilen zu ergänzen (Cache-Check erweitert v4.10.12)")
+        return False
+    except Exception:
+        return False
+
+
+def _build_run_benchmark_cmd(model_id: str, force: bool, silent: bool) -> list[str]:
+    """Baut die run_benchmark.py-Kommandozeile mit den passenden Flags."""
     cmd = [sys.executable, "run_benchmark.py", "--module", "tooluse", "--model", model_id]
     if force:
         cmd.append("--force")
     if silent:
         cmd.append("--silent")
+    return cmd
+
+
+def _watchdog_loop(
+    proc: subprocess.Popen,
+    last_output_time: list[float],
+    watchdog_triggered: list[bool],
+) -> None:
+    """Watchdog-Thread: killet das Prozess-Group bei Inactivity."""
+    while proc.poll() is None:
+        time.sleep(5)
+        elapsed = time.monotonic() - last_output_time[0]
+        if elapsed >= INACTIVITY_TIMEOUT:
+            watchdog_triggered[0] = True
+            print(
+                f"  [WATCHDOG] no output for {elapsed:.0f}s — "
+                f"model appears hung, killing process group"
+            )
+            try:
+                os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+            except Exception:
+                proc.kill()
+            return
+
+
+def _stream_proc_stdout(proc: subprocess.Popen, last_output_time: list[float]) -> None:
+    """Liest stdout des Subprozesses und propagiert KeyboardInterrupt."""
+    try:
+        for line in proc.stdout:  # type: ignore[union-attr]
+            last_output_time[0] = time.monotonic()
+            print(line, end="", flush=True)
+    except KeyboardInterrupt:
+        # Ctrl+C: Subprocess läuft in eigenem Session → muss explizit beendet werden
+        try:
+            os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
+        except Exception:  # noqa: BLE001
+            proc.terminate()
+        proc.wait()
+        raise
+    except Exception:  # noqa: BLE001
+        pass
+
+
+def _await_proc_with_hard_cap(proc: subprocess.Popen) -> bool:
+    """Wartet auf Prozess-Ende (Hard-Cap TIMEOUT_PER_MODEL). True=OK, False=TIMEOUT.
+
+    Propagiert KeyboardInterrupt nach Kill des Prozess-Groups.
+    """
+    try:
+        proc.wait(timeout=TIMEOUT_PER_MODEL)
+        return True
+    except subprocess.TimeoutExpired:
+        print(f"  [TIMEOUT] exceeded {TIMEOUT_PER_MODEL}s — killing process group")
+        try:
+            os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+        except Exception:  # noqa: BLE001
+            proc.kill()
+        proc.wait()
+        return False
+    except KeyboardInterrupt:
+        try:
+            os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+        except Exception:  # noqa: BLE001
+            proc.kill()
+        proc.wait()
+        raise
+
+
+def _run_model(model_id: str, force: bool = False, silent: bool = False) -> bool:
+    """Führt run_benchmark.py --module tooluse --model <id> aus. True = Erfolg.
+
+    Watchdog: kills process group if no stdout for INACTIVITY_TIMEOUT seconds.
+    Hard cap: kills after TIMEOUT_PER_MODEL seconds regardless.
+
+    Prüft vor Ausführung ob das Modell bereits im ToolUse-Leaderboard existiert
+    (außer bei force=True).
+    """
+    model_id = _resolve_canonical_model_id(model_id)
+
+    # Cache-Check: Überspringe wenn Modell bereits im ToolUse-Leaderboard
+    # UND Per-Asset-Detailzeilen in Benchmark-CSVs vorhanden sind (v4.10.12).
+    # Vorher wurde nur das Leaderboard geprüft — Modelle mit fehlenden
+    # Detailzeilen (Legacy-Pfad A) wurden fälschlich übersprungen.
+    if not force and _should_skip_via_cache(model_id):
+        return True  # Als Erfolg werten, da Ergebnis vollständig existiert
+
+    cmd = _build_run_benchmark_cmd(model_id, force=force, silent=silent)
 
     try:
         proc = subprocess.Popen(
@@ -267,59 +348,19 @@ def _run_model(model_id: str, force: bool = False, silent: bool = False) -> bool
     last_output_time: list[float] = [time.monotonic()]
     watchdog_triggered: list[bool] = [False]
 
-    def _watchdog() -> None:
-        while proc.poll() is None:
-            time.sleep(5)
-            elapsed = time.monotonic() - last_output_time[0]
-            if elapsed >= INACTIVITY_TIMEOUT:
-                watchdog_triggered[0] = True
-                print(
-                    f"  [WATCHDOG] no output for {elapsed:.0f}s — "
-                    f"model appears hung, killing process group"
-                )
-                try:
-                    os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
-                except Exception:
-                    proc.kill()
-                return
-
-    wt = threading.Thread(target=_watchdog, daemon=True)
+    wt = threading.Thread(
+        target=_watchdog_loop,
+        args=(proc, last_output_time, watchdog_triggered),
+        daemon=True,
+    )
     wt.start()
 
     # ── Stream stdout to console ──────────────────────────────────────────────
-    try:
-        for line in proc.stdout:  # type: ignore[union-attr]
-            last_output_time[0] = time.monotonic()
-            print(line, end="", flush=True)
-    except KeyboardInterrupt:
-        # Ctrl+C: Subprocess läuft in eigenem Session → muss explizit beendet werden
-        try:
-            os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
-        except Exception:  # noqa: BLE001
-            proc.terminate()
-        proc.wait()
-        raise
-    except Exception:  # noqa: BLE001
-        pass
+    _stream_proc_stdout(proc, last_output_time)
 
     # ── Wait for process exit (hard cap) ─────────────────────────────────────
-    try:
-        proc.wait(timeout=TIMEOUT_PER_MODEL)
-    except subprocess.TimeoutExpired:
-        print(f"  [TIMEOUT] exceeded {TIMEOUT_PER_MODEL}s — killing process group")
-        try:
-            os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
-        except Exception:  # noqa: BLE001
-            proc.kill()
-        proc.wait()
+    if not _await_proc_with_hard_cap(proc):
         return False
-    except KeyboardInterrupt:
-        try:
-            os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
-        except Exception:  # noqa: BLE001
-            proc.kill()
-        proc.wait()
-        raise
 
     if watchdog_triggered[0]:
         return False

@@ -133,16 +133,7 @@ class OpenAIClient(BaseProviderClient):
             "token_limit_used": used_max_tokens,
         }
         for chunk in response_stream:
-            if not self.last_response_metadata.get("id") and chunk.id:
-                self.last_response_metadata["id"] = chunk.id
-            if not self.last_response_metadata.get("model") and chunk.model:
-                self.last_response_metadata["model"] = chunk.model
-            if getattr(chunk, "system_fingerprint", None):
-                self.last_response_metadata["system_fingerprint"] = chunk.system_fingerprint
-            if hasattr(chunk, "usage") and chunk.usage:
-                stream_usage = chunk.usage
-            if chunk.choices and hasattr(chunk.choices[0], "finish_reason") and chunk.choices[0].finish_reason:
-                self.last_response_metadata["finish_reason"] = chunk.choices[0].finish_reason
+            stream_usage = self._capture_openai_chunk_metadata(chunk, stream_usage)
             if not chunk.choices:
                 continue
             delta = chunk.choices[0].delta
@@ -152,12 +143,7 @@ class OpenAIClient(BaseProviderClient):
                     stream_handler(text_piece)
                     full_content += text_piece
             else:
-                if hasattr(delta, "content") and delta.content:
-                    stream_handler(delta.content)
-                    full_content += delta.content
-                reasoning_piece = getattr(delta, "reasoning", None) or getattr(delta, "reasoning_content", None)
-                if reasoning_piece:
-                    think.add(reasoning_piece)
+                full_content = self._apply_openai_chat_delta(delta, stream_handler, full_content, think)
         if stream_usage:
             self.last_response_metadata["usage"] = stream_usage
             rt = self._extract_reasoning_tokens(stream_usage)
@@ -165,6 +151,36 @@ class OpenAIClient(BaseProviderClient):
                 self.last_response_metadata["reasoning_tokens"] = rt
         if think.has_content:
             self.last_response_metadata["think_content"] = think.content
+        return full_content
+
+    def _capture_openai_chunk_metadata(self, chunk: Any, stream_usage: Any) -> Any:
+        """Schreibt id/model/system_fingerprint/usage/finish_reason aus einem OpenAI-Chunk."""
+        if not self.last_response_metadata.get("id") and chunk.id:
+            self.last_response_metadata["id"] = chunk.id
+        if not self.last_response_metadata.get("model") and chunk.model:
+            self.last_response_metadata["model"] = chunk.model
+        if getattr(chunk, "system_fingerprint", None):
+            self.last_response_metadata["system_fingerprint"] = chunk.system_fingerprint
+        if hasattr(chunk, "usage") and chunk.usage:
+            stream_usage = chunk.usage
+        if chunk.choices and hasattr(chunk.choices[0], "finish_reason") and chunk.choices[0].finish_reason:
+            self.last_response_metadata["finish_reason"] = chunk.choices[0].finish_reason
+        return stream_usage
+
+    def _apply_openai_chat_delta(
+        self,
+        delta: Any,
+        stream_handler: Callable[[str], None],
+        full_content: str,
+        think: Any,
+    ) -> str:
+        """Verarbeitet Content+Reasoning aus einem OpenAI-Chat-Delta und liefert erweiterten Text."""
+        if hasattr(delta, "content") and delta.content:
+            stream_handler(delta.content)
+            full_content += delta.content
+        reasoning_piece = getattr(delta, "reasoning", None) or getattr(delta, "reasoning_content", None)
+        if reasoning_piece:
+            think.add(reasoning_piece)
         return full_content
 
     def _process_blocking_completions(

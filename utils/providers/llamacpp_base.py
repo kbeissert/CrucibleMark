@@ -796,24 +796,9 @@ class LlamaCppBaseClient(BaseProviderClient):
             self._client_base_url = None
 
         messages = self._build_messages(prompt, kwargs.get("system"))
-
-        _prov_cfg = self._provider_cfg()
-        token_param_name = _prov_cfg.get("token_param_name", "max_tokens")
-        raw_requested: int | None = kwargs.get("max_tokens")
-        initial_tokens, _ = resolve_token_budget(
-            model, raw_requested, self.config, kwargs.get("_module_key")
+        initial_tokens, token_param_name, params = self._prepare_llamacpp_params(
+            model, messages, temperature, kwargs, stream_handler,
         )
-        model_cfg_max_tokens = self._model_cfg(model).get("max_tokens")
-        if model_cfg_max_tokens is not None:
-            initial_tokens = min(initial_tokens, model_cfg_max_tokens)
-
-        params: dict[str, Any] = {
-            "model": model,
-            "messages": messages,
-            "temperature": temperature,
-        }
-        if stream_handler:
-            params["stream"] = True
 
         response_or_stream, used_max_tokens, fallback_triggered = (
             self._execute_with_token_fallback(
@@ -837,40 +822,84 @@ class LlamaCppBaseClient(BaseProviderClient):
         }
 
         if stream_handler:
-            full_content = ""
-            from utils.providers.base import ThinkAccumulator
-            think = ThinkAccumulator()
-            for chunk in response_or_stream:
-                if hasattr(chunk, "usage") and chunk.usage:
-                    self.last_response_metadata["usage"] = chunk.usage
-                if chunk.choices:
-                    finish = getattr(chunk.choices[0], "finish_reason", None)
-                    if finish:
-                        self.last_response_metadata["finish_reason"] = finish
-                    delta = chunk.choices[0].delta
-                    # Content
-                    content_piece = getattr(delta, "content", None)
-                    if content_piece:
-                        stream_handler(content_piece)
-                        full_content += content_piece
-                    # Reasoning/Thinking (llama.cpp native: reasoning_content)
-                    reasoning_piece = getattr(delta, "reasoning_content", None) or getattr(delta, "reasoning", None)
-                    if reasoning_piece:
-                        think.add(reasoning_piece)
-
-            # Post-Stream: reasoning_tokens + think_content setzen
-            if think.has_content:
-                self.last_response_metadata["think_content"] = think.content
-            usage = self.last_response_metadata.get("usage")
-            if usage:
-                rt = self._extract_reasoning_tokens(usage)
-                if rt is None and think.has_content:
-                    rt = getattr(usage, "completion_tokens", 0)
-                if rt is not None:
-                    self.last_response_metadata["reasoning_tokens"] = rt
-            return full_content
+            return self._process_llamacpp_stream(response_or_stream)
 
         return self._extract_response_content(response_or_stream, model)
+
+    def _prepare_llamacpp_params(
+        self,
+        model: str,
+        messages: list[dict[str, Any]],
+        temperature: float,
+        kwargs: dict[str, Any],
+        stream_handler: Callable[[str], None] | None,
+    ) -> tuple[int, str, dict[str, Any]]:
+        """Berechnet Token-Budget und Request-Parameter fuer llama.cpp."""
+        _prov_cfg = self._provider_cfg()
+        token_param_name = _prov_cfg.get("token_param_name", "max_tokens")
+        raw_requested: int | None = kwargs.get("max_tokens")
+        initial_tokens, _ = resolve_token_budget(
+            model, raw_requested, self.config, kwargs.get("_module_key")
+        )
+        model_cfg_max_tokens = self._model_cfg(model).get("max_tokens")
+        if model_cfg_max_tokens is not None:
+            initial_tokens = min(initial_tokens, model_cfg_max_tokens)
+
+        params: dict[str, Any] = {
+            "model": model,
+            "messages": messages,
+            "temperature": temperature,
+        }
+        if stream_handler:
+            params["stream"] = True
+        return initial_tokens, token_param_name, params
+
+    def _process_llamacpp_stream(self, response_or_stream: Any) -> str:
+        """Verarbeitet die llama.cpp-Streaming-Antwort."""
+        full_content = ""
+        from utils.providers.base import ThinkAccumulator
+        think = ThinkAccumulator()
+        for chunk in response_or_stream:
+            if hasattr(chunk, "usage") and chunk.usage:
+                self.last_response_metadata["usage"] = chunk.usage
+            if chunk.choices:
+                self._apply_llamacpp_stream_chunk(chunk, think)
+                full_content_chunk = self._apply_llamacpp_stream_choices(chunk, think)
+                full_content += full_content_chunk
+
+        if think.has_content:
+            self.last_response_metadata["think_content"] = think.content
+        usage = self.last_response_metadata.get("usage")
+        if usage:
+            rt = self._extract_reasoning_tokens(usage)
+            if rt is None and think.has_content:
+                rt = getattr(usage, "completion_tokens", 0)
+            if rt is not None:
+                self.last_response_metadata["reasoning_tokens"] = rt
+        return full_content
+
+    def _apply_llamacpp_stream_chunk(self, chunk: Any, think: Any) -> None:
+        """Schreibt finish_reason aus dem ersten Choice."""
+        finish = getattr(chunk.choices[0], "finish_reason", None)
+        if finish:
+            self.last_response_metadata["finish_reason"] = finish
+
+    def _apply_llamacpp_stream_choices(self, chunk: Any, think: Any) -> str:
+        """Verarbeitet Content + Reasoning/Thinking aus llama.cpp-Delta-Chunks."""
+        delta = chunk.choices[0].delta
+        content_piece = getattr(delta, "content", None)
+        added = ""
+        if content_piece:
+            stream_handler(content_piece)
+            added = content_piece
+        # Reasoning/Thinking (llama.cpp native: reasoning_content)
+        reasoning_piece = (
+            getattr(delta, "reasoning_content", None)
+            or getattr(delta, "reasoning", None)
+        )
+        if reasoning_piece:
+            think.add(reasoning_piece)
+        return added
 
     def get_available_models(self) -> list[str]:
         """Returns the list of models the server currently advertises via /v1/models,

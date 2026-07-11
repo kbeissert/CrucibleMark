@@ -211,13 +211,7 @@ class CohereClient(BaseProviderClient):
             _module_key = kwargs.get("_module_key")
             token_param_name, max_tokens = self._resolve_request_tokens(model, kwargs)
 
-            # ── Build messages ────────────────────────────────────────────────
-            messages: list[dict] = []
-            if _system:
-                messages.append({"role": "system", "content": _system})
-            messages.append({"role": "user", "content": prompt})
-
-            # ── Build request body ────────────────────────────────────────────
+            messages = self._build_cohere_messages(prompt, _system)
             body: dict[str, Any] = {
                 "stream": False,
                 "model": model,
@@ -227,62 +221,18 @@ class CohereClient(BaseProviderClient):
                 "seed": 42,
             }
 
-            # ── Thinking config for reasoning models ──────────────────────────
-            if _is_cohere_reasoning_model(model):
-                if _module_key == "tooluse":
-                    body["thinking"] = {"type": "disabled"}
-                    logger.debug("Cohere reasoning + tooluse: thinking disabled")
-                else:
-                    thinking_budget = max(max_tokens - 4000, 1000)
-                    body["thinking"] = {"type": "enabled", "token_budget": thinking_budget}
-                    logger.debug(
-                        "Cohere reasoning model: thinking.type=enabled, thinking.token_budget=%d",
-                        thinking_budget,
-                    )
-
-            # ── Native tools for ToolUse module ───────────────────────────────
             use_native_tools = False
-            if _module_key == "tooluse" and _system:
-                tool_schema = _extract_tool_schema(_system)
-                if tool_schema:
-                    body["tools"] = _schema_to_cohere_tools(tool_schema)
-                    use_native_tools = True
-                    logger.debug(
-                        "Cohere native tools: %s (reasoning=%s)",
-                        tool_schema.get("name"),
-                        _is_cohere_reasoning_model(model),
-                    )
+            self._apply_cohere_thinking_config(body, model, _module_key, max_tokens)
+            use_native_tools = self._apply_cohere_native_tools(body, model, _module_key, _system)
 
             logger.debug("Cohere request body keys: %s", list(body.keys()))
             resp = self.http.post("/chat", json=body)
-
-            # ── Rate limit handling ───────────────────────────────────────────
-            if resp.status_code == 429:
-                retry_after = resp.headers.get("retry-after")
-                wait = int(retry_after) if retry_after else 60
-                logger.warning("Cohere Rate Limit (429). Retry-After: %ds", wait)
-                raise httpx.HTTPStatusError(
-                    f"429 Too Many Requests (retry_after={wait}s)",
-                    request=resp.request,
-                    response=resp,
-                )
-
-            # ── Error handling (500 → retry up to 2× with backoff) ────────────
-            if resp.status_code == 500 and use_native_tools:
-                import time as _time
-                for _retry_i in range(2):
-                    wait = 2 * (_retry_i + 1)
-                    logger.warning("Cohere 500 with native tools — retry %d/2 (wait %ds)", _retry_i + 1, wait)
-                    _time.sleep(wait)
-                    resp = self.http.post("/chat", json=body)
-                    if resp.status_code != 500:
-                        break
+            resp = self._handle_cohere_response_errors(resp, body, use_native_tools)
 
             if resp.status_code != 200:
                 logger.error("Cohere API Error HTTP %d: %s", resp.status_code, resp.text[:500])
                 resp.raise_for_status()
 
-            # ── Parse response ────────────────────────────────────────────────
             data = resp.json()
             finish_reason = data.get("finish_reason", "")
             usage = data.get("usage", {})
@@ -294,7 +244,6 @@ class CohereClient(BaseProviderClient):
             input_tokens = tokens.get("input_tokens", 0)
             output_tokens = tokens.get("output_tokens", 0)
 
-            # ── Native tool_calls → convert to JSON text ──────────────────────
             if tool_calls and use_native_tools:
                 content = _format_tool_calls_as_text(tool_calls)
                 self.last_response_metadata = {
@@ -313,17 +262,7 @@ class CohereClient(BaseProviderClient):
                     stream_handler(content)
                 return content
 
-            # ── Standard text response ────────────────────────────────────────
-            text_parts: list[str] = []
-            think_parts: list[str] = []
-            for block in content_blocks:
-                block_type = block.get("type", "")
-                if block_type == "text":
-                    text_parts.append(block.get("text", ""))
-                elif block_type == "thinking":
-                    think_parts.append(block.get("thinking", ""))
-
-            content = "".join(text_parts)
+            content, think_parts = self._collect_cohere_text_and_thinking(content_blocks)
             reasoning_token_count = tokens.get("reasoning_tokens") if think_parts else None
 
             self.last_response_metadata = {
@@ -351,6 +290,98 @@ class CohereClient(BaseProviderClient):
         except Exception as e:
             logger.error("Cohere query failed: %s", e)
             raise
+
+    def _build_cohere_messages(self, prompt: str, system: str | None) -> list[dict]:
+        """Baut die messages-Liste für die Cohere Chat API."""
+        messages: list[dict] = []
+        if system:
+            messages.append({"role": "system", "content": system})
+        messages.append({"role": "user", "content": prompt})
+        return messages
+
+    def _apply_cohere_thinking_config(
+        self,
+        body: dict[str, Any],
+        model: str,
+        module_key: str | None,
+        max_tokens: int,
+    ) -> None:
+        """Setzt thinking-Config für Reasoning-Modelle (Cohere)."""
+        if not _is_cohere_reasoning_model(model):
+            return
+        if module_key == "tooluse":
+            body["thinking"] = {"type": "disabled"}
+            logger.debug("Cohere reasoning + tooluse: thinking disabled")
+            return
+        thinking_budget = max(max_tokens - 4000, 1000)
+        body["thinking"] = {"type": "enabled", "token_budget": thinking_budget}
+        logger.debug(
+            "Cohere reasoning model: thinking.type=enabled, thinking.token_budget=%d",
+            thinking_budget,
+        )
+
+    def _apply_cohere_native_tools(
+        self,
+        body: dict[str, Any],
+        model: str,
+        module_key: str | None,
+        system: str | None,
+    ) -> bool:
+        """Fügt native tools für ToolUse-Modul hinzu, gibt use_native_tools zurück."""
+        if module_key != "tooluse" or not system:
+            return False
+        tool_schema = _extract_tool_schema(system)
+        if not tool_schema:
+            return False
+        body["tools"] = _schema_to_cohere_tools(tool_schema)
+        logger.debug(
+            "Cohere native tools: %s (reasoning=%s)",
+            tool_schema.get("name"),
+            _is_cohere_reasoning_model(model),
+        )
+        return True
+
+    def _handle_cohere_response_errors(
+        self,
+        resp: httpx.Response,
+        body: dict[str, Any],
+        use_native_tools: bool,
+    ) -> httpx.Response:
+        """Behandelt Rate-Limit (429 → Raise) und native-tool 500 → Retry."""
+        if resp.status_code == 429:
+            retry_after = resp.headers.get("retry-after")
+            wait = int(retry_after) if retry_after else 60
+            logger.warning("Cohere Rate Limit (429). Retry-After: %ds", wait)
+            raise httpx.HTTPStatusError(
+                f"429 Too Many Requests (retry_after={wait}s)",
+                request=resp.request,
+                response=resp,
+            )
+
+        if resp.status_code == 500 and use_native_tools:
+            import time as _time
+            for _retry_i in range(2):
+                wait = 2 * (_retry_i + 1)
+                logger.warning("Cohere 500 with native tools — retry %d/2 (wait %ds)", _retry_i + 1, wait)
+                _time.sleep(wait)
+                resp = self.http.post("/chat", json=body)
+                if resp.status_code != 500:
+                    break
+        return resp
+
+    def _collect_cohere_text_and_thinking(
+        self, content_blocks: list[dict[str, Any]],
+    ) -> tuple[str, list[str]]:
+        """Sammelt Text- und Thinking-Bausteine aus Cohere-Content-Blöcken."""
+        text_parts: list[str] = []
+        think_parts: list[str] = []
+        for block in content_blocks:
+            block_type = block.get("type", "")
+            if block_type == "text":
+                text_parts.append(block.get("text", ""))
+            elif block_type == "thinking":
+                think_parts.append(block.get("thinking", ""))
+        return "".join(text_parts), think_parts
 
     def _extract_reasoning_tokens(self, usage: Any) -> int | None:
         """Genuine Cohere-spezifische Override (KEIN dead stub).
