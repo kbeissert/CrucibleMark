@@ -39,6 +39,12 @@ Letzte Releases + aktueller Stand.
 
 **Status:** Working Tree, uncommitted. Working-Tree-Diff: 1 Card + 2 Reviews.
 
+**Nachtrag (Web-Export-Audit):**
+
+- **Befund A: Sentinel-Werte in `benchmark_cost`** (5 Modelle betroffen) — `_calc_benchmark_cost_row()` (`score_calculator.py:790`) berechnet `(tokens_f / 1000) × price_f`. Bei Overflow in `Tokens Total` (Astronomische Werte bis 1e+156) bleibt `Benchmark Cost (USD)` korrupt. **Ursprünglicher Fix:** `_sanitize_cost()` in `entry_builders.py` als Defense-in-Depth-Guard (Threshold 1 Mio. USD, `math.isfinite()`-Check). **Root-Cause-Fix (Session 60 Nachtrag):** `_coerce_dataframe_metrics()` in `data_loader.py` coercete `tokens_used` nicht zu numeric → `.groupby().sum()` auf str-Spalte konkatenierte Per-Task-Strings (`"3620.03082.03082.0..."`) statt zu summieren. Fix: 12 numeric-Spalten (`tokens_used`, `tokens_per_second`, `load_time`, `response_length`, `max_score`, `total_score`, `token_limit_used`, `llm_judge_score`, `llm_judge_latency_ms`, `judge_task_compliance`, `judge_output_quality`, `judge_standard_adherence`) zu `pd.to_numeric(errors="coerce")` hinzugefügt. Ergebnis: 89/89 `tokens_total` plausibel (37.700–209.700), 623/623 `tokens_per_module` plausibel, 0 Overflow. `_sanitize_cost()` bleibt als Defense-in-Depth.
+
+- **Befund B: `card_id`-Konflikt für Gemma-4-31B-Wordsmith-NVFP4(-thinking)** — KEIN Bug, by Design (siehe `systemPatterns.md:64` ff.): Card wird geteilt (vLLM-Hybrid, ein Server, Thinking-Toggle per Request), aber beide Profile haben eigene PC-Einträge. Web-Frontend muss `compassById` als Multi-Map bauen, nicht als Single-Map. **Doku-Ergänzung:** Neuer Pattern-Eintrag in `systemPatterns.md` „Web-Export `political_compass.json`: geteilter `card_id` für vLLM-Thinking-Profile ist by Design (Session 60)".
+
 ---
 
 
