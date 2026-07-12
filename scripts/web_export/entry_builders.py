@@ -514,8 +514,11 @@ def _build_compass_entry(
     """Builds the political_compass entry dict for a single model.
 
     card_id: kanonische model_id aus der Model-Card (SSoT für Frontend-Matching).
-    Muss mit model_id im Leaderboard übereinstimmen, damit buildCompassIdMap
-    im Web-Projekt einen stabilen Match findet (kein Slug-Trick).
+    Für Dual-Profile-Thinking-Varianten wird "--thinking" angehängt (siehe
+    _build_row_compass_data in main.py), um card_id-Kollisionen in
+    political_compass.json zu verhindern, wenn beide Modi eigene Compass-Daten
+    haben. Das Web-Frontend matcht zunehmend per slug (einzigartig), card_id
+    bleibt als Label erhalten.
     """
     archetype: str | None = None
     extremism: str | None = None

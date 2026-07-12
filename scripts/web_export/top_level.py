@@ -15,7 +15,6 @@ if str(_ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(_ROOT_DIR))
 
 from utils.io_helpers import atomic_copy as _atomic_copy, atomic_write_json as _atomic_write_json
-from utils.model_utils import _safe_name
 from utils.text_helpers import strip_emojis as _strip_emojis
 from .filters import _collect_vendor_cards
 from .constants import _SCORES_CONTRACT_KEYS
@@ -235,19 +234,14 @@ def _write_top_level_outputs(
 
     # SSoT-Sanity-Counts: Filesystem vs. Leaderboard-Konsistenz
     card_dir = root_dir / "benchmark_scores" / "model_cards"
-    audit_logs_path = root_dir / "outputs" / "audit_logs"
     card_count = len(list(card_dir.glob("*.json"))) if card_dir.exists() else 0
-    # audit_log_count: NUR Audit-Logs fuer exportierte Modelle (Semantik-Konsistenz).
-    # Zaehlt alle .md-Files in outputs/audit_logs/ wäre ein anderer Wert als das,
-    # was im Webexport ankommt (dort nur Modelle aus dem Leaderboard).
-    exported_slugs = {_safe_name(m.get("model_id") or m.get("slug", "")) for m in models_list}
+    # audit_log_count: 0 — Audit-Logs werden seit dem Dead-Weight-Cleanup
+    # nicht mehr exportiert (weder als Verzeichnis noch in data.json).
+    # Der Wert wurde früher aus dem Source-Filesystem gezählt (4121 .md-Files
+    # in outputs/audit_logs/), was einen Vertrags-Drift erzeugte: meta.json
+    # deklarierte 4121, aber das Export-Paket enthielt 0 Dateien.
+    # Da das Frontend Audit-Logs nirgends rendert, ist 0 korrekt.
     audit_log_count = 0
-    if audit_logs_path.exists():
-        for d in audit_logs_path.iterdir():
-            if not d.is_dir():
-                continue
-            if _safe_name(d.name) in exported_slugs:
-                audit_log_count += len(list(d.glob("*.md")))
 
     _atomic_write_json(
         out_dir / "meta.json",

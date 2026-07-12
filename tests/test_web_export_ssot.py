@@ -166,7 +166,7 @@ def test_meta_json_includes_all_sources_and_counts(tmp_path: Path) -> None:
     out_dir = tmp_path / "raw"
     out_dir.mkdir()
     root = _setup_card_root(tmp_path)
-    # Audit-Logs anlegen
+    # Audit-Logs anlegen (werden nicht mehr exportiert, meta.json meldet 0)
     audit_dir = root / "outputs" / "audit_logs" / "test-model"
     audit_dir.mkdir(parents=True)
     (audit_dir / "test_001.md").write_text("# Audit Log")
@@ -189,7 +189,10 @@ def test_meta_json_includes_all_sources_and_counts(tmp_path: Path) -> None:
     assert "audit_logs" in meta["sources"]
     # Sanity-Counts
     assert meta["card_count"] == 0  # tmp_path/benchmark_scores/model_cards/ ist leer
-    assert meta["audit_log_count"] == 1
+    # audit_log_count ist immer 0: Audit-Logs werden seit Dead-Weight-Cleanup
+    # nicht mehr exportiert (Vertrags-Drift: meta.json deklarierte 4121,
+    # Export-Paket enthielt 0 Dateien).
+    assert meta["audit_log_count"] == 0
     assert "cruciblemark_version" in meta
 
 

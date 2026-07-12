@@ -319,7 +319,10 @@ def _build_row_entry(
         review_published_at=review_published_at,
         review_updated_at=review_updated_at,
         benchmark_run_at=benchmark_run_at,
-        inference_provider=resolve_inference_provider(model_name, ctx["provider_map"]),
+        inference_provider=resolve_inference_provider(
+            raw_model_id if raw_model_id and raw_model_id != "nan" else model_name,
+            ctx["provider_map"],
+        ),
         vendor_card_ref=ctx["vendor_card_id_lookup"].get(vendor) if vendor else None,
         community=community,
         community_card_ref=community_card_ref,
@@ -348,6 +351,17 @@ def _build_row_compass_data(
     if lb_row is None:
         lb_row = ctx["pc_lb_slug_map"].get(pc_slug)
     card_id = (card.get("model_id") if card else None) or (raw_model_id if raw_model_id and raw_model_id != "nan" else None)
+    # Dual-Profile-Thinking-Varianten (Slug endet auf "-thinking") teilen sich
+    # die Card mit der Standard-Variante → card_id ist identisch. Wenn BEIDE
+    # Modi einen eigenen Political-Compass-Datensatz haben, kollidieren die
+    # card_ids in political_compass.json (last-write-wins im Web-Frontend:
+    # Thinking überschreibt Standard). Fix: Thinking-Varianten erhalten eine
+    # distinkte card_id mit "--thinking"-Suffix. Doppeltstrich trennt den
+    # Modus eindeutig vom Modell-Namen (verhindert Kollision mit Modellen,
+    # die "-thinking" im Namen tragen). Konvention: card_id + "--" + mode.
+    # Analog zu _is_dual_thinking in _build_leaderboard_entry (entry_builders.py:328).
+    if slug.endswith("-thinking") and card_id and not card_id.endswith("--thinking"):
+        card_id = f"{card_id}--thinking"
     return _build_compass_entry(pc_row, lb_row, slug, model_name, model_type, ctx["block_meta"], card_id=card_id)
 
 
