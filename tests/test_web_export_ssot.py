@@ -108,6 +108,105 @@ def test_lookup_pc_row_returns_none_for_unknown() -> None:
     assert result is None
 
 
+def test_lookup_pc_row_no_false_positive_variant_suffix() -> None:
+    """Gemma-4-31B darf NICHT auf gemma-4-31B-it-qat-ud-q4 matchen (Variant-Suffix).
+
+    Regression für Root Cause B: Das alte ``startswith(f"{slug}-")`` matchte
+    ``Gemma-4-31B`` → ``gemma-4-31B-it-qat-ud-q4``, weil der Slug-Präfix
+    identisch ist. Das ist eine andere Modell-Variante — False-Positive.
+    Das neue ``strip_date_suffix``-basierte Matching lehnt das korrekt ab.
+    """
+    from scripts.web_export import _lookup_pc_row
+
+    pc = pd.DataFrame({
+        "model": ["gemma-4-31B-it-qat-ud-q4"],
+        "run_id": ["AVG"],
+        "x_coordinate": [0.0],
+        "y_coordinate": [0.0],
+    })
+    # Slug für "Gemma-4-31B" ist "gemma-4-31b"
+    result = _lookup_pc_row("Gemma-4-31B", "gemma-4-31b", pc)
+    assert result is None, "Gemma-4-31B darf nicht auf gemma-4-31B-it-qat-ud-q4 matchen"
+
+
+def test_lookup_pc_row_no_false_positive_thinking_variant() -> None:
+    """qwen3_6-27B darf NICHT auf qwen3_6-27B-thinking matchen (Thinking-Variante).
+
+    Regression für Root Cause B: Das alte ``startswith(f"{slug}-")`` matchte
+    ``qwen3_6-27B`` → ``qwen3_6-27B-thinking``. Thinking ist eine andere
+    Variante mit eigenem Compass-Datensatz — kein Match.
+    """
+    from scripts.web_export import _lookup_pc_row
+
+    pc = pd.DataFrame({
+        "model": ["qwen3_6-27B-thinking"],
+        "run_id": ["AVG"],
+        "x_coordinate": [0.0],
+        "y_coordinate": [0.0],
+    })
+    result = _lookup_pc_row("qwen3_6-27B", "qwen3_6-27b", pc)
+    assert result is None, "qwen3_6-27B darf nicht auf qwen3_6-27B-thinking matchen"
+
+
+def test_lookup_pc_row_matches_reverse_date_suffix() -> None:
+    """Query MIT Datumssuffix findet PC-Modell OHNE Datumssuffix (Richtung 2)."""
+    from scripts.web_export import _lookup_pc_row
+
+    pc = pd.DataFrame({
+        "model": ["claude-haiku-4-5"],
+        "run_id": ["AVG"],
+        "x_coordinate": [0.0],
+        "y_coordinate": [0.0],
+    })
+    # Query-Slug "claude-haiku-4-5-20251001" → strip_date_suffix → "claude-haiku-4-5"
+    result = _lookup_pc_row("claude-haiku-4-5-20251001", "claude-haiku-4-5-20251001", pc)
+    assert result is not None
+    assert result["model"] == "claude-haiku-4-5"
+
+
+# ---------------------------------------------------------------------------
+# 2b. _build_pc_lookups() — PC-Leaderboard-Maps konsistent date-stripped
+# ---------------------------------------------------------------------------
+
+def test_build_pc_lookups_keys_by_strip_date_suffix() -> None:
+    """PC-Leaderboard-Maps werden per strip_date_suffix gekeyt (konsistent mit CSV-Writer).
+
+    Regression für Root Cause A: Wenn die political_compass_leaderboard.csv
+    date-stripped Namen speichert (z.B. ``z-ai/glm-5.1`` statt ``-20260406``),
+    müssen die Lookup-Maps denselben Key verwenden. Andernfalls findet der
+    Web-Export die Aggregat-Felder (vanilla_x, shift_distance, etc.) nicht.
+    """
+    from scripts.web_export import _build_pc_lookups
+
+    pc_lb = pd.DataFrame({
+        "model": ["z-ai/glm-5.1", "claude-haiku-4-5"],
+        "vanilla_x": [-2.5, -1.8],
+        "shift_distance": [3.2, 1.5],
+    })
+    pc_lb_map, pc_lb_slug_map = _build_pc_lookups(pc_lb)
+
+    # Map-Keys sind date-stripped
+    assert "z-ai/glm-5.1" in pc_lb_map
+    assert "claude-haiku-4-5" in pc_lb_map
+    # Slug-Keys ebenfalls date-stripped (slugify strips vendor prefix)
+    assert "glm-5-1" in pc_lb_slug_map
+    assert "claude-haiku-4-5" in pc_lb_slug_map
+
+
+def test_build_pc_lookups_handles_date_suffix_in_csv() -> None:
+    """Falls die CSV doch Datumssuffixe enthält (Defensiv), werden sie gestript."""
+    from scripts.web_export import _build_pc_lookups
+
+    pc_lb = pd.DataFrame({
+        "model": ["z-ai/glm-5.1-20260406"],
+        "vanilla_x": [-2.5],
+    })
+    pc_lb_map, _ = _build_pc_lookups(pc_lb)
+    # Key ist date-stripped, nicht die rohe ID
+    assert "z-ai/glm-5.1" in pc_lb_map
+    assert "z-ai/glm-5.1-20260406" not in pc_lb_map
+
+
 # ---------------------------------------------------------------------------
 # 3. _build_tooluse_entry() nutzt SSoT-Brücke
 # ---------------------------------------------------------------------------

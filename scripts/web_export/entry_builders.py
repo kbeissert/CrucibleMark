@@ -16,6 +16,7 @@ if str(_ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(_ROOT_DIR))
 
 from utils.card_utils import get_tag_display_roles, get_tag_labels, normalize_tags
+from utils.model_id_base import strip_date_suffix
 from utils.model_utils import WEIGHTS_TIER_DISPLAY, _find_card, _safe_name
 from utils.text_helpers import (
     extract_badge_tier,
@@ -501,16 +502,29 @@ def _lookup_pc_row(
 
     Strategy:
     1. Exact match (display-name Gleichheit)
-    2. Suffix/prefix slug match (dated IDs, vendor prefixes)
-    3. Returns None → caller decides what to do (PC-only models werden uebersprungen).
+    2. Exact slug match
+    3. Date-suffix-aware slug match: ``strip_date_suffix`` auf beiden Seiten.
+       Matcht dated IDs (``claude-sonnet-4-5`` ↔ ``claude-sonnet-4-5-20250929``)
+       OHNE False-Positives bei Varianten-Suffixen (``Gemma-4-31B`` ↔
+       ``gemma-4-31B-it-qat-ud-q4`` oder ``qwen3_6-27B`` ↔
+       ``qwen3_6-27B-thinking``).
+    4. Returns None → caller decides what to do (PC-only models werden uebersprungen).
     """
     avg_rows = pc[pc["run_id"] == "AVG"]
     exact = avg_rows[avg_rows["model"] == model_name]
     if not exact.empty:
         return exact.iloc[0]
+    canonical_slug = strip_date_suffix(slug)
     for _pc_model in avg_rows["model"].unique():
         _pc_slug = slugify(str(_pc_model))
-        if _pc_slug == slug or _pc_slug.endswith(f"-{slug}") or _pc_slug.startswith(f"{slug}-"):
+        if _pc_slug == slug:
+            rows = avg_rows[avg_rows["model"] == _pc_model]
+            if not rows.empty:
+                return rows.iloc[0]
+        # Date-suffix-aware match: strippt -YYYYMMDD / -MMDD auf beiden Seiten.
+        # Verhindert False-Positives wie Gemma-4-31B → gemma-4-31B-it-qat-ud-q4
+        # (früher via startswith gematcht) oder qwen3_6-27B → qwen3_6-27B-thinking.
+        if strip_date_suffix(_pc_slug) == canonical_slug:
             rows = avg_rows[avg_rows["model"] == _pc_model]
             if not rows.empty:
                 return rows.iloc[0]

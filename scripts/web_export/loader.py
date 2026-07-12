@@ -12,6 +12,7 @@ _ROOT_DIR = Path(__file__).resolve().parents[2]
 if str(_ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(_ROOT_DIR))
 
+from utils.model_id_base import strip_date_suffix
 from utils.text_helpers import slugify
 
 def build_provider_map(config_path: Path) -> dict[str, str]:
@@ -109,15 +110,24 @@ def _load_sources(scores_dir: Path) -> tuple[
 def _build_pc_lookups(
     pc_lb: pd.DataFrame | None,
 ) -> tuple[dict, dict]:
-    """Builds model-name → PC-leaderboard-row dicts (exact name + slug-keyed)."""
+    """Builds model-name → PC-leaderboard-row dicts (canonical-keyed).
+
+    Keys sind ``strip_date_suffix(model)`` bzw. ``slugify(strip_date_suffix(model))`` —
+    identisch zur Normalisierung, die ``io_manager.save_leaderboard_csv`` beim
+    Schreiben der CSV anwendet. Dadurch matching der Lookup-Seite (Web-Export)
+    konsistent mit der Writer-Seite (Benchmark-Pipeline), unabhängig davon ob
+    eine Model-ID ein Datumssuffix trägt (z.B. ``z-ai/glm-5.1-20260406`` →
+    Key ``z-ai/glm-5.1``).
+    """
     pc_lb_map: dict = {}
     pc_lb_slug_map: dict = {}
     if pc_lb is not None and "model" in pc_lb.columns:
         for _, _row in pc_lb.iterrows():
             m = str(_row.get("model", ""))
             if m and m != "nan":
-                pc_lb_map[m] = _row
-                pc_lb_slug_map[slugify(m)] = _row
+                canonical = strip_date_suffix(m)
+                pc_lb_map[canonical] = _row
+                pc_lb_slug_map[slugify(canonical)] = _row
     return pc_lb_map, pc_lb_slug_map
 
 

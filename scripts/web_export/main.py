@@ -17,6 +17,7 @@ if str(_ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(_ROOT_DIR))
 
 from utils.io_helpers import atomic_write_json as _atomic_write_json
+from utils.model_id_base import strip_date_suffix
 from utils.model_utils import WEIGHTS_TIER_DISPLAY, _safe_name
 from utils.text_helpers import slugify, strip_emojis as _strip_emojis, strip_none as _strip_none
 
@@ -347,9 +348,13 @@ def _build_row_compass_data(
     pc_row = _lookup_pc_row(pc_id, pc_slug, pc)
     if pc_row is None:
         return None
-    lb_row = ctx["pc_lb_map"].get(pc_id)
+    # Lookup-Key normalisieren: strip_date_suffix, damit die Maps (die vom
+    # CSV-Writer ebenfalls date-stripped werden) konsistent gematcht werden.
+    # Beispiel: pc_id="z-ai/glm-5.1-20260406" → Key "z-ai/glm-5.1".
+    pc_id_canonical = strip_date_suffix(pc_id)
+    lb_row = ctx["pc_lb_map"].get(pc_id_canonical)
     if lb_row is None:
-        lb_row = ctx["pc_lb_slug_map"].get(pc_slug)
+        lb_row = ctx["pc_lb_slug_map"].get(slugify(pc_id_canonical))
     card_id = (card.get("model_id") if card else None) or (raw_model_id if raw_model_id and raw_model_id != "nan" else None)
     # Dual-Profile-Thinking-Varianten (Slug endet auf "-thinking") teilen sich
     # die Card mit der Standard-Variante → card_id ist identisch. Wenn BEIDE

@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Any
 
 from utils.benchmark_ui import TerminalUI
+from utils.model_id_base import strip_date_suffix
 
 from .constants import DATE_FORMAT, DEFAULT_ENCODING, TEMP_DIR
 from .evaluators import classify_behavior_archetype
@@ -254,11 +255,9 @@ class PoliticalCompassResultManager:
         ]
 
         # Normalisierung: OpenRouter-Datumssuffixe abschneiden — verhindert Ghost-Duplikate.
-        # -YYYYMMDD (8-stellig, z. B. -20251001) und -MMDD (gültige Monate 01-12, z. B. -0127).
-        # Vierstellige Versions-Suffixe wie -2503 / -2411 werden NICHT abgeschnitten.
+        # SSoT: utils.model_id_base.strip_date_suffix (-/YYYYMMDD und -/MMDD).
         raw_model = report.get("model", "unknown")
-        model = re.sub(r"-\d{8}$", "", raw_model)
-        model = re.sub(r"-(0[1-9]|1[0-2])\d{2}$", "", model)
+        model = strip_date_suffix(raw_model)
 
         raw_provider = report.get("provider", "unknown")
 
