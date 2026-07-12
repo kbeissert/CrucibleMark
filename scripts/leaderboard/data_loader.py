@@ -148,12 +148,39 @@ def _process_csv(dfs: list[pd.DataFrame], filepath: Path, type_label: str) -> No
 
 
 def _coerce_dataframe_metrics(df: pd.DataFrame) -> pd.DataFrame:
-    """Numeric/Timestamp coercion und model_version-Default-Setzung."""
+    """Numeric/Timestamp coercion und model_version-Default-Setzung.
+
+    _process_csv() lädt via csv.reader + pd.DataFrame(rows) → alle Spalten sind
+    str (object dtype). Nur explizit hier aufgeführte Spalten werden zu numeric
+    coercet. Fehlt eine Spalte, führt pandas .sum()/.mean() auf str-Spalten zu
+    String-Konkatenation statt arithmetischer Aggregation (Root Cause des
+    Token-Overflow-Bugs: tokens_used wurde als str konkateniert statt summiert).
+    """
     df["percentage"] = pd.to_numeric(df["percentage"], errors="coerce")
     df["execution_time"] = pd.to_numeric(df["execution_time"], errors="coerce")
     if "cost_usd" in df.columns:
         df["cost_usd"] = pd.to_numeric(df["cost_usd"], errors="coerce").fillna(0.0)
     df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce", utc=True)
+
+    # Numeric coercion for metric columns used in aggregations (.sum()/.mean()).
+    # Without this, str columns get concatenated instead of summed.
+    _numeric_cols = [
+        "tokens_used",
+        "tokens_per_second",
+        "load_time",
+        "response_length",
+        "max_score",
+        "total_score",
+        "token_limit_used",
+        "llm_judge_score",
+        "llm_judge_latency_ms",
+        "judge_task_compliance",
+        "judge_output_quality",
+        "judge_standard_adherence",
+    ]
+    for col in _numeric_cols:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors="coerce")
 
     # If model_version is missing (e.g. newly loaded CSV didn't have it yet), fill with "unknown"
     if "model_version" not in df.columns:

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import logging
+import math
 import re
 import sys
 from pathlib import Path
@@ -268,6 +269,33 @@ def _build_characteristics(
     }
 
 
+# Sentinel-Threshold für benchmark_cost: jeder Wert > 1e6 USD ist ein
+# Datenfehler (Overflow in der Benchmark-Pipeline, siehe Session-60-Audit:
+# 5 Modelle mit Werten bis 1e+156). Solche Werte werden im Web-Export zu
+# None normalisiert, damit die UI keinen literalen "$6.003e+143" rendert.
+_BENCHMARK_COST_MAX = 1_000_000.0  # 1 Mio. USD pro Benchmark — weit über jedem realistischen Wert
+
+
+def _sanitize_cost(val: Any) -> float | None:
+    """Defense-in-Depth: filtert Sentinel-/Overflow-Werte aus benchmark_cost.
+
+    normalize_pending() konvertiert nur nan → None, lässt aber extreme endliche
+    Werte (z.B. 6e+143 aus Token-Accumulator-Overflow) und ±inf durch. Diese
+    würden im Web-Frontend als literaler Exponential-String gerendert.
+
+    Schwellwert: 1 Mio. USD pro Benchmark — alles darüber ist ein Datenfehler.
+    """
+    if val is None:
+        return None
+    if isinstance(val, str):
+        return None
+    if not math.isfinite(float(val)):
+        return None
+    if float(val) > _BENCHMARK_COST_MAX:
+        return None
+    return float(val)
+
+
 def _build_leaderboard_entry(
     row: pd.Series,
     card: dict | None,
@@ -344,7 +372,7 @@ def _build_leaderboard_entry(
         "timeout_count": parse_int(row.get(LdbCols.TIMEOUT_COUNT)),
         "tokens_total": parse_compact_number(row.get(LdbCols.TOKENS_TOTAL)),
         "cost_per_1k": normalize_pending(row.get(LdbCols.COST_PER_1K)),
-        "benchmark_cost": normalize_pending(row.get(LdbCols.BENCHMARK_COST)),
+        "benchmark_cost": _sanitize_cost(normalize_pending(row.get(LdbCols.BENCHMARK_COST))),
         "llm_judge_avg": normalize_pending(row.get(LdbCols.LLM_JUDGE_RAW)) or parse_star_float(row.get(LdbCols.LLM_JUDGE_DISPLAY)),
         "llm_judge_coverage": parse_percent(row.get(LdbCols.LLM_JUDGE_COVERAGE)),
         "tests_run": parse_tests_run(row.get(LdbCols.TESTS_RUN)),
