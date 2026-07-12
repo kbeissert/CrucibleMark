@@ -85,19 +85,19 @@ llm_review:
 llm_card_manager:
   enabled: true
   provider:
-    # name: openrouter
-    # model: google/gemini-2.5-pro
-    # base_url: https://openrouter.ai/api/v1
-    # api_key_env: OPENROUTER_API_KEY
-    # max_tokens: 32768
-    # temperature: 0.0   # deterministisch — Recherche/Faktensammlung, nicht Prosa
-
-    name: openai-compatible
-    model: gemma-4-26B-A4B-it-UD-Q5_K_XL
-    base_url: http://100.89.110.0:1235/v1
-    api_key: sk-local-mg2026
+    name: openrouter
+    model: google/gemini-2.5-pro
+    base_url: https://openrouter.ai/api/v1
+    api_key_env: OPENROUTER_API_KEY
     max_tokens: 32768
     temperature: 0.0   # deterministisch — Recherche/Faktensammlung, nicht Prosa
+
+    # name: openai-compatible
+    # model: gemma-4-26B-A4B-it-UD-Q5_K_XL
+    # base_url: http://100.89.110.0:1235/v1
+    # api_key_env: LOCAL_LLM_API_KEY
+    # max_tokens: 32768
+    # temperature: 0.0   # deterministisch — Recherche/Faktensammlung, nicht Prosa
 
 # Generierungs-Defaults für lokale Modelle — kommerzielle Provider ignorieren diese Werte
 defaults:
