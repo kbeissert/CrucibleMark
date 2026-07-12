@@ -1,6 +1,47 @@
 # Progress
 Letzte Releases + aktueller Stand.
 
+### 2026-07-12 (Session 60) — WordSmith Gemma 4 Bias-Reviews nachgeholt + Bias-Review-Audit [DONE, uncommitted]
+
+**Auslöser:** Session-59-Audit fand fehlende `bias_review_*.md` für 5 Modelle. User-Auftrag: Bias-Reviews umsetzen, fehlerfreie Skript-Funktion prüfen.
+
+**Geliefert:**
+
+1. **WordSmith-NVFP4 Card-Fix** (`benchmark_scores/model_cards/Gemma-4-31B-Wordsmith-NVFP4--VSPK.json`):
+   - `origin_country: null → "USA"`, `developer_jurisdiction: null → "US"`.
+   - Begründung: Basis-Entwickler Google DeepMind (US). Fine-Tune-Autor llmfan46 ohne dokumentierte Jurisdiktion.
+   - Konvention analog `gemma-4-31b-it-creative-wordsmith-q8.json` (USA/US) und anderen Community-Fine-Tunes.
+
+2. **2 Bias-Reviews generiert** (2026-07-12 12:47):
+   - `docs/reviews/Gemma-4-31B-Wordsmith-NVFP4/bias_review_20260712_124729.md` (44 Z.) — Standard-Profil.
+   - `docs/reviews/Gemma-4-31B-Wordsmith-NVFP4-thinking/bias_review_20260712_124757.md` (40 Z.) — Thinking-Profil.
+   - Bewertet beide als „Wolf im Schafspelz" (Shift 1,81 / 1,01, Polarity-Flip-Rate 23,08 % / 24,36 %). Inhaltlich konsistent mit PC-Daten.
+
+3. **Bias-Review-Audit: 3 weitere Modelle ohne PC-Daten** (nicht code-seitig lösbar):
+   - `Gemma-4-31B` (Basis, kein -NVFP4/-Wordsmith): keine PC-Einträge in `political_compass_*.csv`, keine `outputs/audit_logs/Gemma-4-31B/00_bias_report.md`.
+   - `qwen3_6-27B`: gleiche Situation.
+   - `qwen3_6-27B-thinking`: gleiche Situation.
+   - `generate_review.py` überspringt diese Modelle sauber mit „⚠️ Keine zutreffenden Logs gefunden für … im Modus bias, überspringe." (Zeile 820-825).
+
+**Skript-Verifikation (fehlerfrei):**
+- `--type bias --model Gemma-4-31B-Wordsmith-NVFP4` → ✅ erzeugt (Live-Lauf).
+- `--type bias --model Gemma-4-31B-Wordsmith-NVFP4-thinking` → ✅ erzeugt.
+- `--type bias --model Gemma-4-31B` → ✅ sauberer Skip (kein PC-Audit-Log).
+- `--type bias --model qwen3_6-27B` / `-thinking` → ✅ sauberer Skip.
+- `--dry-run` zeigt korrekt „Würde bias-Review für … generieren." vor Generation.
+- Review-Tests: 32/32 grün (`test_generate_review_per_model.py`, `test_cleanup_reviews.py`, `test_review_metrics_flatten.py`).
+- Ruff: `scripts/analysis/generate_review.py` clean.
+
+**Architektur-Entscheidungen:**
+- **PC-Daten sind Vorbedingung für Bias-Review:** ohne `00_bias_report.md` (Output von `run_political_compass_benchmark`) gibt es nichts zu bewerten — Bias-Review-Skript ist daher bewusst kein Audit-Log-Generator.
+- **`_verify_bias_card_prereqs` Card-Felder (developer, origin_country, developer_jurisdiction):** für Community-Fine-Tunes ohne eigene Jurisdiktion wird Basis-Entwickler verwendet (analog `gemma-4-31b-it-creative-wordsmith-q8`).
+- **Skip-Pfad im Skript ist explizit + nicht-still:** Zeile 820-825 + 1430-1431 geben sichtbares Warning aus, kein silent skip.
+
+**Status:** Working Tree, uncommitted. Working-Tree-Diff: 1 Card + 2 Reviews.
+
+---
+
+
 ### 2026-07-11 (Session 59) — Framework-Refactoring (Sektion A–M) + Ruff 0-Violations + Bugfixes [DONE, committed] (v4.10.18)
 
 24 Commits nach v4.10.17. Systematisches Refactoring gegen Architektur-Regeln: God-Script-Zerlegung (`model_utils`→7 Submodule+Bridge, `web_export.py`→Package), Helper-SSoT (`text_helpers`/`io_helpers`), `yaml.safe_load`→`ConfigValidator` (15 Skripte), 131 `print`→`logging`, C901/Ruff 0-Violations, 27 Legacy-Skripte nach `scripts/legacy/`. Bugfix: `ensure_card_structure` Duplicate-Base-Cards. Web LCL-Duplikation via `is_local_provider`-Macro. Doku-Sync auf Package-Struktur. Verhaltenserhaltend. ruff 0, 1316 passed/0 failed.

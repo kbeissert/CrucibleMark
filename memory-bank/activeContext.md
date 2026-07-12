@@ -12,21 +12,22 @@ to know what reference files exist.
 ---
 
 # Active Context
-## Aktueller Status (2026-07-11, Session 59 — v4.10.18 committed)
+## Aktueller Status (2026-07-12, Session 60 — WordSmith Bias-Reviews nachgeholt)
 
-- **v4.10.18 (DONE, committed):** Framework-Refactoring (Sektion A–M) — `model_utils` in 7 Submodule + Bridge, `web_export.py`→Package, Helper-SSoT, `yaml.safe_load`→`ConfigValidator`, 131 `print`→`logging`, C901/Ruff 0-Violations, 27 Legacy-Skripte verschoben. Bugfix: `ensure_card_structure` Duplicate-Base-Cards. Web LCL-Duplikation via `is_local_provider`-Macro. Doku-Sync auf Package-Struktur. Verhaltenserhaltend.
-- **v4.10.17 (DONE, committed):** Web-Export Datenqualitäts-Fixes, Vendor-Taxonomy, variantenbewusster `display_name`.
+- **Session 60 (DONE, uncommitted):** WordSmith-NVFP4 Bias-Reviews nachgeholt (Standard + Thinking). Card-Fix: `origin_country` + `developer_jurisdiction` auf US/USA (Basis Google DeepMind). 3 weitere Modelle (`Gemma-4-31B` Basis, `qwen3_6-27B`, `qwen3_6-27B-thinking`) ohne PC-Daten → Bias-Review nicht möglich, Skript-Skip sauber. Review-Skript fehlerfrei (Dry-Run + Live + Skip-Pfade verifiziert).
 
 ### Aktueller Zustand
-- **Working Tree:** clean. Docs-Sync committed (`57147cdb`). Memory-Bank-Update committed.
-- **Version:** v4.10.18 — Production-Ready. 24 Commits seit v4.10.17.
-- **Tests:** 1316 passed, 21 skipped, 0 failed. Ruff: 0 Violations.
-- **Export-Stats:** 88 Modelle, 23 blacklisted, 9 Score-Keys, 0 Vendor-Warnungen.
-- **Branch:** 25 Commits ahead of `origin/main` (unpushed).
+- **Working Tree:** uncommitted (Session 60: Card-Fix + 2 Bias-Reviews).
+- **Version:** v4.10.18 — Production-Ready.
+- **Tests:** Review-Tests 32/32 grün; Full Suite 1462 passed, 1 pre-existing flaky ToolUse-Test.
+- **Export-Stats:** 88 Modelle, 23 blacklisted, 9 Score-Keys.
+- **Bias-Reviews neu:** 2 (WordSmith-NVFP4 Standard + Thinking).
+- **Branch:** 25+ Commits ahead of `origin/main` (unpushed).
 
 ### Offen/Risiko
 - 7 vLLM + 2 SPRK Modelle ohne Political Compass (Nutzer-Aktion — vLLM-Compass-Daten erfassen, nicht code-seitig lösbar).
-- Branch ist 25 Commits ahead of `origin/main` — Push ausstehend.
+- 3 Modelle ohne PC-Daten → ohne Bias-Review: `Gemma-4-31B` (Basis), `qwen3_6-27B`, `qwen3_6-27B-thinking`.
+- Branch ist 25+ Commits ahead of `origin/main` — Push ausstehend.
 
 ### Nächster Schritt
-- Kein offener Dev-Auftrag. Political-Compass-Daten für vLLM durch Nutzer erfassen. Push nach `origin/main` bei Freigabe.
+- Kein offener Dev-Auftrag. Bias-Review-Gaps nicht code-seitig lösbar (brauchen PC-Läufe). Push nach `origin/main` bei Freigabe.
