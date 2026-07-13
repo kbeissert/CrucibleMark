@@ -3,6 +3,8 @@ Core scoring and aggregation logic for leaderboard.
 Calculates Routine vs Reasoning scores, aggregates stats, and classifies models.
 """
 
+import json
+import logging
 import sys
 from typing import Any
 
@@ -126,6 +128,216 @@ def _get_price_lookup() -> dict[str, float]:
 
 
 # ==============================================================================
+# 1c. COVERAGE STATUS CLASSIFICATION (v5.0 — Coverage-aware Scoring)
+# ==============================================================================
+#
+# v5.0 generalisiert die Modul-Abdeckungs-Logik auf ALLE Scoring-Module.
+# Ein Modul kann pro Modell einen von 6 Status haben:
+#   present      — ≥1 gültige Row (status ∈ _VALID_STATUSES) → trägt zum Score bei
+#   missing      — keine gültigen Rows, Modul anwendbar → Malus (im Nenner, nicht im Zähler)
+#   unknown      — keine gültigen Rows, capability_field fehlt in Card → wie missing + WARNING
+#   incapable    — capability_field explizit false in Card → exempt (aus Nenner entfernt)
+#   not_deployed — Modul hat 0 Daten für alle Modelle → für alle aus Nenner entfernt
+#   rolling_out  — Modul hat Daten für < deployment_threshold der Modelle → für alle aus Nenner entfernt
+#
+# SSoT für incapable/incapable-Erkennung sind die Model Cards
+# (benchmark_scores/model_cards/*.json). CARD_DIR wird respektiert (test-isolierbar).
+
+_coverage_logger = logging.getLogger(__name__)
+
+# Capability-Werte, die ein Modell als strukturell "incapable" markieren.
+# Ein FEHLENDES Feld ist NICHT incapable (→ unknown), sondern muss explizit false sein.
+_INCAPABLE_VALUES = frozenset({False, "false", "not_applicable"})
+
+# Cache für alle Model Cards: {model_id: card_dict}. Invalide bei CARD_DIR-Wechsel.
+_CARDS_CACHE: dict[str, dict[str, Any]] | None = None
+_CARDS_CACHE_DIR: Any = None
+
+
+def _load_all_cards() -> dict[str, dict[str, Any]]:
+    """Lädt alle Model Cards in {model_id: card_dict}. Lazy-cached, CARD_DIR-aware.
+
+    Respektiert utils.model_card_io.CARD_DIR (von conftest auf tmp_path umgelenkt),
+    sodass Tests mit synthetischen Cards isoliert laufen. Der Cache invalide
+    automatisch, sobald CARD_DIR sich ändert.
+    """
+    # pylint: disable=import-outside-toplevel,global-statement
+    global _CARDS_CACHE, _CARDS_CACHE_DIR
+    from pathlib import Path as _Path
+
+    from utils.model_card_io import CARD_DIR as _card_dir
+
+    card_dir = _Path(_card_dir)
+    if _CARDS_CACHE is not None and card_dir == _CARDS_CACHE_DIR:
+        return _CARDS_CACHE
+
+    cards: dict[str, dict[str, Any]] = {}
+    if card_dir.exists():
+        for card_path in card_dir.glob("*.json"):
+            if card_path.name == "_index.json":
+                continue
+            try:
+                with open(card_path, encoding="utf-8") as f:
+                    card = json.load(f)
+            except (OSError, json.JSONDecodeError):
+                continue
+            if isinstance(card, dict) and card.get("model_id"):
+                cards[card["model_id"]] = card
+
+    _CARDS_CACHE = cards
+    _CARDS_CACHE_DIR = card_dir
+    return cards
+
+
+def clear_cards_cache() -> None:
+    """Invalidiert den Model-Card-Cache (`_CARDS_CACHE`).
+
+    Aufrufen, wenn Model Cards zur Laufzeit hinzugefügt/geändert/entfernt werden
+    (z.B. in langlaufenden Prozessen oder Services). Im Batch-Benchmark-Pattern
+    (start → compute → exit) nicht nötig — der Cache invalide automatisch bei
+    CARD_DIR-Wechsel.
+    """
+    # pylint: disable=global-statement
+    global _CARDS_CACHE, _CARDS_CACHE_DIR
+    _CARDS_CACHE = None
+    _CARDS_CACHE_DIR = None
+
+
+def _resolve_canonical(model_str: str) -> str:
+    """Löst einen rohen Model-String auf die kanonische Card model_id auf.
+
+    Nutzt die SSoT-Funktion _resolve_to_canonical_id aus module_integration.
+    Fallback: der Input-String selbst (wenn keine Card gefunden wird).
+    """
+    # pylint: disable=import-outside-toplevel
+    try:
+        from .module_integration import _resolve_to_canonical_id
+    except ImportError:
+        return str(model_str)
+    return _resolve_to_canonical_id(str(model_str))
+
+
+def _get_incapable_models(modules_config: dict[str, Any]) -> dict[str, set[str]]:
+    """Returns {category_name: set_of_model_ids} für strukturell incapable Modelle.
+
+    Ein Modell ist "incapable" für ein Modul, wenn die Card das capability_field
+    EXPLIZIT auf einen Wert in _INCAPABLE_VALUES ({False, "false",
+    "not_applicable"}) setzt. Ein fehlendes Feld ist NICHT incapable (→ unknown,
+    separat in _classify_module_status erkannt).
+
+    Nur Scoring-Module mit gesetztem capability_field werden ausgewertet.
+    """
+    cards = _load_all_cards()
+    incapable_map: dict[str, set[str]] = {}
+    for mod_key, mod_data in modules_config.items():
+        if not mod_data.get("enable_scoring", True):
+            continue
+        cap_field = mod_data.get("capability_field")
+        if not cap_field:
+            continue
+        cat_name = mod_data.get("name", mod_key)
+        incapable_ids: set[str] = set()
+        for model_id, card in cards.items():
+            if cap_field in card and card[cap_field] in _INCAPABLE_VALUES:
+                incapable_ids.add(model_id)
+        incapable_map[cat_name] = incapable_ids
+    return incapable_map
+
+
+def _get_deployed_scoring_modules(
+    df_success: pd.DataFrame,
+    modules_config: dict[str, Any],
+    total_model_count: int,
+    deployment_threshold: float = 0.10,
+) -> tuple[set[str], set[str]]:
+    """Returns (deployed_modules, rolling_out_modules) anhand der Deployment-Schwelle.
+
+    - deployed: ≥ deployment_threshold × total_model_count Modelle haben gültige
+      Daten → missing/unknown-Modelle werden bestraft.
+    - rolling_out: > 0 aber < threshold → für alle aus Nenner entfernt (INFO-Log).
+    - not_deployed (0 Daten): implizit ausgeschlossen (nicht in beiden Sets).
+    """
+    deployed: set[str] = set()
+    rolling_out: set[str] = set()
+    for mod_key, mod_data in modules_config.items():
+        if not mod_data.get("enable_scoring", True):
+            continue
+        cat = mod_data.get("name", mod_key)
+        if "category" in df_success.columns:
+            module_df = df_success[df_success["category"] == cat]
+        else:
+            module_df = pd.DataFrame()
+        model_count = module_df["model"].nunique() if not module_df.empty else 0
+        if model_count == 0:
+            continue  # not_deployed → für alle ausgeschlossen
+        ratio = model_count / total_model_count if total_model_count > 0 else 0.0
+        if ratio >= deployment_threshold:
+            deployed.add(cat)
+        else:
+            rolling_out.add(cat)
+            _coverage_logger.info(
+                "Module '%s' has data for %d/%d models (< threshold %.2f), "
+                "treating as rolling_out — excluded from scoring",
+                cat, model_count, total_model_count, deployment_threshold,
+            )
+    return deployed, rolling_out
+
+
+def _classify_module_status(
+    model_str: str,
+    model_version: str,
+    category: str,
+    present_set: set[tuple[str, str, str]],
+    incapable_map: dict[str, set[str]],
+    modules_config: dict[str, Any],
+) -> str:
+    """Klassifiziert den Status eines Moduls für ein Modell.
+
+    Returns: 'present' | 'missing' | 'unknown' | 'incapable'
+
+    - present: (model, model_version, category) hat ≥1 gültige Row
+    - incapable: keine Rows UND model in incapable_map[category]
+      (capability_field explizit false in Card)
+    - unknown: keine Rows UND capability_field konfiguriert UND Feld fehlt in Card
+      → WARNING-Log
+    - missing: keine Rows, fähig (Feld present+true, oder kein capability_field)
+    """
+    if (str(model_str), str(model_version), category) in present_set:
+        return "present"
+
+    incapable_ids = incapable_map.get(category, set())
+    canonical = _resolve_canonical(model_str)
+    if canonical in incapable_ids:
+        return "incapable"
+
+    # unknown-Detection: capability_field konfiguriert, aber Feld fehlt in Card
+    mod_data = _find_mod_data_by_category(modules_config, category)
+    cap_field = mod_data.get("capability_field") if mod_data else None
+    if cap_field:
+        cards = _load_all_cards()
+        card = cards.get(canonical)
+        if card is None or cap_field not in card:
+            _coverage_logger.warning(
+                "Model '%s' has no capability_field '%s' in card for module "
+                "'%s' — treating as missing with warning",
+                model_str, cap_field, category,
+            )
+            return "unknown"
+
+    return "missing"
+
+
+def _find_mod_data_by_category(
+    modules_config: dict[str, Any], category: str
+) -> dict[str, Any] | None:
+    """Findet den mod_data-Eintrag für einen Kategorienamen."""
+    for _mk, _md in modules_config.items():
+        if _md.get("name", _mk) == category:
+            return _md
+    return None
+
+
+# ==============================================================================
 # 2. HELPERS: SCORING (Granular Contribution)
 # ==============================================================================
 
@@ -218,23 +430,10 @@ def _calculate_group_scores(
     # 2b. Build module-weight scale factors (self-normalizing, Subset-safe)
     # module_weight / sum_of_config_weights_in_that_module → scale per asset row.
     # Falls module_weight=None (kein Eintrag), scale=1.0 (Rückwärtskompatibilität).
+    # Nutzt die SSoT-Funktion _compute_module_scale_factors (Drift-Schutz gemeinsam
+    # mit _compute_expected_module_weights für den Coverage-Malus).
     def _module_scale(mod_data: dict[str, Any]) -> float:
-        module_weight = mod_data.get("module_weight")
-        if module_weight is None:
-            return 1.0
-        benchmarks = mod_data.get("benchmarks", [])
-        default_contrib = mod_data.get("default_contribution", {"routine": 0.0, "reasoning": 0.0})
-        default_sum = float(default_contrib.get("routine", 0.0)) + float(default_contrib.get("reasoning", 0.0))
-        config_weight_sum = 0.0
-        for b in benchmarks:
-            sc = b.get("score_contribution")
-            if sc:
-                config_weight_sum += float(sc.get("routine", 0.0)) + float(sc.get("reasoning", 0.0))
-            else:
-                config_weight_sum += default_sum
-        if config_weight_sum <= 0:
-            config_weight_sum = max(float(mod_data.get("assets_count", 1)) * max(default_sum, 1.0), 1.0)
-        return float(module_weight) / config_weight_sum
+        return _compute_module_scale_factors(mod_data)[0]
 
     module_weight_scales: dict[str, float] = {
         cat_name: _module_scale(mod_data)
@@ -533,10 +732,59 @@ def _aggregate_basic_stats(
     return _merge_judge_stats(stats, df, modules_config)
 
 
+def _logical_run_count_for_group(
+    sub_df: pd.DataFrame,
+    counting_cats: set[str],
+    name_to_override: dict[str, int],
+) -> int:
+    """Berechnet die logische Test-Anzahl für eine Modell-Gruppe.
+
+    v5.0: Nur Rows mit gültigem Status zählen (konsistent mit der Scoring-Basis
+    df_success). Error-Rows produzieren keinen Score und dürfen "Tests Run" nicht
+    als komplett ausweisen (z.B. llama-4-scout mit 6 ToolUse-Errors → 43/49
+    incomplete, nicht 49/49).
+    """
+    count = 0
+    valid_df = sub_df[sub_df["status"].isin(_VALID_STATUSES)]
+    cats = valid_df["category"].unique()
+    for cat in cats:
+        if cat not in counting_cats:
+            continue
+        row_count = len(valid_df[valid_df["category"] == cat])
+        if cat in name_to_override:
+            if row_count > 0:
+                count += name_to_override[cat]
+        else:
+            count += row_count
+    return count
+
+
+def _expected_assets_for_model(
+    model_str: str,
+    expected_assets: int,
+    incapable_map: dict[str, set[str]],
+    cat_assets: dict[str, int],
+) -> int:
+    """v5.0: Per-Modell expected_assets — incapable-Module werden abgezogen."""
+    canonical = _resolve_canonical(str(model_str))
+    reduction = 0
+    for _cat, incapable_ids in incapable_map.items():
+        if canonical in incapable_ids:
+            reduction += cat_assets.get(_cat, 0)
+    return expected_assets - reduction
+
+
 def _calculate_run_counts(
-    df: pd.DataFrame, modules_config: dict[str, Any]
+    df: pd.DataFrame,
+    modules_config: dict[str, Any],
+    incapable_map: dict[str, set[str]] | None = None,
 ) -> pd.DataFrame:
-    """Calculates 'Tests Run' using logic overrides (e.g. PC = 9 tests)."""
+    """Calculates 'Tests Run' using logic overrides (e.g. PC = 9 tests).
+
+    v5.0: `incapable_map` kann vom Caller übergeben werden (vermeidet doppelte
+    Berechnung — wird auch in _apply_coverage_malus benötigt). Bei None wird es
+    hier berechnet (Rückwärtskompatibilität für externe Caller).
+    """
 
     name_to_override = {}
     expected_assets = 0
@@ -555,28 +803,31 @@ def _calculate_run_counts(
         if mod_data.get("display_test_count"):
             name_to_override[name] = int(mod_data.get("display_test_count"))
 
-    def calculate_logical_run_count(sub_df):
-        count = 0
-        cats = sub_df["category"].unique()
-        for cat in cats:
-            if cat not in counting_cats:
-                continue
-            row_count = len(sub_df[sub_df["category"] == cat])
-            if cat in name_to_override:
-                if row_count > 0:
-                    count += name_to_override[cat]
-            else:
-                count += row_count
-        return count
-
     run_counts = (
         df.groupby(["model", "model_version", "type"])
-        .apply(calculate_logical_run_count)
+        .apply(
+            lambda sub: _logical_run_count_for_group(
+                sub, counting_cats, name_to_override
+            )
+        )
         .reset_index(name="logical_count")
     )
 
-    run_counts["expected_assets"] = expected_assets
-    # Note: adding expected_assets as column for easy merge, though it's constant
+    # v5.0: Per-Modell expected_assets — incapable-Module werden abgezogen,
+    # damit incapable-Modelle nicht als "incomplete" markiert werden.
+    if incapable_map is None:
+        incapable_map = _get_incapable_models(modules_config)
+    cat_assets: dict[str, int] = {}
+    for _mk, _md in modules_config.items():
+        _cat = _md.get("name", _mk)
+        if _md.get("enable_scoring", True) or _md.get("display_test_count"):
+            cat_assets[_cat] = int(_md.get("assets_count", 0))
+
+    run_counts["expected_assets"] = run_counts["model"].apply(
+        lambda m: _expected_assets_for_model(
+            m, expected_assets, incapable_map, cat_assets
+        )
+    )
 
     return run_counts
 
@@ -693,16 +944,28 @@ def _prepare_input_data(
 
 
 def _finalize_completion_status(result: pd.DataFrame) -> pd.DataFrame:
-    """Set is_complete + 'Tests Run' string column from expected_assets/logical_count."""
-    # Using 'max' of expected_assets column, as it's constant
-    expected = (
+    """Set is_complete + 'Tests Run' string column from expected_assets/logical_count.
+
+    v5.0: expected_assets ist nun per-Modell (incapable-Modelle haben reduzierte
+    Erwartung). 'Tests Run' nutzt den per-Modell-Wert, is_complete den globalen
+    Max-Wert (damit ein incapable-Modell mit 43/43 als 'complete' gilt, aber ein
+    present-Modell mit 43/49 nicht).
+    """
+    expected_max = (
         result["expected_assets"].max() if "expected_assets" in result.columns else 0
     )
-    result["is_complete"] = result["logical_count"] >= expected
-    # Mypy safely converts logical count to string through apply to avoid + Series warning
-    result["Tests Run"] = result["logical_count"].apply(
-        lambda x: str(int(x)) + "/" + str(expected)
-    )
+    # is_complete: ein Modell ist komplett wenn es SEINE eigene Erwartung erfüllt
+    if "expected_assets" in result.columns:
+        result["is_complete"] = result["logical_count"] >= result["expected_assets"]
+        result["Tests Run"] = result.apply(
+            lambda r: str(int(r["logical_count"])) + "/" + str(int(r["expected_assets"])),
+            axis=1,
+        )
+    else:
+        result["is_complete"] = result["logical_count"] >= expected_max
+        result["Tests Run"] = result["logical_count"].apply(
+            lambda x: str(int(x)) + "/" + str(expected_max)
+        )
     if "expected_assets" in result.columns:
         result = result.drop(columns=["expected_assets"])
     return result
@@ -856,6 +1119,182 @@ def _merge_stability_score(
     return result
 
 
+# ==============================================================================
+# 4b. COVERAGE MALUS (v5.0 — Generalized Coverage-aware Scoring)
+# ==============================================================================
+
+
+def _compute_module_scale_factors(
+    mod_data: dict[str, Any],
+) -> tuple[float, float, float]:
+    """Berechnet (scale, config_weight_routine, config_weight_reasoning) für ein Modul.
+
+    SSoT für die Scale-Logik — wird sowohl von `_module_scale` (present-Module)
+    als auch von `_compute_expected_module_weights` (Malus für missing/unknown)
+    genutzt, damit beide identische Gewichte produzieren (Drift-Schutz).
+
+    - module_weight=None → scale=1.0 (Rückwärtskompatibilität)
+    - config_weight_sum<=0 → Fallback über assets_count × default_sum
+    """
+    module_weight = mod_data.get("module_weight")
+    benchmarks = mod_data.get("benchmarks", [])
+    default_contrib = mod_data.get(
+        "default_contribution", {"routine": 0.0, "reasoning": 0.0}
+    )
+    default_r = float(default_contrib.get("routine", 0.0))
+    default_re = float(default_contrib.get("reasoning", 0.0))
+    default_sum = default_r + default_re
+
+    config_weight_r = 0.0
+    config_weight_re = 0.0
+    for b in benchmarks:
+        sc = b.get("score_contribution")
+        if sc:
+            config_weight_r += float(sc.get("routine", 0.0))
+            config_weight_re += float(sc.get("reasoning", 0.0))
+        else:
+            config_weight_r += default_r
+            config_weight_re += default_re
+
+    config_weight_sum = config_weight_r + config_weight_re
+    if module_weight is None:
+        scale = 1.0
+    else:
+        if config_weight_sum <= 0:
+            config_weight_sum = max(
+                float(mod_data.get("assets_count", 1)) * max(default_sum, 1.0), 1.0
+            )
+        scale = float(module_weight) / config_weight_sum
+    return scale, config_weight_r, config_weight_re
+
+
+def _compute_expected_module_weights(
+    mod_data: dict[str, Any],
+) -> tuple[float, float]:
+    """Berechnet die routine/reasoning-Gewichte, die ein voll present-Modul zum
+    Nenner beitragen würde. Nutzt die SSoT-Funktion `_compute_module_scale_factors`.
+
+    Returns: (expected_w_routine, expected_w_reasoning)
+
+    Bei module_weight=None: scale=1.0, Gewichte = Σ(contributions).
+    Bei gesetztem module_weight: scale × config_weight_sum = module_weight.
+    """
+    scale, config_weight_r, config_weight_re = _compute_module_scale_factors(mod_data)
+    return scale * config_weight_r, scale * config_weight_re
+
+
+def _apply_coverage_malus(
+    result: pd.DataFrame,
+    df_success: pd.DataFrame,
+    modules_config: dict[str, Any],
+    deployment_threshold: float = 0.10,
+    incapable_map: dict[str, set[str]] | None = None,
+) -> pd.DataFrame:
+    """v5.0: Generalisierter Coverage-Malus.
+
+    Für jedes Modell werden missing/unknown Scoring-Module (deployed aber keine
+    gültigen Daten, nicht incapable) identifiziert. Ihre erwarteten Gewichte
+    werden zum Nenner addiert OHNE Zähler-Beitrag → Score-Reduktion.
+
+    Incapable-Module werden komplett aus dem Nenner entfernt.
+    Not-deployed und rolling_out-Module werden für alle Modelle ausgeschlossen.
+
+    Berechnet coverage_ratio = Σ(present weights) / Σ(present + missing + unknown).
+
+    KRITISCH: Recomputiert Routine Score und Reasoning Score nach Modifikation der
+    Gewichte, da _calculate_group_scores() sie mit dem Original-Nenner berechnet.
+    Ohne Recomputation wäre die Invariante Routine + Reasoning = Total verletzt.
+    """
+    if result.empty:
+        result["coverage_ratio"] = 1.0
+        return result
+
+    total_model_count = result["model"].nunique()
+    deployed, _rolling_out = _get_deployed_scoring_modules(
+        df_success, modules_config, total_model_count, deployment_threshold
+    )
+    if incapable_map is None:
+        incapable_map = _get_incapable_models(modules_config)
+
+    # present_set: (model, model_version, category) mit ≥1 gültiger Row
+    present_set: set[tuple[str, str, str]] = set()
+    if not df_success.empty and "category" in df_success.columns:
+        mv_col = (
+            df_success["model_version"].astype(str)
+            if "model_version" in df_success.columns
+            else pd.Series([""] * len(df_success), index=df_success.index)
+        )
+        present_df = pd.DataFrame(
+            {
+                "m": df_success["model"].astype(str),
+                "mv": mv_col,
+                "cat": df_success["category"].astype(str),
+            }
+        )
+        present_set = set(present_df.itertuples(index=False, name=None))
+
+    # Erwartete Gewichte pro deployed Scoring-Modul vorab berechnen
+    expected_weights: dict[str, tuple[float, float]] = {}
+    deployed_module_cats: list[tuple[str, dict[str, Any]]] = []
+    for mod_key, mod_data in modules_config.items():
+        if not mod_data.get("enable_scoring", True):
+            continue
+        cat = mod_data.get("name", mod_key)
+        if cat not in deployed:
+            continue
+        expected_weights[cat] = _compute_expected_module_weights(mod_data)
+        deployed_module_cats.append((cat, mod_data))
+
+    # coverage_ratio-Spalte initialisieren
+    result["coverage_ratio"] = 1.0
+
+    for idx, row in result.iterrows():
+        model = str(row.get("model", ""))
+        mver = str(row.get("model_version", ""))
+        added_routine = 0.0
+        added_reasoning = 0.0
+        present_weight = 0.0
+        denom_weight = 0.0
+
+        for cat, _mod_data in deployed_module_cats:
+            exp_r, exp_re = expected_weights.get(cat, (0.0, 0.0))
+            mw_total = exp_r + exp_re
+            status = _classify_module_status(
+                model, mver, cat, present_set, incapable_map, modules_config
+            )
+            if status == "present":
+                present_weight += mw_total
+                denom_weight += mw_total
+            elif status in ("missing", "unknown"):
+                added_routine += exp_r
+                added_reasoning += exp_re
+                denom_weight += mw_total
+            # incapable: weder Zähler noch Nenner
+
+        # Gewichte aktualisieren
+        new_tw_r = float(row.get("total_weight_routine", 0.0)) + added_routine
+        new_tw_re = float(row.get("total_weight_reasoning", 0.0)) + added_reasoning
+        result.at[idx, "total_weight_routine"] = new_tw_r
+        result.at[idx, "total_weight_reasoning"] = new_tw_re
+
+        # Routine/Reasoning/coverage_ratio recomputieren
+        tw_global = new_tw_r + new_tw_re
+        sum_r = float(row.get("sum_routine", 0.0))
+        sum_re = float(row.get("sum_reasoning", 0.0))
+        if tw_global > 0:
+            result.at[idx, "Routine Score"] = sum_r / tw_global
+            result.at[idx, "Reasoning Score"] = sum_re / tw_global
+        else:
+            result.at[idx, "Routine Score"] = 0.0
+            result.at[idx, "Reasoning Score"] = 0.0
+
+        result.at[idx, "coverage_ratio"] = (
+            present_weight / denom_weight if denom_weight > 0 else 0.0
+        )
+
+    return result
+
+
 def _add_cost_columns(
     result: pd.DataFrame, price_lookup: dict[str, float]
 ) -> pd.DataFrame:
@@ -941,10 +1380,14 @@ def calculate_scores(
     """
     df_all, df_success, scoring_df = _prepare_input_data(df, modules_config)
 
+    # v5.0: incapable_map einmal berechnen und an run_counts + malus durchreichen
+    # (vermeidet doppelte Card-Iteration in beiden Funktionen).
+    _incapable_map = _get_incapable_models(modules_config)
+
     # Aggregation
     stats = _aggregate_basic_stats(df_success, modules_config)
     # Note: uses Full DF (incl non-scoring)
-    run_counts = _calculate_run_counts(df_all, modules_config)
+    run_counts = _calculate_run_counts(df_all, modules_config, _incapable_map)
 
     # Merge Counts
     result = pd.merge(
@@ -963,6 +1406,17 @@ def calculate_scores(
 
     # Routine vs Reasoning (v2.1: Granular Weights)
     result = _merge_granular_scores(result, df_success, modules_config)
+
+    # v5.0: Generalized Coverage Malus (missing/unknown → penalize, incapable → exempt)
+    _lb_cfg = config.get("leaderboard", {}) if isinstance(config, dict) else {}
+    _deployment_threshold = float(
+        _lb_cfg.get(
+            "deployment_threshold", config.get("deployment_threshold", 0.10)
+        )
+    )
+    result = _apply_coverage_malus(
+        result, df_success, modules_config, _deployment_threshold, _incapable_map
+    )
 
     # Stability Score (v3.1 Logic)
     result = _merge_stability_score(result, df_success)

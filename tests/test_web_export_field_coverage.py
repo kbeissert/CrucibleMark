@@ -96,7 +96,7 @@ class TestLeaderboardScoreMapping:
                 "Content Transformation & Adaption", "Cultural Intelligence",
                 "Political Bias",
                 "Tool Execution", "Synthesis Quality", "ToolUse Score",
-                "Tests Run",
+                "Tests Run", "coverage_ratio",
             )
             and not c.startswith("Tokens:")
         ]

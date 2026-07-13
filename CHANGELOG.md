@@ -5,6 +5,42 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v5.0.0] - 2026-07-13
+
+**Generalized Coverage Scoring + ToolUse Integration.**
+
+ToolUse wird als vollwertiges 8. Scoring-Modul in den Total Score integriert
+(`enable_scoring: true`, `module_weight: 1.0`). Die bisherige
+selbstnormalisierende Modulgewichtung (v3.4.3) wird durch eine
+Coverage-aware-Formel ersetzt: fehlende Modul-Daten reduzieren den Score
+(Malus im Nenner), strukturell incapable Modelle sind exempt. Keine
+Benchmark-Re-Runs nötig — die Per-Asset-Daten liegen bereits in den CSVs.
+
+⚠️ **Breaking Change:** Total Scores und Rankings ändern sich. Alte Leaderboards
+bleiben in der Git-History reproduzierbar.
+
+### Changed — Scoring-Formel (v5.0 Coverage-aware)
+
+- **ToolUse als Scoring-Modul:** `benchmark_modules/tooluse/config.yaml` — `enable_scoring: false → true`, `moduleweight → module_weight` (Typo-Fix), `module_weight: 1.0`, `default_contribution: {routine: 0.5, reasoning: 0.5}`, `capability_field: supports_tool_use`. `combined_score` (= `percentage`) fließt in den Total Score ein.
+- **Coverage-aware Nenner:** `Total Score = Σ(present scores×weights) / Σ(present + missing + unknown weights)`. Bisher: Nenner nur über present-Module (Renormalisierung auf 0–100). Jetzt: missing/unknown-Module tragen zum Nenner bei ohne Zähler → Malus.
+- **6-Status-Taxonomie:** `present` / `missing` / `unknown` / `incapable` / `rolling_out` / `not_deployed`. `unknown` = capability_field fehlt in Card (Malus + WARNING-Log). `incapable` = capability_field explizit false (exempt). `rolling_out` = < deployment_threshold Coverage (für alle ausgeschlossen).
+- **Deployment-Schwelle:** `deployment_threshold: 0.10` in `benchmark_config.yaml`. Ein Modul gilt als deployed ab ≥10% der Modelle mit gültigen Daten. Verhindert dass ein Modul mit 3/110 Daten 107 Modelle bestraft.
+- **`coverage_ratio`-Spalte:** Neue Leaderboard-Spalte (gewichtete Test-Abdeckung, 0.0–1.0). 109 Modelle = 1.0, 1 Missing-Modell (llama-4-scout) ≈ 0.87.
+- **Per-Modell `Tests Run`-Erwartung:** Incapable-Modelle bekommen `expected_assets` um die incapable-Modul-Assets reduziert (z.B. 43/43 statt 43/49). `logical_count` zählt nur gültige Status (Error-Rows nicht als "run" gezählt).
+
+### Fixed
+
+- **`moduleweight` → `module_weight` Typo:** `_build_modules_config()` liest `lb_config.get("module_weight")` — der Key `moduleweight` (ohne Unterstrich) wurde ignoriert. Mit `enable_scoring: true` wäre das Gewicht `None` gewesen. Fix im Config-YAML.
+
+### Score-Auswirkungen (verifiziert)
+
+- **106 present-Modelle:** ToolUse trägt normal zum Score bei.
+- **1 missing-Modell** (`meta-llama/llama-4-scout-17b-16e-instruct`): `supports_tool_use: true`, aber alle 6 Rows error → ~13% Score-Reduktion (1.0/7.5 Gewicht), coverage_ratio ≈ 0.87, Tests Run 43/49.
+- **3 incapable-Modelle** (`openai/gpt-oss-20b`, `command-a-plus-05-2026`, `deepseek-r1-distill-qwen-32b`): `supports_tool_use: false` → exempt, keine Strafe, coverage_ratio = 1.0, Tests Run 43/43.
+- **Invariante** `Routine Score + Reasoning Score = Total Score` für alle 110 Modelle erhalten (Toleranz 0.01).
+- **Benchmark-CSVs** (local/cloud/commercial) unverändert — nur Leaderboard-CSVs neu generiert.
+
+
 ## [v4.10.18] - 2026-07-11
 
 **Framework-Refactoring (Sektion A–M) + Ruff-Cleanup + Bugfixes + Doku-Sync.**

@@ -173,6 +173,11 @@ modules:
     enabled: true
     requires_mcp: true
 
+# Schwelle ab der ein Scoring-Modul als "deployed" gilt (verhindert Coverage-Malus bei wenigen Daten)
+# Ein Modell wird nur bestraft, wenn es für ≥ deployment_threshold × total_models gültige Daten hat
+# und trotzdem keine gültige Coverage. Inklusive Schwelle (≥ Threshold → deployed).
+deployment_threshold: 0.10
+
 # Bewertungsstufen für Badge-Vergabe im Leaderboard (threshold = Mindest-Score in %)
 scoring_tiers:
   platinum:

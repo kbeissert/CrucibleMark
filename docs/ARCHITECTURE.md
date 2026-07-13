@@ -558,6 +558,51 @@ else:
 
 **Skill Profile Generation:** Das System erstellt ein Profil basierend auf Speed Class und Top-Modul (z. B. „Fast Code Reviewer").
 
+### Coverage-aware Scoring (v5.0)
+
+Seit v5.0 ist die Score-Berechnung **Coverage-aware**: Modelle mit unvollständiger
+Modul-Abdeckung werden bestraft, strukturell incapable Modelle sind exempt. ToolUse
+ist als 8. Scoring-Modul integriert (`module_weight: 1.0`).
+
+**Formel:**
+
+```
+Total Score(m) = Σ_{i ∈ present} (score_i × w_i) / Σ_{i ∈ present ∪ missing ∪ unknown} w_i
+```
+
+Bisher (v3.4.3 — selbstnormalisierend): Nenner nur über present-Module →
+Renormalisierung auf 0–100 unabhängig vom Modul-Subset. Jetzt: missing/unknown-Module
+tragen zum Nenner bei ohne Zähler → Malus.
+
+**6-Status-Taxonomie (pro Modell+Modul):**
+
+| Status | Zähler | Nenner | Bedeutung |
+|---|---|---|---|
+| `present` | ✓ | ✓ | ≥1 gültige Row (status ∈ `_VALID_STATUSES`) |
+| `missing` | ✗ | ✓ | Keine gültigen Rows, `capability_field ≠ false` |
+| `unknown` | ✗ | ✓ | Keine gültigen Rows, `capability_field` fehlt in Card (+ WARNING-Log) |
+| `incapable` | ✗ | ✗ | `capability_field` ∈ `{False, "false", "not_applicable"}` |
+| `rolling_out` | ✗ | ✗ | Modul hat Daten für < `deployment_threshold` der Modelle (für alle ausgeschlossen) |
+| `not_deployed` | ✗ | ✗ | Modul hat 0 Daten für alle Modelle |
+
+**Deployment-Schwelle** (`benchmark_config.yaml → deployment_threshold: 0.10`):
+Ein Modul gilt als `deployed` ab ≥10% der Modelle mit gültigen Daten (inklusiv ≥).
+Darunter (`rolling_out`) wird es für alle Modelle aus dem Nenner entfernt — verhindert
+dass ein Modul mit 3/110 Daten 107 Modelle bestraft.
+
+**Invariante:** `Routine Score + Reasoning Score = Total Score` bleibt erhalten,
+weil der Malus Routine/Reasoning-Scores mit dem aktualisierten Nenner recomputiert.
+
+**`coverage_ratio`-Spalte:** `Σ(present weights) / Σ(present + missing + unknown weights)`
+(0.0–1.0). Incapable-Module zählen nicht gegen die Coverage.
+
+**Per-Modell `Tests Run`:** Incapable-Modelle bekommen `expected_assets` um die
+incapable-Modul-Assets reduziert (z.B. 43/43 statt 43/49). `logical_count` zählt
+nur gültige Status — Error-Rows gelten nicht als "run".
+
+Siehe: `scripts/leaderboard/score_calculator.py` (`_apply_coverage_malus`,
+`_classify_module_status`, `_get_deployed_scoring_modules`).
+
 ---
 
 ---

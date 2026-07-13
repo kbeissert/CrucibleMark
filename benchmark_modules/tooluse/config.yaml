@@ -1,8 +1,7 @@
 # ============================================================
 # tooluse — Modul-Konfiguration (SSOT)
 # ============================================================
-# Diagnosemodul analog zum Political Compass.
-# Kein Einfluss auf Total Score — enablescoring: false
+# Vollwertiges Scoring-Modul (v5.0) — combined_score fließt als percentage in Total Score ein.
 
 # ================================
 # GLOBAL METADATA
@@ -14,8 +13,8 @@ metadata:
   description: >
     Testet, wie zuverlässig ein Modell externe Tools (Web-Suche, HTTP-Fetch)
     via MCP nutzt. Bewertet Tool-Kompetenz (Phase 1) und Synthesequalität
-    (Phase 2) getrennt. Kein Einfluss auf Total Score — eigenständiges
-    Diagnosemodul analog zum Political Compass.
+    (Phase 2) getrennt. Vollwertiges Scoring-Modul (v5.0) — combined_score
+    fließt als percentage in den Total Score ein.
   author: "CrucibleMark"
   tags:
     - tool-use
@@ -29,8 +28,12 @@ metadata:
 # ================================
 integration:
   leaderboard:
-    enable_scoring: false         # Kein Einfluss auf Total Score
-    moduleweight: 0.0
+    enable_scoring: true              # Vollwertiges Scoring-Modul (v5.0)
+    module_weight: 1.0
+    default_contribution:            # Neutraler Split: combined_score enthält p1/p2-Gewichtung bereits intern
+      routine: 0.5
+      reasoning: 0.5
+    capability_field: supports_tool_use  # Model-Card-Feld für incapable-Erkennung (v5.0 Coverage-Logik)
     custom_csv: tooluse_leaderboard.csv
     columns:
       - id: p1_score

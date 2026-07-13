@@ -1,6 +1,46 @@
 # Progress
 Letzte Releases + aktueller Stand.
 
+### 2026-07-13 (Session 63) — v5.0 Generalized Coverage Scoring + ToolUse Integration [DONE, uncommitted]
+
+**Auslöser:** Plan `.kilo/plans/1783970064583-tooluse-scoring-integration-v5.md`. ToolUse als vollwertiges 8. Scoring-Modul integrieren + Coverage-Logik generalisieren.
+
+**Geliefert (Tasks 1–7 + Doku D1–D4):**
+
+1. **Task 1+1b+2 (bereits im Working Tree vor Session 63):** `tooluse/config.yaml` (`enable_scoring: true`, `module_weight: 1.0`, `default_contribution`, `capability_field: supports_tool_use`), `benchmark_config.yaml` (`deployment_threshold: 0.10`), `_build_modules_config` (`capability_field`-Durchreichung).
+2. **Task 3 — Coverage-Status-Klassifikation** (`score_calculator.py`): `_load_all_cards` (CARD_DIR-aware, cached), `_get_incapable_models` (explizit false → incapable; fehlendes Feld → unknown, NICHT incapable), `_get_deployed_scoring_modules` (returns `deployed, rolling_out`-Tuple), `_classify_module_status` (present/missing/unknown/incapable).
+3. **Task 4 — Coverage-Malus** (`_apply_coverage_malus`): missing/unknown → erwartete Gewichte in Nenner ohne Zähler; incapable → aus Nenner entfernt; rolling_out/not_deployed → für alle ausgeschlossen. Routine/Reasoning-Scores werden NACH Gewichtsmodifikation recomputiert (Invariante erhalten). `coverage_ratio`-Spalte.
+4. **Task 5 — Per-Modell `Tests Run`:** `_expected_assets_for_model` reduziert expected für incapable-Modelle. `calculate_logical_run_count` zählt nur gültige Status (Error-Rows nicht als "run").
+5. **Task 6 — Exporter:** `coverage_ratio` in compact+detailed CSV (nach `Tests Run`). `_round_score_columns` um `coverage_ratio` erweitert.
+6. **Task 7 — Tests** (`tests/test_score_calculator_coverage.py`, 26 Tests): Status-Klassifikation, Deployment-Threshold-Boundary, Invarianten (Routine+Reasoning=Total für present/missing/unknown/incapable), coverage_ratio (1.0/<1.0/0.0), kumulativer Malus, extreme-low-coverage, rolling_out-excluded, end-to-end `calculate_scores`. + `test_web_export_field_coverage.py` um `coverage_ratio` ergänzt.
+7. **Doku:** CHANGELOG v5.0.0, README (Version+Recent Versions), `tooluse/SCORING_RUBRIC.md` (Integration+Coverage-Tabelle), `docs/ARCHITECTURE.md` (Coverage-aware Scoring-Sektion).
+
+**Verifikation:**
+- `make validate` exit 0, Ruff 0-Violations.
+- `pytest tests/` → 1346 passed, 22 skipped, 0 failed (+26 neue Tests).
+- Leaderboard-Regeneration: 110 Modelle, `coverage_ratio`-Spalte vorhanden.
+- Invariante `Routine+Reasoning=Total` für alle 110 Modelle (max delta 0.01).
+- Benchmark-CSVs (local/cloud/commercial) unverändert — nur Leaderboard-CSVs neu.
+
+**Score-Auswirkungen (verifiziert):**
+- 106 present-Modelle: ToolUse trägt normal bei.
+- 1 missing (`meta-llama/llama-4-scout-17b-16e-instruct`): ~13% Reduktion, coverage_ratio≈0.87, Tests Run 43/49.
+- 3 incapable (`openai/gpt-oss-20b`, `command-a-plus-05-2026`, `deepseek-r1-distill-qwen-32b`): exempt, coverage_ratio=1.0, Tests Run 43/43.
+
+**Architektur-Entscheidungen:**
+- **Incapable = explizit false** (`{False, "false", "not_applicable"}`). Fehlendes `capability_field` = `unknown` (Malus + WARNING) — nicht silently als incapable durchrutschen.
+- **`logical_count` nur gültige Status:** Error-Rows produzieren keinen Score und dürfen "Tests Run" nicht als komplett ausweisen (konsistent mit Scoring-Basis `df_success`).
+- **`_finalize_completion_status` per-Modell:** `expected_assets` ist nun per-Modell (incapable → reduziert). `Tests Run` nutzt per-Modell-Wert, `is_complete` vergleicht gegen eigene Erwartung.
+- **CARD_DIR-aware Cache:** `_load_all_cards` invalide bei CARD_DIR-Wechsel (test-isolierbar via conftest).
+
+**Out of Scope (laut Plan):**
+- Web-Frontend Tasks 8–10 (separates Repo `CrucibleMark-Web`): `tooluse_combined` aus agentic-Profilen entfernen, Coverage-Badge, resolveScore-Kommentar.
+- Web-Frontend Agentic-Profil-Ankerung (separates Thema).
+
+**Status:** Working Tree, uncommitted. v5.0.0 — Breaking Change (Total Scores/Rankings ändern sich).
+
+---
+
 ### 2026-07-13 (Session 62) — Baustellen-Reconciliation [DONE, uncommitted]
 
 **Auslöser:** Vier Baustellen aus Session-61-Zusammenfassung sollten geschlossen werden, damit sie nicht mehr als *offene* Punkte in der Memory Bank stehen.

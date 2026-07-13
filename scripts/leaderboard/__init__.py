@@ -85,6 +85,7 @@ def _build_modules_config(full_config, registry_func=get_active_modules) -> dict
             "enable_scoring": enable_scoring,
             "default_contribution": default_contrib,
             "module_weight": lb_config.get("module_weight"),
+            "capability_field": lb_config.get("capability_field"),
             "assets_count": assets_count,
             "path": mod_path_val,
             "benchmarks": mod_int_config.get("benchmarks", []),
@@ -171,6 +172,7 @@ def _round_score_columns(leaderboard: pd.DataFrame) -> pd.DataFrame:
         "Efficiency_Index",
         "Tokens/s",
         "LLM Judge Avg",
+        "coverage_ratio",
     ]
     for col in cols_to_round:
         if col in leaderboard.columns:

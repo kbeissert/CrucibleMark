@@ -183,6 +183,9 @@ def export_leaderboard_compact(leaderboard: pd.DataFrame, cat_cols: list[str]) -
     if "Tests Run" in df_export.columns:
         final_cols.append("Tests Run")
 
+    if "coverage_ratio" in df_export.columns:
+        final_cols.append("coverage_ratio")
+
     existing_cols = [c for c in final_cols if c in df_export.columns]
     df_export = df_export[existing_cols]
     df_export = _format_tokens_k(df_export)
@@ -261,6 +264,9 @@ def export_leaderboard_detailed(leaderboard: pd.DataFrame, cat_cols: list[str]) 
 
     if "Tests Run" in df_export.columns:
         final_cols.append("Tests Run")
+
+    if "coverage_ratio" in df_export.columns:
+        final_cols.append("coverage_ratio")
 
     existing_cols = [c for c in final_cols if c in df_export.columns]
     df_export = df_export[existing_cols]

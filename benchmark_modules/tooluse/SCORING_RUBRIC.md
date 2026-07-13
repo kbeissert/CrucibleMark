@@ -220,6 +220,33 @@ Wenn der LLM-Judge `hallucination_detected: true` zurückgibt, wird **P2 gekappt
 - hallucination_flag (True/False)
 - audit_block (1–2 Sätze pro Dimension)
 
+### Total Score Integration (v5.0)
+
+Seit v5.0 ist ToolUse ein vollwertiges Scoring-Modul (`enable_scoring: true`,
+`module_weight: 1.0`). Der `combined_score` fließt als `percentage` in den
+Total Score ein — kein separates ToolUse-Gewicht mehr im Web-Frontend.
+
+**Coverage-Logik (6-Status-Taxonomie):**
+
+| Status | Behandlung | Bedeutung |
+|---|---|---|
+| `present` | Normaler Score-Beitrag | ≥1 gültige Row (status ∈ Valid-Statuses) |
+| `missing` | Malus (Nenner ohne Zähler) | `supports_tool_use: true`, aber keine gültigen Daten |
+| `unknown` | Malus + WARNING-Log | `supports_tool_use` fehlt in Model Card |
+| `incapable` | Exempt (aus Nenner entfernt) | `supports_tool_use: false` in Model Card |
+| `rolling_out` | Für alle ausgeschlossen | < 10% der Modelle haben Daten |
+| `not_deployed` | Für alle ausgeschlossen | 0 Modelle haben Daten |
+
+**Incapable-Modelle** (`supports_tool_use: false`) werden NICHT bestraft — das
+Modul ist strukturell nicht anwendbar. Ihre `Tests Run`-Erwartung reduziert sich
+um die ToolUse-Assets (z.B. 43/43 statt 43/49).
+
+**Missing-Modelle** (fähig, aber ohne gültige Daten, z.B. alle 6 Rows error)
+werden bestraft (~13% Score-Reduktion bei `module_weight: 1.0` / Total 7.5).
+
+Siehe auch: `benchmark_config.yaml → deployment_threshold`,
+`docs/ARCHITECTURE.md` (Scoring-Formel).
+
 ---
 
 ## References
