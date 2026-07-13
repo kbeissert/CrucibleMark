@@ -1,7 +1,50 @@
 # Progress
 Letzte Releases + aktueller Stand.
 
-### 2026-07-13 (Session 63) — v5.0 Generalized Coverage Scoring + ToolUse Integration [DONE, uncommitted]
+### 2026-07-13 (Session 64) — v5.0 Code-Review + Commit [DONE, committed (`5a330906`)]
+
+**Auslöser:** Session 63 lieferte v5.0-Implementierung (1346 passed, Ruff clean) — ausstehend: Code-Review + Commit. User-Auftrag: „Komite" (sic).
+
+**Code-Review (6 parallele Sub-Agenten):**
+- **Security:** clean, keine Findings.
+- **WARNING (1):** Dead-Code `_find_mod_data_by_category` definiert aber nie aufgerufen.
+- **SUGGESTIONS (3):** (a) Scale-Berechnung dupliziert zwischen `_module_scale` und `_compute_expected_module_weights` (Drift-Risiko); (b) `_get_incapable_models(modules_config)` 2× berechnet (Performance); (c) kein Mechanismus zur Cache-Invalidierung für langlaufende Prozesse.
+
+**Review-Fixes (alle umgesetzt):**
+
+1. **Dead-Code wired** (`scripts/leaderboard/score_calculator.py`):
+   - `_classify_module_status` nutzt jetzt `_find_mod_data_by_category` statt Inline-Loop zur capability_field-Auflösung.
+   - Funktion von der Definition ~30 Zeilen vorher inline dupliziert → jetzt SSoT.
+
+2. **SSoT `_compute_module_scale_factors`** extrahiert:
+   - Neuer Helper akzeptiert `mod_data`, gibt `(scale_factor)` zurück.
+   - Aufgerufen von nested `_module_scale` (in `_calculate_group_scores`) UND `_compute_expected_module_weights` (Coverage-Malus).
+   - Verhindert Drift zwischen den beiden Scale-Berechnungen — vorher identische Logik 2× implementiert.
+
+3. **`incapable_map` einmal berechnet + durchgereicht** (`scripts/leaderboard/score_calculator.py`):
+   - `calculate_scores` ruft `_get_incapable_models(modules_config)` einmal auf.
+   - Optionaler Parameter `incapable_map` an `_calculate_run_counts` und `_apply_coverage_malus` durchgereicht.
+   - Beide Funktionen nutzen übergebenen Wert, fallback auf eigene Berechnung nur bei None (Rückwärtskompatibilität für externe Caller).
+
+4. **`clear_cards_cache()` Funktion** für langlaufende Prozesse:
+   - Invalidiert `_CARDS_CACHE` + `_CARDS_CACHE_DIR` global.
+   - Im Batch-Benchmark-Pattern nicht nötig (Cache invalidiert bei CARD_DIR-Wechsel), aber für Services / Hot-Reload relevant.
+
+**Re-Validation:**
+- `ruff check scripts/leaderboard/` exit 0.
+- `pytest tests/` → `1346 passed, 22 skipped, 0 failed` (unverändert).
+- Leaderboard-Regen: 110 Modelle, 0 Invariant-Verletzungen (`|Routine+Reasoning−Total| > 0.05`), `coverage_ratio` korrekt (109× 1.0, 1× 0.87).
+
+**Commit:**
+- `5a330906 feat(scoring): v5.0.0 Generalized Coverage Scoring + ToolUse Integration` auf `main`.
+- 13 Dateien, +1336/−69.
+- Plan-Dateien (`.kilo/plans/*.md`) bleiben untracked — Working-Notes, kein Repo-Bestandteil.
+
+**Status:** Committed, Working Tree clean.
+
+---
+
+### 2026-07-13 (Session 63) — v5.0 Generalized Coverage Scoring + ToolUse Integration [DONE, committed in Session 64 (`5a330906`)]
 
 **Auslöser:** Plan `.kilo/plans/1783970064583-tooluse-scoring-integration-v5.md`. ToolUse als vollwertiges 8. Scoring-Modul integrieren + Coverage-Logik generalisieren.
 
