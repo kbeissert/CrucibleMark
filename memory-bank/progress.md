@@ -1,6 +1,27 @@
 # Progress
 Letzte Releases + aktueller Stand.
 
+### 2026-07-13 (Session 62) — Baustellen-Reconciliation [DONE, uncommitted]
+
+**Auslöser:** Vier Baustellen aus Session-61-Zusammenfassung sollten geschlossen werden, damit sie nicht mehr als *offene* Punkte in der Memory Bank stehen.
+
+**Geliefert (kein Code — Memory-Bank-Doku):**
+
+1. **#3 Ungepushter Zustand → bereits erledigt:** `git status` clean, `0 commits ahead of origin/main`, alles gepusht (Head `0554ce59` = Session 61 Doku-Commit). Memory-Bank-Behauptung "5 Commits ahead, unpushed" war veraltet.
+2. **#4 Flaky ToolUse-Test → nicht reproduzierbar:** Full Suite: `1320 passed, 22 skipped, 0 failed` (deterministisch; `pytest-randomly` nicht installiert). Tooluse-spezifisch: 78 passed. Behauptung "1462 passed / 1 flaky" aus Session 61 war veraltet/inkorrekt.
+3. **#1 Widerspruch PC-Lücken → historisch bereits korrigiert:** Session-60-Eintrag trägt Nachtrag (korrigiert "3 Modelle ohne PC-Daten" inkl. `qwen3_6-27B-thinking`). Widerspruch ist in der Historie aufgelöst. Keine History-Rewrites.
+4. **#2 8 PC-Lücken → per Nutzer-Entscheidung als Known Limitation akzeptiert:** Keine Benchmark-Runs. In activeContext aus "Offen/Risiko" → "Known Limitations (akzeptiert, nicht blockierend)" verschoben. Deferralbar — jederzeit nachholbar via `run_political_compass_benchmark`.
+
+**Verifikation:**
+- `pytest tests/ -q` → 1320 passed, 22 skipped, 0 failed.
+- `git status` → clean.
+- `git rev-list --count origin/main..HEAD` → 0.
+- 8 Modelle ohne Political Compass bestätigt: `Gemma-4-26B-thinking`, `Gemma-4-31B`, `gemma-4-31b-it-creative-wordsmith-q8`, `Gemma-4-31B-thinking`, `ornith-1_0-35B-FP8-thinking`, `qwable-3_6-27b-q4`, `qwable-3_6-35b-q5`, `qwen3_6-27B` (alle 0 Einträge in `political_compass_results.csv`).
+
+**Status:** Working Tree, uncommitted (nur Memory-Bank-Doku). Clean slate — bereit für nächste Dev-Aufgabe.
+
+---
+
 ### 2026-07-13 (Session 61) — PC-Nachhol-Verifikation + Memory-Bank-Sync [DONE, uncommitted]
 
 **Auslöser:** Nutzer-Vermerk: Political-Compass-Daten 07-11/12 nachgeholt. Memory-Bank (activeContext, progress Session 60) enthält veraltete Aussagen.
