@@ -51,7 +51,7 @@
   "output_modalities": [
     "text"
   ],
-  "supports_tool_use": false,
+  "supports_tool_use": true,
   "tooluse_recommendation": null,
   "temperature": null,
   "system_prompt_override": null,

@@ -41,7 +41,7 @@
   "output_modalities": [
     "text"
   ],
-  "supports_tool_use": false,
+  "supports_tool_use": true,
   "license": "Apache 2.0",
   "license_url": "https://opensource.org/licenses/Apache-2.0",
   "commercial_use_allowed": true,

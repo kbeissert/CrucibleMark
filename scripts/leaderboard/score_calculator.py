@@ -290,17 +290,24 @@ def _classify_module_status(
     present_set: set[tuple[str, str, str]],
     incapable_map: dict[str, set[str]],
     modules_config: dict[str, Any],
+    attempted_set: set[tuple[str, str, str]] | None = None,
 ) -> str:
     """Klassifiziert den Status eines Moduls für ein Modell.
 
     Returns: 'present' | 'missing' | 'unknown' | 'incapable'
 
-    - present: (model, model_version, category) hat ≥1 gültige Row
-    - incapable: keine Rows UND model in incapable_map[category]
-      (capability_field explizit false in Card)
+    - present: (model, model_version, category) hat ≥1 gültige Row (status in _VALID_STATUSES)
+    - incapable: keine Rows überhaupt (auch keine error-Rows) UND model in incapable_map[category]
+      (capability_field explizit false in Card). Wurde das Modell getestet (≥1 Row
+      jeglichen Status), ist es NICHT incapable sondern missing — getestet und
+      durchgefallen ist kein Capability-Mangel.
     - unknown: keine Rows UND capability_field konfiguriert UND Feld fehlt in Card
       → WARNING-Log
-    - missing: keine Rows, fähig (Feld present+true, oder kein capability_field)
+    - missing: keine validen Rows, fähig (Feld present+true, oder kein capability_field)
+
+    v5.1: attempted_set (aus df_all, inkl. error-Rows) verhindert, dass Modelle
+    mit error-Rows als incapable eingestuft werden. Ein Modell, das angetreten
+    ist und durchgefallen ist, ist missing, nicht incapable.
     """
     if (str(model_str), str(model_version), category) in present_set:
         return "present"
@@ -308,7 +315,19 @@ def _classify_module_status(
     incapable_ids = incapable_map.get(category, set())
     canonical = _resolve_canonical(model_str)
     if canonical in incapable_ids:
-        return "incapable"
+        # v5.1: Wenn das Modell Rows für diese Category hat (auch error-Rows),
+        # wurde es getestet → nicht incapable, sondern missing.
+        if attempted_set is not None and (
+            str(model_str), str(model_version), category
+        ) in attempted_set:
+            _coverage_logger.info(
+                "Model '%s' is marked incapable for module '%s' but has "
+                "attempted rows — classifying as missing (tested, not incapable)",
+                model_str, category,
+            )
+            # Fall through to missing/unknown-Logik unten
+        else:
+            return "incapable"
 
     # unknown-Detection: capability_field konfiguriert, aber Feld fehlt in Card
     mod_data = _find_mod_data_by_category(modules_config, category)
@@ -764,12 +783,24 @@ def _expected_assets_for_model(
     expected_assets: int,
     incapable_map: dict[str, set[str]],
     cat_assets: dict[str, int],
+    attempted_canonical_cats: set[tuple[str, str]] | None = None,
 ) -> int:
-    """v5.0: Per-Modell expected_assets — incapable-Module werden abgezogen."""
+    """v5.0: Per-Modell expected_assets — incapable-Module werden abgezogen.
+
+    v5.1: Ein Modell, das Rows für ein Module hat (auch error-Rows), wurde
+    getestet → nicht incapable → kein Abzug. Nur Modelle ohne jegliche Rows
+    für das incapable-Module bekommen den Abzug.
+    """
     canonical = _resolve_canonical(str(model_str))
     reduction = 0
     for _cat, incapable_ids in incapable_map.items():
         if canonical in incapable_ids:
+            # v5.1: Wenn das Modell Rows für diese Category hat, wurde es
+            # getestet → nicht incapable → kein Abzug.
+            if attempted_canonical_cats is not None and (
+                canonical, _cat
+            ) in attempted_canonical_cats:
+                continue
             reduction += cat_assets.get(_cat, 0)
     return expected_assets - reduction
 
@@ -815,6 +846,7 @@ def _calculate_run_counts(
 
     # v5.0: Per-Modell expected_assets — incapable-Module werden abgezogen,
     # damit incapable-Modelle nicht als "incomplete" markiert werden.
+    # v5.1: Modelle mit Rows (auch error) sind nicht incapable → kein Abzug.
     if incapable_map is None:
         incapable_map = _get_incapable_models(modules_config)
     cat_assets: dict[str, int] = {}
@@ -823,9 +855,19 @@ def _calculate_run_counts(
         if _md.get("enable_scoring", True) or _md.get("display_test_count"):
             cat_assets[_cat] = int(_md.get("assets_count", 0))
 
+    # v5.1: attempted_canonical_cats — (canonical_id, category) für alle Modelle
+    # mit ≥1 Row (inkl. error). Verhindert expected_assets-Abzug für getestete
+    # Modelle, deren Card fälschlich supports_tool_use:false sagt.
+    attempted_canonical_cats: set[tuple[str, str]] = set()
+    if not df.empty and "category" in df.columns:
+        for _, _row in df[["model", "category"]].iterrows():
+            _canon = _resolve_canonical(str(_row["model"]))
+            attempted_canonical_cats.add((_canon, str(_row["category"])))
+
     run_counts["expected_assets"] = run_counts["model"].apply(
         lambda m: _expected_assets_for_model(
-            m, expected_assets, incapable_map, cat_assets
+            m, expected_assets, incapable_map, cat_assets,
+            attempted_canonical_cats,
         )
     )
 
@@ -1183,12 +1225,37 @@ def _compute_expected_module_weights(
     return scale * config_weight_r, scale * config_weight_re
 
 
+def _build_model_category_set(
+    df: pd.DataFrame | None,
+) -> set[tuple[str, str, str]]:
+    """Baut ein Set von (model, model_version, category)-Tuples aus einem DataFrame.
+
+    Wird für present_set (aus df_success) und attempted_set (aus df_all) genutzt.
+    """
+    if df is None or df.empty or "category" not in df.columns:
+        return set()
+    mv_col = (
+        df["model_version"].astype(str)
+        if "model_version" in df.columns
+        else pd.Series([""] * len(df), index=df.index)
+    )
+    tuples_df = pd.DataFrame(
+        {
+            "m": df["model"].astype(str),
+            "mv": mv_col,
+            "cat": df["category"].astype(str),
+        }
+    )
+    return set(tuples_df.itertuples(index=False, name=None))
+
+
 def _apply_coverage_malus(
     result: pd.DataFrame,
     df_success: pd.DataFrame,
     modules_config: dict[str, Any],
     deployment_threshold: float = 0.10,
     incapable_map: dict[str, set[str]] | None = None,
+    df_all: pd.DataFrame | None = None,
 ) -> pd.DataFrame:
     """v5.0: Generalisierter Coverage-Malus.
 
@@ -1200,6 +1267,10 @@ def _apply_coverage_malus(
     Not-deployed und rolling_out-Module werden für alle Modelle ausgeschlossen.
 
     Berechnet coverage_ratio = Σ(present weights) / Σ(present + missing + unknown).
+
+    v5.1: df_all (inkl. error-Rows) wird genutzt, um attempted_set zu bauen.
+    Ein Modell mit error-Rows für ein Module wurde getestet → missing, nicht
+    incapable. Nur Modelle mit 0 Rows überhaupt können incapable sein.
 
     KRITISCH: Recomputiert Routine Score und Reasoning Score nach Modifikation der
     Gewichte, da _calculate_group_scores() sie mit dem Original-Nenner berechnet.
@@ -1217,21 +1288,11 @@ def _apply_coverage_malus(
         incapable_map = _get_incapable_models(modules_config)
 
     # present_set: (model, model_version, category) mit ≥1 gültiger Row
-    present_set: set[tuple[str, str, str]] = set()
-    if not df_success.empty and "category" in df_success.columns:
-        mv_col = (
-            df_success["model_version"].astype(str)
-            if "model_version" in df_success.columns
-            else pd.Series([""] * len(df_success), index=df_success.index)
-        )
-        present_df = pd.DataFrame(
-            {
-                "m": df_success["model"].astype(str),
-                "mv": mv_col,
-                "cat": df_success["category"].astype(str),
-            }
-        )
-        present_set = set(present_df.itertuples(index=False, name=None))
+    present_set = _build_model_category_set(df_success)
+
+    # v5.1: attempted_set aus df_all (inkl. error-Rows) — für striktere
+    # incapable-Klassifikation. Ein Modell mit error-Rows wurde getestet.
+    attempted_set = _build_model_category_set(df_all) if df_all is not None else set()
 
     # Erwartete Gewichte pro deployed Scoring-Modul vorab berechnen
     expected_weights: dict[str, tuple[float, float]] = {}
@@ -1260,7 +1321,8 @@ def _apply_coverage_malus(
             exp_r, exp_re = expected_weights.get(cat, (0.0, 0.0))
             mw_total = exp_r + exp_re
             status = _classify_module_status(
-                model, mver, cat, present_set, incapable_map, modules_config
+                model, mver, cat, present_set, incapable_map, modules_config,
+                attempted_set,
             )
             if status == "present":
                 present_weight += mw_total
@@ -1415,7 +1477,8 @@ def calculate_scores(
         )
     )
     result = _apply_coverage_malus(
-        result, df_success, modules_config, _deployment_threshold, _incapable_map
+        result, df_success, modules_config, _deployment_threshold, _incapable_map,
+        df_all,
     )
 
     # Stability Score (v3.1 Logic)

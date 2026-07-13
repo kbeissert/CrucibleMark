@@ -1,6 +1,43 @@
 # Progress
 Letzte Releases + aktueller Stand.
 
+### 2026-07-14 (Session 65) — v5.1 Incapable-Klassifikation-Fix [DONE, uncommitted]
+
+**Auslöser:** Nutzer analysierte v5.0-Leaderboard: Coverage-Malus greift nicht bei Modellen, die komplette Module nicht durchlaufen haben. Command A+ (Tool Execution=0.0) auf Rank 62 trotz fehlendem ToolUse. 109/110 Modelle coverage_ratio=1.0. Diagnose: `supports_tool_use: false` wurde als "incapable" (exempt) klassifiziert, selbst wenn das Modell getestet wurde (6 error-Rows). Inversion des gewünschten Verhaltens: getestet+durchgefallen = exempt (belohnt), teilweise durchgefallen = Malus (bestraft).
+
+**Diagnose (7 Hypothesen, 2 bestätigt):**
+1. **`supports_tool_use: false` falsch gesetzt für 2/3 Modelle** (Data Quality): Command A+ (`use_case_primary: "agentic"`, Cohere-API-Instabilität ≠ Kapabilität) und GPT-OSS 20B (OpenAI, unterstützt Function Calling). Beide wurden getestet (6 error-Rows).
+2. **`supports_tool_use`-Flag semantisch überladen** (Design): Flag soll "Modell kann keine Tools nutzen" bedeuten, wird aber auch für "getestet aber instabil/fehlgeschlagen" verwendet.
+
+**Fix (Option A+C, vom Nutzer bestätigt):**
+
+1. **Card-Korrekturen (Option A):**
+   - `command-a-plus-05-2026.json`: `supports_tool_use: false → true`
+   - `openai_gpt-oss-20b.json`: `supports_tool_use: false → true`
+   - `deepseek-r1-distill-qwen-32b.json`: unverändert (0 Rows, legit. incapable)
+
+2. **Striktere Incapable-Logik (Option C):**
+   - `_classify_module_status`: Neuer Parameter `attempted_set` (aus `df_all`, inkl. error-Rows). Wenn Modell in `incapable_map` ABER in `attempted_set` → "missing" (Malus), nicht "incapable" (exempt). INFO-Log dokumentiert Reklassifikation.
+   - `_expected_assets_for_model`: Neuer Parameter `attempted_canonical_cats`. Modell mit Rows → kein expected_assets-Abzug (Tests Run 43/49, nicht 43/43).
+   - `_calculate_run_counts`: Baut `attempted_canonical_cats`-Set aus `df`, reicht an `_expected_assets_for_model`.
+   - `_apply_coverage_malus`: Neuer Parameter `df_all`, baut `attempted_set` via Helper `_build_model_category_set`.
+   - `calculate_scores`: Reicht `df_all` an `_apply_coverage_malus` durch.
+   - Helper `_build_model_category_set` extrahiert (DRY + C901-Komplexitäts-Reduktion).
+
+**Score-Auswirkungen (verifiziert):**
+- Command A+: Rank 62 → 104 (−42), Score 71.42 → 61.90, coverage_ratio 1.00 → 0.87, Tests Run 43/43 → 43/49.
+- GPT-OSS 20B: Rank 104 → 108 (−4), Score 64.85 → 56.20, coverage_ratio 1.00 → 0.87, Tests Run 43/43 → 43/49.
+- DeepSeek R1 Distill: unverändert (Rank 106, 0 Rows → legit. incapable).
+- Llama 4 Scout: unverändert (Rank 110).
+- coverage_ratio: 107× 1.0 + 3× 0.87 (vorher 109× 1.0 + 1× 0.87).
+- Invariante 0 Verletzungen. Benchmark-CSVs unverändert.
+
+**Tests:** 4 neue in `tests/test_score_calculator_coverage.py` (incapable+error→missing, incapable+no attempted_set→incapable, expected_assets mit/ohne Rows). 1350 passed, 22 skipped, 0 failed.
+
+**Status:** Working Tree, uncommitted.
+
+---
+
 ### 2026-07-13 (Session 64) — v5.0 Code-Review + Commit [DONE, committed (`5a330906`)]
 
 **Auslöser:** Session 63 lieferte v5.0-Implementierung (1346 passed, Ruff clean) — ausstehend: Code-Review + Commit. User-Auftrag: „Komite" (sic).

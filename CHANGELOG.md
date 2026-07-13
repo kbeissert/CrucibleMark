@@ -5,6 +5,72 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v5.1.0] - 2026-07-14
+
+**Striktere Incapable-Klassifikation + Card-Korrekturen.**
+
+Fixt einen Design-Defekt in v5.0: Modelle mit `supports_tool_use: false` wurden
+pauschal als "incapable" exempt, selbst wenn sie getestet wurden (alle 6 Rows
+error). Das führte zur Inversion des gewünschten Verhaltens — Modelle, die
+antraten und durchfielen, wurden belohnt (exempt), während Modelle, die antraten
+und teilweise durchfielen, bestraft wurden (Malus).
+
+⚠️ **Breaking Change:** Total Scores und Rankings für betroffene Modelle ändern sich.
+
+### Fixed — Incapable-Klassifikation (v5.1)
+
+- **Striktere `_classify_module_status`:** Ein Modell mit `capability_field: false`
+  ist NUR dann "incapable" (exempt), wenn es **0 Rows überhaupt** für das Module
+  hat (keine error-Rows, keine success-Rows). Hat es ≥1 Row (auch error), wurde
+  es getestet → Klassifikation "missing" (Malus). Verhindert die Inversion
+  "getestet und durchgefallen = exempt".
+- **`attempted_set` aus `df_all`:** Neuer Parameter in `_classify_module_status`
+  und `_apply_coverage_malus`. Enthält (model, version, category)-Tuples aus dem
+  rohen DataFrame (inkl. error-Rows), gebaut via Helper `_build_model_category_set`.
+- **`_expected_assets_for_model` Konsistenz:** Auch hier wird `attempted_canonical_cats`
+  geprüft — ein Modell mit Rows bekommt keinen expected_assets-Abzug (Tests Run
+  zeigt 43/49, nicht 43/43).
+- **`_calculate_run_counts` baut `attempted_canonical_cats`:** (canonical_id,
+  category)-Set aus df_all, durchgereicht an `_expected_assets_for_model`.
+
+### Fixed — Card-Korrekturen (Data Quality)
+
+- **`command-a-plus-05-2026.json`:** `supports_tool_use: false → true`. Cohere
+  Command A+ ist explizit für Tool-Use/Agentic gebaut (`use_case_primary: "agentic"`).
+  Der `false`-Flag war mit "Tool-Use über die Cohere-API derzeit nicht stabil"
+  begründet — das ist eine Provider/API-Stabilitätsaussage, keine
+  Modellkapabilität. Das Modell WURDE getestet (6 error-Rows, tooluse_runs mit
+  score_p2: 13.33).
+- **`openai_gpt-oss-20b.json`:** `supports_tool_use: false → true`. GPT-OSS
+  unterstützt Function Calling. Wurde getestet (6 error-Rows, tooluse_runs
+  mit 0.0/0.0).
+- **`deepseek-r1-distill-qwen-32b.json`:** Unverändert (`supports_tool_use: false`).
+  0 ToolUse-Rows, keine tooluse_runs → legitimerweise incapable (Reasoning-Distill
+  ohne native Tool-Use-Fähigkeit). Bleibt exempt.
+
+### Score-Auswirkungen (verifiziert)
+
+- **Command A+:** Rank 62 → Rank 104 (−42 Plätze). Score 71.42 → 61.90.
+  coverage_ratio 1.00 → 0.87. Tests Run 43/43 → 43/49.
+- **GPT-OSS 20B:** Rank 104 → Rank 108 (−4 Plätze). Score 64.85 → 56.20.
+  coverage_ratio 1.00 → 0.87. Tests Run 43/43 → 43/49.
+- **DeepSeek R1 Distill Qwen 32B:** unverändert (Rank 106, Score 60.46,
+  coverage_ratio 1.0, Tests Run 43/43 — legit. incapable).
+- **Llama 4 Scout:** unverändert (Rank 110, Score 55.17, coverage_ratio 0.87).
+- **coverage_ratio-Verteilung:** 107× 1.0 + 3× 0.87 (vorher 109× 1.0 + 1× 0.87).
+- **Invariante** `Routine + Reasoning = Total` für alle 110 Modelle (0 Verletzungen).
+- **Benchmark-CSVs** (local/cloud/commercial) unverändert.
+
+### Tests
+
+- 4 neue Tests in `tests/test_score_calculator_coverage.py`:
+  - `test_classify_incapable_with_error_rows_becomes_missing`
+  - `test_classify_incapable_no_attempted_set_still_incapable`
+  - `test_expected_assets_incapable_with_rows_no_reduction`
+  - `test_expected_assets_incapable_without_rows_still_reduced`
+- 1350 passed, 22 skipped, 0 failed.
+
+
 ## [v5.0.0] - 2026-07-13
 
 **Generalized Coverage Scoring + ToolUse Integration.**

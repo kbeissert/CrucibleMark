@@ -176,6 +176,60 @@ def test_classify_incapable(tmp_path: Path):
     assert status == "incapable"
 
 
+def test_classify_incapable_with_error_rows_becomes_missing(tmp_path: Path):
+    """v5.1: Ein Modell mit supports_tool_use:false UND error-Rows (attempted_set)
+    ist 'missing', nicht 'incapable' — es wurde getestet, nur durchgefallen."""
+    _write_card(tmp_path, "m1", supports_tool_use=False)
+    cfg = _modules_config(
+        [{"id": "tu", "name": "Tool", "weight": 1.0, "routine": 0.5, "reasoning": 0.5, "assets": 2, "capability_field": "supports_tool_use"}]
+    )
+    inc = sc._get_incapable_models(cfg)
+    # attempted_set enthält (model, version, category) — selbst error-Rows zählen
+    attempted = {("m1", "v1", "Tool")}
+    status = sc._classify_module_status("m1", "v1", "Tool", set(), inc, cfg, attempted)
+    assert status == "missing"
+
+
+def test_classify_incapable_no_attempted_set_still_incapable(tmp_path: Path):
+    """v5.1: Ohne attempted_set (None) bleibt altes Verhalten — incapable."""
+    _write_card(tmp_path, "m1", supports_tool_use=False)
+    cfg = _modules_config(
+        [{"id": "tu", "name": "Tool", "weight": 1.0, "routine": 0.5, "reasoning": 0.5, "assets": 2, "capability_field": "supports_tool_use"}]
+    )
+    inc = sc._get_incapable_models(cfg)
+    status = sc._classify_module_status("m1", "v1", "Tool", set(), inc, cfg, None)
+    assert status == "incapable"
+
+
+def test_expected_assets_incapable_with_rows_no_reduction(tmp_path: Path):
+    """v5.1: Ein Modell mit supports_tool_use:false aber Rows für das Module
+    bekommt keinen expected_assets-Abzug — es wurde getestet."""
+    _write_card(tmp_path, "m1", supports_tool_use=False)
+    cfg = _modules_config(
+        [{"id": "tu", "name": "Tool", "weight": 1.0, "routine": 0.5, "reasoning": 0.5, "assets": 6, "capability_field": "supports_tool_use"}]
+    )
+    inc = sc._get_incapable_models(cfg)
+    cat_assets = {"Tool": 6}
+    # attempted_canonical_cats: (canonical_id, category) — Modell hat Rows
+    attempted = {("m1", "Tool")}
+    result = sc._expected_assets_for_model("m1", 49, inc, cat_assets, attempted)
+    assert result == 49  # kein Abzug — wurde getestet
+
+
+def test_expected_assets_incapable_without_rows_still_reduced(tmp_path: Path):
+    """v5.1: Ein Modell mit supports_tool_use:false und KEINEN Rows bekommt
+    weiterhin den Abzug — legitim incapable."""
+    _write_card(tmp_path, "m1", supports_tool_use=False)
+    cfg = _modules_config(
+        [{"id": "tu", "name": "Tool", "weight": 1.0, "routine": 0.5, "reasoning": 0.5, "assets": 6, "capability_field": "supports_tool_use"}]
+    )
+    inc = sc._get_incapable_models(cfg)
+    cat_assets = {"Tool": 6}
+    attempted = set()  # keine Rows
+    result = sc._expected_assets_for_model("m1", 49, inc, cat_assets, attempted)
+    assert result == 43  # Abzug von 6
+
+
 def test_classify_no_capability_field_all_missing(tmp_path: Path):
     """Modul ohne capability_field → nie incapable/unknown, immer missing wenn keine Daten."""
     _write_card(tmp_path, "m1")
