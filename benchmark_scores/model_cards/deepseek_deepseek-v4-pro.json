@@ -79,7 +79,7 @@
   "community": null,
   "tooluse_runs": {
     "deepseek/deepseek-v4-pro": {
-      "tested_at": "2026-07-10T14:22:00Z",
+      "tested_at": "2026-07-12T22:30:21Z",
       "score_p1": 90.0,
       "score_p2": 63.33
     }

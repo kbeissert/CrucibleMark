@@ -1,9 +1,41 @@
 # Progress
 Letzte Releases + aktueller Stand.
 
-### 2026-07-12 (Session 60) — WordSmith Gemma 4 Bias-Reviews nachgeholt + Bias-Review-Audit [DONE, uncommitted]
+### 2026-07-13 (Session 61) — PC-Nachhol-Verifikation + Memory-Bank-Sync [DONE, uncommitted]
+
+**Auslöser:** Nutzer-Vermerk: Political-Compass-Daten 07-11/12 nachgeholt. Memory-Bank (activeContext, progress Session 60) enthält veraltete Aussagen.
+
+**Verifikation (CSV/Audit-Logs, kein Code-Run):**
+
+1. **`qwen3_6-27B-thinking` — PC-Baustelle GESCHLOSSEN:**
+   - PC-Eintrag `2026-07-12T15:53` in `political_compass_results.csv`.
+   - Bias-Review existiert: `docs/reviews/qwen3_6-27B-thinking/bias_review_20260713_002833.md`.
+   - Memory-Bank-Behauptung "3 Modelle ohne PC-Daten … qwen3_6-27B-thinking" → **veraltet**.
+
+2. **Neue PC-Einträge 2026-07-11/12:**
+   - `Gemma-4-31B-Wordsmith-NVFP4` + `-thinking` (07-11) — Bias-Reviews in Session 60 gezogen.
+   - `grok-4.20-0309-reasoning` (07-11) — Bias-Review `20260712_124109`.
+   - `moonshotai/kimi-k2.7-code` (07-12) — Re-Run Bias-Review + Review + ToolUse-Narrative (untracked).
+   - `z-ai/glm-5.2` (07-12) — komplett neues Modell: PC + Bias-Review + Review + ToolUse-Narrative (untracked). Bereits im Leaderboard (Score 74.06).
+
+3. **Leaderboard-Stand:** 112 Modelle, 96 Bias-Reports (vorher 96, unverändert).
+4. **Git-Status:** 5 Commits ahead of `origin/main` (vorher Memory-Bank-Behauptung "25+").
+5. **Working-Tree-Status:** 29 modifizierte Model-Cards (Card-Manager-Recherche), neue untracked Reviews für `kimi-k2.7-code`, `qwen3_6-27B-thinking`, `glm-5.2` (über Session 60 hinaus).
+
+**Tatsächlich verbleibende PC-Lücken (Leaderboard, 8 Modelle — nicht 9 wie in Memory Bank):**
+`Gemma-4-26B-thinking`, `Gemma-4-31B` (Basis), `gemma-4-31b-it-creative-wordsmith-q8`, `Gemma-4-31B-thinking`, `ornith-1_0-35B-FP8-thinking`, `qwable-3_6-27b-q4`, `qwable-3_6-35b-q5`, `qwen3_6-27B`.
+
+**Konsequenz:** Memory-Bank-Sync erforderlich (activeContext + progress.md anpassen). Session 60-Eintrag mit Nachtrag kennzeichnen.
+
+**Status:** Working Tree, uncommitted. Session-61-Arbeit = Doku-Sync.
+
+---
+
+### 2026-07-12 (Session 60) — WordSmith Gemma 4 Bias-Reviews nachgeholt + Bias-Review-Audit [DONE, committed (v4.10.18)]
 
 **Auslöser:** Session-59-Audit fand fehlende `bias_review_*.md` für 5 Modelle. User-Auftrag: Bias-Reviews umsetzen, fehlerfreie Skript-Funktion prüfen.
+
+> **Nachtrag Session 61 (07-13):** Die im Abschnitt genannten "3 weitere Modelle ohne PC-Daten" (`Gemma-4-31B` Basis, `qwen3_6-27B`, `qwen3_6-27B-thinking`) waren teilweise überholt: `qwen3_6-27B-thinking` hat seit 2026-07-12 PC-Daten (`2026-07-12T15:53` in `political_compass_results.csv`) + Bias-Review (`docs/reviews/qwen3_6-27B-thinking/bias_review_20260713_002833.md`). Siehe `progress.md Session 61`.
 
 **Geliefert:**
 
@@ -37,7 +69,7 @@ Letzte Releases + aktueller Stand.
 - **`_verify_bias_card_prereqs` Card-Felder (developer, origin_country, developer_jurisdiction):** für Community-Fine-Tunes ohne eigene Jurisdiktion wird Basis-Entwickler verwendet (analog `gemma-4-31b-it-creative-wordsmith-q8`).
 - **Skip-Pfad im Skript ist explizit + nicht-still:** Zeile 820-825 + 1430-1431 geben sichtbares Warning aus, kein silent skip.
 
-**Status:** Working Tree, uncommitted. Working-Tree-Diff: 1 Card + 2 Reviews.
+**Status:** Committed (`933d33d` ist letzter Code-Commit, v4.10.18). Working Tree clean nach Doku-Commit. Session 61 hat neue untracked Reviews + 29 modifizierte Cards (Card-Manager-Recherche) — unabhängig von Session 60.
 
 **Nachtrag (Web-Export-Audit):**
 

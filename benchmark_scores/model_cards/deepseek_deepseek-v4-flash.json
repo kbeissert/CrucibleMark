@@ -78,7 +78,7 @@
   "community": null,
   "tooluse_runs": {
     "deepseek/deepseek-v4-flash": {
-      "tested_at": "2026-07-10T14:22:05Z",
+      "tested_at": "2026-07-12T22:30:26Z",
       "score_p1": 90.0,
       "score_p2": 66.67
     }

@@ -81,7 +81,7 @@
   "community": null,
   "tooluse_runs": {
     "qwen/qwen3-32b": {
-      "tested_at": "2026-07-10T14:20:50Z",
+      "tested_at": "2026-07-12T22:29:20Z",
       "score_p1": 86.67,
       "score_p2": 43.33
     }
