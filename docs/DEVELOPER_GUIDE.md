@@ -1,5 +1,7 @@
 # Entwicklerhandbuch: CrucibleMark erweitern
 
+**Stand: v5.1.0 · 2026-07-14**
+
 **Zielgruppe:** Entwickler, die neue Test-Module erstellen oder das Scoring-System erweitern wollen.
 
 **Inhalt:**
@@ -332,7 +334,7 @@ Der Code in `_build_server_cmd()` (`utils/providers/llamacpp_base.py`) prüft f�
 
 **Beide Provider teilen sich die Defaults:** `llamacpp` (M4) und `llamacpp_spark` (DGX) lesen denselben `llama_cpp_defaults`-Block. Damit sind Sampling-Bedingungen identisch, nur die Hardware-spezifischen Settings (Context-Window, GPU-Layers, SSH-Start) unterscheiden sich.
 
-**Historischer Rename (2026-06-08):** Der Block hieß zuvor `benchmark_defaults` und war auf `temperature: 0.1` / `top_p: 0.9` / `repeat_penalty: 1.1` (sehr deterministisch) gesetzt. Mit dem Rename auf `llama_cpp_defaults` wurde die Semantik klar (Upstream-Defaults als Fallback) und die Pro-Modell-Override-Mechanik in den Vordergrund gerückt. Wenn du ein altes Repo-Konfig-File hast, das noch `benchmark_defaults` nutzt, schlägt der Server-Start fehl — benenne den Block um.
+**Historischer Rename (2026-06-08):** Der Block hieß zuvor `benchmark_defaults` und war auf `temperature: 0.1` / `top_p: 0.9` / `repeat_penalty: 1.1` (sehr deterministisch) gesetzt. Mit dem Rename auf `llama_cpp_defaults` wurde die Semantik klar (Upstream-Defaults als Fallback) und die Pro-Modell-Override-Mechanik in den Vordergrund gerückt. Alte Repo-Konfig-Files, die noch `benchmark_defaults` nutzen, führen beim Server-Start zu einem Fehler — der Block muss umbenannt werden.
 
 Regressionstests: `tests/test_llamacpp_provider_separation.py::test_build_server_cmd_uses_llama_cpp_defaults`, `::test_build_server_cmd_model_override_wins`, `::test_build_server_cmd_works_without_defaults_block`.
 

@@ -1,8 +1,10 @@
 # PROJECT_STATUS.md
 
-**Last Updated:** 2026-07-11
-**Current Version:** 4.10.18 — Framework-Refactoring (Sektion A–M) + Ruff 0-Violations + Bugfixes
-**Status:** ✅ Production-Ready
+> **Interner Statusbericht.** Diese Datei dokumentiert den Projektfortschritt für Maintainer und Contributor. Sie ist nicht Teil der öffentlichen Dokumentation. Aktuelle, kuratierte Release-Informationen stehen in [README.md](README.md) (Recent Versions) und [CHANGELOG.md](CHANGELOG.md).
+
+**Last Updated:** 2026-07-14
+**Current Version:** 5.1.0 — Striktere Incapable-Klassifikation + Coverage-Malus-Bugfix + Prozessdisziplin Model Cards
+**Status:** Production-Ready
 
 > **Hinweis:** Die Executive Summary weiter unten historisch auf v4.6.1.
 > Die Sub-Versionen v4.6.2–v4.10.18 sind im CHANGELOG.md vollständig dokumentiert.

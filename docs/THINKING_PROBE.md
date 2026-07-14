@@ -1,5 +1,7 @@
 # Thinking-Probe — Methodik, SSoT und Konsumenten
 
+**Stand: v5.1.0 · 2026-07-14**
+
 > **Single Source of Truth** für die Thinking-Erkennung in CrucibleMark.
 > Empirische Probe (`probe_thinking_model`) + Card-First-Property + optionaler `thinking_override` (Provider-Card).
 

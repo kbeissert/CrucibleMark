@@ -90,6 +90,25 @@ def _check_profile_verified(card_file: Path, data: dict, issues: list) -> None:
         issues.append(f"🔍 {card_file.stem}: profile_verified=false (Inhalt noch nicht manuell verifiziert)")
 
 
+def _check_supports_tool_use_evidence(card_file: Path, data: dict, issues: list) -> None:
+    """v5.1: Card mit supports_tool_use=false MUSS supports_tool_use_evidence haben.
+
+    Das capability_field ist seit v5.0 scoring-relevant — ein falsches 'false'
+    gewährt einen unverdienten Coverage-Exempt. Das Evidence-Feld erzwingt eine
+    begründete Angabe (analog zu thinking_probe_evidence) und schafft einen
+    Audit-Trail. Karten mit true/untested/null benötigen kein Evidence.
+    """
+    stu = data.get("supports_tool_use")
+    if stu is False or (isinstance(stu, str) and stu.lower() == "false"):
+        evidence = data.get("supports_tool_use_evidence")
+        if not evidence or (isinstance(evidence, str) and evidence.strip() == ""):
+            issues.append(
+                f"🔧 {card_file.stem}: supports_tool_use=false aber "
+                f"supports_tool_use_evidence fehlt/leer — seit v5.1 Pflichtfeld "
+                f"für incapable-Klassifikation (scoring-relevant)."
+            )
+
+
 def _verify_one_card(card_file: Path, canonical_vendors: set, vendor_card_id_map: dict, vendor_cards_dir: Path, all_model_ids: set, issues: list) -> None:
     with open(card_file) as f:
         data = json.load(f)
@@ -104,6 +123,7 @@ def _verify_one_card(card_file: Path, canonical_vendors: set, vendor_card_id_map
     _check_required_fields_present(card_file, data, issues)
     _check_vendor(card_file, data, canonical_vendors, vendor_card_id_map, vendor_cards_dir, issues)
     _check_profile_verified(card_file, data, issues)
+    _check_supports_tool_use_evidence(card_file, data, issues)
 
     if data.get("card_status") != "complete":
         issues.append(f"📝 {card_file.stem}: card_status='{data.get('card_status', 'MISSING')}'")

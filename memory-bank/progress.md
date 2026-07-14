@@ -1,7 +1,7 @@
 # Progress
 Letzte Releases + aktueller Stand.
 
-### 2026-07-14 (Session 65) — v5.1 Incapable-Klassifikation-Fix [DONE, uncommitted]
+### 2026-07-14 (Session 65) — v5.1 Incapable-Klassifikation-Fix [DONE] v5.1.0
 
 **Auslöser:** Nutzer analysierte v5.0-Leaderboard: Coverage-Malus greift nicht bei Modellen, die komplette Module nicht durchlaufen haben. Command A+ (Tool Execution=0.0) auf Rank 62 trotz fehlendem ToolUse. 109/110 Modelle coverage_ratio=1.0. Diagnose: `supports_tool_use: false` wurde als "incapable" (exempt) klassifiziert, selbst wenn das Modell getestet wurde (6 error-Rows). Inversion des gewünschten Verhaltens: getestet+durchgefallen = exempt (belohnt), teilweise durchgefallen = Malus (bestraft).
 
@@ -34,7 +34,7 @@ Letzte Releases + aktueller Stand.
 
 **Tests:** 4 neue in `tests/test_score_calculator_coverage.py` (incapable+error→missing, incapable+no attempted_set→incapable, expected_assets mit/ohne Rows). 1350 passed, 22 skipped, 0 failed.
 
-**Status:** Working Tree, uncommitted.
+**Status:** Committed (`95cf8091`). Prozessdisziplin Option 3 (Evidence-Pflichtfeld + Validierung + 10 Tests + Doku) uncommitted.
 
 ---
 

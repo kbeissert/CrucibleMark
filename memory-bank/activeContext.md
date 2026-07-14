@@ -12,7 +12,16 @@ Keine Referenzdateien auto-laden. Nur laden wenn aktuelle Aufgabe explizit eine 
 ---
 
 # Active Context
-## Aktueller Status (2026-07-14, Session 65 — v5.1 Incapable-Klassifikation-Fix)
+## Aktueller Status (2026-07-14, Session 65 — v5.1.0 committed)
+
+- Abgeschlossen: v5.1.0 committed (`95cf8091`) — striktere Incapable-Klassifikation + Card-Korrekturen. Prozessdisziplin-Option 3 implementiert (Evidence-Pflichtfeld + Validierung + 10 Tests). Scoring-Methodik-Doku für Web erstellt.
+- Nächster Schritt: Option-3-Änderungen committen (Evidence-Pflichtfeld + Doku). Danach Web-Frontend Tasks 8–10 (separates Repo `CrucibleMark-Web`).
+- Offen/Risiko: keine
+
+---
+
+# Active Context
+## Aktueller Status (2026-07-14, Session 65 — v5.1 Incapable-Klassifikation-Fix) [ARCHIVIERT — superseded by commit]
 
 ### Verifizierter Real-Zustand (Git + Suite)
 - **Git:** Working Tree uncommitted — v5.1.0-Implementierung (2 Card-Fixes + Code-Änderungen + 4 neue Tests).

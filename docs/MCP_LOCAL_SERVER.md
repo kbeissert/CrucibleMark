@@ -1,5 +1,7 @@
 # Lokaler MCP-Webserver (Rig Setup)
 
+**Stand: v5.1.0 · 2026-07-14**
+
 Dieser MCP-Server laeuft lokal auf deinem Rechner und stellt Web-Recherche-Tools fuer lokale Modelle bereit.
 
 > **Hinweis:** CrucibleMark betreibt **zwei** unabhaengige MCP-Server mit unterschiedlichen Aufgaben. Dieser Rig-Server (`scripts/mcp/local_rig_server.py`, STDIO-Protokoll) versorgt lokale Modelle im Editor-Workflow (z.B. Cline) mit Web-Tools. Der Benchmark-MCP-Server (`cruciblemark-mcp/server.py`, HTTP JSON-RPC 2.0) versorgt das `tooluse`-Benchmark-Modul mit reproduzierbaren Tool-Calls. Siehe `cruciblemark-mcp/README.md` fuer den Benchmark-Server.

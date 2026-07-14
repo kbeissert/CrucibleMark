@@ -1,5 +1,7 @@
 # Modellklassifizierung & Badge-System
 
+**Stand: v5.1.0 · 2026-07-14**
+
 **Zielgruppe:** Alle, die verstehen wollen, wie CrucibleMark Modelle klassifiziert und bewertet.
 
 **Inhalt:**

@@ -1,5 +1,7 @@
 # CrucibleMark: System-Architektur
 
+**Stand: v5.1.0 · 2026-07-14**
+
 **Zielgruppe:** Engineers, die den Framework-Core verstehen oder erweitern wollen.
 
 **Inhalt:**
@@ -294,7 +296,7 @@ Alle Provider-Connectors in `utils/providers/` extrahieren seit v4.10.1 konsiste
 - **Google Gemini:** `thoughts_token_count` ist kumulativ — letzter Chunk hält den finalen Wert (nicht addieren).
 - **Ollama:** Keine separate `reasoning_tokens`-API — `eval_count` wird als Reasoning-Count verwendet wenn Thinking erkannt wurde (sonst Output-Token-Count).
 - **Groq/xAI:** Reasoning-Unterstützung in `usage` prüfen — `completion_tokens_details.reasoning_tokens` ist OpenAI-kompatibel und verfügbar.
-- **Cohere (ab v4.10.8):** ToolUse-Modul nutzt Cohere-native `tools`-API statt Prompt-basierte JSON-Schemas. Reasoning-Modelle (`command-a-plus`, `command-a-reasoning`) werden über `_is_cohere_reasoning_model()` erkannt (Substring-Match). `thinking: {"type": "disabled"}` bei Native Tools verhindert 422. `command-a-plus` hat persistente 500er bei Benchmark-Prompts (MoE-Instabilität) — `supports_tool_use=false`.
+- **Cohere (ab v4.10.8):** ToolUse-Modul nutzt Cohere-native `tools`-API statt Prompt-basierte JSON-Schemas. Reasoning-Modelle (`command-a-plus`, `command-a-reasoning`) werden über `_is_cohere_reasoning_model()` erkannt (Substring-Match). `thinking: {"type": "disabled"}` bei Native Tools verhindert 422. `command-a-plus` hat persistente 500er bei Benchmark-Prompts (MoE-Instabilität) — `supports_tool_use=false`. Implementierungsdetails: [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md#cohere-native-tooluse-ab-v4108).
 
 **Globaler Token-Fallback-Wrapper:**
 Das Framework implementiert einen robusten Ansatz zur Bewältigung harter Output-Token-Limits, zentral im `BaseProviderClient` über `_execute_with_token_fallback`.

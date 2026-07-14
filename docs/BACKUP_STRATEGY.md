@@ -1,5 +1,7 @@
 # CrucibleMark: Daten-Retention & Backup-Strategie
 
+**Stand: v5.1.0 · 2026-07-14**
+
 **Zielgruppe:** Alle, die verstehen wollen, wie CrucibleMark mit Daten umgeht.
 
 **Inhalt:**
@@ -23,17 +25,7 @@ Das **Live-System** (`benchmark_scores/*.csv`) braucht keine Historie. Es brauch
 
 ### Warum diese Unterscheidung wichtig ist
 
-**Static Weights:**
-
-- Lokale Modelle (z. B. `llama3:8b-q4_K_M`) sind statische Dateien.
-- Ihre Performance ändert sich nicht über die Zeit.
-
-**Locked APIs:**
-
-- Kommerzielle Modelle sind an spezifische Versionen gepinnt (z. B. `gpt-4-0613`).
-- Das gewährleistet Reproduzierbarkeit.
-
-Redundante historische Daten im aktiven Workspace blähen das System auf. Für den primären Use Case (Modell A vs. Modell B vergleichen) bieten sie keinen Mehrwert.
+Lokale Modelle sind statisch — ihre Performance ändert sich über die Zeit nicht. Kommerzielle Modelle sind an spezifische Versionen gebunden (etwa `gpt-4-0613`), was Reproduzierbarkeit sicherstellt. Redundante historische Daten im aktiven Workspace blähen das System auf und bieten für den primären Use Case (Modell A vs. Modell B vergleichen) keinen Mehrwert.
 
 ---
 

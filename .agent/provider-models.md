@@ -224,7 +224,9 @@ Prompt-basierte JSON-Tool-Schemas im System-Prompt kollidieren mit Cohere's Reas
 
 ### Cohere `command-a-plus` MoE-Instabilität
 
-`command-a-plus-05-2026` (Cohere's erstes MoE-Modell, 218B/25B aktiv) zeigt persistente HTTP 500 bei Benchmark-System-Prompts + nativen Tools. Einfache Prompts funktionieren. `thinking: disabled` hilft nicht. Serverseitiger Bug — `supports_tool_use=false` bis Cohere den Bug behebt (Stand 2026-06).
+`command-a-plus-05-2026` (Cohere's erstes MoE-Modell, 218B/25B aktiv) zeigt persistente HTTP 500 bei Benchmark-System-Prompts + nativen Tools. Einfache Prompts funktionieren. `thinking: disabled` hilft nicht. Serverseitiger Bug.
+
+**v5.1-Korrektur:** `supports_tool_use` wurde von `false` auf `true` korrigiert. Command A+ ist explizit für Tool-Use/Agentic gebaut (`use_case_primary: "agentic"`). Das Modell WURDE getestet (6 error-Rows) — "getestet und durchgefallen" ist kein Capability-Mangel, sondern ein Provider-Bug. Ein `false`-Flag hätte dem Modell einen unverdienten Coverage-Exempt gewährt.
 
 ## OpenRouter Quirks
 
@@ -275,6 +277,28 @@ Recovery: alle betroffenen Cards per Backup-Recovery + Flatten-Script bereinigen
 ### Card-Template optional vs required
 
 Felder mit Beschreibung "null wenn X" müssen `required: false` sein — `is_unknown_sentinel(None)` returned `True`, also wird `null` bei `required: true` als Fehler gewertet. Betroffene Felder (Session 25): `params_total_b`, `params_active_b`, `knowledge_cutoff`, `license_url`, `input_price_per_1m`, `output_price_per_1m`.
+
+### `supports_tool_use_evidence` — Pflichtfeld bei `supports_tool_use: false` (v5.1)
+
+Seit v5.0 ist `supports_tool_use` **scoring-relevant**: ein `false`-Wert klassifiziert ein Modell als "incapable" und gewährt einen Coverage-Exempt (kein Malus für fehlende ToolUse-Daten). Ein falsches `false` bei einem fähigen, aber ungetesteten Modell ist ein Schlupfloch — unverdienter Score-Bonus.
+
+**Pflicht:** Jede Card mit `supports_tool_use: false` MUSS ein `supports_tool_use_evidence`-Feld enthalten (nicht-leerer String). Analog zu `thinking_probe_evidence` — eine kurze Begründung, WARUM das Modell Tool-Use nicht unterstützt, mit Verifizierungsquelle.
+
+Cards mit `supports_tool_use: true`, `"untested"`, `null` oder fehlendem Feld benötigen KEIN Evidence.
+
+**Validierung:** `verify_model_cards.py` (`_check_supports_tool_use_evidence`) + pytest `tests/test_model_cards_tool_use_evidence.py`. Beides läuft in `make validate` / CI.
+
+**Beispiel (DeepSeek R1 Distill Qwen 32B):**
+```json
+"supports_tool_use": false,
+"supports_tool_use_evidence": "R1-Distill: reines Reasoning-FT auf Qwen2.5-Base, kein Tool-Use-Chat-Template im Distill trainiert."
+```
+
+**Entscheidungsleitfaden für neue Cards:**
+- Modell kann Tool-Use (Function Calling, MCP, etc.) → `true`
+- Modell wurde noch nicht auf Tool-Use getestet → `"untested"` (NICHT `false`)
+- Modell ist strukturell unfähig (kein Tool-Use-Chat-Template, Reasoning-only-Distill) → `false` + `supports_tool_use_evidence` mit Begründung
+- "Provider-API ist instabil, aber das Modell kann Tools" → `true` (Provider-Bug ≠ Capability-Mangel, siehe Command A+ v5.1-Korrektur)
 
 ### `--card all`
 

@@ -1,5 +1,7 @@
 # CrucibleMark: Maintenance & Fehlerbehebungen
 
+> **Interner Audit-Trail.** Diese Datei dokumentiert Engineering-Sessions bis v4.10.0 (2026-06-18) als historischen Audit-Trail. Für kompakte Release-Notes ab v4.10.1 siehe [CHANGELOG.md](../CHANGELOG.md) im Projekt-Root. Nicht Teil der öffentlichen Dokumentation.
+
 **Zielgruppe:** Entwickler, die Änderungen am Scoring-System oder der Architektur nachvollziehen wollen.
 **Inhalt:** Changelog-Einträge für Bugfixes, Architektur-Entscheidungen und Verhaltensänderungen
 

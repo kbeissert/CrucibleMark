@@ -5,6 +5,16 @@
 
 ## Abgeschlossen
 
+### Striktere Incapable-Klassifikation + Prozessdisziplin (v5.1.0 – 14.07.26, Session 65)
+
+Coverage-Malus greift jetzt korrekt bei Modellen, die komplette Module nicht durchlaufen haben. `supports_tool_use: false` wurde als "incapable" (exempt) klassifiziert, selbst wenn das Modell getestet wurde (error-Rows). Fix: striktere Logik + Card-Korrekturen + Evidence-Pflichtfeld für `false`-Cards.
+
+- [x] Card-Fixes: Command A+ und GPT-OSS 20B `supports_tool_use: false → true` (getestet, durchgefallen ≠ incapable).
+- [x] `_classify_module_status`: `attempted_set` aus `df_all` — incapable+error-Rows → "missing" (Malus), nicht "incapable" (exempt).
+- [x] `_apply_coverage_malus` + `_expected_assets_for_model`: `df_all`/`attempted_canonical_cats` Parameter.
+- [x] `supports_tool_use_evidence` Pflichtfeld für `false`-Cards + Validierungs-Check + 10 Tests.
+- [x] Scoring-Methodik-Doku für Web-Veröffentlichung (`docs/SCORING_METHODOLOGY_WEB.md`).
+
 ### Framework-Refactoring (Sektion A–M) + Ruff 0-Violations (v4.10.18 – 11.07.26, Session 59)
 
 24 Commits nach v4.10.17 — systematisches Refactoring des Framework-Codes gegen die Architektur-Regeln. Verhaltenserhaltend — keine Änderungen an Scoring/Token-Budget/Provider-Logik.

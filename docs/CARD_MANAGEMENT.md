@@ -1,5 +1,7 @@
 # CrucibleMark: Card-Management
 
+**Stand: v5.1.0 · 2026-07-14**
+
 **Zielgruppe:** Entwickler, die Model- oder Provider-Cards erstellen, prüfen oder mit dem Template synchronisieren wollen.
 
 **Inhalt:**
@@ -159,15 +161,12 @@ Vision-Aufgaben optimiert ist. Andernfalls `Vision-Capable` verwenden.
 
 ### Workflow bei neuen Workarounds
 
-Wenn du einen Workaround brauchst (z.B. ein Modell, das in keine
-bestehende Kategorie passt):
+Wenn ein Workaround nötig wird (etwa ein Modell, das in keine bestehende Kategorie passt):
 
 1. **Niemals** einen neuen String in die Karten-Datei schreiben.
-2. Stattdessen prüfen, ob die Taxonomie (`config/classification_taxonomy.json`)
-   erweitert werden muss.
+2. Stattdessen prüfen, ob die Taxonomie (`config/classification_taxonomy.json`) erweitert werden muss.
 3. Erweiterung in einem separaten Commit mit Begründung.
-4. Template-Beschreibung in `config/card_template_model.yaml` synchron
-   halten — der Test `TestTemplateTaxonomySync` schlägt sonst Alarm.
+4. Template-Beschreibung in `config/card_template_model.yaml` synchron halten — der Test `TestTemplateTaxonomySync` schlägt sonst Alarm.
 
 ---
 

@@ -46,6 +46,7 @@
     "text"
   ],
   "supports_tool_use": false,
+  "supports_tool_use_evidence": "R1-Distill: reines Reasoning-FT auf Qwen2.5-Base, kein Tool-Use-Chat-Template im Distill trainiert. Chain-of-Thought-Output via <think>-Tags ist integraler Generierungsbestandteil, Function-Calling-Format nicht unterstützt. Verifiziert via DeepSeek-R1 Model Card und Chat-Template-Inspektion.",
   "tooluse_recommendation": null,
   "temperature": 0.6,
   "system_prompt_override": null,

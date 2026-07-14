@@ -1,7 +1,13 @@
 # Scoring-Methodik
 
+**Stand: v5.1.0 · 2026-07-14**
+
 **Zielgruppe:** Entwickler und technisch versierte Nutzer, die verstehen wollen, wie CrucibleMark Scores berechnet und Modelle bewertet.
-**Inhalt:** Hybrid-Scoring-Architektur (Regex, Embeddings, LLM Judge), Modulgewichtung & Total Score, Leaderboard-Tiers, Token-Budget-System, Hard Constraints, LLM-Judge-Pipeline
+**Inhalt:** Hybrid-Scoring-Architektur (Regex, Embeddings, LLM Judge), Modulgewichtung und Total Score, Leaderboard-Tiers, Token-Budget-System, Hard Constraints, LLM-Judge-Pipeline.
+
+> **Hinweis:** Die Scoring-Baseline wurde am 2026-03-15 eingefroren (nach Token-Limit-Kalibrierung mit kaskadierenden Fallbacks 8000/4000/2000 und Re-Judging via Claude/Mistral/Gemini, Haiku-4 Judge). Spätere Ergänzungen (Token-Budget-System v3.4.0, Modulgewichtung v3.4.3, Coverage-Scoring v5.0, Incapable-Verschärfung v5.1) sind abwärtskompatibel.
+>
+> **Begleitdokument für Endnutzer:** Die Web-Variante dieser Methodik unter [SCORING_METHODOLOGY_WEB.md](SCORING_METHODOLOGY_WEB.md) beschreibt dieselbe Logik in konzentrierter Form, ohne Implementierungsdetails.
 
 > **Hinweis:** Die Scoring-Baseline wurde am 2026-03-15 eingefroren (nach Token-Limit-Kalibrierung mit kaskadierenden Fallbacks 8000/4000/2000 und Re-Judging via Claude/Mistral/Gemini, Haiku-4 Judge). Spätere Ergänzungen (Token-Budget-System v3.4.0, Modulgewichtung v3.4.3) sind abwärtskompatibel.
 
@@ -166,21 +172,21 @@ Kombiniert ergibt sich: **Token-hungrige Modelle sind bei API-Nutzung teurer**, 
 
 ---
 
-## Leaderboard-Tiers & Bewertungsmetrik
+## Leaderboard-Tiers und Bewertungsmetrik
 
-Um Noteninflation entgegenzuwirken und den „Universalien-Malus" korrekt abzubilden, nutzt CrucibleMark ein strenges, an angelsächsische und universitäre Notensysteme angelehntes Tiersystem mit asymmetrischen Leistungsstufen.
+Um Noteninflation entgegenzuwirken und den Generalisten-Vorteil korrekt abzubilden, nutzt CrucibleMark ein strenges, an angelsächsische und universitäre Notensysteme angelehntes Tiersystem.
 
-Über sechs bis sieben grundverschiedene Disziplinen (Coding, UX, Cultural, Logik u. a.) zeitgleich High-Scores zu erzielen, ist ungleich schwerer als in einem isolierten Bereich. Daher liegen die Schwellenwerte für holistische Exzellenz bewusst hoch.
+Gleichzeitig hohe Scores in sechs bis sieben grundverschiedenen Disziplinen (Coding, UX, Cultural, Logik u. a.) zu erzielen, ist ungleich schwerer als in einem isolierten Bereich. Die Schwellenwerte für holistische Exzellenz liegen daher bewusst hoch.
 
-| Tier | Schwelle | Bedeutung & Akademisches Äquivalent |
-| ------------ | --------- | ------------------------------------ |
-| 💎 **Platinum** | **≥ 95 %** | **SOTA Elite (A+ / Perfektion).** Fast unerreichbare „Hall of Fame" für Modelle, die fehlerfrei quer durch alle Module agieren. Hält den Benchmark langfristig „future-proof". |
-| 🏆 **Gold** | **≥ 80 %** | **Excellent (A).** Herausragende, verlässliche Modelle. Erfordert konstante Top-Leistung. |
-| 🥈 **Silver** | **≥ 65 %** | **Good / Adequate (B).** Sehr solide Basis und starkes Expertenlevel. Auch SOTA-Modelle fallen in den Silver-Rang, wenn sie in ein bis zwei Teildisziplinen schwächeln. |
-| 🥉 **Bronze** | **≥ 50 %** | **Acceptable (C).** Die harte Bestehensgrenze. Akzeptable Leistung mit klaren Einschränkungen. |
-| ⚖️ **Standard** | **< 50 %** | **Standard/Fail (F).** Suboptimale Leistung, ungeeignet für komplexe Agenten-Aufgaben. |
+| Tier | Schwelle | Bedeutung |
+|---|---|---|
+| 💎 **Platinum** | **≥ 95 %** | **SOTA Elite.** Nahezu perfekte Gesamtleistung über alle Module. Setzt den Maßstab, an dem sich künftige Releases messen lassen. |
+| 🏆 **Gold** | **≥ 80 %** | **Exzellent.** Herausragende, verlässliche Modelle. Erfordert konstante Top-Leistung. |
+| 🥈 **Silver** | **≥ 65 %** | **Solide Basis.** Production-ready mit starker Gesamtleistung. Auch SOTA-Modelle fallen in diesen Rang, wenn sie in einer Teildisziplin schwächeln. |
+| 🥉 **Bronze** | **≥ 50 %** | **Akzeptabel.** Bestehensgrenze. Solide Grundleistung mit klaren Einschränkungen. |
+| ⚖️ **Standard** | **< 50 %** | **Eingeschränkt.** Suboptimale Leistung, ungeeignet für komplexe Agenten-Aufgaben. |
 
-*Konfiguration: Diese Grenzwerte sind zentral in der `benchmark_config.yaml` (`scoring_tiers`) parametrisiert und steuern nach dem „Prompt-as-Config"-Pattern automatisch die linguistische Bewertung des Meta-Reviewers.*
+*Konfiguration: Diese Grenzwerte stehen zentral in der `benchmark_config.yaml` (`scoring_tiers`) und steuern nach dem "Prompt-as-Config"-Pattern automatisch die linguistische Bewertung des Meta-Reviewers.*
 
 ---
 
@@ -189,9 +195,9 @@ Um Noteninflation entgegenzuwirken und den „Universalien-Malus" korrekt abzubi
 ### Evaluator-Rangliste
 
 ```text
-1. Claude Haiku 4 ⭐ (Strengster, Spread-Erzeuger)
-2. Gemini 2.5 Pro (Pragmatisch, Ceiling-Effekt)
-3. Claude Sonnet 4.6 (Detailliert)
+1. Claude Haiku 4 (strengste Bewertung, spreizt die Score-Verteilung am stärksten)
+2. Gemini 2.5 Pro (pragmatisch, neigt zu Deckeneffekt)
+3. Claude Sonnet 4.6 (detailliert)
 ```
 
 ### Modi
@@ -211,18 +217,21 @@ Um Noteninflation entgegenzuwirken und den „Universalien-Malus" korrekt abzubi
 
 ---
 
-## Task-Matrix & Gewichtung
+## Module und Asset-Verteilung
 
-| Gruppe | Tasks | Evaluator | Gewicht |
-| ----------------- | ----------- | ------------------ | ------- |
-| Code Quality | 5 Audits | Regex + Judge | **25 %** |
-| UX Writing | 5 Microcopy | Judge + Patterns | **15 %** |
-| Documentation | 5 Docs | Judge + Completeness | **20 %** |
-| Content Transf. | 6 Scripts | Judge + Embeddings | **20 %** |
-| Cultural Intel. | 5 Idioms | Judge + Accuracy | **10 %** |
-| Reasoning | 11 Logic | Judge + Verification | **10 %** |
+Die Modulgewichtung folgt seit v3.4.3 dem selbstnormalisierenden `module_weight`-System aus [SCORING_METHODOLOGY_WEB.md](SCORING_METHODOLOGY_WEB.md). Die folgende Tabelle zeigt die Verteilung von Evaluator und Asset-Anzahl pro Modul — nicht den prozentualen Anteil am Total Score (der über `module_weight` in der jeweiligen Modul-`config.yaml` konfiguriert wird).
 
-**CLI:** Regex-only (Batch-Modus)
+| Gruppe | Assets | Evaluator | `module_weight` |
+|---|---|---|---|
+| Code Quality | 5 Audits | Regex + Judge | 1.0 |
+| UX Writing | 5 Microcopy | Judge + Patterns | 1.0 |
+| Documentation | 5 Docs | Judge + Completeness | 1.0 |
+| Content Transformation | 6 Scripts | Judge + Embeddings | 1.0 |
+| Cultural Intelligence | 5 Idioms | Judge + Accuracy | 1.0 |
+| Reasoning | 11 Logic | Judge + Verification | 1.0 |
+| CLI Benchmark | 4 Tasks | Regex-only (Batch) | 0.5 (Supplement) |
+
+Historische Prozentverteilungen (Stand vor v3.4.3) sind im CHANGELOG archiviert.
 
 ---
 
@@ -486,24 +495,17 @@ tool_use:
 ## v1.0 Fix-Historie
 
 ```text
-Pre-v1.0: 2048-Limit → Video-Scripts abgeschnitten
-Fix: Kaskadierend + Haiku-4 Rejudging
-Impact: Claude-Vorsprung -4-8%, robust
+Pre-v1.0: 2048-Token-Limit schnitt Video-Scripts ab.
+Fix: Kaskadierendes Fallback plus Haiku-4-Rejudging.
+Auswirkung: Claude-Vorsprung -4 bis -8 %, robustere Ergebnisse.
 ```
 
 ## Versionshistorie
 
-```text
-v1.0 (2026-03-15): Token-Fix, Haiku Judge ✅
-v3.4.0 (2026-04-08): Token-Budget-System (max_tokens API-Cap), Verbosity-Diagnostik in Audit-Logs und Meta-Reviews ✅
-v3.4.2 (2026-04-09): Vollständige Preis-Datenbasis in cost_limits.yaml; LLM Judge Avg als ★-Format im Leaderboard ✅
-v3.4.3 (2026-04-10): module_weight-System — selbstnormierende Modulgewichtung entkoppelt Total Score von Asset-Anzahl; CLI-Modul als Supplement (0.5) ✅
-v3.5.7 (2026-04-23): SSoT resolve_token_budget(), gemini-2.5 Reasoning-Trigger, Judge-Verbosity-Penalty für Reasoning-Modelle, Refusal-Dokumentationsfelder ✅
-v3.7.5 (2026-05-22): Pricing SSoT Migration — Preise von cost_limits.yaml in Model Cards verlagert (input_price_per_1m / output_price_per_1m, per 1M Tokens). score_calculator.py und cost_tracker.py lesen Cards als primäre Preisquelle; cost_limits.yaml als Legacy-Fallback für Modelle ohne Card ✅
-v3.10.0 (2026-05-23): Tool-Use-Modul Launch — Zwei-Phasen-Scoring (P1 Tool Execution + P2 Synthesis), Hallucination Penalty, Sovereignty Gap, Fleet-Gruppen ✅
-v3.11.0 (2026-05-24): Golden Standard v1.2.0 — manuelle Referenzantworten + Bewertungsrubrik für tooluse001–003; P1-Content-Quality-Check für http_fetch-Assets; Kalibrierungsrunde 1 (12 Modelle) ✅
-v3.12.0 (2026-05-24): Phase-A-Assets (tooluse004 Tool Selection, tooluse005 URL Construction); parse_error_flag → retry_required; methodology_notes.py; P1-Ceiling 96.0 ✅
-v3.13.0 (2026-05-25): Phase-C tooluse006 (Multilingual Synthesis); phase2_rubric-Verdrahtung via rubric_override; config-first Halluzinations-Cap (scoring.yaml cap_hard=20); tool_result_ignored-Flag (content_usable=True + state=B2) ✅
-v3.14.0 (2026-05-25): anthropic.py system-Kwarg-Fix (Silent Drop → alle Anthropic-Modelle retry_required=false); tooluse003 Rubrik-False-Positive behoben; unified_runner.py Token-Tracking Multi-Call-Fix ✅
-v3.15.0 (2026-05-25): Probe-Run 5 Modelle live (mode=live, Tavily); cost_usd="local" für open-weights Deployment-Typ; Leaderboard 11 Modelle; PRODUCTION: gpt-5-mini (76.5%), grok-4-fast (74.2%) ✅
-```
+Die vollständige Versionshistorie der Scoring-Methodik steht in [CHANGELOG.md](../CHANGELOG.md). Kurzfassung der jüngsten Releases:
+
+- **v5.1.0 (2026-07-14)** — Striktere Incapable-Klassifikation. Coverage-Malus greift jetzt auch bei getesteten Modellen mit Fehlversuchen.
+- **v5.0.0 (2026-07-13)** — Generalized Coverage Scoring plus ToolUse als vollwertiges achtes Scoring-Modul (`module_weight: 1.0`). Coverage-aware Scoring-Formel mit sechs Status-Klassen (present, missing, unknown, incapable, rolling_out, not_deployed).
+- **v4.10.16 (2026-07-10)** — Web-Export-Contract-Hardening, Slug-SSoT, normalize_pending-Sentinel-Erweiterung.
+- **v4.10.12 (2026-06-29)** — Web-Export Typ-Konsistenz, Review-Prosa-Vertrag, Token-Verbrauch im Leaderboard, audit_log_count-Semantik.
+- **v3.10.0 (2026-05-23)** — Tool-Use-Modul-Launch mit Zwei-Phasen-Scoring (P1 Tool Execution, P2 Synthesis) und Halluzinations-Cap.

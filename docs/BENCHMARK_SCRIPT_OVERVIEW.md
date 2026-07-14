@@ -1,6 +1,8 @@
 # Benchmark Script Overview
 
-Diese Uebersicht zeigt die Orchestrierung zwischen:
+**Stand: v5.1.0 · 2026-07-14**
+
+Diese Übersicht zeigt die Orchestrierung zwischen:
 - Standard Benchmark Runner
 - den 7 Kernmodulen
 - Political Compass
