@@ -17,25 +17,23 @@
   "params_active_b": 27.8,
   "context_window_k": 262,
   "knowledge_cutoff": "2025-12",
-  "summary": "Qwen 3.6 27B ist Alibabas dichtes Open-Weights-Modell, veröffentlicht am 22. April 2026, das laut Alibaba sogar sein größeres MoE-Geschwistermodell (35B-A3B) bei Coding-, Agent- und Vision-Benchmarks übertrifft. Die Architektur nutzt hybride Attention (Gated-DeltaNet-Linear-Attention kombiniert mit klassischer Attention) und unterstützt native Multi-Token-Prediction (MTP) für spekulatives Decoding. Diese Variante ist eine NVFP4-Quantisierung (NVIDIA ModelOpt, W4A16 bei MLP-Linears, FP8 für Attention und KV-Cache), die auf einer einzelnen Blackwell-GPU (B200/B300/GB10 DGX Spark) bei nahezu verlustfreier Genauigkeit gegenüber der FP8-Baseline läuft. Das Modell unterstützt nativ 262.144 Tokens Kontext, per YaRN erweiterbar auf über 1 Million Tokens.",
+  "summary": "Qwen 3.6 27B ist Alibabas dichtes Open-Weights-Modell mit 27,8 Mrd. aktiven Parametern, das laut Hersteller das eigene MoE-Geschwistermodell 35B-A3B in Coding-, Agent- und Vision-Tests übertrifft. Veröffentlicht am 22. April 2026 unter Apache 2.0 für lokalen Betrieb, kombiniert die Architektur hybride Attention mit nativer Multi-Token-Prediction für spürbaren Durchsatz.",
   "strengths": [
-    "Übertrifft laut Alibaba das eigene, größere MoE-Modell Qwen3.6-35B-A3B in Coding-, Agent- und Vision-Benchmarks trotz geringerer Gesamtparameterzahl.",
-    "Native Multi-Token-Prediction (MTP) ermöglicht spekulatives Decoding mit 1,4-2,2x höherem Durchsatz ohne Genauigkeitsverlust.",
-    "NVFP4-Quantisierung (NVIDIA ModelOpt) komprimiert die Gewichte auf ca. 22 GB und ermöglicht Betrieb auf einer einzelnen Blackwell-GPU bei nahezu verlustfreier Genauigkeit gegenüber FP8.",
-    "Natives 262.144-Token-Kontextfenster, per YaRN-Skalierung auf über 1 Million Tokens erweiterbar.",
-    "Multimodale Fähigkeiten (Text, Bild, Video) durch integrierten Qwen3-VL-Vision-Tower.",
-    "In der Praxis gemessene Durchsätze von bis zu 190 Tokens/Sekunde bei MTP-Spekulation auf Dual-Blackwell-Setups.",
-    "Vollständig Open-Source unter permissiver Apache-2.0-Lizenz, uneingeschränkte kommerzielle Nutzung."
+    "Benchmark-Stärke: Übertrifft laut Alibaba das größere MoE-Geschwister in Coding und Vision.",
+    "Multi-Token-Prediction: Spekulatives Decoding für mehr Durchsatz ohne Genauigkeitsverlust.",
+    "NVFP4-Quantisierung: Kompakte FP4-Variante für ressourcenschonende Inferenz nahe FP8.",
+    "Kontextfenster: Nativ 262.144 Tokens, per Skalierung auf über eine Million erweiterbar.",
+    "Multimodalität: Verarbeitet Text, Bild und Video über integrierten Vision-Tower.",
+    "Lizenz: Apache 2.0 mit offenen Gewichten, uneingeschränkte kommerzielle Nutzung."
   ],
   "known_limitations": [
-    "Erfordert aktuelle vLLM-Versionen (>= 0.17.0, teils Nightly-Build) mit ModelOpt-NVFP4-Unterstützung; ältere Inferenz-Stacks können das Format nicht korrekt laden.",
-    "NVFP4-Quantisierung kann bei sehr langen Agentic-Sessions in Einzelfällen gegenüber FP8 in der zweiten Hälfte einer Aufgabe degradieren (in Community-Tests beobachtet, FP8 lief in diesem Fall stabiler durch).",
-    "Vision-Tower und MTP-Head müssen bei Community-Quantisierungen korrekt von der Quantisierung ausgeschlossen werden (bf16 belassen) – fehlerhafte Bakes können zu 0% Spec-Decode-Acceptance führen.",
-    "Wie alle LLMs kann das Modell halluzinieren oder faktisch falsche Informationen generieren.",
-    "Die Trainingsdaten sind nicht vollständig offengelegt, was zu potenziellen, nicht dokumentierten Verzerrungen (Bias) führen kann.",
-    "LMCache-Integration für Prefix-Caching-Persistenz war zum Zeitpunkt der Recherche noch nicht unterstützt."
+    "Inferenz-Stack: NVFP4 braucht aktuelle Engines; ältere Stacks laden das Format nicht.",
+    "Quantisierungs-Risiko: FP4 kann in langen Sessions minimal gegenüber FP8 degradieren.",
+    "Vision-Tower: Bei Community-Quantisierungen Vision- und MTP-Köpfe ausschließen.",
+    "Halluzination: Trainingsdaten nicht offen, Fakten extern prüfen.",
+    "Prefix-Caching: Persistenz-Cache zum Recherchezeitpunkt nicht ausgereift."
   ],
-  "judge_context_hint": "Qwen 3.6 27B NVFP4 ist Alibabas dichtes Coding-/Agentic-Modell mit hybrider Attention, nativer MTP-Spekulation und 262K-Kontext (YaRN-erweiterbar auf 1M). NVFP4-Quantisierung für Blackwell-GPUs (DGX Spark) optimiert. Bei Coding-, Agent- und multimodalen Vision-Aufgaben stark gewichten. Thinking-Modus via reasoning-parser/enable_thinking-Flag steuerbar, Standardverhalten backend-abhängig prüfen.",
+  "judge_context_hint": "Qwen 3.6 27B ist Alibabas dichtes Modell mit 27,8 Milliarden Parametern, hybrider Attention und nativer MTP-Spekulation. Bei Coding-, Agent- und multimodalen Vision-Aufgaben stark gewichten, dabei beachten dass die MoE-Schwestervariante 35B-A3B laut Alibaba teils unterlegen ist. Thinking-Modus via enable_thinking-Flag steuerbar.",
   "architecture_tags": [
     "Reasoning",
     "Thinking",

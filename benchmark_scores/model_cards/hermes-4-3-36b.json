@@ -17,25 +17,24 @@
   "params_active_b": 36,
   "context_window_k": 32,
   "knowledge_cutoff": "2025-06",
-  "summary": "Hermes 4.3 36B ist Nous Researchs Hybrid-Reasoning-Modell auf Basis von ByteDance Seed-OSS-36B-Base, veröffentlicht am 3. Dezember 2025. Es ist das erste Produktionsmodell von Nous Research, das vollständig über das dezentrale Psyche-Trainingsnetzwerk post-trainiert wurde, und erreicht dabei nahezu die Leistung von Hermes 4 70B bei halbem Parameteraufwand. Das Modell unterstützt native Kontextlängen bis 512.000 Tokens, wird hier jedoch für den lokalen DGX-Spark-Einsatz praxisnah auf 32.000 Tokens konfiguriert, um den KV-Cache-Speicherbedarf im Unified Memory zu begrenzen. BF16-Präzision bietet maximale Qualität, mit integriertem Hybrid-Thinking (umschaltbar per System-Prompt) und nativer Tool-Use-Unterstützung im Hermes-XML-Format.",
+  "summary": "Hermes 4.3 36B ist Nous Researchs Fine-Tune auf ByteDance Seed-OSS-36B-Base, veröffentlicht am 3. Dezember 2025 unter durchgängiger Apache-2.0-Lizenz für lokalen Betrieb. Erstmals wurde das Modell vollständig über das dezentrale Psyche-Netzwerk trainiert, erreicht nahezu die Qualität des doppelt so großen Hermes 4 70B und liefert Antworten ohne strenge inhaltliche Filterung.",
   "strengths": [
-    "Nahezu gleichwertig mit dem doppelt so großen Hermes 4 70B bei deutlich geringerem Ressourcenbedarf.",
-    "Erstes vollständig über das dezentrale Psyche-Netzwerk trainiertes Produktionsmodell – die dezentral trainierte Version übertraf laut Nous Research sogar die zentral trainierte Referenzversion in Downstream-Tasks.",
-    "SOTA auf RefusalBench unter allen getesteten offenen und geschlossenen Modellen bei Steuerbarkeit und Nutzer-Alignment.",
-    "Native Unterstützung für bis zu 512.000 Tokens Kontext, praktikabel einsetzbar je nach verfügbarem VRAM/Unified Memory.",
-    "Integriertes, umschaltbares Hybrid-Thinking sowie natives Tool-Calling im Hermes-XML-Format, kompatibel mit gängigen Agent-Frameworks.",
-    "BF16-Präzision für maximale Qualität ohne Quantisierungsverlust bei ausreichend VRAM.",
-    "Apache-2.0-Lizenz durchgängig über die gesamte Modellkette (Basis und Fine-Tune), uneingeschränkte kommerzielle Nutzung."
+    "Effizienz: Nahezu gleichwertig mit dem doppelt so großen Hermes 4 70B.",
+    "Dezentrales Training: Erstes Produktionsmodell aus dem Psyche-Netzwerk.",
+    "Open Weights: Durchgängig Apache 2.0, uneingeschränkte kommerzielle Nutzung.",
+    "Hybrid-Thinking: Umschaltbarer Denkmodus ohne separate Modellvariante.",
+    "Tool-Tauglichkeit: Natives Tool-Calling im Hermes-XML-Format.",
+    "Kontextfenster: Nativ bis 512.000 Tokens, je nach Speicher einsetzbar.",
+    "BF16-Präzision: Volle Qualität ohne Quantisierungsverlust."
   ],
   "known_limitations": [
-    "Als reines Textmodell keine Verarbeitung von Bild-, Audio- oder Videodaten möglich.",
-    "BF16-Präzision erfordert deutlich mehr VRAM als quantisierte Varianten (GGUF, NVFP4/FP8), was Effizienz und Parallelbetrieb einschränkt.",
-    "Auf der DGX Spark (127,5 GB Unified Memory) nur im Solo-Betrieb ohne parallel laufende weitere Modelle praktikabel.",
-    "Volle 512K-Kontextnutzung würde einen Großteil des verfügbaren Unified-Memory-KV-Cache verbrauchen; die hier gewählte 32K-Konfiguration ist ein bewusster Praxis-Kompromiss, kein technisches Limit des Modells.",
-    "Mehrere Community-GGUF-Uploads wiesen initial fehlerhafte Chat-Template-Konfigurationen auf (falsches Tool-/Thinking-Advertising, falsche Stop-Sequenzen), korrigierte Uploads sind aber verfügbar.",
-    "Bewusst 'aligned to you' statt standardmäßig konservativ zensiertes Verhalten – geringere inhaltliche Filterung kann je nach Einsatzkontext unerwünschte Ausgaben ermöglichen."
+    "Modalität: Reines Textmodell ohne Bild, Audio oder Video.",
+    "Speicherbedarf: BF16 braucht deutlich mehr Speicher als quantisierte Varianten.",
+    "Solo-Betrieb: Volle Kontextlänge würde Großteil des Caches verbrauchen.",
+    "Community-Quants: Erste GGUF-Uploads hatten fehlerhafte Chat-Templates.",
+    "Alignment-Profil: Geringere inhaltliche Filterung, im sensiblen Einsatz prüfen."
   ],
-  "judge_context_hint": "Hermes 4.3 36B ist Nous Researchs dezentral über das Psyche-Netzwerk trainiertes Hybrid-Reasoning-Modell auf ByteDance-Seed-OSS-36B-Basis (Dense, Apache-2.0), das nahezu an Hermes 4 70B heranreicht. Bei Mathematik-, Code- und Logik-Reasoning, Steuerbarkeit/Alignment und Tool-Use stark gewichten. Thinking-Modus muss per System-Prompt aktiviert werden (Nous' deep-thinking-Prompt); bei deaktiviertem Modus antwortet das Modell direkt ohne Denk-Tags, das ist beabsichtigtes Hybrid-Verhalten. Native Kontextlänge bis 512K, hier praxisnah auf 32K konfiguriert.",
+  "judge_context_hint": "Hermes 4.3 36B ist Nous Researchs dezentral über das Psyche-Netzwerk trainierter Fine-Tune auf ByteDance Seed-OSS-36B-Base Dense mit Apache 2.0. Bei Mathematik-, Code- und Logik-Reasoning, Steuerbarkeit und Tool-Use stark gewichten, dabei beachten dass das Modell nahe an Hermes 4 70B heranreicht. Thinking-Modus muss per System-Prompt aktiviert werden — bei deaktiviertem Modus antwortet das Modell direkt ohne Denk-Tags, das ist beabsichtigtes Hybrid-Verhalten.",
   "architecture_tags": [
     "Reasoning",
     "Thinking",

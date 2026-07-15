@@ -17,25 +17,25 @@
   "params_active_b": 70,
   "context_window_k": 131,
   "knowledge_cutoff": "2023-12",
-  "summary": "Hermes 4 70B ist Nous Researchs offenes Hybrid-Reasoning-Modell auf Basis von Meta-Llama-3.1-70B, veröffentlicht am 26. August 2025. Das Modell unterstützt einen umschaltbaren Denkmodus mit expliziten <think></think>-Reasoning-Segmenten, die per System-Prompt oder API-Parameter (reasoning.enabled) aktiviert werden können. Trainiert auf rund 5 Mio. Post-Training-Samples (ca. 60 Mrd. effektive Tokens) über 192 NVIDIA B200 GPUs mit dem DataForge-Pipeline- und Atropos-Verifier-System, erreicht es laut Nous Research SOTA-Werte unter offenen Reasoning-Modellen bei Mathematik, Code, STEM, Logik und insbesondere bei reduzierten, neutral ausgerichteten Ablehnungsraten (RefusalBench: 57,1% vs. GPT-5: 11,34%). Diese Variante liegt als FP8-Quantisierung für effizienten vLLM-Betrieb vor, mit 131.072 Tokens Kontextfenster.",
+  "summary": "Hermes 4 70B ist Nous Researchs Fine-Tune von Meta-Llama-3.1-70B mit umschaltbarem Reasoning-Modus und offenen Gewichten für lokalen Betrieb. Veröffentlicht am 26. August 2025 unter der Llama 3.1 Community License, erreicht das Modell in Mathematik, Code und Logik Spitzenwerte unter offenen Reasoning-Modellen und liefert Antworten ohne starke inhaltliche Filterung.",
   "strengths": [
-    "Umschaltbarer Hybrid-Reasoning-Modus: explizite <think></think>-Segmente aktivierbar per System-Prompt oder reasoning.enabled-Parameter, ohne separate Modellvariante.",
-    "Herausragende Werte bei Ablehnungsraten/Steuerbarkeit: 57,1% auf RefusalBench (Reasoning-Modus), deutlich vor GPT-5 (11,34%) und Claude Sonnet 4 (17%).",
-    "Starke Reasoning-Benchmarks: 96,3% MATH-500, 81,9% AIME 24, deutliche Verbesserungen gegenüber Hermes 3 70B.",
-    "Length-Control-Training reduziert überlange Reasoning-Traces um bis zu 79% bei nur geringem Genauigkeitsverlust (4,7-12,7%).",
-    "Natives Function-Calling, JSON-Schema-Adhärenz und strukturierte Outputs, mit Hermes-spezifischen Tool-Parsern für vLLM und SGLang.",
-    "FP8-Quantisierung ermöglicht effizientere lokale Inferenz bei geringem Präzisionsverlust gegenüber BF16.",
-    "Breite Verfügbarkeit in BF16, FP8 und GGUF-Formaten für unterschiedliche Deployment-Szenarien."
+    "Hybrid-Reasoning: Umschaltbarer Denkmodus mit expliziten Reasoning-Segmenten.",
+    "Offene Gewichte: Lokal betreibbar, Llama 3.1 Community License.",
+    "Reasoning-Stärke: Spitzenwerte unter offenen Modellen in Mathe, Code und Logik.",
+    "Length-Control: Kürzere Reasoning-Traces bei geringem Genauigkeitsverlust.",
+    "Tool-Tauglichkeit: Function-Calling, JSON-Schema und strukturierte Outputs nativ.",
+    "FP8-Quantisierung: Kompakte Variante mit geringem Präzisionsverlust.",
+    "Format-Vielfalt: Verfügbar in BF16, FP8 und GGUF für verschiedene Setups."
   ],
   "known_limitations": [
-    "Unterliegt der Llama 3.1 Community License (nicht einer eigenen 'Nous Research License'), die kommerzielle Nutzung für Anbieter mit über 700 Mio. monatlich aktiven Nutzern einschränkt.",
-    "Kontextfenster liegt bei 131.072 Tokens, nicht bei den teils kolportierten 32K – für sehr lange Dokumente ggf. limitierend im Vergleich zu neueren 256K+-Modellen.",
-    "Als reines Textmodell keine Verarbeitung von Bild-, Audio- oder Videodaten möglich.",
-    "FP8-Quantisierung kann in seltenen Fällen zu minimalen Genauigkeitsverlusten oder Verhaltensänderungen gegenüber der ursprünglichen BF16-Version führen.",
-    "Bewusst 'broadly neutral' statt zensiert ausgerichtetes Alignment – geringere inhaltliche Filterung kann je nach Einsatzkontext unerwünschte Ausgaben ermöglichen.",
-    "Basis Llama-3.1-70B mit Wissensstand Ende 2023, relativ alter Cutoff für schnell wechselnde Themenfelder trotz neuerem Post-Training."
+    "Lizenz-Schwelle: Llama-3.1-Lizenz schränkt bei mehr als 700 Mio. monatlichen Nutzern ein.",
+    "Kontextfenster: 131.072 Tokens, kleiner als aktuelle 256K+-Modelle.",
+    "Modalität: Reines Textmodell ohne Bild, Audio oder Video.",
+    "Quantisierungs-Risiko: FP8 kann zu Verhaltensänderungen gegenüber BF16 führen.",
+    "Alignment-Profil: Geringere inhaltliche Filterung, im sensiblen Einsatz prüfen.",
+    "Wissensstand: Basis Llama-3.1-70B mit Cutoff Ende 2023."
   ],
-  "judge_context_hint": "Hermes 4 70B ist Nous Researchs Hybrid-Reasoning-Fine-Tune auf Llama-3.1-70B (Dense) mit umschaltbaren <think>-Reasoning-Segmenten, 131K-Kontext und starker Steuerbarkeit/reduzierten Refusal-Raten. Bei Mathematik-, Code-, STEM- und Logik-Reasoning sowie Instruction-Following und Tool-Use stark gewichten. Reasoning-Modus muss explizit aktiviert werden (system prompt oder reasoning.enabled) – bei deaktiviertem Modus antwortet das Modell direkt ohne Think-Tags, das ist kein Fehler sondern beabsichtigtes Hybrid-Verhalten.",
+  "judge_context_hint": "Hermes 4 70B ist Nous Researchs Hybrid-Reasoning-Fine-Tune auf Llama-3.1-70B Dense mit umschaltbaren <think>-Reasoning-Segmenten und 131K-Kontext. Bei Mathematik-, Code- und Logik-Aufgaben stark gewichten, ebenso bei Instruction-Following und Tool-Use. Reasoning-Modus muss explizit aktiviert werden (System-Prompt oder reasoning.enabled) — bei deaktiviertem Modus antwortet das Modell direkt ohne Think-Tags, das ist beabsichtigtes Hybrid-Verhalten.",
   "architecture_tags": [
     "Reasoning",
     "Thinking",
