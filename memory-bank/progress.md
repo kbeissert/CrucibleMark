@@ -1,6 +1,27 @@
 # Progress
 Letzte Releases + aktueller Stand.
 
+### 2026-07-15 (Session 66) — Hermes 4.3 36B (Seed-OSS) Integration [IN PROGRESS]
+
+**Auslöser:** Neues vLLM-Modell mit Dual-Profile-Support (Standard + Thinking) integrieren.
+
+**Geliefert:**
+- `provider_config.yaml`: Eintrag `hermes-4-3-36b` mit `config: Hermes4.3-36B`, `enable_thinking: true`.
+- Model Card erstellt: `benchmark_scores/model_cards/hermes-4-3-36b.json` (via `create_model_card.py`, manuell umbenannt — Script rejectet dots in IDs, daher `hermes-4-3-36b` statt `hermes-4.3-36b`).
+- Alle strukturellen Felder manuell gefüllt: CN/Jurisdiction (ByteDance/Seed-OSS), Nous Research Vendor, 36B Dense, BF16, vLLM, Apache-2.0, `dual_profile: true`, `context_window_k: 32`, `hardware_profile: dgx_spark`.
+- `card-research` erfolgreich (LLM füllte 5 Textfelder: summary, strengths, known_limitations, judge_context_hint, weights_provenance_risk_rationale).
+
+**Ausstehend:**
+- Thinking-Probe (benötigt vLLM-Server-Swap von Ornith → Hermes 4.3 36B).
+- `card_status` auf "complete" + `profile_verified: true` nach erfolgreicher Probe.
+
+**Nächster Schritt:**
+```bash
+ssh kay_beissert@gx10-b20a.local "~/ai/shared/scripts/vllm-stop"
+ssh kay_beissert@gx10-b20a.local "~/ai/shared/scripts/vllm-start --config Hermes4.3-36B"
+make probe-thinking MODEL=hermes-4-3-36b PROVIDER=vllm
+```
+
 ### 2026-07-14 (Session 65) — v5.1 Incapable-Klassifikation-Fix [DONE] v5.1.0
 
 **Auslöser:** Nutzer analysierte v5.0-Leaderboard: Coverage-Malus greift nicht bei Modellen, die komplette Module nicht durchlaufen haben. Command A+ (Tool Execution=0.0) auf Rank 62 trotz fehlendem ToolUse. 109/110 Modelle coverage_ratio=1.0. Diagnose: `supports_tool_use: false` wurde als "incapable" (exempt) klassifiziert, selbst wenn das Modell getestet wurde (6 error-Rows). Inversion des gewünschten Verhaltens: getestet+durchgefallen = exempt (belohnt), teilweise durchgefallen = Malus (bestraft).

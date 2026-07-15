@@ -473,11 +473,11 @@ providers:
       #   model_file: Qwable27B/Qwable-27b_Q4_K_M.gguf
       #   n_gpu_layers: 99
       #   enable_thinking: true
-      - id: qwable-3.6-35b-q5
-        name: Qwable 3.6 35B Q5_K_M (GGUF, Fable5-tune)
-        model_file: Qwable35b/Qwable-3.6-35b_q5_k_m.gguf
-        n_gpu_layers: 99
-        enable_thinking: true
+      # - id: qwable-3.6-35b-q5
+      #   name: Qwable 3.6 35B Q5_K_M (GGUF, Fable5-tune)
+      #   model_file: Qwable35b/Qwable-3.6-35b_q5_k_m.gguf
+      #   n_gpu_layers: 99
+      #   enable_thinking: true
 
       # ── Auskommentiert: nano-desktop-models (nicht auf Spark) ──
       # - id: gemma-3-12b-it-spark
@@ -826,7 +826,7 @@ providers:
       # Qwen 3.6 27B Dense — NVFP4 compressed-tensors, MTP, Thinking-Parser aktiv.
       # 32k Context (Sweet-Spot für DGX Spark bei 0.70 gpu-mem-util).
       # Sampling synchron mit Card: temperature=0.6, top_p=0.95, top_k=20.
-      - id: qwen3.6-27B
+      - id: qwen3_6-27b-nvfp4
         name: Qwen 3.6 27B NVFP4 (vLLM, Dense, MTP)
         config: Qwen3.6-27B
         max_tokens: 16384
@@ -834,6 +834,35 @@ providers:
         top_p: 0.95
         top_k: 20
         # repetition_penalty:  # Card: null — vLLM-Server-Default greift
+        enable_thinking: true
+
+      - id: qwen3_6-35b-a3b-nvfp4
+        name: Qwen 3.6 35B NVFP4 (vLLM, MoE, MTP)
+        config: Qwen3.6-35B-NVFP4
+        max_tokens: 16384
+        temperature: 1.0
+        top_p: 0.95
+        top_k: 20
+        enable_thinking: true
+
+      # Hermes 4 70B — FP8 compressed-tensors, Llama-3.1-Architektur, reasoning + tool-calling.
+      # Sampling synchron mit TOML: temperature=0.6, top_p=0.95, top_k=20.
+      - id: hermes-4-70b-fp8
+        name: Hermes 4 70B FP8 (vLLM, Llama-3.1, Dense)
+        config: Hermes4-70B
+        max_tokens: 16384
+        temperature: 0.6
+        top_p: 0.95
+        top_k: 20
+        enable_thinking: true
+
+      - id: hermes-4-3-36b
+        name: Hermes 4.3 36B (vLLM, Seed-OSS, Dense, BF16)
+        config: Hermes4.3-36B
+        max_tokens: 16384
+        temperature: 0.6
+        top_p: 0.95
+        top_k: 20
         enable_thinking: true
 
       # Weitere verfügbare TOMLs (per Auto-Discovery entdeckbar, nicht im Benchmark):
