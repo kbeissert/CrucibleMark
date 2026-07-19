@@ -149,6 +149,11 @@ def stop_vllm_provider_server(
         if stop_cmd in seen_cmds:
             continue
         seen_cmds.add(stop_cmd)
+        # Defense-in-Depth: vllm-stop verlangt --yes in nicht-interaktiven
+        # Umgebungen, sonst stiller Fehlschlag. Auto-Inject analog zum
+        # Connector (utils/providers/vllm_base.py:_server_stop_cmd).
+        if "vllm-stop" in stop_cmd and "--yes" not in stop_cmd:
+            stop_cmd = stop_cmd.rstrip() + " --yes"
         subprocess.run(stop_cmd, shell=True, check=False, capture_output=True)
 
     time.sleep(VLLM_STOP_SETTLE_SEC)

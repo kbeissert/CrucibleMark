@@ -179,6 +179,48 @@ def test_default_ready_timeout_is_600_seconds():
     assert DEFAULT_READY_TIMEOUT_SEC == 600  # noqa: PLR2004 — SSoT-Konstante ist genau dieser Wert
 
 
+# ---------------------------------------------------------------------------
+# server_stop_cmd: --yes Auto-Inject für nicht-interaktive Umgebungen
+# ---------------------------------------------------------------------------
+
+def test_server_stop_cmd_auto_injects_yes_for_vllm_stop(vllm_provider_config):
+    """vllm-stop ohne --yes wird automatisch mit --yes ergänzt.
+
+    Hintergrund: Das Remote-Skript verweigert in nicht-interaktiven
+    Umgebungen (``make benchmark-auto``, Cron) den Stop ohne explizite
+    Bestätigung — Exit != 0, Container bleibt laufen → Endlosschleife
+    im Connector.
+    """
+    vllm_provider_config["providers"]["local"]["vllm_spark"]["server_stop_cmd"] = (
+        "ssh -o BatchMode=yes kay_beissert@host vllm-stop"
+    )
+    client = VllmSparkClient(vllm_provider_config)
+    cmd = client._server_stop_cmd()
+    assert cmd.endswith("--yes")
+    assert "vllm-stop --yes" in cmd
+
+
+def test_server_stop_cmd_preserves_existing_yes_flag(vllm_provider_config):
+    """Bereits gesetztes --yes wird nicht doppelt angehängt."""
+    vllm_provider_config["providers"]["local"]["vllm_spark"]["server_stop_cmd"] = (
+        "ssh kay_beissert@host /home/user/ai/shared/scripts/vllm-stop --yes"
+    )
+    client = VllmSparkClient(vllm_provider_config)
+    cmd = client._server_stop_cmd()
+    assert cmd.count("--yes") == 1
+
+
+def test_server_stop_cmd_leaves_non_vllm_commands_alone(vllm_provider_config):
+    """Stop-Kommandos ohne vllm-stop bleiben unverändert (z. B. llama.cpp)."""
+    vllm_provider_config["providers"]["local"]["vllm_spark"]["server_stop_cmd"] = (
+        "pkill -f llama-server"
+    )
+    client = VllmSparkClient(vllm_provider_config)
+    cmd = client._server_stop_cmd()
+    assert cmd == "pkill -f llama-server"
+    assert "--yes" not in cmd
+
+
 def test_per_model_ready_timeout_overrides_provider_default(vllm_provider_config):
     """Per-Modell server_ready_timeout_sec überschreibt den Provider-Default."""
     vllm_provider_config["providers"]["local"]["vllm_spark"]["models"][0][
@@ -624,7 +666,7 @@ def test_active_config_cleared_on_stop_server():
     client._server_model_name = "ornith-1.0-35B-FP8"
 
     # subprocess-Aufrufe dürfen nicht durchkommen.
-    import unittest.mock as mock
+    from unittest import mock  # noqa: PLC0415
     with mock.patch("utils.providers.vllm_base.subprocess.run"), \
          mock.patch("utils.providers.vllm_base.subprocess.Popen"):
         client.stop_server()
@@ -665,3 +707,82 @@ def test_profile_switch_unhealthy_falls_back_to_cold_start(monkeypatch):
     assert result is True
     assert start_called["flag"] is True
     assert start_called["model"] == "ornith-1.0-35B-FP8-thinking"
+
+
+# ---------------------------------------------------------------------------
+# start_server Pfad 2c/3: Recursion-Cap wenn stop_server() fehlschlägt
+# ---------------------------------------------------------------------------
+
+def test_start_server_path_2c_aborts_when_stop_fails(monkeypatch, vllm_provider_config):
+    """Pfad 2c: Wenn ``stop_server()`` den Container nicht herunterfährt,
+    wird ``start_server()`` NICHT rekursiv aufgerufen (Endlosschleifen-Schutz).
+
+    Szenario: Server läuft mit anderem Modell (``detected != model_id``)
+    UND ``vllm-stop`` schlägt fehl (z. B. ohne ``--yes``). Vor dem Fix
+    rief Pfad 2c sich selbst rekursiv auf, bis zum Python-Recursion-Limit.
+
+    Trick: ``side_effect`` ruft die echte Methode einmal auf (count=1).
+    Jeder weitere Aufruf (Rekursion) wird durch AssertionError gefangen —
+    so sehen wir sofort, ob die Schutz-Logik greift.
+    """
+    from unittest import mock
+
+    client = VllmSparkClient(vllm_provider_config)
+
+    monkeypatch.setattr(client, "_probe_status", lambda: "healthy")
+    client._active_model = None  # Pfad 2 greift
+
+    monkeypatch.setattr(client, "_query_active_model", lambda: "Qwen3.6-35B-NVFP4")
+    monkeypatch.setattr(client, "_is_model_ready", lambda model: True)
+
+    # stop_server() wird aufgerufen, lässt den Container aber absichtlich
+    # am Leben (Probe danach meldet weiterhin "healthy" → Schutz greift).
+    monkeypatch.setattr(client, "stop_server", lambda: None)
+
+    original_start = VllmBaseClient.start_server
+    call_count = {"n": 0}
+
+    def side_effect(*args, **kwargs):
+        call_count["n"] += 1
+        if call_count["n"] > 1:
+            raise AssertionError(
+                f"start_server wurde rekursiv aufgerufen (count={call_count['n']}) — "
+                "Pfad 2c-Schutz hat nicht gegriffen."
+            )
+        return original_start(client, *args, **kwargs)
+
+    with mock.patch.object(client, "start_server", side_effect=side_effect):
+        result = client.start_server("qwen3_6-27b-nvfp4-thinking")
+
+    assert result is False, "Pfad 2c muss abbrechen, wenn der Container nicht stoppt"
+
+
+def test_start_server_path_3_aborts_when_stop_fails(monkeypatch, vllm_provider_config):
+    """Pfad 3: Analog zu Pfad 2c — wenn ``stop_server()`` fehlschlägt,
+    bricht der Connector ab statt zu rekursieren.
+    """
+    from unittest import mock
+
+    client = VllmSparkClient(vllm_provider_config)
+
+    monkeypatch.setattr(client, "_probe_status", lambda: "healthy")
+    client._active_model = "Qwen3.6-35B-NVFP4"  # Pfad 3 greift (anderes Modell)
+
+    monkeypatch.setattr(client, "stop_server", lambda: None)
+
+    original_start = VllmBaseClient.start_server
+    call_count = {"n": 0}
+
+    def side_effect(*args, **kwargs):
+        call_count["n"] += 1
+        if call_count["n"] > 1:
+            raise AssertionError(
+                f"Pfad 3: start_server wurde rekursiv aufgerufen "
+                f"(count={call_count['n']})."
+            )
+        return original_start(client, *args, **kwargs)
+
+    with mock.patch.object(client, "start_server", side_effect=side_effect):
+        result = client.start_server("qwen3_6-27b-nvfp4-thinking")
+
+    assert result is False

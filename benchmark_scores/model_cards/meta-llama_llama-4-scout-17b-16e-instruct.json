@@ -78,7 +78,7 @@
   "community": null,
   "tooluse_runs": {
     "meta-llama/llama-4-scout-17b-16e-instruct": {
-      "tested_at": "2026-07-12T22:29:11Z",
+      "tested_at": "2026-07-17T11:37:30Z",
       "score_p1": 35.0,
       "score_p2": 33.33
     }

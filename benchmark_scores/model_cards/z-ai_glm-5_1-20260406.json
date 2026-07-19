@@ -84,7 +84,7 @@
   "community": null,
   "tooluse_runs": {
     "z-ai/glm-5.1-20260406": {
-      "tested_at": "2026-07-12T22:29:44Z",
+      "tested_at": "2026-07-17T11:38:11Z",
       "score_p1": 90.0,
       "score_p2": 59.17
     }

@@ -745,7 +745,7 @@ providers:
       thinking_max_tokens: 32768
       # vllm-start/vllm-stop liegen unter ~/ai/shared/scripts/ (nicht im PATH).
       server_start_cmd: "ssh -o BatchMode=yes -o ConnectTimeout=10 -p 22 kay_beissert@gx10-b20a.local /home/kay_beissert/ai/shared/scripts/vllm-start"
-      server_stop_cmd: "ssh -o BatchMode=yes -o ConnectTimeout=10 -p 22 kay_beissert@gx10-b20a.local /home/kay_beissert/ai/shared/scripts/vllm-stop"
+      server_stop_cmd: "ssh -o BatchMode=yes -o ConnectTimeout=10 -p 22 kay_beissert@gx10-b20a.local /home/kay_beissert/ai/shared/scripts/vllm-stop --yes"
       toml_models_dir: "~/ai/shared/configs/vllm/models/"
       server_ready_timeout_sec: 600
       existing_server_ready_timeout_sec: 600

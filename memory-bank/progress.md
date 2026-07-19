@@ -1,6 +1,14 @@
 # Progress
 Letzte Releases + aktueller Stand.
 
+### 2026-07-19 (Session 67) — Web-Export-Verifikation [DONE]
+
+**Auftrag:** Web-Export auf fehlende Einträge prüfen.
+
+**Befund:** 92/92 Modelle in `web_export/raw/models/` — alle 5 vermeintlich "fehlenden" Modelle (qwen3_6-27b-nvfp4, qwen3_6-27b-nvfp4-thinking, qwen3_6-35b-a3b-nvfp4, qwen3_6-35b-a3b-nvfp4-thinking, grok-4.20-0309-reasoning) waren Artefakt eines unvollständigen Vorlaufs (108 statt 92).
+
+---
+
 ### 2026-07-15 (Session 66) — Hermes 4.3 36B (Seed-OSS) Integration [IN PROGRESS]
 
 **Auslöser:** Neues vLLM-Modell mit Dual-Profile-Support (Standard + Thinking) integrieren.

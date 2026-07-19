@@ -176,10 +176,22 @@ class VllmBaseClient(BaseProviderClient):
         )
 
     def _server_stop_cmd(self) -> str:
-        """Komplettes Stop-Kommando inkl. SSH-Wrapper."""
-        return os.path.expanduser(
+        """Komplettes Stop-Kommando inkl. SSH-Wrapper.
+
+        Defense-in-Depth: Wenn das Kommando ``vllm-stop`` aufruft, wird
+        ``--yes`` automatisch angehängt, sofern noch nicht vorhanden. Das
+        Remote-Script verweigert sonst in nicht-interaktiven Umgebungen
+        (Cron, Scripts, ``make benchmark-auto``) den Stop mit Exit != 0
+        und löst eine Endlosschleife in :meth:`start_server` Pfad 2c aus.
+        Die Config darf den Flag explizit setzen — er wird nicht doppelt
+        angehängt.
+        """
+        cmd = os.path.expanduser(
             self._provider_cfg().get("server_stop_cmd", "vllm-stop")
         )
+        if "vllm-stop" in cmd and "--yes" not in cmd:
+            cmd = cmd.rstrip() + " --yes"
+        return cmd
 
     def _server_root_url(self) -> str:
         """Base URL ohne /v1-Suffix, z. B. ``http://127.0.0.1:4300``."""
@@ -849,6 +861,15 @@ class VllmBaseClient(BaseProviderClient):
                 print(f"   ⚠️  {warning}")
                 self.stop_server()
                 time.sleep(2)
+                if self._probe_status() != "down":
+                    error = (
+                        f"vLLM-Server unter {self._base_url()} konnte nicht gestoppt werden "
+                        f"(Status nach stop_server(): {self._probe_status()}). "
+                        "Manueller Eingriff erforderlich — Benchmark wird beendet."
+                    )
+                    logger.error(error)
+                    print(f"   ❌ {error}")
+                    return False
                 return self.start_server(model_id)
 
             # Pfad 2d: detected=None UND Probe fehlgeschlagen → Server
@@ -871,6 +892,15 @@ class VllmBaseClient(BaseProviderClient):
             )
             self.stop_server()
             time.sleep(2)
+            if self._probe_status() != "down":
+                error = (
+                    f"vLLM-Server (Modell '{self._active_model}') konnte nicht gestoppt "
+                    f"werden (Status nach stop_server(): {self._probe_status()}). "
+                    "Manueller Eingriff erforderlich — Benchmark wird beendet."
+                )
+                logger.error(error)
+                print(f"   ❌ {error}")
+                return False
             return self.start_server(model_id)
 
         # Pfad 3.5: Proxy meldet "loading" (502) → Backend lädt noch, WARTEN statt neu starten!

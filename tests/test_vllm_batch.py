@@ -307,6 +307,54 @@ class TestStopVllmProviderServer:
         mock_run.assert_not_called()
         assert "server_stop_cmd" in caplog.text
 
+    def test_vllm_stop_auto_injects_yes_flag(self):
+        """prophylaktischer Stop injiziert --yes wenn vllm-stop ohne Flag.
+
+        Sonst stiller Fehlschlag in nicht-interaktiven Umgebungen
+        (``make benchmark-auto``), gefolgt von Endlosschleife im
+        Connector.
+        """
+        cfg = {
+            "providers": {
+                "local": {
+                    "vllm_spark": {
+                        "api_type": "vllm",
+                        "enabled": True,
+                        "server_stop_cmd": (
+                            "ssh -o BatchMode=yes kay_beissert@host "
+                            "/home/kay_beissert/ai/shared/scripts/vllm-stop"
+                        ),
+                    },
+                }
+            }
+        }
+        with patch("scripts.core.vllm_batch.subprocess.run") as mock_run, \
+             patch("scripts.core.vllm_batch.time.sleep"):
+            stop_vllm_provider_server(cfg)
+        mock_run.assert_called_once()
+        args, _ = mock_run.call_args
+        assert "vllm-stop --yes" in args[0]
+
+    def test_vllm_stop_with_existing_yes_not_duplicated(self):
+        """Bereits gesetztes --yes wird nicht doppelt angehängt."""
+        cfg = {
+            "providers": {
+                "local": {
+                    "vllm_spark": {
+                        "api_type": "vllm",
+                        "enabled": True,
+                        "server_stop_cmd": "ssh kay_beissert@host vllm-stop --yes",
+                    },
+                }
+            }
+        }
+        with patch("scripts.core.vllm_batch.subprocess.run") as mock_run, \
+             patch("scripts.core.vllm_batch.time.sleep"):
+            stop_vllm_provider_server(cfg)
+        mock_run.assert_called_once()
+        args, _ = mock_run.call_args
+        assert args[0].count("--yes") == 1
+
 
 # ---------------------------------------------------------------------------
 # run_vllm_provider_cleanup
