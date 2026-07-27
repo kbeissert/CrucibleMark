@@ -61,6 +61,11 @@
       "tested_at": "2026-07-16T18:11:02Z",
       "score_p1": 79.17,
       "score_p2": 45.83
+    },
+    "qwen3_6-35b-a3b-nvfp4-thinking": {
+      "tested_at": "2026-07-20T14:37:52Z",
+      "score_p1": 83.33,
+      "score_p2": 56.67
     }
   },
   "tooluse_recommendation": null,

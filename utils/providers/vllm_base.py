@@ -456,10 +456,16 @@ class VllmBaseClient(BaseProviderClient):
                     return "healthy"
                 return "loading"
         except urllib.error.HTTPError as exc:
-            # 502 = Proxy erreicht, aber Backend nicht bereit (lädt noch)
+            # 502/503 = Proxy erreicht, aber Backend nicht bereit (lädt noch)
             if exc.code in (502, 503):
                 return "loading"
-            # 401/403 = Auth-Problem → down (falsche Config)
+            # 401/403 = Auth-Problem (Token-Rotation, Rate-Limit, Probe-Race).
+            # Als "loading" behandeln — verhindert unnötigen Server-Restart bei
+            # transienten Auth-Issues. Bei dauerhaft falschem Token läuft der
+            # start_server-Timeout ins Leere, was sicherer ist als ein
+            # fälschlicher Server-Kill.
+            if exc.code in (401, 403):
+                return "loading"
             return "down"
         except (urllib.error.URLError, OSError):
             return "down"
@@ -1162,8 +1168,15 @@ class VllmBaseClient(BaseProviderClient):
         if reasoning:
             usage = getattr(response, "usage", None)
             rt = self._extract_reasoning_tokens(usage)
-            if rt is None and not content.strip():
-                rt = getattr(usage, "completion_tokens", 0) if usage else None
+            if rt is None:
+                # vLLM 0.25.1: reasoning_tokens nicht in usage befüllt.
+                # Heuristische Schätzung als Fallback.
+                completion_tokens = (
+                    getattr(usage, "completion_tokens", 0) if usage else 0
+                )
+                rt = self._estimate_reasoning_tokens(
+                    completion_tokens, content, reasoning
+                )
             if rt is not None:
                 self.last_response_metadata["reasoning_tokens"] = rt
             self.last_response_metadata["think_content"] = reasoning
@@ -1264,8 +1277,13 @@ class VllmBaseClient(BaseProviderClient):
             usage = self.last_response_metadata.get("usage")
             if usage:
                 rt = self._extract_reasoning_tokens(usage)
-                if rt is None and think.has_content:
-                    rt = getattr(usage, "completion_tokens", 0)
+                if rt is None:
+                    # vLLM 0.25.1: reasoning_tokens nicht in usage befüllt.
+                    # Heuristische Schätzung als Fallback.
+                    completion_tokens = getattr(usage, "completion_tokens", 0)
+                    rt = self._estimate_reasoning_tokens(
+                        completion_tokens, full_content, think.content
+                    )
                 if rt is not None:
                     self.last_response_metadata["reasoning_tokens"] = rt
             return full_content

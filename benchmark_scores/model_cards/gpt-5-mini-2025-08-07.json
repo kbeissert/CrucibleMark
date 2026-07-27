@@ -78,7 +78,7 @@
   "community": null,
   "tooluse_runs": {
     "gpt-5-mini-2025-08-07": {
-      "tested_at": "2026-07-17T11:37:24Z",
+      "tested_at": "2026-07-20T16:07:45Z",
       "score_p1": 16.67,
       "score_p2": 20.0
     }

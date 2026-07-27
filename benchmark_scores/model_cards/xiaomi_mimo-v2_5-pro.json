@@ -88,7 +88,7 @@
   "community": null,
   "tooluse_runs": {
     "xiaomi/mimo-v2.5-pro": {
-      "tested_at": "2026-07-17T11:38:01Z",
+      "tested_at": "2026-07-20T16:08:27Z",
       "score_p1": 90.0,
       "score_p2": 44.17
     }

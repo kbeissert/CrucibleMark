@@ -19,11 +19,11 @@
   "knowledge_cutoff": "2025-05",
   "summary": "Qwen 3 Coder Next ist ein Coding-spezialisiertes Open-Weights-MoE-Modell von Alibaba, das agentisch auf umfangreichen GitHub-Aufgaben trainiert wurde. Die ultra-sparse Architektur aktiviert pro Token nur 3 Milliarden der insgesamt 80 Milliarden Gesamtparameter, das Kontextfenster umfasst 262.000 Tokens für repository-weite Codebasen. Unter Apache-2.0-Lizenz lokal betreibbar ohne Cloud-Verbindung.",
   "strengths": [
-    "Ultra-sparse MoE-Architektur mit hohem Durchsatz-Vorteil gegenüber vergleichbar grossen Dense-Modellen",
-    "Agentisch trainiert auf umfangreichen Coding-Aufgaben",
-    "Kontextfenster von 262.000 Tokens für repository-weite Codebasen",
-    "Tag-0-Unterstützung für llama.cpp, vLLM, Ollama und SGLang",
-    "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit"
+    "Ultra-sparse MoE-Architektur mit hohem Durchsatz-Vorteil gegenüber ähnlich grossen Dense-Modellen",
+    "Agentisch trainiert auf umfangreichen Coding-Aufgaben aus grossen Repositories",
+    "Kontextfenster von 262.000 Tokens für repository-weite Codebasen und lange Agentic-Loops",
+    "Tag-0-Unterstützung in gängigen lokalen Inference-Engines ohne Workarounds",
+    "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit und Modifizierbarkeit"
   ],
   "known_limitations": [
     "Non-Thinking-Only, kein Thinking-Modus und keine sichtbaren CoT-Blöcke",

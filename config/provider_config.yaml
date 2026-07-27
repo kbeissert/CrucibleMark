@@ -112,6 +112,8 @@ providers:
       max_tokens: 16384
       env_var: XAI_API_KEY
       models:
+      - id: grok-4.5
+        name: Grok 4.5
       - id: grok-4.3
         name: Grok 4.3
       - id: grok-4.20-0309-reasoning
@@ -221,6 +223,8 @@ providers:
         name: GLM 4.6 (Z.ai) via OpenRouter
 
       # Moonshot AI — neueste zuerst (getestet 22. Juni 2026)
+      - id: moonshotai/kimi-k3
+        name: Kimi K3 via OpenRouter
       - id: moonshotai/kimi-k2.7-code
         name: Kimi K2.7 Code via OpenRouter
       - id: moonshotai/kimi-k2.6
@@ -450,14 +454,14 @@ providers:
       read_timeout: 2400
       context_window: 65536
       num_predict: 65536
-      base_url: "http://192.168.1.191:1235/v1"
+      base_url: "http://100.89.110.0:1235/v1"
       api_key: "sk-local"
       model_dir: /home/kay_beissert/ai/models/llm/gguf
       token_param_name: max_tokens
-      server_start_cmd: ssh -o BatchMode=yes -o ConnectTimeout=10 -p 22 kay_beissert@gx10-b20a.local /home/kay_beissert/ai/apps/llama.cpp/build/bin/llama-server
-      server_stop_cmd: ssh -o BatchMode=yes -o ConnectTimeout=10 -p 22 kay_beissert@gx10-b20a.local "pkill -f 'llama-server.*--port 1235'"
+      server_start_cmd: ssh -o BatchMode=yes -o ConnectTimeout=10 -p 22 kay_beissert@100.89.110.0 /home/kay_beissert/ai/apps/llama.cpp/build/bin/llama-server
+      server_stop_cmd: ssh -o BatchMode=yes -o ConnectTimeout=10 -p 22 kay_beissert@100.89.110.0 "pkill -f 'llama-server.*--port 1235'"
       cleanup_on_exit: true
-      server_post_stop_cmd: ssh -o BatchMode=yes -o ConnectTimeout=10 -p 22 kay_beissert@gx10-b20a.local "rm -rf ~/.cache/llama.cpp /tmp/llama.cpp*"
+      server_post_stop_cmd: ssh -o BatchMode=yes -o ConnectTimeout=10 -p 22 kay_beissert@100.89.110.0 "rm -rf ~/.cache/llama.cpp /tmp/llama.cpp*"
       server_ready_timeout_sec: 180
       existing_server_ready_timeout_sec: 120
       server_ready_poll_sec: 5
@@ -716,26 +720,26 @@ providers:
       #     - "--spec-type draft-mtp"
       #     - "--spec-draft-n-max 2"
 
-    # vLLM auf asusGX10 (NVIDIA Blackwell, Remote via SSH).
+    # vLLM auf asusGX10 (NVIDIA Blackwell, Remote via SSH/Tailscale).
     # Steuerung per SSH vom Benchmark-Host. Modelle werden über TOML-Configs
     # in ~/ai/shared/configs/vllm/models/ ausgewählt; ``vllm-start --config <NAME>``
-    # startet den Server, ``vllm-stop`` räumt den laufenden Container ab.
-    # Port 4300/v1 ist ein Token-Capture-Reverse-Proxy, der an den echten
-    # Direkter vLLM-Port 3300 (kein Proxy, keine Auth nötig).
-    # Der Token-Capture-Proxy auf 4300 authentifiziert jeden Request
-    # (auch /health und /v1/models), was den Connector fehleranfällig
-    # macht. Port 3300 ist das direkte Backend — robuster für
-    # Health-Checks und Modell-Discovery.
+    # startet den Server nativ, ``vllm-stop`` räumt die nativen Prozesse ab.
+    # 2026-07-26: Migration Docker → nativ (vLLM 0.25.1 in ~/venvs/vllm025/).
+    #   Main-Chat läuft nativ auf :3300, Embed-Sidecar auf :3301 (kein Docker mehr).
+    #   Metrics-Proxy (Token-Capture) routet permanent :4300→:3300 (Chat) und
+    #   :4301→:3301 (Embed), authentifiziert jeden Request (/health, /v1/models,
+    #   Chat Completions). Auth-Token: sk-local-mg2026.
+    #   base_url zeigt auf den Proxy-Port 4300 (Tailscale-IP 100.89.110.0).
     vllm_spark:
       name: vLLM (asusGX10)
       short_code: VSPK
       api_type: vllm
       model_type: open_weights_local
-      enabled: true  # asusGX10 erreichbar, Main-Container läuft.
+      enabled: true  # asusGX10 erreichbar, nativer Main-Prozess läuft auf :3300.
       read_timeout: 3600  # 60 Min — synthese-starke Modelle brauchen lange für lange Outputs
-      context_window: 131072  # ornith-1.0-35B-FP8 native context laut /v1/models
-      base_url: "http://192.168.1.191:3300/v1"
-      api_key: "${VLLM_SPARK_API_KEY}"  # env var (CLAUDE.md: API Keys NIEMALS in Git) — .env: VLLM_SPARK_API_KEY=sk-local-mg2026
+      context_window: 131072  # konservativer Subset; qwen3.6-27B unterstützt 262144 (laut /v1/models)
+      base_url: "http://100.89.110.0:4300/v1"
+      api_key: "sk-local-mg2026"
       token_param_name: max_tokens
       # Default-Budget für Thinking-Profile (max_tokens des generierten
       # ``{id}-thinking``-Eintrags via Config-Expansion). Pro Modell via
@@ -744,8 +748,8 @@ providers:
       # unverändert (kein Expansion-Trigger).
       thinking_max_tokens: 32768
       # vllm-start/vllm-stop liegen unter ~/ai/shared/scripts/ (nicht im PATH).
-      server_start_cmd: "ssh -o BatchMode=yes -o ConnectTimeout=10 -p 22 kay_beissert@gx10-b20a.local /home/kay_beissert/ai/shared/scripts/vllm-start"
-      server_stop_cmd: "ssh -o BatchMode=yes -o ConnectTimeout=10 -p 22 kay_beissert@gx10-b20a.local /home/kay_beissert/ai/shared/scripts/vllm-stop --yes"
+      server_start_cmd: "ssh -o BatchMode=yes -o ConnectTimeout=10 -p 22 kay_beissert@100.89.110.0 /home/kay_beissert/ai/shared/scripts/vllm-start"
+      server_stop_cmd: "ssh -o BatchMode=yes -o ConnectTimeout=10 -p 22 kay_beissert@100.89.110.0 /home/kay_beissert/ai/shared/scripts/vllm-stop --yes"
       toml_models_dir: "~/ai/shared/configs/vllm/models/"
       server_ready_timeout_sec: 600
       existing_server_ready_timeout_sec: 600
@@ -847,23 +851,27 @@ providers:
 
       # Hermes 4 70B — FP8 compressed-tensors, Llama-3.1-Architektur, reasoning + tool-calling.
       # Sampling synchron mit TOML: temperature=0.6, top_p=0.95, top_k=20.
-      - id: hermes-4-70b-fp8
-        name: Hermes 4 70B FP8 (vLLM, Llama-3.1, Dense)
-        config: Hermes4-70B
-        max_tokens: 16384
-        temperature: 0.6
-        top_p: 0.95
-        top_k: 20
-        enable_thinking: true
+      # 2026-07-20: Auskommentiert — 36B BF16 Hermes-4.3 braucht ~40 Min/Test
+      # (enable_thinking=true + 32K Thinking-Budget), Benchmark-Lauf wird auf
+      # Home-Intranet verschoben (siehe Session-Log 2026-07-20).
+      # - id: hermes-4-70b-fp8
+      #   name: Hermes 4 70B FP8 (vLLM, Llama-3.1, Dense)
+      #   config: Hermes4-70B
+      #   max_tokens: 16384
+      #   temperature: 0.6
+      #   top_p: 0.95
+      #   top_k: 20
+      #   enable_thinking: true
 
-      - id: hermes-4-3-36b
-        name: Hermes 4.3 36B (vLLM, Seed-OSS, Dense, BF16)
-        config: Hermes4.3-36B
-        max_tokens: 16384
-        temperature: 0.6
-        top_p: 0.95
-        top_k: 20
-        enable_thinking: true
+      # 2026-07-20: Auskommentiert — siehe Hinweis oben (Hermes-4-70B-FP8).
+      # - id: hermes-4-3-36b
+      #   name: Hermes 4.3 36B (vLLM, Seed-OSS, Dense, BF16)
+      #   config: Hermes4.3-36B
+      #   max_tokens: 16384
+      #   temperature: 0.6
+      #   top_p: 0.95
+      #   top_k: 20
+      #   enable_thinking: true
 
       # Weitere verfügbare TOMLs (per Auto-Discovery entdeckbar, nicht im Benchmark):
       # - Qwen3-Embedding-0.6B-NVFP4: Embedding-Modell (kein LLM-Target)

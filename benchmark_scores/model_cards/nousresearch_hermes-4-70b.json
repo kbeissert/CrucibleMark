@@ -78,7 +78,7 @@
   "community": null,
   "tooluse_runs": {
     "nousresearch/hermes-4-70b": {
-      "tested_at": "2026-07-17T11:39:25Z",
+      "tested_at": "2026-07-20T16:09:58Z",
       "score_p1": 88.33,
       "score_p2": 41.67
     }

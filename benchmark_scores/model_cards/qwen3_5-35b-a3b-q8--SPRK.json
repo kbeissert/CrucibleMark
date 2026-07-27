@@ -30,9 +30,9 @@
     "Ohne separate Multimodal-Projektor-Datei nur Text-Eingabe",
     "Hoher VRAM-Bedarf durch Q8-Quantisierung bei MoE-Architektur",
     "Mögliche zensierte oder ausweichende Antworten bei sensiblen Themen mit China-Bezug",
-    "llama.cpp: Bei KV-Cache Q8 und Kontexten über ~64K können Kontext-Checkpoints unkontrollierten RAM-Anstieg und Server-Crashes verursachen. Workaround: --ctx-checkpoints 0 setzen."
+    "Lokale Engines: Bei Q8-KV-Cache und grossen Kontexten drohen RAM-Anstieg und Crashes"
   ],
-  "judge_context_hint": "Hochpräzise Q8-MoE-Variante (35B/3B aktiv) mit effizienter Inferenz. Bei der Bewertung Sampling-Defaults berücksichtigen. Vision nur mit zusätzlicher Projektor-Datei aktivierbar. Bekanntes Deployment-Problem mit llama.cpp: KV-Cache Q8 in Kombination mit Kontexten über ~64K kann durch unkontrolliert wachsende Kontext-Checkpoints zu Server-Crashes führen (GitHub Issues #23181, #21690). Workaround: --ctx-checkpoints 0. Dieses Verhalten ist nicht modellspezifisch, sondern betrifft die gesamte Qwen3.x MoE-Familie unter dieser Konfiguration.",
+  "judge_context_hint": "Hochpräzise Q8-MoE-Variante (35B/3B aktiv) mit effizienter Inferenz. Bei der Bewertung Sampling-Defaults berücksichtigen. Vision nur mit zusätzlicher Projektor-Datei aktivierbar. Bekanntes Deployment-Problem mit Lokale Inference-Engines können bei aggressivem KV-Cache unkontrollierten RAM-Anstieg und Crashes verursachen — Workaround verfügbar. Workaround: --ctx-checkpoints 0. Dieses Verhalten ist nicht modellspezifisch, sondern betrifft die gesamte Qwen3.x MoE-Familie unter dieser Konfiguration.",
   "architecture_tags": [
     "General",
     "Instruct",

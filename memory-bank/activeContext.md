@@ -12,9 +12,10 @@ Keine Referenzdateien auto-laden. Nur laden wenn aktuelle Aufgabe explizit eine 
 ---
 
 # Active Context
-## Aktueller Status (2026-07-19, Session 67 — Hermes 4.3 36B Integration)
+## Aktueller Status (2026-07-19, Session 68 — Batch Card Refinements + vLLM Fixes)
 
-- Abgeschlossen: Hermes 4.3 36B (Seed-OSS) als vLLM-Modell integriert — Config-Eintrag, Model Card mit dual_profile, card-research abgeschlossen.
-- Abgeschlossen: Web-Export verifiziert — 92/92 Modelle vorhanden, 5 vermeintlich "fehlende" (qwen3_6-27b-nvfp4, qwen3_6-27b-nvfp4-thinking, qwen3_6-35b-a3b-nvfp4, qwen3_6-35b-a3b-nvfp4-thinking, grok-4.20-0309-reasoning) waren Artefakt eines unvollständigen Vorlaufs (108 statt 92).
+- Abgeschlossen: Batch-Commit `43d60237` — 29 Model Cards verfeinert (summary refinements, data quality fixes), 3 Bias-Reviews (qwen3_6-27b-nvfp4, -thinking, 35b-a3b-nvfp4), vLLM-Batch-Fixes (provider context handling, session cleanup), Provider-Config-Update. Origin/main gepusht.
+- Abgeschlossen: Web-Export verifiziert — 92/92 Modelle vorhanden (Session 67). 2 Modelle ohne Political Compass-Daten (qwen3_6-27b, gemma-4-31b-it-creative-wordsmith-q8) — 0 PC-Einträge, bekannt, nicht blockierend.
+- Offen: Hermes 4.3 36B Thinking-Probe ausstehend (benötigt Server-Swap Ornith → Hermes 4.3 36B). card_status bleibt "draft".
+- Risiko: 4 Model Cards ohne Benchmark-Daten: hermes-4-3-36b (in progress), hermes-4-70b-fp8, qwen3-coder-30b-a3b-q8, qwen3_5-397b-cloud.
 - Nächster Schritt: vLLM-Server auf Hermes 4.3 36B swappen, Thinking-Probe laufen lassen, card_status auf "complete" setzen.
-- Offen/Risiko: Thinking-Probe ausstehend (benötigt Server-Swap), card_status bleibt "draft" bis Probe erfolgreich.

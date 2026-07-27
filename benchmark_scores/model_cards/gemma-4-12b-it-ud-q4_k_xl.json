@@ -28,7 +28,7 @@
   "known_limitations": [
     "Q4-Quantisierung bringt spürbaren Qualitätsverlust gegenüber Q8 oder voller Präzision",
     "Community-Distribution statt offizieller Google-Verpackung",
-    "Thinking-Tokens im lokalen llama.cpp-Deployment nicht als separates Feld exponiert",
+    "Thinking-Tokens im lokalen Deployment nicht als separates Feld exponiert",
     "Audio-Eingabe je nach Pipeline-Unterstützung eingeschränkt",
     "Bild-, Audio- und Video-Verarbeitung erfordern eine separate Multimodal-Projektor-Datei"
   ],

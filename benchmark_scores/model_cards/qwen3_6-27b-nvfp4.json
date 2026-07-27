@@ -52,17 +52,17 @@
     "text"
   ],
   "supports_tool_use": true,
-  "tooluse_tested_at": "2026-07-16T06:37:45Z",
+  "tooluse_tested_at": "2026-07-26T20:36:31Z",
   "tooluse_score_p1": 83.33,
   "tooluse_score_p2": 51.67,
   "tooluse_runs": {
     "qwen3_6-27b-nvfp4": {
-      "tested_at": "2026-07-16T06:37:45Z",
+      "tested_at": "2026-07-26T20:36:31Z",
       "score_p1": 83.33,
       "score_p2": 51.67
     },
     "qwen3_6-27b-nvfp4-thinking": {
-      "tested_at": "2026-07-17T11:36:50Z",
+      "tested_at": "2026-07-27T00:00:08Z",
       "score_p1": 71.67,
       "score_p2": 49.17
     }

@@ -27,7 +27,7 @@
   "judge_context_hint": "Grok 4.20 Reasoning nutzt reasoning_tokens als Provider-Metadaten, nicht als Content-Think-Tag. Bei Faktentreue und Prompt-Adherence stark gewichten, bei roher Intelligenz moderat einordnen (AA-Index 48 vs. 57 bei Gemini 3.1 Pro und GPT-5.4). Multi-Agent- und Non-Reasoning-Varianten sind separate Modelle.",
   "knowledge_cutoff": "2025-01",
   "known_limitations": [
-    "Intelligenz-Abstand: 48 Punkte im AA-Index, unterhalb von Gemini 3.1 Pro und GPT-5.4 (57).",
+    "Intelligenz-Abstand: 48 Punkte im AA-Index liegen unter dem aktuellen Frontier-Spitzenfeld.",
     "Reasoning-Fokus: Schwächer bei kreativen Schreibaufgaben und offener Konversation.",
     "Faktencheck-Pflicht: Zwischenschritte im Reasoning extern prüfen, niedrige Rate hin oder her.",
     "Intransparenz: Proprietär, daher Trainingsdaten, Architektur und Biases nicht öffentlich.",
@@ -65,7 +65,7 @@
     "Multimodaler Eingang: Verarbeitet Text und Bilder, Textausgabe; 1.000.000 Tokens Kontextfenster.",
     "Halluzinationsrate: 78 % Non-Hallucination auf AA-Omniscience, branchenweit niedrigster Wert.",
     "Reasoning-Qualität: Explizite Schritt-für-Schritt-Lösungswege über Provider-Metadaten.",
-    "Intelligenz-Sprung: +6 Punkte im Artificial Analysis Intelligence Index gegenüber Grok 4.",
+    "Intelligenz-Sprung: Plus sechs Punkte im Artificial Analysis Intelligence Index gegenüber Grok 4.",
     "Wirtschaftlichkeit: API 1,25 USD Input / 2,50 USD Output pro Million Tokens.",
     "Agentic-Tauglich: Natives Function-Calling und strukturierte Outputs für Tool-Integration."
   ],

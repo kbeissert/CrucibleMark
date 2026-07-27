@@ -27,7 +27,7 @@
     "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit"
   ],
   "known_limitations": [
-    "MTP-Speculative-Decoding erfordert aktuelle llama.cpp-Versionen",
+    "MTP-Speculative-Decoding erfordert aktuelle Versionen lokaler Inference-Engines",
     "Hoher VRAM-Bedarf durch Q8-Quantisierung bei MoE-Architektur",
     "Ohne separate Multimodal-Projektor-Datei nur Text-Eingabe",
     "Mögliche zensierte oder ausweichende Antworten bei sensiblen Themen mit China-Bezug"

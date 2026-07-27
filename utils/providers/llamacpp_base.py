@@ -761,11 +761,15 @@ class LlamaCppBaseClient(BaseProviderClient):
 
         if reasoning:
             usage = getattr(response, "usage", None)
-            # reasoning_tokens via SSoT-Helper + llamacpp-Fallback
-            # (completion_tokens wenn kein Content — native Thinking-Modelle)
+            # reasoning_tokens via SSoT-Helper + Heuristik-Fallback
             rt = self._extract_reasoning_tokens(usage)
-            if rt is None and not content.strip():
-                rt = getattr(usage, "completion_tokens", 0) if usage else None
+            if rt is None:
+                completion_tokens = (
+                    getattr(usage, "completion_tokens", 0) if usage else 0
+                )
+                rt = self._estimate_reasoning_tokens(
+                    completion_tokens, content, reasoning
+                )
             if rt is not None:
                 self.last_response_metadata["reasoning_tokens"] = rt
             self.last_response_metadata["think_content"] = reasoning
@@ -872,8 +876,11 @@ class LlamaCppBaseClient(BaseProviderClient):
         usage = self.last_response_metadata.get("usage")
         if usage:
             rt = self._extract_reasoning_tokens(usage)
-            if rt is None and think.has_content:
-                rt = getattr(usage, "completion_tokens", 0)
+            if rt is None:
+                completion_tokens = getattr(usage, "completion_tokens", 0)
+                rt = self._estimate_reasoning_tokens(
+                    completion_tokens, full_content, think.content
+                )
             if rt is not None:
                 self.last_response_metadata["reasoning_tokens"] = rt
         return full_content

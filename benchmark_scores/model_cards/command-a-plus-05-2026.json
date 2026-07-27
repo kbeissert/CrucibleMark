@@ -20,21 +20,22 @@
   "summary": "Coheres erstes offenes MoE-Modell kombiniert Frontier-Leistung mit Selbst-Hosting: Von 218 Milliarden Gesamtparametern sind pro Token nur 25 Milliarden aktiv, das Kontextfenster umfasst 128.000 Tokens und das Modell verarbeitet Text- und Bildeingaben. Unter Apache-2.0-Lizenz aus Kanada veröffentlicht, ohne Vendor-Lock-in und ohne proprietäre Gewichte.",
   "strengths": [
     "Apache-2.0-Lizenz mit offenen Gewichten, ohne Vendor-Lock-in selbst hostbar",
-    "MoE-Architektur mit 25 Milliarden aktiven Parametern bei 218 Milliarden gesamt",
+    "MoE-Architektur: 25 Mrd. aktive Parameter bei 218 Mrd. Gesamt für hohe Effizienz",
     "Native Verarbeitung von Text und Bildern",
     "Unterstützung für 48 Sprachen, einschliesslich aller EU-Amtssprachen",
     "Bis zu 64.000 Tokens maximale Ausgabe",
-    "Native Integration mit vLLM und Hugging Face Transformers",
-    "Self-Hosting unter Apache 2.0 ohne laufende Lizenz- oder Tokenkosten; Cohere Cloud-API nur über Cohere Model Vault (Stundenpreis pro Instanz) verfügbar, kein öffentlicher Per-Token-Tarif."
+    "Self-Hosting unter Apache 2.0 ohne laufende Lizenz- oder Tokenkosten und Cohere-Cloud-Zwang",
+    "Native Integration in gängige Open-Source-Inference-Stacks ohne proprietären Vendor-Lock",
+    "Cohere Cloud optional zubuchbar, kein verpflichtender Per-Token-Tarif"
   ],
   "known_limitations": [
     "Weniger unabhängig publizierte Drittbenchmarks als vergleichbare Frontier-Modelle",
     "Thinking verbraucht Output-Tokens aus dem 64.000-Token-Budget",
     "Quantisierung für lokales Self-Hosting mit vertretbarem Ressourcenbedarf nötig",
     "Tool-Use über die Cohere-API derzeit nicht stabil für komplexe Benchmark-Szenarien",
-    "Cohere-API-Preise für command-a-plus-05-2026 werden nicht öffentlich gelistet; Produktions-Tarife erfordern Vertriebskontakt (sales@cohere.com), Trial-Keys sind auf 1.000 API-Calls pro Monat limitiert."
+    "Cohere-API-Tarife für Produktion nur auf Vertriebsanfrage, keine öffentliche Preisliste"
   ],
-  "judge_context_hint": "Offenes MoE-Modell von Cohere aus Kanada unter Apache-2.0-Lizenz. Reasoning-Anteil verbraucht Output-Tokens aus dem 64.000-Token-Budget, was bei intensivem Reasoning die Antwortlänge begrenzt. Vision-Input, 48 Sprachen und Agentic-Tool-Use sind Kernfähigkeiten. Lokales Deployment über vLLM möglich. Kein öffentlicher Per-Token-Preis auf Cohere-Seite verfügbar — Selbst-Hosting ist kostenlos.",
+  "judge_context_hint": "Cohere Command-A Plus (05/2026) ist Coheres Frontier-MoE mit Apache-2.0-Lizenz und 218 Mrd. Gesamt- / 25 Mrd. aktiven Parametern, 128.000 Tokens Kontext, Text- und Bildeingabe, Function-Calling und 48-Sprachen-Unterstützung. Thinking läuft über das Reasoning-Tokens-Feld, nicht als sichtbarer Content-Block; bei der Bewertung Token-Budget für sichtbare Antwort und Reasoning getrennt gewichten. Lokales Deployment über gängige Open-Source-Inference-Stacks möglich.",
   "architecture_tags": [
     "Thinking",
     "MoE",
@@ -90,7 +91,7 @@
   "community": null,
   "tooluse_runs": {
     "command-a-plus-05-2026": {
-      "tested_at": "2026-07-17T11:37:45Z",
+      "tested_at": "2026-07-20T16:08:09Z",
       "score_p1": 0.0,
       "score_p2": 13.33
     }

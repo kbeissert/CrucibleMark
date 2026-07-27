@@ -200,6 +200,42 @@ class BaseProviderClient:
         return getattr(usage, "reasoning_tokens", None)
 
     @staticmethod
+    def _estimate_reasoning_tokens(
+        completion_tokens: int,
+        content: str,
+        reasoning: str,
+    ) -> int | None:
+        """Schätzt reasoning_tokens wenn der Server sie nicht liefert (vLLM 0.25.1).
+
+        vLLM 0.22+ benennt das Feld ``reasoning_content`` → ``reasoning`` um und
+        befüllt ``completion_tokens_details.reasoning_tokens`` nicht zuverlässig.
+        Diese Heuristik wird nur als Fallback verwendet, wenn
+        ``_extract_reasoning_tokens()`` ``None`` zurückgibt.
+
+        Strategie:
+        1. Kein Reasoning-Text → 0 (kein Thinking stattgefunden)
+        2. Kein Content-Text → completion_tokens (alles ist Reasoning)
+        3. Beide vorhanden → completion_tokens − geschätzte Content-Tokens
+           (Content-Tokens ≈ len(content) / 4, grobe Char-to-Token-Ratio)
+
+        Args:
+            completion_tokens: ``usage.completion_tokens`` vom Server
+            content: Sichtbarer Antwort-Text (``message.content``)
+            reasoning: Thinking-Text (``message.reasoning`` / ``reasoning_content``)
+
+        Returns:
+            Geschätzte Reasoning-Token-Anzahl oder ``None`` bei unzureichenden Daten
+        """
+        if not reasoning:
+            return 0
+        if not content or not content.strip():
+            return completion_tokens or 0
+        if not completion_tokens:
+            return None
+        estimated_content_tokens = max(1, len(content) // 4)
+        return max(0, completion_tokens - estimated_content_tokens)
+
+    @staticmethod
     def _extract_think_from_message(
         msg: Any,
         field_names: tuple[str, ...] = ("reasoning", "reasoning_content", "think_content"),

@@ -29,9 +29,9 @@
     "Ohne separate Multimodal-Projektor-Datei nur Text-Eingabe",
     "Leichter Qualitätsverlust durch Q4-Quantisierung im Vergleich zu Q6 oder Q8",
     "Mögliche zensierte oder ausweichende Antworten bei sensiblen Themen mit China-Bezug",
-    "llama.cpp: Bei Kontexten über ~64K können Kontext-Checkpoints unkontrollierten RAM-Anstieg verursachen. Bei Q4-KV-Cache weniger kritisch als bei Q8, aber bei Agentic-Loops mit vielen Tool-Calls weiterhin relevant. Workaround: --ctx-checkpoints 0 setzen."
+    "Lokale Inference-Engines: Bei Kontexten über 64K können Kontext-Checkpoints RAM-Anstieg verursachen"
   ],
-  "judge_context_hint": "Qwen 3.5 35B-A3B als MoE-Variante (Q4_K_XL) mit effizienter Inferenz und optionalem Thinking. Bei der Bewertung die Sampling-Defaults berücksichtigen. Vision nur mit zusätzlicher Projektor-Datei aktivierbar. Deployment-Hinweis: llama.cpp-Kontext-Checkpoints können bei Kontexten über ~64K zu unkontrolliertem RAM-Wachstum führen (weniger kritisch als bei Q8, aber in Agentic-Loops relevant). Workaround: --ctx-checkpoints 0 (GitHub Issues #23181, #21690).",
+  "judge_context_hint": "Qwen 3.5 35B-A3B als MoE-Variante (Q4_K_XL) mit effizienter Inferenz und optionalem Thinking. Bei der Bewertung die Sampling-Defaults berücksichtigen. Vision nur mit zusätzlicher Projektor-Datei aktivierbar. Deployment-Hinweis: Kontext-Checkpoints in lokalen Engines können bei grossen Kontexten unkontrollierten RAM-Anstieg verursachen — Workaround in der Konfiguration verfügbar. Workaround: --ctx-checkpoints 0 (GitHub Issues #23181, #21690).",
   "architecture_tags": [
     "General",
     "Instruct",

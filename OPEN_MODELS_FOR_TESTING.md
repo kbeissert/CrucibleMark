@@ -62,6 +62,9 @@
 - moonshotai/kimi-k2.6
 - moonshotai/kimi-k2-thinking-20251106
 
+## MOONSHOT AI (K3)
+- moonshotai/kimi-k3 (OpenRouter + Moonshot API)
+
 ## XAI (3 Modelle)
 - grok-4.20-0309-reasoning
 - grok-4-1-fast-reasoning
