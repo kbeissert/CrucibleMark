@@ -298,6 +298,42 @@ Alle Provider-Connectors in `utils/providers/` extrahieren seit v4.10.1 konsiste
 - **Groq/xAI:** Reasoning-Unterstützung in `usage` prüfen — `completion_tokens_details.reasoning_tokens` ist OpenAI-kompatibel und verfügbar.
 - **Cohere (ab v4.10.8):** ToolUse-Modul nutzt Cohere-native `tools`-API statt Prompt-basierte JSON-Schemas. Reasoning-Modelle (`command-a-plus`, `command-a-reasoning`) werden über `_is_cohere_reasoning_model()` erkannt (Substring-Match). `thinking: {"type": "disabled"}` bei Native Tools verhindert 422. `command-a-plus` hat persistente 500er bei Benchmark-Prompts (MoE-Instabilität) — `supports_tool_use=false`. Implementierungsdetails: [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md#cohere-native-tooluse-ab-v4108).
 
+**Connector-Verantwortung: Thinking/Content-Trennung (ab v4.11.0):**
+
+Connector-Implementierungen in `utils/providers/` **müssen garantieren**, dass Thinking-Inhalte (`reasoning_content`/`reasoning`/`thinking`) und sichtbare Antwort (`content`) sauber getrennt an den Benchmark übermittelt werden. Diese Garantie ist kritisch für die Judge-Bewertung und bei Inference-Server-Upgrades (z.B. vLLM 0.22 → 0.25) besonders zu prüfen.
+
+| Verantwortung | Mechanismus | Fehler bei Verletzung |
+|---|---|---|
+| **Content-Feld ist clean** | `query()` gibt nur `content` zurück — keine `<think>`-Tags, kein Reasoning-Text | Judge sieht Thinking als Teil der sichtbaren Antwort → fälschliche task_compliance-Abzüge |
+| **think_content separat** | `last_response_metadata["think_content"]` enthält den vollständigen Reasoning-Text | Judge hat keinen Zugriff auf Thinking-Qualität (Abbruch, Verrannt, Durchgedacht-but-falsch) |
+| **reasoning_tokens erfasst** | `last_response_metadata["reasoning_tokens"]` — bevorzugt aus `usage`, Fallback via `_estimate_reasoning_tokens()` | Token-Kalkulation und Reviewer-Reporting unvollständig |
+
+**Connector-Fix: think_content an den Judge übergeben (ab v4.11.0):**
+
+Der Judge-Prompt ist kalibriert und darf nicht verändert werden — sonst ist die Vergleichbarkeit zwischen Modellen nicht gewährleistet. Stattdessen übergibt der Connector (`_build_judge_kwargs()` in `judge_evaluator.py`) das `think_content` als `<think>`-Block **in die `model_response`** eingewickelt:
+
+```python
+_effective_response = response
+_think = result.get("think_content")
+if _think and _think.strip():
+    _effective_response = f"<think>\n{_think.strip()}\n</think>\n\n{response}"
+```
+
+Der Judge sieht das Thinking als Teil der Response in bekannten `<think>`-Tags und erkennt es korrekt als internes Reasoning — nicht als task_compliance-Verletzung. Der TOKEN USAGE-Block im System-Prompt bleibt unverändert (zeigt weiterhin `reasoning_tokens`-Count). Viele rule-based Evaluatoren strippen `<think>`-Tags bereits beim Scoring.
+
+**Datenfluss-Garantie bei Inference-Server-Upgrades:**
+
+Bei Upgrades von vLLM, llama.cpp, Ollama oder anderen Inference-Servern ist zwingend zu prüfen:
+
+1. **Reasoning-Parser aktiv?** — vLLM benötigt `--reasoning-parser` (z.B. `deepseek_r1` für `<think>`-Tags). Ohne aktiven Parser landen `<think>`-Tags im `content`-Feld → Content ist nicht clean.
+2. **`reasoning_content`-Feld befüllt?** — vLLM 0.25 benennt Felder um (`reasoning_content` → `reasoning`). `_extract_response_content()` und Streaming-Pfad prüfen beide Namen.
+3. **`reasoning_tokens` in `usage`?** — vLLM 0.25.1 befüllt `completion_tokens_details.reasoning_tokens` nicht zuverlässig. Fallback-Heuristik `_estimate_reasoning_tokens()` in `base.py` schätzt aus `completion_tokens − len(content)/4`.
+4. **End-to-End-Validierung:** Nach Upgrade einen Thinking-Modell-Durchlauf prüfen — `think_content` in CSV nicht leer, `response_length` entspricht nur sichtbarem Content, Judge-Reasoning erwähnt `<think>`-Block korrekt als internes Reasoning.
+
+**Historischer Kontext (Session 53, vLLM 0.25-Upgrade):**
+
+Unter vLLM 0.22 war der Reasoning-Parser für Ornith nicht korrekt aktiviert — `reasoning_tokens` war leer, `think_content` war 0 chars. Unter vLLM 0.25 funktioniert der Parser (think_content befüllt), aber `reasoning_tokens` wird inkonsistent befüllt (Ornith: 976, Qwen 3.6 27B: leer). Der Connector-Fix macht diese Inkonsistenz unschädlich: der Judge erhält das tatsächliche Thinking als `<think>`-Block in der Response, unabhängig davon ob `reasoning_tokens` befüllt ist oder nicht.
+
 **Globaler Token-Fallback-Wrapper:**
 Das Framework implementiert einen robusten Ansatz zur Bewältigung harter Output-Token-Limits, zentral im `BaseProviderClient` über `_execute_with_token_fallback`.
 

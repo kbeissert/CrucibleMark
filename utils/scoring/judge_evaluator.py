@@ -149,9 +149,21 @@ def _build_judge_kwargs(
     golden = _resolve_golden_standard(asset_data)
     required_language = asset_data.get("metadata", {}).get("language")
     language_weight = asset_data.get("metadata", {}).get("language_weight", 0.20)
+
+    # Connector-Fix: Thinking-Content als <think>-Block vor die sichtbare
+    # Antwort setzen, damit der Judge das Thinking als Teil der Response sieht
+    # und korrekt zwischen internem Reasoning und sichtbarem Output unterscheiden
+    # kann. Der Judge-Prompt bleibt unverändert — nur die model_response wird
+    # angereichert. Viele Evaluatoren strippen <think>-Tags bereits beim
+    # rule-based Scoring.
+    _effective_response = response
+    _think = result.get("think_content")
+    if _think and _think.strip():
+        _effective_response = f"<think>\n{_think.strip()}\n</think>\n\n{response}"
+
     kwargs: dict[str, Any] = {
         "task_prompt": raw_prompt,
-        "model_response": response,
+        "model_response": _effective_response,
         "golden_standard": golden,
         "module_id": eval_module_id,
         "rubric_override": asset_data.get("scoring", {}).get("rubric"),
