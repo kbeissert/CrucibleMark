@@ -73,6 +73,9 @@ config/meta_reviewer_prompt.yaml
 # Memory Bank — interne Projektplanung, nicht öffentlich
 memory-bank/
 
+# Kilo Plans — interne Planung, nicht öffentlich
+.kilo/plans/
+
 # Debug-Artefakte
 .temp_prompt.yaml
 last_failed_raw.txt
