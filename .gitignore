@@ -70,9 +70,6 @@ benchmark_config.yaml
 # Judge-Prompt — nicht öffentlich (Kontaminationsschutz)
 config/meta_reviewer_prompt.yaml
 
-# Memory Bank — interne Projektplanung, nicht öffentlich
-memory-bank/
-
 # Kilo Plans — interne Planung, nicht öffentlich
 .kilo/plans/
 
