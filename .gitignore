@@ -79,6 +79,7 @@ last_failed_raw.txt
 
 # Temporäre Dateien (während der Entwicklung)
 tmp_*
+*.csv.tmp
 .work_progress.json
 .commit_msg.txt
 
