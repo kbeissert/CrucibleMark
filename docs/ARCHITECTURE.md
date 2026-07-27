@@ -321,6 +321,10 @@ if _think and _think.strip():
 
 Der Judge sieht das Thinking als Teil der Response in bekannten `<think>`-Tags. Damit der Judge den `<think>`-Block korrekt als internes Reasoning interpretiert und nicht als "Output ONLY"-Verletzung bestraft, wird ein konditionaler `REASONING TRACE NOTE`-Block in den System-Prompt injiziert (nur wenn `think_content` vorhanden). Siehe `_append_reasoning_trace_note()` in `judge_prompt_builder.py`. Der TOKEN USAGE-Block im System-Prompt bleibt unverändert (zeigt weiterhin `reasoning_tokens`-Count). Viele rule-based Evaluatoren strippen `<think>`-Tags bereits beim Scoring.
 
+Der `REASONING TRACE NOTE`-Block ist der 6. konditionale Kontextblock (neben `identity_context`, `language_compliance`, `token_budget_note`, `truncation_note`, `token_usage_block`, `small_model_note`). Da er nur bei vorhandenem `think_content` feuert, entsteht kein Kalibrierungsrisiko für Non-Thinking-Modelle — der Basis-Judge-Prompt bleibt für alle anderen Fälle unverändert.
+
+**Watch-Liste für Thinking-Modell-Runs:** Bei jedem neuen Thinking-fähigen Modell (nicht nur Ornith-Familie) einen Canary-Check auf Module mit strikten Output-Constraints durchführen. Betroffene Module: `ux_writing_001-003`, `documentation_quality_005`, `tooluse_004-006`, `cultural_intel_001-005`. Bei diesen Tasks mit "Output ONLY"- oder Brevity-Constraints könnte der Judge `<think>`-Blöcke fälschlich als `task_compliance`-Verstoß werten. Verifizieren: `think_content` korrekt getrennt, `REASONING TRACE NOTE`-Block im System-Prompt vorhanden, Judge-Reasoning erwähnt `<think>` nicht als Verstoß.
+
 **Datenfluss-Garantie bei Inference-Server-Upgrades:**
 
 Bei Upgrades von vLLM, llama.cpp, Ollama oder anderen Inference-Servern ist zwingend zu prüfen:
