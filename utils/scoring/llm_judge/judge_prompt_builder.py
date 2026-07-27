@@ -179,6 +179,7 @@ def build_prompts(
     token_usage_context: dict[str, Any] | None = None,
     tool_content: str | None = None,
     tool_content_quality: str | None = None,
+    reasoning_trace_context: bool = False,
 ) -> tuple[str, str]:
     """
     Build the (system_prompt, user_prompt) pair for the LLM Judge.
@@ -224,6 +225,7 @@ def build_prompts(
     system_prompt = _append_token_budget_note(system_prompt, token_budget_context)
     system_prompt = _append_truncation_note(system_prompt, truncation_context)
     system_prompt = _append_token_usage_block(system_prompt, token_usage_context)
+    system_prompt = _append_reasoning_trace_note(system_prompt, reasoning_trace_context)
     system_prompt = _append_small_model_note(system_prompt, small_model_token_context)
 
     clean_response = _normalize_response(model_response)
@@ -390,6 +392,28 @@ def _append_token_usage_block(system_prompt: str, token_usage_context: dict[str,
         f"over-reasoned — the visible response should still be evaluated on its own merits.\n"
         f"- A model that **stays within budget** while delivering quality content demonstrates "
         f"good resource discipline."
+    )
+    return system_prompt
+
+
+def _append_reasoning_trace_note(system_prompt: str, reasoning_trace_context: bool) -> str:
+    """Hängt den REASONING-TRACE-Hinweis an, wenn think_content in der Response sichtbar ist."""
+    if not reasoning_trace_context:
+        return system_prompt
+    system_prompt += (
+        "\n\n### REASONING TRACE NOTE ###\n"
+        "The model response above begins with a <think>...</think> block. This block "
+        "contains the model's INTERNAL reasoning trace and is NOT part of the user-facing "
+        "output. When evaluating the response:\n"
+        "- Evaluate ONLY the content AFTER the </think> closing tag against the task "
+        "requirements, including 'Output ONLY' and brevity constraints.\n"
+        "- The <think> block must NOT be counted as a violation of 'Output ONLY', format, "
+        "or brevity constraints — it is internal reasoning, not visible output.\n"
+        "- The 'Thinking / reasoning tokens' shown in TOKEN USAGE are consumed internally "
+        "and do not represent visible output length. Do not use them as evidence of "
+        "constraint violations.\n"
+        "- If the visible output (after </think>) fully complies with the task, "
+        "task_compliance must reflect the visible output alone."
     )
     return system_prompt
 

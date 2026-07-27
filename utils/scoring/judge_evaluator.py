@@ -157,9 +157,12 @@ def _build_judge_kwargs(
     # angereichert. Viele Evaluatoren strippen <think>-Tags bereits beim
     # rule-based Scoring.
     _effective_response = response
+    _has_think = False
     _think = result.get("think_content")
     if _think and _think.strip():
         _effective_response = f"<think>\n{_think.strip()}\n</think>\n\n{response}"
+        # Kontextblock für den Judge: <think> ist internes Reasoning, kein Output-ONLY-Verstoß
+        _has_think = True
 
     kwargs: dict[str, Any] = {
         "task_prompt": raw_prompt,
@@ -172,6 +175,8 @@ def _build_judge_kwargs(
         "required_language": required_language,
         "language_weight": language_weight,
     }
+    if _has_think:
+        kwargs["reasoning_trace_context"] = True
     _inject_token_usage_context(kwargs, result, eval_module_id)
     _inject_reasoning_budget_context(kwargs, model, eval_module_id)
     if provider:

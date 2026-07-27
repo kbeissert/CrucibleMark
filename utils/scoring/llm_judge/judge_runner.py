@@ -314,6 +314,7 @@ class JudgeRunner:
         truncation_context: bool = False,
         tool_content: str | None = None,
         tool_content_quality: str | None = None,
+        reasoning_trace_context: bool = False,
     ) -> JudgeResult:
         """
         Evaluate a model response and return a structured JudgeResult.
@@ -372,6 +373,7 @@ class JudgeRunner:
             truncation_context=truncation_context,
             tool_content=tool_content,
             tool_content_quality=tool_content_quality,
+            reasoning_trace_context=reasoning_trace_context,
         )
 
         logger.debug(

@@ -6,7 +6,6 @@ Response in bekannten <think>-Tags sieht.
 """
 import sys
 from pathlib import Path
-from unittest.mock import MagicMock
 
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_PROJECT_ROOT))
@@ -181,3 +180,132 @@ class TestJudgePromptUnchanged:
 
         result = _append_token_usage_block("Base.", {"tokens_used": 100, "token_budget": 1000})
         assert "thinking tokens are very high" in result
+
+
+class TestReasoningTraceNote:
+    """Tests für den konditionalen REASONING TRACE NOTE-Block."""
+
+    def _base_kwargs(self):
+        return {
+            "task_prompt": "test",
+            "model_response": "Hello!",
+            "golden_standard": "ref",
+            "module_id": "cultural_intelligence",
+            "scale": 5,
+        }
+
+    def test_reasoning_trace_note_added_when_flag_true(self):
+        """reasoning_trace_context=True → System-Prompt enthält REASONING TRACE NOTE."""
+        system_prompt, _ = build_prompts(**self._base_kwargs(), reasoning_trace_context=True)
+        assert "REASONING TRACE NOTE" in system_prompt
+        assert "NOT part of the user-facing output" in system_prompt
+
+    def test_reasoning_trace_note_absent_when_flag_false(self):
+        """reasoning_trace_context=False → kein REASONING TRACE NOTE-Block."""
+        system_prompt, _ = build_prompts(**self._base_kwargs(), reasoning_trace_context=False)
+        assert "REASONING TRACE NOTE" not in system_prompt
+
+    def test_reasoning_trace_note_absent_by_default(self):
+        """Ohne Parameter → kein REASONING TRACE NOTE-Block (Non-Thinking-Modelle)."""
+        system_prompt, _ = build_prompts(**self._base_kwargs())
+        assert "REASONING TRACE NOTE" not in system_prompt
+
+    def test_reasoning_trace_note_references_think_tag(self):
+        """Block-Text referenziert <think> und </think>."""
+        system_prompt, _ = build_prompts(**self._base_kwargs(), reasoning_trace_context=True)
+        assert "<think>" in system_prompt
+        assert "</think>" in system_prompt
+
+    def test_reasoning_trace_note_references_token_usage(self):
+        """Block-Text referenziert 'Thinking / reasoning tokens' aus dem TOKEN USAGE-Block."""
+        system_prompt, _ = build_prompts(**self._base_kwargs(), reasoning_trace_context=True)
+        assert "Thinking / reasoning tokens" in system_prompt
+
+    def test_build_judge_kwargs_sets_flag_when_think_content(self):
+        """_build_judge_kwargs mit think_content → reasoning_trace_context=True."""
+        from utils.scoring.judge_evaluator import _build_judge_kwargs
+
+        result = {
+            "model": "test-model",
+            "asset_id": "test_001",
+            "execution_time": 1.0,
+            "tokens_used": 500,
+            "reasoning_tokens": 300,
+            "token_limit_used": 8000,
+            "think_content": "Let me reason about this...",
+        }
+        asset_data = {
+            "prompt": "Write a greeting.",
+            "golden_standard": "Hello!",
+            "metadata": {"language": "en", "language_weight": 0.2},
+            "scoring": {},
+        }
+        kwargs = _build_judge_kwargs(
+            result=result,
+            response="Hello!",
+            asset_data=asset_data,
+            eval_module_id="cultural_intelligence",
+            model="test-model",
+            asset_cfg=None,
+            provider=None,
+        )
+        assert kwargs.get("reasoning_trace_context") is True
+
+    def test_build_judge_kwargs_no_flag_without_think_content(self):
+        """_build_judge_kwargs ohne think_content → kein reasoning_trace_context-Key."""
+        from utils.scoring.judge_evaluator import _build_judge_kwargs
+
+        result = {
+            "model": "test-model",
+            "asset_id": "test_001",
+            "execution_time": 1.0,
+            "tokens_used": 500,
+            "reasoning_tokens": 0,
+            "token_limit_used": 8000,
+        }
+        asset_data = {
+            "prompt": "Write a greeting.",
+            "golden_standard": "Hello!",
+            "metadata": {"language": "en", "language_weight": 0.2},
+            "scoring": {},
+        }
+        kwargs = _build_judge_kwargs(
+            result=result,
+            response="Hello!",
+            asset_data=asset_data,
+            eval_module_id="cultural_intelligence",
+            model="test-model",
+            asset_cfg=None,
+            provider=None,
+        )
+        assert "reasoning_trace_context" not in kwargs
+
+    def test_build_judge_kwargs_no_flag_empty_think_content(self):
+        """_build_judge_kwargs mit leerem think_content → kein Flag."""
+        from utils.scoring.judge_evaluator import _build_judge_kwargs
+
+        result = {
+            "model": "test-model",
+            "asset_id": "test_001",
+            "execution_time": 1.0,
+            "tokens_used": 500,
+            "reasoning_tokens": 0,
+            "token_limit_used": 8000,
+            "think_content": "",
+        }
+        asset_data = {
+            "prompt": "Write a greeting.",
+            "golden_standard": "Hello!",
+            "metadata": {"language": "en", "language_weight": 0.2},
+            "scoring": {},
+        }
+        kwargs = _build_judge_kwargs(
+            result=result,
+            response="Hello!",
+            asset_data=asset_data,
+            eval_module_id="cultural_intelligence",
+            model="test-model",
+            asset_cfg=None,
+            provider=None,
+        )
+        assert "reasoning_trace_context" not in kwargs

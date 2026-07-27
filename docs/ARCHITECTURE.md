@@ -319,7 +319,7 @@ if _think and _think.strip():
     _effective_response = f"<think>\n{_think.strip()}\n</think>\n\n{response}"
 ```
 
-Der Judge sieht das Thinking als Teil der Response in bekannten `<think>`-Tags und erkennt es korrekt als internes Reasoning — nicht als task_compliance-Verletzung. Der TOKEN USAGE-Block im System-Prompt bleibt unverändert (zeigt weiterhin `reasoning_tokens`-Count). Viele rule-based Evaluatoren strippen `<think>`-Tags bereits beim Scoring.
+Der Judge sieht das Thinking als Teil der Response in bekannten `<think>`-Tags. Damit der Judge den `<think>`-Block korrekt als internes Reasoning interpretiert und nicht als "Output ONLY"-Verletzung bestraft, wird ein konditionaler `REASONING TRACE NOTE`-Block in den System-Prompt injiziert (nur wenn `think_content` vorhanden). Siehe `_append_reasoning_trace_note()` in `judge_prompt_builder.py`. Der TOKEN USAGE-Block im System-Prompt bleibt unverändert (zeigt weiterhin `reasoning_tokens`-Count). Viele rule-based Evaluatoren strippen `<think>`-Tags bereits beim Scoring.
 
 **Datenfluss-Garantie bei Inference-Server-Upgrades:**
 
@@ -328,7 +328,7 @@ Bei Upgrades von vLLM, llama.cpp, Ollama oder anderen Inference-Servern ist zwin
 1. **Reasoning-Parser aktiv?** — vLLM benötigt `--reasoning-parser` (z.B. `deepseek_r1` für `<think>`-Tags). Ohne aktiven Parser landen `<think>`-Tags im `content`-Feld → Content ist nicht clean.
 2. **`reasoning_content`-Feld befüllt?** — vLLM 0.25 benennt Felder um (`reasoning_content` → `reasoning`). `_extract_response_content()` und Streaming-Pfad prüfen beide Namen.
 3. **`reasoning_tokens` in `usage`?** — vLLM 0.25.1 befüllt `completion_tokens_details.reasoning_tokens` nicht zuverlässig. Fallback-Heuristik `_estimate_reasoning_tokens()` in `base.py` schätzt aus `completion_tokens − len(content)/4`.
-4. **End-to-End-Validierung:** Nach Upgrade einen Thinking-Modell-Durchlauf prüfen — `think_content` in CSV nicht leer, `response_length` entspricht nur sichtbarem Content, Judge-Reasoning erwähnt `<think>`-Block korrekt als internes Reasoning.
+4. **End-to-End-Validierung:** Nach Upgrade einen Thinking-Modell-Durchlauf prüfen — `think_content` in CSV nicht leer, `response_length` entspricht nur sichtbarem Content, Judge-Reasoning erwähnt `<think>`-Block korrekt als internes Reasoning (nicht als task_compliance-Verletzung). Falls der Judge den `<think>`-Block trotzdem bestraft: `REASONING TRACE NOTE`-Block im System-Prompt prüfen (muss vorhanden sein wenn `think_content` gesetzt).
 
 **Historischer Kontext (Session 53, vLLM 0.25-Upgrade):**
 
