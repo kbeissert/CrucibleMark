@@ -582,6 +582,13 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         Behandelt ``llamacpp``, ``llamacpp_spark`` und ``vllm_spark`` — alle drei
         sind OpenAI-kompatible lokale Server, deren Lifecycle über die jeweilige
         ``start_server(model)``-Methode im Provider-Client abgewickelt wird.
+
+        Bei ``start_server() == False`` (z. B. Pfad 2c Endpoint-Konflikt in
+        ``vllm_base.py``) wird ``RuntimeError`` mit der Phrase
+        ``"endpoint conflict or startup failure"`` geworfen — ``_run_asset_loop``
+        erkennt diese und bricht den Modullauf ab. Damit werden fehlerhafte
+        0%-Einträge in der CSV verhindert (vorher: jeder Asset-Aufruf
+        returnte nur ein Error-Result, was zu 5× 0%-Persistierung führte).
         """
         if provider not in ("llamacpp", "llamacpp_spark", "vllm_spark"):
             return None
@@ -600,17 +607,17 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
                     "Server (%s) konnte nicht für Modell '%s' gestartet werden.",
                     provider, model,
                 )
-                return self._create_error_result(
-                    asset_id,
-                    f"Server ({provider}) Start fehlgeschlagen für Modell '{model}' — Server-Log prüfen",
-                    model=model, provider=provider,
+                raise RuntimeError(
+                    f"endpoint conflict or startup failure: "
+                    f"Server ({provider}) Start fehlgeschlagen für Modell '{model}' — Server-Log prüfen"
                 )
+        except RuntimeError:
+            raise
         except Exception as _e:
             logger.error("start_server für Modell '%s' fehlgeschlagen: %s", model, _e)
-            return self._create_error_result(
-                asset_id, f"start_server Exception: {_e}",
-                model=model, provider=provider,
-            )
+            raise RuntimeError(
+                f"endpoint conflict or startup failure: start_server Exception: {_e}"
+            ) from _e
         return None
 
     def _execute_test_with_timing(

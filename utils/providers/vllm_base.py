@@ -413,6 +413,60 @@ class VllmBaseClient(BaseProviderClient):
                 names.append(base)
         return names
 
+    def _remote_chat_server_running(self) -> bool | None:
+        """Prüft via SSH, ob ein vLLM-Chat-Server-Prozess läuft (nicht Embed).
+
+        Bei Proxy-Setups liefert der Reverse-Proxy HTTP 502, sobald das
+        Backend nicht antwortet — unabhängig davon, ob der vLLM-Prozess
+        noch lädt oder komplett fehlt (Connection refused am Backend-Port).
+        ``_probe_status()`` kann diese beiden Fälle NICHT unterscheiden,
+        weil beide aus Sicht des Proxys 502 sind.
+
+        Diese Methode schließt die Lücke, indem sie auf dem Remote-Host
+        nach einem ``vllm serve``-Prozess sucht, der KEIN Embedding-Server
+        ist (Embedding-Server starten mit ``--runner pooling``). So kann
+        :meth:`start_server` Pfad 3.5 entscheiden, ob wirklich auf ein
+        ladendes Backend gewartet wird oder ob ein Cold-Start nötig ist.
+
+        Returns:
+            True  — mindestens ein Chat-vLLM-Prozess läuft/lädt.
+            False — kein Chat-vLLM-Prozess vorhanden (Backend wirklich down).
+            None  — Prüfung nicht möglich (kein SSH-Setup oder SSH-Fehler);
+                    Aufrufer muss konservativ warten (altes Verhalten).
+        """
+        start_cmd = self._server_start_cmd()
+        tokens = start_cmd.split()
+        if not tokens or tokens[0] != "ssh":
+            return None
+        remote_prefix = " ".join(tokens[:-1])
+        # Embedding-Server ausschließen: sie laufen mit ``--runner pooling``.
+        # ``pgrep -af`` listet PID + volle Kommandozeile; die beiden
+        # ``grep -v`` filtern Embed-Instanz und den pgrep-Prozess selbst
+        # heraus. Exit-Code 0 = Chat-Prozess gefunden, 1 = keiner da.
+        ssh_cmd = (
+            f"{remote_prefix} "
+            "\"pgrep -af 'vllm serve' | grep -v -- '--runner pooling' | grep -v pgrep\""
+        )
+        try:
+            proc = subprocess.run(
+                ssh_cmd, shell=True, check=False,
+                capture_output=True, text=True, timeout=15,
+            )
+        except (OSError, subprocess.TimeoutExpired) as exc:
+            logger.debug("SSH-Prozess-Check fehlgeschlagen: %s", exc)
+            return None
+        if proc.returncode == 0:
+            return bool(proc.stdout.strip())
+        if proc.returncode == 1:
+            return False
+        # Anderer Returncode (z. B. SSH 255 bei Verbindungsfehler) →
+        # unsicher, konservativ warten statt fälschlich neu zu starten.
+        logger.debug(
+            "SSH-Prozess-Check unsicher (returncode=%d, stderr=%s)",
+            proc.returncode, proc.stderr.strip(),
+        )
+        return None
+
     # ------------------------------------------------------------------
     # Health- und Readiness-Checks
     # ------------------------------------------------------------------
@@ -912,31 +966,54 @@ class VllmBaseClient(BaseProviderClient):
         # Pfad 3.5: Proxy meldet "loading" (502) → Backend lädt noch, WARTEN statt neu starten!
         # Verhindert den Fatal-Bug, dass ein ladender Container gestoppt und
         # neu gestartet wird (5-10 Min Modell-Ladezeit verschwendet).
+        #
+        # WICHTIG — 502-Mehrdeutigkeit bei Proxy-Setups:
+        # Ein Reverse-Proxy gibt 502 sowohl zurück, wenn das Backend lädt,
+        # ALS AUCH wenn gar kein vLLM-Prozess läuft (Connection refused am
+        # Backend-Port). Ohne Differenzierung würde der Connector hier 600 s
+        # auf ein nicht existierendes Backend warten, ohne ``vllm-start``
+        # aufzurufen → Timeout. Wir prüfen daher per SSH, ob tatsächlich ein
+        # Chat-Server-Prozess läuft. Nur dann wird gewartet; sonst fallen wir
+        # durch zum Cold-Start (Pfad 4).
         if status == "loading" and model_id:
-            prov_cfg = self._provider_cfg()
-            loading_timeout = int(prov_cfg.get(
-                "existing_server_ready_timeout_sec",
-                prov_cfg.get("server_ready_timeout_sec", DEFAULT_READY_TIMEOUT_SEC),
-            ))
-            loading_poll = int(prov_cfg.get("server_ready_poll_sec", DEFAULT_POLL_SEC))
+            chat_running = self._remote_chat_server_running()
+            if chat_running is not False:
+                prov_cfg = self._provider_cfg()
+                loading_timeout = int(prov_cfg.get(
+                    "existing_server_ready_timeout_sec",
+                    prov_cfg.get("server_ready_timeout_sec", DEFAULT_READY_TIMEOUT_SEC),
+                ))
+                loading_poll = int(prov_cfg.get("server_ready_poll_sec", DEFAULT_POLL_SEC))
+                print(
+                    f"   ⏳ vLLM-Backend lädt noch (Proxy meldet 502) — "
+                    f"warte auf Readiness (Timeout: {loading_timeout}s) ...",
+                    flush=True,
+                )
+                if self._wait_for_model_ready(
+                    model_id, timeout_sec=loading_timeout, poll_sec=loading_poll,
+                    log_prefix="Loading warmup",
+                ):
+                    self._active_model = model_id
+                    self._active_config = self._config_arg(model_id)
+                    # Server-Namen abfragen für API-Calls
+                    detected = self._query_active_model()
+                    self._server_model_name = detected or model_id
+                    print("   ✅ Backend bereit nach Wartezeit", flush=True)
+                    return True
+                logger.error("vLLM backend did not become ready within %d s (loading).", loading_timeout)
+                return False
+            # chat_running is False: Proxy-502 ist ein Down-Backend, kein
+            # ladender Prozess → Cold-Start (Pfad 4) statt Wartezeit.
+            logger.info(
+                "Proxy meldet 502, aber kein vLLM-Chat-Prozess aktiv "
+                "→ Cold-Start statt Wartezeit (vermeidet 600-s-Timeout)."
+            )
             print(
-                f"   ⏳ vLLM-Backend lädt noch (Proxy meldet 502) — "
-                f"warte auf Readiness (Timeout: {loading_timeout}s) ...",
+                "   ⚠️  Proxy meldet 502, aber kein vLLM-Chat-Prozess gefunden "
+                "— starte Server neu (Cold-Start) ...",
                 flush=True,
             )
-            if self._wait_for_model_ready(
-                model_id, timeout_sec=loading_timeout, poll_sec=loading_poll,
-                log_prefix="Loading warmup",
-            ):
-                self._active_model = model_id
-                self._active_config = self._config_arg(model_id)
-                # Server-Namen abfragen für API-Calls
-                detected = self._query_active_model()
-                self._server_model_name = detected or model_id
-                print("   ✅ Backend bereit nach Wartezeit", flush=True)
-                return True
-            logger.error("vLLM backend did not become ready within %d s (loading).", loading_timeout)
-            return False
+            # Durchfallen zu Pfad 4 (Cold-Start).
 
         # Pfad 4: Cold-Start (status == "down") — vllm-start launchen und auf Readiness warten
         cmd = self._build_server_cmd(model_id) if model_id else self._server_start_cmd()

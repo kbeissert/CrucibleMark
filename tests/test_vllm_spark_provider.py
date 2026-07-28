@@ -786,3 +786,154 @@ def test_start_server_path_3_aborts_when_stop_fails(monkeypatch, vllm_provider_c
         result = client.start_server("qwen3_6-27b-nvfp4-thinking")
 
     assert result is False
+
+
+# ---------------------------------------------------------------------------
+# Pfad 3.5: 502-Mehrdeutigkeit bei Proxy-Setups
+# ---------------------------------------------------------------------------
+# Ein Reverse-Proxy meldet HTTP 502 sowohl wenn das Backend lädt ALS AUCH
+# wenn gar kein vLLM-Prozess läuft. Der Connector muss letzteres als
+# Cold-Start erkennen, statt 600 s auf ein nicht existierendes Backend zu
+# warten (Regression: qwen3_6-27b-nvfp4-thinking startete nicht, weil der
+# Chat-Server down war, der Proxy aber 502 lieferte).
+
+def test_path_3_5_cold_starts_when_no_chat_process(monkeypatch, vllm_provider_config):
+    """502 + kein Chat-Prozess → Cold-Start (vllm-start wird aufgerufen).
+
+    Regression-Test: Chat-Server down, nur Embed-Server läuft → Proxy
+    meldet 502. Vor dem Fix wartete der Connector 600 s ohne vllm-start
+    aufzurufen. Jetzt wird per SSH geprüft und bei fehlendem Chat-Prozess
+    ein Cold-Start ausgelöst.
+    """
+    from unittest import mock  # noqa: PLC0415
+
+    client = VllmSparkClient(vllm_provider_config)
+
+    monkeypatch.setattr(client, "_probe_status", lambda: "loading")
+    monkeypatch.setattr(client, "_remote_chat_server_running", lambda: False)
+    monkeypatch.setattr(client, "_wait_for_model_ready", lambda *a, **k: True)
+    monkeypatch.setattr(client, "_query_active_model", lambda: "Qwen3.5-35B-A3B")
+
+    popen_calls: list[str] = []
+
+    class _FakeProc:
+        pid = 12345
+
+    def fake_popen(cmd, **kwargs):
+        popen_calls.append(cmd)
+        return _FakeProc()
+
+    with mock.patch("utils.providers.vllm_base.subprocess.Popen", side_effect=fake_popen):
+        result = client.start_server("Qwen3.5-35B-A3B")
+
+    assert result is True, "Cold-Start muss erfolgreich sein"
+    assert len(popen_calls) == 1, "vllm-start muss genau einmal aufgerufen werden"
+    assert "vllm-start" in popen_calls[0]
+    assert "--config Qwen3.5-35B-A3B" in popen_calls[0]
+
+
+def test_path_3_5_waits_when_chat_process_loading(monkeypatch, vllm_provider_config):
+    """502 + Chat-Prozess läuft/lädt → Wartezeit, KEIN Cold-Start.
+
+    Wenn ein vLLM-Chat-Prozess aktiv ist (z. B. Modell lädt noch), darf
+    der Connector nicht neu starten — er muss auf Readiness warten.
+    """
+    from unittest import mock  # noqa: PLC0415
+
+    client = VllmSparkClient(vllm_provider_config)
+
+    monkeypatch.setattr(client, "_probe_status", lambda: "loading")
+    monkeypatch.setattr(client, "_remote_chat_server_running", lambda: True)
+
+    wait_calls = {"n": 0}
+
+    def fake_wait(*args, **kwargs):
+        wait_calls["n"] += 1
+        return True
+
+    monkeypatch.setattr(client, "_wait_for_model_ready", fake_wait)
+    monkeypatch.setattr(client, "_query_active_model", lambda: "Qwen3.5-35B-A3B")
+
+    with mock.patch("utils.providers.vllm_base.subprocess.Popen") as popen_mock:
+        result = client.start_server("Qwen3.5-35B-A3B")
+
+    assert result is True
+    assert wait_calls["n"] == 1, "Auf Readiness muss gewartet werden (Loading warmup)"
+    popen_mock.assert_not_called(), "Bei ladendem Backend darf vllm-start NICHT aufgerufen werden"
+
+
+def test_path_3_5_waits_when_ssh_check_uncertain(monkeypatch, vllm_provider_config):
+    """502 + SSH-Check unsicher (None) → konservativ warten, kein Cold-Start.
+
+    Wenn der Prozess-Check nicht durchgeführt werden kann (SSH-Fehler),
+    muss der Connector das alte Verhalten beibehalten (warten), um keinen
+    fälschlichen Server-Kill auszulösen.
+    """
+    from unittest import mock  # noqa: PLC0415
+
+    client = VllmSparkClient(vllm_provider_config)
+
+    monkeypatch.setattr(client, "_probe_status", lambda: "loading")
+    monkeypatch.setattr(client, "_remote_chat_server_running", lambda: None)
+
+    wait_calls = {"n": 0}
+
+    def fake_wait(*args, **kwargs):
+        wait_calls["n"] += 1
+        return True
+
+    monkeypatch.setattr(client, "_wait_for_model_ready", fake_wait)
+    monkeypatch.setattr(client, "_query_active_model", lambda: "Qwen3.5-35B-A3B")
+
+    with mock.patch("utils.providers.vllm_base.subprocess.Popen") as popen_mock:
+        result = client.start_server("Qwen3.5-35B-A3B")
+
+    assert result is True
+    assert wait_calls["n"] == 1
+    popen_mock.assert_not_called()
+
+
+def test_remote_chat_server_running_returns_none_for_non_ssh(vllm_provider_config):
+    """Nicht-SSH-Start-Kommando → None (kann nicht prüfen, konservativ)."""
+    vllm_provider_config["providers"]["local"]["vllm_spark"]["server_start_cmd"] = "vllm-start"
+    client = VllmSparkClient(vllm_provider_config)
+
+    assert client._remote_chat_server_running() is None
+
+
+def test_remote_chat_server_running_excludes_embed_process(vllm_provider_config):
+    """Embed-Server (``--runner pooling``) wird nicht als Chat-Prozess gezählt.
+
+    Szenario: Nur Embed-Server läuft, Chat-Server down. pgrep findet den
+    Embed-Prozess, grep -v filtert ihn heraus → Rückgabe False (kein Chat).
+    """
+    from unittest import mock  # noqa: PLC0415
+
+    client = VllmSparkClient(vllm_provider_config)
+
+    # Simuliere: pgrep findet nur den Embed-Prozess, grep -v pooling → leer
+    # → Pipeline-Exitcode 1 (letzter grep findet nichts).
+    fake_proc = mock.Mock()
+    fake_proc.returncode = 1
+    fake_proc.stdout = ""
+    fake_proc.stderr = ""
+
+    with mock.patch("utils.providers.vllm_base.subprocess.run", return_value=fake_proc):
+        assert client._remote_chat_server_running() is False
+
+
+def test_remote_chat_server_running_detects_chat_process(vllm_provider_config):
+    """Chat-Server-Prozess vorhanden → Rückgabe True."""
+    from unittest import mock  # noqa: PLC0415
+
+    client = VllmSparkClient(vllm_provider_config)
+
+    fake_proc = mock.Mock()
+    fake_proc.returncode = 0
+    fake_proc.stdout = (
+        "1103120 vllm serve /path/qwen3.6-27B --port 3300 --reasoning-parser qwen3\n"
+    )
+    fake_proc.stderr = ""
+
+    with mock.patch("utils.providers.vllm_base.subprocess.run", return_value=fake_proc):
+        assert client._remote_chat_server_running() is True
