@@ -1,13 +1,18 @@
 ---
 description: >-
   CrucibleMark Memory Bank nach Session aktualisieren. Synchronisiert
-  Versionsnummern mit CHANGELOG und aktualisiert activeContext, progress,
-  systemPatterns, techContext und copilot-instructions. Qualität vor
-  Vollständigkeit — lieber nichts schreiben als etwas Falsches oder Triviales.
+  Versionsnummern mit CHANGELOG und aktualisiert CLAUDE.md, activeContext,
+  progress, systemPatterns, techContext. Hält Kilo-Local auf Index-Rolle.
+  Qualität vor Vollständigkeit — lieber nichts schreiben als etwas Falsches.
 ---
 
 Aktualisiere das Projekt-Wissen für CrucibleMark. **Qualität vor Vollständigkeit —
 lieber nichts schreiben als etwas Falsches oder Triviales.**
+
+**Rollen-Trennung (verbindlich):** `memory-bank/` ist die Content-SSoT
+(sichtbar für Kilo, Hermes, Cline, Copilot). Kilo-Local-Memory ist
+**Index/Zeiger nur** — durable Inhalte NUR nach `memory-bank/`, niemals nur
+nach Kilo-Local. Siehe `CLAUDE.md` → Rollen-Trennung. Schritt 6 prüft das.
 
 
 ## 0. Versionssynchro (immer zuerst ausführen)
@@ -24,7 +29,7 @@ Wenn ja → alle sieben Stellen synchron auf die neue Versionsnummer bringen:
 | `PROJECT_STATUS.md` | `**Current Version:**` + `**Last Updated:**` |
 | `CHANGELOG.md` | Neuer `## [vX.Y.Z] - YYYY-MM-DD`-Block ganz oben (ISO-Datum) |
 | `REF_TODO.md` | Neuer Abschnitt `### <Titel> (vX.Y.Z – DD.MM.YY)` unter "Abgeschlossen" |
-| `scripts/web_export.py` | String `"cruciblemark_version":` suchen und Wert anpassen |
+| `scripts/web_export/` | `cruciblemark_version`-String (wird via `_read_version` dynamisch gelesen — nur prüfen, nicht hardcodieren) |
 | `memory-bank/activeContext.md` | Versionsnennung im Abgeschlossen-Block |
 | `memory-bank/progress.md` | Bestehenden Meilenstein als `[DONE] vX.Y.Z` markieren |
 
@@ -47,11 +52,11 @@ Nicht dokumentieren:
 
 ---
 
-## 1. `.github/copilot-instructions.md` — Fallstricke & Verbote
+## 1. `CLAUDE.md` — Fallstricke & Verbote
 
 Nur ergänzen wenn ein **neuer, nicht-offensichtlicher Fallstrick** aufgetreten ist,
-der noch nicht im Conventions-Abschnitt steht. Max. 1–2 Sätze, ein Satz pro Eintrag.
-Kein neuer Fallstrick? → Nicht anfassen.
+der noch nicht im „Architecture Top Constraints"-Abschnitt steht. Max. 1–2 Sätze,
+ein Satz pro Eintrag. Kein neuer Fallstrick? → Nicht anfassen.
 
 
 ## 2. `memory-bank/systemPatterns.md` — Architekturentscheidungen
@@ -86,7 +91,21 @@ dass "Nächster Schritt" aus dem alten Stand nicht verloren geht, falls er noch 
 Nur anfassen bei **neuer Dependency**, geändertem Build-Befehl oder neuem Tool.
 Sonst: nicht ändern.
 
+
+## 6. Kilo-Local-Memory — Index-Only halten
+
+Prüfe, ob während der Session durable Inhalte versehentlich nach Kilo-Local
+geschrieben wurden (via `kilo_memory_save remember`). Falls ja:
+- Inhalt nach `memory-bank/` migrieren (`systemPatterns.md` oder `progress.md`)
+- Kilo-Local-Eintrag via `kilo_memory_save forget` entfernen
+- Bei Bedarf dünnen Zeiger-Eintrag hinterlassen: `key :: → memory-bank/systemPatterns.md "<Eintrag>"`
+
+Kilo-Local darf enthalten: Session-Digests, dünne Zeiger, Kilo-operative
+Pfade/Commands (`environment.md`). Durable Facts/Decisions/Corrections/Benchmark-
+Findings gehören **nur** nach `memory-bank/` — Hermes/Cline/Copilot können
+Kilo-Local nicht lesen.
+
 ---
 
 Bestätige abschließend mit: **"Memory updated ✓"** + einer einzeiligen Summary
-was geändert wurde (z.B. *"v3.5.0 sync: 7/7 ✅ | activeContext überschrieben | 1 neuer Task in progress.md"*).
+was geändert wurde (z.B. *"v3.5.0 sync: 7/7 ✅ | activeContext überschrieben | 1 neuer Task in progress.md | Kilo-Local bereinigt"*).

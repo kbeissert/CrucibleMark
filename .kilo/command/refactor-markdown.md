@@ -14,7 +14,7 @@ des Projekts auf Qualität und Konsistenz. **Kein Codetouching — nur Markdown 
 ### Reine Markdown-Dateien (`.md`)
 - `memory-bank/` — Projektdokumentation
 - `docs/` — Entwickler- und Architektur-Docs
-- `.github/` — Copilot Instructions und Prompt-Dateien
+- `CLAUDE.md` + `.agent/` — Agent-Context, Constraints, Architektur-Referenz
 - Root-Level: `README.md`, `CHANGELOG.md` (falls vorhanden)
 
 ### YAML-Dateien mit eingebettetem Markdown (`config.yaml`, `asset.yaml`)
@@ -62,11 +62,11 @@ falsche Einrückung zerstört die Prompt-Struktur still und ohne Fehlermeldung:
 - **Markdown innerhalb YAML:** Prüfe ob `**fett**`, `- Listen` und `###`-Headings
   korrekt mit Leerzeilen umgeben sind, damit sie beim LLM-Rendering greifen
 
-### 4 — Prompt- und Instruction-Dateien (`.github/`)
-- Sind alle `mode:`-Frontmatter-Felder gesetzt?
-- Sind `description:`-Felder vorhanden und aussagekräftig?
+### 4 — Command- und Instruction-Dateien (`.kilo/command/`, `CLAUDE.md`, `.agent/`)
+- Sind alle Frontmatter-`description:`-Felder vorhanden und aussagekräftig?
 - Sind eingebettete Code-Blöcke mit Sprach-Tag versehen (` ```python `, ` ```yaml ` etc.)?
 - Ist der Ton konsistent (Imperativ für Anweisungen)?
+- Referenzieren die Commands existierende Pfade (keine verwaisten `.github/`-Refs)?
 
 ### 5 — Memory Bank Konsistenz (`memory-bank/`)
 - Sind alle Statusfelder in `progress.md` im Format `[ ]` oder `[DONE]`?
@@ -90,7 +90,7 @@ Datei: modules/creative_writing/config.yaml  (Feld: system_prompt)
   [YAML-SCALAR]  Zeile 8: Folded-Scalar (>) zerstört Zeilenumbrüche → auf | wechseln
   [FORMATIERUNG] Zeile 14-15: Zwei Absätze ohne Leerzeile zusammengequetscht
 
-Datei: .github/prompts/session-start.prompt.md
+Datei: .kilo/command/session-start.md
   [FRONTMATTER]  description-Feld fehlt
 
 ...

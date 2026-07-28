@@ -37,6 +37,9 @@ Hartcodiert, nicht verhandelbar. Detail-Referenz → [architecture.md](.agent/ar
 - Konfiguration ausschließlich über Config-Files, nie hardcodiert.
 - Scoring-Logik nie stillschweigend verändern — verfälscht historische Benchmarks.
 - **`vllm-start` ist NICHT idempotent für Model-Swap:** Wenn der Container bereits mit einem anderen Modell läuft, weigert sich das Script zu starten und stoppt den laufenden Container nicht automatisch. Vor jedem Modell-Wechsel via Connector immer `vllm-stop` aufrufen (siehe `swap_model()` in `utils/providers/vllm_base.py`).
+- **vLLM-Server-Start dauert bis zu 5 Minuten:** Nicht wiederholt stoppen/starten während Diagnose oder Tests — Server am Leben lassen und gegen den laufenden Server testen.
+- **Judge-Prompts sind während laufender Tests unveränderlich:** Änderungen brechen die Vergleichbarkeit zwischen Modellen, die mit altem vs. neuem Prompt getestet wurden — ein Full-Re-Run aller Modelle wäre nötig.
+- **Benchmark-Reports werden pro Lauf überschrieben:** Alte Reports sind nicht mehr verfügbar — nur die committed JSON-Ergebnisdateien in `outputs/runs/` bleiben erhalten.
 
 ## AI & API Basics
 
@@ -108,3 +111,18 @@ KONTEXT-ÜBERGABE:
 
 > `activeContext.md` und `progress.md` werden nach jeder Session aktualisiert.
 > Vor größeren Änderungen lesen — Konflikte mit laufender Arbeit vermeiden.
+
+### Rollen-Trennung: memory-bank/ vs. Kilo-Local-Memory
+
+`memory-bank/` ist die **einzige Content-SSoT** für dauerhaftes Projektwissen —
+sichtbar für alle Agenten (Kilo, Hermes, Cline, Copilot). Kilo-Local-Memory
+(`~/.local/share/kilo/memory/`) ist **Index/Zeiger nur** und für andere Agenten
+unsichtbar.
+
+- **Durable Inhalte** (Facts, Decisions, Corrections, Benchmark-Findings,
+  Architektur-Patterns) → **nur** `memory-bank/systemPatterns.md` bzw.
+  `progress.md`. Niemals nur in Kilo-Local.
+- **Kilo-Local** darf enthalten: Session-Digests (Transkript-Kontinuität),
+  dünne Zeiger-Keywords, Kilo-operative Pfade/Commands (`environment.md`).
+- **Grund:** Hermes/Cline/Copilot können Kilo-Local nicht lesen — Inhalte nur
+  dort gehen verloren → duplizierte Arbeit, falsche Entscheidungen.

@@ -1,6 +1,14 @@
 # Progress
 Letzte Releases + aktueller Stand.
 
+### 2026-07-28 (Session 69) — vLLM-Connector 502-Mehrdeutigkeits-Fix [DONE] (uncommitted)
+
+**Bug:** Pfad 3.5 in `vllm_base.py:start_server()` wartete bei Proxy-502 600 s ohne `vllm-start`-Aufruf. `_probe_status()` kann „Backend down" nicht von „Backend lädt" unterscheiden (Proxy meldet beides als 502). Symptom: qwen3_6-27b-nvfp4-thinking startete nicht — Chat-Server war down, nur Embed lief.
+
+**Fix:** `_remote_chat_server_running()` (SSH `pgrep -af 'vllm serve' | grep -v -- '--runner pooling'`) prüft Chat-Prozess-Existenz. Pfad 3.5: `False` → Cold-Start (Pfad 4), `True`/`None` → warten. 6 neue + 78 bestehende Tests grün.
+
+---
+
 ### 2026-07-19 (Session 67) — Web-Export-Verifikation [DONE]
 
 **Auftrag:** Web-Export auf fehlende Einträge prüfen.
