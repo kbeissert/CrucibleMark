@@ -937,3 +937,145 @@ def test_remote_chat_server_running_detects_chat_process(vllm_provider_config):
 
     with mock.patch("utils.providers.vllm_base.subprocess.run", return_value=fake_proc):
         assert client._remote_chat_server_running() is True
+
+
+# ---------------------------------------------------------------------------
+# _adopt_matches: Config-Name-Match für Thinking-Profile (Bug-Fix)
+# ---------------------------------------------------------------------------
+
+def test_adopt_matches_config_name_for_thinking_profile(vllm_provider_config):
+    """Thinking-Profil mit abweichender model_id wird via config-Name erkannt.
+
+    Regression-Test für den Bug, bei dem die Auswahl des Thinking-Profils
+    (z. B. ``qwen3_6-35b-a3b-nvfp4-thinking``) einen unnötigen Server-Stop
+    auslöste, weil der Server den TOML-Namen ``Qwen3.6-35B-NVFP4`` meldet
+    und die model_id (mit ``a3b`` + ``thinking``) keinen Substring-Match
+    lieferte. Der Config-Name schließt diese Lücke.
+    """
+    # Thinking-Profil zur Config hinzufügen (wie die Config-Expansion es erzeugt).
+    vllm_provider_config["providers"]["local"]["vllm_spark"]["models"].append({
+        "id": "qwen3_6-35b-a3b-nvfp4-thinking",
+        "name": "Qwen 3.6 35B NVFP4 Thinking",
+        "config": "Qwen3.6-35B-NVFP4",
+        "max_tokens": 32768,
+        "enable_thinking": True,
+    })
+    client = VllmSparkClient(vllm_provider_config)
+
+    # Server meldet TOML-Basisnamen; model_id ist das Thinking-Profil.
+    assert client._adopt_matches("Qwen3.6-35B-NVFP4", "qwen3_6-35b-a3b-nvfp4-thinking") is True
+
+
+def test_adopt_matches_still_works_for_direct_id_match(vllm_provider_config):
+    """Direkter model_id-Match bleibt funktional (kein Regression)."""
+    client = VllmSparkClient(vllm_provider_config)
+    assert client._adopt_matches("Qwen3.5-35B-A3B", "Qwen3.5-35B-A3B") is True
+
+
+def test_adopt_matches_rejects_genuinely_different_model(vllm_provider_config):
+    """Echt verschiedenes Modell wird NICHT adoptiert (kein Fehl-Match)."""
+    client = VllmSparkClient(vllm_provider_config)
+    assert client._adopt_matches("Gemma-4-31B", "Qwen3.5-35B-A3B") is False
+
+
+# ---------------------------------------------------------------------------
+# _backend_stopped: Post-Stop-Verifikation bei permanentem Proxy (Bug-Fix)
+# ---------------------------------------------------------------------------
+
+def test_backend_stopped_true_when_probe_down(vllm_provider_config):
+    """Probe 'down' → Backend gestoppt (kein Proxy oder Proxy ebenfalls weg)."""
+    client = VllmSparkClient(vllm_provider_config)
+    monkeypatch_probe(client, status="down")
+    assert client._backend_stopped() is True
+
+
+def test_backend_stopped_true_when_loading_and_no_chat_process(vllm_provider_config):
+    """Probe 'loading' (Proxy 502) + kein vLLM-Prozess → Backend gestoppt.
+
+    Dies ist das Kern-Szenario des Bugs: permanenter Proxy auf 4300 liefert
+    502, nachdem das Backend auf 3300 gestoppt wurde. _probe_status() gibt
+    'loading' zurück — der SSH-Check bestätigt, dass kein Prozess mehr läuft.
+    """
+    client = VllmSparkClient(vllm_provider_config)
+    monkeypatch_probe(client, status="loading")
+    monkeypatch_chat_running(client, running=False)
+    assert client._backend_stopped() is True
+
+
+def test_backend_stopped_false_when_loading_and_chat_still_running(vllm_provider_config):
+    """Probe 'loading' + vLLM-Prozess noch aktiv → Backend NICHT gestoppt."""
+    client = VllmSparkClient(vllm_provider_config)
+    monkeypatch_probe(client, status="loading")
+    monkeypatch_chat_running(client, running=True)
+    assert client._backend_stopped() is False
+
+
+def test_backend_stopped_false_when_loading_and_ssh_unsure(vllm_provider_config):
+    """Probe 'loading' + SSH-Check unsicher (None) → konservativ False."""
+    client = VllmSparkClient(vllm_provider_config)
+    monkeypatch_probe(client, status="loading")
+    monkeypatch_chat_running(client, running=None)
+    assert client._backend_stopped() is False
+
+
+# ---------------------------------------------------------------------------
+# Hilfsfunktionen für Mocks
+# ---------------------------------------------------------------------------
+
+def monkeypatch_probe(client, status: str):
+    """Patcht _probe_status auf einen festen Rückgabewert."""
+    from unittest import mock  # noqa: PLC0415
+    mock.patch.object(client, "_probe_status", return_value=status, autospec=True).start()
+
+
+def monkeypatch_chat_running(client, running):
+    """Patcht _remote_chat_server_running auf einen festen Rückgabewert."""
+    from unittest import mock  # noqa: PLC0415
+    mock.patch.object(client, "_remote_chat_server_running", return_value=running, autospec=True).start()
+
+
+# ---------------------------------------------------------------------------
+# Integration: echte Config-Expansion + _adopt_matches Chain
+# ---------------------------------------------------------------------------
+
+def test_adopt_matches_through_real_config_expansion(vllm_provider_config):
+    """End-to-End: Config-Expansion erzeugt -thinking-Eintrag, _adopt_matches
+    erkennt ihn als selbes Backend.
+
+    Verifiziert die volle Chain: ``_expand_thinking_profiles()`` erzeugt den
+    ``{id}-thinking``-Eintrag mit identischem ``config``-Feld →
+    ``_config_arg()`` findet ihn → ``_adopt_matches()`` matched gegen den
+    vom Server gemeldeten TOML-Namen. Dies ist der exakte Pfad, der beim
+    Benchmark-Lauf mit Thinking-Profil durchlaufen wird.
+    """
+    from utils.config_validator import ConfigValidator  # noqa: PLC0415
+
+    # Modell mit enable_thinking hinzufügen (wie in provider_config.yaml).
+    vllm_provider_config["providers"]["local"]["vllm_spark"]["models"].append({
+        "id": "qwen3_6-35b-a3b-nvfp4",
+        "name": "Qwen 3.6 35B NVFP4 (vLLM, MoE, MTP)",
+        "config": "Qwen3.6-35B-NVFP4",
+        "max_tokens": 16384,
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 20,
+        "enable_thinking": True,
+    })
+    vllm_provider_config["providers"]["local"]["vllm_spark"]["thinking_max_tokens"] = 32768
+
+    # Echte Config-Expansion ausführen (wie ConfigValidator._load_config).
+    validator = ConfigValidator.__new__(ConfigValidator)
+    validator._expand_thinking_profiles(vllm_provider_config["providers"])
+
+    client = VllmSparkClient(vllm_provider_config)
+
+    # Der -thinking-Eintrag muss nach Expansion in der models-Liste sein.
+    models = client._provider_cfg().get("models", [])
+    thinking_ids = [m["id"] for m in models if m.get("id", "").endswith("-thinking")]
+    assert "qwen3_6-35b-a3b-nvfp4-thinking" in thinking_ids
+
+    # _config_arg muss den TOML-Namen zurückgeben (nicht die model_id).
+    assert client._config_arg("qwen3_6-35b-a3b-nvfp4-thinking") == "Qwen3.6-35B-NVFP4"
+
+    # Server meldet TOML-Namen → _adopt_matches muss True liefern (kein Stop).
+    assert client._adopt_matches("Qwen3.6-35B-NVFP4", "qwen3_6-35b-a3b-nvfp4-thinking") is True

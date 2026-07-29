@@ -467,6 +467,36 @@ class VllmBaseClient(BaseProviderClient):
         )
         return None
 
+    def _backend_stopped(self) -> bool:
+        """Prüfe, ob das vLLM-Backend nach ``stop_server()`` wirklich down ist.
+
+        Bei Proxy-Setups (permanenter Reverse-Proxy auf Port 4300) liefert
+        der Proxy HTTP 502, sobald das Backend weg ist — ``_probe_status()``
+        gibt dann ``"loading"`` zurück, NIEMALS ``"down"``. Ein reiner
+        ``_probe_status() == "down"``-Check würde den Stop also immer
+        fälschlich als fehlgeschlagen melden.
+
+        Diese Methode schließt die Lücke: bei ``"down"`` gilt der Stop als
+        erfolgreich (kein Proxy oder Proxy ebenfalls weg). Bei ``"loading"``
+        wird per SSH geprüft, ob noch ein Chat-vLLM-Prozess läuft — nur wenn
+        KEIN Prozess mehr existiert (``_remote_chat_server_running() is
+        False``), gilt der Stop als erfolgreich. Bei ``None`` (SSH-Check
+        nicht möglich) wird konservativ ``False`` zurückgegeben (Aufrufer
+        meldet Fehler, wie bisher).
+        """
+        status = self._probe_status()
+        if status == "down":
+            return True
+        if status == "loading":
+            chat_running = self._remote_chat_server_running()
+            if chat_running is False:
+                logger.debug(
+                    "Backend-Stopp verifiziert: Proxy meldet 'loading' (502), "
+                    "aber kein vLLM-Chat-Prozess mehr aktiv (SSH-Check)."
+                )
+                return True
+        return False
+
     # ------------------------------------------------------------------
     # Health- und Readiness-Checks
     # ------------------------------------------------------------------
@@ -921,7 +951,7 @@ class VllmBaseClient(BaseProviderClient):
                 print(f"   ⚠️  {warning}")
                 self.stop_server()
                 time.sleep(2)
-                if self._probe_status() != "down":
+                if not self._backend_stopped():
                     error = (
                         f"vLLM-Server unter {self._base_url()} konnte nicht gestoppt werden "
                         f"(Status nach stop_server(): {self._probe_status()}). "
@@ -952,7 +982,7 @@ class VllmBaseClient(BaseProviderClient):
             )
             self.stop_server()
             time.sleep(2)
-            if self._probe_status() != "down":
+            if not self._backend_stopped():
                 error = (
                     f"vLLM-Server (Modell '{self._active_model}') konnte nicht gestoppt "
                     f"werden (Status nach stop_server(): {self._probe_status()}). "
@@ -1062,13 +1092,40 @@ class VllmBaseClient(BaseProviderClient):
         vLLM liefert Modell-IDs im Stil ``/path/to/model`` oder
         ``org/model-name``. Wir matchen tolerant per Substring auf der
         kanonisierten Form.
+
+        WICHTIG — Thinking-Profile: Zwei Profile (Standard + Thinking)
+        zeigen auf dasselbe TOML (``config`` identisch), haben aber
+        unterschiedliche ``model_id``s (z. B. ``qwen3_6-35b-a3b-nvfp4``
+        vs. ``qwen3_6-35b-a3b-nvfp4-thinking``). Der Server meldet den
+        TOML-Basisnamen (z. B. ``Qwen3.6-35B-NVFP4``). Ein reiner
+        model_id-Substring-Match schlägt hier fehl, weil die model_id
+        zusätzliche Segmente enthält (``a3b``, ``thinking``), die im
+        TOML-Namen nicht vorkommen. Daher wird ZUSÄTZLICH der
+        Config-Name (``_config_arg``) gegen ``detected`` geprüft —
+        stimmt dieser überein, handelt es sich um dasselbe Backend und
+        ein Profil-Wechsel darf KEIN Stop+Restart auslösen.
         """
         def _strip(value: str) -> str:
             return value.lower().replace(".", "").replace("-", "").replace("_", "").replace("/", "")
 
-        d = _strip(detected)
-        m = _strip(model_id)
-        return bool(m) and bool(d) and (m in d or d in m)
+        def _match(a: str, b: str) -> bool:
+            sa, sb = _strip(a), _strip(b)
+            return bool(sa) and bool(sb) and (sa in sb or sb in sa)
+
+        if _match(detected, model_id):
+            return True
+        # Config/TOML-Name als zweite Match-Ebene — schließt Thinking-
+        # Profile ein, deren model_id den TOML-Namen nicht substring-
+        # enthält (z. B. a3b-MoE-Notation, -thinking-Suffix).
+        config_name = self._config_arg(model_id)
+        if config_name and config_name != model_id and _match(detected, config_name):
+            logger.debug(
+                "Adopt-Match via config-Name: detected='%s' matched config='%s' "
+                "(model_id='%s') — Profil-Wechsel ohne Server-Swap.",
+                detected, config_name, model_id,
+            )
+            return True
+        return False
 
     def stop_server(self) -> None:
         """Stop the vLLM server via the configured stop command."""
@@ -1108,12 +1165,14 @@ class VllmBaseClient(BaseProviderClient):
     def swap_model(self, model_id: str) -> bool:
         """Stop current server and restart it with the new model.
 
-        WICHTIG: Nach ``stop_server()`` wird aktiv auf ``status == "down"``
-        gewartet, bevor ``start_server()`` aufgerufen wird. Ohne dieses
-        Polling könnte ``start_server()`` den noch laufenden alten
-        Container sehen (SSH-Latenz, langsamer Docker-Shutdown) und über
-        Pfad 2c rekursiv ``stop_server()`` aufrufen — bis zum Python-
-        Recursion-Limit.
+        WICHTIG: Nach ``stop_server()`` wird aktiv auf Backend-Down
+        gewartet (``_backend_stopped()``), bevor ``start_server()``
+        aufgerufen wird. Ohne dieses Polling könnte ``start_server()``
+        den noch laufenden alten Prozess sehen (SSH-Latenz, langsamer
+        Shutdown) und über Pfad 2c rekursiv ``stop_server()`` aufrufen —
+        bis zum Python-Recursion-Limit. Bei permanentem Proxy liefert
+        ``_probe_status()`` ``"loading"`` statt ``"down"``; die SSH-
+        Prozess-Prüfung in ``_backend_stopped()`` schließt diese Lücke.
         """
         logger.debug("Swapping vLLM model to: %s", model_id)
         self.stop_server()
@@ -1127,9 +1186,11 @@ class VllmBaseClient(BaseProviderClient):
 
         # Auf tatsächliches Herunterfahren warten (max 30 s), sonst
         # würde start_server() den alten Container sehen und rekursiv
-        # stop_server() aufrufen.
+        # stop_server() aufrufen. Bei permanentem Proxy liefert
+        # _probe_status() "loading" statt "down" — _backend_stopped()
+        # prüft dann per SSH, ob der vLLM-Prozess wirklich weg ist.
         for _ in range(15):
-            if self._probe_status() == "down":
+            if self._backend_stopped():
                 break
             time.sleep(2)
 
