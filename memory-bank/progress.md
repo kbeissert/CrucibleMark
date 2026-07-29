@@ -1,7 +1,36 @@
 # Progress
 Letzte Releases + aktueller Stand.
 
-### 2026-07-28 (Session 69) — vLLM-Connector 502-Mehrdeutigkeits-Fix [DONE] (uncommitted)
+### 2026-07-29 (Session 71) — vLLM-Connector Thinking-Profile-Adoption-Fix [DONE] (committed `fd386047`)
+
+**Bug:** Benchmark-Abbruch beim Auswählen des Thinking-Profils (Eintrag 12: `qwen3_6-35b-a3b-nvfp4-thinking`), wenn der vLLM-Server bereits mit `Qwen3.6-35B-NVFP4` lief. Zwei gekoppelte Bugs in `utils/providers/vllm_base.py`:
+
+1. **`_adopt_matches()` (Root Cause):** Der Substring-Match nach Stripping von `.-_/` scheiterte, weil die `model_id` `qwen3_6-35b-a3b-nvfp4-thinking` die Segmente `a3b` (MoE-Notation) und `thinking` enthält, die im TOML-Namen `Qwen3.6-35B-NVFP4` fehlen. Pfad 2c wertete das als "ECHTER Endpoint-Konflikt" und stoppte den Server unnötig.
+2. **Post-Stop-Verifikation (sekundär, latent):** Nach `stop_server()` liefert der permanente Proxy auf Port 4300 HTTP 502 (Backend weg), den `_probe_status()` als `"loading"` interpretiert — nie als `"down"`. Der Check `_probe_status() != "down"` meldete den Stop immer fälschlich als fehlgeschlagen.
+
+**Fix:**
+- `_adopt_matches()` prüft zusätzlich zur `model_id` auch den Config/TOML-Namen (`_config_arg(model_id)`) gegen den vom Server gemeldeten Namen. Identische TOML = selbes Backend → Adoption statt Stop.
+- Neue Methode `_backend_stopped()`: bei `"down"` → True; bei `"loading"` → SSH-Check via `_remote_chat_server_running()`, nur wenn kein vLLM-Prozess mehr läuft → True; bei `None` (SSH unsicher) → konservativ False. Eingebaut in Pfad 2c, Pfad 3 und `swap_model`-Polling-Schleife.
+
+**Verifikation:**
+- Config-Expansions-Pfad verifiziert: `_expand_thinking_profiles()` (config_validator.py:79) kopiert via `dict(model)` alle Felder inkl. `config` → `-thinking`-Eintrag in derselben `models`-Liste wie `_model_cfg()`.
+- Smoketest: `start_server("qwen3_6-35b-a3b-nvfp4-thinking")` adoptiert in 0.6s (vs. 5-10min Restart), Query erfolgreich, Server bleibt laufen.
+- Benchmark `code_quality`-Modul: läuft fehlerfrei über Server-Start-Phase (vorher: Abbruch mit "endpoint conflict or startup failure").
+- 120 Tests grün (6 neue Regression-Tests + 1 Integrationstest mit echter Config-Expansion). Lint 9.99/10.
+
+**Architektur-Erkenntnis:** Die Zwei-Port-Architektur (3300 Backend + 4300 Proxy) ist korrekt für die native (nicht-Docker) Installation. Der Connector arbeitet ausschließlich auf 4300. Die `3300`-Meldungen kommen vom remoteen `vllm-stop`-Skript.
+
+---
+
+### 2026-07-28 (Session 70) — Thinking-Trace-Fix Verifikation + ux_writing Re-Run [DONE] (committed `2b1a9321`)
+
+**Verifikation:** REASONING TRACE NOTE + `<think>`-Wrapping modellunabhängig verifiziert — 2 Modelle (Ornith 1.0 35B + qwen3.6-27B), 50+ Audit-Logs, kein einziger Think-Block-Penalty. Negativ-Kontrolle bestanden (Standard-Profil: 0 Think-Referenzen). ToolUse-Judge-Pfad geklärt: `test.py:416` übergibt nur `raw_response` (visible-only), kein `think_content` — kein Think-Penalty-Risiko. Auditor-Bedenken (n=1-Bestätigungsfehler) entkräftet.
+
+**ux_writing Re-Run:** qwen3_6-27b-nvfp4-thinking, 5 Assets mit `--force`. 4/5 erfolgreich (Judge 4.0/5). ux_writing_002 reproduzierbar trunciert (12662 Token Thinking, "Empty response received from LLM", Score 1.1%, Judge 0.0/5). Akzeptiert als modellseitige Known Limitation.
+
+---
+
+### 2026-07-28 (Session 69) — vLLM-Connector 502-Mehrdeutigkeits-Fix [DONE] (committed `659f34e0`)
 
 **Bug:** Pfad 3.5 in `vllm_base.py:start_server()` wartete bei Proxy-502 600 s ohne `vllm-start`-Aufruf. `_probe_status()` kann „Backend down" nicht von „Backend lädt" unterscheiden (Proxy meldet beides als 502). Symptom: qwen3_6-27b-nvfp4-thinking startete nicht — Chat-Server war down, nur Embed lief.
 
