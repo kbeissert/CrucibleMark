@@ -17,11 +17,11 @@
   "params_active_b": 27.8,
   "context_window_k": 262,
   "knowledge_cutoff": "2025-12",
-  "summary": "Qwen 3.6 27B ist Alibabas dichtes Open-Weights-Modell mit 27,8 Mrd. aktiven Parametern, das laut Hersteller das eigene MoE-Geschwistermodell 35B-A3B in Coding-, Agent- und Vision-Tests übertrifft. Veröffentlicht am 22. April 2026 unter Apache 2.0 für lokalen Betrieb, kombiniert die Architektur hybride Attention mit nativer Multi-Token-Prediction für spürbaren Durchsatz.",
+  "summary": "Qwen 3.6 27B ist Alibabas dichtes Open-Weights-Modell mit 27,8 Mrd. aktiven Parametern, das laut Hersteller das eigene MoE-Geschwistermodell 35B-A3B in Coding-, Agent- und Vision-Tests übertrifft. Veröffentlicht am 22. April 2026 unter Apache 2.0 für lokalen Betrieb, kombiniert die Architektur hybride Attention mit nativer Multi-Token-Prediction für spürbaren Durchsatz. Diese Card erfasst die NVFP4-Variante — ein Performance-Update für vLLM auf NVIDIA Blackwell: NVFP4 ist ein 4-Bit-Floating-Point-Format mit zweistufiger Mikroblock-Skalierung (E4M3 pro 16-Werte-Block plus FP32-Per-Tensor-Skala), das den Speicherbedarf gegenüber FP16 um ~3,5× und gegenüber FP8 um ~1,8× senkt bei unter 1 % Genauigkeitsverlust. Vorgängerprofil ohne NVFP4: qwen3_6-27B (Card qwen3_6-27B--VSPK.json, Tests 2026-07-09).",
   "strengths": [
     "Benchmark-Stärke: Übertrifft laut Alibaba das größere MoE-Geschwister in Coding und Vision.",
     "Multi-Token-Prediction: Spekulatives Decoding für mehr Durchsatz ohne Genauigkeitsverlust.",
-    "NVFP4-Quantisierung: Kompakte FP4-Variante für ressourcenschonende Inferenz nahe FP8.",
+    "NVFP4-Quantisierung: 4-Bit-Floating-Point für NVIDIA Blackwell-Tensor-Cores, ~3,5× weniger Speicher als FP16 bei unter 1 % Genauigkeitsverlust gegenüber FP8.",
     "Kontextfenster: Nativ 262.144 Tokens, per Skalierung auf über eine Million erweiterbar.",
     "Multimodalität: Verarbeitet Text, Bild und Video über integrierten Vision-Tower.",
     "Lizenz: Apache 2.0 mit offenen Gewichten, uneingeschränkte kommerzielle Nutzung."

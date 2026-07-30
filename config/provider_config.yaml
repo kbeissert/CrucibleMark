@@ -621,21 +621,25 @@ providers:
           - "--spec-type draft-mtp"
           - "--spec-draft-n-max 4"
 
-      - id: qwen3_6-35b-a3b-mtp-ud-q8
-        name: Qwen 3.6 35B-A3B MTP UD-Q8_K_XL (GGUF)
-        model_file: Qwen3.6/Qwen3.6-35B-A3B-MTP-UD-Q8_K_XL.gguf
-        n_gpu_layers: 99
-        context_length: 65536
-        enable_thinking: true
-        temperature: 0.7
-        top_p: 0.8
-        top_k: 20
-        presence_penalty: 1.5
-        repeat_penalty: 1.0
-        extra_server_args:
-          - "--spec-type draft-mtp"
-          - "--spec-draft-n-max 2"
-          - '--chat-template-kwargs {"preserve_thinking":true}'
+      # 2026-07-30: Auskommentiert — Dublette zu vllm_spark.qwen3_6-35b-a3b-nvfp4.
+      # Cross-Backend-Inference-Vergleich (llamacpp vs. vllm) wird über
+      # separate vllm_spark-Konfiguration gefahren; Datensatz bleibt für
+      # spätere Re-Aktivierung erhalten.
+      # - id: qwen3_6-35b-a3b-mtp-ud-q8
+      #   name: Qwen 3.6 35B-A3B MTP UD-Q8_K_XL (GGUF)
+      #   model_file: Qwen3.6/Qwen3.6-35B-A3B-MTP-UD-Q8_K_XL.gguf
+      #   n_gpu_layers: 99
+      #   context_length: 65536
+      #   enable_thinking: true
+      #   temperature: 0.7
+      #   top_p: 0.8
+      #   top_k: 20
+      #   presence_penalty: 1.5
+      #   repeat_penalty: 1.0
+      #   extra_server_args:
+      #     - "--spec-type draft-mtp"
+      #     - "--spec-draft-n-max 2"
+      #     - '--chat-template-kwargs {"preserve_thinking":true}'
 
       # ── Auskommentiert 2026-07-08: GGUF-Dateien fehlen auf der Spark. ──
       # - id: qwen3_5-35b-a3b-q8
@@ -799,7 +803,15 @@ providers:
       # Gemma 4 offizielle Empfehlung: temperature=1.0, top_p=0.95, top_k=64.
       - id: Gemma-4-26B
         name: Gemma 4 26B-A4B NVFP4 (vLLM, MoE)
-        config: Gemma-4-26B
+        # TOML: ~/ai/shared/configs/vllm/models/Gemma-4-26B-A4B-it-NVFP4.toml
+        # (Unsloth NVFP4 compressed-tensors, MoE 25.2B total / 3.8B active).
+        # ``config`` MUSS exakt dem TOML-Dateinamen ohne .toml entsprechen,
+        # sonst scheitert ``vllm-start --config`` (siehe vllm_base._config_arg).
+        # ``model_id`` bleibt ``Gemma-4-26B`` für Card/CSV-Konsistenz; die
+        # Adoption in vllm_base._adopt_matches() prüft zusätzlich gegen
+        # ``config_name``, damit der vom Server gemeldete served_model_name
+        # (``Gemma-4-26B-A4B-it-NVFP4``) als Match akzeptiert wird.
+        config: Gemma-4-26B-A4B-it-NVFP4
         max_tokens: 16384
         temperature: 1.0
         top_p: 0.95
@@ -809,7 +821,10 @@ providers:
 
       - id: Gemma-4-31B
         name: Gemma 4 31B NVFP4 (vLLM, Dense, multimodal)
-        config: Gemma-4-31B
+        # TOML: ~/ai/shared/configs/vllm/models/Gemma-4-31B-it-NVFP4.toml
+        # (Dense, multimodal, Apache-2.0). Siehe Hinweis oben zu
+        # ``config`` ↔ TOML-Filename-Mismatch.
+        config: Gemma-4-31B-it-NVFP4
         max_tokens: 16384
         temperature: 1.0
         top_p: 0.95
@@ -847,6 +862,28 @@ providers:
         temperature: 1.0
         top_p: 0.95
         top_k: 20
+        enable_thinking: true
+
+      # Laguna S 2.1 — Poolside NVFP4 MoE (117.6B total / 8.5B active),
+      # custom LagunaForCausalLM (trust_remote_code=true), DFlash Speculative
+      # Decoding (15 Tokens, ~2x decode-speedup), 256K Context.
+      # Sampling synchron mit TOML (HF-Card-Empfehlung
+      # temperature=0.7/top_p=0.95). top_k=20 wird via
+      # ``--generation-config auto`` aus Checkpoint geladen — KEIN
+      # ``min_p`` (vLLM rejects min_p under speculative decoding -> 400).
+      # Thinking serverseitig ON (HF-Card: "reasoning model by default"),
+      # MOD-Patch thinking-budget-by-effort injiziert reasoning_effort →
+      # thinking_token_budget. Clients können via
+      # chat_template_kwargs {"enable_thinking":false} abschalten.
+      # Cold-Start ~15 Min, single-Cold-Start (kein Container-Pool).
+      - id: Laguna-S-2_1-NVFP4
+        name: Laguna S 2.1 NVFP4 (vLLM, MoE, DFlash)
+        config: Laguna-S-2.1-NVFP4
+        max_tokens: 16384
+        temperature: 0.7
+        top_p: 0.95
+        top_k: 20
+        # repetition_penalty:  # TOML-Default (kein Override)
         enable_thinking: true
 
       # Hermes 4 70B — FP8 compressed-tensors, Llama-3.1-Architektur, reasoning + tool-calling.

@@ -90,12 +90,12 @@
   "community": null,
   "tooluse_runs": {
     "Gemma-4-26B": {
-      "tested_at": "2026-07-10T08:45:08Z",
+      "tested_at": "2026-07-29T20:52:14Z",
       "score_p1": 88.33,
       "score_p2": 56.67
     },
     "Gemma-4-26B-thinking": {
-      "tested_at": "2026-07-10T08:45:08Z",
+      "tested_at": "2026-07-29T22:57:46Z",
       "score_p1": 82.5,
       "score_p2": 60.0
     }
