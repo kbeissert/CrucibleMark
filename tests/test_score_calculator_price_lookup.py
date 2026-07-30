@@ -209,10 +209,10 @@ def test_card_without_model_id_is_skipped():
 
 
 def test_real_qwen3_6_27b_card_has_zero_price():
-    """Regression: qwen3_6-27B Card nach Fix → price = 0.0 (per-1K)."""
+    """Regression: qwen3_6-27B-pre025 Card nach Fix → price = 0.0 (per-1K)."""
     lookup = _build_lookup_from_dir(_REAL_CARDS_DIR)
-    assert "qwen3_6-27B" in lookup
-    assert lookup["qwen3_6-27B"] == 0.0
+    assert "qwen3_6-27B-pre025" in lookup
+    assert lookup["qwen3_6-27B-pre025"] == 0.0
 
 
 def test_real_gemma_4_26b_card_has_zero_price():

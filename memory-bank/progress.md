@@ -1,6 +1,14 @@
 # Progress
 Letzte Releases + aktueller Stand.
 
+### 2026-07-30 (Session 72) — qwen3_6-27B → qwen3_6-27B-pre025 Historical Rename + ToolUse Timestamp-Bugfix [DONE]
+
+**Rename:** Historische `qwen3_6-27B`-ID (capital B, vLLM vor 0.25.1) zu `qwen3_6-27B-pre025` umbenannt. CSV (99 Zeilen), Card (`git mv` + model_id + tooluse_runs), NVFP4-Card-Summary, Blacklist (`kept_overrides` → aktive `blacklist`), Audit-Logs (93 Dateien), Reviews, Runs-JSON, Test-Fixtures aktualisiert. 1553 Tests grün, Webexport erfolgreich (pre025 blacklisted, nvfp4 exportiert).
+
+**Bugfix:** `tooluse_exporter.py:_write_card_from_aggregated_row` (Path B) überschrieb `tested_at` in 107 Cards mit `datetime.now()` bei jedem `make tooluse-leaderboard`-Lauf. Fix: existierenden Card-Wert bewahren (Priority: existing card → `source_timestamp` aus CSV → `row.timestamp` → `datetime.now`). Neue Methode `_latest_source_timestamp` extrahiert CSV-Timestamps. Nach Fix: 0 Cards modifiziert.
+
+---
+
 ### 2026-07-29 (Session 71) — vLLM-Connector Thinking-Profile-Adoption-Fix [DONE] (committed `fd386047`)
 
 **Bug:** Benchmark-Abbruch beim Auswählen des Thinking-Profils (Eintrag 12: `qwen3_6-35b-a3b-nvfp4-thinking`), wenn der vLLM-Server bereits mit `Qwen3.6-35B-NVFP4` lief. Zwei gekoppelte Bugs in `utils/providers/vllm_base.py`:

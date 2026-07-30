@@ -229,9 +229,17 @@ class ToolUseExporter:
             p2 = float(row.get("p2_score", "") or 0.0)
         except (ValueError, TypeError):
             p2 = 0.0
-        timestamp = row.get("timestamp") or datetime.now(UTC).strftime(
-            "%Y-%m-%dT%H:%M:%SZ",
-        )
+        existing_card = _load_card_data(model_id) or {}
+        existing_run = (existing_card.get("tooluse_runs") or {}).get(model_id) or {}
+        source_ts = row.get("source_timestamp")
+        if existing_run.get("tested_at"):
+            timestamp = existing_run["tested_at"]
+        elif source_ts:
+            timestamp = source_ts
+        else:
+            timestamp = row.get("timestamp") or datetime.now(UTC).strftime(
+                "%Y-%m-%dT%H:%M:%SZ",
+            )
 
         update_model_card_tooluse_fields(
             model_id=model_id,
@@ -254,7 +262,30 @@ class ToolUseExporter:
         state = self._init_aggregation_state()
         for row in rows:
             self._accumulate_csv_row(row, state)
-        return self._build_leaderboard_row(model_id, rows, state, card)
+        result = self._build_leaderboard_row(model_id, rows, state, card)
+        result["source_timestamp"] = self._latest_source_timestamp(rows)
+        return result
+
+    @staticmethod
+    def _latest_source_timestamp(rows: list[dict[str, Any]]) -> str | None:
+        """Extrahiert den neuesten timestamp aus den Quell-CSV-Zeilen.
+
+        Normalisiert ``YYYY-MM-DD HH:MM:SS`` → ``YYYY-MM-DDTHH:MM:SSZ``
+        (ISO-8601 UTC). Wird von ``_write_card_from_aggregated_row`` genutzt,
+        um ``tested_at`` in der Card nicht mit ``datetime.now()`` zu
+        überschreiben, sondern den originalen Test-Zeitpunkt zu bewahren.
+        """
+        best: str | None = None
+        for row in rows:
+            raw = str(row.get("timestamp", "")).strip()
+            if not raw:
+                continue
+            normalized = raw.replace(" ", "T", 1)
+            if not normalized.endswith("Z"):
+                normalized += "Z"
+            if best is None or normalized > best:
+                best = normalized
+        return best
 
     # ------------------------------------------------------------------
     # Aggregation helpers (shared by finalize_model + aggregate_from_benchmark_csvs)

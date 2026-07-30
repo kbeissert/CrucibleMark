@@ -40,6 +40,7 @@ Hartcodiert, nicht verhandelbar. Detail-Referenz → [architecture.md](.agent/ar
 - **vLLM-Server-Start dauert bis zu 5 Minuten:** Nicht wiederholt stoppen/starten während Diagnose oder Tests — Server am Leben lassen und gegen den laufenden Server testen.
 - **Judge-Prompts sind während laufender Tests unveränderlich:** Änderungen brechen die Vergleichbarkeit zwischen Modellen, die mit altem vs. neuem Prompt getestet wurden — ein Full-Re-Run aller Modelle wäre nötig.
 - **Benchmark-Reports werden pro Lauf überschrieben:** Alte Reports sind nicht mehr verfügbar — nur die committed JSON-Ergebnisdateien in `outputs/runs/` bleiben erhalten.
+- **`tooluse_leaderboard.csv` ist ein Upsert-File:** Bei Modell-ID-Renames persistieren alte IDs als verwaiste Zeilen — Datei vor `make tooluse-leaderboard` löschen, sonst Duplikate im Leaderboard.
 
 ## AI & API Basics
 

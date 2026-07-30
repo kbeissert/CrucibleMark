@@ -10,7 +10,7 @@ Dot-Form (``ornith-1.0-35B-FP8``).
 Vor dem Fix (util/model_utils.py:1061) wurde in ``resolve_provider()`` ein
 exakter String-Vergleich gegen ``provider_config.yaml`` durchgeführt,
 wodurch kanonisierte IDs den falschen Provider-Slot fanden
-(``ornith-1_0-35B-FP8`` → ``ollama``, ``qwen3_6-27B`` → ``groq``).
+(``ornith-1_0-35B-FP8`` → ``ollama``, ``qwen3_6-27B-pre025`` → ``groq``).
 
 Diese Tests sichern die korrekte Zuteilung mit beiden Schreibweisen ab und
 verhindern, dass der nächste Refactor in der SSoT-Pipeline denselben
@@ -31,10 +31,11 @@ from utils.model_utils import resolve_provider
         ("ornith-1.0-35B-FP8", "vllm_spark"),
         ("ornith-1_0-35B-FP8", "vllm_spark"),
         # Qwen3.6-27B NVFP4 — aktive Config-ID in vllm_spark (seit NVFP4-Update
-        # 2026-07-26). Die Vorgänger-ID ``qwen3_6-27B`` (vor NVFP4, GGUF-Ära)
-        # ist ein eigenständiges historisches Modell mit eigenen Audit-Logs
-        # (outputs/audit_logs/qwen3_6-27B/, 2026-07-10) und eigener Card
-        # (qwen3_6-27B--VSPK.json), aber NICHT mehr in provider_config.yaml
+        # 2026-07-26). Die Vorgänger-ID ``qwen3_6-27B-pre025`` (vor NVFP4,
+        # vLLM vor 0.25.1) ist ein eigenständiges historisches Modell mit
+        # eigenen Audit-Logs (outputs/audit_logs/qwen3_6-27B-pre025/,
+        # 2026-07-10) und eigener Card (qwen3_6-27B-pre025--VSPK.json), aber
+        # NICHT mehr in provider_config.yaml
         # aktiv — fällt daher auf die 'qwen'→groq-Heuristik zurück.
         ("qwen3_6-27b-nvfp4", "vllm_spark"),
         # qwen3_5-35b-a3b-q8: am 2026-07-08 aus llamacpp_spark auskommentiert

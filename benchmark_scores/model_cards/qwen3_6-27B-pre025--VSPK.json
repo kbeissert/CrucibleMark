@@ -1,5 +1,5 @@
 {
-  "model_id": "qwen3_6-27B",
+  "model_id": "qwen3_6-27B-pre025",
   "display_name": "Qwen3.6 27B Instruct",
   "developer": "Alibaba Cloud (Qwen Team)",
   "origin_country": "CN",
@@ -93,12 +93,12 @@
   "heritage_ids": [],
   "community": null,
   "tooluse_runs": {
-    "qwen3_6-27B": {
+    "qwen3_6-27B-pre025": {
       "tested_at": "2026-07-10T08:45:08Z",
       "score_p1": 72.5,
       "score_p2": 56.67
     },
-    "qwen3_6-27B-thinking": {
+    "qwen3_6-27B-pre025-thinking": {
       "tested_at": "2026-07-12T22:28:42Z",
       "score_p1": 19.17,
       "score_p2": 22.5

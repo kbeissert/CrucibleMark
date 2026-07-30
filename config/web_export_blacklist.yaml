@@ -110,6 +110,12 @@ blacklist:
   # -----------------------------------------------------------------
   - "qwen3-coder-next-q8"                   # q4 (Rank 34) schneller UND stärker
 
+  # -----------------------------------------------------------------
+  # Qwen 3.6 27B — historische pre-vLLM-0.25.1-Variante (NVFP4 ersetzt)
+  # -----------------------------------------------------------------
+  - "qwen3_6-27B-pre025"                    # vLLM vor 0.25.1, Standard
+  - "qwen3_6-27B-pre025-thinking"            # vLLM vor 0.25.1, Thinking
+
 
 # ============================================================================
 # KEPT OVERRIDES (informational, Loader ignoriert diesen Block)
@@ -247,18 +253,18 @@ kept_overrides:
         score: 76.26
         size: Frontier
         reason: "Frontier-API (OpenRouter)"
-      - id: qwen3_6-27B-thinking
+      - id: qwen3_6-27B-pre025-thinking
         rank: 19
         score: 75.52
         size: Workstation
         mode: Thinking
-        reason: "27B dense Thinking-Mode"
-      - id: qwen3_6-27B
+        reason: "27B dense Thinking-Mode (vLLM vor 0.25.1)"
+      - id: qwen3_6-27B-pre025
         rank: 63
         score: 72.27
         size: Workstation
         mode: Standard
-        reason: "27B dense Standard-Mode"
+        reason: "27B dense Standard-Mode (vLLM vor 0.25.1)"
       - id: qwen3_6-35b-a3b-uncensored
         rank: 44
         score: 73.55
