@@ -12,8 +12,8 @@ Keine Referenzdateien auto-laden. Nur laden wenn aktuelle Aufgabe explizit eine 
 ---
 
 # Active Context
-## Aktueller Status (2026-07-30, Session 72 — qwen3_6-27B-pre025 Rename + ToolUse Timestamp-Bugfix)
+## Aktueller Status (2026-07-31, Session 73 — Laguna S 2.1 selektives Reasoning)
 
-- Abgeschlossen: Historische `qwen3_6-27B`-ID zu `qwen3_6-27B-pre025` umbenannt (CSV 99 Zeilen, Card, Blacklist, Audit-Logs, Reviews, Runs, Tests). Bug fix: `tooluse_exporter.py` Path B überschrieb `tested_at` in 107 Cards mit `datetime.now()` — jetzt wird der existierende Card-Wert bewahrt. 1553 Tests grün, Webexport erfolgreich (pre025 blacklisted, nvfp4 exportiert).
-- Nächster Schritt: Commit der uncommitteten Änderungen (Rename + Bugfix + Memory-Bank), dann Push der 13+ unpushed Commits.
-- Offen/Risiko: `gemma-4-31b-it-creative-wordsmith-q8` steht in `kept_overrides` (nicht blacklist) → wird exportiert. Falls Blacklist gewünscht, muss ID in aktive `blacklist`-Sektion verschoben werden.
+- Abgeschlossen: Laguna S 2.1 als selektives Reasoning-Modell identifiziert (denkt pro Request selbst, nicht immer wie Qwen3.6). `enable_thinking: true` aus `provider_config.yaml` entfernt → kein Dual-Profile mehr. `dual_profile` in Card auf `null` gesetzt. Alle Laguna-CSV-Einträge aus 4 CSVs entfernt (60+2+2+1=65 Zeilen). `add-model`-Skill um Modell-Klassen-Tabelle ergänzt (Always-Thinking vs. selektiv). CLAUDE.md + systemPatterns.md um Fallstrick ergänzt.
+- Nächster Schritt: Laguna-S-2_1-NVFP4 Benchmark-Run (einzelnes Profil, Thinking serverseitig ON via TOML), danach `make leaderboard` + `make tooluse-leaderboard` neu generieren.
+- Offen/Risiko: `judge_context_hint` in Laguna-Card erwähnt noch "Thinking- und No-Thinking-Modus" — sollte nach dem Run auf selektives Reasoning aktualisiert werden.

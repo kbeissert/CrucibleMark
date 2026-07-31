@@ -41,6 +41,7 @@ Hartcodiert, nicht verhandelbar. Detail-Referenz → [architecture.md](.agent/ar
 - **Judge-Prompts sind während laufender Tests unveränderlich:** Änderungen brechen die Vergleichbarkeit zwischen Modellen, die mit altem vs. neuem Prompt getestet wurden — ein Full-Re-Run aller Modelle wäre nötig.
 - **Benchmark-Reports werden pro Lauf überschrieben:** Alte Reports sind nicht mehr verfügbar — nur die committed JSON-Ergebnisdateien in `outputs/runs/` bleiben erhalten.
 - **`tooluse_leaderboard.csv` ist ein Upsert-File:** Bei Modell-ID-Renames persistieren alte IDs als verwaiste Zeilen — Datei vor `make tooluse-leaderboard` löschen, sonst Duplikate im Leaderboard.
+- **Selektive Reasoning-Modelle (z.B. Laguna S 2.1) dürfen KEIN `enable_thinking: true` in `provider_config.yaml` bekommen:** Sie denken pro Request selbst ("thinks when needed"), kein Always-Thinking wie Qwen3.6. `enable_thinking` triggert Dual-Profile-Expansion, die bei selektiven Modellen eine Kernfähigkeit künstlich unterdrückt. Thinking wird serverseitig via TOML `--default-chat-template-kwargs {"enable_thinking":true}` verwaltet.
 
 ## AI & API Basics
 

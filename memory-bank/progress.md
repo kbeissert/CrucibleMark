@@ -1,6 +1,12 @@
 # Progress
 Letzte Releases + aktueller Stand.
 
+### 2026-07-31 (Session 73) — Laguna S 2.1: Selektives Reasoning, Dual-Profile entfernt [DONE]
+
+Laguna S 2.1 als selektives Reasoning-Modell identifiziert (HF Discussion #13: "thinks when needed", nicht Always-Thinking wie Qwen3.6). `enable_thinking: true` aus `provider_config.yaml` entfernt → keine Dual-Profile-Expansion mehr. `dual_profile` in Card auf `null`. Alle Laguna-CSV-Einträge aus 4 CSVs entfernt (65 Zeilen). `add-model`-Skill um Modell-Klassen-Tabelle ergänzt. CLAUDE.md + systemPatterns.md um Fallstrick ergänzt. `reasoning_effort` darf NICHT gesendet werden (vLLM 0.25.1 400-Fehler). Benchmark-Run ausstehend.
+
+---
+
 ### 2026-07-30 (Session 72) — qwen3_6-27B → qwen3_6-27B-pre025 Historical Rename + ToolUse Timestamp-Bugfix [DONE]
 
 **Rename:** Historische `qwen3_6-27B`-ID (capital B, vLLM vor 0.25.1) zu `qwen3_6-27B-pre025` umbenannt. CSV (99 Zeilen), Card (`git mv` + model_id + tooluse_runs), NVFP4-Card-Summary, Blacklist (`kept_overrides` → aktive `blacklist`), Audit-Logs (93 Dateien), Reviews, Runs-JSON, Test-Fixtures aktualisiert. 1553 Tests grün, Webexport erfolgreich (pre025 blacklisted, nvfp4 exportiert).

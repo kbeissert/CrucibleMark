@@ -22,14 +22,22 @@ Eintrag unter `providers.local.vllm.models` hinzufügen:
   temperature: 1.0
   top_p: 0.95
   top_k: 20
-  enable_thinking: true
+  enable_thinking: true   # nur bei Always-Thinking-Modellen (siehe unten)
 ```
 
 **Wichtig:**
 - `id` = Slug ohne Punkte (Punkte führen zu Slug-Mismatches). Slashes als Vendor-Präfix erlaubt. Doppelpunkte (Ollama) OK.
 - `config` = TOML-Filename exakt so wie remote (`~/ai/shared/configs/vllm/models/<config>.toml`)
 - Sampling-Params (temperature, top_p, top_k) spiegeln TOML-Defaults wider
-- `enable_thinking: true` setzen wenn das Modell Thinking unterstützt
+
+**`enable_thinking` — zwei Modell-Klassen:**
+
+| Modell-Klasse | Beispiele | `enable_thinking` | Verhalten |
+|---|---|---|---|
+| **Always-Thinking** | Qwen3.6, Ornith | `true` | Dual-Profile-Expansion: Standard-Profil erzwingt `enable_thinking:false`, Thinking-Profil `enable_thinking:true`. Beide Profile werden benchmarked. |
+| **Selektives Reasoning** | Laguna S 2.1 | **weglassen** | KEIN Dual-Profile. TOML setzt `--default-chat-template-kwargs {"enable_thinking":true}` serverseitig. Das Modell entscheidet pro Request selbst, ob es denkt. Ein Non-Thinking-Profil würde eine Kernfähigkeit künstlich unterdrücken und verzerrt den Benchmark. |
+
+Entscheidungskriterium: Denkt das Modell **immer** (wie Qwen3.6) oder **nur bei Bedarf** (wie Laguna S 2.1)? Bei selektiven Reasoning-Modellen `enable_thinking` weglassen — das Thinking-Profil enthält bereits Non-Thinking-Antworten (Modell-Entscheidung).
 
 ### 2. Model Card Skeleton erstellen
 
