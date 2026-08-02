@@ -1,6 +1,6 @@
 {
   "model_id": "hermes-4-70b-fp8",
-  "display_name": "Hermes 4 70B (FP8, vLLM, Llama-3.1, Dense)",
+  "display_name": "Hermes 4 70B",
   "developer": "Nous Research",
   "origin_country": "US",
   "developer_jurisdiction": "US",
@@ -71,7 +71,7 @@
   "license_url": "https://huggingface.co/NousResearch/Hermes-4-70B",
   "commercial_use_allowed": true,
   "weights_license_tier": "restricted",
-  "model_version": "4-70B-FP8",
+  "model_version": "4",
   "input_price_per_1m": null,
   "output_price_per_1m": null,
   "hardware_profile": "dgx_spark",

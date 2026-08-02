@@ -13,8 +13,8 @@ SSoT für: Preise, Modell-Identität (`model_id`), Thinking-Probe-Status, Tool-U
 |---|---|---|
 | `card_id` | str | Eindeutige ID (SSoT-Schema: `{base}--{shortcode}`) |
 | `model_id` | str | Kanonische API-ID (SSoT für Cross-File-Mapping) |
-| `model_version` | str | Format/Quant-Version |
-| `display_name` | str | Menschenlesbarer Name |
+| `model_version` | str | Reine Versionsnummer (z.B. `3.6`, `4`, `5.4`). **NICHT**: Parameteranzahl (27B, 120B), Quantisierung (FP8, NVFP4, MXFP4), Variante (Instruct, Coder), Community-Gruppe (Uncensored). Diese gehoeren in `quantization_format`, `model_variant`, `display_name`. |
+| `display_name` | str | Menschenlesbarer Name. Format: `{Basismodellname} ({Community-Gruppe ODER Variante})`. z.B. `Qwen 3.6 35B-A3B`, `Gemma 4 31B (Unsloth)`, `Hermes 4 14B (Abliterated)`. **NICHT**: Quantisierung (NVFP4, FP8, MXFP4), Deployment (vLLM, GGUF), Architektur (Dense, MoE, MTP, DFlash). |
 | `vendor` | str | Hersteller/Provider |
 | `card_status` | enum | `draft` / `minimal` / `complete` / `verified` |
 | `weights_license_tier` | enum | `proprietary` / `restricted-weights` / `open-weights` |
@@ -110,7 +110,7 @@ Aggregierte Test-Logs, geschrieben von `UnifiedBenchmarkRunner.save_results()`.
 | Spalte | Typ | Zweck |
 |---|---|---|
 | `model` | str | Kanonische `model_id` (nach `enforce_card_first()`) |
-| `model_version` | str | Format/Quant-Version |
+| `model_version` | str | Reine Versionsnummer (SSoT: Card-Feld, siehe oben) |
 | `asset_id` | str | Test-Asset-Identifier (z.B. `code_quality_001`) |
 | `timestamp` | str (ISO-8601) | UTC-Zeitstempel |
 | `score` | float | Test-Score (0-100) |

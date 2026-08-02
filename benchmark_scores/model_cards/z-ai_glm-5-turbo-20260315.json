@@ -25,7 +25,7 @@
   "local_deployment_possible": false,
   "model_family": "GLM",
   "model_id": "z-ai/glm-5-turbo-20260315",
-  "model_version": "Turbo",
+  "model_version": "5",
   "origin_country": "China",
   "output_price_per_1m": 4.0,
   "parameter_architecture": "dense",

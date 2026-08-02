@@ -24,7 +24,7 @@ CrucibleMark ist ein LLM-Benchmark-Framework (Python 3.12), das strukturierte Te
 ## Projektrahmen
 
 - **Start:** 2026-04 (historisch).
-- **Aktuelle Version:** v4.10.12.
+- **Aktuelle Version:** v5.1.0 (2026-08-02).
 - **Python-Ecosystem:** Python 3.12, venv, pytest, ruff, mypy.
 - **Web-Site:** separates Repo (`CrucibleMark-Web`), Eleventy (JS).
 - **Konfig-Dateien:** `benchmark_config.yaml`, `provider_config.yaml`, `config.yaml`, `web_export_blacklist.yaml`.

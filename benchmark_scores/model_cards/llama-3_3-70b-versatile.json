@@ -24,7 +24,7 @@
   "local_deployment_possible": true,
   "model_family": "Llama",
   "model_id": "llama-3_3-70b-versatile",
-  "model_version": "3.3-70B",
+  "model_version": "3.3",
   "origin_country": "USA",
   "output_price_per_1m": 0.79,
   "parameter_architecture": "dense",

@@ -46,7 +46,7 @@
   "license_url": "https://opensource.org/licenses/Apache-2.0",
   "commercial_use_allowed": true,
   "weights_license_tier": "open-weights",
-  "model_version": "20B",
+  "model_version": "1.0",
   "input_price_per_1m": 0.075,
   "output_price_per_1m": 0.3,
   "unknown": false,

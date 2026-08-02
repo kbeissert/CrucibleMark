@@ -70,6 +70,8 @@ Die folgenden Felder werden vom LLM **NICHT** gefüllt (werden als "already vali
 - `status` — `"draft"` oder `"complete"`
 - `created_at`, `updated_at` — ISO-Datumsstrings
 
+**Namenskonventionen:** Siehe `memory-bank/reference/data-schema.md` (Feldbeschreibungen fuer `display_name` und `model_version`). Diese Datei ist die SSoT — hier NICHT aendern.
+
 ### 4. LLM-Recherche laufen lassen
 
 ```bash

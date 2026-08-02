@@ -31,7 +31,7 @@
 | Ollama | `utils/providers/ollama.py` | Local, `eval_count` |
 | Llama.cpp | `utils/providers/llamacpp_base.py` | Local, `reasoning_content` + GGUF |
 | Spark (llamacpp) | `llamacpp_spark.py` | Eigenstaendiger Server mit Kontextfenster |
-| vLLM (Spark) | `vllm_base.py` + `vllm_spark.py` | SSH-gesteuert (asusGX10), OpenAI-kompatibel Port 3300, MoE-kompatibel |
+| vLLM (Spark) | `vllm_base.py` + `vllm_spark.py` | SSH-gesteuert (asusGX10), OpenAI-kompatibel Port 3300/4300 (Proxy), MoE-kompatibel, Dual-Thinking-Profile |
 
 ## Architektur-Module
 
@@ -58,7 +58,7 @@
 | Reviews | `docs/reviews/<model>/` | Markdown |
 | Leaderboards | `benchmark_scores/benchmark_leaderboard_compact.csv` | CSV |
 | Cost-Log | `outputs/cost_log.csv` | CSV |
-| Web-Export | `CrucibleMark-Web/src/_data/raw/` | JSON |
+| Web-Export | `scripts/web_export/` (Package) | JSON-Pipeline → `CrucibleMark-Web/src/_data/raw/` |
 
 ## Key-Patterns
 

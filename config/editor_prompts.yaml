@@ -413,10 +413,17 @@ model_card_verification:
       Einschränkung dokumentiert.
     - `display_name` = `"{Offizieller Basismodellname} ({Community-Gruppe ODER Variante})"`,
       z.B. `"Gemma 3 27B IT (Unsloth)"` oder `"Hermes 4 14B (Abliterated)"`.
-      **NICHT** im display_name: Quantisierungsstufe (Q4_K_M, Q8_0, UD-Q*, QAT, MTP),
-      Deployment-Deskriptoren (Cloud API, GGUF), Provider-Suffixe (via OpenRouter)
-      oder Datumsangaben. Diese Informationen gehören in `model_version`,
-      `deployment_type` bzw. `model_id`.
+      **NICHT** im display_name: Quantisierungsstufe (Q4_K_M, Q8_0, UD-Q*, QAT, MTP, NVFP4, MXFP4),
+      Deployment-Deskriptoren (vLLM, GGUF, Cloud API), Provider-Suffixe (via OpenRouter),
+      Architektur-Tags (Dense, MoE, MTP, DFlash) oder Datumsangaben.
+      Diese Informationen gehören in `quantization_format`, `model_variant`,
+      `parameter_architecture`, `architecture_tags`, `deployment_type` bzw. `model_id`.
+    - `model_version` = Reine Versionsnummer (z.B. `"3.6"`, `"4"`, `"5.4"`).
+      **NICHT** in model_version: Parameteranzahl (27B, 35B-A3B, 120B), Quantisierung
+      (FP8, NVFP4, MXFP4), Variante (Instruct, Coder, Next), Community-Gruppe
+      (Uncensored, Abliterated), Architektur (Dense, MoE).
+      Diese gehoeren in `quantization_format`, `model_variant`, `display_name`,
+      `parameter_architecture` bzw. `community`.
     - `summary` muss Basismodell, Distributor, Quantisierungsstufe und
       den praktischen Deploymentvorteil nennen
     - `judge_context_hint` muss auf die Quantisierungsvariante und

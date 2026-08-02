@@ -342,10 +342,10 @@ required_fields:
     type: str
     required: true
     default: null
-    description: "Versions-String des Modells"
+    description: "Reine Versionsnummer (z.B. '3.6', '4', '5.4'). NICHT: Parameteranzahl (27B, 120B), Architektur (A3B, MoE), Quantisierung (FP8, NVFP4), Variante (Instruct, Coder), Community-Gruppe. Diese gehoeren in quantization_format, model_variant, parameter_architecture, display_name."
     consumers: [leaderboard, web_export, review]
     since: "v1.0"
-    example: "5.4"
+    example: "3.6"
 
   - name: use_case_primary
     type: str

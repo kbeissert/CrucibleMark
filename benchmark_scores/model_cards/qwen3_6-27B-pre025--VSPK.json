@@ -70,7 +70,7 @@
   "license_url": "https://qwen.ai/blog?id=qwen3.6-27b",
   "commercial_use_allowed": true,
   "weights_license_tier": "open-weights",
-  "model_version": "3.6-27B-Instruct",
+  "model_version": "3.6",
   "input_price_per_1m": 0.0,
   "output_price_per_1m": 0.0,
   "hardware_profile": null,

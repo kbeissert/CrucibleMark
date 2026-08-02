@@ -1,6 +1,6 @@
 {
   "model_id": "gpt-oss-120b",
-  "display_name": "GPT-OSS 120B (vLLM, MXFP4)",
+  "display_name": "GPT-OSS 120B",
   "developer": "OpenAI",
   "origin_country": "US",
   "developer_jurisdiction": "US",
@@ -85,7 +85,7 @@
   "license_url": "https://opensource.org/licenses/Apache-2.0",
   "commercial_use_allowed": true,
   "weights_license_tier": "open-weights",
-  "model_version": "120B",
+  "model_version": "1.0",
   "input_price_per_1m": 0.0,
   "output_price_per_1m": 0.0,
   "hardware_profile": "asus_gx10_blackwell",

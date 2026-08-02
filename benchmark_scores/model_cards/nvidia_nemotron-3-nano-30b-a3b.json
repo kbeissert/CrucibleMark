@@ -62,7 +62,7 @@
   "license_url": "https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/",
   "commercial_use_allowed": true,
   "weights_license_tier": "open-weights",
-  "model_version": "3 Nano A3B",
+  "model_version": "3",
   "input_price_per_1m": 0.05,
   "output_price_per_1m": 0.2,
   "unknown": false,

@@ -3,17 +3,16 @@
 ## Session-Start-Anweisungen
 
 Beim Session-Start diese Dateien lesen:
-1. `memory-bank/activeContext.md` — aktueller Fokus + offene Fragen
-2. `memory-bank/progress.md` — erledigt, blockiert
-3. `memory-bank/systemPatterns.md` — Architektur, Stack, Patterns
+1. `memory-bank/activeContext.md` — aktueller Fokus
+2. `memory-bank/progress.md` — Historie
+3. `memory-bank/systemPatterns.md` — Architektur, Patterns
 
-Keine Referenzdateien auto-laden. Nur laden wenn aktuelle Aufgabe explizit eine Reference benötigt.
+Regel: Nur aktive, ungelöste Themen als Baustelle melden. Abgeschlossene Integrationen, akzeptierte Known Limitations (progress.md Session 62) und BACKLOG-Items (progress.md Ende) sind KEINE Baustellen.
 
 ---
 
-# Active Context
-## Aktueller Status (2026-08-02, Session 74 — Laguna S 2.1 Benchmark abgeschlossen)
+## Aktueller Status (2026-08-02, Session 76)
 
-- Abgeschlossen: Laguna S 2.1 Benchmark-Run erfolgreich (50 Standard + 43 Thinking Audit-Logs). Leaderboard-Eintrag: Rank 92, Score 69.1%, Silver Badge. Card-Status auf "complete" gesetzt, `judge_context_hint` auf selektives Reasoning aktualisiert. Dual-Profile-Anomalie aufgeklärt: Laguna wählt selbst, wann thinking/nonthinking genutzt wird (selektives Reasoning, nicht Always-Thinking).
-- Nächster Schritt: Keine — Laguna-Integration komplett.
+- **Erledigt:** Naming-Validator (`scripts/analysis/validate_naming.py`) als Publication-Gate in `make web-export` (hard) / `make web-export-dev` (warn-only). 7 display_name + 10 model_version Cards korrigiert. Web-Export rebuilt (96 Models, 0 Fehler).
+- Nächster Schritt: Keine.
 - Offen/Risiko: Keine.

@@ -12,7 +12,7 @@
 	benchmark-tooluse benchmark-tooluse-local benchmark-tooluse-force \
 	clean clean-csv clean-model clean-module clean-all clean-runs clean-wizard consolidate-csv prune-orphans clean-bak clean-reviews \
 	backup backup-prep \
-	audit-markdown vendor-cards-status validate-csv \
+	audit-markdown vendor-cards-status validate-csv validate-naming \
 	docs-version-check docs-version-sync
 
 # Python-Interpreter aus .venv verwenden
@@ -81,6 +81,7 @@ help:
 	@printf "\033[1;32mCard-Lifecycle & Validierung\033[0m\n"
 	@printf "  %-25s %s\n" "model-cards"     "Erstelle/Update-Vorlagen"
 	@printf "  %-25s %s\n" "validate-cards"  "Schema-Prüfung"
+	@printf "  %-25s %s\n" "validate-naming" "Namenskonventionen (display_name, model_version)"
 	@printf "  %-25s %s\n" "cards-sync"      "SSoT-Synchronisierung"
 	@printf "  %-25s %s\n" "card-create"     "Neue Card aus provider_config.yaml anlegen"
 	@printf "  %-25s %s\n" "card-validate"   "Cards mit Template synchronisieren (alle oder MODEL=)"
@@ -322,6 +323,10 @@ validate-cards:
 	@echo "Checking Model Card consistency (tier, summary, commercial)..."
 	$(PYTHON) scripts/dev/validate_model_cards.py
 
+validate-naming:
+	@echo "=== Naming Convention Validator (display_name, model_version) ==="
+	@$(PYTHON) scripts/analysis/validate_naming.py $(if $(WARN_ONLY),--warn-only,)
+
 test: validate
 	@echo "Running Unit Tests..."
 	$(PYTHON) -m pytest benchmark_modules/ tests/ -v --tb=short
@@ -553,11 +558,15 @@ benchmark-tooluse-force:
 # === WEB EXPORT ===
 
 web-export:
+	@echo "=== Pre-Check: Naming Conventions ==="
+	@$(PYTHON) scripts/analysis/validate_naming.py
 	@echo "Starte Web Export..."
 	$(PYTHON) -m scripts.web_export $(if $(WEB_DATA_DIR),--output $(WEB_DATA_DIR),)
 	@echo "Export abgeschlossen."
 
 web-export-dev:
+	@echo "=== Pre-Check: Naming Conventions (warn-only) ==="
+	@$(PYTHON) scripts/analysis/validate_naming.py --warn-only
 	@echo "Exportiere direkt ins 11ty-Projekt..."
 	$(PYTHON) -m scripts.web_export --output ../cruciblemark-web/src/_data/raw/
 	@echo "Dev-Export abgeschlossen."

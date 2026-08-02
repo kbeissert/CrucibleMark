@@ -5,7 +5,7 @@
 [![License](https://img.shields.io/badge/license-MIT-green)](.)
 [![Status](https://img.shields.io/badge/status-production--ready-brightgreen)](.)
 
-**Stand: v5.1.0 · 2026-07-14**
+**Stand: v5.1.0 · 2026-08-02**
 
 ## Ein modulares LLM-Benchmark-Framework für Product Engineers
 
@@ -54,7 +54,7 @@ Die volle Beschreibung mit Layer-Architektur, Provider-Abstraktion und Datenflus
 
 - **LLM-as-a-Judge.** Dediziertes Sub-System bewertet die Antworten über starke Judge-Modelle (Claude Haiku, Gemini Pro oder lokale Modelle).
 - **Hybrid Scoring.** Regex, Embeddings und LLM Judge ergänzen sich. Regex liefert Objektivität, der Judge liefert Nuancen, Embeddings fangen Format-Varianz ab.
-- **Multi-Provider.** Volle Unterstützung für Ollama, llama.cpp, OpenAI, Anthropic, Google, Mistral, xAI, Cohere, OpenRouter und Groq.
+- **Multi-Provider.** Volle Unterstützung für OpenAI, Anthropic, Google, Mistral, xAI, OpenRouter, Cohere, Ollama, llama.cpp, Spark (llamacpp) und vLLM (Spark).
 - **Sequenzielle, faire Testbedingungen.** Modelle werden einzeln nacheinander mit Server-Neustart und Cooldown getestet. Kein Cache-Vorteil, kein Kontextmix.
 - **Block-Level-Checkpointing.** Runs überstehen Budget-Erschöpfung, 429-Limits und Verbindungsabbrüche. Resume erfolgt auf den Token genau.
 

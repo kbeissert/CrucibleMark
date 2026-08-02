@@ -66,7 +66,7 @@
   "license_url": "https://ai.google.dev/gemma/docs/core",
   "commercial_use_allowed": true,
   "weights_license_tier": "open-weights",
-  "model_version": "4-26B-A4B-Instruct",
+  "model_version": "4",
   "input_price_per_1m": 0.0,
   "output_price_per_1m": 0.0,
   "hardware_profile": null,

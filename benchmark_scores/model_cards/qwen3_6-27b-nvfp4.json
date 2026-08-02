@@ -1,6 +1,6 @@
 {
   "model_id": "qwen3_6-27b-nvfp4",
-  "display_name": "Qwen 3.6 27B NVFP4 (vLLM, Dense, MTP)",
+  "display_name": "Qwen 3.6 27B",
   "developer": "Alibaba Cloud (Qwen Team)",
   "origin_country": "CN",
   "developer_jurisdiction": "CN",
@@ -84,7 +84,7 @@
   "license_url": "https://huggingface.co/Qwen/Qwen3.6-27B",
   "commercial_use_allowed": true,
   "weights_license_tier": "open-weights",
-  "model_version": "3.6-27B-Instruct",
+  "model_version": "3.6",
   "input_price_per_1m": 0.0,
   "output_price_per_1m": 0.0,
   "hardware_profile": "DGX Spark",
