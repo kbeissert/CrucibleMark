@@ -34,6 +34,7 @@ class LdbCols:
     LLM_JUDGE_DISPLAY = "LLM Judge Avg"
     LLM_JUDGE_COVERAGE = "LLM Judge Coverage"
     TESTS_RUN = "Tests Run"
+    COVERAGE_RATIO = "coverage_ratio"
     VERSION = "Version"
     PROVIDER_CODE = "Provider Code"
     HARDWARE_PROFILE = "Hardware Profile"

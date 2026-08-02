@@ -377,6 +377,7 @@ def _build_leaderboard_entry(
         "llm_judge_avg": normalize_pending(row.get(LdbCols.LLM_JUDGE_RAW)) or parse_star_float(row.get(LdbCols.LLM_JUDGE_DISPLAY)),
         "llm_judge_coverage": parse_percent(row.get(LdbCols.LLM_JUDGE_COVERAGE)),
         "tests_run": parse_tests_run(row.get(LdbCols.TESTS_RUN)),
+        "coverage_ratio": normalize_pending(row.get(LdbCols.COVERAGE_RATIO)),
         "scores": {
             key: normalize_pending(row.get(_col))
             for _col, key in _SCORE_COLUMN_TO_KEY.items()

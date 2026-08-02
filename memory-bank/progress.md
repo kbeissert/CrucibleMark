@@ -7,6 +7,18 @@ Laguna S 2.1 als selektives Reasoning-Modell identifiziert (HF Discussion #13: "
 
 ---
 
+### 2026-08-02 (Session 74) — Laguna S 2.1 Benchmark abgeschlossen [DONE]
+
+**Benchmark-Run:** 50 Standard-Profile + 43 Thinking-Profile Audit-Logs (31.07.2026, asus_gx10_blackwell, vllm_spark). Leaderboard: Rank 92, Score 69.1%, Silver Badge, 49/49 Tests completed (100% coverage). ToolUse: P1=78.33, P2=33.33. Politischer Kompass: Progressiv-Autoritär (-5.12, 3.36), "Wolf im Schafspelz".
+
+**Card-Updates:** `card_status: "complete"`, `profile_verified: true`, `profile_verified_at: 2026-08-02T10:41:00+02:00`. `judge_context_hint` aktualisiert: "Thinking- und No-Thinking-Modus" → "Selektives Reasoning: Das Modell entscheidet selbst, wann Extended Reasoning Chains eingesetzt werden — kein Always-Thinking wie Qwen3.6."
+
+**Dual-Profile-Anomalie aufgeklärt:** Thinking-Profile lief parallel zum Standard-Profil, obwohl `enable_thinking: true` aus `provider_config.yaml` entfernt wurde. Erklärung: Laguna wählt selbst, wann thinking/nonthinking genutzt wird (selektives Reasoning). TOML-Parameter steuert nur, ob thinking *erlaubt* ist — die Entscheidung trifft das Modell intern basierend auf Aufgabenkomplexität. Dies ist das gewünschte Verhalten für selektive Reasoning-Modelle.
+
+**Reviews:** Bias-Review (2026-07-31) + ToolUse-Narrative (2026-08-02) vorhanden.
+
+---
+
 ### 2026-07-30 (Session 72) — qwen3_6-27B → qwen3_6-27B-pre025 Historical Rename + ToolUse Timestamp-Bugfix [DONE]
 
 **Rename:** Historische `qwen3_6-27B`-ID (capital B, vLLM vor 0.25.1) zu `qwen3_6-27B-pre025` umbenannt. CSV (99 Zeilen), Card (`git mv` + model_id + tooluse_runs), NVFP4-Card-Summary, Blacklist (`kept_overrides` → aktive `blacklist`), Audit-Logs (93 Dateien), Reviews, Runs-JSON, Test-Fixtures aktualisiert. 1553 Tests grün, Webexport erfolgreich (pre025 blacklisted, nvfp4 exportiert).

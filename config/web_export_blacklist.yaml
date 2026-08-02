@@ -64,6 +64,7 @@ blacklist:
   # 31B — alle schwächer als Gemma-4-31B NVFP4 (Rank 18, 76.03)
   - "gemma-4-31B-it-qat-ud-q4"              # QAT, UD-Q4 [Spark]
   - "gemma-4-31B-it-UD-Q8_K_XL-mtp"         # UD-Q8, MTP [Spark]
+  - "gemma-4-31b-it-creative-wordsmith-q8"  # Wordsmith Q8 (Rank 73, 70.93) — ersetzt durch vLLM Wordsmith-NVFP4
 
   # -----------------------------------------------------------------
   # Hermes (NousResearch)
@@ -204,11 +205,6 @@ kept_overrides:
         size: Workstation
         mode: Thinking
         reason: "Wordsmith + Thinking"
-      - id: gemma-4-31b-it-creative-wordsmith-q8
-        rank: 73
-        score: 70.93
-        size: Workstation
-        reason: "Wordsmith alternative Quant (Q8 vs NVFP4)"
       - id: google/gemma-4-31b-it
         rank: 47
         score: 73.24

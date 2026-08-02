@@ -889,33 +889,38 @@ providers:
         # repetition_penalty:  # TOML-Default (kein Override)
         # KEIN enable_thinking — siehe Kommentar oben (selektives Reasoning).
 
-      # Hermes 4 70B — FP8 compressed-tensors, Llama-3.1-Architektur, reasoning + tool-calling.
       # Sampling synchron mit TOML: temperature=0.6, top_p=0.95, top_k=20.
       # 2026-07-20: Auskommentiert — 36B BF16 Hermes-4.3 braucht ~40 Min/Test
       # (enable_thinking=true + 32K Thinking-Budget), Benchmark-Lauf wird auf
-      # Home-Intranet verschoben (siehe Session-Log 2026-07-20).
-      # - id: hermes-4-70b-fp8
-      #   name: Hermes 4 70B FP8 (vLLM, Llama-3.1, Dense)
-      #   config: Hermes4-70B
-      #   max_tokens: 16384
-      #   temperature: 0.6
-      #   top_p: 0.95
-      #   top_k: 20
-      #   enable_thinking: true
+      - id: hermes-4-3-36b
+        name: Hermes 4.3 36B (vLLM, Seed-OSS, Dense, NVFP4)
+        config: Hermes4.3-36B
+        max_tokens: 16384
+        temperature: 0.6
+        top_p: 0.95
+        top_k: 20
+        enable_thinking: true
 
-      # 2026-07-20: Auskommentiert — siehe Hinweis oben (Hermes-4-70B-FP8).
-      # - id: hermes-4-3-36b
-      #   name: Hermes 4.3 36B (vLLM, Seed-OSS, Dense, BF16)
-      #   config: Hermes4.3-36B
-      #   max_tokens: 16384
-      #   temperature: 0.6
-      #   top_p: 0.95
-      #   top_k: 20
-      #   enable_thinking: true
+      # GPT-OSS 120B — lokales vLLM auf gx10 (MoE 117B total / 5.1B active, MXFP4).
+      # MoE: 128 Experten, 4 aktiv pro Token; 36 Layer (18 sliding + 18 full attention).
+      # Native MXFP4-Quantisierung (quant_method: mxfp4 in config.json).
+      # 128K Context via YaRN factor=32 von 4096.
+      # Sampling: TOML via --generation-config auto (HF-Card: temperature=0.6, top_p=0.95, top_k=20).
+      # reasoning_effort per Request (low/medium/high); --reasoning-parser openai_gptoss.
+      # WICHTIG: 120b belegt den GESAMTEN 128-GB-GPU-Memory — muss allein laufen.
+      # vllm-stop --yes vor dem Start, sonst kein KV-Cache Headroom.
+      - id: gpt-oss-120b
+        name: GPT-OSS 120B (vLLM, MoE, MXFP4, 128K)
+        config: gpt-oss-120b
+        max_tokens: 16384
+        temperature: 0.6
+        top_p: 0.95
+        top_k: 20
+        enable_thinking: true
 
       # Weitere verfügbare TOMLs (per Auto-Discovery entdeckbar, nicht im Benchmark):
       # - Qwen3-Embedding-0.6B-NVFP4: Embedding-Modell (kein LLM-Target)
-      # Beispiel-Eintrag zum Aktivieren einer neuen TOML
+      # Beispiel-Eintrag zum Aktivieren einer neuen TOML^
       # (TOML liegt unter ~/ai/shared/configs/vllm/models/<NAME>.toml):
       # - id: <NAME>
       #   name: <Display-Name> (vLLM)
