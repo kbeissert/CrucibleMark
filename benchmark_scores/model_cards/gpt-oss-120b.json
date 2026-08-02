@@ -1,0 +1,110 @@
+{
+  "model_id": "gpt-oss-120b",
+  "display_name": "GPT-OSS 120B (vLLM, MXFP4)",
+  "developer": "OpenAI",
+  "origin_country": "US",
+  "developer_jurisdiction": "US",
+  "deployment_type": "open-weights-local",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "low",
+  "weights_provenance_risk_rationale": "OpenAI ist ein US-Unternehmen; das Modell wird unter Apache-2.0 als Open Weights veröffentlicht. Lokales Deployment vermeidet vollständig jeglichen API-Datenabfluss an OpenAI-Server, wodurch das Risiko trotz US-Jurisdiktion (CLOUD Act) als gering eingestuft wird.",
+  "model_family": "GPT OSS",
+  "vendor": "OpenAI",
+  "primary_focus": "general",
+  "use_case_primary": "generalist",
+  "parameter_architecture": "moe",
+  "params_total_b": 116.8,
+  "params_active_b": 5.1,
+  "context_window_k": 131,
+  "knowledge_cutoff": "2024-06",
+  "summary": "GPT-OSS 120B ist seit August 2025 OpenAIs grösstes Open-Weights-Modell, veröffentlicht unter Apache-2.0-Lizenz mit freier kommerzieller Nutzung. Das MoE bündelt 116,8 Milliarden Gesamt- bei nur 5,1 Milliarden aktiven Parametern pro Token und läuft dank nativer MXFP4-Quantisierung auf einer einzelnen High-Memory-GPU. Drei Reasoning-Stufen und natives Tool-Use im Harmony-Format runden das Profil ab.",
+  "strengths": [
+    "MoE mit 116,8 Mrd. Gesamt- und 5,1 Mrd. aktiven Parametern pro Token, 128 Experten mit 4 aktiven.",
+    "Native MXFP4-Quantisierung erlaubt lokalen Betrieb auf einer einzelnen High-Memory-GPU.",
+    "Apache-2.0-Lizenz ohne regionale Einschränkungen, voll kommerziell nutzbar und fine-tunable.",
+    "Drei konfigurierbare Reasoning-Intensitätsstufen über den Reasoning-Effort-Parameter.",
+    "Natives Tool-Use im Harmony-Format mit klar getrennten Channels für Analyse und Schluss-Antwort.",
+    "131.072-Token-Kontextfenster mit YaRN-Erweiterung."
+  ],
+  "known_limitations": [
+    "Hoher Speicherbedarf einer einzelnen GPU durch MXFP4-quantisiertes MoE-Modell.",
+    "Reines Text-Modell ohne Bild- oder Multimodal-Unterstützung.",
+    "Trainiert primär auf englischsprachigen Daten, Wissensstand bis Juni 2024.",
+    "Reasoning ist immer aktiv und nicht deaktivierbar, was Antwortlatenz erhöhen kann.",
+    "Gesamter GPU-Speicher durch das Modell belegt, kein paralleles Embedding-Modell möglich.",
+    "Bekannte Bugs in älteren Inference-Engine-Versionen bei MXFP4-Decoding."
+  ],
+  "judge_context_hint": "GPT-OSS 120B ist OpenAIs Open-Weights-Modell (Apache-2.0) mit 116,8 Mrd. Gesamt- und 5,1 Mrd. aktiven Parametern pro Token. Native MXFP4-Quantisierung ermöglicht lokales Single-Node-Deployment. Konfigurierbare Reasoning-Stufen (low/medium/high) immer aktiv, nicht deaktivierbar; Reasoning läuft im Harmony-Format mit Analysis-/Commentary-/Final-Channels statt sichtbarer Think-Tags. Bei der Bewertung Coding, Reasoning und Tool-Use-Korrektheit gleichermassen gewichten, Wissensstand Juni 2024 beachten.",
+  "architecture_tags": [
+    "Configurable-Reasoning",
+    "MoE",
+    "MXFP4",
+    "Native-Quant",
+    "Harmony",
+    "Tool-Use"
+  ],
+  "input_modalities": [
+    "text"
+  ],
+  "output_modalities": [
+    "text"
+  ],
+  "supports_tool_use": true,
+  "tooluse_tested_at": "2026-07-31T22:52:20Z",
+  "tooluse_score_p1": 90.0,
+  "tooluse_score_p2": 45.0,
+  "tooluse_runs": {
+    "gpt-oss-120b": {
+      "tested_at": "2026-07-31T22:52:20Z",
+      "score_p1": 90.0,
+      "score_p2": 45.0
+    },
+    "gpt-oss-120b-thinking": {
+      "tested_at": "2026-08-02T05:14:30Z",
+      "score_p1": 90.0,
+      "score_p2": 55.0
+    }
+  },
+  "tooluse_recommendation": null,
+  "dual_profile": true,
+  "temperature": 0.6,
+  "system_prompt_override": null,
+  "cot_marker_family": "harmony",
+  "cot_tags_detected": [
+    "analysis",
+    "final"
+  ],
+  "top_p": 0.95,
+  "top_k": 20,
+  "repetition_penalty": null,
+  "frequency_penalty": null,
+  "presence_penalty": null,
+  "seed": null,
+  "stop_sequences": null,
+  "license": "Apache 2.0",
+  "license_url": "https://opensource.org/licenses/Apache-2.0",
+  "commercial_use_allowed": true,
+  "weights_license_tier": "open-weights",
+  "model_version": "120B",
+  "input_price_per_1m": 0.0,
+  "output_price_per_1m": 0.0,
+  "hardware_profile": "asus_gx10_blackwell",
+  "inference_engine": "vLLM",
+  "quantization_format": "MXFP4",
+  "model_variant": "MXFP4",
+  "unknown": false,
+  "card_status": "draft",
+  "size_class": "Server",
+  "generated_at": "2026-07-31T18:33:00+00:00",
+  "thinking_probe_detected": true,
+  "thinking_probe_evidence": "Multi-Probe (3 prompts, 3 detected, best confidence=medium):\n  - math: [math] reasoning_tokens=144 in provider metadata.\n  - code: [code] reasoning_tokens=707 in provider metadata.\n  - decision: [decision] reasoning_tokens=27 in provider metadata.\nReasoning wird als separates provider-seitiges Metadatenfeld (reasoning_tokens) sowie im analysis-Channel des Harmony-Formats erfasst, nicht als sichtbare DeepSeek-Style Think-Tags.",
+  "thinking_probe_confidence": "medium",
+  "thinking_probe_at": "2026-07-31T19:01:14.831709+00:00",
+  "thinking_probe_manual_override": "Servers down (cold-start 448s + 600s probe timeout exceeded). Evidence from TOML config (--reasoning-parser openai_gptoss, --default-chat-template-kwargs enable_thinking:true) + architecture_tags + cot_marker_family=harmony. Probe will be re-run when servers are online.",
+  "profile_verified": false,
+  "profile_verified_at": null,
+  "profile_verified_by": null,
+  "last_modified_at": "2026-07-31",
+  "heritage_ids": [],
+  "community": null
+}

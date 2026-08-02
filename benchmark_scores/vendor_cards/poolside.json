@@ -1,0 +1,28 @@
+{
+  "vendor_id": "poolside",
+  "display_name": "Poolside",
+  "company": "Poolside Inc.",
+  "headquarters": "San Francisco, CA, USA",
+  "founding_year": 2023,
+  "pricing_model": "subscription",
+  "api_base_url": null,
+  "api_documentation_url": null,
+  "deployment": {
+    "cloud_act_exposure": true,
+    "applicable_law": "US (CLOUD Act)",
+    "data_residency": "Unknown",
+    "gdpr_dpa_available": "unknown",
+    "eu_adequacy_decision": "unknown",
+    "data_retention_days": -1,
+    "chinese_nsl_risk": "none"
+  },
+  "privacy_note": "Poolside appears to be a US-based provider, so API or hosted service usage may be subject to US legal access regimes including the CLOUD Act. Public information on data residency, retention, and EU transfer safeguards is limited, so EU customers should assume elevated transfer uncertainty until contractual terms are verified.",
+  "notable_models": [
+    "poolside-assistant",
+    "Malibu"
+  ],
+  "unknown": false,
+  "generated_at": "2026-08-02T08:09:57.282187+00:00",
+  "last_verified_at": null,
+  "verification_source": "https://poolside.ai"
+}
