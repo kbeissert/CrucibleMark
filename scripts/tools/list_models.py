@@ -316,7 +316,6 @@ def main() -> None:
     config = load_config()
     check_ollama()
     check_commercial(config)
-    check_commercial(config)
 
 
 if __name__ == "__main__":

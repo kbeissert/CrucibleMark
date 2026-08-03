@@ -36,8 +36,8 @@ Jedes Modul trägt zu beiden Komponenten bei, basierend auf der Art der gestellt
 | Documentation Quality | 1.0 | Routine + Reasoning |
 | Logical Reasoning | 1.0 | Reasoning |
 | UX Writing & Microcopy | 1.0 | Routine |
-| Tool Execution (ToolUse) | 1.0 | Routine + Reasoning |
-| CLI Badge | 0.5 | Routine |
+| Tool Use & Assistenz | 1.0 | Routine + Reasoning |
+| CLI Operations | 0.5 | Routine |
 
 **Summe aller Gewichte: 7.5**
 
@@ -59,7 +59,7 @@ Total Score = ──────────────────────
                  Σ (Gewichte getesteter Module) + Σ (Gewichte fehlender Module)
 ```
 
-Ein Modell, das das Modul Tool Execution nicht durchlaufen hat, erhält keinen Score-Beitrag für dieses Modul. Das Gewicht von 1.0 wird dennoch zum Nenner addiert. Bei einer Gesamtgewichtssumme von 7.5 ergibt sich ein neuer Nenner von 8.5 — der Score sinkt entsprechend.
+Ein Modell, das das Modul Tool Use & Assistenz nicht durchlaufen hat, erhält keinen Score-Beitrag für dieses Modul. Das Gewicht von 1.0 wird dennoch zum Nenner addiert. Bei einer Gesamtgewichtssumme von 7.5 ergibt sich ein neuer Nenner von 8.5 — der Score sinkt entsprechend.
 
 ### Module mit nicht verwertbaren Ergebnissen
 
@@ -71,7 +71,7 @@ Getestet und durchgefallen ist kein Capability-Mangel — das Modell tritt im Ra
 
 **Wenn ein Modell ein Modul grundlegend nicht unterstützen kann** (Status *incapable*), wird das Modul vollständig aus der Berechnung entfernt — weder Zähler noch Nenner werden beeinflusst.
 
-Beispiel: Ein reines Reasoning-Modell ohne Tool-Use-Funktionalität. Das Modul Tool Execution wird sowohl aus dem Zähler als auch aus dem Nenner herausgerechnet. Der Score basiert nur auf den verbleibenden Modulen, ohne Malus.
+Beispiel: Ein reines Reasoning-Modell ohne Tool-Use-Funktionalität. Das Modul Tool Use & Assistenz wird sowohl aus dem Zähler als auch aus dem Nenner herausgerechnet. Der Score basiert nur auf den verbleibenden Modulen, ohne Malus.
 
 Die Feststellung, ob ein Modell strukturell unfähig ist, erfolgt über das Capability-Feld in der Model Card (`supports_tool_use`). Ein Modell gilt nur dann als *incapable*, wenn die Model Card dies ausdrücklich bestätigt und das Modell keine Testdaten für das jeweilige Modul aufweist.
 

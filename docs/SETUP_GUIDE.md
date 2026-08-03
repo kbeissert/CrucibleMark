@@ -5,7 +5,7 @@
 **Zielgruppe:** Alle, die CrucibleMark erstmalig einrichten oder die zentrale Konfiguration anpassen.
 **Inhalt:** Hardware-Profil, Provider und API-Keys, LLM-Judge-Konfiguration, Modul-Auswahl.
 
-> **Voraussetzung:** Python 3.10+ und venv eingerichtet (siehe [README.md](../README.md)):
+> **Voraussetzung:** Python 3.12+ und venv eingerichtet (siehe [README.md](../README.md)):
 > ```bash
 > python3 -m venv .venv
 > source .venv/bin/activate
@@ -172,7 +172,7 @@ llm_judge:
 
 Nicht alle Test-Module sind für jeden Anwendungsfall relevant. Im Feld `modules` am Ende der `benchmark_config.yaml` wird festgelegt, welche Eigenschaften evaluiert werden.
 
-Für einen schnellen ersten Test empfiehlt es sich, nur Code Quality (`coding`), CLI Benchmark (`cli_benchmark`) oder logisches Verständnis (`reasoning`) auf `enabled: true` zu lassen. Soft-Skills (UX-Writing, Cultural Intelligence u. a.) lassen sich zunächst ausklammern.
+Für einen schnellen ersten Test empfiehlt es sich, nur Code Quality (`code_quality`), CLI Benchmark (`cli_benchmark`) oder logisches Verständnis (`reasoning`) auf `enabled: true` zu lassen. Soft-Skills (UX-Writing, Cultural Intelligence u. a.) lassen sich zunächst ausklammern.
 
 | Disziplin | Typ | Ziel des Moduls |
 |---|---|---|

@@ -28,7 +28,7 @@ In deiner Cline-Konfiguration muss unter `mcpServers` ein Eintrag enthalten sein
   "command": "uv",
   "args": [
     "--directory",
-    "/Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark",
+    "/Users/kbeissert/_PROJEKTE/Entwicklung/CrucibleMark",
     "run",
     "--with",
     "mcp",
@@ -40,7 +40,7 @@ In deiner Cline-Konfiguration muss unter `mcpServers` ein Eintrag enthalten sein
 ## Manuelles Starten (optional)
 
 ```bash
-cd /Users/kbeissert/_PROJEKTE/Entwicklung/cruciblemark
+cd /Users/kbeissert/_PROJEKTE/Entwicklung/CrucibleMark
 uv run --with mcp scripts/mcp/local_rig_server.py
 ```
 

@@ -13,7 +13,6 @@ Alle Preise in USD pro 1 Million Tokens (Input/Output).
 | Alibaba         | Qwen 3.5 397B                  | $0.6000   | $3.6000   | 128K | OK |
 | Alibaba         | Qwen 3 32B                     | $0.2900   | $0.5900   | 32K | OK |
 | Alibaba         | Qwen 3.7 Max                   | $1.2500   | $3.7500   | 1000K | OK |
-| Alibaba         | Qwen 3.7 Max                   | $1.2500   | $3.7500   | 1000K | OK |
 | Anthropic       | Claude Haiku 4.5               | $1.0000   | $5.0000   | 200K | OK |
 | Anthropic       | Claude Opus 4.5                | $5.0000   | $25.0000  | 200K | OK |
 | Anthropic       | Claude Opus 4.6                | $5.0000   | $25.0000  | 1000K | OK |
