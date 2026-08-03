@@ -16,7 +16,7 @@
   "params_total_b": 116.8,
   "params_active_b": 5.1,
   "context_window_k": 131,
-  "knowledge_cutoff": "2024-06",
+  "knowledge_cutoff": null,
   "summary": "GPT-OSS 120B ist seit August 2025 OpenAIs größtes Open-Weights-Modell und das offenste des Anbieters: Apache-2.0-Lizenz, lokales Deployment möglich. Das MoE bündelt 116,8 Milliarden Gesamt- bei nur etwa 5,1 Milliarden aktiven Parametern pro Token und läuft dank MXFP4-Quantisierung auf einer einzelnen 80-GB-GPU. Drei Reasoning-Stufen und native Tool-Use-Fähigkeiten runden das Profil ab.",
   "strengths": [
     "MoE mit 116,8 Mrd. Gesamt- und etwa 5,1 Mrd. aktiven Parametern pro Token.",
