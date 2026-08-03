@@ -2,20 +2,26 @@
 from __future__ import annotations
 
 import logging
-import sys
 from pathlib import Path
+from typing import NamedTuple
 
 import pandas as pd
 import yaml
 
-_ROOT_DIR = Path(__file__).resolve().parents[2]
-if str(_ROOT_DIR) not in sys.path:
-    sys.path.insert(0, str(_ROOT_DIR))
-
 from utils.model_id_base import strip_date_suffix
 from utils.text_helpers import slugify
 
-def build_provider_map(config_path: Path) -> dict[str, str]:
+
+class ProviderMap(NamedTuple):
+    """Kapselt Provider-Lookup-Daten ohne Magic-String-Keys.
+
+    mapping:  model_id → human-readable Provider-Display-Name.
+    fallbacks: api_type → Display-Name (für Heuristic-Fallback).
+    """
+    mapping: dict[str, str]
+    fallbacks: dict[str, str]
+
+def build_provider_map(config_path: Path) -> ProviderMap:
     """Builds a model_id → provider display name map from benchmark_config.yaml.
 
     Falls back to resolve_provider() for models not listed in the config
@@ -23,16 +29,16 @@ def build_provider_map(config_path: Path) -> dict[str, str]:
     provider label (e.g. "Groq Cloud", "Ollama (Local)"), not the api_type key.
     """
     mapping: dict[str, str] = {}
+    fallbacks: dict[str, str] = {}
 
     try:
         from utils.config_validator import ConfigValidator
         cfg = ConfigValidator(str(config_path)).config
     except (OSError, FileNotFoundError):
-        return mapping
+        return ProviderMap(mapping=mapping, fallbacks=fallbacks)
 
     providers_block = cfg.get("providers", {})
     # Build fallback map from config provider names (SSOT — no hardcoded strings)
-    _fallbacks: dict[str, str] = {}
     for _tier_key, tier_val in providers_block.items():
         if not isinstance(tier_val, dict):
             continue
@@ -42,7 +48,7 @@ def build_provider_map(config_path: Path) -> dict[str, str]:
             if "name" not in prov_val:
                 continue  # Skip config/settings sub-blocks (e.g. local.config)
             display_name: str = prov_val["name"]
-            _fallbacks[_prov_key] = display_name
+            fallbacks[_prov_key] = display_name
             for model_entry in prov_val.get("models", []):
                 if isinstance(model_entry, dict) and "id" in model_entry:
                     model_id: str = model_entry["id"]
@@ -53,15 +59,13 @@ def build_provider_map(config_path: Path) -> dict[str, str]:
                         mapping[short_id] = display_name
 
     # resolve_provider() returns "ollama" for all local models — alias to ollama_local name
-    if "ollama" not in _fallbacks:
-        _fallbacks["ollama"] = _fallbacks.get("ollama_local", "Ollama")
+    if "ollama" not in fallbacks:
+        fallbacks["ollama"] = fallbacks.get("ollama_local", "Ollama")
 
-    # Store fallback names so callers can use them without importing model_utils
-    mapping["__fallbacks__"] = _fallbacks  # type: ignore[assignment]
-    return mapping
+    return ProviderMap(mapping=mapping, fallbacks=fallbacks)
 
 
-def resolve_inference_provider(model_name: str, provider_map: dict[str, str]) -> str | None:
+def resolve_inference_provider(model_name: str, provider_map: ProviderMap) -> str | None:
     """Returns the display name of the inference provider for a given model.
 
     Lookup order:
@@ -69,21 +73,21 @@ def resolve_inference_provider(model_name: str, provider_map: dict[str, str]) ->
     2. Strip org prefix and retry
     3. resolve_provider() heuristic → map to display name via fallback table
     """
-    if model_name in provider_map:
-        return provider_map[model_name]
+    if model_name in provider_map.mapping:
+        return provider_map.mapping[model_name]
     short = model_name.rsplit("/", maxsplit=1)[-1]
-    if short in provider_map:
-        return provider_map[short]
+    if short in provider_map.mapping:
+        return provider_map.mapping[short]
 
     # Heuristic fallback
     try:
-        from utils.model_utils import resolve_provider as _rp
+        from utils.model_utils import resolve_provider as _rp  # noqa: PLC0415
         api_type, _ = _rp(model_name)
-    except Exception:
+    except (ImportError, ValueError, KeyError) as exc:
+        logging.debug("resolve_provider heuristic fehlgeschlagen für %r: %s", model_name, exc)
         api_type = "ollama"
 
-    fallbacks: dict[str, str] = provider_map.get("__fallbacks__", {})  # type: ignore[arg-type]
-    return fallbacks.get(api_type)
+    return provider_map.fallbacks.get(api_type)
 
 
 def load_csv_with_fallback(path: Path) -> pd.DataFrame | None:

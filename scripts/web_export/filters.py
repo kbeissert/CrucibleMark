@@ -3,16 +3,11 @@ from __future__ import annotations
 
 import json
 import logging
-import sys
 from fnmatch import fnmatch
 from pathlib import Path
 from typing import Any
 
 import yaml
-
-_ROOT_DIR = Path(__file__).resolve().parents[2]
-if str(_ROOT_DIR) not in sys.path:
-    sys.path.insert(0, str(_ROOT_DIR))
 
 from utils.model_utils import _safe_name
 

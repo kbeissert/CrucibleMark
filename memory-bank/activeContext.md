@@ -11,8 +11,8 @@ Regel: Nur aktive, ungelöste Themen als Baustelle melden. Abgeschlossene Integr
 
 ---
 
-## Aktueller Status (2026-08-03, Session 78)
+## Aktueller Status (2026-08-03, Session 79)
 
-- **Erledigt:** vLLM-Connector CC-Refactoring (`vllm_base.py`). `start_server` (CC 19→8) in Dispatch-Shell + 9 Pfad-Methoden zerlegt, `query` (CC 16→7) Streaming in `_consume_stream` ausgelagert, Reasoning-Fallback in `_apply_reasoning_fallback` dedupliziert (DRY). Alle `# noqa: C901` entfernt. Verhaltenserhaltend — 115 Tests grün, Ruff 0 violations. Versionssynchro v5.1.2 (7/7 Stellen).
-- Nächster Schritt: Commit ausstehen — Code-Änderung uncommitted (`vllm_base.py`).
+- **Erledigt:** Web-Export-Code-Review gegen Architekturregeln — 10 Befunde umgesetzt (B1–B10): Safety-Gate `assert`→`raise` vor `shutil.rmtree`, Monkeypatching-Mechanismus aus `__init__.py` entfernt, Magic-String `__fallbacks__`→`ProviderMap`-NamedTuple, duplizierte Pending-Sentinels→SSoT `normalize_pending()`, breite `except Exception`→konkret, sys.path-Bootstrap zentralisiert, `_build_model_card_subdict` ausgelagert (SRP). 9 Dateien, Ruff 0 violations, 172 Tests grün, Dry-Run 95 Modelle exportiert.
+- Nächster Schritt: Commit ausstehen — Web-Export-Refactoring (`scripts/web_export/` + `tests/test_web_export_blacklist.py`).
 - Offen/Risiko: Keine.

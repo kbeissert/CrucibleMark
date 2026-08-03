@@ -1,4 +1,11 @@
 # ruff: noqa: E402,F401
+"""Web-Export-Package: aggregiert Leaderboard, Political-Compass, Vendor-Cards
+und Model-Cards zu einem Datenpaket für das externe Frontend (cruciblemark-web).
+
+Re-Exportiert die Namen der Submodule für bequemen Zugriff aus Tests und
+externen Callern. Submodule sollten direkt importiert werden, wenn nur eine
+einzelne Funktion benötigt wird.
+"""
 from __future__ import annotations
 
 import sys
@@ -8,7 +15,11 @@ _ROOT_DIR = Path(__file__).resolve().parents[2]
 if str(_ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(_ROOT_DIR))
 
-from utils.io_helpers import atomic_copy as _atomic_copy, atomic_write_json as _atomic_write_json, atomic_write_text as _atomic_write_text
+from utils.io_helpers import (
+    atomic_copy as _atomic_copy,
+    atomic_write_json as _atomic_write_json,
+    atomic_write_text as _atomic_write_text,
+)
 from utils.text_helpers import (
     extract_badge_tier,
     extract_version,
@@ -26,14 +37,23 @@ from . import filters as _filters
 from . import loader as _loader
 from . import main as _main_module
 from . import top_level as _top_level
+
+from .constants import (
+    LdbCols,
+    _BLACKLIST_PATH,
+    _ROOT_DIR,
+    _SCORES_CONTRACT_KEYS,
+    _SCORE_COLUMN_TO_KEY,
+)
 from .entry_builders import (
-    _normalize_export_tags,
     _build_block_scores,
     _build_characteristics,
     _build_compass_entry,
     _build_leaderboard_entry,
+    _build_model_card_subdict,
     _build_tooluse_entry,
     _lookup_pc_row,
+    _normalize_export_tags,
     _read_latest_tooluse_narrative,
     _supports_tool_use_state,
     compute_is_retest,
@@ -54,19 +74,13 @@ from .filters import (
     _normalize_vendor,
 )
 from .loader import (
+    ProviderMap,
     _build_pc_lookups,
     _load_pc_block_meta,
     _load_sources,
     build_provider_map,
     load_csv_with_fallback,
     resolve_inference_provider,
-)
-from .constants import (
-    LdbCols,
-    _BLACKLIST_PATH,
-    _SCORES_CONTRACT_KEYS,
-    _SCORE_COLUMN_TO_KEY,
-    _ROOT_DIR,
 )
 from .main import (
     _audit_has_benchmark,
@@ -92,49 +106,16 @@ from .top_level import (
     find_latest_markdown,
 )
 
-_PATCHABLE_NAMES = (
-    "_setup_output_dirs",
-    "_load_sources",
-    "_build_pc_lookups",
-    "_load_pc_block_meta",
-    "_build_benchmark_run_dates",
+
+__all__ = [
+    # Öffentliche API
+    "LdbCols",
+    "ProviderMap",
     "build_provider_map",
+    "resolve_inference_provider",
+    "load_csv_with_fallback",
     "load_model_card",
-    "_resolve_dir",
-    "_export_model_files",
-    "_build_leaderboard_entry",
-    "_build_tooluse_entry",
-    "_write_top_level_outputs",
-    "_is_blacklisted",
-    "_should_skip_model",
-    "_resolve_model_dirs_and_card",
-    "_atomic_write_json",
-)
-
-
-def _sync_package_patches() -> dict[tuple[object, str], object]:
-    modules = (_main_module, _entry_builders, _filters, _loader, _top_level)
-    originals: dict[tuple[object, str], object] = {}
-    for name in _PATCHABLE_NAMES:
-        value = globals().get(name)
-        for module in modules:
-            if hasattr(module, name):
-                originals[(module, name)] = getattr(module, name)
-                setattr(module, name, value)
-    return originals
-
-
-def _restore_module_attrs(originals: dict[tuple[object, str], object]) -> None:
-    for (module, name), value in originals.items():
-        setattr(module, name, value)
-
-
-def main() -> None:
-    originals = _sync_package_patches()
-    try:
-        return _main_module.main()
-    finally:
-        _restore_module_attrs(originals)
-
-
-__all__ = [name for name in globals() if not name.startswith("__")]
+    "compute_is_retest",
+    "find_latest_markdown",
+    "parse_tests_run",
+]

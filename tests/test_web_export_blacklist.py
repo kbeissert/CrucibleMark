@@ -18,6 +18,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from scripts.web_export import (  # noqa: E402
+    ProviderMap,
     _is_blacklisted,
     _load_export_blacklist,
     _write_top_level_outputs,
@@ -254,7 +255,7 @@ def test_main_loop_calls_is_blacklisted_for_each_model(tmp_path: Path) -> None:
     Wir monkey-patchen alle externen Calls (CSV-Load, Card-Load, File-Write)
     und verifizieren, dass _is_blacklisted fuer jedes Leaderboard-Row aufgerufen wird.
     """
-    import scripts.web_export as we
+    import scripts.web_export.main as we_main
 
     # Echte tmp_path-Struktur: models_dir muss existieren, weil main() darin mkdir aufruft.
     output_root = tmp_path / "out" / "raw"
@@ -278,22 +279,22 @@ def test_main_loop_calls_is_blacklisted_for_each_model(tmp_path: Path) -> None:
         "Speed Profile": ["fast", "fast", "fast"],
     })
 
-    with patch.object(we, "_setup_output_dirs", return_value=(
+    with patch.object(we_main, "_setup_output_dirs", return_value=(
             output_root, models_dir, tmp_path)), \
-         patch.object(we, "_load_sources", return_value=(fake_df, None, None)), \
-         patch.object(we, "_build_pc_lookups", return_value=({}, {})), \
-         patch.object(we, "_load_pc_block_meta", return_value={}), \
-         patch.object(we, "_build_benchmark_run_dates", return_value={}), \
-         patch.object(we, "build_provider_map", return_value={}), \
-         patch.object(we, "load_model_card", return_value=None), \
-         patch.object(we, "_resolve_dir", return_value=None), \
-         patch.object(we, "_export_model_files", return_value={"review": None, "bias_review": None}), \
-         patch.object(we, "_build_leaderboard_entry", return_value={"slug": "x"}), \
-         patch.object(we, "_build_tooluse_entry", return_value=None), \
-         patch.object(we, "_write_top_level_outputs", return_value=None), \
-         patch.object(we, "_is_blacklisted", return_value=False) as mock_bl, \
+         patch.object(we_main, "_load_sources", return_value=(fake_df, None, None)), \
+         patch.object(we_main, "_build_pc_lookups", return_value=({}, {})), \
+         patch.object(we_main, "_load_pc_block_meta", return_value={}), \
+         patch.object(we_main, "_build_benchmark_run_dates", return_value={}), \
+         patch.object(we_main, "build_provider_map", return_value=ProviderMap({}, {})), \
+         patch.object(we_main, "load_model_card", return_value=None), \
+         patch.object(we_main, "_resolve_dir", return_value=None), \
+         patch.object(we_main, "_export_model_files", return_value={"review": None, "bias_review": None}), \
+         patch.object(we_main, "_build_leaderboard_entry", return_value={"slug": "x"}), \
+         patch.object(we_main, "_build_tooluse_entry", return_value=None), \
+         patch.object(we_main, "_write_top_level_outputs", return_value=None), \
+         patch.object(we_main, "_is_blacklisted", return_value=False) as mock_bl, \
          patch("sys.argv", ["web_export.py", "--output", str(tmp_path / "out")]):
-        we.main()
+        we_main.main()
 
     # Genau 3 Modelle geprueft
     assert mock_bl.call_count == 3
@@ -304,7 +305,7 @@ def test_main_loop_calls_is_blacklisted_for_each_model(tmp_path: Path) -> None:
 
 def test_main_loop_skips_blacklisted_model(tmp_path: Path) -> None:
     """Integration: Modell A ist geblacklistet, wird uebersprungen (kein data.json)."""
-    import scripts.web_export as we
+    import scripts.web_export.main as we_main
     import pandas as pd
 
     # Echte tmp_path-Struktur mit Blacklist-Datei
@@ -333,22 +334,22 @@ def test_main_loop_skips_blacklisted_model(tmp_path: Path) -> None:
         written_data.append(model_out.name)
         return {"review": None, "bias_review": None}
 
-    with patch.object(we, "_setup_output_dirs", return_value=(
+    with patch.object(we_main, "_setup_output_dirs", return_value=(
             output_root, models_dir, tmp_path)), \
-         patch.object(we, "_load_sources", return_value=(fake_df, None, None)), \
-         patch.object(we, "_build_pc_lookups", return_value=({}, {})), \
-         patch.object(we, "_load_pc_block_meta", return_value={}), \
-         patch.object(we, "_build_benchmark_run_dates", return_value={}), \
-         patch.object(we, "build_provider_map", return_value={}), \
-         patch.object(we, "load_model_card", return_value=None), \
-         patch.object(we, "_resolve_dir", return_value=None), \
-         patch.object(we, "_export_model_files", side_effect=_capture_write), \
-         patch.object(we, "_build_leaderboard_entry", return_value={"slug": "x"}), \
-         patch.object(we, "_build_tooluse_entry", return_value=None), \
-         patch.object(we, "_write_top_level_outputs") as mock_write, \
+         patch.object(we_main, "_load_sources", return_value=(fake_df, None, None)), \
+         patch.object(we_main, "_build_pc_lookups", return_value=({}, {})), \
+         patch.object(we_main, "_load_pc_block_meta", return_value={}), \
+         patch.object(we_main, "_build_benchmark_run_dates", return_value={}), \
+         patch.object(we_main, "build_provider_map", return_value=ProviderMap({}, {})), \
+         patch.object(we_main, "load_model_card", return_value=None), \
+         patch.object(we_main, "_resolve_dir", return_value=None), \
+         patch.object(we_main, "_export_model_files", side_effect=_capture_write), \
+         patch.object(we_main, "_build_leaderboard_entry", return_value={"slug": "x"}), \
+         patch.object(we_main, "_build_tooluse_entry", return_value=None), \
+         patch.object(we_main, "_write_top_level_outputs") as mock_write, \
          patch("sys.argv", ["web_export.py", "--output", str(tmp_path / "out")]):
         # _is_blacklisted unkontrolliert — Real-Funktion liest Blacklist aus tmp_path/config/
-        we.main()
+        we_main.main()
 
     # Nur Model B wurde exportiert (Model A ist blacklisted)
     # Slug wird aus model_id gebildet (SSoT), nicht aus model_name

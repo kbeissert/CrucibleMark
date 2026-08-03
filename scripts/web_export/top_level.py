@@ -6,18 +6,13 @@ import json
 import logging
 import re
 import shutil
-import sys
 from pathlib import Path
 from typing import Any
 
-_ROOT_DIR = Path(__file__).resolve().parents[2]
-if str(_ROOT_DIR) not in sys.path:
-    sys.path.insert(0, str(_ROOT_DIR))
-
 from utils.io_helpers import atomic_copy as _atomic_copy, atomic_write_json as _atomic_write_json
 from utils.text_helpers import strip_emojis as _strip_emojis
+from .constants import _ROOT_DIR, _SCORES_CONTRACT_KEYS
 from .filters import _collect_vendor_cards
-from .constants import _SCORES_CONTRACT_KEYS
 
 def _read_version(root_dir: Path) -> str:
     """Reads project version from README.md badge line."""
@@ -129,7 +124,12 @@ def _setup_output_dirs(args: argparse.Namespace) -> tuple[Path, Path, Path]:
     if out_dir.name != "raw":
         out_dir = out_dir / "raw"
     models_dir = out_dir / "models"
-    assert models_dir == (out_dir / "models"), "Safety check failed: rmtree target is not models/"
+    # Safety-Gate vor shutil.rmtree: assert wuerde unter ``python -O`` entfallen.
+    # Invariante: models_dir muss direktes Kind von out_dir sein.
+    if models_dir.parent != out_dir:
+        raise RuntimeError(
+            f"rmtree safety violation: {models_dir} is not a child of {out_dir}"
+        )
     out_dir.mkdir(parents=True, exist_ok=True)
     if models_dir.exists():
         shutil.rmtree(models_dir)

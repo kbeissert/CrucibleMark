@@ -5,15 +5,10 @@ import json
 import logging
 import math
 import re
-import sys
 from pathlib import Path
 from typing import Any
 
 import pandas as pd
-
-_ROOT_DIR = Path(__file__).resolve().parents[2]
-if str(_ROOT_DIR) not in sys.path:
-    sys.path.insert(0, str(_ROOT_DIR))
 
 from utils.card_utils import get_tag_display_roles, get_tag_labels, normalize_tags
 from utils.model_id_base import strip_date_suffix
@@ -297,6 +292,98 @@ def _sanitize_cost(val: Any) -> float | None:
     return float(val)
 
 
+def _build_model_card_subdict(
+    card: dict,
+    vendor: str | None,
+    community: str | None,
+    normalized_tags: list[str],
+) -> dict[str, Any]:
+    """Baut das self-contained model_card-Sub-Dict für data.json.leaderboard.
+
+    Spiegelt die Card-Sicht (Identität, Metadaten, Provenance, Thinking-Probe).
+    Aufgeteilt aus ``_build_leaderboard_entry`` (SRP — die Entry-Funktion baut
+    den Leaderboard-Datensatz, diese Funktion die Card-Projektion).
+    """
+    return _strip_none({
+        # Identitaet
+        "model_id": card.get("model_id"),
+        "model_version": card.get("model_version"),
+        # v4.10.14: Quant/Variant-Separierung — model_version ist reine
+        # Versionsnummer; Quant/Format-Token und interne Variant-Namen
+        # wurden aus model_version ausgelagert.
+        "quantization_format": card.get("quantization_format"),
+        "model_variant": card.get("model_variant"),
+        "unknown": card.get("unknown"),
+        "display_name": card.get("display_name"),
+        "developer": card.get("developer"),
+        "origin_country": card.get("origin_country"),
+        "developer_jurisdiction": card.get("developer_jurisdiction"),
+        "deployment_type": card.get("deployment_type"),
+        "local_deployment_possible": card.get("local_deployment_possible"),
+        "weights_provenance_risk": card.get("weights_provenance_risk"),
+        "weights_provenance_risk_rationale": card.get("weights_provenance_risk_rationale"),
+        # Normalisierter Hersteller-Name (SSoT: kanonischer Name aus
+        # classification_taxonomy.json, identisch mit Top-Level vendor-Feld).
+        "vendor": vendor,
+        "architecture_tags": normalized_tags,
+        "primary_focus": card.get("primary_focus"),
+        "thinking_probe_detected": card.get("thinking_probe_detected"),
+        "thinking_probe_confidence": card.get("thinking_probe_confidence"),
+        "thinking_probe_evidence": card.get("thinking_probe_evidence"),
+        "thinking_probe_manual_override": card.get("thinking_probe_manual_override"),
+        "thinking_probe_at": card.get("thinking_probe_at"),
+        "model_family": card.get("model_family"),
+        "use_case_primary": card.get("use_case_primary"),
+        "parameter_architecture": card.get("parameter_architecture"),
+        "params_total_b": card.get("params_total_b"),
+        "params_active_b": card.get("params_active_b"),
+        "context_window_k": card.get("context_window_k"),
+        "knowledge_cutoff": card.get("knowledge_cutoff"),
+        "size_class": card.get("size_class"),
+        # Modalitaeten (required since v4.7.0)
+        "input_modalities": card.get("input_modalities"),
+        "output_modalities": card.get("output_modalities"),
+        "summary": card.get("summary"),
+        "judge_context_hint": card.get("judge_context_hint"),
+        "strengths": card.get("strengths"),
+        "known_limitations": card.get("known_limitations"),
+        "card_status": card.get("card_status"),
+        "generated_at": card.get("generated_at"),
+        "license": card.get("license"),
+        "license_url": card.get("license_url"),
+        "commercial_use_allowed": card.get("commercial_use_allowed"),
+        "weights_license_tier": card.get("weights_license_tier"),
+        "input_price_per_1m": card.get("input_price_per_1m"),
+        "output_price_per_1m": card.get("output_price_per_1m"),
+        "supports_tool_use": card.get("supports_tool_use"),
+        # Heritage-IDs (v4.8.0): frühere kanonische model_ids.
+        "heritage_ids": card.get("heritage_ids") or [],
+        # Community-Distributor (v4.9.2)
+        "community": community,
+        # Profil-Verifikation (v4.9.0)
+        "profile_verified": card.get("profile_verified"),
+        "profile_verified_at": card.get("profile_verified_at"),
+        "profile_verified_by": card.get("profile_verified_by"),
+        "last_modified_at": card.get("last_modified_at"),
+        # Optional v4.7.1 Thinking-Probe-Quartett: nur exportieren wenn gesetzt.
+        **(
+            {"cot_marker_family": card["cot_marker_family"]}
+            if card.get("cot_marker_family") is not None
+            else {}
+        ),
+        **(
+            {"cot_tags_detected": card["cot_tags_detected"]}
+            if card.get("cot_tags_detected") is not None
+            else {}
+        ),
+        # Tri-State-Semantik für 11ty-Frontend:
+        #   "true"      — Tool-Use funktioniert (empirisch verifiziert)
+        #   "false"     — Modell kann keine Tools (empirisch verifiziert)
+        #   "untested"  — noch kein Tool-Use-Benchmark gelaufen
+        "supports_tool_use_state": _supports_tool_use_state(card.get("supports_tool_use")),
+    })
+
+
 def _build_leaderboard_entry(
     row: pd.Series,
     card: dict | None,
@@ -402,90 +489,7 @@ def _build_leaderboard_entry(
             review_published_at,
             review_updated_at if review_updated_at != review_published_at else None,
         ]), default=None),
-        "model_card": _strip_none({
-            # Identitaet (self-contained sub-dict, spiegelt Card-Sicht)
-            "model_id": card.get("model_id"),
-            "model_version": card.get("model_version"),
-            # v4.10.14: Quant/Variant-Separierung — model_version ist reine
-            # Versionsnummer; Quant/Format-Token und interne Variant-Namen
-            # wurden aus model_version ausgelagert (Migration siehe
-            # scripts/maintenance/migrate_model_versions_pollution.py).
-            "quantization_format": card.get("quantization_format"),
-            "model_variant": card.get("model_variant"),
-            "unknown": card.get("unknown"),
-            "display_name": card.get("display_name"),
-            "developer": card.get("developer"),
-            "origin_country": card.get("origin_country"),
-            "developer_jurisdiction": card.get("developer_jurisdiction"),
-            "deployment_type": card.get("deployment_type"),
-            "local_deployment_possible": card.get("local_deployment_possible"),
-            "weights_provenance_risk": card.get("weights_provenance_risk"),
-            "weights_provenance_risk_rationale": card.get("weights_provenance_risk_rationale"),
-            # Normalisierter Hersteller-Name (SSoT: kanonischer Name aus classification_taxonomy.json,
-            # identisch mit Top-Level vendor-Feld — kein Raw-Wert aus der Card).
-            "vendor": vendor,
-            "architecture_tags": _normalized_tags,
-            "primary_focus": card.get("primary_focus"),
-            "thinking_probe_detected": card.get("thinking_probe_detected"),
-            "thinking_probe_confidence": card.get("thinking_probe_confidence"),
-            "thinking_probe_evidence": card.get("thinking_probe_evidence"),
-            "thinking_probe_manual_override": card.get("thinking_probe_manual_override"),
-            "thinking_probe_at": card.get("thinking_probe_at"),
-            "model_family": card.get("model_family"),
-            "use_case_primary": card.get("use_case_primary"),
-            "parameter_architecture": card.get("parameter_architecture"),
-            "params_total_b": card.get("params_total_b"),
-            "params_active_b": card.get("params_active_b"),
-            "context_window_k": card.get("context_window_k"),
-            "knowledge_cutoff": card.get("knowledge_cutoff"),
-            "size_class": card.get("size_class"),
-            # Modalitaeten (required since v4.7.0, consumers: [web_export, ...])
-            "input_modalities": card.get("input_modalities"),
-            "output_modalities": card.get("output_modalities"),
-            "summary": card.get("summary"),
-            "judge_context_hint": card.get("judge_context_hint"),
-            "strengths": card.get("strengths"),
-            "known_limitations": card.get("known_limitations"),
-            "card_status": card.get("card_status"),
-            "generated_at": card.get("generated_at"),
-            "license": card.get("license"),
-            "license_url": card.get("license_url"),
-            "commercial_use_allowed": card.get("commercial_use_allowed"),
-            "weights_license_tier": card.get("weights_license_tier"),
-            "input_price_per_1m": card.get("input_price_per_1m"),
-            "output_price_per_1m": card.get("output_price_per_1m"),
-            "supports_tool_use": card.get("supports_tool_use"),
-            # Heritage-IDs (v4.8.0): frühere kanonische model_ids — leer wenn nicht gesetzt.
-            "heritage_ids": card.get("heritage_ids") or [],
-            # Community-Distributor (v4.9.2): kanonischer Name aus classification_taxonomy.json
-            "community": community,
-            # Profil-Verifikation (v4.9.0): wurde die Card manuell geprüft?
-            "profile_verified": card.get("profile_verified"),
-            "profile_verified_at": card.get("profile_verified_at"),
-            "profile_verified_by": card.get("profile_verified_by"),
-            "last_modified_at": card.get("last_modified_at"),
-            # Optional v4.7.1 Thinking-Probe-Quartett: nur exportieren wenn gesetzt
-            # (Sonde schreibt die Felder nur bei detektiertem CoT; sonst noise vermeiden).
-            **(
-                {"cot_marker_family": card["cot_marker_family"]}
-                if card.get("cot_marker_family") is not None
-                else {}
-            ),
-            **(
-                {"cot_tags_detected": card["cot_tags_detected"]}
-                if card.get("cot_tags_detected") is not None
-                else {}
-            ),
-            # Tri-State-Semantik für 11ty-Frontend:
-            #   "true"      — Tool-Use funktioniert (empirisch verifiziert)
-            #   "false"     — Modell kann keine Tools (empirisch verifiziert)
-            #   "untested"  — noch kein Tool-Use-Benchmark gelaufen
-            "supports_tool_use_state": (
-                _supports_tool_use_state(card.get("supports_tool_use"))
-                if card is not None
-                else None
-            ),
-        }) if card else None,
+        "model_card": _build_model_card_subdict(card, vendor, community, _normalized_tags) if card else None,
     })
     return _entry
 

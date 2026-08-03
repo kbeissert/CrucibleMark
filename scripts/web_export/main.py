@@ -1,37 +1,30 @@
-# ruff: noqa: E402,F401
+# ruff: noqa: E402
 from __future__ import annotations
 
 import argparse
 import datetime
 import logging
 import sys
-from contextlib import suppress
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
-import pandas as pd
+import yaml
 
-_ROOT_DIR = Path(__file__).resolve().parents[2]
-if str(_ROOT_DIR) not in sys.path:
-    sys.path.insert(0, str(_ROOT_DIR))
-
+from utils.config_validator import ConfigValidator
 from utils.io_helpers import atomic_write_json as _atomic_write_json
 from utils.model_id_base import strip_date_suffix
 from utils.model_utils import WEIGHTS_TIER_DISPLAY, _safe_name
-from utils.text_helpers import slugify, strip_emojis as _strip_emojis, strip_none as _strip_none
-
-try:
-    from utils.config_validator import ConfigValidator
-except ImportError:
-    ConfigValidator = None  # type: ignore[assignment]
+from utils.text_helpers import (
+    normalize_pending,
+    slugify,
+    strip_emojis as _strip_emojis,
+    strip_none as _strip_none,
+)
 
 from .constants import (
     LdbCols,
-    _BLACKLIST_PATH,
-    _ROOT_DIR,
     _SCORES_CONTRACT_KEYS,
-    _SCORE_COLUMN_TO_KEY,
 )
 
 from .entry_builders import (
@@ -104,9 +97,10 @@ def _init_export_context(
     # Provider-Config für card_model_id-Redirect (Dual-Thinking-Profile).
     # Graceful degradation: ohne Config bleibt load_model_card wie bisher.
     _provider_config: dict | None = None
-    with suppress(Exception):
-        if ConfigValidator is not None:
-            _provider_config = ConfigValidator().config
+    try:
+        _provider_config = ConfigValidator().config
+    except (OSError, ValueError, yaml.YAMLError) as exc:
+        logging.debug("Provider-Config nicht ladbar — load_model_card ohne Redirect: %s", exc)
 
     return {
         "root_dir": root_dir,
@@ -166,10 +160,10 @@ def _should_skip_model(
     """
     has_raw = bool(raw_model_id) and raw_model_id != "nan"
 
-    # Skip 1: kein Benchmark (weder Audit-Log noch CSV-Score)
+    # Skip 1: kein Benchmark (weder Audit-Log noch CSV-Score).
+    # SSoT: normalize_pending() kennt alle Sentinel-Werte (inkl. En-Dash U+2013).
     _audit_has_bench = _audit_has_benchmark(model_audit_src)
-    _csv_total = str(row.get(LdbCols.TOTAL_SCORE, "")).strip()
-    _csv_has_benchmark = _csv_total not in ("", "Pending", "—", "nan") and not pd.isna(row.get(LdbCols.TOTAL_SCORE, float("nan")))
+    _csv_has_benchmark = normalize_pending(row.get(LdbCols.TOTAL_SCORE)) is not None
     if not _audit_has_bench and not _csv_has_benchmark:
         logging.debug("  [%s/%s] %s -> SKIP (nur PC-Daten, kein Benchmark)", count, total, model_name)
         return "no_benchmark"
@@ -508,7 +502,7 @@ def main() -> None:
     try:
         config = ConfigValidator().config
         default_out = config.get("output", {}).get("web_export_dir", "./web_export")
-    except Exception:
+    except (OSError, ValueError, yaml.YAMLError):
         default_out = "./web_export"
 
     parser = argparse.ArgumentParser(description="Export CrucibleMark data for Web")

@@ -1,6 +1,12 @@
 # Progress
 Letzte Releases + aktueller Stand.
 
+### 2026-08-03 (Session 79) — Web-Export-Code-Review + 10 Architektur-Fixes [DONE]
+
+Code-Review des `scripts/web_export/`-Packages gegen die Architekturregeln. 10 Befunde umgesetzt: (B1) `assert` vor `shutil.rmtree` → echter `if/raise` (Safety-Gate überlebt `python -O`); (B2) Monkeypatching-Mechanismus (`_sync_package_patches`/`_PATCHABLE_NAMES`) aus `__init__.py` entfernt — Tests patchen jetzt direkt auf dem Submodul; (B3) `_ROOT_DIR`-Redefinition entfernt (war durch file-level `F401`-noqa verborgen); (B4) Magic-String `"__fallbacks__"` → `ProviderMap`-NamedTuple; (B5) 4× breite `except Exception`/`suppress(Exception)` → konkrete `(OSError, ValueError, yaml.YAMLError)`; (B6) duplizierte Pending-Sentinels → SSoT `normalize_pending()` (schließt En-Dash-Lücke); (B7) sys.path-Bootstrap von 6 Modulen → 1 zentrale Stelle; (B8) `__all__` explizit; (B9) `_build_model_card_subdict` aus `_build_leaderboard_entry` ausgelagert (SRP); (B10) file-level `F401`-noqa aus `main.py` entfernt (deckte 3 tote Imports). Test-Laufzeit 80s→0.6s (Mock-Fix aus B2). AGENTS.md um file-level-F401-Verbot ergänzt.
+
+---
+
 ### 2026-08-03 (Session 78) — vLLM-Connector CC-Refactoring [DONE] v5.1.2
 
 Verhaltenserhaltendes Refactoring von `utils/providers/vllm_base.py`. Die als unverhandelbar deklarierte CC-≤-12-Regel wurde über zwei `# noqa: C901`-Annotationen umgangen (start_server CC=19, query CC=16). Drei Maßnahmen: (1) `start_server` in Dispatch-Shell + 9 Pfad-Methoden zerlegt (CC→8), (2) `query`-Streaming in `_consume_stream` ausgelagert (CC→7), (3) Reasoning-Fallback in `_apply_reasoning_fallback` dedupliziert (DRY). Keine `noqa` mehr. 115 Tests grün (78 vLLM + 37 Thinking/Config). AGENTS.md um noqa-Verbot ergänzt. Versionssynchro v5.1.2 über 7 Stellen (fixt auch v5.1.1-Drift in AGENTS.md/PROJECT_STATUS.md/REF_TODO.md).
