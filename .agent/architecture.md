@@ -1,6 +1,6 @@
 # Architecture & SSoTs
 
-Detail-Referenz für CrucibleMark-Architektur-Constraints. Die Top-Constraints stehen in [`CLAUDE.md`](../CLAUDE.md); hier nur, was darüber hinausgeht.
+Detail-Referenz für CrucibleMark-Architektur-Constraints. Die Top-Constraints stehen in [`AGENTS.md`](../AGENTS.md); hier nur, was darüber hinausgeht.
 
 ## Architektur-Invariants
 

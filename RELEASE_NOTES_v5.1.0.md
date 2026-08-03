@@ -158,7 +158,7 @@ ToolUse-Connector, Command A+ als Test-Modell. Cohere in
 
 ## Framework-Refactoring (Sektionen A–M)
 
-Systematische Zerlegung gegen die Architektur-Regeln aus `CLAUDE.md`.
+Systematische Zerlegung gegen die Architektur-Regeln aus `AGENTS.md`.
 **Verhaltenserhaltend** — keine Änderungen an Scoring/Token-Budget/Provider-Logik.
 
 - **Sektion A:** `utils/model_utils.py` (Monolith) → 7 Submodule + Re-Export-Bridge

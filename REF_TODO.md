@@ -6,6 +6,15 @@
 
 ## Abgeschlossen
 
+### vLLM-Connector CC-Refactoring (v5.1.2 – 03.08.26, Session 78)
+
+Verhaltenserhaltendes Refactoring von `utils/providers/vllm_base.py` — die als unverhandelbar deklarierte CC-≤-12-Regel wurde über `# noqa: C901` umgangen.
+
+- [x] `start_server` zerlegt (CC 19 → 8): Dispatch-Shell + 9 Pfad-Methoden.
+- [x] `query` Streaming in `_consume_stream` ausgelagert (CC 16 → 7).
+- [x] Reasoning-Fallback in `_apply_reasoning_fallback` dedupliziert (DRY).
+- [x] Alle `# noqa: C901` entfernt — Ruff C901: 0 violations. 115 Tests grün.
+
 ### Striktere Incapable-Klassifikation + Prozessdisziplin (v5.1.0 – 14.07.26, Session 65)
 
 Coverage-Malus greift jetzt korrekt bei Modellen, die komplette Module nicht durchlaufen haben. `supports_tool_use: false` wurde als "incapable" (exempt) klassifiziert, selbst wenn das Modell getestet wurde (error-Rows). Fix: striktere Logik + Card-Korrekturen + Evidence-Pflichtfeld für `false`-Cards.

@@ -13,7 +13,7 @@ Lifecycle-Achsen:
   3. Context-Manager für Batch-Sessions (Exception-safe Server-Teardown)
 
 Hinweis zu vllm-start-Constraint: ``swap_model()`` wird NICHT verwendet.
-Per CLAUDE.md ist ``vllm-start`` nicht idempotent — Server wird zwischen
+Per AGENTS.md ist ``vllm-start`` nicht idempotent — Server wird zwischen
 Modellen immer gestoppt und frisch gestartet.
 """
 import logging
@@ -200,7 +200,7 @@ def vllm_model_session(
 
     Stellt sicher, dass der Server nach der Verwendung immer gestoppt wird,
     auch bei Exceptions oder KeyboardInterrupt. Pro-Modell aufrufen —
-    ``stop_server()`` zwischen Modellen ist Pflicht (CLAUDE.md:
+    ``stop_server()`` zwischen Modellen ist Pflicht (AGENTS.md:
     vllm-start ist nicht idempotent).
 
     Cleanup (``server_post_stop_cmd``) ist bewusst NICHT Teil der Session —
@@ -236,7 +236,7 @@ def vllm_model_session(
 
     set_vllm_provider_context(vllm_client, provider_key)
 
-    # Server starten — Per CLAUDE.md nicht idempotent, daher nie swap_model()
+    # Server starten — Per AGENTS.md nicht idempotent, daher nie swap_model()
     if not vllm_client.start_server(model_id):
         raise VllmSessionError(
             f"vLLM-Server für '{model_id}' konnte nicht gestartet werden."
@@ -249,5 +249,5 @@ def vllm_model_session(
         vllm_client.stop_server()
         # Settle: Docker-Container auf der Remote-Box braucht Zeit, um den
         # Port freizugeben. Ohne Settle schlägt der nächste vllm-start fehl
-        # (Nonidempotenz-Constraint, siehe CLAUDE.md).
+        # (Nonidempotenz-Constraint, siehe AGENTS.md).
         time.sleep(VLLM_STOP_SETTLE_SEC)

@@ -299,7 +299,7 @@ def test_llamacpp_with_enable_thinking_is_not_expanded(llamacpp_provider_with_th
 def test_missing_thinking_max_tokens_raises_error(tmp_path: Path):
     """Ohne thinking_max_tokens (weder model_cfg noch Provider-Default) → ValueError.
 
-    Verhindert stilles Hardcoding eines Default-Werts (CLAUDE.md:
+    Verhindert stilles Hardcoding eines Default-Werts (AGENTS.md:
     Konfiguration ausschließlich über Config-Files).
     """
     providers = {

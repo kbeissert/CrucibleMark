@@ -37,7 +37,7 @@ from scripts.core.vllm_batch import (
 # ---------------------------------------------------------------------------
 
 def test_vllm_stop_settle_sec_default_is_three():
-    """Per CLAUDE.md-Konservativ-Annahme (gleicher Default wie llama.cpp)."""
+    """Per AGENTS.md-Konservativ-Annahme (gleicher Default wie llama.cpp)."""
     assert VLLM_STOP_SETTLE_SEC == 3  # noqa: PLR2004
 
 

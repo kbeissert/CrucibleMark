@@ -421,7 +421,7 @@ def _run_single_vllm_provider_batch(
     End-of-Batch Cleanup) wird vom Orchestrator übernommen, nicht vom
     einzelnen ``run_benchmark()``-Aufruf.
 
-    vLLM-Constraint (siehe CLAUDE.md): ``vllm-start`` ist nicht idempotent
+    vLLM-Constraint (siehe AGENTS.md): ``vllm-start`` ist nicht idempotent
     → kein ``swap_model()``, immer ``stop_server()`` + ``start_server()``
     zwischen Modellen. Realisiert via ``vllm_model_session``-Contextmanager
     pro Modell in der Schleife.

@@ -1145,7 +1145,7 @@ Jede Model Card JSON muss folgende Felder enthalten. Cards mit `card_status: "dr
 | `thinking_probe_manual_override` | boolean | `true` wenn Wert manuell gesetzt (z. B. OpenAI o-Series ohne `reasoning_tokens`) |
 | `thinking_probe_at` | string | ISO-Timestamp des letzten Probe-Runs |
 
-**Signals:** Signal A = `<think>`-Tags in Antwort, Signal B = `reasoning_tokens > 0`. Response-Länge ist kein Signal (ThinkingProbe Signal-C-Verbot, siehe CLAUDE.md).
+**Signals:** Signal A = `<think>`-Tags in Antwort, Signal B = `reasoning_tokens > 0`. Response-Länge ist kein Signal (ThinkingProbe Signal-C-Verbot, siehe AGENTS.md).
 
 ---
 
@@ -1684,5 +1684,5 @@ python run_benchmark.py --debug-responses
 
 ---
 
-**Dokumenten-Version:** 5.1.0 (Überarbeitung 2026-08)\
+**Dokumenten-Version:** 5.1.2 (Ueberarbeitung 2026-08)\
 **Kompatibel mit:** CrucibleMark v3.8.2+

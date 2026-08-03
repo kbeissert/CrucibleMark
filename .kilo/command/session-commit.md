@@ -1,7 +1,7 @@
 ---
 description: >-
   CrucibleMark Memory Bank nach Session aktualisieren. Synchronisiert
-  Versionsnummern mit CHANGELOG und aktualisiert CLAUDE.md, activeContext,
+  Versionsnummern mit CHANGELOG und aktualisiert AGENTS.md, activeContext,
   progress, systemPatterns, techContext. Hält Kilo-Local auf Index-Rolle.
   Qualität vor Vollständigkeit — lieber nichts schreiben als etwas Falsches.
 ---
@@ -12,7 +12,7 @@ lieber nichts schreiben als etwas Falsches oder Triviales.**
 **Rollen-Trennung (verbindlich):** `memory-bank/` ist die Content-SSoT
 (sichtbar für Kilo, Hermes, Cline, Copilot). Kilo-Local-Memory ist
 **Index/Zeiger nur** — durable Inhalte NUR nach `memory-bank/`, niemals nur
-nach Kilo-Local. Siehe `CLAUDE.md` → Rollen-Trennung. Schritt 6 prüft das.
+nach Kilo-Local. Siehe `AGENTS.md` → Rollen-Trennung. Schritt 6 prüft das.
 
 
 ## 0. Versionssynchro (immer zuerst ausführen)
@@ -52,7 +52,7 @@ Nicht dokumentieren:
 
 ---
 
-## 1. `CLAUDE.md` — Fallstricke & Verbote
+## 1. `AGENTS.md` — Fallstricke & Verbote
 
 Nur ergänzen wenn ein **neuer, nicht-offensichtlicher Fallstrick** aufgetreten ist,
 der noch nicht im „Architecture Top Constraints"-Abschnitt steht. Max. 1–2 Sätze,

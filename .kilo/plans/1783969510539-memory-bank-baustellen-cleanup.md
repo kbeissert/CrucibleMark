@@ -79,7 +79,7 @@ Neuer Eintrag *oben* (vor Session 61), Format analog bestehender Einträge:
 ## Out of Scope
 - Keine Code-Änderungen, kein Release-Bump (bleibt v4.10.18).
 - Keine PC-Benchmark-Runs (Nutzer-Entscheidung: Known Limitation).
-- Kein automatischer Commit (nur auf ausdrücklichen Nutzerwunsch; CLAUDE.md:
+- Kein automatischer Commit (nur auf ausdrücklichen Nutzerwunsch; AGENTS.md:
   "NEVER commit unless explicitly asked"). Plan endet mit uncommitted Doku-Änderung.
 
 ## Validierung

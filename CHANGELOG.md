@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v5.1.2] - 2026-08-03
+
+**Patch-Release: vLLM-Connector CC-Refactoring — Architektur-Regel-Konformität.**
+
+Verhaltenserhaltendes Refactoring von `utils/providers/vllm_base.py`. Die als
+*unverhandelbar* deklarierte CC-≤-12-Regel (`.ruff.toml` C901, max-complexity=12)
+wurde bisher über zwei `# noqa: C901`-Annotationen umgangen. Alle drei Verstöße
+behoben — keine `noqa` mehr im Connector.
+
+### Changed — vLLM-Connector Komplexitäts-Reduktion (Session 78)
+
+- **`start_server` zerlegt (CC 19 → 8):** 280-Zeilen-Monolith in Dispatch-Shell
+  + 9 Pfad-Methoden (`_start_already_running`, `_start_adopt`, `_adopt_with_warmup`,
+  `_start_swap_restart`, `_stop_and_verify`, `_start_loading_or_cold`,
+  `_start_wait_for_loading`, `_cold_start`, `_mark_active`). Kein Verhaltenswechsel.
+- **`query` Streaming ausgelagert (CC 16 → 7):** Streaming-Block in `_consume_stream()`
+  extrahiert.
+- **Reasoning-Fallback dedupliziert (DRY):** `_apply_reasoning_fallback()` als
+  Shared-Helper — ersetzt doppelten vLLM-0.25.1-Fallback in Streaming + Non-Streaming.
+
+### Tests
+
+- 115 passed (78 vLLM-Connector + 37 Thinking-Expansion/Config), 0 failed.
+- Ruff C901: 0 violations, 0 `noqa`-Annotationen in `vllm_base.py`.
+
+
+
 ## [v5.1.0] - 2026-07-14
 
 **Striktere Incapable-Klassifikation + Card-Korrekturen.**
@@ -577,8 +604,8 @@ bleiben in der Git-History reproduzierbar.
 
 ### Design Constraints (dokumentiert)
 
-- **Sequenzielle Modell-Abarbeitung:** `systemPatterns.md` + `CLAUDE.md` — Modelle werden einzeln getestet, Server-Restart + Cooldown zwischen Modellen. Kein Performance-Bug — garantiert gleichwertige Testumgebungen.
-- **Judge-Reset zwischen Tasks:** `systemPatterns.md` + `CLAUDE.md` — Jede Bewertung ist ein frischer API-Call. Kein Caching — verhindert Kontextmix.
+- **Sequenzielle Modell-Abarbeitung:** `systemPatterns.md` + `AGENTS.md` — Modelle werden einzeln getestet, Server-Restart + Cooldown zwischen Modellen. Kein Performance-Bug — garantiert gleichwertige Testumgebungen.
+- **Judge-Reset zwischen Tasks:** `systemPatterns.md` + `AGENTS.md` — Jede Bewertung ist ein frischer API-Call. Kein Caching — verhindert Kontextmix.
 
 ---
 
@@ -1589,7 +1616,7 @@ Drei unabhängige Schichten garantieren: **Phase-8-Erfolg kann nicht durch zukü
 - **`generate_review.py` — Skip-Logik vereinfacht** — mtime-Vergleich gegen Leaderboard-CSV entfernt; Existenz-Check reicht: vorhandene Narrative-Reviews werden immer übersprungen (kein `--force` nötig für Nicht-Wiederholungen).
 - **`Makefile` — `make review` FLAGS** — `AUTO=1` und `FORCE=1` werden jetzt korrekt an `generate_review.py` weitergegeben (für `--all` und `--model`-Pfad).
 - **Docs** — `ARCHITECTURE.md`, `SCORING_METHODOLOGY.md`, `SETUP_GUIDE.md`: Ollama-Cloud-Proxy-Ära entfernt, OpenRouter-Free-Tier-Doku ergänzt.
-- **`CLAUDE.md` — Pitfall ergänzt** — `resolve_provider()` `:free`-Suffix-Verhalten und OpenRouter-Namespace-Heuristik dokumentiert.
+- **`AGENTS.md` — Pitfall ergänzt** — `resolve_provider()` `:free`-Suffix-Verhalten und OpenRouter-Namespace-Heuristik dokumentiert.
 
 ### Added (Model Cards)
 - **`qwen_qwen3_7-max.json`** — Qwen 3.7 Max (Proprietär, Alibaba Cloud via OpenRouter, input $1.25/1M, output $3.75/1M, context 131K, `thinking_probe_detected: false`).
@@ -1611,7 +1638,7 @@ Drei unabhängige Schichten garantieren: **Phase-8-Erfolg kann nicht durch zukü
 
 ### Changed
 - **Model Card Schema** — `model_version` enthält nur noch Format/Quant-Stufe (z.B. `Q4_K_M (GGUF)`). Plattform-Info ausgelagert in neues Feld `weights_source`.
-- **Docs** — `ARCHITECTURE.md`, `DEVELOPER_GUIDE.md`, `SETUP_GUIDE.md`, `CLAUDE.md`: llamacpp Server-Management, `reasoning_content`-Sonderfall (Gemma-4 Native Thinking), `_infer_provider()`-Heuristik-Pitfall.
+- **Docs** — `ARCHITECTURE.md`, `DEVELOPER_GUIDE.md`, `SETUP_GUIDE.md`, `AGENTS.md`: llamacpp Server-Management, `reasoning_content`-Sonderfall (Gemma-4 Native Thinking), `_infer_provider()`-Heuristik-Pitfall.
 
 ---
 
@@ -1639,7 +1666,7 @@ Vollständige Einzelversionen: v3.10.0 → v3.15.1 (siehe unten).
 - **`utils/cost_tracker.py`:** Schlanker konstruktor — kein YAML-Config-Loading mehr. `cost_log_file` ist jetzt hardcodiert (`outputs/cost_log.csv`). `calculate_cost()` ist 1-stufig: Model Card JSON → Warning-Log + `return 0.0`. Kosten-Tracking (`track_request()`, `get_spend_breakdown()`) vollständig erhalten.
 
 ### Docs
-- **`CLAUDE.md`**, **`README.md`**, **`docs/USER_GUIDE.md`**, **`docs/DEVELOPER_GUIDE.md`:** Alle Referenzen auf `cost_limits.yaml` als Legacy-Fallback und auf tägliche Budget-Limits entfernt. Pricing-SSoT-Hinweis zeigt jetzt direkt auf Model Card JSON.
+- **`AGENTS.md`**, **`README.md`**, **`docs/USER_GUIDE.md`**, **`docs/DEVELOPER_GUIDE.md`:** Alle Referenzen auf `cost_limits.yaml` als Legacy-Fallback und auf tägliche Budget-Limits entfernt. Pricing-SSoT-Hinweis zeigt jetzt direkt auf Model Card JSON.
 
 ---
 

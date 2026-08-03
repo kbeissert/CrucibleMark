@@ -1,6 +1,12 @@
 # Progress
 Letzte Releases + aktueller Stand.
 
+### 2026-08-03 (Session 78) — vLLM-Connector CC-Refactoring [DONE] v5.1.2
+
+Verhaltenserhaltendes Refactoring von `utils/providers/vllm_base.py`. Die als unverhandelbar deklarierte CC-≤-12-Regel wurde über zwei `# noqa: C901`-Annotationen umgangen (start_server CC=19, query CC=16). Drei Maßnahmen: (1) `start_server` in Dispatch-Shell + 9 Pfad-Methoden zerlegt (CC→8), (2) `query`-Streaming in `_consume_stream` ausgelagert (CC→7), (3) Reasoning-Fallback in `_apply_reasoning_fallback` dedupliziert (DRY). Keine `noqa` mehr. 115 Tests grün (78 vLLM + 37 Thinking/Config). AGENTS.md um noqa-Verbot ergänzt. Versionssynchro v5.1.2 über 7 Stellen (fixt auch v5.1.1-Drift in AGENTS.md/PROJECT_STATUS.md/REF_TODO.md).
+
+---
+
 ### 2026-08-03 (Session 77) — Vollständiger Doku-Audit + list_models Bugfix [DONE]
 
 **Bugfix:** `scripts/tools/list_models.py` hatte duplikaten `check_commercial()`-Aufruf (Zeile 319), führte zu 5+ Min Timeout bei API-Pings. Entfernt.
@@ -47,7 +53,7 @@ Hermes 4.3 36B Model Card verifiziert (`card_status: "complete"`, `profile_verif
 
 ### 2026-07-31 (Session 73) — Laguna S 2.1: Selektives Reasoning, Dual-Profile entfernt [DONE]
 
-Laguna S 2.1 als selektives Reasoning-Modell identifiziert (HF Discussion #13: "thinks when needed", nicht Always-Thinking wie Qwen3.6). `enable_thinking: true` aus `provider_config.yaml` entfernt → keine Dual-Profile-Expansion mehr. `dual_profile` in Card auf `null`. Alle Laguna-CSV-Einträge aus 4 CSVs entfernt (65 Zeilen). `add-model`-Skill um Modell-Klassen-Tabelle ergänzt. CLAUDE.md + systemPatterns.md um Fallstrick ergänzt. `reasoning_effort` darf NICHT gesendet werden (vLLM 0.25.1 400-Fehler).
+Laguna S 2.1 als selektives Reasoning-Modell identifiziert (HF Discussion #13: "thinks when needed", nicht Always-Thinking wie Qwen3.6). `enable_thinking: true` aus `provider_config.yaml` entfernt → keine Dual-Profile-Expansion mehr. `dual_profile` in Card auf `null`. Alle Laguna-CSV-Einträge aus 4 CSVs entfernt (65 Zeilen). `add-model`-Skill um Modell-Klassen-Tabelle ergänzt. AGENTS.md + systemPatterns.md um Fallstrick ergänzt. `reasoning_effort` darf NICHT gesendet werden (vLLM 0.25.1 400-Fehler).
 
 ---
 

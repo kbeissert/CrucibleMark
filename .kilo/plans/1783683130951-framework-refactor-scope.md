@@ -10,7 +10,7 @@
 
 ## 1. Architektur-Invariants (Referenz — nicht verhandelbar)
 
-Aus `CLAUDE.md`, `.agent/architecture.md`, `.agent/data-pipeline.md`, `memory-bank/systemPatterns.md`:
+Aus `AGENTS.md`, `.agent/architecture.md`, `.agent/data-pipeline.md`, `memory-bank/systemPatterns.md`:
 
 | Regel | SSoT-Aufruf |
 |---|---|

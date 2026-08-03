@@ -14,7 +14,7 @@ des Projekts auf Qualität und Konsistenz. **Kein Codetouching — nur Markdown 
 ### Reine Markdown-Dateien (`.md`)
 - `memory-bank/` — Projektdokumentation
 - `docs/` — Entwickler- und Architektur-Docs
-- `CLAUDE.md` + `.agent/` — Agent-Context, Constraints, Architektur-Referenz
+- `AGENTS.md` + `.agent/` — Agent-Context, Constraints, Architektur-Referenz
 - Root-Level: `README.md`, `CHANGELOG.md` (falls vorhanden)
 
 ### YAML-Dateien mit eingebettetem Markdown (`config.yaml`, `asset.yaml`)
@@ -62,7 +62,7 @@ falsche Einrückung zerstört die Prompt-Struktur still und ohne Fehlermeldung:
 - **Markdown innerhalb YAML:** Prüfe ob `**fett**`, `- Listen` und `###`-Headings
   korrekt mit Leerzeilen umgeben sind, damit sie beim LLM-Rendering greifen
 
-### 4 — Command- und Instruction-Dateien (`.kilo/command/`, `CLAUDE.md`, `.agent/`)
+### 4 — Command- und Instruction-Dateien (`.kilo/command/`, `AGENTS.md`, `.agent/`)
 - Sind alle Frontmatter-`description:`-Felder vorhanden und aussagekräftig?
 - Sind eingebettete Code-Blöcke mit Sprach-Tag versehen (` ```python `, ` ```yaml ` etc.)?
 - Ist der Ton konsistent (Imperativ für Anweisungen)?

@@ -1,11 +1,11 @@
 # CrucibleMark
 
-[![Version](https://img.shields.io/badge/version-5.1.1-blue)](.)
+[![Version](https://img.shields.io/badge/version-5.1.2-blue)](.)
 [![Python](https://img.shields.io/badge/python-3.12%2B-blue)](.)
 [![License](https://img.shields.io/badge/license-MIT-green)](.)
 [![Status](https://img.shields.io/badge/status-production--ready-brightgreen)](.)
 
-**Stand: v5.1.1 · 2026-08-03**
+**Stand: v5.1.2 · 2026-08-03**
 
 ## Ein modulares LLM-Benchmark-Framework für Product Engineers
 
@@ -197,6 +197,11 @@ make clean-model MODEL="mistral-large-2411" DRY=1   # Vorschau ohne Löschen
 ## Recent Versions
 
 Die vollständige Versionshistorie steht in [CHANGELOG.md](CHANGELOG.md). Kurzfassung der letzten drei Releases:
+### v5.1.2 (2026-08-03) — vLLM-Connector CC-Refactoring
+
+Verhaltenserhaltendes Refactoring von `vllm_base.py`: `start_server` (CC 19→8) in Dispatch-Shell + 9 Pfad-Methoden zerlegt, `query` (CC 16→7) Streaming in `_consume_stream` ausgelagert, Reasoning-Fallback in `_apply_reasoning_fallback` dedupliziert (DRY). Alle `# noqa: C901`-Annotationen entfernt — die als unverhandelbar deklarierte CC-≤-12-Regel wird nicht mehr umgangen. 115 Tests grün, Ruff 0 violations.
+
+
 
 ### v5.1.1 (2026-08-02) — vLLM-Connector-Fixes, Laguna Dual-Profile, Naming-Validator
 
@@ -242,4 +247,4 @@ Bug-Reports, Feature-Wünsche und Diskussionen laufen über [GitHub Issues](http
 
 - **Maintainer:** [kbeissert](https://github.com/kbeissert)
 - **Repository:** [github.com/kbeissert/cruciblemark](https://github.com/kbeissert/cruciblemark)
-- **Status:** Production-Ready (v5.1.1)
+- **Status:** Production-Ready (v5.1.2)
