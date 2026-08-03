@@ -23,7 +23,7 @@
     "MoE-aware GGUF quantizations"
   ],
   "stats": {},
-  "unknown": true,
+  "unknown": false,
   "generated_at": "2026-06-12T08:00:00+00:00",
   "last_verified_at": "2026-06-22",
   "verification_source": "https://huggingface.co/collections/mudler/apex-quants-gguf",

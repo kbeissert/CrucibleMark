@@ -1,25 +1,33 @@
 {
   "vendor_id": "llmfan46",
-  "display_name": "unknown",
-  "company": "unknown",
-  "headquarters": "unknown",
-  "founding_year": 0,
-  "pricing_model": "free",
+  "card_subtype": "community",
+  "display_name": "llmfan46",
+  "company": "llmfan46 (Community Contributor)",
+  "headquarters": "Unknown",
+  "founding_year": null,
+  "pricing_model": "open-source-self-hosted",
   "api_base_url": null,
   "api_documentation_url": null,
   "deployment": {
     "cloud_act_exposure": false,
-    "applicable_law": "Unknown",
-    "data_residency": "Unknown",
-    "gdpr_dpa_available": "unknown",
-    "eu_adequacy_decision": "unknown",
-    "data_retention_days": -1,
+    "applicable_law": "N/A (lokal only)",
+    "data_residency": "N/A (lokal only)",
+    "gdpr_dpa_available": false,
+    "eu_adequacy_decision": false,
+    "data_retention_days": 0,
     "chinese_nsl_risk": "none"
   },
-  "privacy_note": "Zu diesem Anbieter konnten keine verifizierten Informationen gefunden werden. Für europäische Nutzer sind Verarbeitungsort, Rechtsrahmen und Speicherfristen daher unklar.",
-  "notable_models": [],
-  "unknown": true,
+  "privacy_note": "llmfan46 betreibt keinen eigenen Cloud-Inferenz-Dienst. Die Modelle werden ausschließlich lokal betrieben. Datenschutzrisiken hängen vollständig vom gewählten Hosting ab.",
+  "notable_models": [
+    "Gemma (Abliterated/Heretic v1.2.0)",
+    "Gemma (Wordsmith/Ortenzya Creative Writing)"
+  ],
+  "unknown": false,
   "generated_at": "2026-07-09T16:38:10.637285+00:00",
-  "last_verified_at": null,
-  "verification_source": null
+  "last_verified_at": "2026-08-02",
+  "verification_source": "https://huggingface.co/llmfan46",
+  "profile_verified": true,
+  "profile_verified_at": "2026-08-02",
+  "profile_verified_by": "llm:perplexity",
+  "description": "llmfan46 ist ein einzelner Community-Contributor, spezialisiert auf Abliteration (Heretic v1.2.0, ARA-Methode) und Creative-Writing-Fine-Tunes (Wordsmith/Ortenzya) auf Google-Gemma-Basismodellen. Verwendet Unsloth Studio. Keine dokumentierte Jurisdiktion (HF-Profil ohne Länderangabe). Bei rein lokalem Betrieb sind weder US-CLOUD-Act noch chinesisches NSL relevant."
 }
