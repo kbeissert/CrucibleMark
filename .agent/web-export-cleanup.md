@@ -95,7 +95,7 @@ Rückgabewert: `float | str | None`. Zahlen → `float`. Sentinels → `None`. A
 
 `LdbCols` in `scripts/web_export/constants.py` MUSS eine Konstante für JEDE CSV-Modul-Spalte in `benchmark_scores/benchmark_leaderboard_detailed.csv` haben, sonst wird die Spalte stillschweigend ignoriert und landet nicht in `data.json.leaderboard.scores`.
 
-Stand v4.10.11: 10 Spalten (Code Quality, CLI Badge, UX Writing, Documentation Quality, Content Transformation, Cultural Intelligence, Logical Reasoning, Synthesis Quality, Tool Execution, Political Bias).
+Stand v4.10.11: 9 Spalten (Code Quality, CLI Badge, UX Writing, Documentation Quality, Content Transformation, Cultural Intelligence, Logical Reasoning, Synthesis Quality, Tool Execution). Political Bias wurde in v4.10.16 entfernt (separate `data.json.political_compass` Section).
 
 **Symptom bei Drift:** Radar-Charts auf Webseite zeigen "Tool Execution" nicht an.
 
@@ -103,7 +103,7 @@ Stand v4.10.11: 10 Spalten (Code Quality, CLI Badge, UX Writing, Documentation Q
 
 ## Tool-Use-Cleanup-Atomarität (ab v4.10.11)
 
-Das Sanitize-Skript `scripts/maintenance/sanitize_8_models_tooluse.py` muss ALLE Tool-Use-Datenquellen ATOMAR bereinigen, sonst entsteht Drift zwischen LB, Audit-Logs und narrativen Reviews.
+Das Sanitize-Skript `scripts/legacy/sanitize_8_models_tooluse.py` muss ALLE Tool-Use-Datenquellen ATOMAR bereinigen, sonst entsteht Drift zwischen LB, Audit-Logs und narrativen Reviews.
 
 **Symptom (User-Beobachtung 2026-06-26):** DeepSeek V3.1 hatte Tool-Use-Scores im Leaderboard und narrative Reviews, aber keine Audit-Files im `outputs/audit_logs/<dir>/` — der Web-Export zeigte Tool-Use-Daten ohne nachvollziehbaren Audit-Trail.
 

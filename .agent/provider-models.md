@@ -314,7 +314,7 @@ Limitiert Targets pro Run. Bei `FORCE=1` werden immer die ersten N alphabetische
 
 ### `_rebuild_index()` entfernt (v4.10.7, historisch)
 
-`generate_model_cards.py` hatte früher `_rebuild_index()` — wurde zwischenzeitlich zu `rebuild_card_index()` in `utils/card_template` migriert, dann mit dem Index vollständig entfernt (siehe oben).
+`generate_model_cards.py` hatte früher `_rebuild_index()` — wurde zwischenzeitlich zu `rebuild_card_index()` in `utils/card_template.py` migriert, dann mit dem Index vollständig entfernt (siehe oben).
 
 ## MCP Auto-Lifecycle
 

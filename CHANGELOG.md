@@ -71,6 +71,54 @@ und teilweise durchfielen, bestraft wurden (Malus).
 - 1350 passed, 22 skipped, 0 failed.
 
 
+
+## [v5.1.1] - 2026-08-02
+
+**Patch-Release: vLLM-Connector-Fixes, Laguna Dual-Profile-Bereinigung, Naming-Validator, Tool-Use-Memory-Bank.**
+
+### Fixed — vLLM-Connector (Session 71, Commits fd386047, 659f34e0)
+
+- **Thinking-Profile-Adoption:** `_adopt_matches()` scheiterte an MoE-Notation (`a3b`, `thinking`) im ID-Segment. Fix in `vllm_base.py`: Config/TOML-Name-Match.
+- **Post-Stop-Verifikation:** Proxy-502 nicht mehr als `loading` interpretiert. `_backend_stopped()` mit SSH-Check.
+- **502-Mehrdeutigkeit:** Pfad 3.5 in `vllm_base.py:start_server()` wartete bei Proxy-502 600s ohne `vllm-start`-Aufruf. `_remote_chat_server_running()` (SSH `pgrep`) prüft Chat-Prozess-Existenz.
+
+### Fixed — ToolUse Timestamp-Overwrite (Session 72, Commit 79a88fe0)
+
+- `tooluse_exporter.py:_write_card_from_aggregated_row` (Path B) überschrieb `tested_at` in 107 Cards mit `datetime.now()`. Fix: existierenden Card-Wert bewahren.
+
+### Changed — Historical Rename (Session 72, Commit 79a88fe0)
+
+- `qwen3_6-27B` → `qwen3_6-27B-pre025` (capital B, vLLM vor 0.25.1). CSV (99 Zeilen), Card, NVFP4-Summary, Blacklist (kept_overrides → aktive blacklist), Audit-Logs (93 Dateien), Reviews, Runs-JSON, Test-Fixtures aktualisiert. `pre025` blacklisted, `nvfp4` exportiert.
+
+### Changed — Laguna Dual-Profile-Bereinigung (Session 73, Commit 7a05dbd7)
+
+- Laguna S 2.1 als selektives Reasoning-Modell identifiziert (HF Discussion #13: "thinks when needed"). `enable_thinking: true` aus `provider_config.yaml` entfernt → keine Dual-Profile-Expansion. `dual_profile` in Card auf `null`. 65 CSV-Zeilen entfernt.
+
+### Added — Coverage Ratio (Session 74, Commit 7ccbc0cf)
+
+- `coverage_ratio` als neue Spalte im Leaderboard (generalisiert Coverage-Bewertung pro Modell).
+- Laguna S 2.1 als 9. vollständig integriertes Modell: Rank 92, Score 69.1%, Silver Badge, 49/49 Tests, ToolUse P1=78.33/P2=33.33.
+
+### Added — Naming-Validator als Publication-Gate (Session 76, Commit 1c48c1d9)
+
+- `scripts/analysis/validate_naming.py`: 11 display_name + 7 model_version Forbidden-Patterns. Hard-Gate in `make web-export` (exit 1), Soft-Gate in `make web-export-dev` (warn-only).
+- 7 vLLM/NVFP4 display_name + 10 model_version + 4 Cloud/Groq model_version Korrekturen.
+- `make validate-naming` Target. `data-schema.md` als Konventionen-SSoT.
+
+### Added — Memory-Bank Tool Use Schema (Commit e2bab258)
+
+- `memory-bank/reference/feedback_schema.md`: Tool Use Schema Finalisierung v3.11.0 (Separation of Concerns, SSoT-Integrität).
+- `memory-bank/reference/tooluse_module.md`: Tool Use Modul v3.11.0 — Architektur, Golden Standard v1.3.0, AUTHORIZED_TOOLS-Aliases, MCP-Konfiguration, P1-Scoring-Stufen.
+
+### Fixed — Vendor Card Cleanup (Commit 45f879a2)
+
+- 7 auto-generierte compound-name Vendor-Cards gelöscht (`alibaba_jackrong_x2`, `alibaba_hauhaucs`, `cognitive_computations`, `google_deepmind_ara_apex`, `google_deepmind_llmfan46`, `google_deepmind_undix`, `google_deepmind_unsloth`).
+- `ara_apex_quant.json`: `unknown: false` (verifiziert via HF Collection).
+- `llmfan46.json`: vollständig überarbeitet (Community Contributor Profil).
+- `jackrong.json`: neue Community Contributor Card.
+
+---
+
 ## [v5.0.0] - 2026-07-13
 
 **Generalized Coverage Scoring + ToolUse Integration.**

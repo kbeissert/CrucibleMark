@@ -22,13 +22,19 @@ Regel: Nur aktive, ungelöste Themen als Baustelle melden. Abgeschlossene Integr
 ```bash
 make benchmark-auto          # Vollautomatischer Batch-Run
 make validate                # Lint (ruff + pylint)
+make validate-naming         # Naming-Validator (Publication-Gate, Session 76)
+make validate-csv            # CSV-Sanitizer
 make test                    # Full test suite (pytest)
 make leaderboard             # Leaderboard regenerieren
-make web-export              # Web-Export-Pipeline
-make web-export-dev          # Export ins Dev-Frontend
+make tooluse-leaderboard     # ToolUse-Leaderboard aggregieren
+make web-export              # Web-Export-Pipeline (hard gate: Naming-Validator)
+make web-export-dev          # Export ins Dev-Frontend (warn-only)
 make model-cards MODEL=<id>  # Neues Model Card Template
 make probe-thinking MODEL=<id>  # Thinking-Probe für ein Modell
 make clean-model MODEL=<id>  # Modell vollständig entfernen
+make mcp-start / mcp-stop    # Benchmark-MCP-Server starten/stoppen
+make docs-version-check      # Doku-Stempel-Drift prüfen
+make docs-version-sync YES=1 # Doku-Stempel auf aktuelle Version angleichen
 ```
 
 ## Architektur-Regeln (unverhandelbar)

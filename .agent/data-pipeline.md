@@ -14,7 +14,7 @@ Regeln und Pitfalls für CSV-IO, Ergebnis-Persistenz, Konsolidierung.
 `_handle_single_asset()` in `unified_runner.py` schreibt jedes Ergebnis **SOFORT** per `save_results([result])` in die CSV.
 
 - Vorher: Batch-Write erst am Ende des Runs — bei Crash/Kill/Timeout waren ALLE Ergebnisse des Runs verloren.
-- Caller (`benchmark_auto.py:498`, `run_score_benchmark.py:180`) behält finalen `save_results(results)` als Safety-Netz (Upsert ist idempotent).
+- Caller (`scripts/core/benchmark_auto.py`, `scripts/run_score_benchmark.py`) behält finalen `save_results(results)` als Safety-Netz (Upsert ist idempotent).
 
 ## CSV-Write-Through atomar (v4.10.4)
 
