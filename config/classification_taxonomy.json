@@ -302,6 +302,13 @@
         "aliases": [],
         "jurisdiction": "US"
       },
+      "Poolside": {
+        "label": "Poolside",
+        "vendor_card_id": "poolside",
+        "description": "Poolside Inc. — US-amerikanisches KI-Unternehmen. Entwickler der Laguna-Modellreihe (offene Coding-Modelle unter OpenMDW-1.1-Lizenz).",
+        "aliases": [],
+        "jurisdiction": "US"
+      },
       "xAI": {
         "label": "xAI",
         "vendor_card_id": "xai",
