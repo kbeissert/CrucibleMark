@@ -806,7 +806,7 @@ class VllmBaseClient(BaseProviderClient):
             return True
         return False
 
-    def start_server(self, model_id: str | None = None) -> bool:  # noqa: C901
+    def start_server(self, model_id: str | None = None) -> bool:
         """Start the vLLM server for the given model id (TOML-Name oder Pfad).
 
         Falls der Server bereits mit einem ANDEREN Modell läuft, wird er
@@ -832,160 +832,92 @@ class VllmBaseClient(BaseProviderClient):
         """
         status = self._probe_status()
         healthy = (status == "healthy")
-
-        # Pfad 1: Server läuft bereits mit dem gewünschten Modell
         probe_name = self._server_model_name or model_id
-        if (
-            healthy
-            and self._active_model
-            and self._active_model == model_id
-            and model_id
-            and self._is_model_ready(probe_name)
-        ):
+
+        # Pfad 1/1b: Server läuft bereits mit dem gewünschten Modell.
+        if healthy and self._active_model and self._active_model == model_id and model_id:
+            return self._start_already_running(model_id, probe_name)
+
+        # Pfad 2: Server gesund, aber kein _active_model gesetzt → adoptieren.
+        if healthy and self._active_model is None and model_id:
+            return self._start_adopt(model_id)
+
+        # Pfad 3: Server läuft mit einem ANDEREN bekannten Modell → Restart.
+        if healthy and self._active_model and self._active_model != model_id:
+            return self._start_swap_restart(model_id)
+
+        # Pfad 3.5/4: Proxy-Loading abwarten oder Cold-Start.
+        return self._start_loading_or_cold(model_id, status)
+
+    def _start_already_running(self, model_id: str, probe_name: str) -> bool:
+        """Pfad 1/1b: Server gesund + aktives Modell = Zielmodell.
+
+        Pfad 1: Readiness-Probe erfolgreich → sofort zurück.
+        Pfad 1b: Probe transient fehlgeschlagen → 3× retry (je 2 s).
+        Kein Durchfallen zum Cold-Start — das würde den laufenden Server
+        neu starten (5-10 Min verschwendet).
+        """
+        if self._is_model_ready(probe_name):
             logger.debug("vLLM server already running at %s", self._base_url())
             return True
-
-        # Pfad 1b: Server gesund + richtiges Modell, aber Probe transient
-        # fehlgeschlagen. NICHT zu Pfad 4 (Cold-Start) durchfallen — das
-        # würde den laufenden Server neu starten (5-10 Min verschwendet).
-        # Stattdessen kurz warten und erneut probieren.
-        if (
-            healthy
-            and self._active_model
-            and self._active_model == model_id
-            and model_id
-        ):
-            for retry in range(3):
-                time.sleep(2)
-                if self._is_model_ready(probe_name):
-                    logger.debug(
-                        "vLLM probe succeeded on retry %d (model=%s)", retry + 1, model_id,
-                    )
-                    return True
-            warning = (
-                f"vLLM server at {self._base_url()} is healthy with model '{model_id}', "
-                "but readiness probe failed 3 times. Benchmark wird beendet."
-            )
-            logger.warning(warning)
-            print(f"   ⚠️  {warning}")
-            return False
-
-        # Pfad 2: Server gesund, aber kein _active_model gesetzt → adoptieren
-        if healthy and self._active_model is None and model_id:
-            detected = self._query_active_model()
-
-            # Pfad 2a: Server meldet das gewünschte Modell → adoptieren.
-            # WICHTIG: Für API-Calls (Probe, Query) muss der Server-Modellname
-            # (detected) verwendet werden, nicht der normalisierte model_id.
-            # z. B. Server kennt "ornith-1.0-35B-FP8", aber model_id ist
-            # "ornith-1_0-35B-FP8" (Punkte → Unterstriche normalisiert).
-            if detected and self._adopt_matches(detected, model_id):
-                probe_name = detected  # Server-Name für API-Calls
-                if self._is_model_ready(probe_name):
-                    self._active_model = model_id
-                    self._active_config = self._config_arg(model_id)
-                    self._server_model_name = detected
-                    logger.debug(
-                        "Adopting already running vLLM endpoint at %s with model '%s' (server name: '%s')",
-                        self._base_url(), model_id, detected,
-                    )
-                    return True
-
-                prov_cfg = self._provider_cfg()
-                adopt_timeout = int(prov_cfg.get(
-                    "existing_server_ready_timeout_sec",
-                    prov_cfg.get("server_ready_timeout_sec", DEFAULT_READY_TIMEOUT_SEC),
-                ))
-                adopt_poll = int(prov_cfg.get("server_ready_poll_sec", DEFAULT_POLL_SEC))
-                print(
-                    f"   ⏳ Server läuft bereits mit '{detected}' — "
-                    f"warte auf Modell-Bereitschaft (Timeout: {adopt_timeout}s) ...",
-                    flush=True,
-                )
-                if self._wait_for_model_ready(
-                    probe_name, timeout_sec=adopt_timeout, poll_sec=adopt_poll,
-                    log_prefix="Adopt warmup",
-                ):
-                    self._active_model = model_id
-                    self._active_config = self._config_arg(model_id)
-                    self._server_model_name = detected
-                    print("   ✅ Modell bereit nach Wartezeit", flush=True)
-                    logger.debug(
-                        "Adopted already running vLLM endpoint at %s with model '%s' (server name: '%s')",
-                        self._base_url(), model_id, detected,
-                    )
-                    return True
-
-                warning = (
-                    f"OpenAI-kompatibler Endpunkt unter {self._base_url()} läuft bereits mit '{detected}', "
-                    "antwortet aber auch nach Wartezeit noch nicht stabil auf den Hallo-Probe-Request. "
-                    "Benchmark wird beendet."
-                )
-                logger.warning(warning)
-                print(f"   ⚠️  {warning}")
-                return False
-
-            # Pfad 2b: /v1/models nicht ermittelbar (detected=None) → direkt
-            # adoptieren, wenn das Modell auf einen Probe-Request antwortet.
-            # Verhindert, dass ein temporärer /v1/models-Fehler (z. B. Proxy-
-            # Latenz) zum Stoppen des laufenden Servers führt.
-            if detected is None and self._is_model_ready(model_id):
-                self._active_model = model_id
-                self._active_config = self._config_arg(model_id)
-                self._server_model_name = model_id  # kein Server-Name bekannt, model_id verwenden
+        for retry in range(3):
+            time.sleep(2)
+            if self._is_model_ready(probe_name):
                 logger.debug(
-                    "Adopting already running vLLM endpoint at %s with model '%s' "
-                    "(model list unavailable, probe succeeded)",
-                    self._base_url(), model_id,
+                    "vLLM probe succeeded on retry %d (model=%s)", retry + 1, model_id,
                 )
                 return True
+        warning = (
+            f"vLLM server at {self._base_url()} is healthy with model '{model_id}', "
+            "but readiness probe failed 3 times. Benchmark wird beendet."
+        )
+        logger.warning(warning)
+        print(f"   ⚠️  {warning}")
+        return False
 
-            # Pfad 2c: ECHTER Endpoint-Konflikt — Server meldet ein ANDERES
-            # Modell. Nur in diesem Fall darf der Server gestoppt werden.
-            if detected and not self._adopt_matches(detected, model_id):
-                warning = (
-                    f"OpenAI-kompatibler Endpunkt unter {self._base_url()} ist bereits aktiv "
-                    f"(aktives Modell: {detected}). Starte Server mit '{model_id}' neu..."
-                )
-                logger.warning(warning)
-                print(f"   ⚠️  {warning}")
-                self.stop_server()
-                time.sleep(2)
-                if not self._backend_stopped():
-                    error = (
-                        f"vLLM-Server unter {self._base_url()} konnte nicht gestoppt werden "
-                        f"(Status nach stop_server(): {self._probe_status()}). "
-                        "Manueller Eingriff erforderlich — Benchmark wird beendet."
-                    )
-                    logger.error(error)
-                    print(f"   ❌ {error}")
-                    return False
-                return self.start_server(model_id)
+    def _start_adopt(self, model_id: str) -> bool:
+        """Pfad 2: Server gesund, _active_model None → laufenden Server adoptieren.
 
-            # Pfad 2d: detected=None UND Probe fehlgeschlagen → Server
-            # scheinbar gesund, aber Modell nicht ansprechbar. NICHT
-            # stoppen — als Fehler melden.
+        Unterpfade:
+        - 2a: Server meldet Zielmodell → adoptieren (ggf. mit Warmup-Wartezeit).
+        - 2b: /v1/models nicht ermittelbar, aber Probe erfolgreich → adoptieren.
+        - 2c: Server meldet ANDERES Modell → Stop + rekursiver Neustart.
+        - 2d: Server gesund, aber Modell nicht ansprechbar → Fehler (nicht stoppen).
+        """
+        detected = self._query_active_model()
+
+        # Pfad 2a: Server meldet das gewünschte Modell → adoptieren.
+        # WICHTIG: Für API-Calls (Probe, Query) muss der Server-Modellname
+        # (detected) verwendet werden, nicht der normalisierte model_id.
+        if detected and self._adopt_matches(detected, model_id):
+            return self._adopt_with_warmup(model_id, detected)
+
+        # Pfad 2b: /v1/models nicht ermittelbar (detected=None) → direkt
+        # adoptieren, wenn das Modell auf einen Probe-Request antwortet.
+        # Verhindert, dass ein temporärer /v1/models-Fehler (z. B. Proxy-
+        # Latenz) zum Stoppen des laufenden Servers führt.
+        if detected is None and self._is_model_ready(model_id):
+            self._mark_active(model_id)
+            logger.debug(
+                "Adopting already running vLLM endpoint at %s with model '%s' "
+                "(model list unavailable, probe succeeded)",
+                self._base_url(), model_id,
+            )
+            return True
+
+        # Pfad 2c: ECHTER Endpoint-Konflikt — Server meldet ein ANDERES
+        # Modell. Nur in diesem Fall darf der Server gestoppt werden.
+        if detected and not self._adopt_matches(detected, model_id):
             warning = (
-                f"OpenAI-kompatibler Endpunkt unter {self._base_url()} ist gesund, "
-                f"aber Modell '{model_id}' antwortet nicht auf Probe-Request. "
-                "Benchmark wird beendet."
+                f"OpenAI-kompatibler Endpunkt unter {self._base_url()} ist bereits aktiv "
+                f"(aktives Modell: {detected}). Starte Server mit '{model_id}' neu..."
             )
             logger.warning(warning)
             print(f"   ⚠️  {warning}")
-            return False
-
-        # Pfad 3: Server läuft mit einem ANDEREN bekannten Modell → Restart
-        if healthy and self._active_model and self._active_model != model_id:
-            logger.debug(
-                "vLLM server running with managed model '%s', restarting for '%s'",
-                self._active_model, model_id,
-            )
-            self.stop_server()
-            time.sleep(2)
-            if not self._backend_stopped():
+            if not self._stop_and_verify():
                 error = (
-                    f"vLLM-Server (Modell '{self._active_model}') konnte nicht gestoppt "
-                    f"werden (Status nach stop_server(): {self._probe_status()}). "
+                    f"vLLM-Server unter {self._base_url()} konnte nicht gestoppt werden "
+                    f"(Status nach stop_server(): {self._probe_status()}). "
                     "Manueller Eingriff erforderlich — Benchmark wird beendet."
                 )
                 logger.error(error)
@@ -993,45 +925,112 @@ class VllmBaseClient(BaseProviderClient):
                 return False
             return self.start_server(model_id)
 
-        # Pfad 3.5: Proxy meldet "loading" (502) → Backend lädt noch, WARTEN statt neu starten!
-        # Verhindert den Fatal-Bug, dass ein ladender Container gestoppt und
-        # neu gestartet wird (5-10 Min Modell-Ladezeit verschwendet).
-        #
-        # WICHTIG — 502-Mehrdeutigkeit bei Proxy-Setups:
-        # Ein Reverse-Proxy gibt 502 sowohl zurück, wenn das Backend lädt,
-        # ALS AUCH wenn gar kein vLLM-Prozess läuft (Connection refused am
-        # Backend-Port). Ohne Differenzierung würde der Connector hier 600 s
-        # auf ein nicht existierendes Backend warten, ohne ``vllm-start``
-        # aufzurufen → Timeout. Wir prüfen daher per SSH, ob tatsächlich ein
-        # Chat-Server-Prozess läuft. Nur dann wird gewartet; sonst fallen wir
-        # durch zum Cold-Start (Pfad 4).
+        # Pfad 2d: detected=None UND Probe fehlgeschlagen → Server
+        # scheinbar gesund, aber Modell nicht ansprechbar. NICHT
+        # stoppen — als Fehler melden.
+        warning = (
+            f"OpenAI-kompatibler Endpunkt unter {self._base_url()} ist gesund, "
+            f"aber Modell '{model_id}' antwortet nicht auf Probe-Request. "
+            "Benchmark wird beendet."
+        )
+        logger.warning(warning)
+        print(f"   ⚠️  {warning}")
+        return False
+
+    def _adopt_with_warmup(self, model_id: str, detected: str) -> bool:
+        """Pfad 2a: Server läuft bereits mit passendem Modell — adoptieren.
+
+        Bei noch nicht schlagfertigem Modell wird auf Readiness gewartet
+        (Adopt-Warmup). Der Server-Name (``detected``) wird für alle
+        nachfolgenden API-Calls genutzt.
+        """
+        probe_name = detected  # Server-Name für API-Calls
+        if self._is_model_ready(probe_name):
+            self._mark_active(model_id, detected)
+            logger.debug(
+                "Adopting already running vLLM endpoint at %s with model '%s' (server name: '%s')",
+                self._base_url(), model_id, detected,
+            )
+            return True
+
+        prov_cfg = self._provider_cfg()
+        adopt_timeout = int(prov_cfg.get(
+            "existing_server_ready_timeout_sec",
+            prov_cfg.get("server_ready_timeout_sec", DEFAULT_READY_TIMEOUT_SEC),
+        ))
+        adopt_poll = int(prov_cfg.get("server_ready_poll_sec", DEFAULT_POLL_SEC))
+        print(
+            f"   ⏳ Server läuft bereits mit '{detected}' — "
+            f"warte auf Modell-Bereitschaft (Timeout: {adopt_timeout}s) ...",
+            flush=True,
+        )
+        if self._wait_for_model_ready(
+            probe_name, timeout_sec=adopt_timeout, poll_sec=adopt_poll,
+            log_prefix="Adopt warmup",
+        ):
+            self._mark_active(model_id, detected)
+            print("   ✅ Modell bereit nach Wartezeit", flush=True)
+            logger.debug(
+                "Adopted already running vLLM endpoint at %s with model '%s' (server name: '%s')",
+                self._base_url(), model_id, detected,
+            )
+            return True
+
+        warning = (
+            f"OpenAI-kompatibler Endpunkt unter {self._base_url()} läuft bereits mit '{detected}', "
+            "antwortet aber auch nach Wartezeit noch nicht stabil auf den Hallo-Probe-Request. "
+            "Benchmark wird beendet."
+        )
+        logger.warning(warning)
+        print(f"   ⚠️  {warning}")
+        return False
+
+    def _start_swap_restart(self, model_id: str) -> bool:
+        """Pfad 3: Server läuft mit anderem bekannten Modell → Stop + Restart."""
+        logger.debug(
+            "vLLM server running with managed model '%s', restarting for '%s'",
+            self._active_model, model_id,
+        )
+        if not self._stop_and_verify():
+            error = (
+                f"vLLM-Server (Modell '{self._active_model}') konnte nicht gestoppt "
+                f"werden (Status nach stop_server(): {self._probe_status()}). "
+                "Manueller Eingriff erforderlich — Benchmark wird beendet."
+            )
+            logger.error(error)
+            print(f"   ❌ {error}")
+            return False
+        return self.start_server(model_id)
+
+    def _stop_and_verify(self) -> bool:
+        """Server stoppen und Backend-Down verifizieren (Shared-Helper).
+
+        Gemeinsam für Pfad 2c (Endpoint-Konflikt) und Pfad 3 (Swap).
+        Returns True wenn das Backend wirklich down ist, False wenn der
+        Stop fehlschlug. Die Fehlermeldung wird vom Aufrufer gesetzt —
+        sie unterscheidet sich zwischen den Pfaden (Rekursionsschutz:
+        bei False bricht der Aufrufer ab statt ``start_server`` erneut
+        aufzurufen).
+        """
+        self.stop_server()
+        time.sleep(2)
+        return self._backend_stopped()
+
+    def _start_loading_or_cold(self, model_id: str | None, status: str) -> bool:
+        """Pfad 3.5/4: Proxy-Loading abwarten oder Cold-Start.
+
+        Pfad 3.5: Proxy meldet ``"loading"`` (502). Ein Reverse-Proxy
+        gibt 502 sowohl zurück, wenn das Backend lädt, ALS AUCH wenn gar
+        kein vLLM-Prozess läuft (Connection refused am Backend-Port).
+        Ohne Differenzierung würde der Connector hier 600 s auf ein
+        nicht existierendes Backend warten. Per SSH wird geprüft, ob ein
+        Chat-Server-Prozess existiert — nur dann wird gewartet, sonst
+        Cold-Start (Pfad 4).
+        """
         if status == "loading" and model_id:
             chat_running = self._remote_chat_server_running()
             if chat_running is not False:
-                prov_cfg = self._provider_cfg()
-                loading_timeout = int(prov_cfg.get(
-                    "existing_server_ready_timeout_sec",
-                    prov_cfg.get("server_ready_timeout_sec", DEFAULT_READY_TIMEOUT_SEC),
-                ))
-                loading_poll = int(prov_cfg.get("server_ready_poll_sec", DEFAULT_POLL_SEC))
-                print(
-                    f"   ⏳ vLLM-Backend lädt noch (Proxy meldet 502) — "
-                    f"warte auf Readiness (Timeout: {loading_timeout}s) ...",
-                    flush=True,
-                )
-                if self._wait_for_model_ready(
-                    model_id, timeout_sec=loading_timeout, poll_sec=loading_poll,
-                    log_prefix="Loading warmup",
-                ):
-                    self._active_model = model_id
-                    self._active_config = self._config_arg(model_id)
-                    # Server-Namen abfragen für API-Calls
-                    detected = self._query_active_model()
-                    self._server_model_name = detected or model_id
-                    print("   ✅ Backend bereit nach Wartezeit", flush=True)
-                    return True
-                logger.error("vLLM backend did not become ready within %d s (loading).", loading_timeout)
-                return False
+                return self._start_wait_for_loading(model_id)
             # chat_running is False: Proxy-502 ist ein Down-Backend, kein
             # ladender Prozess → Cold-Start (Pfad 4) statt Wartezeit.
             logger.info(
@@ -1044,8 +1043,34 @@ class VllmBaseClient(BaseProviderClient):
                 flush=True,
             )
             # Durchfallen zu Pfad 4 (Cold-Start).
+        return self._cold_start(model_id)
 
-        # Pfad 4: Cold-Start (status == "down") — vllm-start launchen und auf Readiness warten
+    def _start_wait_for_loading(self, model_id: str) -> bool:
+        """Pfad 3.5 (Warte-Zweig): Backend lädt noch — auf Readiness warten."""
+        prov_cfg = self._provider_cfg()
+        loading_timeout = int(prov_cfg.get(
+            "existing_server_ready_timeout_sec",
+            prov_cfg.get("server_ready_timeout_sec", DEFAULT_READY_TIMEOUT_SEC),
+        ))
+        loading_poll = int(prov_cfg.get("server_ready_poll_sec", DEFAULT_POLL_SEC))
+        print(
+            f"   ⏳ vLLM-Backend lädt noch (Proxy meldet 502) — "
+            f"warte auf Readiness (Timeout: {loading_timeout}s) ...",
+            flush=True,
+        )
+        if self._wait_for_model_ready(
+            model_id, timeout_sec=loading_timeout, poll_sec=loading_poll,
+            log_prefix="Loading warmup",
+        ):
+            detected = self._query_active_model()
+            self._mark_active(model_id, detected)
+            print("   ✅ Backend bereit nach Wartezeit", flush=True)
+            return True
+        logger.error("vLLM backend did not become ready within %d s (loading).", loading_timeout)
+        return False
+
+    def _cold_start(self, model_id: str | None) -> bool:
+        """Pfad 4: vllm-start launchen und auf Readiness warten."""
         cmd = self._build_server_cmd(model_id) if model_id else self._server_start_cmd()
         logger.debug("Starting vLLM server: %s", cmd)
         print(f"   ⏳ Starte vLLM Server ({model_id}) ...")
@@ -1067,24 +1092,35 @@ class VllmBaseClient(BaseProviderClient):
         # länger als den Provider-Default (600 s).
         _mcfg = self._model_cfg(model_id) if model_id else {}
         ready_timeout = int(
-            _mcfg.get("server_ready_timeout_sec")
-            or prov_cfg.get("server_ready_timeout_sec", DEFAULT_READY_TIMEOUT_SEC)
+            _mcfg.get("ready_timeout_sec")
+            or prov_cfg.get(
+                "existing_server_ready_timeout_sec",
+                prov_cfg.get("server_ready_timeout_sec", DEFAULT_READY_TIMEOUT_SEC),
+            )
         )
         ready_poll = int(prov_cfg.get("server_ready_poll_sec", DEFAULT_POLL_SEC))
         if self._wait_for_model_ready(
             model_id, timeout_sec=ready_timeout, poll_sec=ready_poll, log_prefix="vLLM",
         ):
-            self._active_model = model_id
-            self._active_config = self._config_arg(model_id)
-            # Server-Namen abfragen für API-Calls
             detected = self._query_active_model()
-            self._server_model_name = detected or model_id
+            self._mark_active(model_id, detected)
             print(f"   ✅ Server bereit ({ready_timeout}s)")
             logger.debug("vLLM server ready within %d s", ready_timeout)
             return True
-
         logger.error("vLLM server did not become ready within %d s.", ready_timeout)
         return False
+
+    def _mark_active(self, model_id: str, server_name: str | None = None) -> None:
+        """Aktives Modell + Config + Server-Namen nach Start/Adopt setzen.
+
+        Shared-Helper für alle Start-Pfade, die ein Modell erfolgreich
+        aktiviert haben (Pfad 2a/2b/3.5/4). Vermeidet wiederholte
+        3-Zeilen-Assignments (DRY). ``server_name=None`` fällt auf
+        ``model_id`` zurück (Pfad 2b: kein Server-Name bekannt).
+        """
+        self._active_model = model_id
+        self._active_config = self._config_arg(model_id)
+        self._server_model_name = server_name or model_id
 
     def _adopt_matches(self, detected: str, model_id: str) -> bool:
         """Prüfe, ob das vom Server gemeldete Modell dem gewünschten entspricht.
@@ -1304,24 +1340,14 @@ class VllmBaseClient(BaseProviderClient):
         )
 
         if reasoning:
-            usage = getattr(response, "usage", None)
-            rt = self._extract_reasoning_tokens(usage)
-            if rt is None:
-                # vLLM 0.25.1: reasoning_tokens nicht in usage befüllt.
-                # Heuristische Schätzung als Fallback.
-                completion_tokens = (
-                    getattr(usage, "completion_tokens", 0) if usage else 0
-                )
-                rt = self._estimate_reasoning_tokens(
-                    completion_tokens, content, reasoning
-                )
-            if rt is not None:
-                self.last_response_metadata["reasoning_tokens"] = rt
+            self._apply_reasoning_fallback(
+                getattr(response, "usage", None), content, reasoning
+            )
             self.last_response_metadata["think_content"] = reasoning
 
         return content
 
-    def query(  # noqa: C901 — Komplexität spiegelt llamacpp_base.query() (Stream + Token-Fallback)
+    def query(
         self,
         model: str,
         prompt: str,
@@ -1388,45 +1414,79 @@ class VllmBaseClient(BaseProviderClient):
         }
 
         if stream_handler:
-            full_content = ""
-            from utils.providers.base import ThinkAccumulator
-            think = ThinkAccumulator()
-            for chunk in response_or_stream:
-                if hasattr(chunk, "usage") and chunk.usage:
-                    self.last_response_metadata["usage"] = chunk.usage
-                if chunk.choices:
-                    finish = getattr(chunk.choices[0], "finish_reason", None)
-                    if finish:
-                        self.last_response_metadata["finish_reason"] = finish
-                    delta = chunk.choices[0].delta
-                    content_piece = getattr(delta, "content", None)
-                    if content_piece:
-                        stream_handler(content_piece)
-                        full_content += content_piece
-                    reasoning_piece = (
-                        getattr(delta, "reasoning_content", None)
-                        or getattr(delta, "reasoning", None)
-                    )
-                    if reasoning_piece:
-                        think.add(reasoning_piece)
-
-            if think.has_content:
-                self.last_response_metadata["think_content"] = think.content
-            usage = self.last_response_metadata.get("usage")
-            if usage:
-                rt = self._extract_reasoning_tokens(usage)
-                if rt is None:
-                    # vLLM 0.25.1: reasoning_tokens nicht in usage befüllt.
-                    # Heuristische Schätzung als Fallback.
-                    completion_tokens = getattr(usage, "completion_tokens", 0)
-                    rt = self._estimate_reasoning_tokens(
-                        completion_tokens, full_content, think.content
-                    )
-                if rt is not None:
-                    self.last_response_metadata["reasoning_tokens"] = rt
-            return full_content
+            return self._consume_stream(response_or_stream, stream_handler)
 
         return self._extract_response_content(response_or_stream, model)
+
+    def _consume_stream(
+        self,
+        response_or_stream: Any,
+        stream_handler: Callable[[str], None],
+    ) -> str:
+        """Streaming-Antwort konsumieren: Content an Handler, Metadata sammeln.
+
+        Extrahiert aus :meth:`query` (DRY — senkt die Komplexität der
+        Query-Methode unter das CC-12-Limit). Sammelt sichtbaren Content
+        via ``stream_handler``, akkumuliert Reasoning via
+        :class:`ThinkAccumulator` und wendet den gemeinsamen
+        Reasoning-Fallback (:meth:`_apply_reasoning_fallback`) an.
+        """
+        full_content = ""
+        from utils.providers.base import ThinkAccumulator
+
+        think = ThinkAccumulator()
+        for chunk in response_or_stream:
+            if hasattr(chunk, "usage") and chunk.usage:
+                self.last_response_metadata["usage"] = chunk.usage
+            if chunk.choices:
+                finish = getattr(chunk.choices[0], "finish_reason", None)
+                if finish:
+                    self.last_response_metadata["finish_reason"] = finish
+                delta = chunk.choices[0].delta
+                content_piece = getattr(delta, "content", None)
+                if content_piece:
+                    stream_handler(content_piece)
+                    full_content += content_piece
+                reasoning_piece = (
+                    getattr(delta, "reasoning_content", None)
+                    or getattr(delta, "reasoning", None)
+                )
+                if reasoning_piece:
+                    think.add(reasoning_piece)
+
+        if think.has_content:
+            self.last_response_metadata["think_content"] = think.content
+        usage = self.last_response_metadata.get("usage")
+        if usage:
+            self._apply_reasoning_fallback(usage, full_content, think.content)
+        return full_content
+
+    def _apply_reasoning_fallback(
+        self,
+        usage: Any,
+        content: str,
+        reasoning: str | None,
+    ) -> None:
+        """vLLM 0.25.1 reasoning_tokens-Heuristik als Shared-Helper (DRY).
+
+        vLLM 0.22+ benennt ``reasoning_content`` -> ``reasoning`` um und befüllt
+        ``completion_tokens_details.reasoning_tokens`` nicht zuverlässig. Diese
+        Methode wendet die Base-Utilities (``_extract_reasoning_tokens`` ->
+        ``_estimate_reasoning_tokens``) an und schreibt das Ergebnis nach
+        ``last_response_metadata["reasoning_tokens"]``.
+
+        Genutzt vom Streaming- und Non-Streaming-Pfad gemeinsam — keine
+        Inline-Duplikation der Fallback-Logik mehr (siehe .agent/provider-models.md:
+        „NIEMALS eigene Inline-Extraction schreiben").
+        """
+        rt = self._extract_reasoning_tokens(usage)
+        if rt is None:
+            completion_tokens = (
+                getattr(usage, "completion_tokens", 0) if usage else 0
+            )
+            rt = self._estimate_reasoning_tokens(completion_tokens, content, reasoning)
+        if rt is not None:
+            self.last_response_metadata["reasoning_tokens"] = rt
 
     def get_available_models(self) -> list[str]:
         """Returns the list of models the server currently advertises via ``/v1/models``.
