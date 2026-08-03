@@ -1,11 +1,11 @@
 # CrucibleMark
 
-[![Version](https://img.shields.io/badge/version-5.1.0-blue)](.)
-[![Python](https://img.shields.io/badge/python-3.10%2B-blue)](.)
+[![Version](https://img.shields.io/badge/version-5.1.1-blue)](.)
+[![Python](https://img.shields.io/badge/python-3.12%2B-blue)](.)
 [![License](https://img.shields.io/badge/license-MIT-green)](.)
 [![Status](https://img.shields.io/badge/status-production--ready-brightgreen)](.)
 
-**Stand: v5.1.0 · 2026-08-02**
+**Stand: v5.1.1 · 2026-08-03**
 
 ## Ein modulares LLM-Benchmark-Framework für Product Engineers
 
@@ -82,7 +82,7 @@ Die volle Beschreibung mit Layer-Architektur, Provider-Abstraktion und Datenflus
 ### Voraussetzungen
 
 - macOS, Linux oder Windows (WSL)
-- Python 3.10 oder höher
+- Python 3.12 oder höher
 - Ollama für den lokalen Modus
 
 ### Schritt 1: Repository klonen und einrichten
@@ -198,6 +198,22 @@ make clean-model MODEL="mistral-large-2411" DRY=1   # Vorschau ohne Löschen
 
 Die vollständige Versionshistorie steht in [CHANGELOG.md](CHANGELOG.md). Kurzfassung der letzten drei Releases:
 
+### v5.1.1 (2026-08-02) — vLLM-Connector-Fixes, Laguna Dual-Profile, Naming-Validator
+
+vLLM-Connector gehärtet: Thinking-Profile-Adoption (MoE-Notation im ID-Segment), Post-Stop-Verifikation via SSH statt 502-Interpretation, 502-Mehrdeutigkeit (Pfad 3.5 wartete 600s ohne vllm-start). ToolUse-Exporter überschrieb  in 107 Cards behoben.  →  als Historical Rename (vLLM vor 0.25.1). Laguna S 2.1 als selektives Reasoning-Modell erkannt —  aus  entfernt, keine Dual-Profile-Expansion.  als neue Leaderboard-Spalte. Naming-Validator () als Publication-Gate in === Pre-Check: Naming Conventions ===
+=== Naming Convention Validator (model-cards) ===
+Alle 116 Cards OK — keine Namensverstoesse.
+
+Starte Web Export...
+.venv/bin/python -m scripts.web_export 
+Export abgeschlossen. (hard) / === Pre-Check: Naming Conventions (warn-only) ===
+=== Naming Convention Validator (model-cards) ===
+Alle 116 Cards OK — keine Namensverstoesse.
+
+Exportiere direkt ins 11ty-Projekt...
+.venv/bin/python -m scripts.web_export --output ../cruciblemark-web/src/_data/raw/
+Dev-Export abgeschlossen. (warn-only) — 11 display_name + 7 model_version Forbidden-Patterns. 7 Vendor-Cards mit compound-Namen bereinigt (llmfan46, jackrong, ara_apex neu strukturiert). 1553 Tests grün.
+
 ### v5.1.0 (2026-07-14) — Striktere Incapable-Klassifikation
 
 Fixt einen Design-Defekt aus v5.0: Modelle mit `supports_tool_use: false` wurden pauschal als "incapable" exempt, selbst wenn sie getestet wurden und fehlschlugen. Jetzt gilt "incapable" nur, wenn das Modell null Rows für das Modul hat. `attempted_set` aus `df_all` prüft, ob ein Modell angetreten ist. Zwei Cards korrigiert (Command A+ und GPT-OSS 20B, beide wurden getestet, `false` war Provider-Stabilitätsaussage, nicht Kapabilität). Command A+ fällt von Rang 62 auf Rang 104.
@@ -226,4 +242,4 @@ Bug-Reports, Feature-Wünsche und Diskussionen laufen über [GitHub Issues](http
 
 - **Maintainer:** [kbeissert](https://github.com/kbeissert)
 - **Repository:** [github.com/kbeissert/cruciblemark](https://github.com/kbeissert/cruciblemark)
-- **Status:** Production-Ready (v5.1.0)
+- **Status:** Production-Ready (v5.1.1)

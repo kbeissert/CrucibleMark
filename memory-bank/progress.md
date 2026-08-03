@@ -1,6 +1,28 @@
 # Progress
 Letzte Releases + aktueller Stand.
 
+### 2026-08-03 (Session 77) — Vollständiger Doku-Audit + list_models Bugfix [DONE]
+
+**Bugfix:** `scripts/tools/list_models.py` hatte duplikaten `check_commercial()`-Aufruf (Zeile 319), führte zu 5+ Min Timeout bei API-Pings. Entfernt.
+
+**Doku-Audit:** 15 Files in 3 thematischen Commits gefixt. Stichproben:
+- `docs/SETUP_GUIDE.md`: Python 3.10 → 3.12, Module-Key `coding` → `code_quality` (existiert nicht)
+- `docs/PRICING_REVIEW.md`: Duplikate Qwen 3.7 Max-Zeile entfernt
+- `docs/MCP_LOCAL_SERVER.md`: Lowercase Path → `CrucibleMark` (Case-Sensitive-FS-Robustheit)
+- `docs/SCORING_METHODOLOGY_WEB.md`: Modul-Display-Namen korrigiert (Tool Execution → Tool Use & Assistenz, CLI Badge → CLI Operations)
+- 4 drift Doku-Stempel sync (4.10.17 → 5.1.0): ARCHITECTURE, BACKUP_STRATEGY, DEVELOPER_GUIDE, MODEL_CLASSIFICATION
+- `CHANGELOG.md`: v5.1.1 Sektion (Sessions 71–76) hinzugefügt
+- `AGENTS.md`: Quick Commands ergänzt (validate-naming, validate-csv, tooluse-leaderboard, mcp-start/stop, docs-version-check/sync)
+- `memory-bank/reference/_index.md`: Neue Files `feedback_schema.md` und `tooluse_module.md` indiziert
+- `.agent/web-export-cleanup.md`: Political Bias entfernt (9 Spalten statt 10), Pfad `scripts/legacy/` statt `scripts/maintenance/`
+- `.agent/provider-models.md`: `utils/card_template.py` (Datei) statt Verzeichnis
+- `.agent/data-pipeline.md`: Hartcodierte Zeilennummern durch Dateinamen ersetzt
+- `README.md`: Badge v5.1.1, Python 3.12, v5.1.1 Section, Status aktualisiert
+
+`make docs-version-check`: 0 drift (vorher 4).
+
+---
+
 ### 2026-08-02 (Session 76) — Naming-Validator + Card-Bereinigung [DONE]
 
 Automatisierter Naming-Validator (`scripts/analysis/validate_naming.py`) erstellt: prüft 11 display_name + 7 model_version Forbidden-Patterns. Als Publication-Gate integriert: `make web-export` hard-gate (exit 1), `make web-export-dev` warn-only. 7 vLLM/NVFP4 display_name-Korrekturen + 10 model_version-Korrekturen + 4 Cloud/Groq model_version-Fixes. `ornith-1_0-35B-FP8` display_name bereinigt. Konventionen in `memory-bank/reference/data-schema.md` als SSoT dokumentiert. Web-Export rebuilt: 96 Models, 0 Fehler. `validate-naming` Makefile-Target + `.kilo/command/card-cleanup.md` aktualisiert.
