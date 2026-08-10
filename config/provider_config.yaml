@@ -454,12 +454,12 @@ providers:
       read_timeout: 2400
       context_window: 65536
       num_predict: 65536
-      base_url: "http://100.89.110.0:1235/v1"
+      base_url: "http://100.89.110.0:1234/v1"
       api_key: "sk-local"
       model_dir: /home/kay_beissert/ai/models/llm/gguf
       token_param_name: max_tokens
       server_start_cmd: ssh -o BatchMode=yes -o ConnectTimeout=10 -p 22 kay_beissert@100.89.110.0 /home/kay_beissert/ai/apps/llama.cpp/build/bin/llama-server
-      server_stop_cmd: ssh -o BatchMode=yes -o ConnectTimeout=10 -p 22 kay_beissert@100.89.110.0 "pkill -f 'llama-server.*--port 1235'"
+      server_stop_cmd: ssh -o BatchMode=yes -o ConnectTimeout=10 -p 22 kay_beissert@100.89.110.0 "pkill -f 'llama-server.*--port 1234'"
       cleanup_on_exit: true
       server_post_stop_cmd: ssh -o BatchMode=yes -o ConnectTimeout=10 -p 22 kay_beissert@100.89.110.0 "rm -rf ~/.cache/llama.cpp /tmp/llama.cpp*"
       server_ready_timeout_sec: 180
@@ -569,6 +569,19 @@ providers:
 
       # ── Aktive Spark-Modelle ──
 
+      # DeepSeek V4 Flash — lokale GGUF (IQ2_M, 3-teilig), llama.cpp auf gx10:2234.
+      # Server: http://100.89.110.0:2234, Split-GGUF unter DeepSeek-V4-Flash/.
+      # Sampling: temperature=0.7/top_p=0.95 gemäß HF-Card-Empfehlung.
+      - id: deepseek-v4-flash-ud-iq2
+        name: DeepSeek V4 Flash UD-Q2_M (GGUF, 3-part, llama.cpp)
+        model_file: DeepSeek-V4-Flash-0731-IQ2_M/UD-IQ2_M/DeepSeek-V4-Flash-0731-UD-IQ2_M-00001-of-00003.gguf
+        n_gpu_layers: 99
+        context_length: 262144
+        enable_thinking: false  # Reasoning kann serverseitig aktiviert werden, aber kein Always-Thinking
+        temperature: 0.7
+        top_p: 0.95
+        top_k: 20
+
       # ── Auskommentiert 2026-07-08: Q8_K_XL-Datei existiert nicht auf der Spark.
       # Auf der Disk liegt nur Q5_K_XL (+ MTP-Draft) — siehe Modell unten.
       # - id: gemma-4-26B-A4B-it-UD-Q8_K_XL
@@ -595,31 +608,33 @@ providers:
       #   context_length: 16384
       #   parallel: 1
 
-      - id: gemma-4-26B-A4B-it-UD-Q5_K_XL-mtp
-        name: Gemma 4 26B A4B IT UD-Q5_K_XL [+MTP] (GGUF)
-        model_file: Gemma4-26B/gemma-4-26B-A4B-it-UD-Q5_K_XL.gguf
-        model_draft_file: Gemma4-26B/gemma-4-26B-A4B-it-Q8_0-MTP.gguf
-        n_gpu_layers: 99
-        enable_thinking: true  # Gemma 4 Channel-Tokens (<|channel|>): --jinja + --reasoning-format deepseek separiert Thinking in reasoning_content
-        context_length: 65536
-        extra_server_args:
-          - "--jinja"
-          - "--reasoning-format deepseek"
-          - "--spec-type draft-mtp"
-          - "--spec-draft-n-max 4"
+      # ── Auskommentiert 2026-08-10: Nicht auf llama.cpp-Server gx10:2234 verfügbar.
+      # - id: gemma-4-26B-A4B-it-UD-Q5_K_XL-mtp
+      #   name: Gemma 4 26B A4B IT UD-Q5_K_XL [+MTP] (GGUF)
+      #   model_file: Gemma4-26B/gemma-4-26B-A4B-it-UD-Q5_K_XL.gguf
+      #   model_draft_file: Gemma4-26B/gemma-4-26B-A4B-it-Q8_0-MTP.gguf
+      #   n_gpu_layers: 99
+      #   enable_thinking: true  # Gemma 4 Channel-Tokens (<|channel|>): --jinja + --reasoning-format deepseek separiert Thinking in reasoning_content
+      #   context_length: 65536
+      #   extra_server_args:
+      #     - "--jinja"
+      #     - "--reasoning-format deepseek"
+      #     - "--spec-type draft-mtp"
+      #     - "--spec-draft-n-max 4"
 
-      - id: gemma-4-31B-it-UD-Q8_K_XL-mtp
-        name: Gemma 4 31B IT UD-Q8_K_XL [+MTP] (GGUF)
-        model_file: Gemma4-31b/gemma-4-31B-it-UD-Q8_K_XL.gguf
-        model_draft_file: Gemma4-31b/gemma-4-31B-it-Q8_0-MTP.gguf
-        n_gpu_layers: 99
-        enable_thinking: true  # Gemma 4 Channel-Tokens (<|channel|>): --jinja + --reasoning-format deepseek separiert Thinking in reasoning_content
-        context_length: 131072
-        extra_server_args:
-          - "--jinja"
-          - "--reasoning-format deepseek"
-          - "--spec-type draft-mtp"
-          - "--spec-draft-n-max 4"
+      # ── Auskommentiert 2026-08-10: Nicht auf llama.cpp-Server gx10:2234 verfügbar.
+      # - id: gemma-4-31B-it-UD-Q8_K_XL-mtp
+      #   name: Gemma 4 31B IT UD-Q8_K_XL [+MTP] (GGUF)
+      #   model_file: Gemma4-31b/gemma-4-31B-it-UD-Q8_K_XL.gguf
+      #   model_draft_file: Gemma4-31b/gemma-4-31B-it-Q8_0-MTP.gguf
+      #   n_gpu_layers: 99
+      #   enable_thinking: true  # Gemma 4 Channel-Tokens (<|channel|>): --jinja + --reasoning-format deepseek separiert Thinking in reasoning_content
+      #   context_length: 131072
+      #   extra_server_args:
+      #     - "--jinja"
+      #     - "--reasoning-format deepseek"
+      #     - "--spec-type draft-mtp"
+      #     - "--spec-draft-n-max 4"
 
       # 2026-07-30: Auskommentiert — Dublette zu vllm_spark.qwen3_6-35b-a3b-nvfp4.
       # Cross-Backend-Inference-Vergleich (llamacpp vs. vllm) wird über
@@ -671,17 +686,18 @@ providers:
       #   presence_penalty: 1.5
       #   repeat_penalty: 1.0
 
+      # ── Auskommentiert 2026-08-10: Nicht auf llama.cpp-Server gx10:2234 verfügbar.
       # Sampling identisch mit vllm_spark.ornith-1.0-35B-FP8 (Cross-Backend-Vergleich).
-      - id: ornith-1-0-35b
-        name: Ornith 1.0 35B Q8_0 (GGUF)
-        model_file: Ornith1-35B/ornith-1.0-35b-Q8_0.gguf
-        n_gpu_layers: 99
-        context_length: 131072
-        max_tokens: 8192
-        enable_thinking: false  # Reasoning-Loop auf ux_writing 8-Scenario-Aufgaben (Constraint-Konflikt Verb-First vs. destruktive Aktion). Card-Override deaktiviert Thinking für Spark-Runs.
-        temperature: 0.6
-        top_p: 0.95
-        top_k: 20
+      # - id: ornith-1-0-35b
+      #   name: Ornith 1.0 35B Q8_0 (GGUF)
+      #   model_file: Ornith1-35B/ornith-1.0-35b-Q8_0.gguf
+      #   n_gpu_layers: 99
+      #   context_length: 131072
+      #   max_tokens: 8192
+      #   enable_thinking: false  # Reasoning-Loop auf ux_writing 8-Scenario-Aufgaben (Constraint-Konflikt Verb-First vs. destruktive Aktion). Card-Override deaktiviert Thinking für Spark-Runs.
+      #   temperature: 0.6
+      #   top_p: 0.95
+      #   top_k: 20
 
       # - id: gemma-4-31b-it-creative-wordsmith-q8
       #   name: Gemma 4 31B Creative Wordsmith Uncensored Q8_0 (GGUF)
