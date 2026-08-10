@@ -8,13 +8,25 @@
   ],
   "card_status": "complete",
   "commercial_use_allowed": true,
+  "community": null,
   "context_window_k": 200,
+  "cot_marker_family": "think-xml",
+  "cot_tags_detected": [
+    "<thought>"
+  ],
   "deployment_type": "open-weights-cloud-available",
   "developer": "Z.AI (formerly Zhipu AI)",
   "developer_jurisdiction": "CN",
   "display_name": "GLM-5.1",
-  "vendor": "Z.AI (formerly Zhipu AI)",
+  "dual_profile": null,
+  "frequency_penalty": null,
   "generated_at": "2026-04-23T22:03:19.200573+00:00",
+  "hardware_profile": null,
+  "heritage_ids": [],
+  "inference_engine": null,
+  "input_modalities": [
+    "text"
+  ],
   "input_price_per_1m": 1.05,
   "judge_context_hint": "Frontier-Modell mit starkem Fokus auf agentic Coding und Long-Horizon-Execution. Bei der Bewertung Coding und Agentic-Fähigkeiten gewichten, Thinking per API schaltbar.",
   "knowledge_cutoff": "2025-12",
@@ -24,19 +36,32 @@
     "Mögliche Zensur oder Zurückhaltung bei politisch sensiblen Themen mit Bezug zu China",
     "Chinesische Jurisdiktion mit erhöhtem Sovereign-Risk bei Cloud-Nutzung"
   ],
+  "last_modified_at": "2026-06-22",
   "license": "MIT",
   "license_url": "https://opensource.org/licenses/MIT",
   "local_deployment_possible": true,
   "model_family": "GLM",
   "model_id": "z-ai/glm-5.1-20260406",
+  "model_variant": null,
   "model_version": "5.1",
   "origin_country": "China",
+  "output_modalities": [
+    "text"
+  ],
   "output_price_per_1m": 3.5,
   "parameter_architecture": "moe",
   "params_active_b": 40.0,
   "params_total_b": 754.0,
+  "presence_penalty": null,
   "primary_focus": "general",
+  "profile_verified": true,
+  "profile_verified_at": "2026-06-22",
+  "profile_verified_by": "llm:perplexity",
+  "quantization_format": null,
+  "repetition_penalty": null,
+  "seed": null,
   "size_class": "Frontier",
+  "stop_sequences": null,
   "strengths": [
     "Starke Leistung bei agentischem Coding mit langfristiger autonomer Ausführung",
     "Effiziente MoE-Architektur mit 40 Milliarden aktiven Parametern bei 754 Milliarden Gesamtparametern",
@@ -47,46 +72,30 @@
   ],
   "summary": "GLM-5.1 ist Z.AIs Post-Training-Upgrade mit 754 Milliarden Gesamt- und 40 Milliarden aktiven Parametern in MoE-Architektur, optimiert für langfristige agentische Coding-Workflows mit bis zu acht Stunden autonomer Ausführung. Das Kontextfenster umfasst 200.000 Tokens, die Gewichte sind unter MIT-Lizenz als Open-Weights-Modell verfügbar.",
   "supports_tool_use": true,
+  "system_prompt_override": null,
+  "temperature": null,
   "thinking_probe_at": "2026-04-25T09:32:21.175051+00:00",
   "thinking_probe_confidence": "medium",
   "thinking_probe_detected": true,
   "thinking_probe_evidence": "reasoning_tokens=530 in provider metadata",
-  "unknown": false,
-  "use_case_primary": "generalist",
-  "weights_license_tier": "open-weights",
-  "weights_provenance_risk": "high",
-  "weights_provenance_risk_rationale": "Z.AI (formerly Zhipu AI) ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten ermöglichen kann. Das BSI hat im Februar 2025 explizit vor der Nutzung chinesischer KI-Cloud-Dienste gewarnt (BSI-Referenz: Warnung DeepSeek, 04.02.2025); diese Risikoeinschätzung gilt analog für alle chinesischen Cloud-KI-Anbieter, die Nutzerdaten auf chinesischen Servern verarbeiten. Bei rein lokaler Inferenz entfällt das Cloud-Act-äquivalente Risiko.",
-  "top_p": null,
-  "top_k": null,
-  "repetition_penalty": null,
-  "frequency_penalty": null,
-  "presence_penalty": null,
-  "seed": null,
-  "stop_sequences": null,
-  "input_modalities": [
-    "text"
-  ],
-  "output_modalities": [
-    "text"
-  ],
-  "profile_verified": true,
-  "profile_verified_at": "2026-06-22",
+  "thinking_probe_manual_override": null,
   "tooluse_recommendation": null,
-  "temperature": null,
-  "system_prompt_override": null,
-  "cot_marker_family": "think-xml",
-  "cot_tags_detected": [
-    "<thought>"
-  ],
-  "profile_verified_by": "llm:perplexity",
-  "last_modified_at": "2026-06-22",
-  "heritage_ids": [],
-  "community": null,
   "tooluse_runs": {
     "z-ai/glm-5.1-20260406": {
       "tested_at": "2026-07-20T16:08:39Z",
       "score_p1": 90.0,
       "score_p2": 59.17
     }
-  }
+  },
+  "tooluse_score_p1": null,
+  "tooluse_score_p2": null,
+  "tooluse_tested_at": null,
+  "top_k": null,
+  "top_p": null,
+  "unknown": false,
+  "use_case_primary": "generalist",
+  "vendor": "Z.AI (formerly Zhipu AI)",
+  "weights_license_tier": "open-weights",
+  "weights_provenance_risk": "high",
+  "weights_provenance_risk_rationale": "Z.AI (formerly Zhipu AI) ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten ermöglichen kann. Das BSI hat im Februar 2025 explizit vor der Nutzung chinesischer KI-Cloud-Dienste gewarnt (BSI-Referenz: Warnung DeepSeek, 04.02.2025); diese Risikoeinschätzung gilt analog für alle chinesischen Cloud-KI-Anbieter, die Nutzerdaten auf chinesischen Servern verarbeiten. Bei rein lokaler Inferenz entfällt das Cloud-Act-äquivalente Risiko."
 }

@@ -7,12 +7,25 @@
   ],
   "card_status": "complete",
   "commercial_use_allowed": true,
+  "community": null,
   "context_window_k": 128,
+  "cot_marker_family": "think-xml",
+  "cot_tags_detected": [
+    "<think>"
+  ],
   "deployment_type": "open-weights-cloud-available",
   "developer": "Zhipu AI / Z.AI",
   "developer_jurisdiction": "CN",
   "display_name": "GLM-4.7",
+  "dual_profile": null,
+  "frequency_penalty": null,
   "generated_at": "2026-05-02T16:15:51.589754+00:00",
+  "hardware_profile": null,
+  "heritage_ids": [],
+  "inference_engine": null,
+  "input_modalities": [
+    "text"
+  ],
   "input_price_per_1m": 0.38,
   "judge_context_hint": "Bilingual optimiertes Modell mit Frontier-Coding-Fähigkeiten. Bei der Bewertung chinesisch-englische Bilingualität und Agentic-Coding-Aufgaben gewichten. Thinking-Modus per API schaltbar.",
   "knowledge_cutoff": "2025-12",
@@ -22,19 +35,32 @@
     "Chinesischer Anbieter mit erhöhtem Sovereign-Risk bei Cloud-Nutzung",
     "Bei rein lokaler Inferenz entfällt das Cloud-Act-äquivalente Risiko"
   ],
+  "last_modified_at": "2026-06-22",
   "license": "GLM-4 License",
   "license_url": "https://huggingface.co/zai-org/glm-4-9b/blob/main/LICENSE",
   "local_deployment_possible": true,
   "model_family": "GLM",
   "model_id": "z-ai/glm-4.7",
+  "model_variant": null,
   "model_version": "4.7",
   "origin_country": "China",
+  "output_modalities": [
+    "text"
+  ],
   "output_price_per_1m": 1.74,
   "parameter_architecture": "moe",
   "params_active_b": 32.0,
   "params_total_b": 355.0,
+  "presence_penalty": null,
   "primary_focus": "general",
+  "profile_verified": true,
+  "profile_verified_at": "2026-06-22",
+  "profile_verified_by": "llm:perplexity",
+  "quantization_format": null,
+  "repetition_penalty": null,
+  "seed": null,
   "size_class": "Frontier",
+  "stop_sequences": null,
   "strengths": [
     "Starke Leistung in chinesisch-englischen bilingualen Aufgaben",
     "Frontier-Coding-Fähigkeiten für anspruchsvolle Software-Engineering-Aufgaben",
@@ -44,47 +70,30 @@
   ],
   "summary": "GLM-4.7 ist das Flagship-Modell von Zhipu AI mit 355 Milliarden Gesamt- und 32 Milliarden aktiven Parametern in MoE-Architektur, optimiert für agentisches Coding, Reasoning und bilinguale Aufgaben in Chinesisch und Englisch. Das Modell unterstützt schaltbares Thinking-System und ist als Open-Weights-Variante lokal oder über Cloud-Schnittstellen einsetzbar.",
   "supports_tool_use": true,
+  "system_prompt_override": null,
+  "temperature": null,
   "thinking_probe_at": "2026-05-02T18:51:15.646745+00:00",
   "thinking_probe_confidence": "medium",
   "thinking_probe_detected": true,
   "thinking_probe_evidence": "reasoning_tokens=385 in provider metadata",
-  "unknown": false,
-  "use_case_primary": "generalist",
-  "vendor": "Zhipu AI / Z.AI",
-  "weights_license_tier": "restricted-weights",
-  "weights_provenance_risk": "high",
-  "weights_provenance_risk_rationale": "Zhipu AI / Z.AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten ermöglichen kann. Das BSI hat im Februar 2025 explizit vor der Nutzung chinesischer KI-Cloud-Dienste gewarnt (BSI-Referenz: Warnung DeepSeek, 04.02.2025); diese Risikoeinschätzung gilt analog für alle chinesischen Cloud-KI-Anbieter, die Nutzerdaten auf chinesischen Servern verarbeiten. Bei rein lokaler Inferenz entfällt das Cloud-Act-äquivalente Risiko.",
-  "top_p": null,
-  "top_k": null,
-  "repetition_penalty": null,
-  "frequency_penalty": null,
-  "presence_penalty": null,
-  "seed": null,
-  "stop_sequences": null,
-  "input_modalities": [
-    "text"
-  ],
-  "output_modalities": [
-    "text"
-  ],
-  "profile_verified": true,
-  "profile_verified_at": "2026-06-22",
+  "thinking_probe_manual_override": null,
   "tooluse_recommendation": null,
-  "temperature": null,
-  "system_prompt_override": null,
-  "cot_marker_family": "think-xml",
-  "cot_tags_detected": [
-    "<think>"
-  ],
-  "profile_verified_by": "llm:perplexity",
-  "last_modified_at": "2026-06-22",
-  "heritage_ids": [],
-  "community": null,
   "tooluse_runs": {
     "z-ai/glm-4.7": {
       "tested_at": "2026-07-20T16:08:51Z",
       "score_p1": 83.33,
       "score_p2": 42.5
     }
-  }
+  },
+  "tooluse_score_p1": null,
+  "tooluse_score_p2": null,
+  "tooluse_tested_at": null,
+  "top_k": null,
+  "top_p": null,
+  "unknown": false,
+  "use_case_primary": "generalist",
+  "vendor": "Zhipu AI / Z.AI",
+  "weights_license_tier": "restricted-weights",
+  "weights_provenance_risk": "high",
+  "weights_provenance_risk_rationale": "Zhipu AI / Z.AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten ermöglichen kann. Das BSI hat im Februar 2025 explizit vor der Nutzung chinesischer KI-Cloud-Dienste gewarnt (BSI-Referenz: Warnung DeepSeek, 04.02.2025); diese Risikoeinschätzung gilt analog für alle chinesischen Cloud-KI-Anbieter, die Nutzerdaten auf chinesischen Servern verarbeiten. Bei rein lokaler Inferenz entfällt das Cloud-Act-äquivalente Risiko."
 }
