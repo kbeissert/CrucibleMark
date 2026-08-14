@@ -34,6 +34,11 @@ runner_environment:
       compute_unit: CUDA
       ram_gb: 64
 
+# Thinking-Probe: Fallback für Modelle ohne Config-Eintrag oder ohne '/' im Namen
+probe_thinking:
+  fallback_provider: openrouter
+  fallback_model: deepseek/deepseek-v4-flash
+
 # LLM-Judge: Bewertet Antworten qualitativ und ergänzt die regelbasierten Scorer
 # mode: complement = Score nur wenn Regex/Rule-Scorer kein Urteil liefern können
 llm_judge:
@@ -98,6 +103,13 @@ llm_card_manager:
     # api_key_env: LOCAL_LLM_API_KEY
     # max_tokens: 32768
     # temperature: 0.0   # deterministisch — Recherche/Faktensammlung, nicht Prosa
+
+# Thinking-Probe (probe_thinking.py): Fallback-Provider und -Modell, wenn die
+# model_id nicht in providers.commercial gefunden wird und kein "/" enthält.
+# Der Fallback-Provider muss einen API-Key in der .env haben.
+probe_thinking:
+  fallback_provider: openrouter
+  fallback_model: deepseek/deepseek-v4-flash
 
 # Generierungs-Defaults für lokale Modelle — kommerzielle Provider ignorieren diese Werte
 defaults:

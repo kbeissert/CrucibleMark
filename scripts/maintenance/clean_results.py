@@ -28,6 +28,7 @@ from utils.model_utils import (  # noqa: E402
     resolve_canonical_model_id,
     CARD_DIR,
 )
+from utils.model_id_base import internal_id_to_config_form  # noqa: E402
 from utils.module_registry import get_active_modules
 from utils.config_validator import ConfigValidator
 from utils.backup_targets import CSV_FILES  # noqa: E402
@@ -124,10 +125,19 @@ def _collect_model_id_variants(model: str) -> set[str]:
     # 1. Eingabe selbst
     variants.add(model)
 
+    # 1b. Config-Form (Underscore→Dot in Versions-Segmenten). PITFALL: Ohne
+    # diese Variante findet ``clean_provider_config`` den Eintrag nicht, wenn
+    # die kanonische interne Form (Underscore, z.B. ``ornith-1_0-35B-FP8``)
+    # uebergeben wird, die Config aber die Dotted-Form (``ornith-1.0-35B-FP8``)
+    # nutzt — Card-Lookup und Cross-Discovery decken die Dotted-Form NICHT ab.
+    # SSoT-Import: internal_id_to_config_form ist die einzige Konversionsquelle.
+    variants.add(internal_id_to_config_form(model))
+
     # 2. Kanonische Form (Card-Lookup)
     try:
         canonical = resolve_canonical_model_id(model)
         variants.add(canonical)
+        variants.add(internal_id_to_config_form(canonical))
     except Exception:  # noqa: BLE001
         pass
 
@@ -596,6 +606,194 @@ def clean_model_card(model: str, dry_run: bool = False):
 
     _delete_card_paths(cards_to_delete, model, dry_run)
 
+
+def _normalize_empty_models_keys(lines: list[str]) -> list[str]:
+    """Setzt ``models:``-Keys ohne aktive Einträge auf ``models: []``.
+
+    Werden alle Einträge unter einem ``models:``-Key auskommentiert, parst
+    YAML den Key als ``None`` — ``provider_cfg.get("models", [])`` crasht
+    dann mit ``TypeError: 'NoneType' object is not iterable``. Diese
+    Normalisierung ersetzt den leeren Key durch eine explizite leere Liste.
+    """
+    import re as _re
+
+    # Inline-Kommentar nach dem Key (``models:  # alle deaktiviert``) ist
+    # ebenfalls ein None-Kandidat — mit matchen, sonst bleibt der Crash-Pfad.
+    # ``models: []`` matcht bewusst NICHT (bereits explizit leer).
+    models_key_re = _re.compile(r"^(\s*)models:\s*(?:#.*)?$")
+    out: list[str] = []
+    i = 0
+    while i < len(lines):
+        m = models_key_re.match(lines[i])
+        if not m:
+            out.append(lines[i])
+            i += 1
+            continue
+        indent = len(m.group(1))
+        # Look-ahead: YAML-Sequenzeinträge liegen auf GLEICHER Einrückung wie
+        # der Key. Aktive Einträge sind ``- id:``-Zeilen; ein anderer Key auf
+        # gleicher Ebene oder ein Provider auf höherer Ebene beendet die Liste.
+        j = i + 1
+        has_active = False
+        while j < len(lines):
+            line = lines[j]
+            if line.strip() == "" or line.lstrip().startswith("#"):
+                j += 1
+                continue
+            line_indent = len(line) - len(line.lstrip())
+            if line_indent < indent:
+                break
+            if line_indent == indent:
+                if _re.match(r"\s*-\s", line):
+                    if _re.match(r"\s*- id:", line):
+                        has_active = True
+                        break
+                    j += 1
+                    continue
+                break
+            j += 1
+        out.append(f"{' ' * indent}models: []" if not has_active else lines[i])
+        i += 1
+    return out
+
+
+def _collect_header_comments(lines: list[str], idx: int, prefix: str) -> list[str]:
+    """Sammelt Header-Kommentare direkt vor einem ``- id:``-Eintrag.
+
+    Scannt rückwärts ab ``idx-1``: Kommentarzeilen gehören zum Block, eine
+    leere Zeile davor markiert das Ende (wird nicht mitgeschnitten), jede
+    andere Zeile beendet den Scan. Nicht-Kommentar-Zeilen im Bereich werden
+    beim Ausschreiben als Kommentare markiert.
+
+    Returns:
+        Die neu eingerückten Kommentarzeilen (mit ``prefix``).
+    """
+    header_start = idx
+    for j in range(idx - 1, -1, -1):
+        s = lines[j].rstrip()
+        if s.startswith("#"):
+            header_start = j
+        elif s == "":
+            # Leere Zeile vor den Kommentaren — nicht mitschneiden
+            header_start = j + 1
+            break
+        else:
+            break
+
+    out: list[str] = []
+    for k in range(header_start, idx):
+        line = lines[k]
+        if line.strip().startswith("#"):
+            out.append(prefix + " " + line.strip())
+        else:
+            out.append(prefix + "# " + line.strip())
+    return out
+
+
+def _comment_out_entry_block(lines: list[str], start: int, prefix: str) -> tuple[list[str], int]:
+    """Kommentiert ``- id:`` + alle Felder bis zum Blockende aus.
+
+    Blockende ist die erste Nicht-Kommentar-Zeile, die nicht stärker als der
+    ``- id:``-Eintrag eingerückt ist (der nächste ``- id:``-Eintrag oder ein
+    Key auf höherer Ebene). Leerzeilen und Kommentare innerhalb des Eintrags
+    (YAML erlaubt beides) gehören zum Block; nachlaufende Leerzeilen und
+    Kommentare, die zum nächsten Eintrag gehören, werden NICHT konsumiert.
+
+    PITFALL: Eine frühere Variante endete an der nächsten leeren Zeile —
+    das zerbricht Einträge mit internen Leerzeilen (z.B. Ornith-Felder mit
+    Kommentar-Blöcken), weil Restfelder aktiv bleiben und die YAML unparsebar
+    wird. Die Einzugs-basierte Erkennung ist robust dagegen.
+
+    Returns:
+        ``(commented_lines, next_index)`` — die auskommentierten Zeilen und
+        der Index der ersten Zeile nach dem Block.
+    """
+    entry_indent = len(lines[start]) - len(lines[start].lstrip())
+    out: list[str] = []
+    pending: list[str] = []
+    last_consumed = start - 1
+    k = start
+    while k < len(lines):
+        line = lines[k]
+        stripped = line.strip()
+        if stripped == "" or stripped.startswith("#"):
+            pending.append(line)
+            k += 1
+            continue
+        line_indent = len(line) - len(line.lstrip())
+        # ``- id:``-Startzeile (k == start) immer konsumieren; Felder des
+        # Eintrags sind staerker eingerueckt als die ``- id:``-Zeile.
+        if k == start or line_indent > entry_indent:
+            for pl in pending:
+                out.append(pl if not pl.strip() else prefix + "# " + pl.strip())
+            pending = []
+            out.append(prefix + "# " + stripped)
+            last_consumed = k
+            k += 1
+            continue
+        break
+    return out, last_consumed + 1
+
+
+def clean_provider_config(model: str, dry_run: bool = False) -> None:
+    """Kommentiert den Modell-Eintrag in ``config/provider_config.yaml`` aus.
+
+    Findet ``- id: <model>`` (variant-aware) und kommentiert den gesamten
+    Block aus: optionale Header-Kommentare direkt vor dem Eintrag + alle
+    Felder bis zur Blockgrenze (einzugsbasiert, siehe
+    ``_comment_out_entry_block``). Kinderlose ``models:``-Keys werden
+    anschließend zu ``models: []`` normalisiert (None-Crash-Prophylaxe).
+
+    Dies stellt sicher, dass ``make clean-model`` das Modell auch aus der
+    aktiven Provider-Config entfernt, damit es nicht mehr in Benchmark-Runs
+    berücksichtigt wird.
+    """
+    import re as _re
+    from datetime import date as _date
+
+    pc_path = ROOT_DIR / "config" / "provider_config.yaml"
+    if not pc_path.exists():
+        return
+
+    variants = _collect_model_id_variants(model)
+    id_re = _re.compile(
+        r"^\s*- id:\s*(" + "|".join(_re.escape(v) for v in variants) + r")\s*$"
+    )
+
+    lines = pc_path.read_text(encoding="utf-8").splitlines()
+    found = False
+    result: list[str] = []
+    i = 0
+    date_stamp = _date.today().isoformat()
+
+    while i < len(lines):
+        if id_re.match(lines[i]):
+            found = True
+            prefix = " " * (len(lines[i]) - len(lines[i].lstrip()))
+            result.extend(_collect_header_comments(lines, i, prefix))
+            result.append(f"{prefix}# Auskommentiert {date_stamp} via make clean-model.")
+            commented, i = _comment_out_entry_block(lines, i, prefix)
+            result.extend(commented)
+            continue
+        result.append(lines[i])
+        i += 1
+
+    if not found:
+        print(f"   - provider_config.yaml: Kein Eintrag für '{model}' gefunden.")
+        return
+
+    result = _normalize_empty_models_keys(result)
+
+    print(f"   - provider_config.yaml: Eintrag für '{model}' auskommentiert.")
+    if not dry_run:
+        # Trailing Newline erhalten — splitlines() wirft es weg, ohne
+        # Re-Append entstünde "\ No newline at end of file" im Diff.
+        pc_path.write_text("\n".join(result) + "\n", encoding="utf-8")
+        print("     ✅ Gespeichert.")
+    else:
+        print("     (Dry Run - keine Änderung)")
+
+
 def clean_csv(
     file_path: Path,
     model: str = None,
@@ -825,13 +1023,18 @@ def _resolve_target_assets(args) -> list[str]:
 def _run_model_artifact_cleanup(args) -> None:
     """Fuehrt alle modell-spezifischen Cleanup-Schritte aus.
 
-    Reihenfolge bewusst: CSVs brauchen die Card (resolve_canonical_model_id),
+    Reihenfolge bewusst: CSVs und Provider-Config brauchen die Card
+    (resolve_canonical_model_id + Cross-Variant-Discovery ueber Card-Inhalte),
     Cards werden daher ZULETZT geloescht.
     """
     clean_model_output_directories(model=args.model, dry_run=args.dry_run)
     clean_cost_log(model=args.model, dry_run=args.dry_run)
     clean_tooluse_metrics_jsonl(model=args.model, dry_run=args.dry_run)
-    # Cards ZULETZT löschen (nach CSV-Bereinigung).
+    # Provider-Config auskommentieren, BEVOR die Card geloescht wird —
+    # _collect_model_id_variants() lost Varianten ueber Card-Lookup und
+    # heritage_ids auf; ohne Card schrumpft die Match-Abdeckung.
+    clean_provider_config(model=args.model, dry_run=args.dry_run)
+    # Cards ZULETZT löschen (nach CSV-Bereinigung und Config-Auskommentierung).
     clean_model_card(model=args.model, dry_run=args.dry_run)
 
 

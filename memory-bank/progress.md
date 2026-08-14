@@ -1,6 +1,12 @@
 # Progress
 Letzte Releases + aktueller Stand.
 
+### 2026-08-14 (Session 81) — probe_thinking.py Fallback-Umstellung + nemotron-3.5-lightning Card-Fix [ ]
+
+probe_thinking.py `_infer_provider()` hatte Dead-Code-Fallback `return "ollama"` (Ollama seit langem `enabled: false`). Umstellung: Fallback-Provider und Fallback-Modell aus `benchmark_config.yaml:probe_thinking` gelesen (Config-Driven, kein Hardcoding). Model-Card `nvidia_nemotron-3_5-lightning.json`: `model_id` korrigiert (`nvidia_nemotron-3_5-lightning` → `nvidia/nemotron-3.5-lightning`) — Slash ist Pflicht für OpenRouter-Erkennung in `_infer_provider()`. Thinking-Probe erfolgreich: `detected: true`, `confidence: medium` (reasoning_tokens=413 math, 983 decision).
+
+---
+
 ### 2026-08-03 (Session 79) — Web-Export-Code-Review + 10 Architektur-Fixes [DONE]
 
 Code-Review des `scripts/web_export/`-Packages gegen die Architekturregeln. 10 Befunde umgesetzt: (B1) `assert` vor `shutil.rmtree` → echter `if/raise` (Safety-Gate überlebt `python -O`); (B2) Monkeypatching-Mechanismus (`_sync_package_patches`/`_PATCHABLE_NAMES`) aus `__init__.py` entfernt — Tests patchen jetzt direkt auf dem Submodul; (B3) `_ROOT_DIR`-Redefinition entfernt (war durch file-level `F401`-noqa verborgen); (B4) Magic-String `"__fallbacks__"` → `ProviderMap`-NamedTuple; (B5) 4× breite `except Exception`/`suppress(Exception)` → konkrete `(OSError, ValueError, yaml.YAMLError)`; (B6) duplizierte Pending-Sentinels → SSoT `normalize_pending()` (schließt En-Dash-Lücke); (B7) sys.path-Bootstrap von 6 Modulen → 1 zentrale Stelle; (B8) `__all__` explizit; (B9) `_build_model_card_subdict` aus `_build_leaderboard_entry` ausgelagert (SRP); (B10) file-level `F401`-noqa aus `main.py` entfernt (deckte 3 tote Imports). Test-Laufzeit 80s→0.6s (Mock-Fix aus B2). AGENTS.md um file-level-F401-Verbot ergänzt.

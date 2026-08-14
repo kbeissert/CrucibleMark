@@ -172,7 +172,7 @@ class ConfigValidator:
                     continue
                 if prov_cfg.get("auto_discover"):
                     continue
-                for model in prov_cfg.get("models", []):
+                for model in (prov_cfg.get("models") or []):
                     if not isinstance(model, dict):
                         continue
                     mid = model.get("id")

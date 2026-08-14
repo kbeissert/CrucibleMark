@@ -1,11 +1,10 @@
 """Phase 28: Tests fuer clean_results (SSoT-Anbindung + ID-Normalisierung)."""
-import csv
 from pathlib import Path
 from types import SimpleNamespace
-from typing import Any
 
 import pandas as pd
 import pytest
+import yaml
 
 from scripts.maintenance import clean_results
 from utils.backup_targets import CSV_FILES
@@ -160,3 +159,122 @@ def test_main_with_args_requires_model_or_module(capsys):
         clean_results.main_with_args(args)
     captured = capsys.readouterr()
     assert "--model" in captured.out or "Bitte" in captured.out
+
+
+# ---------------------------------------------------------------------------
+# clean_provider_config: Auskommentieren + models-Key-Normalisierung
+# ---------------------------------------------------------------------------
+
+_MINI_PROVIDER_YAML = """providers:
+  local:
+    llamacpp_spark:
+      name: LlamaCPP Spark
+      models:
+      # - id: old-model
+      #   name: Old
+      - id: keep-me
+        name: Keep Me
+      - id: victim-model
+        name: Victim
+        config: Victim
+        max_tokens: 8192
+
+        # Interner Kommentar-Block mit Leerzeile davor —
+        # gehoert zum Eintrag (YAML erlaubt beides).
+        enable_thinking: true
+      - id: after-victim
+        name: After Victim
+"""
+
+
+def _write_mini_config(tmp_path: Path) -> Path:
+    """Legt eine minimale provider_config.yaml unter tmp_path an."""
+    cfg_dir = tmp_path / "config"
+    cfg_dir.mkdir(exist_ok=True)
+    pc_path = cfg_dir / "provider_config.yaml"
+    pc_path.write_text(_MINI_PROVIDER_YAML, encoding="utf-8")
+    return pc_path
+
+
+def test_clean_provider_config_comments_out_entry(tmp_path, monkeypatch, capsys):
+    """Eintrag wird komplett auskommentiert (inkl. Felder nach Leerzeile)."""
+    pc_path = _write_mini_config(tmp_path)
+    monkeypatch.setattr(clean_results, "ROOT_DIR", tmp_path)
+
+    clean_results.clean_provider_config("victim-model", dry_run=False)
+
+    captured = capsys.readouterr()
+    assert "victim-model" in captured.out
+    assert "Gespeichert" in captured.out
+
+    text = pc_path.read_text(encoding="utf-8")
+    assert "# - id: victim-model" in text
+    assert "# enable_thinking: true" in text, (
+        "Felder nach interner Leerzeile muessen mitkommentiert werden"
+    )
+    assert "# Auskommentiert" in text and "make clean-model" in text
+    # Nachbarn bleiben aktiv
+    assert "- id: keep-me" in text
+    assert "- id: after-victim" in text
+    # YAML bleibt parsebar
+    cfg = yaml.safe_load(text)
+    ids = [m["id"] for m in cfg["providers"]["local"]["llamacpp_spark"]["models"]]
+    assert ids == ["keep-me", "after-victim"]
+
+
+def test_clean_provider_config_normalizes_empty_models(tmp_path, monkeypatch, capsys):
+    """Letzter aktiver Eintrag raus -> models: [] statt models: (None)."""
+    pc_path = _write_mini_config(tmp_path)
+    monkeypatch.setattr(clean_results, "ROOT_DIR", tmp_path)
+
+    for mid in ("keep-me", "victim-model", "after-victim"):
+        clean_results.clean_provider_config(mid, dry_run=False)
+
+    cfg = yaml.safe_load(pc_path.read_text(encoding="utf-8"))
+    models = cfg["providers"]["local"]["llamacpp_spark"]["models"]
+    assert models == [], "models muss nach Leerung explizit [] sein, nicht None"
+
+
+def test_normalize_empty_models_keys_unit():
+    """_normalize_empty_models_keys: Look-ahead ueber Kommentare hinweg."""
+    lines_active = ["      models:", "      - id: foo"]
+    assert clean_results._normalize_empty_models_keys(lines_active) == lines_active
+
+    lines_empty = ["      models:", "      # - id: foo", "    next_key: 1"]
+    out = clean_results._normalize_empty_models_keys(lines_empty)
+    assert out[0] == "      models: []"
+    assert out[1:] == lines_empty[1:]
+
+    assert clean_results._normalize_empty_models_keys(["      models: []"]) == [
+        "      models: []"
+    ]
+
+
+def test_clean_provider_config_matches_dotted_config_form(tmp_path, monkeypatch):
+    """Underscore-Input (kanonische interne Form) findet Dotted-Config-Eintrag.
+
+    Regression: _collect_model_id_variants deckte die Config-Form (Dot in
+    Versions-Segmenten, z.B. ``ornith-1.0-35B-FP8``) nicht ab, wenn die
+    interne Form (``ornith-1_0-35B-FP8``) uebergeben wurde — lautes
+    "Kein Eintrag gefunden" haette das Modell in der Config aktiv lassen.
+    """
+    cfg_dir = tmp_path / "config"
+    cfg_dir.mkdir()
+    pc_path = cfg_dir / "provider_config.yaml"
+    pc_path.write_text(
+        "providers:\n"
+        "  local:\n"
+        "    vllm_spark:\n"
+        "      models:\n"
+        "      - id: ornith-1.0-35B-FP8\n"
+        "        name: Ornith\n"
+        "        config: Ornith1-35B-FP8\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(clean_results, "ROOT_DIR", tmp_path)
+
+    clean_results.clean_provider_config("ornith-1_0-35B-FP8", dry_run=False)
+
+    cfg = yaml.safe_load(pc_path.read_text(encoding="utf-8"))
+    assert cfg["providers"]["local"]["vllm_spark"]["models"] == []
+    assert "# - id: ornith-1.0-35B-FP8" in pc_path.read_text(encoding="utf-8")

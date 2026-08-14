@@ -112,6 +112,8 @@ providers:
       max_tokens: 16384
       env_var: XAI_API_KEY
       models:
+      - id: grok-4.6
+        name: Grok 4.6
       - id: grok-4.5
         name: Grok 4.5
       - id: grok-4.3
@@ -195,6 +197,9 @@ providers:
       - id: nvidia/nemotron-3-nano-30b-a3b
         name: NVIDIA Nemotron 3 Nano 30B A3B via OpenRouter
 
+      - id: nvidia/nemotron-3.5-lightning
+        name: NVIDIA Nemotron 3.5 Lightning via OpenRouter
+
 
       # Xiaomi MiMo — neueste zuerst (getestet 22. Juni 2026)
       - id: xiaomi/mimo-v2.5-pro
@@ -247,8 +252,22 @@ providers:
         name: DeepSeek V3.2 via OpenRouter
 
       # Google — neueste zuerst (Providervergleich)
+      - id: google/gemini-3.7-flash
+        name: Gemini 3.7 Flash via OpenRouter
+
       - id: google/gemma-4-31b-it
         name: Gemma 4 31B Instruct via OpenRouter
+
+      # Meta — neueste zuerst (getestet 14. August 2026)
+      - id: meta/muse-glimmer-30b
+        name: Muse Glimmer 30B via OpenRouter
+
+      - id: meta/muse-spark-1.2
+        name: Muse Spark 1.2 via OpenRouter
+
+      # Upstage — Solar Pro4
+      - id: upstage/solar-pro4
+        name: Solar Pro4 via OpenRouter
 
       # MiniMax — neueste zuerst (getestet 22. Juni 2026)
       - id: minimax/minimax-m3
@@ -262,7 +281,10 @@ providers:
       - id: nousresearch/hermes-4-70b
         name: Hermes 4 70B via OpenRouter
 
-      # Qwen — neueste zuerst (getestet 22. Juni 2026)
+      # Qwen — neueste zuerst
+      - id: qwen/qwen3.8-2.4t-a95b
+        name: Qwen 3.8 2.4T A95B via OpenRouter
+
       - id: qwen/qwen3.7-max
         name: Qwen 3.7 Max via OpenRouter
 
@@ -471,7 +493,7 @@ providers:
       threads: 10
       parallel: 2
       hardware_profile: dgx_spark_cuda
-      models:
+      models: []
       # - id: qwable-3.6-27b-q4
       #   name: Qwable 3.6 27B Q4_K_M (GGUF, Fable5-tune)
       #   model_file: Qwable27B/Qwable-27b_Q4_K_M.gguf
@@ -569,18 +591,19 @@ providers:
 
       # ── Aktive Spark-Modelle ──
 
+      # Auskommentiert 2026-08-14: Modell entfernt via make clean-model.
       # DeepSeek V4 Flash — lokale GGUF (IQ2_M, 3-teilig), llama.cpp auf gx10:2234.
       # Server: http://100.89.110.0:2234, Split-GGUF unter DeepSeek-V4-Flash/.
       # Sampling: temperature=0.7/top_p=0.95 gemäß HF-Card-Empfehlung.
-      - id: deepseek-v4-flash-ud-iq2
-        name: DeepSeek V4 Flash UD-Q2_M (GGUF, 3-part, llama.cpp)
-        model_file: DeepSeek-V4-Flash-0731-IQ2_M/UD-IQ2_M/DeepSeek-V4-Flash-0731-UD-IQ2_M-00001-of-00003.gguf
-        n_gpu_layers: 99
-        context_length: 262144
-        enable_thinking: false  # Reasoning kann serverseitig aktiviert werden, aber kein Always-Thinking
-        temperature: 0.7
-        top_p: 0.95
-        top_k: 20
+      # - id: deepseek-v4-flash-ud-iq2
+      #   name: DeepSeek V4 Flash UD-Q2_M (GGUF, 3-part, llama.cpp)
+      #   model_file: DeepSeek-V4-Flash-0731-IQ2_M/UD-IQ2_M/DeepSeek-V4-Flash-0731-UD-IQ2_M-00001-of-00003.gguf
+      #   n_gpu_layers: 99
+      #   context_length: 262144
+      #   enable_thinking: false  # Reasoning kann serverseitig aktiviert werden, aber kein Always-Thinking
+      #   temperature: 0.7
+      #   top_p: 0.95
+      #   top_k: 20
 
       # ── Auskommentiert 2026-07-08: Q8_K_XL-Datei existiert nicht auf der Spark.
       # Auf der Disk liegt nur Q5_K_XL (+ MTP-Draft) — siehe Modell unten.

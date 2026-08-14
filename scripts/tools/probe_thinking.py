@@ -61,9 +61,9 @@ def _infer_provider(model_id: str, config: dict[str, Any]) -> str:
     """
     Leitet den Provider aus der Config ab. Heuristik:
       - Config-Lookup zuerst (exakter Treffer in providers.commercial)
-      - model_id enthält '/' → Cloud-Modell, Fallback openrouter
+      - model_id enthält '/' → Cloud-Modell → Fallback openrouter
       - model_id enthält ':' aber kein '/' → Ollama-Format (name:tag)
-      - Kein Separator → check Config, Fallback Ollama
+      - Kein Separator → check Config, Fallback aus benchmark_config.yaml
     """
     commercial = config.get("providers", {}).get("commercial", {})
     for provider_key, provider_cfg in commercial.items():
@@ -75,8 +75,10 @@ def _infer_provider(model_id: str, config: dict[str, Any]) -> str:
     if "/" in model_id:
         return "openrouter"
 
-    # Ollama-Format: 'name:tag' oder nur 'name' ohne Slash
-    return "ollama"
+    return (
+        config.get("probe_thinking", {})
+        .get("fallback_provider", "openrouter")
+    )
 
 
 def _probe_fields_to_dict(probe: ThinkingProbeResult) -> dict[str, Any]:
@@ -170,11 +172,41 @@ def run_probe(
         except Exception:
             pass
 
+    fallback_cfg = config.get("probe_thinking", {})
+    fallback_provider = fallback_cfg.get("fallback_provider", "openrouter")
+    fallback_model = fallback_cfg.get("fallback_model", "deepseek/deepseek-v4-flash")
+
     logger.info("🔍 Reasoning-Erkennung: %s via %s …", model_id, provider_key)
     try:
         probe = probe_thinking_model(model_id, provider_key, config)
     except RuntimeError as e:
-        logger.error("❌ Probe fehlgeschlagen für '%s': %s", model_id, e)
+        # Fallback-Probe ist REIN DIAGNOSTISCH: Sie unterscheidet "Provider
+        # down" von "Modell defekt". Ihr Ergebnis wird NIEMALS in die Card
+        # von ``model_id`` geschrieben — die Probe-Felder eines anderen
+        # Modells (fallback_model) wären falsche Capability-Daten mit
+        # Langzeitwirkung (Card-First-Tagging + Skip-Check verhindern
+        # künftige Korrektur ohne --force).
+        if provider_key == fallback_provider and model_id != fallback_model:
+            logger.warning(
+                "❌ Probe fehlgeschlagen für '%s' via %s — Diagnose-Fallback mit %s …",
+                model_id, provider_key, fallback_model,
+            )
+            try:
+                probe_thinking_model(fallback_model, fallback_provider, config)
+            except RuntimeError:
+                logger.error(
+                    "❌ Fallback-Probe ebenfalls fehlgeschlagen — Provider %s "
+                    "vermutlich down. Ursprünglicher Fehler für '%s': %s",
+                    provider_key, model_id, e,
+                )
+            else:
+                logger.error(
+                    "❌ Provider %s OK (Fallback-Modell probt), aber Modell "
+                    "'%s' defekt: %s",
+                    provider_key, model_id, e,
+                )
+        else:
+            logger.error("❌ Probe fehlgeschlagen für '%s': %s", model_id, e)
         return False
 
     card_path = _write_probe_to_card(model_id, probe, provider=provider_key)

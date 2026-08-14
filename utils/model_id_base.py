@@ -288,7 +288,10 @@ def find_model_in_provider_cfg(
         Den Model-Eintrag-Dict wenn gefunden, sonst ``None``.
     """
     config_form = internal_id_to_config_form(model_id)
-    for entry in provider_cfg.get("models", []):
+    # ``or []``: Ein Provider, dessen Modelle alle auskommentiert sind
+    # (z.B. via make clean-model), hat ``models:`` explizit auf None —
+    # .get()-Default greift dort nicht. Leere Liste ist der korrekte Zustand.
+    for entry in provider_cfg.get("models") or []:
         if isinstance(entry, dict):
             entry_id = entry.get("id", "")
             if entry_id in (model_id, config_form):

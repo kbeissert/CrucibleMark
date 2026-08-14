@@ -77,6 +77,16 @@ BOOLEAN_MODEL_VALUES = frozenset({"true", "false"})
 # Known finish_reason values that should never appear as model names.
 FINISH_REASON_VALUES = frozenset({"length", "stop", "content_filter", "tool_calls"})
 
+# Provider-/Org-Namen, die durch Spalten-Shift in die model-Spalte landen koennen
+# (z.B. Judge-Provider "anthropic" aus dem reasoning-Feld).
+# SYNC-PFLICHT: Bei neuen Providern in provider_config.yaml diese Liste
+# erweitern — sie ist bewusst hartcodiert (Standalone-Wartungstool ohne
+# Config-Abhängigkeit), driftet aber sonst still.
+PROVIDER_NAME_VALUES = frozenset({
+    "anthropic", "openai", "google", "xai", "mistral", "meta",
+    "cohere", "amazon", "nvidia", "tavily", "ollama", "vllm",
+})
+
 # Datei-Liste, die bereinigt wird.
 TARGET_CSVS = (LOCAL_CSV, CLOUD_CSV, COMMERCIAL_CSV)
 
@@ -103,7 +113,8 @@ def _is_invalid_model(model: str) -> tuple[bool, str]:
     """Prueft ob der model-Wert ein gueltiger Model-Identifier ist.
 
     Returns:
-        (is_invalid, reason) -- reason ist "empty" | "boolean" | "numeric" | "finish_reason" | "unknown"
+        (is_invalid, reason) -- reason ist "empty" | "boolean" | "numeric" |
+        "finish_reason" | "provider_name" | "narrative" | "unknown"
     """
     m = (model or "").strip()
     if not m or m.lower() in {"nan", "none", "null"}:
@@ -117,6 +128,15 @@ def _is_invalid_model(model: str) -> tuple[bool, str]:
     # Known finish_reason values (e.g. "length", "stop") that shifted into model field.
     if m.lower() in FINISH_REASON_VALUES:
         return True, "finish_reason"
+    # Provider-/Org-Namen (z.B. "anthropic" aus Judge-Reasoning) sind nie Modell-IDs.
+    if m.lower() in PROVIDER_NAME_VALUES:
+        return True, "provider_name"
+    # Gueltige interne Modell-IDs enthalten nie Whitespace (Underscore/Hyphen/Dot
+    # stattdessen). Fragmente mit Leerzeichen sind Rohtext-Spalten-Shifts.
+    # Geprueft wird die GESTRIPPTE Form — reine Rand-Whitespace-IDs (z.B.
+    # "foo ") bleiben valide, interne Leerzeichen ("mail injection") nicht.
+    if any(ch.isspace() for ch in m):
+        return True, "narrative"
     return False, ""
 
 

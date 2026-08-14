@@ -1,0 +1,102 @@
+{
+  "model_id": "meta/muse-glimmer-30b",
+  "display_name": "Meta Muse Glimmer 30B via OpenRouter",
+  "developer": "Meta",
+  "origin_country": "US",
+  "developer_jurisdiction": "US",
+  "deployment_type": "open-weights-local",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "low",
+  "weights_provenance_risk_rationale": "Meta ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act. Muse Glimmer 30B ist jedoch Metas erstes Modell überhaupt unter der offenen Apache-2.0-Lizenz mit vollständig öffentlichen Gewichten; bei lokalem Betrieb auf eigener Hardware entfällt jede Abhängigkeit von US-Cloud-Infrastruktur, wodurch das Risiko trotz US-Jurisdiktion als gering eingestuft wird.",
+  "model_family": "Muse",
+  "vendor": "Meta",
+  "primary_focus": "agentic",
+  "use_case_primary": "agentic",
+  "parameter_architecture": "dense",
+  "params_total_b": 29.6,
+  "params_active_b": 29.6,
+  "context_window_k": 131,
+  "knowledge_cutoff": "2026-01",
+  "summary": "Muse Glimmer 30B ist Meta Superintelligence Labs' erstes Open-Weights-Modell unter Apache-2.0-Lizenz (10. August 2026), optimiert für always-on lokale Agenten-Workflows. Das dichte 30-Milliarden-Parameter-Modell mit zusätzlichem 1,8-Milliarden-Parameter-Vision-Encoder verarbeitet Text und Bild, läuft auf einer einzelnen Consumer-GPU oder Mac und bietet 131.072 Tokens Kontext bei einem Reasoning-Modus 'High Reasoning'.",
+  "strengths": [
+    "Erstes Meta-Modell unter Apache-2.0-Lizenz — frei kommerziell nutzbar und offline.",
+    "Keine EU-Ausschlussklausel — anders als die Llama-Familie.",
+    "Lokal auf einer einzelnen Consumer-GPU oder Mac lauffähig, ohne Cloud-Anbindung.",
+    "Multimodal: dedizierter Vision-Encoder plus Text-Decoder in einem Gewichtspaket.",
+    "Benchmark-Spitzenwerte in der <32B-Klasse: MCP Atlas 75,5, AIME 2026 94,7, AA-LCR 80,0.",
+    "Destilliert aus Muse Spark 1.2 — agentische Fähigkeiten des Flaggschiffs erhalten."
+  ],
+  "known_limitations": [
+    "Kontextfenster 131.072 Tokens deutlich kleiner als bei Muse Spark 1.2 (1 Mio).",
+    "Keine Audio-Unterstützung; Video nur als Einzelbild-Sequenz.",
+    "Volle Präzision braucht über 55 GB — nur quantisierte Varianten lokal praktikabel.",
+    "Wissensstand 4. Januar 2026, ohne Live-Updates.",
+    "Allgemeines Reasoning und Wissensbreite bleiben hinter dem nicht-offenen Muse Spark 1.2."
+  ],
+  "judge_context_hint": "Muse Glimmer 30B ist Meta Superintelligence Labs' Open-Weights-Modell (Apache-2.0, US-Jurisdiktion) für lokale Agentik-Workflows auf Consumer-Hardware. 30 Mrd. dichte Parameter + 1,8 Mrd. Vision-Encoder, multimodal Text+Image, 131.072 Tokens Kontext, Reasoning-Modus 'High Reasoning'. Optionaler DFlash-Speculative-Decoder für schnellere Inferenz. Bewerte Tool-Use, mehrstufige Agentik-Aufgaben und multimodales Verständnis.",
+  "architecture_tags": [
+    "General",
+    "Multimodal",
+    "Agentic-Orchestrator",
+    "Open-Weight"
+  ],
+  "input_modalities": [
+    "text",
+    "image"
+  ],
+  "output_modalities": [
+    "text"
+  ],
+  "supports_tool_use": true,
+  "tooluse_tested_at": "2026-08-14T19:55:45Z",
+  "tooluse_score_p1": 89.17,
+  "tooluse_score_p2": 70.0,
+  "tooluse_runs": {
+    "meta/muse-glimmer-30b": {
+      "tested_at": "2026-08-14T19:55:45Z",
+      "score_p1": 89.17,
+      "score_p2": 70.0
+    }
+  },
+  "tooluse_recommendation": null,
+  "dual_profile": null,
+  "temperature": null,
+  "system_prompt_override": null,
+  "cot_marker_family": null,
+  "cot_tags_detected": null,
+  "top_p": null,
+  "top_k": null,
+  "repetition_penalty": null,
+  "frequency_penalty": null,
+  "presence_penalty": null,
+  "seed": null,
+  "stop_sequences": null,
+  "license": "Apache-2.0",
+  "license_url": "https://huggingface.co/meta-llama/Muse-Glimmer-30B/blob/main/LICENSE",
+  "commercial_use_allowed": true,
+  "weights_license_tier": "open-weights",
+  "model_version": "30b",
+  "input_price_per_1m": 0.0,
+  "output_price_per_1m": 0.0,
+  "hardware_profile": null,
+  "inference_engine": null,
+  "quantization_format": null,
+  "model_variant": null,
+  "unknown": false,
+  "card_status": "draft",
+  "size_class": "Desktop",
+  "generated_at": "2026-08-14T14:51:47.000000+00:00",
+  "thinking_probe_detected": true,
+  "thinking_probe_evidence": "Multi-Probe (3 prompts, 3 detected, best confidence=medium):\n  - math: [math] reasoning_tokens=269 in provider metadata.\n  - code: [code] reasoning_tokens=1203 in provider metadata.\n  - decision: [decision] reasoning_tokens=438 in provider metadata.\nHinweis: Keine der recherchierten offiziellen Quellen (Meta, NVIDIA NIM, OpenRouter, Artificial Analysis) erwähnt einen dedizierten Thinking-/Reasoning-Modus für Muse Glimmer; die gemessenen reasoning_tokens könnten auf provider-seitiges Reasoning-Wrapping bei OpenRouter statt auf eine native Modellfähigkeit zurückgehen. Vor Freigabe der Karte gezielt gegen die offizielle Meta-Model-Card prüfen.",
+  "thinking_probe_confidence": "low",
+  "thinking_probe_at": "2026-08-14T12:54:52.410919+00:00",
+  "thinking_probe_manual_override": null,
+  "profile_verified": false,
+  "profile_verified_at": null,
+  "profile_verified_by": null,
+  "last_modified_at": "2026-08-14",
+  "heritage_ids": [
+    "meta/muse-spark-1.2"
+  ],
+  "community": null
+}

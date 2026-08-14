@@ -1,0 +1,103 @@
+{
+  "model_id": "nvidia/nemotron-3.5-lightning",
+  "display_name": "NVIDIA Nemotron 3.5 Lightning",
+  "developer": "NVIDIA",
+  "origin_country": "US",
+  "developer_jurisdiction": "US",
+  "deployment_type": "open-weights-cloud-available",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "low",
+  "weights_provenance_risk_rationale": "NVIDIA ist ein US-Unternehmen und unterliegt dem CLOUD Act bei Nutzung der gehosteten API/NIM-Infrastruktur. Die Gewichte werden jedoch vollständig offen unter der permissiven OpenMDW-1.1-Lizenz veröffentlicht (inklusive Trainingsdaten-Rezepten), was unabhängige Prüfung und vollständig lokalen Betrieb ohne jede Cloud-Abhängigkeit ermöglicht und das Risiko entsprechend senkt.",
+  "model_family": "Nemotron",
+  "vendor": "NVIDIA",
+  "primary_focus": "agentic",
+  "use_case_primary": "agentic",
+  "parameter_architecture": "moe",
+  "params_total_b": 30.0,
+  "params_active_b": 3.0,
+  "context_window_k": 1024,
+  "knowledge_cutoff": "2026-05",
+  "summary": "NVIDIA Nemotron 3.5 Lightning ist ein offenes 30-Milliarden-Parameter-MoE mit 3 Milliarden aktiven Parametern pro Token (11. August 2026), destilliert aus Nemotron 3 Ultra und auf die Ausführungsschicht always-on laufender Agenten spezialisiert. Die hybride Mamba-2 + MoE + Attention-Architektur unter OpenMDW-1.1-Lizenz bietet bis zu 1 Million Tokens Kontext und bis zu 4-fache Ausgabegeschwindigkeit durch Multi-Token-Prediction und Speculative Decoding.",
+  "strengths": [
+    "MoE mit 30 Mrd. Gesamt- und 3 Mrd. aktiven Parametern — Compute nahe 3B-Dense.",
+    "Bis zu 1 Mio. Tokens Kontext für lange Agent-Sessions.",
+    "Multi-Token-Prediction und Speculative Decoding für bis zu 4× Ausgabegeschwindigkeit.",
+    "Spezialisiert auf Agent-Ausführung: Tool-Aufrufe, Validierung, Retrieval, Formatierung.",
+    "OpenMDW-1.1-Lizenz: offene Gewichte, Trainingsdaten-Rezepte, kommerzielle Nutzung frei.",
+    "Lokal betreibbar auf Workstation- und Edge-Hardware."
+  ],
+  "known_limitations": [
+    "Rein textbasiert — keine native Bild-, Audio- oder Videoverarbeitung.",
+    "Voller 1-Mio.-Kontext erfordert Multi-GPU; Single-GPU-Default begrenzt auf 256K.",
+    "Sprachfokus primär Englisch; weitere Sprachen (ES, FR, DE, IT, JP) schwächer.",
+    "Wissensbreite und Reasoning-Tiefe hinter dem Frontier-Ursprungsmodell zurück.",
+    "Pre-Training-Daten September 2025, Post-Training bis Mai 2026 — kein Echtzeitwissen ohne Tools."
+  ],
+  "judge_context_hint": "Nemotron 3.5 Lightning ist NVIDIAs Open-Weights-Modell (OpenMDW-1.1, US) für die Ausführungsschicht von Agenten. MoE mit 30B/3B-aktiv, Mamba-2 + MoE + Attention hybrid, 1M Kontext nativ (Single-GPU-Default 256K). Spezialisiert auf Tool-Aufrufe, Validierung, Retrieval, Formatierung — nicht auf offenes Frontier-Reasoning. Multi-Token-Prediction und Speculative Decoding für hohe Ausgabegeschwindigkeit.",
+  "architecture_tags": [
+    "Thinking",
+    "Instruct",
+    "MoE",
+    "Long-Context",
+    "Agentic-Orchestrator",
+    "Hybrid-Attention"
+  ],
+  "input_modalities": [
+    "text"
+  ],
+  "output_modalities": [
+    "text"
+  ],
+  "supports_tool_use": true,
+  "tooluse_tested_at": "2026-08-14T18:50:23Z",
+  "tooluse_score_p1": 90.0,
+  "tooluse_score_p2": 50.0,
+  "tooluse_runs": {
+    "nvidia/nemotron-3.5-lightning": {
+      "tested_at": "2026-08-14T18:50:23Z",
+      "score_p1": 90.0,
+      "score_p2": 50.0
+    }
+  },
+  "tooluse_recommendation": null,
+  "dual_profile": null,
+  "temperature": 1.0,
+  "system_prompt_override": null,
+  "cot_marker_family": null,
+  "cot_tags_detected": null,
+  "top_p": 0.95,
+  "top_k": null,
+  "repetition_penalty": null,
+  "frequency_penalty": null,
+  "presence_penalty": null,
+  "seed": null,
+  "stop_sequences": null,
+  "license": "OpenMDW-1.1",
+  "license_url": "https://huggingface.co/nvidia/Nemotron-3.5-Lightning-30B-A3B/blob/main/LICENSE",
+  "commercial_use_allowed": true,
+  "weights_license_tier": "open-weights",
+  "model_version": "3.5",
+  "input_price_per_1m": 0.08,
+  "output_price_per_1m": 0.2,
+  "hardware_profile": null,
+  "inference_engine": null,
+  "quantization_format": null,
+  "model_variant": "lightning",
+  "unknown": false,
+  "card_status": "draft",
+  "size_class": "Workstation",
+  "generated_at": "2026-08-14T13:30:00+00:00",
+  "thinking_probe_detected": true,
+  "thinking_probe_evidence": "Multi-Probe (3 prompts, 2 detected, best confidence=medium):\n  - math: [math] reasoning_tokens=413 in provider metadata.\n  - decision: [decision] reasoning_tokens=983 in provider metadata.\nHinweis: Nicht in allen recherchierten offiziellen NVIDIA-Quellen als expliziter 'Thinking-Modus' dokumentiert; das Modell wird primär als schnelles Agenten-Ausführungsmodell beschrieben. Vor Freigabe gegen die offizielle Model Card auf build.nvidia.com verifizieren.",
+  "thinking_probe_confidence": "medium",
+  "thinking_probe_manual_override": null,
+  "thinking_probe_at": "2026-08-14T13:32:18.133772+00:00",
+  "profile_verified": false,
+  "profile_verified_at": null,
+  "profile_verified_by": null,
+  "last_modified_at": "2026-08-14",
+  "heritage_ids": [
+    "nvidia/nemotron-3-ultra"
+  ],
+  "community": null
+}
