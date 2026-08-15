@@ -11,6 +11,11 @@ Hot files (`activeContext.md`, `progress.md`, `systemPatterns.md`) reichen für 
 | `tooluse_module.md` | Tool Use Modul v3.11.0 — Architektur, Pitfalls, Golden Standard v1.3.0, AUTHORIZED_TOOLS-Aliases, MCP-Config, P1-Scoring-Stufen | Bei Tool Use Benchmark-Arbeit, MCP-Änderungen, bekannten Modul-Bugs |
 | `social-media-archive.md` | Social-Media-Plan (separates Projekt, inaktiv) | Nur bei Social-Media-Fragen |
 | `pitfall-diagnoses.md` | Detaillierte Bug-Diagnosen (Qwen 3.6 Hang, Hermes-Retries, ToolUse-Sanierung 8 Modelle, llama.cpp Timeouts) | Bei konkretem Fehlerbild mit Similarity zu dokumentierten Fällen |
+| `architecture.md` | Architektur-Invariants, SSoT-Tabelle (Token-Budget, Card-Lookup, Thinking-Profile-Expansion), Dead-Model-Handling-Workflow | Bei Architektur-Änderungen an Runner, Card-Lookup oder Thinking-Profilen |
+| `code-style.md` | Python-3.12-Konventionen, Verbote (print, bare except, hardcodierte Provider), Plugin-Laden | Bei Code-Reviews und neuen Modulen |
+| `data-pipeline.md` | CSV-Upsert-Semantik, atomare Writes, Write-Through, Recovery-Sequenz, Judge-Parser | Bei CSV-IO, Konsolidierung, Korruptions-Recovery |
+| `provider-models.md` | Provider-Connector-Verträge (reasoning_tokens, think_content, usage), Model-ID-Konventionen, Thinking-Probe, Pricing | Bei Provider-Änderungen, Model-Card-Workflow, Thinking-Integration |
+| `web-export-cleanup.md` | WebExport-Pipeline, Cleanup- und Migrations-Regeln | Bei Web-Export-Änderungen und Bereinigungen |
 | `heartbeat-v474-detail.md` | v4.7.4 Heartbeat-Configurable Implementation (Code, Config, Tests) | Bei Heartbeat-Tuning oder Wiederherstellung des Original-Verhaltens |
 
-**Letzte Aktualisierung:** 2026-08-03
+**Letzte Aktualisierung:** 2026-08-15

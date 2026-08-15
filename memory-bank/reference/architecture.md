@@ -1,6 +1,6 @@
 # Architecture & SSoTs
 
-Detail-Referenz für CrucibleMark-Architektur-Constraints. Die Top-Constraints stehen in [`AGENTS.md`](../AGENTS.md); hier nur, was darüber hinausgeht.
+Detail-Referenz für CrucibleMark-Architektur-Constraints. Die Top-Constraints stehen in [`AGENTS.md`](../../AGENTS.md); hier nur, was darüber hinausgeht.
 
 ## Architektur-Invariants
 
@@ -42,14 +42,14 @@ Detail-Referenz für CrucibleMark-Architektur-Constraints. Die Top-Constraints s
 - Per-Model Override für `claude-haiku-4-5-20251001`: **8192** (Desktop-Klasse).
 - Bei neuen Claude-Modellen prüfen, ob der Default ausreicht — Claude 4.x unterstützt bis 128K Output, aber 32768 deckt alle Reasoning-Budgets ab (max. 20000 bei `code_quality`).
 
-Versions-Historie und Audit-Trail (v4.10.6: 8192→32768, `fallback_max_tokens` entfernt) siehe [`.agent/provider-models.md`](provider-models.md).
+Versions-Historie und Audit-Trail (v4.10.6: 8192→32768, `fallback_max_tokens` entfernt) siehe [`memory-bank/reference/provider-models.md`](provider-models.md).
 
 ## CI@500-Artefakt (Memory)
 
 Aktuelles Cultural-Intelligence-Budget: **3000 (Standard) / 4000 (Reasoning)**.
 - Achtung: Wenn `token_limit_used` in alten Audit-Logs **500** zeigt, sind diese Runs veraltet (vor v4.10.6).
 
-Historische Bereinigung (130 Zeilen / 26 Modelle) siehe [`.agent/provider-models.md`](provider-models.md).
+Historische Bereinigung (130 Zeilen / 26 Modelle) siehe [`memory-bank/reference/provider-models.md`](provider-models.md).
 
 ## `token_param_name` per Provider
 

@@ -29,7 +29,7 @@ Lies zunächst diese Dateien, um den aktuellen Stand zu verstehen:
 2. [memory-bank/systemPatterns.md](../memory-bank/systemPatterns.md)
 3. [memory-bank/techContext.md](../memory-bank/techContext.md)
 4. [AGENTS.md](../AGENTS.md)
-5. [.agent/architecture.md](../.agent/architecture.md)
+5. [memory-bank/reference/architecture.md](../memory-bank/reference/architecture.md)
 6. [docs/ARCHITECTURE.md](../docs/ARCHITECTURE.md)
 
 Führe noch keine Änderungen durch.
@@ -64,7 +64,7 @@ LLM-Test-Phase und Auswertungs-Phase eine andere LLM geladen werden muss
 - Werden `parse_success=False`-Pfade korrekt propagiert (nie Exception schlucken)?
 
 ### Schritt 3 — Architektur-Compliance
-Prüfe gegen die Regeln aus `AGENTS.md` (Architecture Top Constraints) und `.agent/architecture.md`:
+Prüfe gegen die Regeln aus `AGENTS.md` (Architecture Top Constraints) und `memory-bank/reference/architecture.md`:
 
 - **Single Source of Truth:** Keine Konfig-Werte redundant in mehreren Dateien
 - **Konfig-Hierarchie eingehalten:** Global → Modul → Runtime (keine Umgehung)

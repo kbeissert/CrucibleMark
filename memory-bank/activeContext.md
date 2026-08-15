@@ -1,6 +1,6 @@
 # Active Context
 Aktueller Stand und nächste Schritte.
 
-- **Abgeschlossen:** v5.1.3 — drei vorbestehende Testfehler behoben (hermes-4-36b Orphan-Card via clean-model, Tag-Whitelist normalisiert mit Native-Quant/Harmony + Deprecated-Mappings, Ornith-Test invariantisiert). 1410 Tests grün, Web-Export verifiziert. Nemotron-3.5-lightning-Benchmark aus Session 81 ist gelaufen (50 CSV-Einträge).
-- **Nächster Schritt:** v5.1.3-Changes committen (32 geänderte Dateien: Cards, Vocabulary, Tests, Docs-Stempel).
-- **Offen/Risiko:** `make clean-model` bereinigt jetzt auch die Model-Card-Datei selbst (im Dry-Run verifizigt) — frühere manuelle Card-Löschungen sind obsolet.
+- **Abgeschlossen:** Agent-Memory-Konsolidierung komplett — `.agent/` (5 Dateien) nach `memory-bank/reference/` migriert und `_index.md` ergänzt; `.kilo` bereinigt (6 stale Worktrees + 7 gemergte/obsolete Branches entfernt, `plans/` und vestigiale `node_modules` gelöscht, `compress-project` in `session-start` konsolidiert); `.kilo/kilo.jsonc` wegen API-Key aus Git ungetrackt und in `.kilo/.gitignore` aufgenommen; `agent-manager.json` von toten Worktree-Einträgen befreit. Alle aktiven `.agent`-Referenzen (AGENTS.md, Commands, `vllm_base.py`) umgestellt — historische Erwähnungen in CHANGELOG/progress.md bewusst unverändert.
+- **Nächster Schritt:** Keiner aus dieser Konsolidierung — reguläre Projektarbeit.
+- **Offen/Risiko:** `kilo.jsonc`-API-Key bleibt in der Git-Historie (lokaler Netzwerk-Endpoint 100.89.110.0:2230) — bei erhöhten Anforderungen Key rotieren oder History-Rewrite; sonst akzeptiertes Restrisiko.

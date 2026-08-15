@@ -1,6 +1,6 @@
 # Provider & Models
 
-Provider-Konnektoren, Model-Card-Workflow, Model-ID-Konventionen, Provider-spezifische Quirks. Versions-Audit-Trail zu SSoTs aus `architecture.md`.
+Provider-Konnektoren, Model-Card-Workflow, Model-ID-Konventionen, Provider-spezifische Quirks. Versions-Audit-Trail zu SSoTs aus [`architecture.md`](architecture.md) (gleicher Ordner).
 
 ## Provider-Connector Thinking/Reasoning-Extraktion (SSoT in `base.py`)
 

@@ -54,7 +54,7 @@ make docs-version-sync YES=1   # Doku-Stempel angleichen
 - **Kein Judge-Fallback:** Anthropic-Overloads nur mit Exponential-Backoff-Retry behandeln. Nie ein anderes LLM als Ersatz-Judge verwenden.
 - **Judge-Prompts unveränderlich halten:** Änderungen während laufender Tests brechen die Vergleichbarkeit.
 - **Scoring-Logik nicht stillschweigend ändern:** Das verfälscht historische Benchmarks.
-- **`vllm-start` nicht als idempotent behandeln:** Vor einem Modellwechsel den Server über `vllm-stop` stoppen. Die Details stehen in `.agent/architecture.md`.
+- **`vllm-start` nicht als idempotent behandeln:** Vor einem Modellwechsel den Server über `vllm-stop` stoppen. Die Details stehen in `memory-bank/reference/architecture.md`.
 - **vLLM-Server nicht unnötig neu starten:** Der Start kann mehrere Minuten dauern. Während Diagnose und Tests gegen den laufenden Server arbeiten.
 - **Reports als flüchtig behandeln:** Benchmark-Reports werden pro Lauf überschrieben. Verbindlich sind die versionierten Ergebnisdateien in `outputs/runs/`.
 - **ToolUse-Leaderboard bereinigen:** `tooluse_leaderboard.csv` ist ein Upsert-File. Bei Modell-ID-Renames alte IDs vor der Aggregation entfernen.
@@ -100,11 +100,11 @@ make docs-version-sync YES=1   # Doku-Stempel angleichen
 
 ## Referenzen
 
-- [.agent/architecture.md](.agent/architecture.md) — SSoT-Brücken, BaseTest und Token-Budget
-- [.agent/code-style.md](.agent/code-style.md) — Python 3.12, Type Hints, Verbote und Pytest-Fixtures
-- [.agent/data-pipeline.md](.agent/data-pipeline.md) — CSV-Atomic-Writes, `save_results()` und Konsolidierung
-- [.agent/provider-models.md](.agent/provider-models.md) — Provider-Konnektoren, Thinking und Model-Card-Workflow
-- [.agent/web-export-cleanup.md](.agent/web-export-cleanup.md) — WebExport, Cleanup und Migration
+- [memory-bank/reference/architecture.md](memory-bank/reference/architecture.md) — SSoT-Brücken, BaseTest und Token-Budget
+- [memory-bank/reference/code-style.md](memory-bank/reference/code-style.md) — Python 3.12, Type Hints, Verbote und Pytest-Fixtures
+- [memory-bank/reference/data-pipeline.md](memory-bank/reference/data-pipeline.md) — CSV-Atomic-Writes, `save_results()` und Konsolidierung
+- [memory-bank/reference/provider-models.md](memory-bank/reference/provider-models.md) — Provider-Konnektoren, Thinking und Model-Card-Workflow
+- [memory-bank/reference/web-export-cleanup.md](memory-bank/reference/web-export-cleanup.md) — WebExport, Cleanup und Migration
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — Layer-Architektur und Provider-Abstraktion
 - [docs/DEVELOPER_GUIDE.md](docs/DEVELOPER_GUIDE.md) — Entwicklerhandbuch
 - [CHANGELOG.md](CHANGELOG.md) — Vollständige Versionshistorie

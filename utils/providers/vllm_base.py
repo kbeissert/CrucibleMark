@@ -1476,7 +1476,7 @@ class VllmBaseClient(BaseProviderClient):
         ``last_response_metadata["reasoning_tokens"]``.
 
         Genutzt vom Streaming- und Non-Streaming-Pfad gemeinsam — keine
-        Inline-Duplikation der Fallback-Logik mehr (siehe .agent/provider-models.md:
+        Inline-Duplikation der Fallback-Logik mehr (siehe memory-bank/reference/provider-models.md:
         „NIEMALS eigene Inline-Extraction schreiben").
         """
         rt = self._extract_reasoning_tokens(usage)
