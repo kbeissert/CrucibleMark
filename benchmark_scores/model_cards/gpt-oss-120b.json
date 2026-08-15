@@ -36,9 +36,8 @@
   ],
   "judge_context_hint": "GPT-OSS 120B ist OpenAIs Open-Weights-Modell (Apache-2.0) mit 116,8 Mrd. Gesamt- und 5,1 Mrd. aktiven Parametern pro Token. Native MXFP4-Quantisierung ermöglicht lokales Single-Node-Deployment. Konfigurierbare Reasoning-Stufen (low/medium/high) immer aktiv, nicht deaktivierbar; Reasoning läuft im Harmony-Format mit Analysis-/Commentary-/Final-Channels statt sichtbarer Think-Tags. Bei der Bewertung Coding, Reasoning und Tool-Use-Korrektheit gleichermassen gewichten, Wissensstand Juni 2024 beachten.",
   "architecture_tags": [
-    "Configurable-Reasoning",
+    "Thinking-Optional",
     "MoE",
-    "MXFP4",
     "Native-Quant",
     "Harmony",
     "Tool-Use"

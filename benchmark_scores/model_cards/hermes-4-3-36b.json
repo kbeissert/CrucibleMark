@@ -40,10 +40,6 @@
   "architecture_tags": [
     "Thinking",
     "Dense",
-    "36B",
-    "NVFP4",
-    "Compressed-Tensors",
-    "512K-Context",
     "Thinking-Optional",
     "Tool-Use",
     "Long-Context",

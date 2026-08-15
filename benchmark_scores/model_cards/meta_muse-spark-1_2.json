@@ -36,7 +36,7 @@
   "judge_context_hint": "Muse Spark 1.2 ist Metas proprietäres Coding-/Agentik-Flaggschiff (US/CLOUD Act, Cloud-Only, Co-Training mit Muse Code). 1.048.576 Tokens Kontext, multimodaler Input (Text/Bild/Video/Audio), Reasoning-Effort bis 'xhigh'. Bewerte besonders Coding, Multi-File-Refactoring, Tool-Use-Zuverlässigkeit und Multi-Agent-Orchestrierung. Reasoning-Marker und Architektur undokumentiert.",
   "architecture_tags": [
     "General",
-    "Configurable-Reasoning",
+    "Thinking-Optional",
     "Multimodal",
     "Long-Context",
     "Agentic-Orchestrator",

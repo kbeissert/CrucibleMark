@@ -232,6 +232,20 @@ informational_tags:
     display_role: badge
     since: v4.7.0
 
+  - slug: Native-Quant
+    label: "Native Quantisierung"
+    description: "Modell ist nativ in einer quantisierten Form trainiert/destilliert (z.B. GPT-OSS MXFP4, Laguna NVFP4) statt post-training quantisiert. Volle Qualität bei reduziertem Speicherbedarf."
+    consumers: [web_export_filter]
+    display_role: badge
+    since: v5.1.3
+
+  - slug: Harmony
+    label: "Harmony-Format"
+    description: "Modell nutzt OpenAIs Harmony-System-Prompt-/Response-Format (GPT-OSS-Familie) mit strukturierten Kanälen für Analyse und finale Antwort."
+    consumers: [web_export_filter]
+    display_role: badge
+    since: v5.1.3
+
 # ---------------------------------------------------------------------------
 # 4. Deprecated Tags (mit Normalisierung)
 # ---------------------------------------------------------------------------
@@ -253,6 +267,16 @@ deprecated_tags:
     normalized_to: null
     reason: "Architektur-Implementierungs-Detail; konsolidiert in parameter_architecture='hybrid'."
     since: v4.7.0
+
+  - slug: "Configurable-Reasoning"
+    normalized_to: "Thinking-Optional"
+    reason: "Semantisch identisch mit Thinking-Optional (Reasoning per Parameter konfigurierbar/abschaltbar, z.B. GPT-OSS reasoning_effort). Normalisiert, damit thinking_mode='partial' greift."
+    since: v5.1.3
+
+  - slug: "Thinking-Mandatory"
+    normalized_to: "Thinking"
+    reason: "Semantisch identisch mit Thinking (Always-On). Normalisiert, damit thinking_mode='thinking' und der 5x Reasoning-Multiplikator greifen."
+    since: v5.1.3
 
   - slug: "Dual-Attention"
     normalized_to: null

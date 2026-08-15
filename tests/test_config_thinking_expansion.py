@@ -398,7 +398,15 @@ def test_provider_config_yaml_ornith_is_expanded(tmp_path: Path, monkeypatch):
 
 
 def test_llamacpp_ornith_in_provider_config_unchanged(tmp_path: Path, monkeypatch):
-    """llama.cpp's Ornith (anderes Backend) bleibt unverändert — keine Expansion."""
+    """llama.cpp-Modelle (anderes Backend) bleiben unverändert — keine Expansion.
+
+    Hinweis: llamacpp_spark ist seit 2026-08-10 komplett auskommentiert
+    (Modelle nicht auf llama.cpp-Server gx10:2234 verfügbar), u.a. auch
+    ornith-1-0-35b. Der Test bleibt als Invariante für Re-Aktivierungen:
+    sollte ornith-1-0-35b (manuell enable_thinking: false) oder ein anderes
+    llamacpp-Modell re-aktiviert werden, darf die Thinking-Expansion
+    (vllm-only) niemals greifen.
+    """
     bench_cfg = tmp_path / "benchmark_config.yaml"
     bench_cfg.write_text("golden_standard: {}\n", encoding="utf-8")
 
@@ -406,12 +414,17 @@ def test_llamacpp_ornith_in_provider_config_unchanged(tmp_path: Path, monkeypatc
     llamacpp_models = validator.config["providers"]["local"]["llamacpp_spark"]["models"]
     llamacpp_ids = {m["id"] for m in llamacpp_models}
 
-    # llamacpp.ornith-1-0-35b existiert und hat enable_thinking: false (manuell gesetzt).
-    ornith_llamacpp = next(m for m in llamacpp_models if m["id"] == "ornith-1-0-35b")
-    assert ornith_llamacpp["enable_thinking"] is False
+    # Bedingte Prüfung: ornith-1-0-35b existiert NUR wenn re-aktiviert.
+    ornith_llamacpp = next(
+        (m for m in llamacpp_models if m["id"] == "ornith-1-0-35b"), None
+    )
+    if ornith_llamacpp is not None:
+        assert ornith_llamacpp["enable_thinking"] is False
 
-    # Sicherstellen, dass KEIN llama.cpp-Modell ein "*-thinking"-Suffix bekommen hat.
+    # Invariante (immer): KEIN llama.cpp-Modell bekommt ein "*-thinking"-Suffix
+    # oder vllm-spezifische chat_template_kwargs durch die Expansion.
     assert not any(mid.endswith("-thinking") for mid in llamacpp_ids)
+    assert not any("chat_template_kwargs" in m for m in llamacpp_models)
 
 
 # ---------------------------------------------------------------------------

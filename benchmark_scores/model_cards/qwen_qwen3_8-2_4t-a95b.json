@@ -37,7 +37,7 @@
   "judge_context_hint": "Qwen3.8-2.4T-A95B ist Alibabas Open-Weights-Modell auf Qwen-Max-Niveau (CN-Jurisdiktion, eigene Lizenz). Fein granulare MoE mit 2,4T/95B-aktiv, Hybrid-Attention, 262K Kontext nativ (~1M erweiterbar), Reasoning immer aktiv (low/high/xhigh, Default xhigh). Text-only im Open-Weights-Checkpoint. Bewerte Coding, Agentik und lange Kontexte.",
   "architecture_tags": [
     "General",
-    "Thinking-Mandatory",
+    "Thinking",
     "Long-Context",
     "Agentic-Orchestrator",
     "MoE",
@@ -50,10 +50,16 @@
     "text"
   ],
   "supports_tool_use": true,
-  "tooluse_tested_at": null,
-  "tooluse_score_p1": null,
-  "tooluse_score_p2": null,
-  "tooluse_runs": null,
+  "tooluse_tested_at": "2026-08-14T21:52:49Z",
+  "tooluse_score_p1": 90.0,
+  "tooluse_score_p2": 66.67,
+  "tooluse_runs": {
+    "qwen/qwen3.8-2.4t-a95b": {
+      "tested_at": "2026-08-14T21:52:49Z",
+      "score_p1": 90.0,
+      "score_p2": 66.67
+    }
+  },
   "tooluse_recommendation": null,
   "dual_profile": null,
   "temperature": null,

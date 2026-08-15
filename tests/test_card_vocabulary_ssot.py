@@ -87,8 +87,7 @@ def test_get_all_known_tags_vereinigt_drei_sektionen():
     known = get_all_known_tags()
     reserved = set(get_reserved_tags())
     informational = set(get_informational_tags())
-    # deprecated ist auch Teil von known, weil get_all_known_tags() alle vereinigt
-    expected = reserved | informational
+    # deprecated ist auch Teil von known, weil get_all_known_tags() alle vereinigt.
     # Wir prüfen, dass reserved+informational enthalten sind; deprecated
     # kann zusätzlich enthalten sein (per Implementierung)
     assert reserved <= known, "reserved_tags fehlen in get_all_known_tags()"
