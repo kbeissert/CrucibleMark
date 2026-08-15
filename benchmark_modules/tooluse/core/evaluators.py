@@ -84,45 +84,12 @@ class ToolUseEvaluator:
             score += 40.0
 
         # 2. Call result as expected? (40 pts)
-        if expected_tool == TOOL_WEB_SEARCH:
-            results = tool_transcript.get("results") or []
-            call_status = tool_transcript.get("status", "")
-            if len(results) >= 1:
-                score += 40.0
-            elif call_status == "success":
-                # Empty result set despite a successful MCP call: the search
-                # backend returned nothing (infrastructure issue, not model
-                # fault). Award call-execution points so the model is not
-                # penalised for an external API edge case.
-                score += 40.0
-                logger.debug("Phase 1: web_search status=success but result_count=0 — empty_result state, awarding call-execution pts")
-        elif expected_tool == TOOL_HTTP_FETCH:
-            status_code = tool_transcript.get("status_code")
-            if is_failure_test:
-                if (
-                    tool_transcript.get("status") == "error"
-                    and status_code == 404
-                ):
-                    score += 40.0
-            else:
-                expected_code = phase1.get("expected_status_code", 200)
-                if status_code == expected_code:
-                    score += 40.0
+        score += self._phase1_call_result_pts(
+            tool_transcript, phase1, expected_tool, is_failure_test)
 
         # 3. Source quality (20 pts)
-        # web_search: relevant domain in results
-        # http_fetch (success): excerpt_quality signal (full=20, partial=12, minimal=6, empty=0)
-        # http_fetch (failure): not applicable — no pts added
-        if expected_tool == TOOL_WEB_SEARCH:
-            results = tool_transcript.get("results") or []
-            if len(results) >= 2:
-                score += 20.0
-            elif len(results) >= 1:
-                score += 10.0
-            # 0 results → 0 pts
-        elif expected_tool == TOOL_HTTP_FETCH and not is_failure_test:
-            _quality_map = {"full": 20, "partial": 12, "minimal": 6, "empty": 0}
-            score += _quality_map.get(excerpt_quality, 0)
+        score += self._phase1_source_quality_pts(
+            tool_transcript, expected_tool, is_failure_test, excerpt_quality)
 
         # 4. parse_attempts penalty
         retry_penalty = float(self.config.get("parse_retry_penalty", 5))
@@ -131,6 +98,67 @@ class ToolUseEvaluator:
             logger.debug("Phase 1: parse_attempts=%d → -%.1f penalty", parse_attempts, retry_penalty)
 
         return min(score, 100.0)
+
+    @staticmethod
+    def _phase1_call_result_pts(
+        tool_transcript: dict[str, Any],
+        phase1: dict[str, Any],
+        expected_tool: str,
+        is_failure_test: bool,
+    ) -> float:
+        """2. Call result as expected? (40 pts) — Scoring-Logik unverändert."""
+        if expected_tool == TOOL_WEB_SEARCH:
+            results = tool_transcript.get("results") or []
+            call_status = tool_transcript.get("status", "")
+            if len(results) >= 1:
+                return 40.0
+            if call_status == "success":
+                # Empty result set despite a successful MCP call: the search
+                # backend returned nothing (infrastructure issue, not model
+                # fault). Award call-execution points so the model is not
+                # penalised for an external API edge case.
+                logger.debug("Phase 1: web_search status=success but result_count=0 — empty_result state, awarding call-execution pts")
+                return 40.0
+            return 0.0
+        if expected_tool == TOOL_HTTP_FETCH:
+            status_code = tool_transcript.get("status_code")
+            if is_failure_test:
+                if (
+                    tool_transcript.get("status") == "error"
+                    and status_code == 404
+                ):
+                    return 40.0
+            else:
+                expected_code = phase1.get("expected_status_code", 200)
+                if status_code == expected_code:
+                    return 40.0
+        return 0.0
+
+    @staticmethod
+    def _phase1_source_quality_pts(
+        tool_transcript: dict[str, Any],
+        expected_tool: str,
+        is_failure_test: bool,
+        excerpt_quality: str,
+    ) -> float:
+        """3. Source quality (20 pts).
+
+        web_search: relevant domain in results;
+        http_fetch (success): excerpt_quality signal (full=20, partial=12, minimal=6, empty=0);
+        http_fetch (failure): not applicable — no pts added.
+        """
+        if expected_tool == TOOL_WEB_SEARCH:
+            results = tool_transcript.get("results") or []
+            if len(results) >= 2:
+                return 20.0
+            if len(results) >= 1:
+                return 10.0
+            # 0 results → 0 pts
+            return 0.0
+        if expected_tool == TOOL_HTTP_FETCH and not is_failure_test:
+            _quality_map = {"full": 20, "partial": 12, "minimal": 6, "empty": 0}
+            return float(_quality_map.get(excerpt_quality, 0))
+        return 0.0
 
     # ------------------------------------------------------------------
     # Phase 2: Synthesis Quality Scoring
@@ -178,55 +206,13 @@ class ToolUseEvaluator:
             total_w = 1.0
 
         # 2. Keyword score (0–100 raw, scaled by w_hall)
-        keywords: list = phase2.get("keywords", [])
-        keyword_raw = 0.0
-        if keywords:
-            output_lower = model_output.lower()
-            found = sum(1 for kw in keywords if str(kw).lower() in output_lower)
-            ratio = found / len(keywords)
-            threshold = self.config.get(KEYWORD_THRESHOLD_KEY, 0.4)
-            if ratio >= threshold:
-                keyword_raw = ratio * 100.0
-            # Below threshold → 0
-        else:
-            keyword_raw = 100.0  # no keywords defined → neutral
+        keyword_raw = self._phase2_keyword_raw(model_output, phase2)
 
         # 3. Semantic score (0–100 raw, scaled by w_fact)
-        golden_answer: str = phase2.get("golden_answer", "")
-        semantic_raw = 0.0
-        if golden_answer and model_output.strip():
-            similarity = SemanticSimilarity.calculate_similarity(
-                model_output, golden_answer,
-            )
-            semantic_threshold = self.config.get(SEMANTIC_THRESHOLD_KEY, 0.72)
-            if similarity >= semantic_threshold:
-                semantic_raw = similarity * 100.0
-            else:
-                # Below threshold: half value (no hard zero)
-                semantic_raw = similarity * 50.0
-        else:
-            semantic_raw = 100.0  # no golden answer → neutral
+        semantic_raw = self._phase2_semantic_raw(model_output, phase2)
 
         # 4. Structural requirements (0–100 raw, scaled by w_struct)
-        requires_url = phase2.get("requires_url_citation", False)
-        requires_structured = phase2.get("requires_structured_output", False)
-
-        if requires_url or requires_structured:
-            structural_raw = 0.0
-            if requires_url:
-                if "http" in model_output.lower():
-                    structural_raw += 50.0
-            else:
-                structural_raw += 50.0  # not required → neutral
-
-            if requires_structured:
-                list_items = _LIST_ITEM_RE.findall(model_output)
-                if len(list_items) >= 3:
-                    structural_raw += 50.0
-            else:
-                structural_raw += 50.0  # not required → neutral
-        else:
-            structural_raw = 100.0  # neither declared → neutral
+        structural_raw = self._phase2_structural_raw(model_output, phase2)
 
         # Weighted combination (normalized)
         score = (
@@ -242,6 +228,58 @@ class ToolUseEvaluator:
             score *= 0.80
 
         return min(round(score, 2), 100.0)
+
+    def _phase2_keyword_raw(self, model_output: str, phase2: dict[str, Any]) -> float:
+        """2. Keyword score (0–100 raw) — Scoring-Logik unverändert."""
+        keywords: list = phase2.get("keywords", [])
+        if not keywords:
+            return 100.0  # no keywords defined → neutral
+        output_lower = model_output.lower()
+        found = sum(1 for kw in keywords if str(kw).lower() in output_lower)
+        ratio = found / len(keywords)
+        threshold = self.config.get(KEYWORD_THRESHOLD_KEY, 0.4)
+        if ratio >= threshold:
+            return ratio * 100.0
+        # Below threshold → 0
+        return 0.0
+
+    def _phase2_semantic_raw(self, model_output: str, phase2: dict[str, Any]) -> float:
+        """3. Semantic score (0–100 raw) — Scoring-Logik unverändert."""
+        golden_answer: str = phase2.get("golden_answer", "")
+        if not (golden_answer and model_output.strip()):
+            return 100.0  # no golden answer → neutral
+        similarity = SemanticSimilarity.calculate_similarity(
+            model_output, golden_answer,
+        )
+        semantic_threshold = self.config.get(SEMANTIC_THRESHOLD_KEY, 0.72)
+        if similarity >= semantic_threshold:
+            return similarity * 100.0
+        # Below threshold: half value (no hard zero)
+        return similarity * 50.0
+
+    @staticmethod
+    def _phase2_structural_raw(model_output: str, phase2: dict[str, Any]) -> float:
+        """4. Structural requirements (0–100 raw) — Scoring-Logik unverändert."""
+        requires_url = phase2.get("requires_url_citation", False)
+        requires_structured = phase2.get("requires_structured_output", False)
+
+        if not (requires_url or requires_structured):
+            return 100.0  # neither declared → neutral
+
+        structural_raw = 0.0
+        if requires_url:
+            if "http" in model_output.lower():
+                structural_raw += 50.0
+        else:
+            structural_raw += 50.0  # not required → neutral
+
+        if requires_structured:
+            list_items = _LIST_ITEM_RE.findall(model_output)
+            if len(list_items) >= 3:
+                structural_raw += 50.0
+        else:
+            structural_raw += 50.0  # not required → neutral
+        return structural_raw
 
     # ------------------------------------------------------------------
     # Combined Score

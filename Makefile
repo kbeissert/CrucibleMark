@@ -489,8 +489,13 @@ mcp-start:
 	@if curl -s http://localhost:8765/health > /dev/null 2>&1; then \
 		echo "  MCP Server already running — skipped."; \
 	else \
-		{ [ -f "$$HOME/.api_keys" ] && . "$$HOME/.api_keys" || true; $(PYTHON) cruciblemark-mcp/server.py --mode $(or $(MODE),mock); } & \
+		{ [ -f "$$HOME/.api_keys" ] && . "$$HOME/.api_keys" || true; exec $(PYTHON) cruciblemark-mcp/server.py --mode $(or $(MODE),mock); } & \
+		echo $$! > .mcp.pid; \
 	fi
+# Review 2026-08-15: .mcp.pid wird jetzt beim Start geschrieben — mcp-stop
+# kann den gezielten Kill-Pfad nehmen statt immer pkill -f (Race mit
+# fremden Prozessen, die denselben Pfad-String enthalten). exec sorgt dafür,
+# dass $$! die Python-PID ist (nicht die Wrapper-Subshell-PID).
 
 mcp-stop:
 	@if [ -f .mcp.pid ]; then \

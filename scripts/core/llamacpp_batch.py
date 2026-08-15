@@ -101,6 +101,8 @@ def stop_llamacpp_provider_server(
         if not stop_cmd or stop_cmd in seen_cmds:
             continue
         seen_cmds.add(stop_cmd)
+        # shell=True ist hier bewusst: server_stop_cmd ist ein vom Operator
+        # konfiguriertes Shell-Kommando (Trust-Boundary: provider_config.yaml).
         subprocess.run(stop_cmd, shell=True, check=False, capture_output=True)
 
     time.sleep(LLAMACPP_STOP_SETTLE_SEC)
@@ -205,14 +207,17 @@ def get_existing_results(
     Returns:
         Set von (model_id, asset_id) Tupeln
     """
-    import pandas as pd
     from utils.config_validator import ConfigValidator
 
     cache: set[tuple[str, str]] = set()
     if force:
         return cache
 
-    # ConfigValidator ist verpflichtend (kein defensiver Fallback)
+    # ConfigValidator ist verpflichtend (kein defensiver Fallback).
+    # Performance (Review 2026-08-15): ConfigValidator hat jetzt einen
+    # mtime-invalidierten Klassen-Cache — mehrfaches Instanziieren pro
+    # Batch-Loop ist kein YAML-Re-Parse mehr. Der innere pd-Import entfiel
+    # (pd ist bereits auf Modulebene importiert).
     validator = ConfigValidator()
     output_cfg = validator.config.get("output", {})
 
@@ -528,7 +533,11 @@ def get_leaderboard_scored_modules(
 
     try:
         df = pd.read_csv(leaderboard_path)
-    except Exception:  # pylint: disable=broad-exception-caught
+    except Exception as exc:  # pylint: disable=broad-exception-caught
+        logger.warning(
+            "Leaderboard-Cache deaktiviert — CSV nicht lesbar (%s): %s",
+            leaderboard_path, exc,
+        )
         return cache
 
     if "Model ID" not in df.columns:

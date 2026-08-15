@@ -5,7 +5,46 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [v5.1.3] - 2026-08-15
+## [v5.1.4] - 2026-08-15
+
+**Patch-Release: Code-Review-Umsetzung (Sicherheit, Konsistenz, Robustheit).**
+
+- **Judge-Prompt (Blind-Evaluierung):** Illustrative Modellnamen-Beispiele
+  (o1, DeepSeek R1, Qwen3, Gemini 2.5 etc.) aus den Tag-Beschreibungen des
+  EVALUATION-CONTEXT-Blocks entfernt — Verhaltensanweisungen unverändert,
+  Judge bleibt name-blind. Bekannte Limitierung dokumentiert: Tag
+  Agentic-Orchestrator mappt 1:1 auf Claude-Opus.
+- **Scoring-Fix ToolUse-Exporter:** `combined_score == 0.0` fiel bisher durch
+  einen `or`-Fallback fälschlich auf `total_score` zurück (0.0 ist falsy).
+  Ersetzt durch expliziten `None`-Check. Betrifft ausschließlich Assets mit
+  exakt 0.0 — historische Werte mit echten Scores bleiben unverändert.
+- **Robustheit:** Ollama-Modul-Loop in `benchmark_auto.py` bricht bei echtem
+  Fehler ab (Spiegelbild zu vllm/llamacpp); `lifecycle_hooks` verschluckt
+  ToolUseExporter-Fehler nicht mehr still; 8 stille Exception-Swallows mit
+  Logging versehen; `LLMScorer` Fail-Fast statt stillem 0-Score.
+- **Preis-Update refactored:** Longest-Prefix-Match statt fehlerhaftem
+  `split("-")[0:2]` (falsche Preise bei Versionssuffixen), Preis-SSoT nach
+  `config/model_pricing.yaml`, atomare Card-Writes.
+- **Sicherheit:** Shell-Injection-Flächen geschlossen (List-Subprocess für
+  MCP-Start, `shlex.quote` in llamacpp-Server-Cmd); Rate-Limit-Backoff
+  exponentiell (60s-Basis, 600s-Cap).
+- **DRY/Performance:** `utils/provider_config_text.py` als SSoT für
+  YAML-Text-Helfer; Blacklist-Load und Vendor-Lookup delegieren an
+  `web_export/filters.py`; `ConfigValidator` mit mtime-invalidiertem
+  Cache (52+ Call-Sites); Card-Lookup-Cache in `clean_results`.
+- **CC≤12:** Alle 8 ruff-bestätigten C901-Verstöße verhaltenstreu
+  aufgesplittet (audit_logger CC 67 → Methoden; Roundtrip-Diff
+  byte-identisch).
+- **Ruff:** 409 → 0 Fehler (413 Auto-Fixes, veraltete Typ-Annotations,
+  E402-Zeilen-noqas statt file-level noqa, SIM/B007-Bereinigung).
+- **Maintenance:** `consolidate_csv.py --dry-run`; Sanitizer-Numeric-Heuristik
+  entschärft (ID-artige Werte wie `3-8` bleiben valide);
+  `_fix_csv_efficiency.py` unlauffähig gemacht (One-Shot-Doku);
+  Dead Code entfernt (`verify_counts.py`, `_apply_research_diff`).
+- **Konsistenz:** llamacpp-Modell-Normalisierung case-insensitive (analog
+  vllm); `run_reviews.sh` mit `set -euo pipefail`; Makefile `mcp-start`
+  schreibt `.mcp.pid` (gezielter Kill statt pkill-Race).
+
 ## [v5.1.3] - 2026-08-15
 
 **Patch-Release: Test-Suite-Reparatur & Card-Vocabulary-Normalisierung.**

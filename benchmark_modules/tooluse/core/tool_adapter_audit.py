@@ -189,10 +189,7 @@ def _has_content_overlap(model_output: str, content_excerpt: str) -> bool:
     # Fallback: single key tokens — proper nouns (≥5 chars, starts uppercase)
     # and 4-digit years are language-invariant
     key_tokens = re.findall(r'\b([A-Z][a-zA-Z]{4,}|\d{4})\b', clean)
-    for token in set(key_tokens):
-        if token.lower() in output_lower:
-            return True
-    return False
+    return any(token.lower() in output_lower for token in set(key_tokens))
 
 
 # -----------------------------------------------------------------------
@@ -407,9 +404,8 @@ class ToolAdapterAudit:
             )
             diagnosis["audit_details"]["mcp_routing"] = routing_audit
 
-            if routing_audit["anomalies"]:
-                if diagnosis["likely_cause"] == "unknown":
-                    diagnosis["likely_cause"] = "mcp_routing_issue"
+            if routing_audit["anomalies"] and diagnosis["likely_cause"] == "unknown":
+                diagnosis["likely_cause"] = "mcp_routing_issue"
 
         # Check for sandbox violation
         if tool_transcript.get("status") == "blocked":
@@ -508,22 +504,21 @@ class ToolAdapterAudit:
                     "Content not usable; model answered without signalling "
                     "content absence — judge will assess content grounding."
                 )
+        # Content usable: prüfe Overlap
+        elif _has_content_overlap(model_output, content_excerpt):
+            state = "A"
+            cap_key = None
+            rationale = (
+                "Content usable and model output contains specific phrases "
+                "from tool response — sourced response confirmed."
+            )
         else:
-            # Content usable: prüfe Overlap
-            if _has_content_overlap(model_output, content_excerpt):
-                state = "A"
-                cap_key = None
-                rationale = (
-                    "Content usable and model output contains specific phrases "
-                    "from tool response — sourced response confirmed."
-                )
-            else:
-                state = "B2"
-                cap_key = None  # B2 cap removed — judge evaluates grounding directly
-                rationale = (
-                    "Content usable but no phrase overlap detected — "
-                    "judge will assess whether response is grounded or parametric."
-                )
+            state = "B2"
+            cap_key = None  # B2 cap removed — judge evaluates grounding directly
+            rationale = (
+                "Content usable but no phrase overlap detected — "
+                "judge will assess whether response is grounded or parametric."
+            )
 
         if cap_key is not None:
             cap = caps[cap_key]

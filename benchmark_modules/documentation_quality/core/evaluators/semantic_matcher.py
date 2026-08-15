@@ -3,7 +3,6 @@ Semantic Matcher module.
 Handles hybrid keyword and semantic similarity matching.
 """
 
-from typing import List
 import re
 from utils.similarity import SemanticSimilarity
 from ..constants import SIMILARITY_THRESHOLD, MIN_SENTENCE_LENGTH, ASSET_SPECIFIC_CONFIG
@@ -19,7 +18,7 @@ class SemanticMatcher:
 
     @staticmethod
     def check_match(
-        response: str, keywords: List[str], target_matches: int, asset_id: str
+        response: str, keywords: list[str], target_matches: int, asset_id: str
     ) -> bool:
         """
         Checks if keywords are present using hybrid approach.
@@ -61,7 +60,7 @@ class SemanticMatcher:
         return re.sub(r"<think>.*?</think>", "", response, flags=re.DOTALL)
 
     @staticmethod
-    def _chunk_response(response: str) -> List[str]:
+    def _chunk_response(response: str) -> list[str]:
         """Splits response into semantic chunks (sentences or character blocks)."""
         sentences = [
             s.strip()

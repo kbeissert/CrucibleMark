@@ -37,7 +37,7 @@ class TestAssetLoading:
         """Error Messages Asset wird korrekt geladen"""
         assert error_messages_asset_path.exists(), "Error Messages Asset nicht gefunden"
 
-        with open(error_messages_asset_path, "r", encoding="utf-8") as f:
+        with open(error_messages_asset_path, encoding="utf-8") as f:
             asset = yaml.safe_load(f)
 
         assert asset["metadata"]["id"] == "ux_writing_001"
@@ -51,7 +51,7 @@ class TestAssetLoading:
         """Button Labels Asset wird korrekt geladen"""
         assert button_labels_asset_path.exists(), "Button Labels Asset nicht gefunden"
 
-        with open(button_labels_asset_path, "r", encoding="utf-8") as f:
+        with open(button_labels_asset_path, encoding="utf-8") as f:
             asset = yaml.safe_load(f)
 
         assert asset["metadata"]["id"] == "ux_writing_002"

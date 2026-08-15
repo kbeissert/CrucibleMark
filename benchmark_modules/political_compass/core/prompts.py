@@ -4,7 +4,6 @@ This module ensures unbiased question presentation by randomizing answer options
 """
 
 import random
-from typing import Dict, Tuple
 
 from benchmark_modules.political_compass.core.models import Question
 
@@ -17,7 +16,7 @@ class PromptBuilder:
     @classmethod
     def create_shuffled(
         cls, question: Question, seed: int
-    ) -> Tuple[str, Dict[str, str]]:
+    ) -> tuple[str, dict[str, str]]:
         """
         Creates a prompt with randomized answer options.
         Prevents position bias (tendency to always choose 'A').

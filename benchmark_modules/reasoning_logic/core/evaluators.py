@@ -170,10 +170,10 @@ class ReasoningEvaluator:
         if handler := self._scorers.get(asset_id):
             # FIX: Metacognition assets require RAW response (with tags).
             # Other assets (5b, 5c, etc.) require CLEAN options (without tags).
-            if "metacog" in asset_id:
-                input_text = response
-            else:
-                input_text = self._strip_thinking_tags(response)
+            input_text = (
+                response if "metacog" in asset_id
+                else self._strip_thinking_tags(response)
+            )
 
             # --- Feasibility Extraction for Hardened Scorers ---
             # Assets 5d and 5e now require feasibility parameter

@@ -11,60 +11,35 @@ Ausführung:
 
 import json
 import logging
-from pathlib import Path
-from datetime import datetime
 import sys
+from datetime import datetime
+from pathlib import Path
 
-logging.basicConfig(level=logging.INFO, format="%(message)s")
+import yaml
+
+ROOT_DIR = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT_DIR))
+
+from utils.io_helpers import atomic_write_json  # noqa: E402
+
 logger = logging.getLogger(__name__)
 
-# Recherchierte Preise (USD pro 1 Million Tokens)
-# Stand: 10.06.2026
-CURRENT_PRICING = {
-    # OpenAI — aus OpenAI API Pricing (2026)
-    "gpt-5-5": {"input": 5.00, "output": 30.00},
-    "gpt-5-5-pro": {"input": 30.00, "output": 180.00},
-    "gpt-5-4": {"input": 2.50, "output": 15.00},
-    "gpt-5-4-mini": {"input": 0.75, "output": 4.50},
-    "gpt-5-4-nano": {"input": 0.20, "output": 1.25},
-    "gpt-5-4-pro": {"input": 30.00, "output": 180.00},
-    "gpt-5": {"input": 2.50, "output": 15.00},  # Fallback
-    "gpt-5-mini": {"input": 0.75, "output": 4.50},
-    "gpt-4o": {"input": 2.50, "output": 10.00},
-    "gpt-4o-2024-08-06": {"input": 2.50, "output": 10.00},
-    "gpt-4o-mini": {"input": 1.25, "output": 5.00},
+PRICING_CONFIG_PATH = ROOT_DIR / "config" / "model_pricing.yaml"
 
-    # Anthropic — aus Anthropic API Pricing (2026)
-    "claude-opus-4-6": {"input": 5.00, "output": 25.00},
-    "claude-opus-4-5-20251101": {"input": 5.00, "output": 25.00},
-    "claude-opus-4-7": {"input": 5.00, "output": 25.00},
-    "claude-sonnet-4-6": {"input": 3.00, "output": 15.00},
-    "claude-sonnet-4-5-20250929": {"input": 3.00, "output": 15.00},
-    "claude-haiku-4-5-20251001": {"input": 1.00, "output": 5.00},
 
-    # Google Gemini — aus Google AI Pricing (2026)
-    "gemini-3-5-flash": {"input": 1.50, "output": 9.00},
-    "gemini-3-1-flash-lite-preview": {"input": 0.25, "output": 1.50},
-    "gemini-3-1-pro-preview": {"input": 2.00, "output": 12.00},
-    "gemini-3-flash-preview": {"input": 0.50, "output": 3.00},
-    "gemini-2-5-flash": {"input": 0.30, "output": 2.50},
-    "gemini-2-5-pro": {"input": 1.25, "output": 10.00},
+def load_pricing() -> dict[str, dict[str, float]]:
+    """Laedt die Preis-SSoT (config/model_pricing.yaml). Fail-Fast bei Fehlern."""
+    try:
+        data = yaml.safe_load(PRICING_CONFIG_PATH.read_text(encoding="utf-8"))
+    except (OSError, yaml.YAMLError) as e:
+        logger.error(f"Preis-Config nicht lesbar {PRICING_CONFIG_PATH}: {e}")
+        return {}
+    pricing = (data or {}).get("model_pricing")
+    if not isinstance(pricing, dict) or not pricing:
+        logger.error(f"Keine 'model_pricing'-Sektion in {PRICING_CONFIG_PATH}")
+        return {}
+    return pricing
 
-    # Mistral — aus Mistral API Pricing (2026)
-    "mistral-large-2512": {"input": 2.00, "output": 6.00},
-    "mistral-large-2411": {"input": 2.00, "output": 6.00},
-    "mistral-medium-3-5": {"input": 1.50, "output": 7.50},
-    "mistral-small-2603": {"input": 0.10, "output": 0.30},
-    "mistral-small-2503": {"input": 0.10, "output": 0.30},
-    "magistral-medium-latest": {"input": 1.50, "output": 7.50},
-    "magistral-small-latest": {"input": 0.50, "output": 1.50},
-    "ministral-3_14b": {"input": 0.20, "output": 0.20},
-    "ministral-3_8b": {"input": 0.10, "output": 0.10},
-
-    # xAI Grok — aus Grok API
-    "grok-3": {"input": 5.00, "output": 15.00},
-    "grok-3-mini": {"input": 0.50, "output": 1.50},
-}
 
 
 def load_card(path: Path) -> dict | None:
@@ -77,35 +52,35 @@ def load_card(path: Path) -> dict | None:
 
 
 def save_card(path: Path, data: dict) -> bool:
-    """Speichert eine Model Card JSON mit Formatting."""
+    """Speichert eine Model Card JSON atomar (Temp-Datei + os.replace)."""
     try:
-        path.write_text(
-            json.dumps(data, indent=2, ensure_ascii=False) + "\n",
-            encoding="utf-8"
-        )
+        atomic_write_json(path, data, indent=2, ensure_ascii=False)
         return True
-    except Exception as e:
+    except OSError as e:
         logger.error(f"Fehler beim Speichern {path}: {e}")
         return False
 
 
-def find_matching_price(model_id: str) -> dict | None:
-    """Findet die beste passende Preis-Regel für ein Modell."""
-    # Exakter Match
-    if model_id in CURRENT_PRICING:
-        return CURRENT_PRICING[model_id]
+def find_matching_price(model_id: str, pricing: dict[str, dict[str, float]]) -> dict | None:
+    """Findet die beste passende Preis-Regel für ein Modell.
 
-    # Vereinfachte Modell-ID probieren (z.B. "gpt-4o-2024-08-06" → "gpt-4o")
-    base_id = model_id.split("-")[0:2]
-    if len(base_id) >= 2:
-        simplified = "-".join(base_id)
-        if simplified in CURRENT_PRICING:
-            return CURRENT_PRICING[simplified]
+    Fix 2026-08-15: Laengster-Prefix-Match statt naivem ``split("-")[0:2]`` —
+    bisher matchte z.B. "gpt-4o-mini-2024-07-18" auf "gpt-4o" und schrieb
+    den vierfachen Mini-Preis in die Card.
+    """
+    if model_id in pricing:
+        return pricing[model_id]
 
-    return None
+    # Laengsten bekannten Key als Prefix suchen (z.B.
+    # "claude-sonnet-4-6-20260101" -> "claude-sonnet-4-6").
+    best_key: str | None = None
+    for key in pricing:
+        if model_id.startswith(key + "-") and (best_key is None or len(key) > len(best_key)):
+            best_key = key
+    return pricing[best_key] if best_key else None
 
 
-def update_pricing(cards_dir: Path) -> tuple[int, int, int]:
+def update_pricing(cards_dir: Path, pricing: dict[str, dict[str, float]]) -> tuple[int, int, int]:
     """Aktualisiert Preise in allen Modellkarten.
 
     Returns:
@@ -128,7 +103,7 @@ def update_pricing(cards_dir: Path) -> tuple[int, int, int]:
             skipped += 1
             continue
 
-        price_data = find_matching_price(model_id)
+        price_data = find_matching_price(model_id, pricing)
         if not price_data:
             logger.debug(f"⏭️  {model_id}: keine Preisregel gefunden")
             skipped += 1
@@ -161,17 +136,23 @@ def update_pricing(cards_dir: Path) -> tuple[int, int, int]:
 
 
 if __name__ == "__main__":
-    cards_dir = Path("benchmark_scores/model_cards")
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
+
+    cards_dir = ROOT_DIR / "benchmark_scores" / "model_cards"
 
     if not cards_dir.exists():
         logger.error(f"Verzeichnis nicht gefunden: {cards_dir}")
         sys.exit(1)
 
+    pricing = load_pricing()
+    if not pricing:
+        sys.exit(1)
+
     logger.info("🔄 Aktualisiere Modellkarten-Preise...")
     logger.info(f"📂 Quelle: {cards_dir}")
-    logger.info("📅 Preisstand: Juni 2026 (OpenAI, Anthropic, Google, Mistral)\n")
+    logger.info(f"📅 Preisstand: {PRICING_CONFIG_PATH.name} ({len(pricing)} Einträge)\n")
 
-    updated, skipped, errors = update_pricing(cards_dir)
+    updated, skipped, errors = update_pricing(cards_dir, pricing)
 
     logger.info("\n" + "="*60)
     logger.info(f"✅ Aktualisiert:  {updated}")

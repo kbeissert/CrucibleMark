@@ -140,43 +140,7 @@ def _audit_md_file(path: str, add_finding) -> None:
         add_finding(path, "FORMATIERUNG", len(lines), "Ungeschlossener Code-Fence")
 
 
-def _find_providers_block(lines: list[str]) -> tuple[int | None, int]:
-    providers_start: int | None = None
-    providers_end: int = len(lines)
-    for i, line in enumerate(lines):
-        if line.rstrip() == "providers:":
-            providers_start = i
-        elif (
-            providers_start is not None
-            and line
-            and not line[0].isspace()
-            and not line.startswith("#")
-        ):
-            providers_end = i
-            break
-    return providers_start, providers_end
 
-
-def _find_section_line(lines: list[str], section_header: str, start: int, end: int) -> int | None:
-    for i in range(start, end):
-        if lines[i].rstrip() == section_header:
-            return i
-    return None
-
-
-def _find_insert_index(lines: list[str], section_line_idx: int, providers_end: int) -> int:
-    insert_before: int | None = None
-    for i in range(section_line_idx + 1, providers_end):
-        line = lines[i]
-        stripped = line.lstrip()
-        indent = len(line) - len(stripped)
-        if stripped.startswith("daily_budget:"):
-            insert_before = i
-            break
-        if indent <= 2 and stripped and not stripped.startswith("#"):
-            insert_before = i
-            break
-    return providers_end if insert_before is None else insert_before
 
 
 def _check_target_field_line(

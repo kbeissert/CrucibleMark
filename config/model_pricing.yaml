@@ -1,0 +1,118 @@
+# Modell-Preise (USD pro 1 Million Tokens) — SSoT fuer update_model_pricing.py
+# Stand: 10.06.2026 (OpenAI, Anthropic, Google, Mistral, xAI)
+# Matching: exakte model_id zuerst, dann laengster Prefix-Suffix-Match
+# (z.B. "gpt-4o-mini-2024-07-18" -> "gpt-4o-mini", NICHT "gpt-4o").
+model_pricing:
+
+# OpenAI — aus OpenAI API Pricing (2026)
+  "gpt-5-5":
+    input: 5.00
+    output: 30.00
+  "gpt-5-5-pro":
+    input: 30.00
+    output: 180.00
+  "gpt-5-4":
+    input: 2.50
+    output: 15.00
+  "gpt-5-4-mini":
+    input: 0.75
+    output: 4.50
+  "gpt-5-4-nano":
+    input: 0.20
+    output: 1.25
+  "gpt-5-4-pro":
+    input: 30.00
+    output: 180.00
+  # Fallback
+  "gpt-5":
+    input: 2.50
+    output: 15.00
+  "gpt-5-mini":
+    input: 0.75
+    output: 4.50
+  "gpt-4o":
+    input: 2.50
+    output: 10.00
+  "gpt-4o-2024-08-06":
+    input: 2.50
+    output: 10.00
+  "gpt-4o-mini":
+    input: 1.25
+    output: 5.00
+
+# Anthropic — aus Anthropic API Pricing (2026)
+  "claude-opus-4-6":
+    input: 5.00
+    output: 25.00
+  "claude-opus-4-5-20251101":
+    input: 5.00
+    output: 25.00
+  "claude-opus-4-7":
+    input: 5.00
+    output: 25.00
+  "claude-sonnet-4-6":
+    input: 3.00
+    output: 15.00
+  "claude-sonnet-4-5-20250929":
+    input: 3.00
+    output: 15.00
+  "claude-haiku-4-5-20251001":
+    input: 1.00
+    output: 5.00
+
+# Google Gemini — aus Google AI Pricing (2026)
+  "gemini-3-5-flash":
+    input: 1.50
+    output: 9.00
+  "gemini-3-1-flash-lite-preview":
+    input: 0.25
+    output: 1.50
+  "gemini-3-1-pro-preview":
+    input: 2.00
+    output: 12.00
+  "gemini-3-flash-preview":
+    input: 0.50
+    output: 3.00
+  "gemini-2-5-flash":
+    input: 0.30
+    output: 2.50
+  "gemini-2-5-pro":
+    input: 1.25
+    output: 10.00
+
+# Mistral — aus Mistral API Pricing (2026)
+  "mistral-large-2512":
+    input: 2.00
+    output: 6.00
+  "mistral-large-2411":
+    input: 2.00
+    output: 6.00
+  "mistral-medium-3-5":
+    input: 1.50
+    output: 7.50
+  "mistral-small-2603":
+    input: 0.10
+    output: 0.30
+  "mistral-small-2503":
+    input: 0.10
+    output: 0.30
+  "magistral-medium-latest":
+    input: 1.50
+    output: 7.50
+  "magistral-small-latest":
+    input: 0.50
+    output: 1.50
+  "ministral-3_14b":
+    input: 0.20
+    output: 0.20
+  "ministral-3_8b":
+    input: 0.10
+    output: 0.10
+
+# xAI Grok — aus Grok API
+  "grok-3":
+    input: 5.00
+    output: 15.00
+  "grok-3-mini":
+    input: 0.50
+    output: 1.50

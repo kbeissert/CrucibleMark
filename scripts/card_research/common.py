@@ -1,4 +1,3 @@
-# ruff: noqa: E402
 from __future__ import annotations
 
 import argparse
@@ -20,9 +19,9 @@ ROOT_DIR = Path(__file__).resolve().parents[2]
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-from utils.card_template import CardTemplate, cards_dir
-from utils.model_utils import _find_card
-from .models import (
+from utils.card_template import CardTemplate, cards_dir  # noqa: E402
+from utils.model_utils import _find_card  # noqa: E402
+from .models import (  # noqa: E402
     CardCheckReport,
     CardFinding,
     LLMSpec,
@@ -519,7 +518,7 @@ def _check_license_text_fields(card: dict) -> list[CardFinding]:
 
 
 def _ensure_license_consistency(card: dict) -> dict:
-    """Konsistenz-Korrektur nach _apply_research_diff: wenn license geaendert
+    """Konsistenz-Korrektur nach dem Research-Merge: wenn license geaendert
     wurde, pruefe ob weights_license_tier noch passt."""
     license_val = str(card.get("license", ""))
     tier = card.get("weights_license_tier")
@@ -822,29 +821,6 @@ def _discover_research_targets(args: argparse.Namespace) -> list[tuple[str, Path
     return _glob_model_cards(args.force)
 
 
-def _apply_research_diff(original: dict, response: dict) -> dict:
-    """Uebertraegt die LLM-vorgeschlagenen Werte aus ``findings`` in die Card.
-
-    Pro Finding wird ``suggested`` uebernommen wenn nicht None.
-    Neue Felder (die noch nicht in der Card existieren) werden hinzugefuegt.
-    """
-    findings = response.get("findings", [])
-    if not isinstance(findings, list):
-        return original
-    merged = dict(original)
-    for finding in findings:
-        if not isinstance(finding, dict):
-            continue
-        suggested = finding.get("suggested")
-        if suggested is None:
-            continue
-        field = finding.get("field")
-        if not field:
-            continue
-        merged[field] = suggested
-    return merged
-
-
 def _build_research_user_prompt(card: dict, editor_prompt: str, pre_findings: list[CardFinding]) -> str:
     """User-Prompt fuer den Research-Modus: Card + Editor-Prompt + Pre-Findings."""
     text_card = {k: v for k, v in card.items() if k in _LLM_TEXT_FIELDS}
@@ -922,9 +898,10 @@ def _ensure_mcp_running(mcp_url: str) -> bool:
         return True
 
     logger.info("    🚀 Starte MCP-Server (%s)...", mcp_url)
+    # List-Form statt shell=True (Review 2026-08-15): kein Shell-Parsing,
+    # äquivalent zu `make mcp-start MODE=live` (Makefile lädt ~/.api_keys).
     subprocess.Popen(
-        "source ~/.api_keys 2>/dev/null; python3 cruciblemark-mcp/server.py --mode live",
-        shell=True,
+        ["make", "mcp-start", "MODE=live"],
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
         start_new_session=True,

@@ -33,7 +33,7 @@ def security_asset_path():
     return Path("benchmark_modules/code_quality/assets/asset_002_security_audit.yaml")
 
 
-from schemas.result import BenchmarkResult
+from schemas.result import BenchmarkResult  # noqa: E402
 
 class TestAssetLoading:
     """Asset-Loading Tests"""
@@ -42,7 +42,7 @@ class TestAssetLoading:
         """WCAG Asset wird korrekt geladen"""
         assert wcag_asset_path.exists(), "WCAG Asset nicht gefunden"
 
-        with open(wcag_asset_path, "r", encoding="utf-8") as f:
+        with open(wcag_asset_path, encoding="utf-8") as f:
             asset = yaml.safe_load(f)
 
         assert asset["metadata"]["id"] == "code_quality_001"
@@ -56,7 +56,7 @@ class TestAssetLoading:
         """Security Asset wird korrekt geladen"""
         assert security_asset_path.exists(), "Security Asset nicht gefunden"
 
-        with open(security_asset_path, "r", encoding="utf-8") as f:
+        with open(security_asset_path, encoding="utf-8") as f:
             asset = yaml.safe_load(f)
 
         assert asset["metadata"]["id"] == "code_quality_002"
@@ -68,10 +68,10 @@ class TestAssetLoading:
         self, wcag_asset_path, security_asset_path
     ):
         """Beide Assets nutzen gleiche Scoring-Struktur"""
-        with open(wcag_asset_path, "r", encoding="utf-8") as f:
+        with open(wcag_asset_path, encoding="utf-8") as f:
             wcag = yaml.safe_load(f)
 
-        with open(security_asset_path, "r", encoding="utf-8") as f:
+        with open(security_asset_path, encoding="utf-8") as f:
             security = yaml.safe_load(f)
 
         # Gleiche Scoring-Kategorien

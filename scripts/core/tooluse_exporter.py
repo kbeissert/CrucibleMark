@@ -371,9 +371,13 @@ class ToolUseExporter:
         state: dict[str, Any],
     ) -> None:
         # combined_score: prefer data_dict, fallback to total_score column.
-        # Bewahrt 0.0-Fallback-Bug (0.0 ist falsy → fällt auf total_score zurück) —
-        # nicht korrigieren, würde historische Benchmark-Werte verändern.
-        combined_raw = data_dict.get("combined_score") or row.get("total_score")
+        # Fix 2026-08-15 (Review): expliziter None-Check statt `or` — ein
+        # legitimer combined_score von 0.0 ist nicht falsy und darf nicht auf
+        # total_score zurückfallen. SCORING-ÄNDERUNG, dokumentiert im
+        # CHANGELOG v5.1.4; betrifft nur Assets mit combined_score == 0.0.
+        combined_raw = data_dict.get("combined_score")
+        if combined_raw is None:
+            combined_raw = row.get("total_score")
         if combined_raw is not None:
             with contextlib.suppress(ValueError, TypeError):
                 state["combined_scores"].append(float(combined_raw))

@@ -4,7 +4,7 @@ Verifies presence of required documentation sections using fuzzy matching.
 """
 
 import re
-from typing import Dict, List, Any
+from typing import Any
 from ..constants import DOC_TYPE_SCHEMAS
 
 
@@ -17,7 +17,7 @@ class CompletenessChecker:
     # pylint: disable=too-few-public-methods
 
     @staticmethod
-    def check_completeness(response: str, doc_type: str) -> Dict[str, Any]:
+    def check_completeness(response: str, doc_type: str) -> dict[str, Any]:
         """
         Calculates completeness score and identifies missing sections.
         """
@@ -56,7 +56,7 @@ class CompletenessChecker:
         }
 
     @staticmethod
-    def _extract_headings(response: str) -> List[str]:
+    def _extract_headings(response: str) -> list[str]:
         """
         Extracts all markdown headings (minus #).
         """
@@ -97,9 +97,9 @@ class CompletenessChecker:
         if len(seq2) == 0:
             return len(seq1)
 
-        previous_row: List[int] = list(range(len(seq2) + 1))
+        previous_row: list[int] = list(range(len(seq2) + 1))
         for i, char1 in enumerate(seq1):
-            current_row: List[int] = [i + 1]
+            current_row: list[int] = [i + 1]
             for j, char2 in enumerate(seq2):
                 insertions = previous_row[j + 1] + 1
                 deletions = current_row[j] + 1

@@ -11,7 +11,7 @@ def get_assets():
 
 @pytest.mark.parametrize("asset_path", get_assets())
 def test_asset_structure(asset_path):
-    with open(asset_path, "r") as f:
+    with open(asset_path) as f:
         data = yaml.safe_load(f)
 
     required_keys = [
@@ -33,7 +33,7 @@ def test_asset_structure(asset_path):
 
 @pytest.mark.parametrize("asset_path", get_assets())
 def test_scoring_weights(asset_path):
-    with open(asset_path, "r") as f:
+    with open(asset_path) as f:
         data = yaml.safe_load(f)
 
     scoring = data["scoring"]
@@ -48,7 +48,7 @@ def test_scoring_weights(asset_path):
 
 @pytest.mark.parametrize("asset_path", get_assets())
 def test_testdata_consistency(asset_path):
-    with open(asset_path, "r") as f:
+    with open(asset_path) as f:
         data = yaml.safe_load(f)
 
     testdata_issue_names = {i["issue"] for i in data["testdata"]["issues"]}

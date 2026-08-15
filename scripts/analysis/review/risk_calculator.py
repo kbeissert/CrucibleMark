@@ -20,23 +20,26 @@ _RISK_ORDER = {"low": 0, "medium": 1, "high": 2}
 def _resolve_vendor_card_id(name: str | None) -> str | None:
     """Löst Hersteller-/Vendor-Namen via Taxonomy-Alias-Map auf vendor_card_id auf.
 
-    Analog zu _build_vendor_alias_map + _build_vendor_card_id_lookup in web_export.py.
-    Nutzt classification_taxonomy.json/manufacturers für kanonische Normalisierung
-    (z.B. "Google" → "google_deepmind", "Mistral" → "mistral_ai").
-
-    Fallback: _safe_id() wenn kein Taxonomy-Eintrag gefunden (z.B. Community-Vendors).
+    DRY (Review 2026-08-15): komponiert jetzt die SSoT-Funktionen aus
+    web_export/filters.py (Alias-Map + Card-ID-Lookup) statt die Taxonomy-
+    Logik zu duplizieren. Semantik identisch: Name (kanonisch oder Alias)
+    → vendor_card_id; ohne Taxonomy-Eintrag Fallback auf _safe_id().
     """
     if not name:
         return None
-    try:
-        taxonomy_path = ROOT_DIR / "config" / "classification_taxonomy.json"
-        taxonomy = json.loads(taxonomy_path.read_text(encoding="utf-8"))
-        for canonical, entry in taxonomy.get("manufacturers", {}).get("values", {}).items():
-            if name == canonical or name in entry.get("aliases", []):
-                vid = entry.get("vendor_card_id")
-                return vid if vid else _safe_id(canonical)
-    except (OSError, json.JSONDecodeError, KeyError):
-        pass
+    from scripts.web_export.filters import (
+        _build_vendor_alias_map,
+        _build_vendor_card_id_lookup,
+    )
+
+    config_dir = ROOT_DIR / "config"
+    alias_map = _build_vendor_alias_map(config_dir)
+    lookup = _build_vendor_card_id_lookup(config_dir)
+
+    canonical = alias_map.get(name)
+    if canonical is not None:
+        vid = lookup.get(canonical)
+        return vid if vid else _safe_id(canonical)
     # Fallback: direkte _safe_id-Konvertierung (Community-Vendors ohne Taxonomy-Eintrag)
     return _safe_id(name)
 

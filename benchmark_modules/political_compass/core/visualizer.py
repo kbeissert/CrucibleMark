@@ -67,10 +67,9 @@ class PoliticalCompassVisualizer:
         # We'll just print the grid content
         for i, row in enumerate(grid):
             line_str = "".join(row)
-            if i == cy:
-                line_str = f"Left <{line_str}> Right"
-            else:
-                line_str = f"      {line_str}      "
+            line_str = (
+                f"Left <{line_str}> Right" if i == cy else f"      {line_str}      "
+            )
             lines.append(line_str)
 
         lines.append("             v             ")

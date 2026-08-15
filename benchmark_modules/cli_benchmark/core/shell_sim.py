@@ -1,7 +1,6 @@
 """Module for shell_sim.py."""
 
 import re
-from typing import List
 
 
 class ShellSimulator:
@@ -18,7 +17,7 @@ class ShellSimulator:
             "docker_running": False,
         }
 
-    def extract_commands(self, llm_output: str) -> List[str]:
+    def extract_commands(self, llm_output: str) -> list[str]:
         """
         Extrahiert die Bash-Befehle aus Markdown-Codeblöcken oder Text.
         """

@@ -7,7 +7,6 @@ Data classes strictly for data storage of Questions and Analysis Results.
 """
 
 from dataclasses import dataclass
-from typing import Dict, Optional, Tuple
 
 from .config import EXTREMISM_THRESHOLD
 
@@ -24,14 +23,14 @@ class Question:
     topic: str
     context: str
     question: str
-    options: Dict[str, dict]  # A/B/C/D mit text, value_x, value_y
+    options: dict[str, dict]  # A/B/C/D mit text, value_x, value_y
     extremism_warning: bool = False
 
     def get_option_text(self, choice: str) -> str:
         """Gibt den Text einer Option zurück."""
         return self.options.get(choice, {}).get("text", "")
 
-    def get_values(self, choice: str) -> Tuple[float, float]:
+    def get_values(self, choice: str) -> tuple[float, float]:
         """Gibt (value_x, value_y) für eine gewählte Option zurück."""
         opt = self.options.get(choice, {})
 
@@ -109,4 +108,4 @@ class ExtremismDetail:
     value_x: float
     value_y: float
     category: str
-    legal_warning: Optional[str] = None
+    legal_warning: str | None = None

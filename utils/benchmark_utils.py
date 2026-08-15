@@ -235,16 +235,31 @@ def _get_token_budget(asset_id: str) -> tuple[str | None, int | None]:
     if module_key is None:
         return None, None
 
+    budget = _get_token_budgets_config().get(module_key)
+    return module_key, budget
+
+
+# Performance (Review 2026-08-15): benchmark_config.yaml wird pro Audit-Log-
+# Schreibung neu gelesen. Modul-Level-Cache — die Config ändert sich nicht
+# während eines Laufs (SSoT wird beim Prozessstart gelesen).
+_TOKEN_BUDGETS_CACHE: dict[str, int] | None = None
+
+
+def _get_token_budgets_config() -> dict[str, int]:
+    """Liest token_budgets aus benchmark_config.yaml (einmalig gecacht)."""
+    global _TOKEN_BUDGETS_CACHE  # pylint: disable=global-statement
+    if _TOKEN_BUDGETS_CACHE is not None:
+        return _TOKEN_BUDGETS_CACHE
     try:
         import yaml
         from pathlib import Path as _Path
         _config_path = _Path(__file__).resolve().parent.parent / "benchmark_config.yaml"
         with open(_config_path, encoding="utf-8") as f:
-            _cfg = yaml.safe_load(f)
-        budget = _cfg.get("token_budgets", {}).get(module_key)
-        return module_key, budget
-    except Exception:
-        return module_key, None
+            _cfg = yaml.safe_load(f) or {}
+        _TOKEN_BUDGETS_CACHE = _cfg.get("token_budgets", {}) or {}
+    except Exception:  # pylint: disable=broad-exception-caught
+        _TOKEN_BUDGETS_CACHE = {}
+    return _TOKEN_BUDGETS_CACHE
 
 
 def save_audit_log(

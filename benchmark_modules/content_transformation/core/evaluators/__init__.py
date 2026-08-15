@@ -3,7 +3,7 @@ Content Transformation Evaluator (Facade)
 Orchestrates the evaluation process by delegating to specialized evaluators.
 """
 
-from typing import Any, Dict
+from typing import Any
 
 from utils.benchmark_utils import clean_reasoning_tags
 from .tiered_scoring import TieredScoringEngine
@@ -28,7 +28,7 @@ class ContentTransformationEvaluator:
     Encapsulates scoring logic for Error Detection (Tiered) and Solution Quality.
     """
 
-    def __init__(self, asset: Dict[str, Any]):
+    def __init__(self, asset: dict[str, Any]):
         self.asset = asset
 
     def score_response(self, response: str) -> dict:
@@ -100,10 +100,7 @@ class ContentTransformationEvaluator:
         ed_raw_score, ed_details, ed_violations, ed_max_possible = ed_results
 
         # Normalize Score to Weight (Scaling)
-        if ed_max_possible > 0:
-            ed_final_score = (ed_raw_score / ed_max_possible) * ed_weight
-        else:
-            ed_final_score = 0.0
+        ed_final_score = (ed_raw_score / ed_max_possible) * ed_weight if ed_max_possible > 0 else 0.0
 
         category_scores["error_detection"] = {
             "achieved": round(ed_final_score, 2),

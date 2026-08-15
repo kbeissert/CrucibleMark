@@ -5,15 +5,15 @@ Unit Tests für Documentation Quality Module
 Testet: Asset Loading, Scoring-Logik, Response Validation
 """
 
-import pytest
-import yaml
-from pathlib import Path
-import sys
+import pytest  # noqa: E402
+import yaml  # noqa: E402
+from pathlib import Path  # noqa: E402
+import sys  # noqa: E402
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parents[3]))
 
-from benchmark_modules.documentation_quality.test import DocumentationTest
+from benchmark_modules.documentation_quality.test import DocumentationTest  # noqa: E402
 
 # Test constants
 TOTAL_POINTS = 100
@@ -44,7 +44,7 @@ class TestAssetLoading:
         """README Asset wird korrekt geladen"""
         assert readme_asset_path.exists(), "README Asset nicht gefunden"
 
-        with open(readme_asset_path, "r", encoding="utf-8") as f:
+        with open(readme_asset_path, encoding="utf-8") as f:
             asset = yaml.safe_load(f)
 
         assert asset["metadata"]["id"] == "documentation_quality_001"
@@ -64,7 +64,7 @@ class TestAssetLoading:
 
     def test_scoring_weights_sum_to_total_points(self, readme_asset_path):
         """Scoring-Gewichte summieren sich zur definierten Gesamtpunktzahl"""
-        with open(readme_asset_path, "r", encoding="utf-8") as f:
+        with open(readme_asset_path, encoding="utf-8") as f:
             asset = yaml.safe_load(f)
 
         # Neue Struktur: scoring.total_points und error_detection/solution_quality

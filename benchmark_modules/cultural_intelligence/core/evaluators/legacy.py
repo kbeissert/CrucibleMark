@@ -1,5 +1,5 @@
 # pylint: skip-file
-from typing import Tuple, List, Dict, Any
+from typing import Any
 
 
 class LegacyEvaluator:
@@ -7,10 +7,10 @@ class LegacyEvaluator:
     Legacy evaluation logic (v1.0) for backward compatibility.
     """
 
-    def __init__(self, asset: Dict[str, Any]):
+    def __init__(self, asset: dict[str, Any]):
         self.asset = asset
 
-    def score_response(self, response: str) -> Dict[str, Any]:
+    def score_response(self, response: str) -> dict[str, Any]:
         """
         Scores the response based on the active asset's criteria using v1 logic.
         """
@@ -18,7 +18,7 @@ class LegacyEvaluator:
         asset_id = meta.get("id", self.asset.get("id", ""))
         response_lower = response.lower()
         score = 0.0
-        feedback: List[str] = []
+        feedback: list[str] = []
 
         if asset_id == "cultural_intel_001":
             score, feedback = self._evaluate_tech_localization(response_lower)
@@ -47,7 +47,7 @@ class LegacyEvaluator:
             "details": feedback,  # Compatibility for result manager
         }
 
-    def _evaluate_tech_localization(self, text: str) -> Tuple[float, List[str]]:
+    def _evaluate_tech_localization(self, text: str) -> tuple[float, list[str]]:
         rules = [
             ("Push", lambda t: "push" in t and "drück" not in t),
             (
@@ -84,7 +84,7 @@ class LegacyEvaluator:
         feedback.insert(0, f"Found {hits}/10 Terms")
         return min(1.0, hits / 10.0), feedback
 
-    def _evaluate_inclusive_job_ad(self, text: str) -> Tuple[float, List[str]]:
+    def _evaluate_inclusive_job_ad(self, text: str) -> tuple[float, list[str]]:
         hits = 0
         feedback = []
         checks = [
@@ -124,7 +124,7 @@ class LegacyEvaluator:
         feedback.insert(0, f"Score {hits}/10 Checks")
         return min(1.0, hits / 10.0), feedback
 
-    def _evaluate_agency_vibe(self, text: str) -> Tuple[float, List[str]]:
+    def _evaluate_agency_vibe(self, text: str) -> tuple[float, list[str]]:
         score = 0.0
         feedback = []
         hits = 0
@@ -148,7 +148,7 @@ class LegacyEvaluator:
         feedback.insert(0, f"Cleaned {hits}/9 Buzzwords")
         return min(1.0, hits / 9.0), feedback
 
-    def _evaluate_formal_informal(self, text: str) -> Tuple[float, List[str]]:
+    def _evaluate_formal_informal(self, text: str) -> tuple[float, list[str]]:
         hits = 0
         feedback = []
 
@@ -219,7 +219,7 @@ class LegacyEvaluator:
         feedback.insert(0, f"Score {hits}/10 Register Switch")
         return min(1.0, hits / 10.0), feedback
 
-    def _evaluate_german_idioms(self, text: str) -> Tuple[float, List[str]]:
+    def _evaluate_german_idioms(self, text: str) -> tuple[float, list[str]]:
         score = 0.0
         feedback = []
         hits = 0

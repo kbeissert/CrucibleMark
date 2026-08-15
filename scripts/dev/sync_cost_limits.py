@@ -28,6 +28,12 @@ import yaml
 ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
+
+from utils.provider_config_text import (  # noqa: E402
+    find_insert_index as _find_insert_index,
+    find_providers_block as _find_providers_block,
+    find_section_line as _find_section_line,
+)
 BENCHMARK_CONFIG = ROOT / "benchmark_config.yaml"
 COST_LIMITS = ROOT / "config" / "cost_limits.yaml"
 SCORES_DIR = ROOT / "benchmark_scores"
@@ -187,43 +193,7 @@ def find_missing(
     return missing
 
 
-def _find_providers_block(lines: list[str]) -> tuple[int | None, int]:
-    providers_start: int | None = None
-    providers_end: int = len(lines)
-    for i, line in enumerate(lines):
-        if line.rstrip() == "providers:":
-            providers_start = i
-        elif (
-            providers_start is not None
-            and line
-            and not line[0].isspace()
-            and not line.startswith("#")
-        ):
-            providers_end = i
-            break
-    return providers_start, providers_end
 
-
-def _find_section_line(lines: list[str], section_header: str, start: int, end: int) -> int | None:
-    for i in range(start, end):
-        if lines[i].rstrip() == section_header:
-            return i
-    return None
-
-
-def _find_insert_index(lines: list[str], section_line_idx: int, providers_end: int) -> int:
-    insert_before: int | None = None
-    for i in range(section_line_idx + 1, providers_end):
-        line = lines[i]
-        stripped = line.lstrip()
-        indent = len(line) - len(stripped)
-        if stripped.startswith("daily_budget:"):
-            insert_before = i
-            break
-        if indent <= 2 and stripped and not stripped.startswith("#"):
-            insert_before = i
-            break
-    return providers_end if insert_before is None else insert_before
 
 
 def _build_placeholder_lines(model_ids: set[str]) -> tuple[list[str], int]:

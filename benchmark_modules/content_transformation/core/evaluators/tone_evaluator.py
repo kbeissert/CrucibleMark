@@ -4,7 +4,7 @@ Analyzes text for formality, professionalism, and spoken style attributes.
 """
 
 import re
-from typing import Dict, Set, Any
+from typing import Any
 
 
 class ToneEvaluator:
@@ -12,7 +12,7 @@ class ToneEvaluator:
 
     # Static word lists
     # Note: Move to external config if these grow large
-    FORMAL_WORDS: Set[str] = {
+    FORMAL_WORDS: set[str] = {
         "therefore",
         "consequently",
         "furthermore",
@@ -33,7 +33,7 @@ class ToneEvaluator:
         "indicate",
     }
 
-    CASUAL_WORDS: Set[str] = {
+    CASUAL_WORDS: set[str] = {
         "hey",
         "cool",
         "stuff",
@@ -59,7 +59,7 @@ class ToneEvaluator:
         "job",
     }
 
-    SPOKEN_MARKERS: Set[str] = {
+    SPOKEN_MARKERS: set[str] = {
         "um",
         "uh",
         "like",
@@ -136,11 +136,8 @@ class ToneEvaluator:
         slang_hits = sum(1 for w in slang_words if w in text_lower)
 
         # Base score
-        if slang_hits > 0:
-            # Start low if slang is present
-            score = 0.5 - (slang_hits * 0.15)
-        else:
-            score = 1.0
+        # Start low if slang is present
+        score = 0.5 - (slang_hits * 0.15) if slang_hits > 0 else 1.0
 
         # Formatting penalty: excessive exclamation marks
         exclamations = response.count("!")
@@ -157,7 +154,7 @@ class ToneEvaluator:
         return max(0.0, min(1.0, score))
 
     @staticmethod
-    def detect_spoken_style(response: str) -> Dict[str, Any]:
+    def detect_spoken_style(response: str) -> dict[str, Any]:
         """
         Detects if the text sounds like spoken conversation.
         Returns a dictionary with details.

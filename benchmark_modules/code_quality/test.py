@@ -46,7 +46,7 @@ class CodeQualityTest(BaseTest):
         try:
             config_path = Path(__file__).parent / "config.yaml"
             if config_path.exists():
-                with open(config_path, "r", encoding="utf-8") as f:
+                with open(config_path, encoding="utf-8") as f:
                     data = yaml.safe_load(f)
                     module_gen = data.get("generation", {})
                     # Update (Override) global defaults with module specifics

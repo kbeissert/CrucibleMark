@@ -90,8 +90,10 @@ class RetryHandler:
 
                 # Calculate wait time
                 if is_rate_limit:
-                    # Specific Backoff for Rate Limits: Start high (e.g. 60s) to clear the penalty
-                    wait_time = 60 * (attempt + 1)
+                    # Rate-Limit-Backoff: exponentiell mit 60s-Basis und 600s-Cap
+                    # (Review 2026-08-15: vorher linear 60*(attempt+1) — Regel
+                    # verlangt Exponential-Backoff auch im Rate-Limit-Pfad).
+                    wait_time = min(60 * (2 ** attempt), 600)
                     logger.debug(
                         "⚠️ Rate Limit detected (attempt %d/%d). Pausing for %ds to cool down...",
                         attempt + 1,

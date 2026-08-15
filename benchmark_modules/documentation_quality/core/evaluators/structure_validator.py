@@ -4,7 +4,7 @@ Validates Markdown structure checks (headings, code blocks, hierarchy).
 """
 
 import re
-from typing import List, Dict, Any
+from typing import Any
 from ..constants import DOC_TYPE_SCHEMAS
 
 
@@ -15,7 +15,7 @@ class StructureValidator:
     """
 
     @staticmethod
-    def validate_markdown_structure(response: str, doc_type: str) -> Dict[str, Any]:
+    def validate_markdown_structure(response: str, doc_type: str) -> dict[str, Any]:
         """
         Validates markdown structure and returns violations and stats.
         """
@@ -62,7 +62,7 @@ class StructureValidator:
         }
 
     @staticmethod
-    def check_heading_hierarchy(response: str) -> List[str]:
+    def check_heading_hierarchy(response: str) -> list[str]:
         """
         Checks that headings do not skip levels (e.g. H1 to H3).
         """
@@ -82,11 +82,10 @@ class StructureValidator:
             if i == 0:
                 if level > 2:  # warning if starts with H3+
                     pass  # not strictly a hierarchy violation but odd
-            else:
-                if level > prev_level + 1:
-                    violations.append(
-                        f"Skipped heading level: H{prev_level} -> H{level} ('{title}')"
-                    )
+            elif level > prev_level + 1:
+                violations.append(
+                    f"Skipped heading level: H{prev_level} -> H{level} ('{title}')"
+                )
 
             prev_level = level
 
@@ -105,7 +104,7 @@ class StructureValidator:
         return len(matches) // 2
 
     @staticmethod
-    def check_required_sections(response: str, doc_type: str) -> List[str]:
+    def check_required_sections(response: str, doc_type: str) -> list[str]:
         """
         Checks for presence of required sections based on doc_type.
         """

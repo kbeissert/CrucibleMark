@@ -145,6 +145,11 @@ def _get_price_lookup() -> dict[str, float]:
 
 _coverage_logger = logging.getLogger(__name__)
 
+# Execution-Time-Threshold für Timeout-Zählung (Sekunden): 120s entspricht dem
+# Standard-Request-Timeout der Runner; historische CSVs führen kein is_timeout-Flag
+# (Review 2026-08-15: vorher Magic Number).
+TIMEOUT_THRESHOLD_S = 120.0
+
 # Capability-Werte, die ein Modell als strukturell "incapable" markieren.
 # Ein FEHLENDES Feld ist NICHT incapable (→ unknown), sondern muss explizit false sein.
 _INCAPABLE_VALUES = frozenset({False, "false", "not_applicable"})
@@ -606,7 +611,7 @@ def _agg_time_stats(df: pd.DataFrame) -> pd.DataFrame:
         return x.quantile(0.99)
 
     def count_timeouts(x):
-        return (x > 120.0).sum()
+        return (x > TIMEOUT_THRESHOLD_S).sum()
 
     return (
         df.groupby(["model", "model_version", "type"])["execution_time"]

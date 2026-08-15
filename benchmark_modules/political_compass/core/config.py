@@ -6,7 +6,7 @@ Global constants and configurations for the Political Compass module.
 """
 
 from utils.constants import OLLAMA_DEFAULT_BASE_URL
-from typing import Any, Dict
+from typing import Any
 
 # Global Constants used across classes
 EXTREMISM_THRESHOLD = 8
@@ -36,7 +36,7 @@ TOPIC_NAMES = {
 }
 
 # LLM Configuration
-LLM_CONFIGS: Dict[str, Dict[str, Any]] = {
+LLM_CONFIGS: dict[str, dict[str, Any]] = {
     "ollama": {
         "endpoint": f"{OLLAMA_DEFAULT_BASE_URL}/api/generate",
         "timeout": 120,  # Sekunden

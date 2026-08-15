@@ -23,7 +23,7 @@ from benchmark_modules.content_transformation.core.constants import (  # noqa: E
     DEFAULT_TEMPERATURE,
     TOKEN_MULTIPLIER,
 )
-from benchmark_modules.content_transformation.core.evaluators import (
+from benchmark_modules.content_transformation.core.evaluators import (  # noqa: E402
     ContentTransformationEvaluator,
 )  # noqa: E402
 # pylint: enable=wrong-import-position
@@ -44,10 +44,7 @@ class ContentTransformationTest(BaseTest):
         prompt = self.asset["prompt"]
 
         # Context hinzufügen falls vorhanden
-        if "context" in self.asset:
-            full_prompt = f"{self.asset['context']}\n\n{prompt}"
-        else:
-            full_prompt = prompt
+        full_prompt = f"{self.asset['context']}\n\n{prompt}" if "context" in self.asset else prompt
 
         # LLM Query
         start = time.time()

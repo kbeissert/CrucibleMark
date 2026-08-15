@@ -1,6 +1,6 @@
 # CrucibleMark
 
-[![Version](https://img.shields.io/badge/version-5.1.3-blue)](.)
+[![Version](https://img.shields.io/badge/version-5.1.4-blue)](.)
 [![Python](https://img.shields.io/badge/python-3.12%2B-blue)](.)
 [![License](https://img.shields.io/badge/license-MIT-green)](.)
 [![Status](https://img.shields.io/badge/status-production--ready-brightgreen)](.)
@@ -247,4 +247,4 @@ Bug-Reports, Feature-Wünsche und Diskussionen laufen über [GitHub Issues](http
 
 - **Maintainer:** [kbeissert](https://github.com/kbeissert)
 - **Repository:** [github.com/kbeissert/cruciblemark](https://github.com/kbeissert/cruciblemark)
-- **Status:** Production-Ready (v5.1.3)
+- **Status:** Production-Ready (v5.1.4)

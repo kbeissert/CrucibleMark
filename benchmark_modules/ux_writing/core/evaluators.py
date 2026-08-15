@@ -1,7 +1,6 @@
 """Core evaluators for UX Writing rules."""
 import re
 from abc import ABC, abstractmethod
-from typing import Tuple, List
 from utils.similarity import SemanticSimilarity
 from .models import UXCriterion, UXIssue
 from .constants import (
@@ -18,12 +17,12 @@ class CriterionEvaluator(ABC):
     """Abstract base class for criterion evaluators."""
 
     @abstractmethod
-    def evaluate(self, response: str, criterion: UXCriterion) -> Tuple[float, str]:
+    def evaluate(self, response: str, criterion: UXCriterion) -> tuple[float, str]:
         """Returns (score, explanation_string)."""
 
 
 class KeywordPresenceEvaluator(CriterionEvaluator):
-    def evaluate(self, response: str, criterion: UXCriterion) -> Tuple[float, str]:
+    def evaluate(self, response: str, criterion: UXCriterion) -> tuple[float, str]:
         points = criterion.points
         keywords = criterion.keywords
         # Simple containment check
@@ -44,7 +43,7 @@ class KeywordPresenceEvaluator(CriterionEvaluator):
 
 
 class KeywordAbsenceEvaluator(CriterionEvaluator):
-    def evaluate(self, response: str, criterion: UXCriterion) -> Tuple[float, str]:
+    def evaluate(self, response: str, criterion: UXCriterion) -> tuple[float, str]:
         points = criterion.points
         forbidden = criterion.forbidden_keywords
         found_forbidden = [kw for kw in forbidden if kw.lower() in response.lower()]
@@ -62,7 +61,7 @@ class KeywordAbsenceEvaluator(CriterionEvaluator):
 
 
 class MarkdownTableEvaluator(CriterionEvaluator):
-    def evaluate(self, response: str, criterion: UXCriterion) -> Tuple[float, str]:
+    def evaluate(self, response: str, criterion: UXCriterion) -> tuple[float, str]:
         points = criterion.points
         has_table = "|" in response and "-" in response
 
@@ -92,7 +91,7 @@ class MarkdownTableEvaluator(CriterionEvaluator):
 
 
 class StructureValidationEvaluator(CriterionEvaluator):
-    def evaluate(self, response: str, criterion: UXCriterion) -> Tuple[float, str]:
+    def evaluate(self, response: str, criterion: UXCriterion) -> tuple[float, str]:
         points = criterion.points
         required_structure = criterion.required_structure
 
@@ -111,7 +110,7 @@ class StructureValidationEvaluator(CriterionEvaluator):
 
 
 class RegexEvaluator(CriterionEvaluator):
-    def evaluate(self, response: str, criterion: UXCriterion) -> Tuple[float, str]:
+    def evaluate(self, response: str, criterion: UXCriterion) -> tuple[float, str]:
         points = criterion.points
 
         # Fallback to WCAG pattern if not provided, just like original code
@@ -134,7 +133,7 @@ class RegexEvaluator(CriterionEvaluator):
 
 
 class CodeValidationEvaluator(CriterionEvaluator):
-    def evaluate(self, response: str, criterion: UXCriterion) -> Tuple[float, str]:
+    def evaluate(self, response: str, criterion: UXCriterion) -> tuple[float, str]:
         points = criterion.points
         required = criterion.required_elements
         min_blocks = criterion.min_code_blocks
@@ -161,7 +160,7 @@ class CodeValidationEvaluator(CriterionEvaluator):
 
 
 class LengthValidationEvaluator(CriterionEvaluator):
-    def evaluate(self, response: str, criterion: UXCriterion) -> Tuple[float, str]:
+    def evaluate(self, response: str, criterion: UXCriterion) -> tuple[float, str]:
         points = criterion.points
         # Assuming generic param parsing or usage of additional_params if needed
         # but models.py has specific fields for now or we rely on defaults.
@@ -194,7 +193,7 @@ class IssueEvaluator:
     @staticmethod
     def check_issue_mentioned(
         response_lower: str,
-        keywords: List[str],
+        keywords: list[str],
         required_ratio: float = DEFAULT_REQUIRED_RATIO,
     ) -> bool:
         """
@@ -250,7 +249,7 @@ class IssueEvaluator:
             return False
 
     @classmethod
-    def evaluate(cls, response_lower: str, issue: UXIssue) -> Tuple[float, str, bool]:
+    def evaluate(cls, response_lower: str, issue: UXIssue) -> tuple[float, str, bool]:
         """
         Returns (points_awarded, explanation, is_match).
         """

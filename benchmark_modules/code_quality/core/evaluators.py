@@ -3,7 +3,7 @@ Code Quality Evaluator - Facade Pattern.
 Delegates scoring to specialized sub-modules.
 """
 
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 from utils.benchmark_utils import clean_reasoning_tags
 from .error_detection import ErrorDetector
@@ -22,12 +22,12 @@ class CodeQualityEvaluator:
     Orchestrates error detection, solution quality, and formatting checks.
     """
 
-    def __init__(self, asset: Dict[str, Any]) -> None:
+    def __init__(self, asset: dict[str, Any]) -> None:
         self.asset = asset
         self.error_detector = ErrorDetector()
         self.scoring_helpers = ScoringHelpers()
 
-    def score_response(self, response: str) -> Dict[str, Any]:
+    def score_response(self, response: str) -> dict[str, Any]:
         """
         Facade Method: Main scoring entry point.
         Delegates to specialized scorers.
@@ -48,7 +48,7 @@ class CodeQualityEvaluator:
         scoring_config = self.asset["scoring"]
         total_possible = scoring_config.get("total_points", 100)
 
-        results: Dict[str, Any] = {
+        results: dict[str, Any] = {
             "category_scores": {},
             "details": [],
             "violations": [],
@@ -99,8 +99,8 @@ class CodeQualityEvaluator:
         return clean_reasoning_tags(response, tags=list(REASONING_TAGS))
 
     def _evaluate_criterion_dispatch(
-        self, criterion: Dict[str, Any], response: str, response_lower: str
-    ) -> Tuple[float, str]:
+        self, criterion: dict[str, Any], response: str, response_lower: str
+    ) -> tuple[float, str]:
         """Dispatches criterion evaluation to appropriate scorer."""
         method = criterion.get("check_method")
         if not isinstance(method, str):
@@ -123,8 +123,8 @@ class CodeQualityEvaluator:
         return 0.0, f"⚠️ Unknown check_method: {method}"
 
     def _score_generic_category(
-        self, response: str, response_lower: str, config: Dict[str, Any]
-    ) -> Tuple[float, List[str]]:
+        self, response: str, response_lower: str, config: dict[str, Any]
+    ) -> tuple[float, list[str]]:
         """Generic category scoring (solution quality, formatting, expertise)."""
         score = 0.0
         details = []
@@ -141,9 +141,9 @@ class CodeQualityEvaluator:
         self,
         category_key: str,
         score: float,
-        cat_details: List[str],
+        cat_details: list[str],
         weight: int,
-        results: Dict[str, Any],
+        results: dict[str, Any],
     ) -> None:
         """Updates results dict with category score."""
         results["category_scores"][category_key] = {

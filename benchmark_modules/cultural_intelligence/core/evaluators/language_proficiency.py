@@ -2,7 +2,7 @@
 Language Proficiency Evaluator Module.
 """
 
-from typing import Tuple, List, Dict, Any
+from typing import Any
 from benchmark_modules.cultural_intelligence.core.constants import (
     GERMAN_WORD_MARKERS,
     FORMAL_MARKERS,
@@ -27,8 +27,8 @@ class LanguageProficiencyEvaluator:
 
     @staticmethod
     def score_proficiency(
-        response: str, criteria: List[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+        response: str, criteria: list[dict[str, Any]]
+    ) -> dict[str, Any]:
         """
         Score language proficiency based on German markers.
 
@@ -97,8 +97,8 @@ class LanguageProficiencyEvaluator:
 
     @staticmethod
     def _check_german_words(
-        count: int, criterion: Dict[str, Any], points: float
-    ) -> Tuple[float, str]:
+        count: int, criterion: dict[str, Any], points: float
+    ) -> tuple[float, str]:
         """Check if german word count meets minimum."""
         name = criterion.get("name", "Unknown")
         min_count = criterion.get("min_count", MIN_GERMAN_WORDS)
@@ -108,8 +108,8 @@ class LanguageProficiencyEvaluator:
 
     @staticmethod
     def _check_formality(
-        response_lower: str, criterion: Dict[str, Any], points: float
-    ) -> Tuple[float, str]:
+        response_lower: str, criterion: dict[str, Any], points: float
+    ) -> tuple[float, str]:
         """Check if formality matches expected level."""
         name = criterion.get("name", "Unknown")
         formality_level, _ = LanguageProficiencyEvaluator._detect_formality(
@@ -125,7 +125,7 @@ class LanguageProficiencyEvaluator:
         return 0.0, f"○ {name}: Expected {expected_level}, got {formality_level}"
 
     @staticmethod
-    def _detect_formality(response_lower: str) -> Tuple[str, float]:
+    def _detect_formality(response_lower: str) -> tuple[str, float]:
         """
         Detect formality level based on pronoun usage.
 

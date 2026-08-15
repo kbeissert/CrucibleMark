@@ -4,6 +4,7 @@ Handles reading commercial, local, and golden standard benchmark results.
 """
 
 import csv
+import logging
 from pathlib import Path
 
 import pandas as pd
@@ -51,6 +52,9 @@ except ImportError:
 
 
 # pylint: enable=import-error
+
+
+logger = logging.getLogger(__name__)
 
 
 def _extract_scores_from_df(df: pd.DataFrame) -> dict[str, float]:
@@ -210,7 +214,8 @@ def _load_config_or_none() -> dict | None:
     try:
         from utils.config_validator import ConfigValidator  # noqa: PLC0415
         return ConfigValidator().config
-    except Exception:  # pylint: disable=broad-except
+    except Exception as exc:  # pylint: disable=broad-except
+        logger.debug("ConfigValidator-Load fehlgeschlagen (Graceful Degradation): %s", exc)
         return None
 
 

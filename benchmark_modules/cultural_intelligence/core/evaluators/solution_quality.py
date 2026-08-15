@@ -2,7 +2,7 @@
 Solution Quality Evaluator Module.
 """
 
-from typing import List, Dict, Any
+from typing import Any
 from .utils import evaluate_keyword_presence
 
 
@@ -19,7 +19,7 @@ class SolutionQualityEvaluator:
     # pylint: disable=too-few-public-methods
 
     @staticmethod
-    def score_quality(response: str, criteria: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def score_quality(response: str, criteria: list[dict[str, Any]]) -> dict[str, Any]:
         """
         Score solution quality based on keyword criteria.
 

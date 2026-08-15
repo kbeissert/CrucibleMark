@@ -3,7 +3,6 @@ Tiered Scoring Engine module.
 Handles scoring for tiered error detection (Labeled, Standard, Advanced, Expert).
 """
 
-from typing import List, Tuple
 from .semantic_matcher import SemanticMatcher
 
 
@@ -20,7 +19,7 @@ class TieredScoringEngine:
 
     def score_tier(
         self, response: str, issues: list[dict], tier_name: str, min_threshold: float
-    ) -> Tuple[float, List[str], List[str]]:
+    ) -> tuple[float, list[str], list[str]]:
         """
         Scores a single tier level (e.g. "Standard Issues").
 
@@ -38,8 +37,8 @@ class TieredScoringEngine:
         """
         # pylint: disable=too-many-locals
         tier_score: float = 0.0
-        details: List[str] = []
-        violations: List[str] = []
+        details: list[str] = []
+        violations: list[str] = []
 
         if not issues:
             return 0.0, details, violations
@@ -70,7 +69,7 @@ class TieredScoringEngine:
 
     def _evaluate_issue(
         self, issue: dict, found: bool, tier_name: str, points: float
-    ) -> Tuple[float, str, str]:
+    ) -> tuple[float, str, str]:
         """Evaluates a single issue and determines score impact and message."""
         name = issue.get("issue", "Unknown Issue")
         severity = issue.get("severity", "medium")

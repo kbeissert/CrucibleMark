@@ -3,18 +3,18 @@ Error Detection Logic for Code Quality Module.
 Handles issue detection, bonus scoring, and violation tracking.
 """
 
-from typing import Any, Dict, List, Tuple, Set
+from typing import Any
 
 
 class ErrorDetector:
     """Handles error detection scoring and violation tracking."""
 
     def __init__(self) -> None:
-        self.known_issues_cache: Set[str] = set()
+        self.known_issues_cache: set[str] = set()
 
     def score_error_detection(
-        self, response_lower: str, config: Dict[str, Any]
-    ) -> Tuple[float, List[str], List[str]]:
+        self, response_lower: str, config: dict[str, Any]
+    ) -> tuple[float, list[str], list[str]]:
         """
         Main error detection scoring method.
 
@@ -77,8 +77,8 @@ class ErrorDetector:
         return min(score, max_score), details, violations
 
     def _identify_found_issues(
-        self, text_lower: str, config: Dict[str, Any]
-    ) -> Set[str]:
+        self, text_lower: str, config: dict[str, Any]
+    ) -> set[str]:
         """
         Scans text for all issue keywords and returns set of found issue names.
         Optimized to single text pass per keyword.
@@ -99,17 +99,14 @@ class ErrorDetector:
                             break  # Found this issue, move to next
         return found
 
-    def check_issue_mentioned(self, text_lower: str, keywords: List[str]) -> bool:
+    def check_issue_mentioned(self, text_lower: str, keywords: list[str]) -> bool:
         """Checks if any keyword for an issue is present."""
         if not keywords:
             return False
-        for kw in keywords:
-            if kw.lower() in text_lower:
-                return True
-        return False
+        return any(kw.lower() in text_lower for kw in keywords)
 
     def calculate_bonus_score(
-        self, response_lower: str, config: Dict[str, Any], details: List[str]
+        self, response_lower: str, config: dict[str, Any], details: list[str]
     ) -> float:
         """Calculates bonus points for extra findings."""
         bonus = 0.0

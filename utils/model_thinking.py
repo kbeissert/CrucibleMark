@@ -555,7 +555,8 @@ def is_reasoning_model_from_card(model_id: str) -> bool | None:
         if val is None:
             return None
         return bool(val)
-    except Exception:
+    except (json.JSONDecodeError, OSError) as exc:
+        logger.debug("Card-Lesefehler (thinking_probe_detected) für %s: %s", card_path, exc)
         return None
 
 
@@ -600,7 +601,8 @@ def is_thinking_optional_from_card(model_id: str) -> bool:
         data = json.loads(card_path.read_text(encoding="utf-8"))
         tags = data.get("architecture_tags", [])
         return "Thinking-Optional" in (tags or [])
-    except Exception:
+    except (json.JSONDecodeError, OSError) as exc:
+        logger.debug("Card-Lesefehler (Thinking-Optional) für %s: %s", card_path, exc)
         return False
 
 
@@ -621,6 +623,6 @@ def _read_max_output_tokens_from_card(model_id: str) -> int | None:
         val = data.get("max_output_tokens")
         if isinstance(val, int) and val > 0:
             return val
-    except Exception:
-        pass
+    except (json.JSONDecodeError, OSError) as exc:
+        logger.debug("Card-Lesefehler (max_output_tokens) für %s: %s", card_path, exc)
     return None

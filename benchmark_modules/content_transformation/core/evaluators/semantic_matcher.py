@@ -4,7 +4,6 @@ Handles keyword detection with semantic fallback for fuzzy matching
 """
 
 import re
-from typing import List
 from utils.similarity import SemanticSimilarity
 from ..constants import SEMANTIC_THRESHOLDS
 
@@ -15,7 +14,7 @@ class SemanticMatcher:
     @staticmethod
     def check_issue_mentioned(
         response_lower: str,
-        keywords: List[str],
+        keywords: list[str],
         tier_name: str,
         min_keyword_threshold: float = 0.40,
     ) -> bool:
@@ -58,7 +57,7 @@ class SemanticMatcher:
 
     @staticmethod
     def _semantic_check(
-        response_lower: str, keywords: List[str], threshold: float, tier_name: str
+        response_lower: str, keywords: list[str], threshold: float, tier_name: str
     ) -> bool:
         """
         Performs semantic similarity check using sentence-transformers.

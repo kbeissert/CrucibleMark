@@ -31,6 +31,8 @@ ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
+from utils.io_helpers import atomic_write_json  # noqa: E402
+
 from utils.card_utils import ensure_card  # noqa: E402
 from utils.config_validator import ConfigValidator  # noqa: E402
 from utils.model_utils import (  # noqa: E402
@@ -130,7 +132,9 @@ def _write_probe_to_card(
         if "Thinking" not in tags:
             card["architecture_tags"] = ["Thinking"] + [t for t in tags if t != "General"]
 
-    card_path.write_text(json.dumps(card, ensure_ascii=False, indent=2), encoding="utf-8")
+    # Atomarer Write (Review 2026-08-15): Temp-Datei + os.replace statt
+    # direktem write_text — Crash mid-write kann keine Card korrumpieren.
+    atomic_write_json(card_path, card, indent=2, ensure_ascii=False)
     return card_path
 
 

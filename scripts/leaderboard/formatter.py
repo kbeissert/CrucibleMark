@@ -20,6 +20,16 @@ BADGE_GOLD_THRESHOLD = _tiers.get("gold", {}).get("threshold", 80.0)
 BADGE_SILVER_THRESHOLD = _tiers.get("silver", {}).get("threshold", 65.0)
 BADGE_BRONZE_THRESHOLD = _tiers.get("bronze", {}).get("threshold", 50.0)
 
+# --- Klassifikations-Schwellwerte (Review 2026-08-15: vorher Magic Numbers) --
+# All-Rounder: Score-Range über alle Kategorien < 12 Punkte (bewusst etwas
+# lockerer als 10 — historisch gewachsene Kalibrierung, Änderung wäre eine
+# Leaderboard-Klassifikationsänderung).
+ALL_ROUNDER_MAX_SCORE_RANGE = 12
+
+# Stabilitäts-Klassifikation (relative Score-Varianz):
+STABILITY_UNSTABLE_THRESHOLD = 0.5    # >= 50% Varianz → UNSTABLE
+STABILITY_MODERATE_THRESHOLD = 0.35   # >= 35% Varianz → MODERATE
+
 BADGE_PLATINUM_ICON = _tiers.get("platinum", {}).get("badge", "💎 Platinum")
 BADGE_GOLD_ICON = _tiers.get("gold", {}).get("badge", "🏆 Gold")
 BADGE_SILVER_ICON = _tiers.get("silver", {}).get("badge", "🥈 Silver")
@@ -150,7 +160,7 @@ def get_skill_role(row: pd.Series, cat_cols: list) -> str:
     # Check if all-rounder
     vals = list(valid_categories.values())
     score_range = max(vals) - min(vals)
-    is_all_rounder = score_range < 12  # Slightly looser than 10
+    is_all_rounder = score_range < ALL_ROUNDER_MAX_SCORE_RANGE
 
     if is_all_rounder:
         return "All-Rounder"
@@ -181,9 +191,9 @@ def format_speed_profile(row: pd.Series) -> str:
 
         # Thresholds: > 50% (0.5) is UNSTABLE (High Variance)
         # 30-50% is MODERATE (Normal for diverse local benchmarks)
-        if stability >= 0.5:
+        if stability >= STABILITY_UNSTABLE_THRESHOLD:
             profile += " ❌ UNSTABLE"
-        elif stability >= 0.35:
+        elif stability >= STABILITY_MODERATE_THRESHOLD:
             # Only flag heavily if variance is significant but not critical
             pass
 

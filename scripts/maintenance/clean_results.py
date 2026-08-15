@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# ruff: noqa: E402
 """
 Skript zum gezielten Löschen von Benchmark-Ergebnissen aus den CSV-Caches.
 Erlaubt das Entfernen bestimmter Modelle oder Module (Asset-Gruppen).
@@ -29,8 +28,8 @@ from utils.model_utils import (  # noqa: E402
     CARD_DIR,
 )
 from utils.model_id_base import internal_id_to_config_form  # noqa: E402
-from utils.module_registry import get_active_modules
-from utils.config_validator import ConfigValidator
+from utils.module_registry import get_active_modules  # noqa: E402
+from utils.config_validator import ConfigValidator  # noqa: E402
 from utils.backup_targets import CSV_FILES  # noqa: E402
 
 # pylint: enable=wrong-import-position
@@ -826,13 +825,23 @@ def clean_csv(
             # Alle moeglichen Modell-Spalten pruefen
             model_cols = [c for c in df.columns if c in ("model", "Model ID", "model_id_raw")]
 
+            # Performance (Review 2026-08-15): resolve_canonical_model_id macht
+            # Card-File-IO pro Call — bei grossen CSVs (~10K Zeilen) mehrfach pro
+            # Modellwert. Lokaler Dict-Cache: IDs wiederholen sich massiv.
+            _canon_cache: dict[str, str] = {}
+
+            def _canon_cached(v: str) -> str:
+                if v not in _canon_cache:
+                    _canon_cache[v] = resolve_canonical_model_id(v)
+                return _canon_cache[v]
+
             for col in model_cols:
                 # Varianten-Direktmatch
                 col_mask_direct = ~df[col].isin(variants)
 
                 # Kanonischer Match (fuer Faelle wie qwen3.5-35b == qwen_qwen3.5-35b)
                 df_model_canon = df[col].apply(
-                    lambda v: resolve_canonical_model_id(str(v)) if pd.notna(v) else v
+                    lambda v: _canon_cached(str(v)) if pd.notna(v) else v
                 )
                 col_mask_canon = df_model_canon != target_canon
 

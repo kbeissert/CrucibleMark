@@ -30,7 +30,7 @@ def load_ground_truth_datasets() -> dict:
 
     for file_path in yaml_files:
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
+            with open(file_path, encoding="utf-8") as f:
                 data = yaml.safe_load(f)
                 if "asset_id" in data:
                     datasets[data["asset_id"]] = data
@@ -97,7 +97,7 @@ def validate_response_against_ground_truth(
 
 if __name__ == "__main__":
     # Display dataset structure
-    for ds_id, ds_data in GROUND_TRUTH_DATASETS.items():
+    for _ds_id, ds_data in GROUND_TRUTH_DATASETS.items():
         print(f"\n{'=' * 70}")
         print(f"Asset: {ds_data['test_name']}")
         print(f"{'=' * 70}")

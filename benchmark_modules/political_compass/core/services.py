@@ -11,7 +11,7 @@ import logging
 import os
 import random
 import time
-from typing import Any, Optional
+from typing import Any
 
 import requests  # pylint: disable=import-error
 
@@ -73,13 +73,13 @@ class FrameworkAdapter:
         self.model = model
         self.default_temperature = 0.0
 
-    def query(self, question: Question) -> Optional[str]:
+    def query(self, question: Question) -> str | None:
         """Sendet Query über den adaptierten Client."""
         # FrameworkAdapter nutzt in der Regel Standard-Settings
         prompt = question.to_prompt()
         return self.query_prompt(prompt)
 
-    def query_prompt(self, prompt: str) -> Optional[str]:
+    def query_prompt(self, prompt: str) -> str | None:
         """Helper to send raw prompt via client."""
         try:
             return self.client.query(
@@ -147,14 +147,14 @@ class LLMInterface:
                     "❌ Anthropic Library nicht installiert. `pip install anthropic`"
                 )
 
-    def query(self, question: Question) -> Optional[str]:
+    def query(self, question: Question) -> str | None:
         """Sendet Frage an LLM und gibt rohe Antwort zurück."""
         prompt = question.to_prompt()
         return self.query_raw(prompt, str(question.id))
 
     def query_raw(
         self, prompt: str, request_id: str = "unknown", system_prompt: str | None = None
-    ) -> Optional[str]:
+    ) -> str | None:
         """Sendet rohen Prompt an LLM mit Retry-Logik."""
         return self._query_with_retry(prompt, request_id, system_prompt=system_prompt)
 
@@ -164,7 +164,7 @@ class LLMInterface:
         request_id: str,
         max_retries: int = 3,
         system_prompt: str | None = None,
-    ) -> Optional[str]:
+    ) -> str | None:
         """Führt LLM-Request mit Retry und Rate-Limiting aus."""
 
         for attempt in range(max_retries):

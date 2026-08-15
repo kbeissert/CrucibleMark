@@ -9,7 +9,7 @@ import json
 import logging
 import re
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 from pathlib import Path
 from typing import Any
 
@@ -19,8 +19,8 @@ _ROOT = Path(__file__).resolve().parents[3]
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
-from benchmark_modules.tooluse.core.constants import AUDIT_MCP_UNAVAILABLE
-from schemas.result import BenchmarkResult
+from benchmark_modules.tooluse.core.constants import AUDIT_MCP_UNAVAILABLE  # noqa: E402
+from schemas.result import BenchmarkResult  # noqa: E402
 
 _ASSET_NAMES: dict[str, str] = {
     "tooluse001": "EU Lizenzrecherche",
@@ -56,7 +56,7 @@ def _log_metrics_to_json(model_id: str, row: dict[str, Any]) -> None:
 
     try:
         metric = {
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "model_id": model_id,
             "combined_score": float(row.get("combined_score") or 0),
             "p1_score": float(row.get("p1_score") or 0),

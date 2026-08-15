@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# ruff: noqa: E402,F401
 from __future__ import annotations
 
 import argparse
@@ -11,27 +10,23 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-from scripts.card_research.common import (
+from scripts.card_research.common import (  # noqa: E402
     _load_benchmark_config,
     _load_editor_prompt,
     _resolve_llm_spec,
     _setup_logging,
 )
-from scripts.card_research.manager import CardManager, _render_markdown_report
-from scripts.card_research.models import (
-    CardCheckReport,
-    CardFinding,
-    CardMakeReport,
+from scripts.card_research.manager import CardManager, _render_markdown_report  # noqa: E402
+from scripts.card_research.models import (  # noqa: E402
     LLMSession,
     LLMSpec,
     MAX_RETRIES,
     PER_CALL_TIMEOUT_S,
-    ResearchReport,
     RunSummary,
 )
-from scripts.card_research.researcher import Researcher, _render_research_markdown_report
-from utils.card_template import load_card_template
-from utils.model_utils import _find_card
+from scripts.card_research.researcher import Researcher, _render_research_markdown_report  # noqa: E402
+from utils.card_template import load_card_template  # noqa: E402
+from utils.model_utils import _find_card  # noqa: E402
 
 
 def _build_parser() -> argparse.ArgumentParser:

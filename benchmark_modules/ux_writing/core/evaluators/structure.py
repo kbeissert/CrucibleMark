@@ -2,7 +2,6 @@
 Evaluators for structural elements (tables, formatting).
 """
 
-from typing import Tuple
 from ..models import UXCriterion
 from ..constants import MIN_TABLE_COLUMNS
 from .base import CriterionEvaluator
@@ -15,7 +14,7 @@ class MarkdownTableEvaluator(CriterionEvaluator):
     Evaluates if the response contains a valid Markdown table.
     """
 
-    def evaluate(self, response: str, criterion: UXCriterion) -> Tuple[float, str]:
+    def evaluate(self, response: str, criterion: UXCriterion) -> tuple[float, str]:
         """
         Checks for table syntax and minimum row count.
 
@@ -59,7 +58,7 @@ class StructureValidationEvaluator(CriterionEvaluator):
     Evaluates if specific structural text elements are present.
     """
 
-    def evaluate(self, response: str, criterion: UXCriterion) -> Tuple[float, str]:
+    def evaluate(self, response: str, criterion: UXCriterion) -> tuple[float, str]:
         """
         Checks if required structural strings are found.
 

@@ -22,7 +22,7 @@ from benchmark_modules.documentation_quality.core.constants import (  # noqa: E4
     DEFAULT_TEMPERATURE,
     TOKEN_MULTIPLIER,
 )
-from benchmark_modules.documentation_quality.core.evaluators import (
+from benchmark_modules.documentation_quality.core.evaluators import (  # noqa: E402
     DocumentationEvaluator,
 )  # noqa: E402
 
@@ -42,10 +42,7 @@ class DocumentationTest(BaseTest):
         prompt = self.asset["prompt"]
 
         # Context hinzufügen falls vorhanden
-        if "context" in self.asset:
-            full_prompt = f"{self.asset['context']}\n\n{prompt}"
-        else:
-            full_prompt = prompt
+        full_prompt = f"{self.asset['context']}\n\n{prompt}" if "context" in self.asset else prompt
 
         provider = kwargs.get("provider")
         extra_kwargs = {k: v for k, v in kwargs.items() if k != "provider"}

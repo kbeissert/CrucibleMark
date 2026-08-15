@@ -88,5 +88,5 @@ class PoliticalCompassTransformer:
         ]
 
         # Add dynamic keys that are not in base_headers
-        other_keys = [k for k in row_data.keys() if k not in base_headers]
+        other_keys = [k for k in row_data if k not in base_headers]
         return base_headers + sorted(other_keys)

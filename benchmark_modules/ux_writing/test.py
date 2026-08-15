@@ -9,7 +9,7 @@ import sys
 import time
 import logging
 from pathlib import Path
-from typing import Dict, Any, List, Tuple
+from typing import Any
 from schemas.result import BenchmarkResult
 from utils.model_utils import get_model_version
 
@@ -19,11 +19,11 @@ if str(root_dir) not in sys.path:
     sys.path.insert(0, str(root_dir))
 
 from benchmark_modules.base_test import BaseTest  # noqa: E402
-from benchmark_modules.ux_writing.core.models import (
+from benchmark_modules.ux_writing.core.models import (  # noqa: E402
     UXScenario,
     UXScoringConfig,
 )  # noqa: E402
-from benchmark_modules.ux_writing.core.evaluators import (
+from benchmark_modules.ux_writing.core.evaluators import (  # noqa: E402
     IssueEvaluator,
     EvaluatorFactory,
 )  # noqa: E402
@@ -194,7 +194,7 @@ class UXWritingTest(BaseTest):
 
     def _evaluate_response(
         self, response: str, config: UXScoringConfig
-    ) -> Tuple[Dict[str, float], List[str]]:
+    ) -> tuple[dict[str, float], list[str]]:
         """
         Führt die eigentliche Bewertung durch.
 

@@ -3,7 +3,7 @@ Scoring Helper Methods for Code Quality Evaluation.
 Contains all check methods (regex, keyword, semantic, etc.).
 """
 
-from typing import Any, Dict, Tuple
+from typing import Any
 import re
 from utils.similarity import SemanticSimilarity
 
@@ -14,7 +14,7 @@ class ScoringHelpers:
     def __init__(self) -> None:
         self.similarity_engine = SemanticSimilarity()
 
-    def score_regex(self, text: str, criterion: Dict[str, Any]) -> Tuple[float, str]:
+    def score_regex(self, text: str, criterion: dict[str, Any]) -> tuple[float, str]:
         """Scores based on regex pattern matching."""
         pattern = criterion.get("pattern", "")
         points = criterion.get("points", 0)
@@ -36,8 +36,8 @@ class ScoringHelpers:
         return 0.0, f"✗ {criterion.get('description')} nicht gefunden"
 
     def score_keyword_presence(
-        self, text_lower: str, criterion: Dict[str, Any]
-    ) -> Tuple[float, str]:
+        self, text_lower: str, criterion: dict[str, Any]
+    ) -> tuple[float, str]:
         """Scores based on keyword presence."""
         keywords = [k.lower() for k in criterion.get("keywords", [])]
         points = criterion.get("points", 0)
@@ -47,14 +47,14 @@ class ScoringHelpers:
         return 0.0, f"✗ {criterion.get('description')} (-{points}p)"
 
     def score_list_detection(
-        self, text_lower: str, criterion: Dict[str, Any]
-    ) -> Tuple[float, str]:
+        self, text_lower: str, criterion: dict[str, Any]
+    ) -> tuple[float, str]:
         """Alias for keyword_presence."""
         return self.score_keyword_presence(text_lower, criterion)
 
     def score_code_validation(
-        self, text: str, criterion: Dict[str, Any]
-    ) -> Tuple[float, str]:
+        self, text: str, criterion: dict[str, Any]
+    ) -> tuple[float, str]:
         """Validates code structure and required elements."""
         required_elements = criterion.get("required_elements", [])
         points = criterion.get("points", 0)
@@ -67,8 +67,8 @@ class ScoringHelpers:
         )
 
     def score_markdown_table_validation(
-        self, text: str, criterion: Dict[str, Any]
-    ) -> Tuple[float, str]:
+        self, text: str, criterion: dict[str, Any]
+    ) -> tuple[float, str]:
         """Validates markdown table structure."""
         lines = text.split("\n")
         table_lines = [
@@ -80,8 +80,8 @@ class ScoringHelpers:
         return 0.0, "✗ Tabelle nicht erkannt oder zu klein"
 
     def score_semantic_similarity(
-        self, text: str, criterion: Dict[str, Any]
-    ) -> Tuple[float, str]:
+        self, text: str, criterion: dict[str, Any]
+    ) -> tuple[float, str]:
         """Calculates semantic similarity to reference text."""
         reference = criterion.get("reference_text", "")
         threshold = criterion.get("threshold", 0.7)

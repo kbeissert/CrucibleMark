@@ -3,7 +3,6 @@ Solution Quality Evaluator module.
 Evaluates positive criteria like code examples and best practices.
 """
 
-from typing import List, Tuple
 
 
 class SolutionQualityEvaluator:
@@ -15,7 +14,7 @@ class SolutionQualityEvaluator:
     # pylint: disable=too-few-public-methods
 
     @staticmethod
-    def score_criteria(response: str, criteria: list[dict]) -> Tuple[float, List[str]]:
+    def score_criteria(response: str, criteria: list[dict]) -> tuple[float, list[str]]:
         """
         Scores a list of positive criteria.
 
@@ -57,7 +56,7 @@ class SolutionQualityEvaluator:
         return round(score, 2), details
 
     @staticmethod
-    def _check_keyword_presence(response: str, criterion: dict) -> Tuple[float, str]:
+    def _check_keyword_presence(response: str, criterion: dict) -> tuple[float, str]:
         """Checks if required keywords are present."""
         name = criterion.get("name", "Unknown")
         points = criterion.get("points", 0)

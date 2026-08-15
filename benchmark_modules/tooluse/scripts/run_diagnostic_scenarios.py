@@ -25,17 +25,17 @@ _PROJECT_ROOT = Path(__file__).resolve().parents[3]
 if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
-from benchmark_modules.tooluse.DIAGNOSTIC_SCENARIOS import (
+from benchmark_modules.tooluse.DIAGNOSTIC_SCENARIOS import (  # noqa: E402
     create_diagnostic_transcript,
     scenario_descriptions,
 )
 
-from benchmark_modules.tooluse.core.diagnostics import (
+from benchmark_modules.tooluse.core.diagnostics import (  # noqa: E402
     PipelineDiagnostic,
     PipelineDiagnostician,
 )
-from benchmark_modules.tooluse.core.evaluators import ToolUseEvaluator
-from utils.module_registry import load_module_config
+from benchmark_modules.tooluse.core.evaluators import ToolUseEvaluator  # noqa: E402
+from utils.module_registry import load_module_config  # noqa: E402
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
@@ -110,7 +110,7 @@ def generate_report(
     lines = [
         "# Tool Use Pipeline Diagnostic Report",
         f"**Model:** {model_id}",
-        f"**Run Date:** 2026-05-23",
+        "**Run Date:** 2026-05-23",
         "",
         "## Test Matrix",
         "",

@@ -154,6 +154,8 @@ def stop_vllm_provider_server(
         # Connector (utils/providers/vllm_base.py:_server_stop_cmd).
         if "vllm-stop" in stop_cmd and "--yes" not in stop_cmd:
             stop_cmd = stop_cmd.rstrip() + " --yes"
+        # shell=True ist hier bewusst: server_stop_cmd ist ein vom Operator
+        # konfiguriertes Shell-Kommando (Trust-Boundary: provider_config.yaml).
         subprocess.run(stop_cmd, shell=True, check=False, capture_output=True)
 
     time.sleep(VLLM_STOP_SETTLE_SEC)

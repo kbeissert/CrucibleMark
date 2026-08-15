@@ -2,7 +2,6 @@
 Evaluators for keyword presence and absence.
 """
 
-from typing import Tuple
 from ..models import UXCriterion
 from .base import CriterionEvaluator
 
@@ -14,7 +13,7 @@ class KeywordPresenceEvaluator(CriterionEvaluator):
     Evaluates if specific positive keywords are present in the response.
     """
 
-    def evaluate(self, response: str, criterion: UXCriterion) -> Tuple[float, str]:
+    def evaluate(self, response: str, criterion: UXCriterion) -> tuple[float, str]:
         """
         Checks if required keywords are present in the response.
 
@@ -50,7 +49,7 @@ class KeywordAbsenceEvaluator(CriterionEvaluator):
     Evaluates if forbidden keywords are absent from the response.
     """
 
-    def evaluate(self, response: str, criterion: UXCriterion) -> Tuple[float, str]:
+    def evaluate(self, response: str, criterion: UXCriterion) -> tuple[float, str]:
         """
         Checks if forbidden keywords are absent from the response.
 

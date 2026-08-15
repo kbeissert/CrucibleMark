@@ -9,7 +9,7 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from benchmark_modules.reasoning_logic.core.evaluators import (
+from benchmark_modules.reasoning_logic.core.evaluators import (  # noqa: E402
     ReasoningEvaluator,
 )  # noqa: E402
 

@@ -34,18 +34,14 @@ class LLMScorer(BaseScorer):
                 "error": "LLMScorer requires 'llm_client' in kwargs",
             }
 
-        # judge_model = kwargs.get("judge_model", "qwen2.5:14b") # Default fallback
-        # scoring_config = asset.get("scoring", {})
-
-        # TODO: Implement the actual query to the Judge LLM
-        # 1. Construct Prompt (System + User + Response + Rubric)
-        # 2. Call llm_client.query()
-        # 3. Parse JSON output from Judge
-
-        # Placeholder return
-        return {
-            "status": "skipped",
-            "message": "LLM Scoring logic to be implemented",
-            "total_score": 0.0,
-            "max_score": 100,
-        }
+        # Fail-Fast (Review 2026-08-15): Der Scorer ist nicht implementiert
+        # (siehe auskommentierte Registrierung in __init__.py). Statt eines
+        # stillen 0-Scores ("skipped"), der historische Benchmarks verfälschen
+        # würde, wirft er explizit — sollte je ein Asset `method: llm`
+        # konfigurieren. Aktive Assets nutzen ausschließlich `llm_judge`
+        # (JudgeEvaluator), nicht diesen Scorer.
+        raise NotImplementedError(
+            "LLMScorer is not implemented. Configure 'method: llm_judge' "
+            "(JudgeEvaluator) instead — a silent 0-score placeholder would "
+            "corrupt benchmark results."
+        )

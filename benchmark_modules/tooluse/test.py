@@ -57,6 +57,57 @@ logger = logging.getLogger(__name__)
 # Judge rubric helper
 # ---------------------------------------------------------------------------
 
+# Rubric-Sektionen (key → Label) — Refactoring 2026-08-15 (Review):
+# CC=13 → Sektions-Rendering in eigene Funktion ausgelagert, Output unverändert.
+_RUBRIC_SECTIONS: tuple[tuple[str, str], ...] = (
+    ("tool_usage", "Tool Usage"),
+    ("factuality", "Factuality"),
+    ("hallucination_risk", "Hallucination Risk"),
+    ("uncertainty_handling", "Uncertainty Handling"),
+    ("url_precision", "URL Precision"),
+    ("language_consistency", "Language Consistency"),
+    ("search_strategy", "Search Strategy"),
+)
+
+
+def _append_rubric_section(
+    lines: list[str], rubric_key: str, section_label: str, section: dict[str, Any]
+) -> None:
+    """Rendert eine phase2_rubric-Sektion in Markdown-Zeilen."""
+    # Language consistency: emit target language in the section header
+    if rubric_key == "language_consistency" and section.get("target_language"):
+        lang = section["target_language"].upper()
+        lines.append(f"\n### {section_label} (Target Language: {lang})")
+    else:
+        # Header is implicit — emitted per sub-section below
+        pass
+
+    must_include = section.get("must_include") or []
+    must_not_include = section.get("must_not_include") or []
+    red_flags = section.get("red_flags") or []
+    acceptable = section.get("acceptable_patterns") or section.get("acceptable") or []
+    unacceptable = section.get("unacceptable") or []
+    scoring_note = section.get("scoring_note") or ""
+
+    if must_include:
+        lines.append(f"\n### Must Include ({section_label})")
+        lines.extend(f"- {item}" for item in must_include)
+    if must_not_include:
+        lines.append(f"\n### Must NOT Include ({section_label})")
+        lines.extend(f"- {item}" for item in must_not_include)
+    if red_flags:
+        lines.append(f"\n### {section_label} Red Flags (trigger hallucination_detected: true)")
+        lines.extend(f"- {flag}" for flag in red_flags)
+    if acceptable:
+        lines.append(f"\n### Acceptable Patterns ({section_label})")
+        lines.extend(f"- {p}" for p in acceptable)
+    if unacceptable:
+        lines.append(f"\n### NOT Acceptable ({section_label})")
+        lines.extend(f"- {item}" for item in unacceptable)
+    if scoring_note:
+        lines.append(f"\n> **{section_label} Note:** {scoring_note.strip()}")
+
+
 def _build_rubric_override(phase2_rubric: dict[str, Any]) -> str | None:
     """Converts a phase2_rubric YAML dict into a structured rubric_override string.
 
@@ -77,51 +128,11 @@ def _build_rubric_override(phase2_rubric: dict[str, Any]) -> str | None:
             pct = round(float(w) * 100) if float(w) <= 1.0 else int(w)
             lines.append(f"- {dim.replace('_', ' ').title()}: {pct}%")
 
-    for rubric_key, section_label in (
-        ("tool_usage", "Tool Usage"),
-        ("factuality", "Factuality"),
-        ("hallucination_risk", "Hallucination Risk"),
-        ("uncertainty_handling", "Uncertainty Handling"),
-        ("url_precision", "URL Precision"),
-        ("language_consistency", "Language Consistency"),
-        ("search_strategy", "Search Strategy"),
-    ):
+    for rubric_key, section_label in _RUBRIC_SECTIONS:
         section = phase2_rubric.get(rubric_key, {})
         if not section:
             continue
-
-        # Language consistency: emit target language in the section header
-        if rubric_key == "language_consistency" and section.get("target_language"):
-            lang = section["target_language"].upper()
-            lines.append(f"\n### {section_label} (Target Language: {lang})")
-        else:
-            # Header is implicit — emitted per sub-section below
-            pass
-
-        must_include = section.get("must_include") or []
-        must_not_include = section.get("must_not_include") or []
-        red_flags = section.get("red_flags") or []
-        acceptable = section.get("acceptable_patterns") or section.get("acceptable") or []
-        unacceptable = section.get("unacceptable") or []
-        scoring_note = section.get("scoring_note") or ""
-
-        if must_include:
-            lines.append(f"\n### Must Include ({section_label})")
-            lines.extend(f"- {item}" for item in must_include)
-        if must_not_include:
-            lines.append(f"\n### Must NOT Include ({section_label})")
-            lines.extend(f"- {item}" for item in must_not_include)
-        if red_flags:
-            lines.append(f"\n### {section_label} Red Flags (trigger hallucination_detected: true)")
-            lines.extend(f"- {flag}" for flag in red_flags)
-        if acceptable:
-            lines.append(f"\n### Acceptable Patterns ({section_label})")
-            lines.extend(f"- {p}" for p in acceptable)
-        if unacceptable:
-            lines.append(f"\n### NOT Acceptable ({section_label})")
-            lines.extend(f"- {item}" for item in unacceptable)
-        if scoring_note:
-            lines.append(f"\n> **{section_label} Note:** {scoring_note.strip()}")
+        _append_rubric_section(lines, rubric_key, section_label, section)
 
     result = "\n".join(lines)
     return result if len(result) > len("## Asset-Specific Evaluation Criteria") else None
@@ -376,61 +387,13 @@ class ToolUseTest(BaseTest):
         )
 
         # Derive tool_content for judge: full tool text or search excerpts
-        tool_content: str | None = None
+        tool_content = _derive_tool_content(tool_transcript)
         tool_content_quality = cv_block.get("state", "A")
-        _tc_raw = tool_transcript.get("content")
-        if isinstance(_tc_raw, list) and _tc_raw:
-            tool_content = _tc_raw[0].get("text") if isinstance(_tc_raw[0], dict) else None
-        if not tool_content:
-            # web_search: build content from results list
-            _results = tool_transcript.get("results") or []
-            if _results:
-                tool_content = "\n\n".join(
-                    f"{r.get('title', '')}\n{r.get('url', '')}\n{r.get('excerpt', '')}"
-                    for r in _results if isinstance(r, dict)
-                ) or None
 
         # LLM Judge: replace rule-based P2 with judge score when judge is available
-        judge_result = None
-        p2 = p2_cv  # fallback to CV-gated rule-based score
-        hallucination_detected: bool = False
-        try:
-            from utils.config_validator import ConfigValidator
-            _global_cfg = ConfigValidator().config
-            judge_cfg_dict = _global_cfg.get("llm_judge", {})
-            if judge_cfg_dict and judge_cfg_dict.get("enabled", False):
-                judge_config = LLMJudgeConfig.from_dict(judge_cfg_dict)
-                runner = JudgeRunner(judge_config)
-                task_prompt_str: str = self.asset.get("prompt", "")
-                golden_answer: str = (
-                    self.asset.get("evaluation", {})
-                    .get("phase2", {})
-                    .get("golden_answer", "")
-                )
-                phase2_rubric = (
-                    self.asset.get("evaluation", {}).get("phase2_rubric")
-                )
-                rubric_text = _build_rubric_override(phase2_rubric) if phase2_rubric else None
-                judge_result = runner.score(
-                    task_prompt=task_prompt_str,
-                    model_response=model_output,
-                    golden_standard=golden_answer,
-                    module_id="tooluse",
-                    tested_model_id=result.meta.get("model_id"),
-                    tested_model_provider=result.meta.get("provider"),
-                    tool_content=tool_content,
-                    tool_content_quality=tool_content_quality,
-                    rubric_override=rubric_text,
-                )
-                if judge_result.parse_success and judge_result.score is not None:
-                    scale = judge_config.scoring.scale
-                    p2 = round((judge_result.score / scale) * 100.0, 2)
-                    p2 = min(p2, 100.0)
-                if judge_result.hallucination_detected is not None:
-                    hallucination_detected = judge_result.hallucination_detected
-        except (JudgeUnavailableError, Exception):
-            logger.warning("LLM Judge unavailable for tooluse; using rule-based P2", exc_info=True)
-            result.data["judge_fallback"] = True
+        judge_result, p2, hallucination_detected = self._run_llm_judge(
+            result, model_output, tool_content, tool_content_quality, p2_cv,
+        )
 
         # Hallucination cap — zweistufig: Schwere bestimmt sich am P2 vor der Kappung.
         # P2 <= threshold_severe → cap_hard (Fabrication); > threshold → cap_moderate (mild).
@@ -517,51 +480,144 @@ class ToolUseTest(BaseTest):
             }
 
         # Anomaly callouts for per-asset audit logs.
-        # generate_audit_log() will prepend these as GitHub Alert blocks so
-        # generate_review.py can pick them up via its regex.
-        _callouts: list[str] = []
-        if hallucination_detected:
-            _callouts.append(
-                "> [!WARNING]\n"
-                "> **Halluzination erkannt:** Das Modell hat auf diesem Asset Inhalte generiert, die\n"
-                "> nicht aus dem abgerufenen Tool-Ergebnis stammen, sondern erfunden wurden.\n"
-                "> P2-Score wurde durch Halluzinations-Cap begrenzt. Für content-kritische Tasks\n"
-                "> (Recherche, Faktenberichte) ist dieses Verhalten ein disqualifizierendes Signal."
-            )
-        if tool_transcript.get("status") == "parse_error":
-            _callouts.append(
-                "> [!CAUTION]\n"
-                "> **Parse-Fehler beim Tool-Call:** Das Modell hat auf diesem Asset keinen auswertbaren\n"
-                "> MCP-Tool-Call erzeugt. Mögliche Ursache: Das Modell verwendet ein proprietäres\n"
-                "> natives Tool-Format statt des CrucibleMark-Custom-JSON-Schemas (z. B.\n"
-                "> `{\"tool_call\": {\"name\": ..., \"parameters\": ...}}` statt `{\"name\": ..., \"input\": ...}`).\n"
-                "> Über die native API (SDK-Level) ist das Modell vollständig tool-use-fähig."
-            )
-        # State C: model completely ignored tool-use instruction
-        if cv_block.get("state") == "C":
-            _callouts.append(
-                "> [!ERROR]\n"
-                "> **Kein Tool-Call — vollständig parametrische Antwort:** Das Modell hat die\n"
-                "> Tool-Use-Instruktion auf diesem Asset ignoriert und stattdessen ausschließlich\n"
-                "> aus Trainingswissen geantwortet (Content-Verification-State C, P1=0).\n"
-                "> P2 ist auf max. 20 Punkte gekappt. Für agentic Workflows, die den aktiven\n"
-                "> Tool-Einsatz voraussetzen, ist dieses Modell auf diesem Aufgabentyp nicht geeignet."
-            )
-        # State B2 with usable content: model got good data but answered from training knowledge
-        if cv_block.get("tool_result_ignored") and not hallucination_detected:
-            _callouts.append(
-                "> [!CAUTION]\n"
-                "> **Tool-Ergebnis ignoriert:** Das MCP-Tool lieferte verwertbaren Content, aber das\n"
-                "> Modell antwortete ohne erkennbaren Bezug zum abgerufenen Inhalt\n"
-                "> (Content-Verification-State B2, `tool_result_ignored: true`). Die Antwort stammt\n"
-                "> vermutlich aus Trainingswissen statt aus den Tool-Ergebnissen. Subtiler als\n"
-                "> Halluzination: Der Output kann inhaltlich korrekt wirken, ist aber nicht gegrounded."
-            )
+        _callouts = _build_anomaly_callouts(
+            hallucination_detected, tool_transcript, cv_block,
+        )
         if _callouts:
             result.data["anomaly_callouts"] = _callouts
 
         ToolUseIOManager.print_asset_result(result, self.asset)
         return result
+
+
+    def _run_llm_judge(
+        self,
+        result: BenchmarkResult,
+        model_output: str,
+        tool_content: str | None,
+        tool_content_quality: str,
+        p2_cv: float,
+    ) -> tuple[Any, float, bool]:
+        """LLM-Judge-Aufruf; Fallback auf CV-gated rule-based P2.
+
+        Refactoring 2026-08-15 (Review): aus score_response (CC=18) ausgelagert.
+        Kein Ersatz-Judge — bei Judge-Ausfall greift der regelbasierte P2-Score.
+        """
+        judge_result = None
+        p2 = p2_cv  # fallback to CV-gated rule-based score
+        hallucination_detected: bool = False
+        try:
+            from utils.config_validator import ConfigValidator
+            _global_cfg = ConfigValidator().config
+            judge_cfg_dict = _global_cfg.get("llm_judge", {})
+            if judge_cfg_dict and judge_cfg_dict.get("enabled", False):
+                judge_config = LLMJudgeConfig.from_dict(judge_cfg_dict)
+                runner = JudgeRunner(judge_config)
+                task_prompt_str: str = self.asset.get("prompt", "")
+                golden_answer: str = (
+                    self.asset.get("evaluation", {})
+                    .get("phase2", {})
+                    .get("golden_answer", "")
+                )
+                phase2_rubric = (
+                    self.asset.get("evaluation", {}).get("phase2_rubric")
+                )
+                rubric_text = _build_rubric_override(phase2_rubric) if phase2_rubric else None
+                judge_result = runner.score(
+                    task_prompt=task_prompt_str,
+                    model_response=model_output,
+                    golden_standard=golden_answer,
+                    module_id="tooluse",
+                    tested_model_id=result.meta.get("model_id"),
+                    tested_model_provider=result.meta.get("provider"),
+                    tool_content=tool_content,
+                    tool_content_quality=tool_content_quality,
+                    rubric_override=rubric_text,
+                )
+                if judge_result.parse_success and judge_result.score is not None:
+                    scale = judge_config.scoring.scale
+                    p2 = round((judge_result.score / scale) * 100.0, 2)
+                    p2 = min(p2, 100.0)
+                if judge_result.hallucination_detected is not None:
+                    hallucination_detected = judge_result.hallucination_detected
+        except JudgeUnavailableError:
+            logger.warning("LLM Judge unavailable for tooluse; using rule-based P2", exc_info=True)
+            result.data["judge_fallback"] = True
+        except Exception:  # pylint: disable=broad-exception-caught
+            # Review 2026-08-15: vorher `except (JudgeUnavailableError, Exception)`
+            # — redundant und verschluckte auch Programmierfehler still. Getrennt
+            # behandelt, beide Pfade loggen mit exc_info.
+            logger.warning("LLM Judge failed for tooluse; using rule-based P2", exc_info=True)
+            result.data["judge_fallback"] = True
+        return judge_result, p2, hallucination_detected
+
+
+def _derive_tool_content(tool_transcript: dict[str, Any]) -> str | None:
+    """Full tool text (http_fetch) oder Search-Excerpts (web_search)."""
+    tool_content: str | None = None
+    _tc_raw = tool_transcript.get("content")
+    if isinstance(_tc_raw, list) and _tc_raw:
+        tool_content = _tc_raw[0].get("text") if isinstance(_tc_raw[0], dict) else None
+    if not tool_content:
+        # web_search: build content from results list
+        _results = tool_transcript.get("results") or []
+        if _results:
+            tool_content = "\n\n".join(
+                f"{r.get('title', '')}\n{r.get('url', '')}\n{r.get('excerpt', '')}"
+                for r in _results if isinstance(r, dict)
+            ) or None
+    return tool_content
+
+
+def _build_anomaly_callouts(
+    hallucination_detected: bool,
+    tool_transcript: dict[str, Any],
+    cv_block: dict[str, Any],
+) -> list[str]:
+    """Anomaly callouts für per-asset Audit-Logs (GitHub-Alert-Blöcke).
+
+    generate_audit_log() prepended diese Blöcke, damit generate_review.py
+    sie via Regex aufnehmen kann.
+    """
+    _callouts: list[str] = []
+    if hallucination_detected:
+        _callouts.append(
+            "> [!WARNING]\n"
+            "> **Halluzination erkannt:** Das Modell hat auf diesem Asset Inhalte generiert, die\n"
+            "> nicht aus dem abgerufenen Tool-Ergebnis stammen, sondern erfunden wurden.\n"
+            "> P2-Score wurde durch Halluzinations-Cap begrenzt. Für content-kritische Tasks\n"
+            "> (Recherche, Faktenberichte) ist dieses Verhalten ein disqualifizierendes Signal."
+        )
+    if tool_transcript.get("status") == "parse_error":
+        _callouts.append(
+            "> [!CAUTION]\n"
+            "> **Parse-Fehler beim Tool-Call:** Das Modell hat auf diesem Asset keinen auswertbaren\n"
+            "> MCP-Tool-Call erzeugt. Mögliche Ursache: Das Modell verwendet ein proprietäres\n"
+            "> natives Tool-Format statt des CrucibleMark-Custom-JSON-Schemas (z. B.\n"
+            "> `{\"tool_call\": {\"name\": ..., \"parameters\": ...}}` statt `{\"name\": ..., \"input\": ...}`).\n"
+            "> Über die native API (SDK-Level) ist das Modell vollständig tool-use-fähig."
+        )
+    # State C: model completely ignored tool-use instruction
+    if cv_block.get("state") == "C":
+        _callouts.append(
+            "> [!ERROR]\n"
+            "> **Kein Tool-Call — vollständig parametrische Antwort:** Das Modell hat die\n"
+            "> Tool-Use-Instruktion auf diesem Asset ignoriert und stattdessen ausschließlich\n"
+            "> aus Trainingswissen geantwortet (Content-Verification-State C, P1=0).\n"
+            "> P2 ist auf max. 20 Punkte gekappt. Für agentic Workflows, die den aktiven\n"
+            "> Tool-Einsatz voraussetzen, ist dieses Modell auf diesem Aufgabentyp nicht geeignet."
+        )
+    # State B2 with usable content: model got good data but answered from training knowledge
+    if cv_block.get("tool_result_ignored") and not hallucination_detected:
+        _callouts.append(
+            "> [!CAUTION]\n"
+            "> **Tool-Ergebnis ignoriert:** Das MCP-Tool lieferte verwertbaren Content, aber das\n"
+            "> Modell antwortete ohne erkennbaren Bezug zum abgerufenen Inhalt\n"
+            "> (Content-Verification-State B2, `tool_result_ignored: true`). Die Antwort stammt\n"
+            "> vermutlich aus Trainingswissen statt aus den Tool-Ergebnissen. Subtiler als\n"
+            "> Halluzination: Der Output kann inhaltlich korrekt wirken, ist aber nicht gegrounded."
+        )
+    return _callouts
 
 
 # ---------------------------------------------------------------------------

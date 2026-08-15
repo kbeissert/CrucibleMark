@@ -28,7 +28,6 @@ if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
 from utils.backup_targets import REVIEWS_KEEP_PER_CATEGORY  # noqa: E402
-from utils.model_utils import _safe_name  # noqa: E402
 
 logger = logging.getLogger("cleanup_reviews")
 
@@ -67,8 +66,10 @@ def find_old_reviews(reviews_dir: Path) -> list[Path]:
     for model_dir in sorted(reviews_dir.iterdir()):
         if not model_dir.is_dir() or model_dir.name in (".gitkeep", ".DS_Store"):
             continue
-        # Phase 27: kanonischer Modell-Key (Robustheit bei Slug-Drift)
-        _ = _safe_name(model_dir.name)
+        # Review 2026-08-15: toter _safe_name-Auflösungsversuch entfernt —
+        # die Cleanup-Logik gruppiert nach model_dir.name; kanonische Keys
+        # sind für den Cleanup-Zweck nicht erforderlich (Slug-Drift führt
+        # höchstens zu getrennten Verzeichnissen, nie zu Datenverlust).
 
         bias_files = sorted(
             model_dir.glob("bias_review_*.md"),

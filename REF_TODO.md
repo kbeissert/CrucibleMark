@@ -6,6 +6,9 @@
 
 ## Abgeschlossen
 
+### Code-Review-Umsetzung (v5.1.4 – 15.08.26, Session 83)
+Vollständige Umsetzung eines 23-Findings-Reviews: 5 kritische Fixes (Ollama-Loop-Break, lifecycle_hooks-Logging, combined_score-0.0-Fallback, doppelter probe_thinking-Key, Preis-Split-Bug mit neuer SSoT config/model_pricing.yaml), Shell-Injection-Flächen geschlossen, exponentieller Rate-Limit-Backoff, Judge-Prompt Name-Priming entfernt (Blind-Evaluierung), 8 C901-Verstöße verhaltenstreu aufgesplittet (audit_logger CC 67, Roundtrip-Diff byte-identisch), Ruff 409→0, DRY-Konsolidierung (utils/provider_config_text.py), ConfigValidator-mtime-Cache, Maintenance-Skripte gehärtet (--dry-run, Heuristik-Entschärfung). 1411 Tests grün, Naming-Gate 122 Cards OK.
+
 ### Test-Suite-Reparatur & Card-Vocabulary-Normalisierung (v5.1.3 – 15.08.26)
 Drei vorbestehende Testfehler behoben: hermes-4-36b Orphan-Draft-Card via clean-model entfernt; Architecture-Tags gegen Vocabulary-SSoT normalisiert (Native-Quant/Harmony neu, Configurable-Reasoning/Thinking-Mandatory deprecated); Ornith-Test als llamacpp-Invariante für Re-Aktivierungen umgeschrieben. Maintenance-Fixes aus Sessions 74/75 (clean_provider_config, Sanitizer, probe_thinking) integriert. 1410 Tests grün.
 

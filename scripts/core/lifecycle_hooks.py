@@ -151,7 +151,19 @@ def filter_untested_with_caches(
     try:
         from scripts.core.tooluse_exporter import ToolUseExporter
         exporter = ToolUseExporter(validator.config)
-    except (NameError, Exception):
+    except ImportError as exc:
+        # Import-Fehler dürfen nicht still verschluckt werden — sonst laufen
+        # Cache-Treffer unbeabsichtigt doppelt (Double-Runs im Leaderboard).
+        print(
+            f"   ⚠️  ToolUseExporter nicht importierbar ({exc}) — "
+            "Leaderboard-Cache-Filter deaktiviert, alle testbaren Modelle laufen."
+        )
+        return testable, unreachable
+    except Exception as exc:  # pylint: disable=broad-exception-caught
+        print(
+            f"   ⚠️  ToolUseExporter-Init fehlgeschlagen ({exc}) — "
+            "Leaderboard-Cache-Filter deaktiviert, alle testbaren Modelle laufen."
+        )
         return testable, unreachable
 
     filtered: list[tuple[str, str]] = []

@@ -3,7 +3,7 @@ Base Constants for Reasoning Logic Benchmark.
 Contains global configuration and tier mappings.
 """
 
-from typing import Dict, List, Any
+from typing import Any
 
 # Scoring Configuration
 MAX_SCORE = 100
@@ -29,14 +29,14 @@ SYSTEM_PROMPT_REASONING = (
     "Finally, provide the clear Answer."
 )
 
-MODEL_REASONING_CAPABILITIES: Dict[str, Dict[str, Any]] = {
+MODEL_REASONING_CAPABILITIES: dict[str, dict[str, Any]] = {
     "deepseek": {"score": 100, "type": "Explicit Reasoning", "match": "r1"},
     "qwen": {"score": 70, "type": "Implicit Reasoning", "match": None},
     "default": {"score": 20, "type": "Pattern Matching", "match": None},
 }
 
 # Tier Configuration
-TIER_MAPPING: Dict[str, List[str]] = {
+TIER_MAPPING: dict[str, list[str]] = {
     "Tier 0 (Sanity Check)": ["reasoning_001_river"],
     "Tier 2 (Deep Reasoning)": [
         "reasoning_5a_001",

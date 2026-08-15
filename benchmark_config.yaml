@@ -34,11 +34,6 @@ runner_environment:
       compute_unit: CUDA
       ram_gb: 64
 
-# Thinking-Probe: Fallback für Modelle ohne Config-Eintrag oder ohne '/' im Namen
-probe_thinking:
-  fallback_provider: openrouter
-  fallback_model: deepseek/deepseek-v4-flash
-
 # LLM-Judge: Bewertet Antworten qualitativ und ergänzt die regelbasierten Scorer
 # mode: complement = Score nur wenn Regex/Rule-Scorer kein Urteil liefern können
 llm_judge:

@@ -3,7 +3,7 @@ Constants for Content Transformation Module
 Defines thresholds, schemas, and weightings.
 """
 
-from typing import Dict, Any
+from typing import Any
 
 # Constants
 TOKEN_MULTIPLIER = 1.3
@@ -23,7 +23,7 @@ SEMANTIC_THRESHOLDS = {
 }
 
 # NEW: Format-Specific Validation Rules (for Phase 2)
-FORMAT_SCHEMAS: Dict[str, Dict[str, Any]] = {
+FORMAT_SCHEMAS: dict[str, dict[str, Any]] = {
     "twitter_thread": {
         "pattern": r"^\d+/\d+",  # Regex for "1/5" thread numbering
         "min_tweets": 3,

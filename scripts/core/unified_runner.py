@@ -57,6 +57,19 @@ setup_logging()
 logger = logging.getLogger(__name__)
 _language_validator = LanguageValidator()
 
+# --- Heartbeat-Defaults (Review 2026-08-15: vorher 3x Magic Number 60.0) -----
+HEARTBEAT_DEFAULT_INTERVAL_S = 60.0
+
+# ToolUse-Flat-Fields: Ergebnis-Keys, die ohne score_contributions direkt
+# aus dem Exec-Result in den CSV-Datensatz übernommen werden (Modul-Konstante
+# statt pro Asset-Run neu erzeugtem Tuple; Review 2026-08-15).
+TOOLUSE_FLAT_FIELDS = (
+    "p1_score", "p2_score", "combined_score", "mcp_mode",
+    "tool_call_valid", "tool_call_attempts", "mcp_latency_s",
+    "call1_time_s", "call2_time_s", "total_time_s",
+    "call1_tokens", "call2_tokens", "hallucination_flag",
+)
+
 # Budget-/Quota-Fehlermuster — Modul-Level-Konstante (kein Rebuild pro Exception)
 _BUDGET_KEYWORDS: tuple[str, ...] = (
     "quota",
@@ -719,13 +732,7 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         # aus der main CSV zu lesen, auch ohne score_contributions.
         _tu_data = exec_result.data
         if "p1_score" in _tu_data:
-            _TOOLUSE_FLAT = (
-                "p1_score", "p2_score", "combined_score", "mcp_mode",
-                "tool_call_valid", "tool_call_attempts", "mcp_latency_s",
-                "call1_time_s", "call2_time_s", "total_time_s",
-                "call1_tokens", "call2_tokens", "hallucination_flag",
-            )
-            for _k in _TOOLUSE_FLAT:
+            for _k in TOOLUSE_FLAT_FIELDS:
                 if _k in _tu_data and _k not in result:
                     result[_k] = _tu_data[_k]
 
@@ -1107,17 +1114,17 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         """
         cfg = self.validator.config.get("heartbeat", {}) or {}
         if not isinstance(cfg, dict):
-            return True, 60.0
+            return True, HEARTBEAT_DEFAULT_INTERVAL_S
 
         enabled = bool(cfg.get("enabled", True))
 
-        raw_interval = cfg.get("interval_seconds", 60.0)
+        raw_interval = cfg.get("interval_seconds", HEARTBEAT_DEFAULT_INTERVAL_S)
         try:
             interval = float(raw_interval)
         except (TypeError, ValueError):
-            interval = 60.0
+            interval = HEARTBEAT_DEFAULT_INTERVAL_S
         if interval <= 0:
-            interval = 60.0
+            interval = HEARTBEAT_DEFAULT_INTERVAL_S
 
         return enabled, interval
 
@@ -1499,16 +1506,10 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         Das Flag `_skip_llamacpp_cleanup` kann vom Orchestrator gesetzt werden,
         um diesen Pfad explizit zu deaktivieren.
         """
-        local_provider_names = (
-            "ollama",
-            "llamacpp",
-            "llamacpp_spark",
-            "llama_cpp",
-            "llamacpp_local",
-            "vllm_spark",
-        )
+        # DRY (Review 2026-08-15): identisches Tupel wie _local_provider_names()
+        # — vorher doppelt gepflegt, Drift-Gefahr bei neuen Providern.
         provider_l = provider.lower()
-        if provider_l not in local_provider_names:
+        if provider_l not in UnifiedBenchmarkRunner._local_provider_names():
             return
 
         # llama.cpp-Provider: Cleanup liegt beim Batch-Orchestrator (benchmark_auto.py),

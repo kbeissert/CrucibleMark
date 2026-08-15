@@ -17,6 +17,7 @@ Subklassen MÜSSEN `PROVIDER_NAMES` (für Auto-Registry) und
 import json
 import logging
 import os
+import shlex
 import subprocess
 import time
 import urllib.error
@@ -143,10 +144,16 @@ class LlamaCppBaseClient(BaseProviderClient):
 
     @staticmethod
     def _normalize_model_name(model_id: str | None) -> str:
-        """Punkt → Underscore, Bindestrich → Underscore für Vergleich."""
+        """Punkt → Underscore, Bindestrich → Underscore, lowercased für Vergleich.
+
+        Review 2026-08-15: case-insensitive gemacht, analog zu
+        vllm_base._normalize_model_name — gemischte Config-Namen
+        (``Qwen3.5-35B-A3B``) und kanonische Pipeline-Formen
+        (``qwen3_5-35b-a3b``) matchen jetzt denselben Normalisierungs-Hash.
+        """
         if not model_id:
             return ""
-        return model_id.replace(".", "_").replace("-", "_")
+        return model_id.lower().replace(".", "_").replace("-", "_")
 
     @staticmethod
     def _strip_model_name(model_id: str) -> str:
@@ -359,16 +366,20 @@ class LlamaCppBaseClient(BaseProviderClient):
         log_file = os.path.expanduser(prov_cfg.get("server_log", "~/ai/llama-lab-server.log"))
         start_cmd = self._server_start_cmd()
 
+        # Shell-Injection-Schutz (Review 2026-08-15, Spiegelbild zu vllm_base.py):
+        # Alle Single-Value-Interpolationen werden mit shlex.quote() gesichert.
+        # start_cmd und extra_server_args bleiben bewusst unquoted — sie sind
+        # vom Operator konfigurierte Shell-Fragmente (Trust-Boundary: Config).
         cmd = (
             f"{start_cmd}"
-            f" -m {model_path}"
-            f" --alias {model_id}"
+            f" -m {shlex.quote(str(model_path))}"
+            f" --alias {shlex.quote(str(model_id))}"
             f" --ctx-size {ctx_size}"
             f" --n-gpu-layers {n_gpu}"
             f" --threads {threads}"
             f" --parallel {parallel}"
             f" --port {port}"
-            f" --host {prov_cfg.get('bind_host', '127.0.0.1')}"
+            f" --host {shlex.quote(str(prov_cfg.get('bind_host', '127.0.0.1')))}"
         )
 
         # Reproduzierbarkeits-Seed (aus Defaults, Fallback 42 statt llama.cpp-Random)
@@ -385,7 +396,7 @@ class LlamaCppBaseClient(BaseProviderClient):
         # Optional model-level runtime tuning
         reasoning_mode = model_cfg.get("reasoning")
         if reasoning_mode:
-            cmd += f" --reasoning {reasoning_mode}"
+            cmd += f" --reasoning {shlex.quote(str(reasoning_mode))}"
         enable_thinking = model_cfg.get("enable_thinking")
         if enable_thinking in (True, False):
             # Server-Log empfiehlt: "Use --reasoning on / --reasoning off instead"
@@ -398,7 +409,7 @@ class LlamaCppBaseClient(BaseProviderClient):
         draft_file = model_cfg.get("model_draft_file")
         if draft_file:
             draft_path = self._resolve_model_path_from_dir(draft_file, prov_cfg.get("model_dir"))
-            cmd += f" --model-draft {draft_path}"
+            cmd += f" --model-draft {shlex.quote(str(draft_path))}"
 
         # Zusätzliche Server-Flags aus der Modell-Config (extra_server_args).
         # Ermöglicht die Übergabe beliebiger llama.cpp-Flags wie --spec-type,
@@ -413,7 +424,7 @@ class LlamaCppBaseClient(BaseProviderClient):
                 if isinstance(arg, str) and arg.strip():
                     cmd += f" {arg.strip()}"
 
-        return f"{cmd} >> {log_file} 2>&1"
+        return f"{cmd} >> {shlex.quote(str(log_file))} 2>&1"
 
     # ------------------------------------------------------------------
     # OpenAI-Client (lazy-loaded, recreated on base_url change)

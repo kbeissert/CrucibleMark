@@ -7,7 +7,7 @@ from abc import ABC, abstractmethod
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any, Optional, NamedTuple
+from typing import Any, NamedTuple
 
 import yaml
 
@@ -23,10 +23,10 @@ class BenchmarkResultData(NamedTuple):
 
     model: str
     response: str
-    score: Dict[str, Any]
-    comparison: Dict[str, Any]
+    score: dict[str, Any]
+    comparison: dict[str, Any]
     output_dir: Path
-    output_file: Optional[Path] = None
+    output_file: Path | None = None
 
 
 class BaseTest(ABC):
@@ -52,7 +52,7 @@ class BaseTest(ABC):
         self.asset = self._load_asset()
         self._validate_asset()
 
-    def _load_asset(self) -> Dict[str, Any]:
+    def _load_asset(self) -> dict[str, Any]:
         """
         Lädt YAML-Test-Asset.
         Robust gegenüber Multi-Document-Files (nimmt das erste Dokument mit metadaten).
@@ -60,7 +60,7 @@ class BaseTest(ABC):
         Returns:
             Dict mit Asset-Daten
         """
-        with open(self.asset_path, "r", encoding="utf-8") as f:
+        with open(self.asset_path, encoding="utf-8") as f:
             try:
                 # Try single load first (fastest)
                 return yaml.safe_load(f) or {}
@@ -127,7 +127,7 @@ class BaseTest(ABC):
 
     def compare_to_golden_standard(
         self, response: str, golden_path: Path
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Vergleicht Response mit Golden Standard
 
@@ -144,7 +144,7 @@ class BaseTest(ABC):
                 "message": "No golden standard available for comparison",
             }
 
-        with open(golden_path, "r", encoding="utf-8") as f:
+        with open(golden_path, encoding="utf-8") as f:
             golden_data = json.load(f)
 
         golden_response = golden_data.get("response", "")
@@ -206,8 +206,8 @@ class BaseTest(ABC):
         path: Path,
         model: str,
         response: str,
-        score: Dict[str, Any],
-        comparison: Dict[str, Any],
+        score: dict[str, Any],
+        comparison: dict[str, Any],
     ) -> None:
         """Schreibt Markdown Report"""
         with open(path, "w", encoding="utf-8") as f:
@@ -241,8 +241,8 @@ class BaseTest(ABC):
         path: Path,
         model: str,
         response: str,
-        score: Dict[str, Any],
-        comparison: Dict[str, Any],
+        score: dict[str, Any],
+        comparison: dict[str, Any],
     ) -> None:
         """Schreibt JSON Result"""
         result = {

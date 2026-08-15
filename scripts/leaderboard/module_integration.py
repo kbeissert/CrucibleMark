@@ -14,6 +14,7 @@ SSoT (Single Source of Truth):
 """
 
 import json
+import logging
 import sys
 from typing import Any
 
@@ -38,6 +39,9 @@ except ImportError:
     _safe_name = None  # type: ignore
     ConfigValidator = None  # type: ignore
 # pylint: enable=import-error
+
+
+logger = logging.getLogger(__name__)
 
 
 def _build_card_lookups() -> tuple[dict[str, str], dict[str, str]]:
@@ -365,7 +369,8 @@ def _safe_format_value(row: pd.Series, source_config: dict[str, Any]) -> str:
         return ""
     except KeyError:
         return "Error (Key)"
-    except Exception:
+    except (json.JSONDecodeError, TypeError, ValueError) as exc:
+        logger.debug("Enrichment-Formatierung fehlgeschlagen: %s", exc)
         return "Error"
 
 
@@ -486,8 +491,8 @@ def _enrich_from_csv_source(
         # Model-card-based not-capable check
         result = _apply_not_capable_card_check(result, label, source_config, fallback)
 
-    except Exception as e:
-        print(f"Generic CSV Merge Error ({filename}): {e}")
+    except (pd.errors.ParserError, pd.errors.EmptyDataError, OSError, KeyError) as e:
+        logger.warning("Generic CSV Merge Error (%s): %s", filename, e)
         if label not in result.columns:
             result[label] = "Error"
 

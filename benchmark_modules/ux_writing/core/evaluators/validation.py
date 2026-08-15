@@ -3,7 +3,6 @@ Evaluators for validation rules (Regex, Code presence, Length constraints).
 """
 
 import re
-from typing import Tuple
 from ..models import UXCriterion
 from ..constants import MAX_BUTTON_LENGTH, DEFAULT_MIN_REGEX_MATCHES
 from .base import CriterionEvaluator
@@ -17,7 +16,7 @@ class RegexEvaluator(CriterionEvaluator):
     Useful for checking specific formats like WCAG identifiers (x.x.x).
     """
 
-    def evaluate(self, response: str, criterion: UXCriterion) -> Tuple[float, str]:
+    def evaluate(self, response: str, criterion: UXCriterion) -> tuple[float, str]:
         points = criterion.points
 
         # Fallback to WCAG pattern if not provided, just like original code
@@ -45,7 +44,7 @@ class CodeValidationEvaluator(CriterionEvaluator):
     Checks for presence of specific strings/tokens in code.
     """
 
-    def evaluate(self, response: str, criterion: UXCriterion) -> Tuple[float, str]:
+    def evaluate(self, response: str, criterion: UXCriterion) -> tuple[float, str]:
         points = criterion.points
         required = criterion.required_elements
         min_blocks = criterion.min_code_blocks
@@ -79,7 +78,7 @@ class LengthValidationEvaluator(CriterionEvaluator):
     Checks that button labels do not exceed a character limit.
     """
 
-    def evaluate(self, response: str, criterion: UXCriterion) -> Tuple[float, str]:
+    def evaluate(self, response: str, criterion: UXCriterion) -> tuple[float, str]:
         points = criterion.points
         # Assuming generic param parsing or usage of additional_params if needed
         # but models.py has specific fields for now or we rely on defaults.

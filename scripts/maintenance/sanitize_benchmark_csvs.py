@@ -39,6 +39,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import contextlib
 import logging
 import shutil
 import sys
@@ -121,10 +122,17 @@ def _is_invalid_model(model: str) -> tuple[bool, str]:
         return True, "empty"
     if m.lower() in BOOLEAN_MODEL_VALUES:
         return True, "boolean"
-    # Pure-numeric model names (e.g. "65536", "12000", "4") are column-shift artifacts
-    # from token limits, max_tokens, or judge sub-scores leaking into the model field.
-    if m.replace(".", "").replace("_", "").replace("-", "").isdigit():
-        return True, "numeric"
+    # Pure-numeric model names (e.g. "65536", "12000", "4", "0.5") are column-shift
+    # artifacts from token limits, max_tokens, or judge sub-scores leaking into the
+    # model field. Review 2026-08-15: vorher wurden ALLE Trennzeichen entfernt und
+    # dann isdigit() geprueft — dadurch wurden auch ID-artige Werte wie "3-8" oder
+    # "1_000" fälschlich als numeric klassifiziert. Jetzt: nur Werte ohne ID-typische
+    # Trennzeichen ("-", "_"), die sich als float parsen lassen. Echte Leaks aus
+    # numerischen CSV-Spalten enthalten keine Bindestriche.
+    if "-" not in m and "_" not in m:
+        with contextlib.suppress(ValueError):
+            float(m)
+            return True, "numeric"
     # Known finish_reason values (e.g. "length", "stop") that shifted into model field.
     if m.lower() in FINISH_REASON_VALUES:
         return True, "finish_reason"

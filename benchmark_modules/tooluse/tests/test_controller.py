@@ -11,14 +11,14 @@ if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
 
-from benchmark_modules.tooluse.core.constants import (
+from benchmark_modules.tooluse.core.constants import (  # noqa: E402
     AUDIT_MCP_UNAVAILABLE,
     FIELD_HALLUCINATION_FLAG,
     FIELD_P1_SCORE,
     FIELD_P2_SCORE,
 )
-from benchmark_modules.tooluse.test import ToolUseTest
-from schemas.result import BenchmarkResult
+from benchmark_modules.tooluse.test import ToolUseTest  # noqa: E402
+from schemas.result import BenchmarkResult  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Asset paths (real files used so BaseTest._load_asset() runs normally)

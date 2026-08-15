@@ -4,7 +4,7 @@ Calculates Flesch-Kincaid Reading Ease and other metrics.
 """
 
 import re
-from typing import Dict, Any
+from typing import Any
 
 
 class ReadabilityScorer:
@@ -13,7 +13,7 @@ class ReadabilityScorer:
     """
 
     @staticmethod
-    def calculate_readability(response: str) -> Dict[str, Any]:
+    def calculate_readability(response: str) -> dict[str, Any]:
         """
         Calculates Flesch Reading Ease score and statistics.
         """

@@ -7,7 +7,7 @@ import csv
 import re
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, Any, Optional
+from typing import Any
 
 
 class UXResultManager:
@@ -38,7 +38,7 @@ class UXResultManager:
 
     @staticmethod
     def save_json(
-        report: Dict[str, Any], directory: Path, filename: Optional[str] = None
+        report: dict[str, Any], directory: Path, filename: str | None = None
     ) -> Path:
         """
         Saves the full report as JSON.
@@ -69,7 +69,7 @@ class UXResultManager:
         return filepath
 
     @staticmethod
-    def save_csv(report: Dict[str, Any], filepath: Path) -> Path:
+    def save_csv(report: dict[str, Any], filepath: Path) -> Path:
         """
         Appends the result to a CSV leaderboard file.
 
@@ -123,7 +123,7 @@ class UXResultManager:
         return filepath
 
     @staticmethod
-    def print_summary(report: Dict[str, Any]) -> None:
+    def print_summary(report: dict[str, Any]) -> None:
         """
         Prints a CLI summary of the report.
 

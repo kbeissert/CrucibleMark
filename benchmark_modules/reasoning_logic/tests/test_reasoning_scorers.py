@@ -12,7 +12,7 @@ and simulated ground truth for missing assets.
 """
 
 import unittest
-from typing import Dict, Any
+from typing import Any
 
 from benchmark_modules.reasoning_logic.core.evaluators import (
     ReasoningEvaluator,
@@ -31,7 +31,7 @@ class TestReasoningScorers(unittest.TestCase):
     def setUp(self) -> None:
         """Set up test fixtures."""
         # Simulated Ground Truth for assets not yet in validation_dataset.py
-        self.simulated_ground_truth: Dict[str, Any] = {
+        self.simulated_ground_truth: dict[str, Any] = {
             "reasoning_metacog_003": {
                 "expected_score": 100.0,
                 "input": "<thought>Option 1: A. Option 2: B. Let's compare.</thought>\nAnswer: Because logic.",

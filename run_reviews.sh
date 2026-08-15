@@ -1,4 +1,9 @@
 #!/bin/bash
+# Review 2026-08-15: set -euo pipefail — Fehler im Script-Setup (ungebundene
+# Variablen, Pipeline-Brüche) brechen ab statt still weiterzulaufen. Fehler
+# einzelner generate_review-Läufe bleiben bewusst im if-Handling (OK/FEHLER-Log).
+set -euo pipefail
+
 MODELS=(
   "claude-haiku-4-5-20251001"
   "claude-opus-4-5-20251101"

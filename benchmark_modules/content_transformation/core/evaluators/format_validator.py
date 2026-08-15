@@ -5,7 +5,7 @@ Validates structure of specific content types (Twitter threads, JSON, Landing Pa
 
 import json
 import re
-from typing import Dict, List, Tuple, Any, Optional
+from typing import Any
 from ..constants import FORMAT_SCHEMAS
 
 
@@ -14,14 +14,14 @@ class FormatValidator:
 
     @staticmethod
     def validate_twitter_thread(
-        response: str, config: Optional[Dict[str, Any]] = None
-    ) -> Tuple[bool, List[str]]:
+        response: str, config: dict[str, Any] | None = None
+    ) -> tuple[bool, list[str]]:
         """
         Validates a Twitter thread structure.
         Expects tweets to be separated by newlines or numbered like 1/X.
         """
-        base_schema: Dict[str, Any] = FORMAT_SCHEMAS.get("twitter_thread", {})
-        cfg: Dict[str, Any] = config if config is not None else base_schema
+        base_schema: dict[str, Any] = FORMAT_SCHEMAS.get("twitter_thread", {})
+        cfg: dict[str, Any] = config if config is not None else base_schema
         min_tweets = cfg.get("min_tweets", 3)
         max_chars = cfg.get("max_chars_per_tweet", 280)
         pattern_str = cfg.get("pattern", r"^\d+/\d+")
@@ -37,10 +37,7 @@ class FormatValidator:
             # Extract content between matches
             for i, match in enumerate(matches):
                 start = match.end()
-                if i + 1 < len(matches):
-                    end = matches[i + 1].start()
-                else:
-                    end = len(response)
+                end = matches[i + 1].start() if i + 1 < len(matches) else len(response)
                 content = response[start:end].strip()
                 tweets.append(content)
         elif "\n\n" in response:
@@ -70,23 +67,57 @@ class FormatValidator:
         return len(issues) == 0, issues
 
     @staticmethod
+    def _extract_json_content(response: str) -> str:
+        """Extrahiert JSON aus Markdown-Code-Blöcken, falls vorhanden."""
+        if "```" not in response:
+            return response
+        # Try to match optional "json" identifier
+        match = re.search(r"```(?:json)?(.*?)```", response, re.DOTALL)
+        if match:
+            return match.group(1).strip()
+        return response
+
+    @staticmethod
+    def _check_required_keys(data: Any, required_keys: list, issues: list) -> None:
+        """Prüft Required-Keys in dict oder erstem Listen-Element."""
+        if isinstance(data, dict):
+            missing = [k for k in required_keys if k not in data]
+            if missing:
+                issues.append(f"Missing required JSON keys: {', '.join(missing)}")
+        elif isinstance(data, list) and required_keys:
+            # Check first item if it's a list
+            if data and isinstance(data[0], dict):
+                missing = [k for k in required_keys if k not in data[0]]
+                if missing:
+                    issues.append(f"Missing required keys: {', '.join(missing)}")
+
+    @staticmethod
+    def _check_strict_extra_keys(
+        data: Any, schema: dict[str, Any] | None, issues: list
+    ) -> None:
+        """Strict-Mode: meldet Keys, die nicht in required_keys stehen."""
+        if not (isinstance(data, dict) and schema):
+            return
+        required_set = set(schema.get("required_keys", []))
+        actual_set = set(data.keys())
+        extra = actual_set - required_set
+        if extra:
+            issues.append(f"Found unauthorized extra keys: {', '.join(extra)}")
+
+    @classmethod
     def validate_json_structure(
-        response: str, schema: Optional[Dict[str, Any]] = None
-    ) -> Tuple[bool, List[str]]:
+        cls, response: str, schema: dict[str, Any] | None = None
+    ) -> tuple[bool, list[str]]:
         """
         Validates if the response contains valid JSON and optionally matches a schema.
+
+        Refactoring 2026-08-15 (Review): CC=14 → Schema-/Strict-Checks in
+        eigene Methoden ausgelagert — Validierungslogik unverändert.
         """
         # Typehint to appease mypy as get on empty dict could be inferred as object
-        config: Dict[str, Any] = FORMAT_SCHEMAS.get("json_export", {})
-        issues = []
-        json_content = response
-
-        # Extract JSON from markdown code blocks if present
-        if "```" in response:
-            # Try to match optional "json" identifier
-            match = re.search(r"```(?:json)?(.*?)```", response, re.DOTALL)
-            if match:
-                json_content = match.group(1).strip()
+        config: dict[str, Any] = FORMAT_SCHEMAS.get("json_export", {})
+        issues: list[str] = []
+        json_content = cls._extract_json_content(response)
 
         try:
             data = json.loads(json_content)
@@ -98,30 +129,11 @@ class FormatValidator:
                     required_keys = schema
                 else:
                     required_keys = schema.get("required_keys", [])
-
-                if isinstance(data, dict):
-                    missing = [k for k in required_keys if k not in data]
-                    if missing:
-                        issues.append(
-                            f"Missing required JSON keys: {', '.join(missing)}"
-                        )
-                elif isinstance(data, list) and required_keys:
-                    # Check first item if it's a list
-                    if data and isinstance(data[0], dict):
-                        missing = [k for k in required_keys if k not in data[0]]
-                        if missing:
-                            issues.append(
-                                f"Missing required keys: {', '.join(missing)}"
-                            )
+                cls._check_required_keys(data, required_keys, issues)
 
             is_strict = config.get("strict_mode", False)
-            if is_strict and isinstance(data, dict) and schema:
-                # Check for extra keys if strict mode is on and we have a schema
-                required_set = set(schema.get("required_keys", []))
-                actual_set = set(data.keys())
-                extra = actual_set - required_set
-                if extra:
-                    issues.append(f"Found unauthorized extra keys: {', '.join(extra)}")
+            if is_strict:
+                cls._check_strict_extra_keys(data, schema, issues)
 
         except json.JSONDecodeError as e:
             issues.append(f"Invalid JSON format: {str(e)}")
@@ -132,13 +144,13 @@ class FormatValidator:
 
     @staticmethod
     def validate_landing_page_structure(
-        response: str, config: Optional[Dict[str, Any]] = None
-    ) -> Tuple[bool, List[str]]:
+        response: str, config: dict[str, Any] | None = None
+    ) -> tuple[bool, list[str]]:
         """
         Validates markdown structure for landing pages (Headers, CTA).
         """
-        base_schema: Dict[str, Any] = FORMAT_SCHEMAS.get("landing_page", {})
-        cfg: Dict[str, Any] = config if config is not None else base_schema
+        base_schema: dict[str, Any] = FORMAT_SCHEMAS.get("landing_page", {})
+        cfg: dict[str, Any] = config if config is not None else base_schema
         required_sections = cfg.get("required_sections", [])
         max_headline_len = cfg.get("max_headline_chars", 60)
 

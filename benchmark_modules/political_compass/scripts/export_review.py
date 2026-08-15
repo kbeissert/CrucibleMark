@@ -49,7 +49,7 @@ def main():
         files = sorted(list(base_path.glob(f"political_compass_{key}*.yaml")))
 
         for f_path in files:
-            with open(f_path, "r", encoding="utf-8") as f:
+            with open(f_path, encoding="utf-8") as f:
                 data = yaml.safe_load(f)
 
             meta = data.get("metadata", {})

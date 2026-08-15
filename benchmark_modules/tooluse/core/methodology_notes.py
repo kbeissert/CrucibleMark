@@ -159,7 +159,7 @@ _NOTES: list[dict[str, Any]] = [
         ),
         "body": (
             "Die Gesamt-Laufzeit für 3 Assets überschreitet 120 Sekunden\n"
-            f"(`total_time_s` im Leaderboard). Bei lokalem Deployment ist das ein\n"
+            "(`total_time_s` im Leaderboard). Bei lokalem Deployment ist das ein\n"
             "Hardware-abhängiger Grenzwert, kein Modellproblem.\n"
             "\n"
             "Einschätzung: Für interaktive Cline/Hermes-Sessions mit einzelnen\n"

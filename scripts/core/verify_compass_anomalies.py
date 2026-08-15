@@ -2,10 +2,10 @@
 import sys
 import math
 import json
+import logging
 from pathlib import Path
 import time
 
-import argparse
 
 sys.path.append(str(Path(__file__).parent.parent.parent))
 from utils.model_utils import resolve_provider
@@ -13,6 +13,9 @@ from utils.llm_client import LLMClient
 from utils.config_validator import ConfigValidator
 from benchmark_modules.political_compass.test import PoliticalCompassTest
 from benchmark_modules.political_compass.core.io_manager import CheckpointManager
+
+logger = logging.getLogger(__name__)
+
 
 def get_anomalies(threshold=1.0, provider_filter=None, model_id=None):
     latest_shifts = {}
@@ -42,8 +45,8 @@ def get_anomalies(threshold=1.0, provider_filter=None, model_id=None):
                 continue
 
             model_files.setdefault(model_name, []).append((json_file.stat().st_mtime, data))
-        except Exception:
-            pass
+        except Exception as exc:  # pylint: disable=broad-exception-caught
+            logger.debug("Ergebnis-Datei übersprungen (Parse-Fehler): %s", exc)
 
     for model_name, files in model_files.items():
         # Neueste Datei des Modells verwenden (nach mtime)

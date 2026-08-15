@@ -181,7 +181,7 @@ providers:
         deepseek/deepseek-v4-pro: 16000
         deepseek/deepseek-v4-flash: 16000
 
-      # Xiaomi MiMo Thinking-Modelle — Reasoning-Anteile benötigen höheres Budget
+        # Xiaomi MiMo Thinking-Modelle — Reasoning-Anteile benötigen höheres Budget
         xiaomi/mimo-v2.5-pro: 20000
         xiaomi/mimo-v2.5: 24000
 

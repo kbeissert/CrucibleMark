@@ -16,6 +16,20 @@ from utils.model_thinking import (
 
 logger = logging.getLogger(__name__)
 
+# --- Budget-Multiplikatoren (Review 2026-08-15: vorher Magic Numbers) ---------
+# Reasoning-Modelle mit explizitem Budget, aber ohne modulspezifischen
+# token_budgets_reasoning_models-Eintrag: 5x-Multiplikator (Chain-of-Thought
+# konsumiert das gleiche Ausgabefenster wie die sichtbare Antwort).
+REASONING_BUDGET_MULTIPLIER = 5
+
+# Thinking-Optional-Modelle (adaptive interne Planung im Standard-Modus):
+# 2x-Multiplikator, damit die sichtbare Ausgabe nicht verdrängt wird.
+THINKING_OPTIONAL_BUDGET_MULTIPLIER = 2
+
+# Mindest-Budget für Reasoning-Modelle ohne explizites Budget — stellt
+# sicher, dass Chain-of-Thought nicht am Default-num_predict truncatet.
+REASONING_MIN_BUDGET_TOKENS = 25000
+
 
 def _apply_provider_thinking_override(
     model: str,
@@ -116,18 +130,18 @@ def resolve_token_budget(
 
     if reasoning and explicit_budget:
         budgets = config.get("token_budgets_reasoning_models", {})
-        tokens = budgets[module_key] if (module_key and module_key in budgets) else tokens * 5
+        tokens = budgets[module_key] if (module_key and module_key in budgets) else tokens * REASONING_BUDGET_MULTIPLIER
     elif reasoning:
         # Ohne explicit_budget: Mindest-Budget für Reasoning-Modelle sicherstellen.
         # max() statt fester Schwelle — robust auch wenn defaults.generation.num_predict
         # in der Config >= 10000 konfiguriert ist.
-        tokens = max(tokens, 25000)
+        tokens = max(tokens, REASONING_MIN_BUDGET_TOKENS)
     elif is_thinking_optional_from_card(model) and explicit_budget:
         # Thinking-Optional models (e.g. Gemini 2.5 Flash, Qwen3) activate internal
         # thinking adaptively and consume the same max_output_tokens quota.
         # Grant the reasoning budget so visible output is not crowded out.
         budgets = config.get("token_budgets_reasoning_models", {})
-        tokens = budgets[module_key] if (module_key and module_key in budgets) else tokens * 2
+        tokens = budgets[module_key] if (module_key and module_key in budgets) else tokens * THINKING_OPTIONAL_BUDGET_MULTIPLIER
 
     elif not reasoning and explicit_budget and module_key:
         # Kleine lokale Modelle (Desktop, Edge, Nano, Workstation): GGUF-Quantisierungen

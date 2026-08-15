@@ -3,7 +3,7 @@ Facade for Documentation Quality evaluation.
 Handles orchestration of specialized sub-evaluators.
 """
 
-from typing import Dict, Any, List, Optional
+from typing import Any
 from pathlib import Path
 
 from utils.benchmark_utils import clean_reasoning_tags
@@ -25,7 +25,7 @@ class DocumentationEvaluator:
 
     # pylint: disable=too-few-public-methods
 
-    def __init__(self, asset: Dict[str, Any], asset_path: Optional[Path] = None):
+    def __init__(self, asset: dict[str, Any], asset_path: Path | None = None):
         self.asset = asset
         self.asset_path = asset_path or Path("")
 
@@ -58,9 +58,9 @@ class DocumentationEvaluator:
         scoring_config = self.asset["scoring"]
         total_possible = scoring_config["total_points"]
 
-        category_scores: Dict[str, Any] = {}
-        details: List[str] = []
-        violations: List[str] = []
+        category_scores: dict[str, Any] = {}
+        details: list[str] = []
+        violations: list[str] = []
         total_achieved: float = 0.0
 
         response_lower = clean_response.lower()
@@ -112,8 +112,8 @@ class DocumentationEvaluator:
         return clean_reasoning_tags(response)
 
     def _run_advanced_validators(
-        self, response: str, details: List[str], violations: List[str]
-    ) -> Dict[str, Any]:
+        self, response: str, details: list[str], violations: list[str]
+    ) -> dict[str, Any]:
         """Runs Phase 2 validators: Structure, Readability, Completeness."""
         doc_type = self.asset.get("metadata", {}).get("doc_type", "readme")
         results = {"doc_type": doc_type}

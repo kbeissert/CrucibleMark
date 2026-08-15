@@ -6,6 +6,9 @@ import contextlib
 
 
 
+logger = logging.getLogger(__name__)
+
+
 class CostTracker:
     """Verfolgt Token-Kosten für kommerzielle APIs."""
 
@@ -169,7 +172,7 @@ class CostTracker:
                     ]
                 )
         except Exception as e:
-            logging.error(f"Failed to write cost log: {e}")
+            logger.error("Failed to write cost log: %s", e)
 
         return cost
 

@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import os
 import re
 import sys
@@ -52,6 +53,8 @@ from scripts.analysis.review import (  # noqa: E402
 _MAX_LOG_CHARS = 30_000
 
 
+logger = logging.getLogger(__name__)
+
 def _resolve_thinking_mode_for_review(model_id: str) -> str:
     """Löst den Thinking-Modus für einen Review-Kandidaten auf.
 
@@ -75,8 +78,8 @@ def _resolve_thinking_mode_for_review(model_id: str) -> str:
             return "Thinking" if ctk["enable_thinking"] else "Standard"
         if "enable_thinking" in model_cfg:
             return "Thinking" if model_cfg["enable_thinking"] else "Standard"
-    except Exception:  # pylint: disable=broad-except
-        pass
+    except Exception as exc:  # pylint: disable=broad-except
+        logger.debug("Thinking-Mode-Auflösung fehlgeschlagen für Config-Pfad: %s", exc)
     return "n/a"
 
 # Per-Task-Metrik-Zeilen, die aus dem Audit-Log-Kontext entfernt werden, BEVOR
@@ -102,20 +105,19 @@ def load_config() -> dict:
 
 
 def _load_webexport_blacklist() -> set[str]:
-    """Load web export blacklist model IDs.
+    """Load web export blacklist model IDs via SSoT (web_export/filters.py).
 
-    Returns set of blacklisted model_ids that should be skipped in auto-review.
+    DRY (Review 2026-08-15): vorher identische Load-Logik dupliziert — jetzt
+    delegiert an _load_export_blacklist(), die auch Pattern-Einträge (*, ?, [)
+    korrekt als eigene Menge führt. Für den Auto-Review-Skip zählen exakte
+    UND Pattern-IDs als blacklisted.
     """
-    blacklist_path = ROOT_DIR / "config" / "web_export_blacklist.yaml"
-    try:
-        with open(blacklist_path, encoding="utf-8") as f:
-            data = yaml.safe_load(f)
-            blacklist = data.get("blacklist", [])
-            # Return as set for fast O(1) lookup
-            return set(blacklist) if blacklist else set()
-    except Exception as e:
-        print(f"⚠️ Konnte Webexport-Blacklist nicht laden: {e}")
-        return set()
+    from scripts.web_export.filters import _load_export_blacklist
+
+    exact, pattern, _total, _loaded = _load_export_blacklist(
+        root_dir=ROOT_DIR,
+    )
+    return exact | pattern
 
 
 def _load_classification_taxonomy() -> dict:
@@ -423,7 +425,8 @@ def _extract_audit_logs(model_dir: Path, review_type: str) -> list[str]:
                 extracted_logs.append(
                     f"--- Datei: {md_file.name} ---{system_info_text}\n{content[-1500:]}"
                 )
-        except Exception:
+        except Exception as exc:  # pylint: disable=broad-except
+            logger.debug("Audit-Log %s übersprungen (Lesefehler): %s", md_file, exc)
             continue
     return extracted_logs
 

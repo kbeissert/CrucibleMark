@@ -2,7 +2,7 @@
 Cultural Fit Evaluator Module.
 """
 
-from typing import List, Dict, Any
+from typing import Any
 from benchmark_modules.cultural_intelligence.core.constants import (
     REGIONAL_EXPRESSIONS,
     POLITENESS_MARKERS,
@@ -24,8 +24,8 @@ class CulturalFitEvaluator:
 
     @staticmethod
     def score_cultural_fit(
-        response: str, criteria: List[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+        response: str, criteria: list[dict[str, Any]]
+    ) -> dict[str, Any]:
         """
         Score cultural fit based on regional and politeness markers.
 
@@ -101,7 +101,7 @@ class CulturalFitEvaluator:
         }
 
     @staticmethod
-    def _detect_regional_markers(response_lower: str) -> Dict[str, int]:
+    def _detect_regional_markers(response_lower: str) -> dict[str, int]:
         """
         Detect regional markers (DE/AT/CH) in response.
 

@@ -94,26 +94,12 @@ class BaseBenchmarkRunner:
         else:
             exec_result = test_instance.execute(model, self.client, provider=provider)
 
-        # Inject finish_reason if available
-        if hasattr(self.client, "last_response_metadata"):
-            # Check token_limit_fallback FIRST: a ctx_overflow (fallback=True) must prevent
-            # token_limit_cutoff from being set, even if finish_reason="length".
-            fb = self.client.last_response_metadata.get("token_limit_fallback")
-            if fb:
-                exec_result.token_limit_fallback = True
-
-            fr = self.client.last_response_metadata.get("finish_reason")
-            if fr:
-                exec_result.finish_reason = str(fr)
-                # Only mark as budget cutoff when NOT a ctx overflow (fallback already set above)
-                if str(fr).lower() in ["length", "max_tokens"] and not getattr(exec_result, "token_limit_fallback", False):
-                    exec_result.token_limit_cutoff = True
-
-            tlu = self.client.last_response_metadata.get("token_limit_used")
-            if tlu is not None:
-                exec_result.token_limit_used = tlu
-
-            self._inject_client_metadata(exec_result)
+        # Inject finish_reason + Token-Limit-Metadaten (SSoT: _inject_client_metadata).
+        # Review 2026-08-15: vorher war die Logik hier INLINE dupliziert UND wurde
+        # zusätzlich via _inject_client_metadata nochmal ausgeführt (Doppel-Write
+        # derselben Felder). Die Methode deckt alle Felder ab — inklusive
+        # token_limit_fallback-Priorität vor token_limit_cutoff.
+        self._inject_client_metadata(exec_result)
 
         return test_instance, exec_result
 

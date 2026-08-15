@@ -246,7 +246,16 @@ def build_prompts(
 
 
 def _append_identity_context(system_prompt: str, tested_model_id: str | None) -> str:
-    """Hängt den EVALUATION-CONTEXT-Block (Modell-Tag-Hinweise) an, wenn vorhanden."""
+    """Hängt den EVALUATION-CONTEXT-Block (Modell-Tag-Hinweise) an, wenn vorhanden.
+
+    Blind-Evaluierung (Review 2026-08-15): Der Judge erhält NUR Capability-Tags,
+    nie Modellnamen (display_name/raw werden nicht injiziert). Illustrative
+    Modellnamen-Beispiele wurden aus den Tag-Beschreibungen entfernt, um
+    Name-Priming zu vermeiden. Bekannte Limitierung: Der Tag
+    Agentic-Orchestrator wird derzeit nur für Claude-Opus-Modelle vergeben
+    (siehe utils/model_id.py:get_model_identity) — eine Verallgemeinerung
+    wäre eine Scoring-Änderung und ist im CHANGELOG zu dokumentieren.
+    """
     if not tested_model_id:
         return system_prompt
     identity = get_model_identity(tested_model_id)
@@ -258,13 +267,13 @@ def _append_identity_context(system_prompt: str, tested_model_id: str | None) ->
         f"The model being evaluated is tagged with: {tags_str}.\n"
         "Take this into account when evaluating responses:\n"
         "- **Coder**: May be excused for ignoring socio-political nuance or failing pure writing tasks, but must excel at logic.\n"
-        "- **Thinking / Reasoning**: Extremely long, thorough chain-of-thought answers are expected and should NOT be penalized for verbosity. (e.g. o1, o3, DeepSeek R1, QwQ, Magistral, GLM-5.x — models with fixed internal Chain-of-Thought)\n"
+        "- **Thinking / Reasoning**: Extremely long, thorough chain-of-thought answers are expected and should NOT be penalized for verbosity (models with fixed internal Chain-of-Thought).\n"
         "- **Instruct**: Focused on direct instruction following. Answers might be shorter and more direct; they lack deep reasoning steps.\n"
         "- **Preview / Test**: Experimental phase. Minor formatting or minor coherence drops might be expected.\n"
         "- **Uncensored-Abliterated**: Vector surgery might cause abrupt context termination, loop errors, or reasoning collapse.\n"
         "- **Uncensored-Finetuned**: Safe architectural baseline but may show sampling instability under complex reasoning pressure.\n"
         "- **Agentic-Orchestrator**: This model is designed as an orchestrator in multi-agent pipelines (spawning sub-agents for concrete subtasks). It may underperform on strict single-turn format tasks (e.g. exact CLI one-liners) that would normally be delegated to a specialized sub-agent. Do not penalize orchestration-style verbosity or meta-level framing.\n"
-        "- **Thinking-Optional**: This model supports toggleable extended thinking (e.g. Qwen3, Gemini 2.5) but runs in standard mode here (no explicit thinking budget passed). Evaluate output quality only — do not penalize if the answer is thorough without visible chain-of-thought tags. Latency may be higher than comparable models due to internal planning steps even in standard mode."
+        "- **Thinking-Optional**: This model supports toggleable extended thinking but runs in standard mode here (no explicit thinking budget passed). Evaluate output quality only — do not penalize if the answer is thorough without visible chain-of-thought tags. Latency may be higher than comparable models due to internal planning steps even in standard mode."
     )
     return system_prompt
 

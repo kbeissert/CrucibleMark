@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# ruff: noqa: E402
 """Leaderboard generation entry point.
 
 This is a thin wrapper around the leaderboard package.
@@ -16,7 +15,7 @@ if str(ROOT_DIR) not in sys.path:
 
 # Import main function from new package
 # pylint: disable=wrong-import-position
-from scripts.leaderboard import main
+from scripts.leaderboard import main  # noqa: E402
 
 if __name__ == "__main__":
     # Disable printing table to terminal to avoid spam

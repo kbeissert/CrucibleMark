@@ -702,14 +702,22 @@ def _run_ollama_model_modules(
     audit_mode: bool,
     mcp_mode: str,
 ) -> None:
-    """Iteriert über Module für ein Ollama-Modell."""
+    """Iteriert über Module für ein Ollama-Modell, bricht bei echtem Fehler ab."""
     for module in modules:
-        # Phase 21: had_new_results nur auf "ran" setzen — "skipped" und
-        # "failed" dürfen den Counter nicht hochzählen.
-        _run_module_for_model(
+        assets_todo = get_startable_assets(module, model, existing_tests)
+        status = _run_module_for_model(
             runner, model, module, existing_tests,
             force=force, audit=audit_mode, mcp_mode=mcp_mode,
         )
+        if status == "failed" and assets_todo:
+            # ECHTER Fehler bei offenen Assets (Leaderboard-Skip zählt nicht).
+            # Spiegelbild zu _run_llamacpp_model_modules / _run_vllm_model_modules.
+            print(
+                f"   ⚠️  Modul '{module.get('key', 'unknown')}' für '{model}' fehlgeschlagen "
+                "(mit offenen Assets). Restliche Module für dieses Modell werden übersprungen."
+            )
+            break
+        # "ran" oder "skipped" → weiter
 
 
 

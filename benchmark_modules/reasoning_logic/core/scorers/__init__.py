@@ -1,8 +1,5 @@
 """Core scorers for reasoning assets."""
 
-from typing import Tuple
-
-
 def check_condition(
     condition: bool,
     points: float,
@@ -11,7 +8,7 @@ def check_condition(
     partial_condition: bool = False,
     partial_points: float = 0.0,
     partial_msg: str = "",
-) -> Tuple[float, str]:
+) -> tuple[float, str]:
     """Helper to evaluate a scoring condition.
 
     Args:

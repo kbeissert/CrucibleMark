@@ -8,9 +8,9 @@ _PROJECT_ROOT = Path(__file__).resolve().parents[3]
 if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
-from benchmark_modules.tooluse.core.constants import AUDIT_MCP_UNAVAILABLE
-from benchmark_modules.tooluse.core.io_manager import ToolUseIOManager
-from schemas.result import BenchmarkResult
+from benchmark_modules.tooluse.core.constants import AUDIT_MCP_UNAVAILABLE  # noqa: E402
+from benchmark_modules.tooluse.core.io_manager import ToolUseIOManager  # noqa: E402
+from schemas.result import BenchmarkResult  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Shared helpers

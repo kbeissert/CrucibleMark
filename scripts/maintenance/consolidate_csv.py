@@ -164,12 +164,40 @@ def _filter_corrupt_rows(
     return df, drop_stats
 
 
-def consolidate_file(file_path: Path, key_cols: tuple[str, ...]) -> None:
+def _write_consolidated(
+    file_path: Path,
+    df_clean: pd.DataFrame,
+    original_count: int,
+    cleaned_count: int,
+    removed_count: int,
+    *,
+    dry_run: bool,
+) -> None:
+    """Schreibt das bereinigte Ergebnis (oder zeigt es im Dry-Run an)."""
+    if dry_run:
+        logger.info(
+            "   👁️ [DRY-RUN] Wuerde bereinigen: %d -> %d Zeilen "
+            "(%d alte Eintraege). Kein Schreibvorgang.",
+            original_count, cleaned_count, removed_count,
+        )
+        return
+    df_clean.to_csv(file_path, index=False)
+    logger.info(
+        "   ✅ Bereinigt: %d -> %d Zeilen. (%d alte Eintraege entfernt)",
+        original_count, cleaned_count, removed_count,
+    )
+
+
+def consolidate_file(
+    file_path: Path, key_cols: tuple[str, ...], *, dry_run: bool = False,
+) -> None:
     """Liest, bereinigt und ueberschreibt eine einzelne CSV-Datei.
 
     Args:
         file_path: Pfad zur CSV-Datei.
         key_cols: Tuple von Schluesselspalten fuer die Deduplizierung.
+        dry_run: Nur anzeigen, nichts schreiben (Review 2026-08-15 —
+            vorher schrieb das Skript direkt ohne Preview-Moeglichkeit).
     """
     if not file_path.exists():
         logger.info("⚠️  Datei nicht gefunden (ueberspringe): %s", file_path)
@@ -224,10 +252,9 @@ def consolidate_file(file_path: Path, key_cols: tuple[str, ...]) -> None:
         removed_count = original_count - cleaned_count
 
         if removed_count > 0:
-            df_clean.to_csv(file_path, index=False)
-            logger.info(
-                "   ✅ Bereinigt: %d -> %d Zeilen. (%d alte Eintraege entfernt)",
-                original_count, cleaned_count, removed_count,
+            _write_consolidated(
+                file_path, df_clean, original_count, cleaned_count, removed_count,
+                dry_run=dry_run,
             )
         else:
             logger.info("   ✨ Keine Duplikate gefunden. Datei unveraendert.")
@@ -238,11 +265,12 @@ def consolidate_file(file_path: Path, key_cols: tuple[str, ...]) -> None:
         )
 
 
-def main() -> None:
+def main(dry_run: bool = False) -> None:
     """Consolidation Main Entry Point."""
-    print("🧹 Starte CSV-Konsolidierung (The Crucible Memory Law)...")
+    mode = " [DRY-RUN]" if dry_run else ""
+    print(f"🧹 Starte CSV-Konsolidierung (The Crucible Memory Law){mode}...")
     for csv_file, key_cols in CSV_FILES:
-        consolidate_file(csv_file, key_cols)
+        consolidate_file(csv_file, key_cols, dry_run=dry_run)
     print("🏁 Fertig.")
 
 
@@ -252,5 +280,9 @@ if __name__ == "__main__":
         description="CSV-Konsolidierung: dedupliziert Benchmark-CSVs "
                     "(SSoT-Liste aus utils.backup_targets.CSV_FILES).",
     )
-    parser.parse_args()  # nur --help unterstützen, keine Optionen noetig
-    main()
+    parser.add_argument(
+        "--dry-run", action="store_true",
+        help="Nur anzeigen was bereinigt wuerde, keine Dateien schreiben.",
+    )
+    args = parser.parse_args()
+    main(dry_run=args.dry_run)

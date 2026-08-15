@@ -7,7 +7,6 @@ and the issue evaluator logic used across different benchmarks.
 
 import re
 from abc import ABC, abstractmethod
-from typing import Tuple, List
 from utils.similarity import SemanticSimilarity
 from ..models import UXCriterion, UXIssue
 from ..constants import (
@@ -23,7 +22,7 @@ class CriterionEvaluator(ABC):
     # pylint: disable=too-few-public-methods
 
     @abstractmethod
-    def evaluate(self, response: str, criterion: UXCriterion) -> Tuple[float, str]:
+    def evaluate(self, response: str, criterion: UXCriterion) -> tuple[float, str]:
         """
         Evaluates a single criterion against the response.
 
@@ -41,7 +40,7 @@ class IssueEvaluator:
     @staticmethod
     def check_issue_mentioned(
         response_lower: str,
-        keywords: List[str],
+        keywords: list[str],
         required_ratio: float = DEFAULT_REQUIRED_RATIO,
     ) -> bool:
         """
@@ -105,7 +104,7 @@ class IssueEvaluator:
             return False
 
     @classmethod
-    def evaluate(cls, response_lower: str, issue: UXIssue) -> Tuple[float, str, bool]:
+    def evaluate(cls, response_lower: str, issue: UXIssue) -> tuple[float, str, bool]:
         """
         Evaluates a specific issue against the response.
 

@@ -1,10 +1,18 @@
-import pandas as pd
+import sys
 from pathlib import Path
 
-LEADERBOARD_CSV = "benchmark_scores/benchmark_leaderboard.csv"
-LOCAL_CSV = "benchmark_scores/local_models_benchmark.csv"
-CLOUD_CSV = "benchmark_scores/cloud_models_benchmark.csv"
-COMMERCIAL_CSV = "benchmark_scores/commercial_models_benchmark.csv"
+import pandas as pd
+
+# ROOT_DIR-Anker (Review 2026-08-15): vorher CWD-relative Pfade — Aufruf aus
+# anderem Verzeichnis fuehrte zu stillem "File not found".
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+
+LEADERBOARD_CSV = ROOT_DIR / "benchmark_scores" / "benchmark_leaderboard.csv"
+LOCAL_CSV = ROOT_DIR / "benchmark_scores" / "local_models_benchmark.csv"
+CLOUD_CSV = ROOT_DIR / "benchmark_scores" / "cloud_models_benchmark.csv"
+COMMERCIAL_CSV = ROOT_DIR / "benchmark_scores" / "commercial_models_benchmark.csv"
 
 
 def colors(text, color):

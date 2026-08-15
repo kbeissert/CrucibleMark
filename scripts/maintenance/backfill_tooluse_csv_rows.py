@@ -174,7 +174,12 @@ def _build_csv_row(parsed: dict[str, Any], model_version: str) -> dict[str, Any]
     combined = parsed.get("combined_score")
     combined_f = float(combined) if combined is not None else 0.0
 
-    # score_contributions als Python-Dict-String (wie unified_runner es schreibt)
+    # score_contributions als Python-Dict-String (repr) — NICHT zu JSON aendern!
+    # Beide Reader (tooluse_exporter._parse_row_data_dict und
+    # utils/export/tooluse_context.py) parsen via ast.literal_eval; JSON-Booleans
+    # (true/false) waeren keine gueltigen Python-Literale und wuerden den
+    # Parse still fehlschlagen lassen. repr() ist hier das Pipeline-Format
+    # (Review 2026-08-15: Befund 'repr statt JSON' als False Positive verifiziert).
     score_contributions = repr(parsed["raw_dict"])
 
     transcript = parsed.get("tool_transcript") or {}

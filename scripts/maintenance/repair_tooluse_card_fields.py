@@ -102,15 +102,11 @@ def _apply_tooluse_update(card: dict, model_id: str, row: dict, has_p1_data: boo
     """Schreibt das neue tooluse_runs/{model_id}-Eintrags-Nested-Schema."""
     from datetime import datetime
 
-    correct_val = card["supports_tool_use"]
+    # Review 2026-08-15: supports_tool_use wird bereits vom Caller
+    # (_process_row) mit dem korrekten Wert aus _derive_correct_value
+    # gesetzt — das frühere if/elif/else hier war ein redundanter
+    # Zweit-Write desselben Felds (identischer Wert).
     now_iso = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
-
-    if correct_val is True:
-        card["supports_tool_use"] = True
-    elif correct_val is False:
-        card["supports_tool_use"] = False
-    else:
-        card["supports_tool_use"] = "untested"
 
     tooluse_runs = card.get("tooluse_runs")
     if not isinstance(tooluse_runs, dict):

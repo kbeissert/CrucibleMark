@@ -25,7 +25,16 @@ PROVIDER_CONFIG_PATH = Path("config/provider_config.yaml")
 
 
 class ConfigValidator:
-    """Validiert benchmark_config.yaml und merged provider_config.yaml."""
+    """Validiert benchmark_config.yaml und merged provider_config.yaml.
+
+    Performance (Review 2026-08-15): Klassen-Cache pro config_path, invalidiert
+    automatisch bei mtime-Änderung der Config-Dateien. Vorher wurde bei jeder
+    Instanziierung (52+ Call-Sites, u.a. pro resolve_provider()-Aufruf) beide
+    YAMLs neu gelesen und geparst.
+    """
+
+    # Cache-Key: (config_path, provider_config_path) → (mtime-Tupel, config)
+    _config_cache: dict[tuple[str, str], tuple[tuple[float, float], dict[str, Any]]] = {}
 
     def __init__(self, config_path: str = "benchmark_config.yaml"):
         """Initialisiert Validator.
@@ -35,7 +44,32 @@ class ConfigValidator:
         """
         self.config_path = Path(config_path)
         self.provider_config_path = PROVIDER_CONFIG_PATH
-        self.config = self._load_config()
+        self.config = self._load_config_cached(
+            self.config_path, self.provider_config_path,
+        )
+
+    @classmethod
+    def _load_config_cached(
+        cls, config_path: Path, provider_config_path: Path,
+    ) -> dict[str, Any]:
+        """Lädt die Config mit mtime-invalidiertem Cache."""
+        def _mtime(path: Path) -> float:
+            return path.stat().st_mtime if path.exists() else -1.0
+
+        cache_key = (str(config_path), str(provider_config_path))
+        mtimes = (_mtime(config_path), _mtime(provider_config_path))
+        cached = cls._config_cache.get(cache_key)
+        if cached is not None and cached[0] == mtimes:
+            return cached[1]
+
+        # Frische Instanz ohne __init__ (verhindert Cache-Rekursion) und
+        # ursprüngliche Ladlogik ausführen.
+        validator = cls.__new__(cls)
+        validator.config_path = config_path
+        validator.provider_config_path = provider_config_path
+        config = validator._load_config()
+        cls._config_cache[cache_key] = (mtimes, config)
+        return config
 
     def _load_config(self) -> dict[str, Any]:
         """Lädt benchmark_config.yaml, merged provider_config.yaml und prüft auf Duplikat-IDs."""
