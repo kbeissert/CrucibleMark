@@ -1,0 +1,28 @@
+{
+  "vendor_id": "upstage",
+  "display_name": "Upstage",
+  "company": "Upstage AI, Inc.",
+  "headquarters": "Seoul, South Korea",
+  "founding_year": 2020,
+  "pricing_model": "free-tier+pay-per-token",
+  "api_base_url": "https://api.upstage.ai",
+  "api_documentation_url": "https://developers.upstage.ai",
+  "deployment": {
+    "cloud_act_exposure": false,
+    "applicable_law": "Unknown",
+    "data_residency": "Unknown",
+    "gdpr_dpa_available": "unknown",
+    "eu_adequacy_decision": "unknown",
+    "data_retention_days": -1,
+    "chinese_nsl_risk": "none"
+  },
+  "privacy_note": "Upstage is a South Korean provider, so US CLOUD Act exposure appears limited, but public information on processing location, retention, and EU transfer mechanisms is unclear. EU users should treat data residency and GDPR transfer safeguards as unverified unless contractually confirmed.",
+  "notable_models": [
+    "Solar Mini",
+    "Solar Pro"
+  ],
+  "unknown": false,
+  "generated_at": "2026-08-15T10:30:24.835432+00:00",
+  "last_verified_at": null,
+  "verification_source": "https://developers.upstage.ai"
+}

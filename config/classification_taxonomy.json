@@ -56,8 +56,21 @@
   "size_class": {
     "description": "Deployment-Hardware-Tier des Modells – leitet sich aus Parameteranzahl oder API-Only-Status ab. SSoT für Tier-Reihenfolge, Schwellwerte und Reviewer-Hinweise. Konsumiert von utils.model_utils.get_model_size_class(), Card-Vocabulary-Validierung und Reviewer-Prompt-Generator (format_classification_context).",
     "field_name": "size_class",
-    "thresholds_b": [4, 9, 22, 35, 75],
-    "tier_order": ["Nano", "Edge", "Desktop", "Workstation", "Server", "Frontier"],
+    "thresholds_b": [
+      4,
+      9,
+      22,
+      35,
+      75
+    ],
+    "tier_order": [
+      "Nano",
+      "Edge",
+      "Desktop",
+      "Workstation",
+      "Server",
+      "Frontier"
+    ],
     "values": {
       "Nano": {
         "label": "Nano (≤4B Parameter)",
@@ -341,6 +354,25 @@
           "ZhipuAI"
         ],
         "jurisdiction": "CN"
+      },
+      "Qwen": {
+        "label": "Qwen",
+        "vendor_card_id": "qwen",
+        "description": "Qwen-Team (Alibaba Cloud Computing Ltd.) — chinesische Modellreihe der Alibaba Cloud. Eigene Vendor-Card, getrennt von Alibaba-Cloud-Infrastruktur.",
+        "aliases": [
+          "Qwen Team",
+          "Alibaba Qwen"
+        ],
+        "jurisdiction": "CN"
+      },
+      "Upstage": {
+        "label": "Upstage",
+        "vendor_card_id": "upstage",
+        "description": "Upstage AI, Inc. — südkoreanisches KI-Unternehmen, Entwickler der Solar-Modellreihe.",
+        "aliases": [
+          "Upstage AI"
+        ],
+        "jurisdiction": "KR"
       }
     }
   },
