@@ -91,6 +91,24 @@ Rückgabewert: `float | str | None`. Zahlen → `float`. Sentinels → `None`. A
 
 **SSoT:** `_SCORES_CONTRACT_KEYS` (abgeleitet aus `_SCORE_COLUMN_TO_KEY`) ist die einzige Quelle für die 9 Modul-Keys. Beide Write-Pfade (`data.json` via `_process_leaderboard`, `leaderboard.json` via `_write_top_level_outputs`) referenzieren dieselbe Konstante. `political_bias` ist KEIN Score-Modul (v4.10.16 entfernt) — Political Compass-Daten in separater `data.json.political_compass` Section.
 
+## WebExport `tokens_per_module`-Ableitung (Session 75, 2026-08-15)
+
+`tokens_per_module` in `_build_leaderboard_entry` wird aus `_SCORE_COLUMN_TO_KEY` abgeleitet (`f"Tokens: {csv_col}"` ↔ score_key) — identisch zum `scores`-Dict. Zuvor hardcodiert: `Tokens: Tool Execution` wurde still NICHT exportiert (0/102 Modelle), und der `"system"`-Key las `Tokens: System` — eine Spalte, die kein Writer erzeugt (toter Key, entfernt).
+
+**Defense-in-Depth:** `tests/test_web_export_field_coverage.py::TestLeaderboardScoreMapping::test_no_silent_tokens_column_loss` bricht den Build, wenn eine neue `Tokens:`-Spalte ohne Mapping dazukommt.
+
+## WebExport Partial-Export-Sicherheit (Session 75, 2026-08-15)
+
+`--model`-Exporte zerstören den Datenbestand nicht mehr: `_setup_output_dirs` löscht `models/` NUR im Voll-Export; `main()` skippt bei `--model` die Top-Level-Writes (`leaderboard.json` & Co. würden sonst auf einen 1-Eintrag-Index schrumpfen). Slug-Dedupe läuft außerdem NACH der Skip-Prüfung — geblacklistete Modelle konsumieren keine Slugs mehr.
+
+## WebExport Top-Level-Vertrag & Writer-Atomarität (Session 75, 2026-08-15)
+
+- `political_compass.json`, `vendor_cards.json`, `community_cards.json` werden IMMER geschrieben (auch mit leerer Liste) — fehlende Dateien brechen den Web-Build bei temporär leerer Quelle.
+- `cruciblemark_version` in `meta.json` kommt aus CHANGELOG.md (SSoT, erste `## [vX.Y.Z]`-Zeile), README-Badge nur als Fallback.
+- `benchmark_cost`-Sentinel-Threshold steht in `benchmark_config.yaml → web_export.benchmark_cost_max_usd` (keine Magic Number im Code; Fallback-Konstante in entry_builders).
+- Leaderboard-CSVs (`exporter.py`) und PC-Leaderboard (`io_manager.py`) schreiben atomar via `utils/io_helpers.atomic_write_text` — Regel data-pipeline.md v4.10.4 gilt jetzt projektweit.
+- Naming-Gate `make web-export` validiert `--card-type all` (Model- UND Vendor-Cards).
+
 ## WebExport Score-Spalten-Vollständigkeit (ab v4.10.11)
 
 `LdbCols` in `scripts/web_export/constants.py` MUSS eine Konstante für JEDE CSV-Modul-Spalte in `benchmark_scores/benchmark_leaderboard_detailed.csv` haben, sonst wird die Spalte stillschweigend ignoriert und landet nicht in `data.json.leaderboard.scores`.

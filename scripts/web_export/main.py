@@ -28,6 +28,7 @@ from .constants import (
 )
 
 from .entry_builders import (
+    _BENCHMARK_COST_MAX,
     _build_compass_entry,
     _build_leaderboard_entry,
     _build_tooluse_entry,
@@ -102,6 +103,10 @@ def _init_export_context(
     except (OSError, ValueError, yaml.YAMLError) as exc:
         logging.debug("Provider-Config nicht ladbar — load_model_card ohne Redirect: %s", exc)
 
+    # benchmark_cost-Sentinel-Threshold aus benchmark_config.yaml (SSoT,
+    # Config-Driven). Fallback: _BENCHMARK_COST_MAX aus entry_builders.
+    _benchmark_cost_max = _load_benchmark_cost_max(root_dir)
+
     return {
         "root_dir": root_dir,
         "comparisons_path": comparisons_path,
@@ -122,8 +127,29 @@ def _init_export_context(
         "bl_exact": _bl_exact,
         "bl_pattern": _bl_pattern,
         "bl_total": _bl_total,
+        "benchmark_cost_max": _benchmark_cost_max,
         "generated_at": datetime.datetime.now(datetime.UTC).isoformat(),
     }
+
+
+def _load_benchmark_cost_max(root_dir: Path) -> float:
+    """Liest web_export.benchmark_cost_max_usd aus benchmark_config.yaml.
+
+    Fallback bei fehlender/unlesbarer Config oder ungültigem Wert:
+    _BENCHMARK_COST_MAX (entry_builders) — der Export bricht nicht.
+    """
+    try:
+        cfg = ConfigValidator(str(root_dir / "benchmark_config.yaml")).config
+        value = float(cfg.get("web_export", {}).get("benchmark_cost_max_usd", _BENCHMARK_COST_MAX))
+    except (OSError, ValueError, TypeError, yaml.YAMLError) as exc:
+        logging.debug("benchmark_cost_max nicht lesbar — Fallback %s: %s", _BENCHMARK_COST_MAX, exc)
+        return _BENCHMARK_COST_MAX
+    if value <= 0:
+        logging.warning(
+            "benchmark_cost_max_usd=%s ungültig (<= 0) — Fallback %s", value, _BENCHMARK_COST_MAX,
+        )
+        return _BENCHMARK_COST_MAX
+    return value
 
 
 def _audit_has_benchmark(model_audit_src: Path | None) -> bool:
@@ -321,6 +347,7 @@ def _build_row_entry(
         vendor_card_ref=ctx["vendor_card_id_lookup"].get(vendor) if vendor else None,
         community=community,
         community_card_ref=community_card_ref,
+        benchmark_cost_max=ctx["benchmark_cost_max"],
     )
     return entry, comp_files_dict, has_report, has_review, model_type
 
@@ -414,7 +441,6 @@ def _process_leaderboard(
         model_name, raw_model_id, has_raw, slug = identity
         if filter_slug and slugify(filter_slug) != slug:
             continue
-        slug = _dedupe_slug(slug, row, seen_slugs, count, total, raw_model_id)
         card, model_audit_src, model_comp_src = _resolve_model_dirs_and_card(
             model_name=model_name,
             raw_model_id=raw_model_id,
@@ -440,6 +466,10 @@ def _process_leaderboard(
         if skip_reason == "blacklisted":
             models_skipped_blacklist += 1
             continue
+        # Slug-Dedupe NACH der Skip-Pruefung: geblacklistete/geskippte Modelle
+        # konsumieren keine Slugs — sonst erhalten behaltene Modelle bei
+        # Kollision mit toten Slugs unnötig Provider-/Counter-Suffixe.
+        slug = _dedupe_slug(slug, row, seen_slugs, count, total, raw_model_id)
         if card is None:
             logging.warning(
                 "  [WARN] [%s/%s] %s (raw_model_id=%s): keine Model Card gefunden. "
@@ -524,6 +554,17 @@ def main() -> None:
 
     ctx = _init_export_context(root_dir, scores_dir, comparisons_path)
     result = _process_leaderboard(ctx, args.model, models_dir)
+
+    if args.model:
+        # Partial-Export: Top-Level-Index-Files NICHT überschreiben — sie
+        # würden sonst auf einen 1-Eintrag-Index schrumpfen und den
+        # kompletten Web-Bestand unbrauchbar machen.
+        logging.info(
+            "Partial-Export abgeschlossen (%s Modell(e)) — Top-Level-Files "
+            "nicht überschrieben. Für einen vollständigen Bestand: "
+            "make web-export ohne --model.", len(result["models_list"]),
+        )
+        return
 
     _write_top_level_outputs(
         out_dir=out_dir,

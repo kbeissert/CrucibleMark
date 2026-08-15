@@ -15,7 +15,19 @@ from .constants import _ROOT_DIR, _SCORES_CONTRACT_KEYS
 from .filters import _collect_vendor_cards
 
 def _read_version(root_dir: Path) -> str:
-    """Reads project version from README.md badge line."""
+    """Reads project version for meta.json.
+
+    SSoT: CHANGELOG.md (erste '## [vX.Y.Z]'-Zeile) — identisch zum
+    docs-version-check-Target im Makefile. README-Badge nur als Fallback,
+    da docs-version-check README-Drift nicht abdeckt.
+    """
+    try:
+        for line in (root_dir / "CHANGELOG.md").read_text(encoding="utf-8").splitlines():
+            m = re.match(r"^## \[v(\d+\.\d+\.\d+)\]", line)
+            if m:
+                return m.group(1)
+    except OSError as exc:
+        logging.debug("Konnte Version aus CHANGELOG.md nicht lesen: %s", exc)
     try:
         readme = root_dir / "README.md"
         for line in readme.read_text(encoding="utf-8").splitlines()[:10]:
@@ -116,7 +128,11 @@ def _resolve_dir(dirs: dict[str, Path], raw_slug: str) -> Path | None:
 def _setup_output_dirs(args: argparse.Namespace) -> tuple[Path, Path, Path]:
     """Sets up and validates output directories.
 
-    Safety: only the models/ subdirectory of out_dir may be deleted.
+    Safety: only the models/ subdirectory of out_dir may be deleted — und
+    auch nur im Voll-Export. Bei Partial-Export (``--model``) bleibt
+    models/ unangetastet; nur das Ziel-Modell-Verzeichnis wird
+    überschrieben (main() skippt zusätzlich die Top-Level-Files, damit
+    leaderboard.json & Co. nicht auf einen 1-Eintrag-Index schrumpfen).
     Returns (out_dir, models_dir, root_dir).
     """
     out_dir = Path(args.output).resolve()
@@ -131,7 +147,12 @@ def _setup_output_dirs(args: argparse.Namespace) -> tuple[Path, Path, Path]:
             f"rmtree safety violation: {models_dir} is not a child of {out_dir}"
         )
     out_dir.mkdir(parents=True, exist_ok=True)
-    if models_dir.exists():
+    if getattr(args, "model", None):
+        logging.info(
+            "Partial-Export (--model=%s): models/ wird NICHT geloescht, "
+            "Top-Level-Files bleiben unangetastet.", args.model,
+        )
+    elif models_dir.exists():
         shutil.rmtree(models_dir)
     models_dir.mkdir(exist_ok=True)
     root_dir = _ROOT_DIR
@@ -205,15 +226,17 @@ def _write_top_level_outputs(
         _strip_emojis({"generated_at": generated_at, "total_models": len(models_list), "models": models_list}),
     )
 
-    if pc_list:
-        _atomic_write_json(
-            out_dir / "political_compass.json",
-            _strip_emojis({
-                "generated_at": generated_at,
-                "axes": {"x": "Ideologie (Links -> Rechts)", "y": "Haltung (Libertär -> Autoritär)"},
-                "models": pc_list,
-            }),
-        )
+    # Vertrag: Top-Level-Files existieren IMMER — auch mit leerer Modell-Liste.
+    # Fehlende Dateien würden den Web-Build/Passthrough brechen, wenn eine
+    # Quelle temporär leer ist (z.B. PC-Reset).
+    _atomic_write_json(
+        out_dir / "political_compass.json",
+        _strip_emojis({
+            "generated_at": generated_at,
+            "axes": {"x": "Ideologie (Links -> Rechts)", "y": "Haltung (Libertär -> Autoritär)"},
+            "models": pc_list,
+        }),
+    )
 
     # BEFUND 4 Fix: Alle Vendor-Cards EINMAL lesen, dann in Memory splitten.
     # Vorher: _collect_vendor_cards(exclude_community=True) + _collect_community_cards()
@@ -221,16 +244,14 @@ def _write_top_level_outputs(
     all_vendor_cards = _collect_vendor_cards(root_dir)
     vendor_cards = [c for c in all_vendor_cards if c.get("card_subtype") != "community"]
     community_cards = [c for c in all_vendor_cards if c.get("card_subtype") == "community"]
-    if vendor_cards:
-        _atomic_write_json(
-            out_dir / "vendor_cards.json",
-            _strip_emojis({"generated_at": generated_at, "vendors": vendor_cards}),
-        )
-    if community_cards:
-        _atomic_write_json(
-            out_dir / "community_cards.json",
-            _strip_emojis({"generated_at": generated_at, "communities": community_cards}),
-        )
+    _atomic_write_json(
+        out_dir / "vendor_cards.json",
+        _strip_emojis({"generated_at": generated_at, "vendors": vendor_cards}),
+    )
+    _atomic_write_json(
+        out_dir / "community_cards.json",
+        _strip_emojis({"generated_at": generated_at, "communities": community_cards}),
+    )
 
     # SSoT-Sanity-Counts: Filesystem vs. Leaderboard-Konsistenz
     card_dir = root_dir / "benchmark_scores" / "model_cards"

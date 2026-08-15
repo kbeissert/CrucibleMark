@@ -8,6 +8,8 @@ from pathlib import Path
 
 import pandas as pd
 
+from utils.io_helpers import atomic_write_text
+
 from .config import OUTPUT_CSV
 
 
@@ -192,7 +194,9 @@ def export_leaderboard_compact(leaderboard: pd.DataFrame, cat_cols: list[str]) -
     df_export = _format_judge_stars(df_export)
 
     try:
-        df_export.to_csv(OUTPUT_CSV, index=False)
+        # Atomar schreiben (Regel data-pipeline.md v4.10.4: NIEMALS 'w'/truncate
+        # zum Überschreiben — bei Crash mid-write bleibt die alte Datei intakt).
+        atomic_write_text(Path(OUTPUT_CSV), df_export.to_csv(index=False))
         print(f"Compact Leaderboard saved to: {OUTPUT_CSV}")
     except (OSError, PermissionError) as e:
         print(f"⚠️ Error saving compact leaderboard: {e}")
@@ -274,7 +278,10 @@ def export_leaderboard_detailed(leaderboard: pd.DataFrame, cat_cols: list[str]) 
     df_export = _format_judge_stars(df_export)
 
     try:
-        df_export.to_csv(detailed_csv, index=False)
+        # Atomar schreiben (Regel data-pipeline.md v4.10.4) — die detailed CSV
+        # ist die Primärquelle des Web-Exports; truncation mid-write würde
+        # korrupte Exporte erzeugen.
+        atomic_write_text(detailed_csv, df_export.to_csv(index=False))
         print(f"Detailed Leaderboard saved to: {detailed_csv}")
     except (OSError, PermissionError) as e:
         print(f"⚠️ Error saving detailed leaderboard: {e}")

@@ -112,6 +112,33 @@ class TestLeaderboardScoreMapping:
         for attr in score_attrs:
             assert hasattr(LdbCols, attr), f"LdbCols.{attr} fehlt"
 
+    def test_no_silent_tokens_column_loss(self):
+        """Defensive Cross-Check: jede 'Tokens: <Modul>'-CSV-Spalte ist im
+        _SCORE_COLUMN_TO_KEY-Mapping vertreten und landet damit in
+        data.json.leaderboard.tokens_per_module.
+
+        Hintergrund: tokens_per_module war frueher hardcodiert und verlor
+        'Tokens: Tool Execution' still (0/102 Exporte). Die Spalten-Mapping-
+        Ableitung (f"Tokens: {col}" <-> score_key) verhindert das — dieser
+        Test bricht den Build, wenn eine neue Token-Spalte ohne Mapping
+        dazukommt.
+        """
+        from scripts.web_export import _SCORE_COLUMN_TO_KEY
+
+        csv_path = ROOT / "benchmark_scores" / "benchmark_leaderboard_detailed.csv"
+        with csv_path.open() as f:
+            csv_cols = csv.DictReader(f).fieldnames or []
+
+        token_cols = [c for c in csv_cols if c.startswith("Tokens: ")]
+        assert token_cols, "Keine Tokens-Spalten in der CSV gefunden (unexpected)"
+
+        # Mapping-Keys sind die Modul-Spaltennamen ohne 'Tokens: '-Präfix
+        unmapped = [c for c in token_cols if c[len("Tokens: "):] not in _SCORE_COLUMN_TO_KEY]
+        assert not unmapped, (
+            f"Tokens-Spalten ohne _SCORE_COLUMN_TO_KEY-Mapping (landen NICHT "
+            f"in tokens_per_module): {unmapped}"
+        )
+
 
 class TestDataJsonStructure:
     """Prueft Vollstaendigkeit der per-Modell data.json-Struktur."""

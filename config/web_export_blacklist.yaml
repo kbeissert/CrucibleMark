@@ -93,6 +93,9 @@ blacklist:
   # -----------------------------------------------------------------
   # Qwable (Qwen-Derivat, Fable5-tune)
   # -----------------------------------------------------------------
+  # Präventiv: Modell ist in provider_config.yaml deaktiviert (auskommentiert)
+  # und damit nicht im Leaderboard — Eintrag verhindert ungewollten Export
+  # bei Re-Aktivierung.
   - "qwable-3_6-27b-q4"
 
   # -----------------------------------------------------------------

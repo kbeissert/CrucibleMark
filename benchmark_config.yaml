@@ -136,6 +136,13 @@ output:
   web_export_dir: ../cruciblemark-web/src/_data/raw/
   streaming_output_commercial_providers: false
 
+# Web-Export-Schwellwerte (Publishing-Layer, scripts/web_export/)
+web_export:
+  # Sentinel-Threshold für benchmark_cost (USD): Werte darüber gelten als
+  # Datenfehler (Token-Accumulator-Overflow, Session-60-Audit) und werden
+  # im Export zu null normalisiert.
+  benchmark_cost_max_usd: 1000000
+
 # Logging (Datei + Konsole, Rotation)
 logging:
   file_path: logs/crucible.log
@@ -179,7 +186,7 @@ modules:
     enabled: true
   political_compass:
     path: benchmark_modules/political_compass
-    enabled: false
+    enabled: true
   tooluse:
     path: benchmark_modules/tooluse
     enabled: true

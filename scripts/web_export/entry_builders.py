@@ -265,21 +265,25 @@ def _build_characteristics(
     }
 
 
-# Sentinel-Threshold für benchmark_cost: jeder Wert > 1e6 USD ist ein
+# Fallback-Sentinel-Threshold für benchmark_cost (USD). Der wirksame Wert
+# steht in benchmark_config.yaml → web_export.benchmark_cost_max_usd
+# (Config-Driven, keine Magic Numbers im Code). Jeder Wert darüber ist ein
 # Datenfehler (Overflow in der Benchmark-Pipeline, siehe Session-60-Audit:
-# 5 Modelle mit Werten bis 1e+156). Solche Werte werden im Web-Export zu
-# None normalisiert, damit die UI keinen literalen "$6.003e+143" rendert.
+# 5 Modelle mit Werten bis 1e+156) und wird im Web-Export zu None normalisiert,
+# damit die UI keinen literalen "$6.003e+143" rendert.
 _BENCHMARK_COST_MAX = 1_000_000.0  # 1 Mio. USD pro Benchmark — weit über jedem realistischen Wert
 
 
-def _sanitize_cost(val: Any) -> float | None:
+def _sanitize_cost(val: Any, max_cost: float = _BENCHMARK_COST_MAX) -> float | None:
     """Defense-in-Depth: filtert Sentinel-/Overflow-Werte aus benchmark_cost.
 
     normalize_pending() konvertiert nur nan → None, lässt aber extreme endliche
     Werte (z.B. 6e+143 aus Token-Accumulator-Overflow) und ±inf durch. Diese
     würden im Web-Frontend als literaler Exponential-String gerendert.
 
-    Schwellwert: 1 Mio. USD pro Benchmark — alles darüber ist ein Datenfehler.
+    max_cost: Schwellwert in USD — wirksamer Wert aus
+        benchmark_config.yaml → web_export.benchmark_cost_max_usd,
+        Fallback _BENCHMARK_COST_MAX (1 Mio. USD).
     """
     if val is None:
         return None
@@ -287,7 +291,7 @@ def _sanitize_cost(val: Any) -> float | None:
         return None
     if not math.isfinite(float(val)):
         return None
-    if float(val) > _BENCHMARK_COST_MAX:
+    if float(val) > max_cost:
         return None
     return float(val)
 
@@ -400,6 +404,7 @@ def _build_leaderboard_entry(
     vendor_card_ref: str | None = None,
     community: str | None = None,
     community_card_ref: str | None = None,
+    benchmark_cost_max: float = _BENCHMARK_COST_MAX,
 ) -> dict[str, Any]:
     """Builds the leaderboard entry dict for a single model."""
     _card_version = extract_version(card.get("model_version")) if card else None
@@ -460,7 +465,7 @@ def _build_leaderboard_entry(
         "timeout_count": parse_int(row.get(LdbCols.TIMEOUT_COUNT)),
         "tokens_total": parse_compact_number(row.get(LdbCols.TOKENS_TOTAL)),
         "cost_per_1k": normalize_pending(row.get(LdbCols.COST_PER_1K)),
-        "benchmark_cost": _sanitize_cost(normalize_pending(row.get(LdbCols.BENCHMARK_COST))),
+        "benchmark_cost": _sanitize_cost(normalize_pending(row.get(LdbCols.BENCHMARK_COST)), benchmark_cost_max),
         "llm_judge_avg": normalize_pending(row.get(LdbCols.LLM_JUDGE_RAW)) or parse_star_float(row.get(LdbCols.LLM_JUDGE_DISPLAY)),
         "llm_judge_coverage": parse_percent(row.get(LdbCols.LLM_JUDGE_COVERAGE)),
         "tests_run": parse_tests_run(row.get(LdbCols.TESTS_RUN)),
@@ -469,15 +474,16 @@ def _build_leaderboard_entry(
             key: normalize_pending(row.get(_col))
             for _col, key in _SCORE_COLUMN_TO_KEY.items()
         },
+        # SSoT: Token-Spalten werden aus _SCORE_COLUMN_TO_KEY abgeleitet
+        # (f"Tokens: {csv_col}" ↔ score_key) — identisch zum scores-Dict.
+        # Verhindert stille Spaltenverluste: "Tokens: Tool Execution" wurde
+        # bei Hardcodierung nicht exportiert. Fehlende Spalten (z.B.
+        # "Tokens: Synthesis Quality") werden zu None und via strip_none
+        # entfernt. Der frühere "system"-Key las "Tokens: System" — eine
+        # Spalte, die kein Writer erzeugt (toter Key, entfernt).
         "tokens_per_module": {
-            "code_quality": parse_compact_number(row.get("Tokens: Code Quality Audit")),
-            "cli_benchmark": parse_compact_number(row.get("Tokens: CLI Badge")),
-            "ux_writing": parse_compact_number(row.get("Tokens: UX Writing & Microcopy")),
-            "documentation_quality": parse_compact_number(row.get("Tokens: Documentation Quality")),
-            "content_transformation": parse_compact_number(row.get("Tokens: Content Transformation & Adaption")),
-            "cultural_intelligence": parse_compact_number(row.get("Tokens: Cultural Intelligence")),
-            "logical_reasoning": parse_compact_number(row.get("Tokens: Logical Reasoning")),
-            "system": parse_compact_number(row.get("Tokens: System")),
+            key: parse_compact_number(row.get(f"Tokens: {col}"))
+            for col, key in _SCORE_COLUMN_TO_KEY.items()
         },
         "report_available": has_report,
         "review_available": has_review,
@@ -489,7 +495,11 @@ def _build_leaderboard_entry(
             review_published_at,
             review_updated_at if review_updated_at != review_published_at else None,
         ]), default=None),
-        "model_card": _build_model_card_subdict(card, vendor, community, _normalized_tags) if card else None,
+        "model_card": (
+            _build_model_card_subdict(card, vendor, community, _normalized_tags)
+            if card
+            else None
+        ),
     })
     return _entry
 

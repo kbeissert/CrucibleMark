@@ -7,15 +7,17 @@ Handles file I/O operations for reports and results.
 
 import contextlib
 import csv
+import io
 import json
 import logging
 import re
 import time
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 from pathlib import Path
 from typing import Any
 
 from utils.benchmark_ui import TerminalUI
+from utils.io_helpers import atomic_write_text
 from utils.model_id_base import strip_date_suffix
 
 from .constants import DATE_FORMAT, DEFAULT_ENCODING, TEMP_DIR
@@ -121,7 +123,7 @@ class PoliticalCompassResultManager:
     @staticmethod
     def generate_filename(model: str, prefix: str = "results") -> str:
         """Generates a consistent filename with timestamp."""
-        timestamp = datetime.now(timezone.utc).strftime(DATE_FORMAT)
+        timestamp = datetime.now(UTC).strftime(DATE_FORMAT)
         safe_model = re.sub(r"[^a-zA-Z0-9]", "_", model)
         return f"{prefix}_{safe_model}_{timestamp}"
 
@@ -292,17 +294,21 @@ class PoliticalCompassResultManager:
             )
 
         row = {
-            "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
+            "timestamp": datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S"),
             "model": model,
             "model_category": model_category,
             "provider_type": raw_provider,
             "model_version": report.get("model_version", ""),
             "vanilla_x": round(float(v_coords.get("x", 0.0)), 2),
             "vanilla_y": round(float(v_coords.get("y", 0.0)), 2),
-            "vanilla_label": f"{v_archetype.get('x_label', '')} / {v_archetype.get('y_label', '')}".strip(" /"),
+            "vanilla_label": (
+                f"{v_archetype.get('x_label', '')} / {v_archetype.get('y_label', '')}".strip(" /")
+            ),
             "forced_x": round(float(f_coords.get("x", 0.0)), 2),
             "forced_y": round(float(f_coords.get("y", 0.0)), 2),
-            "forced_label": f"{f_archetype.get('x_label', '')} / {f_archetype.get('y_label', '')}".strip(" /"),
+            "forced_label": (
+                f"{f_archetype.get('x_label', '')} / {f_archetype.get('y_label', '')}".strip(" /")
+            ),
             "shift_x": round(float(shift.get("x", 0.0)), 2),
             "shift_y": round(float(shift.get("y", 0.0)), 2),
             "shift_distance": round(float(shift.get("distance", 0.0)), 2),
@@ -322,16 +328,21 @@ class PoliticalCompassResultManager:
         existing_rows: list[dict] = []
         if csv_path.exists():
             try:
-                with open(csv_path, "r", encoding="utf-8") as f:
+                with open(csv_path, encoding="utf-8") as f:
                     existing_rows = [r for r in csv.DictReader(f) if r.get("model") != model]
             except Exception as e:
                 logger.warning("Fehler beim Lesen der PC-Leaderboard-CSV, überschreibe: %s", e)
 
         existing_rows.append(row)
 
-        with open(csv_path, "w", newline="", encoding="utf-8") as f:
-            writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction="ignore")
-            writer.writeheader()
-            writer.writerows(existing_rows)
+        # Atomar schreiben (Regel data-pipeline.md v4.10.4: NIEMALS 'w'/truncate
+        # zum Überschreiben). Die PC-Leaderboard-CSV ist Upsert-File und
+        # Primärquelle des Web-Exports — bei Crash mid-write bleibt die
+        # alte Datei intakt.
+        buffer = io.StringIO()
+        writer = csv.DictWriter(buffer, fieldnames=fieldnames, extrasaction="ignore")
+        writer.writeheader()
+        writer.writerows(existing_rows)
+        atomic_write_text(csv_path, buffer.getvalue())
 
         logger.info("💾 Leaderboard CSV gespeichert: %s", csv_path)

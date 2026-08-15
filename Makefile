@@ -558,15 +558,15 @@ benchmark-tooluse-force:
 # === WEB EXPORT ===
 
 web-export:
-	@echo "=== Pre-Check: Naming Conventions ==="
-	@$(PYTHON) scripts/analysis/validate_naming.py
+	@echo "=== Pre-Check: Naming Conventions (model + vendor cards) ==="
+	@$(PYTHON) scripts/analysis/validate_naming.py --card-type all
 	@echo "Starte Web Export..."
-	$(PYTHON) -m scripts.web_export $(if $(WEB_DATA_DIR),--output $(WEB_DATA_DIR),)
+	$(PYTHON) -m scripts.web_export $(if $(WEB_DATA_DIR),--output "$(WEB_DATA_DIR)",)
 	@echo "Export abgeschlossen."
 
 web-export-dev:
-	@echo "=== Pre-Check: Naming Conventions (warn-only) ==="
-	@$(PYTHON) scripts/analysis/validate_naming.py --warn-only
+	@echo "=== Pre-Check: Naming Conventions (warn-only, model + vendor cards) ==="
+	@$(PYTHON) scripts/analysis/validate_naming.py --card-type all --warn-only
 	@echo "Exportiere direkt ins 11ty-Projekt..."
 	$(PYTHON) -m scripts.web_export --output ../cruciblemark-web/src/_data/raw/
 	@echo "Dev-Export abgeschlossen."
