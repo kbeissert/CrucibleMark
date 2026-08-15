@@ -47,10 +47,16 @@
     "text"
   ],
   "supports_tool_use": true,
-  "tooluse_tested_at": null,
-  "tooluse_score_p1": null,
-  "tooluse_score_p2": null,
-  "tooluse_runs": null,
+  "tooluse_tested_at": "2026-08-14T20:32:48Z",
+  "tooluse_score_p1": 90.0,
+  "tooluse_score_p2": 66.67,
+  "tooluse_runs": {
+    "upstage/solar-pro4": {
+      "tested_at": "2026-08-14T20:32:48Z",
+      "score_p1": 90.0,
+      "score_p2": 66.67
+    }
+  },
   "tooluse_recommendation": null,
   "dual_profile": null,
   "temperature": null,

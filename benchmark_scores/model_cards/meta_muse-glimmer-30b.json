@@ -75,7 +75,7 @@
   "license_url": "https://huggingface.co/meta-llama/Muse-Glimmer-30B/blob/main/LICENSE",
   "commercial_use_allowed": true,
   "weights_license_tier": "open-weights",
-  "model_version": "30b",
+  "model_version": "1",
   "input_price_per_1m": 0.0,
   "output_price_per_1m": 0.0,
   "hardware_profile": null,
