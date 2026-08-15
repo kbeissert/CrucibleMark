@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v5.1.3] - 2026-08-15
+## [v5.1.3] - 2026-08-15
+
+**Patch-Release: Test-Suite-Reparatur & Card-Vocabulary-Normalisierung.**
+
+Behebt drei vorbestehende Testfehler (alle auf HEAD reproduzierbar) und
+normalisiert die Architecture-Tags gegen die Vocabulary-SSoT.
+
+- **hermes-4-36b Orphan-Cleanup:** Draft-Card (alle Felder `TODO`, aus
+  abgebrochenem Run vom 01.08.) via `make clean-model` entfernt — der
+  vollständige Benchmark lief korrekt unter `hermes-4-3-36b` (ID-Rename-
+  Orphan-Muster). 15 verwaiste Audit-Logs und 19 Cost-Log-Einträge bereinigt.
+- **Tag-Whitelist normalisiert:** Redundante Quant/Param-Tags (`MXFP4`,
+  `NVFP4`, `36B`, `Compressed-Tensors`, `512K-Context`) aus 2 Cards entfernt —
+  Info steht in dedizierten Feldern. Vocabulary um `Native-Quant` und
+  `Harmony` (informational, neue Web-Export-Badges) erweitert;
+  `Configurable-Reasoning` → `Thinking-Optional` und `Thinking-Mandatory` →
+  `Thinking` als Deprecated-Normalisierungen. Wirkung: `qwen3-8-2-4t-a95b`
+  erhält jetzt korrekt `thinking_mode: "thinking"` (5x Reasoning-Multiplikator
+  greift), GPT-OSS-120b zeigt Native-Quant/Harmony-Badges.
+- **Ornith-Test invariantisiert:** llamacpp-Ornith-Test an leeres
+  `llamacpp_spark` (seit 2026-08-10 auskommentiert) angepasst — Kern-Invariante
+  (keine Thinking-Expansion für llama.cpp-Modelle) bleibt für
+  Re-Aktivierungen aktiv.
+- **Maintenance-Fixes (Sessions 74/75):** `clean_provider_config` Endlosschleife/
+  YAML-Bruch, `models`-None-Crash, `sanitize_benchmark_csvs` aktualisiert,
+  `probe_thinking` auf rein diagnostisch umgestellt.
+- **Model-Cards:** Null-/Standardfelder für alle Cards ergänzt;
+  `deepseek-v4-flash-ud-iq2` (IQ2_M, GGUF, llama.cpp Spark) integriert;
+  `political_compass` deaktiviert; llamacpp-Port 1234 korrigiert.
+- 1410 Tests grün, Naming-Gate 122 Cards OK, Ruff sauber.
+
 ## [v5.1.2] - 2026-08-03
 
 **Patch-Release: vLLM-Connector CC-Refactoring — Architektur-Regel-Konformität.**

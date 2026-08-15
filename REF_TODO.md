@@ -6,6 +6,9 @@
 
 ## Abgeschlossen
 
+### Test-Suite-Reparatur & Card-Vocabulary-Normalisierung (v5.1.3 – 15.08.26)
+Drei vorbestehende Testfehler behoben: hermes-4-36b Orphan-Draft-Card via clean-model entfernt; Architecture-Tags gegen Vocabulary-SSoT normalisiert (Native-Quant/Harmony neu, Configurable-Reasoning/Thinking-Mandatory deprecated); Ornith-Test als llamacpp-Invariante für Re-Aktivierungen umgeschrieben. Maintenance-Fixes aus Sessions 74/75 (clean_provider_config, Sanitizer, probe_thinking) integriert. 1410 Tests grün.
+
 ### vLLM-Connector CC-Refactoring (v5.1.2 – 03.08.26, Session 78)
 
 Verhaltenserhaltendes Refactoring von `utils/providers/vllm_base.py` — die als unverhandelbar deklarierte CC-≤-12-Regel wurde über `# noqa: C901` umgangen.

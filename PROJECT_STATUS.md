@@ -2,8 +2,8 @@
 
 > **Interner Statusbericht.** Diese Datei dokumentiert den Projektfortschritt für Maintainer und Contributor. Sie ist nicht Teil der öffentlichen Dokumentation. Aktuelle, kuratierte Release-Informationen stehen in [README.md](README.md) (Recent Versions) und [CHANGELOG.md](CHANGELOG.md).
 
-**Last Updated:** 2026-08-03
-**Current Version:** 5.1.2 — vLLM-Connector CC-Refactoring (Architektur-Regel-Konformität)
+**Last Updated:** 2026-08-15
+**Current Version:** 5.1.3 — Test-Suite-Reparatur & Card-Vocabulary-Normalisierung
 **Status:** Production-Ready
 
 ---

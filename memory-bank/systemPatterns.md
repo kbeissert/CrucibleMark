@@ -28,6 +28,7 @@ Diese Eigenschaften sind **bewusste Design-Entscheidungen** für faire, reproduz
 | Brücke | SSoT-Speicherort | Hot-Aufruf |
 |---|---|---|
 | **Token-Budget** | `benchmark_config.yaml → token_budgets` + `token_budgets_reasoning_models` | `resolve_token_budget()` → `min(budget, provider_num_predict)` |
+| **Card-Tag-Vocabulary (Session 82)** | `config/card_vocabulary.yaml` (reserved/informational/deprecated) | `normalize_tags()` + `get_all_known_tags()` |
 | **Token-Kaskade (Provider)** | `provider_config.yaml → <provider>.max_tokens` + `<provider>.model_max_tokens` | `_resolve_request_tokens()` in `base.py` → Kaskade: `min(resolve_budget, model_override ?? provider_default)` |
 | **Thinking** | Card `thinking_probe_detected` + optional `thinking_override` (Provider-Card) | `resolve_effective_thinking()` Priorität: Override > Probe > None |
 | **Provider-Config SSOT-Chain** | Provider-Config → Card Name → Card `model_id` → Downstream SSOT | Provider-Config definiert die ID, Card wird daraus abgeleitet, Card `model_id` wird SSOT für alles Weitere. Card-Name/CARDFELD `model_id` NICHT ändern — ist an `provider_config.yaml` gebunden. |
@@ -106,6 +107,8 @@ Aktivierung: `value` bool, `reason` nicht whitespace-only, `active_until` in der
 ---
 
 ## Pitfalls (Goldene Regeln, Kurz-Liste)
+
+- **Tag-Vocabulary: Deprecated-Normalisierung vor neuen Reserved-Tags (Session 82, 2026-08-15):** Wenn ein unregistrierter Card-Tag semantisch einem existierenden Reserved-Tag entspricht (z.B. `Thinking-Mandatory` → `Thinking`, `Configurable-Reasoning` → `Thinking-Optional`), als `deprecated`-Eintrag mit `normalized_to:` in `config/card_vocabulary.yaml` führen — NICHT als neues Reserved-Tag duplizieren. Nur wirklich neue Konzepte (z.B. `Native-Quant`, `Harmony`) als informational aufnehmen. Quant-Format/Parameterzahl/Kontextlänge gehören NICHT in `architecture_tags` — dafür existieren dedizierte Card-Felder (`quantization_format`, `params_total_b`, `context_window_k`). Falsche Tags sind nicht nur Kosmetik: `Thinking-Mandatory` statt `Thinking` setzte `thinking_mode` fälschlich auf `standard` (Reasoning-Multiplikator griff nicht).
 
 - **Race-Condition:** NIEMALS während laufendem Benchmark Core-Module modifizieren
 - **Python 3.14 `sys.path`:** `ROOT_DIR = Path(__file__).resolve().parent.parent.parent` vor Package-Imports

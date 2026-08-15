@@ -1,7 +1,13 @@
 # Progress
 Letzte Releases + aktueller Stand.
 
-### 2026-08-14 (Session 81) — probe_thinking.py Fallback-Umstellung + nemotron-3.5-lightning Card-Fix [ ]
+### 2026-08-15 (Session 82) — Test-Suite-Reparatur & Card-Vocabulary-Normalisierung [DONE] v5.1.3
+
+Drei vorbestehende Testfehler behoben (alle auf HEAD reproduzierbar, eingeführt durch Sessions 74/75 Maintenance + Auto-Generatoren): (1) `hermes-4-36b.json` Orphan-Draft-Card (alle Felder TODO, abgebrochener Run vom 01.08.) via `make clean-model` entfernt — vollständiger Benchmark lief korrekt unter `hermes-4-3-36b`; (2) Tag-Whitelist: redundante Quant/Param-Tags aus 2 Cards entfernt, Vocabulary um `Native-Quant`/`Harmony` (informational) erweitert, `Configurable-Reasoning`→`Thinking-Optional` und `Thinking-Mandatory`→`Thinking` als Deprecated-Normalisierungen — `qwen3-8-2-4t-a95b` erhält jetzt korrekt `thinking_mode: "thinking"`; (3) Ornith-llamacpp-Test als Invariante für Re-Aktivierungen umgeschrieben (`llamacpp_spark` seit 2026-08-10 leer). 1410 Tests grün, Naming-Gate 122 Cards OK, Web-Export verifiziert (102 Modelle, neue Badges gerendert). Versionssynchro v5.1.3 über 7 Stellen + 5 Docs-Stempel.
+
+---
+
+### 2026-08-14 (Session 81) — probe_thinking.py Fallback-Umstellung + nemotron-3.5-lightning Card-Fix [DONE]
 
 probe_thinking.py `_infer_provider()` hatte Dead-Code-Fallback `return "ollama"` (Ollama seit langem `enabled: false`). Umstellung: Fallback-Provider und Fallback-Modell aus `benchmark_config.yaml:probe_thinking` gelesen (Config-Driven, kein Hardcoding). Model-Card `nvidia_nemotron-3_5-lightning.json`: `model_id` korrigiert (`nvidia_nemotron-3_5-lightning` → `nvidia/nemotron-3.5-lightning`) — Slash ist Pflicht für OpenRouter-Erkennung in `_infer_provider()`. Thinking-Probe erfolgreich: `detected: true`, `confidence: medium` (reasoning_tokens=413 math, 983 decision).
 
