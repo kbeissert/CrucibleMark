@@ -2,7 +2,9 @@
 
 Geprüft am: 02.06.2026 22:25 Uhr
 
-> **Snapshot-Dokument.** Diese Seite ist ein Audit-Trail der damaligen Recherche. Die aktuelle, maschinenlesbare Pricing-SSoT lebt in `benchmark_scores/model_cards/*.json` (`input_price_per_1m`, `output_price_per_1m`). Für automatisierte Updates siehe `scripts/update_model_pricing.py`.
+> **Snapshot-Dokument.** Diese Seite ist ein Audit-Trail der damaligen Recherche. Die aktuelle, maschinenlesbare Pricing-SSoT lebt in `benchmark_scores/model_cards/*.json` (`input_price_per_1m`, `output_price_per_1m`). Für automatisierte Updates siehe `scripts/update_model_pricing.py` — dessen
+Preis-Referenztabelle lebt seit v5.1.4 in `config/model_pricing.yaml` (SSoT,
+Longest-Prefix-Match auf model_id).
 
 ## Übersicht aller API-Preise
 

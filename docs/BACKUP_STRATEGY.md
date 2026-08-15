@@ -256,6 +256,9 @@ Bereinigt `docs/reviews/` und behält pro Modell-Verzeichnis je einen Benchmark-
 
 Verarbeitet alle Benchmark- und Leaderboard-CSVs mit robustem CSV-Parsing (ab v4.4.0).
 
+> **v5.1.4:** `--dry-run` zeigt an, was bereinigt würde, ohne zu schreiben —
+> für eine Vorschau vor dem physischen Reduzieren.
+
 **Robuster CSV-Loader (Fallback-Strategien):**
 1. **Strategie 1:** `utils.csv_recovery.load_csv_robust()` — nutzt `on_bad_lines="skip"`
 2. **Strategie 2:** `pd.read_csv(on_bad_lines="skip", engine="python")` — Fallback
@@ -404,5 +407,5 @@ rsync -avz backups/ /mnt/external-drive/cruciblemark-backups/
 
 ---
 
-**Dokumenten-Version:** 5.1.3 (Ueberarbeitung 2026-08)\
+**Dokumenten-Version:** 5.1.4 (Ueberarbeitung 2026-08)\
 **Kompatibel mit:** CrucibleMark v4.4.3+

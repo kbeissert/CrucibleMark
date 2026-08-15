@@ -1134,7 +1134,10 @@ Jede Model Card JSON muss folgende Felder enthalten. Cards mit `card_status: "dr
 | `input_price_per_1m` | float | Preis pro 1M Input-Tokens in USD (**optional**, null bei lokalen Modellen) |
 | `output_price_per_1m` | float | Preis pro 1M Output-Tokens in USD (**optional**, null bei lokalen Modellen) |
 
-**Wichtig:** Preise gehören ausschließlich in die Model Card.
+**Wichtig:** Preise gehören ausschließlich in die Model Card. Die
+Update-Quelle für `scripts/update_model_pricing.py` ist
+`config/model_pricing.yaml` (v5.1.4) — das Skript schreibt die Werte in die
+Cards, das Leaderboard liest ausschließlich aus den Cards.
 
 #### Thinking Probe
 
@@ -1684,5 +1687,5 @@ python run_benchmark.py --debug-responses
 
 ---
 
-**Dokumenten-Version:** 5.1.3 (Ueberarbeitung 2026-08)\
+**Dokumenten-Version:** 5.1.4 (Ueberarbeitung 2026-08)\
 **Kompatibel mit:** CrucibleMark v3.8.2+
