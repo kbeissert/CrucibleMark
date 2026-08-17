@@ -1,6 +1,10 @@
 # Progress
 Letzte Releases + aktueller Stand.
 
+### 2026-08-17 (Session 85) — Web-Export: Provider-Code-first-Auflösung [DONE]
+
+`resolve_inference_provider()` löste den Inferenz-Server **model-basiert** auf (Config-Map + Heuristik) — SPRK-Runs (llama.cpp auf asusGX10) fielen auf 'Groq Cloud'/'Ollama (Local)', weil ihre model_ids auch Groq-/Ollama-Config-Einträgen entsprechen (5 von 7 SPRK-Runs falsch im Export; nur qwen3-6-35b-a3b-mtp-ud-q8 stand explizit im llamacpp_spark-Block). Fix: `ProviderMap.by_short_code` (eindeutig vergebene short_codes aus provider_config.yaml, mehrdeutige wie 'API' ausgeschlossen) + `resolve_inference_provider(..., provider_code=...)` prüft den Run-Provider-Code der CSV-Zeile zuerst — run-autoritativ statt name-basiert. `main.py` reicht `LdbCols.PROVIDER_CODE` durch. Bonus: eindeutige Cloud-Codes (GR/OR) lösen jetzt ebenfalls run-autoritativ. `llamacpp_spark.name` auf 'Llama.cpp (asusGX10)' umbenannt (konsistent mit vllm_spark, gleiche Hardware; CrucibleMark-Web-Rohdaten hatten manuell schon diesen Wert). 10 neue Tests (Code-first, Mehrdeutigkeits-Fallback, _extract_short_codes), 432 passed im Web-Export/Provider-Umfeld, Ruff scripts/ clean.
+
 ### 2026-08-17 (Session 84) — Echte-Token-Pipeline [DONE] v5.1.5
 
 `tokens_per_second` lief aus der Modul-Schätzung (Wörter × 1.3, ohne Thinking), während `tokens_used` die echten Provider-Usage-Werte enthielt — zwei Spalten, zwei Token-Zahlen. Umstellung auf echte Daten: TPS = `output_tokens / execution_time` (inkl. Thinking), neue CSV-Spalten `input_tokens`/`output_tokens`, `LLMClient.last_input_tokens`, Judge-Context + Audit-Log mit echter Breakdown, Visible-Output-Formel fixt (`output_tokens − reasoning_tokens`), ToolUse akkumuliert per Call. Provider lieferten bereits echte Usage — keine Provider-Änderung. 1572 Tests grün (+12 neue), Lint 0, Naming-Gate 123 Cards OK, CSV-Sanitizer sauber. Daten-Vorfall: 1 echte CSV-Row (qwen3_8-27b-nvfp4/code_quality_001) durch Simulations-Write ersetzt und nicht restaurierbar (CSV gitignored, Backup nur bis 2026-07-10) — Row muss neu gelaufen werden.
