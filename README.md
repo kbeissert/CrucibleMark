@@ -1,11 +1,11 @@
 # CrucibleMark
 
-[![Version](https://img.shields.io/badge/version-5.1.4-blue)](.)
+[![Version](https://img.shields.io/badge/version-5.1.5-blue)](.)
 [![Python](https://img.shields.io/badge/python-3.12%2B-blue)](.)
 [![License](https://img.shields.io/badge/license-MIT-green)](.)
 [![Status](https://img.shields.io/badge/status-production--ready-brightgreen)](.)
 
-**Stand: v5.1.2 · 2026-08-03**
+**Stand: v5.1.5 · 2026-08-17**
 
 ## Ein modulares LLM-Benchmark-Framework für Product Engineers
 
@@ -197,43 +197,18 @@ make clean-model MODEL="mistral-large-2411" DRY=1   # Vorschau ohne Löschen
 ## Recent Versions
 
 Die vollständige Versionshistorie steht in [CHANGELOG.md](CHANGELOG.md). Kurzfassung der letzten drei Releases:
-### v5.1.2 (2026-08-03) — vLLM-Connector CC-Refactoring
 
-Verhaltenserhaltendes Refactoring von `vllm_base.py`: `start_server` (CC 19→8) in Dispatch-Shell + 9 Pfad-Methoden zerlegt, `query` (CC 16→7) Streaming in `_consume_stream` ausgelagert, Reasoning-Fallback in `_apply_reasoning_fallback` dedupliziert (DRY). Alle `# noqa: C901`-Annotationen entfernt — die als unverhandelbar deklarierte CC-≤-12-Regel wird nicht mehr umgangen. 115 Tests grün, Ruff 0 violations.
+### v5.1.5 (2026-08-17) — Echte-Token-Pipeline (TPS, Judge, Audit-Log)
 
+Behebt einen Architektur-Denkfehler: `tokens_per_second` wurde aus der Modul-Schätzung (Wörter × 1.3, ohne Thinking) berechnet, während `tokens_used` die echten Provider-Usage-Werte enthielt — zwei Spalten, zwei Token-Zahlen, bei Thinking-Modellen massiv unterbewertet. Jetzt: TPS = echte Output-Tokens (inkl. Thinking) / Wall-Time, neue CSV-Spalten `input_tokens`/`output_tokens`, Judge-Context und Audit-Log mit echter Breakdown, Visible-Output-Formel fixt (`output_tokens − reasoning_tokens`). Provider (vLLM, OpenRouter, llama.cpp, Ollama) lieferten bereits echte Usage — keine Provider-Änderung. 1572 Tests grün, Lint 0.
 
+### v5.1.4 (2026-08-15) — Code-Review-Umsetzung (Sicherheit, Konsistenz, Robustheit)
 
-### v5.1.1 (2026-08-02) — vLLM-Connector-Fixes, Laguna Dual-Profile, Naming-Validator
+Vollständige Umsetzung eines 23-Findings-Reviews: Ollama-Modul-Loop bricht bei echtem Fehler ab, lifecycle_hooks verschluckt ToolUseExporter-Fehler nicht mehr still, ToolUse-Exporter `combined_score == 0.0`-Fallback fixt, Shell-Injection-Flächen geschlossen (shlex.quote, List-Subprocess), exponentieller Rate-Limit-Backoff, Identitäts-Tags aus Judge-Prompt entfernt (Blind-Evaluierung), 8 CC>12-Verstöße verhaltenstreu aufgesplittet (audit_logger CC 67, Roundtrip-Diff byte-identisch), Ruff 409→0, DRY-Konsolidierung (`provider_config_text` SSoT), ConfigValidator-mtime-Cache, Maintenance-Skripte gehärtet. 1411 Tests grün, Naming-Gate 122 Cards OK.
 
-vLLM-Connector gehärtet: Thinking-Profile-Adoption (MoE-Notation im ID-Segment), Post-Stop-Verifikation via SSH statt 502-Interpretation, 502-Mehrdeutigkeit (Pfad 3.5 wartete 600s ohne vllm-start). ToolUse-Exporter überschrieb  in 107 Cards behoben.  →  als Historical Rename (vLLM vor 0.25.1). Laguna S 2.1 als selektives Reasoning-Modell erkannt —  aus  entfernt, keine Dual-Profile-Expansion.  als neue Leaderboard-Spalte. Naming-Validator () als Publication-Gate in === Pre-Check: Naming Conventions ===
-=== Naming Convention Validator (model-cards) ===
-Alle 116 Cards OK — keine Namensverstoesse.
+### v5.1.3 (2026-08-15) — Test-Suite-Reparatur & Card-Vocabulary-Normalisierung
 
-Starte Web Export...
-.venv/bin/python -m scripts.web_export 
-Export abgeschlossen. (hard) / === Pre-Check: Naming Conventions (warn-only) ===
-=== Naming Convention Validator (model-cards) ===
-Alle 116 Cards OK — keine Namensverstoesse.
-
-Exportiere direkt ins 11ty-Projekt...
-.venv/bin/python -m scripts.web_export --output ../cruciblemark-web/src/_data/raw/
-Dev-Export abgeschlossen. (warn-only) — 11 display_name + 7 model_version Forbidden-Patterns. 7 Vendor-Cards mit compound-Namen bereinigt (llmfan46, jackrong, ara_apex neu strukturiert). 1553 Tests grün.
-
-### v5.1.0 (2026-07-14) — Striktere Incapable-Klassifikation
-
-Fixt einen Design-Defekt aus v5.0: Modelle mit `supports_tool_use: false` wurden pauschal als "incapable" exempt, selbst wenn sie getestet wurden und fehlschlugen. Jetzt gilt "incapable" nur, wenn das Modell null Rows für das Modul hat. `attempted_set` aus `df_all` prüft, ob ein Modell angetreten ist. Zwei Cards korrigiert (Command A+ und GPT-OSS 20B, beide wurden getestet, `false` war Provider-Stabilitätsaussage, nicht Kapabilität). Command A+ fällt von Rang 62 auf Rang 104.
-
-⚠️ **Breaking Change.** Total Scores und Rankings ändern sich für betroffene Modelle.
-
-### v5.0.0 (2026-07-13) — Generalized Coverage Scoring + ToolUse Integration
-
-ToolUse wird als vollwertiges achtes Scoring-Modul integriert (`enable_scoring: true`, `module_weight: 1.0`). Die Coverage-Logik wurde generalisiert: missing- und unknown-Module lösen einen Malus aus, incapable-Modelle bleiben exempt, rolling_out- und not_deployed-Module sind für alle ausgeschlossen. Neue `coverage_ratio`-Spalte. Per-Modell-`Tests Run`-Erwartung (incapable reduziert). Invariante `Routine + Reasoning = Total` erhalten.
-
-⚠️ **Breaking Change.** Total Scores und Rankings ändern sich.
-
-### v4.10.18 (2026-07-11) — Framework-Refactoring + Ruff 0-Violations
-
-Systematisches Refactoring gegen die Architektur-Regeln: `model_utils.py` zerlegt in sieben Submodule mit Re-Export-Bridge, `web_export.py` als Package, `yaml.safe_load` durch `ConfigValidator` in 15 Skripten ersetzt, 131 `print`-Aufrufe auf `logging` migriert. 27 Legacy-Skripte nach `scripts/legacy/` verschoben. Ruff-Verstöße 252 → 0. Bugfix für doppelte Base-Cards bei suffixed Modellen. 1316 Tests grün, verhaltenserhaltend.
+Drei vorbestehende Testfehler behoben: hermes-4-36b Orphan-Draft-Card via `make clean-model` entfernt (der vollständige Benchmark lief korrekt unter `hermes-4-3-36b`), Architecture-Tags gegen Vocabulary-SSoT normalisiert (`Native-Quant`/`Harmony` neu, `Configurable-Reasoning`/`Thinking-Mandatory` deprecated), Ornith-llamacpp-Test als Invariante für Re-Aktivierungen umgeschrieben. Maintenance-Fixes aus Sessions 74/75 integriert. 1410 Tests grün.
 
 ---
 
@@ -247,4 +222,4 @@ Bug-Reports, Feature-Wünsche und Diskussionen laufen über [GitHub Issues](http
 
 - **Maintainer:** [kbeissert](https://github.com/kbeissert)
 - **Repository:** [github.com/kbeissert/cruciblemark](https://github.com/kbeissert/cruciblemark)
-- **Status:** Production-Ready (v5.1.4)
+- **Status:** Production-Ready (v5.1.5)

@@ -1295,7 +1295,10 @@ class BenchmarkResult(BaseModel):
 
     # Execution Metrics
     execution_time: float             # Seconds
-    tokens_used: int                  # Estimated token count
+    tokens_used: int                  # Echte Provider-Usage: Input + Output (max(modul, client))
+    input_tokens: int                 # Echte Input-Tokens aus Provider-Usage (0 wenn nicht gemeldet)
+    output_tokens: int                # Echte Output-Tokens inkl. Thinking (0 wenn nicht gemeldet)
+    tokens_per_second: float          # output_tokens / execution_time (ab v5.1.5; Fallback: Modul-Schätzung)
     cost_usd: float                   # Estimated cost
     raw_response: str                 # The full LLM output text
 
@@ -1687,5 +1690,5 @@ python run_benchmark.py --debug-responses
 
 ---
 
-**Dokumenten-Version:** 5.1.4 (Ueberarbeitung 2026-08)\
+**Dokumenten-Version:** 5.1.5 (Ueberarbeitung 2026-08)\
 **Kompatibel mit:** CrucibleMark v3.8.2+

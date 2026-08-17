@@ -58,6 +58,7 @@ make docs-version-sync YES=1   # Doku-Stempel angleichen
 - **vLLM-Server nicht unnötig neu starten:** Der Start kann mehrere Minuten dauern. Während Diagnose und Tests gegen den laufenden Server arbeiten.
 - **Reports als flüchtig behandeln:** Benchmark-Reports werden pro Lauf überschrieben. Verbindlich sind die versionierten Ergebnisdateien in `outputs/runs/`.
 - **ToolUse-Leaderboard bereinigen:** `tooluse_leaderboard.csv` ist ein Upsert-File. Bei Modell-ID-Renames alte IDs vor der Aggregation entfernen.
+- **`save_results`-Simulationen nicht gegen echte CSVs laufen lassen:** `benchmark_scores/*.csv` ist gitignored — es gibt kein Git-Sicherheitsnetz für Benchmark-Daten. In Tests und Simulationen `config['output']` explizit auf Temp-Pfade umleiten.
 - **Selektives Reasoning beachten:** Modelle, die selbst entscheiden, wann sie denken, dürfen keine Always-Thinking-Konfiguration erhalten. `enable_thinking: true` kann sonst eine falsche Dual-Profile-Expansion auslösen.
 - **`# noqa: C901` nicht verwenden:** Die CC-≤-12-Regel bleibt verbindlich. Stattdessen Methoden nach Pfaden aufteilen.
 - **File-level `# ruff: noqa: F401` nur in `__init__.py`:** In anderen Modulen verbirgt es tote Imports und Redefinitions. Stattdessen gezielte `# noqa: F401` an Re-Export-Zeilen oder gar keine verwenden.

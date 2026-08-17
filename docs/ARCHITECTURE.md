@@ -319,7 +319,7 @@ if _think and _think.strip():
     _effective_response = f"<think>\n{_think.strip()}\n</think>\n\n{response}"
 ```
 
-Der Judge sieht das Thinking als Teil der Response in bekannten `<think>`-Tags. Damit der Judge den `<think>`-Block korrekt als internes Reasoning interpretiert und nicht als "Output ONLY"-Verletzung bestraft, wird ein konditionaler `REASONING TRACE NOTE`-Block in den System-Prompt injiziert (nur wenn `think_content` vorhanden). Siehe `_append_reasoning_trace_note()` in `judge_prompt_builder.py`. Der TOKEN USAGE-Block im System-Prompt bleibt unverändert (zeigt weiterhin `reasoning_tokens`-Count). Viele rule-based Evaluatoren strippen `<think>`-Tags bereits beim Scoring.
+Der Judge sieht das Thinking als Teil der Response in bekannten `<think>`-Tags. Damit der Judge den `<think>`-Block korrekt als internes Reasoning interpretiert und nicht als "Output ONLY"-Verletzung bestraft, wird ein konditionaler `REASONING TRACE NOTE`-Block in den System-Prompt injiziert (nur wenn `think_content` vorhanden). Siehe `_append_reasoning_trace_note()` in `judge_prompt_builder.py`. Der TOKEN USAGE-Block im System-Prompt zeigt seit v5.1.5 die echte Provider-Usage-Breakdown (Input + Output), den Thinking-Anteil am Output und den sichtbaren Output (`output_tokens − reasoning_tokens`); SSoT: `_format_token_usage_lines()` in `judge_prompt_builder.py`. Viele rule-based Evaluatoren strippen `<think>`-Tags bereits beim Scoring.
 
 Der `REASONING TRACE NOTE`-Block ist der 6. konditionale Kontextblock (neben `identity_context`, `language_compliance`, `token_budget_note`, `truncation_note`, `token_usage_block`, `small_model_note`). Da er nur bei vorhandenem `think_content` feuert, entsteht kein Kalibrierungsrisiko für Non-Thinking-Modelle — der Basis-Judge-Prompt bleibt für alle anderen Fälle unverändert.
 
@@ -442,7 +442,7 @@ Aktivierungs-Regeln (`_is_override_active`): `value` muss bool sein, `reason` Pf
 
 CrucibleMark koppelt alle Auswertungen an das Hardware- oder Kosten-Umfeld. Der **`SystemContextManager` (`utils/system_context.py`)** setzt das um:
 
-- **T/s Berechnung:** Berechnet zentral die `tokens_per_second` für alle Benchmark-Runs.
+- **T/s Berechnung:** `tokens_per_second` = echte Output-Tokens (inkl. Thinking) / Wall-Time — SSoT in `base_runner.build_base_result()` (ab v5.1.5; Fallback auf Modul-Schätzung nur wenn der Provider kein Usage meldet).
 - **Prompt-Injection:** Holt dynamische Rahmendaten über das Testsystem basierend auf dem in `benchmark_config.yaml` festgelegten `runner_environment` passend zum `run_type` (Local vs. Commercial).
 - **„Prompt-as-Config":** System-Prompts für textgenerierende Pipeline-Funktionen (z. B. für den Meta-Reviewer) sind vollständig nach `config/meta_reviewer_prompt.yaml` ausgelagert. Der System-Code führt lediglich ein `.format()` aus und injiziert Hardware-Variablen und Ergebnislogs in das YAML-Template.
 - **Data-Coupling & Regex-Integration:** Das System injiziert Metadaten (Token-Limits, Loop-Errors, ausgelöste Safety-Protokolle) via Warnblöcke direkt in die auszuwertenden Markdown-Logs. Der Evaluierungs-Flow parst diese Metadaten über vordefinierte Regex-Muster oder ID-Anker (z. B. "7.2.001"). Das befähigt den Judge, Modelle ganzheitlich – einschließlich technischer Flaws – zu bewerten. Hartes Grammar-Enforcement im Prompt verhindert Halluzinationen über einen aktiven Willen der KI-Modelle.
@@ -955,5 +955,5 @@ class LLMClientFactory:
 
 ---
 
-**Dokumenten-Version:** 5.1.4 (Ueberarbeitung 2026-08)\
+**Dokumenten-Version:** 5.1.5 (Ueberarbeitung 2026-08)\
 **Kompatibel mit:** CrucibleMark v3.8.0+

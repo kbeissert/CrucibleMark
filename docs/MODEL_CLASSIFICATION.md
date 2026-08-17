@@ -262,6 +262,8 @@ Skill Profiles beschreiben die **Stärken-Kombination** eines Modells basierend 
 Tokens/s = Mittelwert der tokens_per_second über alle Nicht-System-Assets
 ```
 
+> **Semantik (ab v5.1.5):** `tokens_per_second` = echte Output-Tokens (inkl. Thinking) / Wall-Time (SSoT: `base_runner.build_base_result()`). Zeilen bis v5.1.4 enthalten Modul-Schätzungen ohne Thinking — bei Thinking-Modellen unterbewertet.
+
 > **Hinweis:** Der frühere „Efficiency Score" (Total Score ÷ Avg Task Duration) wurde in v3.4.3 entfernt.
 > Er kombinierte Qualität und Speed opak in einer Zahl und war neben `Cost per 1K (USD)` redundant.
 > Stattdessen drei saubere, unabhängige Dimensionen: `Total Score`, `Avg Task Duration (s)`, `Tokens/s`.
@@ -470,5 +472,5 @@ make probe-all-thinking
 
 ---
 
-**Dokumenten-Version:** 5.1.4 (Ueberarbeitung 2026-08)\
+**Dokumenten-Version:** 5.1.5 (Ueberarbeitung 2026-08)\
 **Kompatibel mit:** CrucibleMark v3.8+

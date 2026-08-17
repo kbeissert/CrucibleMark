@@ -2,52 +2,48 @@
 
 > **Interner Statusbericht.** Diese Datei dokumentiert den Projektfortschritt für Maintainer und Contributor. Sie ist nicht Teil der öffentlichen Dokumentation. Aktuelle, kuratierte Release-Informationen stehen in [README.md](README.md) (Recent Versions) und [CHANGELOG.md](CHANGELOG.md).
 
-**Last Updated:** 2026-08-15
-**Current Version:** 5.1.4 — Code-Review-Umsetzung (Sicherheit, Konsistenz, Robustheit)
+**Last Updated:** 2026-08-17
+**Current Version:** 5.1.5 — Echte-Token-Pipeline (TPS, Judge, Audit-Log)
 **Status:** Production-Ready
 
 ---
 
 ## Executive Summary
 
-CrucibleMark v5.1.0 ist ein production-ready LLM-Benchmark-Framework mit 110+ getesteten Modellen über 11 Provider. Das Framework misst praxisnahe Leistung (Code-Reviews, UX-Texte, Reasoning, Tool-Use, Political Compass) mit blindem LLM-Judge und generiert Leaderboards mit License-/Sovereign-Filtern.
+CrucibleMark v5.1.5 ist ein production-ready LLM-Benchmark-Framework mit 120+ getesteten Modellen über 11 Provider. Das Framework misst praxisnahe Leistung (Code-Reviews, UX-Texte, Reasoning, Tool-Use) mit blindem LLM-Judge und generiert Leaderboards mit License-/Sovereign-Filtern.
 
-**Aktueller Stand (2026-08-02):**
-- **110+ Modelle** im Leaderboard, davon 88 im Web-Export (restliche geblacklisted: Quant-Vergleichstests, experimentelle Modelle, superseded vLLM-Versionen).
+**Aktueller Stand (2026-08-17):**
+- **120+ Modelle** im Leaderboard (Naming-Gate: 123 Cards OK), Web-Export nach Blacklist-Reduktion (Quant-Vergleichstests, experimentelle Modelle, superseded vLLM-Versionen).
 - **11 Provider:** OpenAI, Anthropic, Google, Mistral, xAI, OpenRouter, Cohere, Ollama, Llama.cpp, Spark (llamacpp), vLLM (Spark).
-- **8 Scoring-Module** + Political Compass (separat): Code Quality, CLI Operations, Reasoning & Logik, UX Writing, Cultural Intelligence, Documentation Quality, Content Transformation, Tool Use.
-- **Web-Export:** 88 Modelle, 0 Vendor-Warnungen, 9 Score-Keys, Eleventy-Build 366 Dateien, 0 Errors.
-- **1316+ Tests** grün, Ruff 0-Violations, Pylint ≥ 9.99/10.
+- **8 Scoring-Module:** Code Quality, CLI Operations, Reasoning & Logik, UX Writing, Cultural Intelligence, Documentation Quality, Content Transformation, Tool Use. Political Compass seit v5.1.3 deaktiviert (`enabled: false`).
+- **1572 Tests** grün, Ruff 0-Violations, Pylint ≥ 9.99/10.
 
-**Aktuelle Modell-Integrationen (Sessions 73–75):**
-- **Laguna S 2.1 NVFP4** — selektives Reasoning-Modell (Rank 92, Score 69.1%, Silver Badge). Dual-Profile entfernt: Laguna denkt pro Request selbst, kein Always-Thinking.
-- **Hermes 4.3 36B (Seed-OSS)** — Dual-Profile (Standard Rank 98, Thinking Rank 103). Apache-2.0, 36B Dense, BF16, vLLM.
-- **qwen3_6-27B → qwen3_6-27B-pre025** — historischer Rename für vLLM-Versionsmarker. ToolUse-Timestamp-Bugfix (Path B überschrieb `tested_at` nicht mehr).
+**Aktuelle Modell-Integrationen (Sessions 82–84):**
+- **Qwen 3.8 27B NVFP4** (lokal, vLLM gx10) — Standard-Profil Rank 63, Score 72.25, Silver Badge. Thinking-Profil im Benchmark (Dual-Profile-Expansion).
+- **Qwen3.8 2.4T A95B** (OpenRouter, Cloud) — Rank 115, Score 67.23, Silver Badge.
+- **Echte-Token-Pipeline (v5.1.5):** TPS, Judge-Context und Audit-Log laufen jetzt auf echten Provider-Usage-Werten (`input_tokens`/`output_tokens`).
 
 **Known Limitations (akzeptiert, nicht blockierend):**
-- 8 Modelle ohne Political Compass-Daten (Gemma-4-26B-thinking, Gemma-4-31B, gemma-4-31b-it-creative-wordsmith-q8, Gemma-4-31B-thinking, ornith-1_0-35B-FP8-thinking, qwable-3_6-27b-q4, qwable-3_6-35b-q5, qwen3_6-27B). Deferralbar via `run_political_compass_benchmark`.
-- Political Compass `raw_response` trunciert auf 2–3 Zeichen (nur `answer`-Feld vertrauen).
+- **TPS-Semantik-Wechsel v5.1.5:** Historische CSV-Zeilen behalten Schätzwerte (Upsert rechnet nicht neu durch) — Leaderboard mischt alte/neue TPS, bis Modelle neu gelaufen sind.
+- **Political Compass deaktiviert (seit v5.1.3):** 8 Modelle ohne PC-Daten; Re-Aktivierung via `benchmark_config.yaml` + `run_political_compass_benchmark`.
+- **Datenlücke:** qwen3_8-27b-nvfp4 / code_quality_001-Row fehlt (durch Simulations-Write ersetzt, nicht restaurierbar) — Modul-Neulauf ausstehend.
 - Web-Frontend (separates Repo): `price-comparison-row.njk` Null-Guard, `model-header.njk` Doppel-Rendering, Frontend stu=false-Score-Anzeige.
 
 ---
 
 ## Recent Releases
 
-### v5.1.0 (2026-07-14) — Striktere Incapable-Klassifikation
+### v5.1.5 (2026-08-17) — Echte-Token-Pipeline (TPS, Judge, Audit-Log)
 
-Fixt einen Design-Defekt aus v5.0: Modelle mit `supports_tool_use: false` wurden pauschal als "incapable" exempt, selbst wenn sie getestet wurden und fehlschlugen. Jetzt gilt "incapable" nur, wenn das Modell null Rows für das Modul hat. `attempted_set` aus `df_all` prüft, ob ein Modell angetreten ist. Zwei Cards korrigiert (Command A+ und GPT-OSS 20B). Command A+ fällt von Rang 62 auf Rang 104.
+`tokens_per_second` lief aus der Modul-Schätzung (Wörter × 1.3, ohne Thinking), während `tokens_used` die echten Provider-Usage-Werte enthielt — zwei Spalten, zwei Token-Zahlen. Jetzt: TPS = `output_tokens / execution_time` (inkl. Thinking), neue CSV-Spalten `input_tokens`/`output_tokens`, Judge-Context + Audit-Log mit echter Breakdown, Visible-Output-Formel fixt (`output_tokens − reasoning_tokens`). Provider lieferten bereits echte Usage — keine Provider-Änderung. 1572 Tests grün (+12 neue), Lint 0, Naming-Gate 123 Cards OK.
 
-⚠️ **Breaking Change.** Total Scores und Rankings ändern sich für betroffene Modelle.
+### v5.1.4 (2026-08-15) — Code-Review-Umsetzung (Sicherheit, Konsistenz, Robustheit)
 
-### v5.0.0 (2026-07-13) — Generalized Coverage Scoring + ToolUse Integration
+23-Findings-Review umgesetzt: 5 kritische Fixes (Ollama-Loop-Break, lifecycle_hooks-Logging, combined_score-0.0-Fallback, doppelter probe_thinking-Key, Preis-Split-Bug mit neuer SSoT `config/model_pricing.yaml`), Shell-Injection-Flächen geschlossen, exponentieller Rate-Limit-Backoff, Judge-Prompt Name-Priming entfernt (Blind-Evaluierung), 8 C901-Verstöße verhaltenstreu aufgesplittet, Ruff 409→0, DRY-Konsolidierung (`utils/provider_config_text.py`), ConfigValidator-mtime-Cache, Maintenance-Skripte gehärtet. 1411 Tests grün, Naming-Gate 122 Cards OK.
 
-ToolUse wird als vollwertiges achtes Scoring-Modul integriert (`enable_scoring: true`, `module_weight: 1.0`). Die Coverage-Logik wurde generalisiert: missing- und unknown-Module lösen einen Malus aus, incapable-Modelle bleiben exempt, rolling_out- und not_deployed-Module sind für alle ausgeschlossen. Neue `coverage_ratio`-Spalte. Per-Modell-`Tests Run`-Erwartung (incapable reduziert). Invariante `Routine + Reasoning = Total` erhalten.
+### v5.1.3 (2026-08-15) — Test-Suite-Reparatur & Card-Vocabulary-Normalisierung
 
-⚠️ **Breaking Change.** Total Scores und Rankings ändern sich.
-
-### v4.10.18 (2026-07-11) — Framework-Refactoring + Ruff 0-Violations
-
-Systematisches Refactoring gegen die Architektur-Regeln: `model_utils.py` zerlegt in sieben Submodule mit Re-Export-Bridge, `web_export.py` als Package, `yaml.safe_load` durch `ConfigValidator` in 15 Skripten ersetzt, 131 `print`-Aufrufe auf `logging` migriert. 27 Legacy-Skripte nach `scripts/legacy/` verschoben. Ruff-Verstöße 252 → 0. Bugfix für doppelte Base-Cards bei suffixed Modellen. 1316 Tests grün, verhaltenserhaltend.
+Drei vorbestehende Testfehler behoben: hermes-4-36b Orphan-Draft-Card via `make clean-model` entfernt; Architecture-Tags gegen Vocabulary-SSoT normalisiert (`Native-Quant`/`Harmony` neu, `Configurable-Reasoning`/`Thinking-Mandatory` deprecated); Ornith-Test als llamacpp-Invariante für Re-Aktivierungen umgeschrieben. Maintenance-Fixes aus Sessions 74/75 integriert. `political_compass` deaktiviert. 1410 Tests grün.
 
 ---
 

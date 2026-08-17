@@ -1,6 +1,6 @@
 # Active Context
 Aktueller Stand und nächste Schritte.
 
-- **Abgeschlossen:** Code-Review-Umsetzung v5.1.4 (Session 83) — alle 23 Findings umgesetzt und verifiziert (Ruff 0 Fehler, 1411 Tests grün, Naming-Gate 122 Cards OK). Enthielt: 5 kritische Fixes (u.a. combined_score-0.0-Fallback als dokumentierte Scoring-Änderung, Preis-SSoT nach config/model_pricing.yaml), Shell-Injection-Schließung, Blind-Evaluierung (Name-Priming aus Judge-Prompt), 8 CC>12-Splits verhaltenstreu, Ruff 409→0, DRY/Performance-Konsolidierung, Maintenance-Härtung.
-- **Nächster Schritt:** Arbeitsbaum committen — 123 geänderte Dateien + 2 neue (config/model_pricing.yaml, utils/provider_config_text.py) + 1 gelöschte (scripts/maintenance/verify_counts.py), uncommittet auf Zuruf.
-- **Offen/Risiko:** kilo.jsonc-API-Key bleibt in der Git-Historie (lokaler Netzwerk-Endpoint) — bei erhöhten Anforderungen Key rotieren oder History-Rewrite; sonst akzeptiertes Restrisiko.
+- **Abgeschlossen:** Echte-Token-Pipeline v5.1.5 (Session 84) — TPS/Judge-Context/Audit-Log laufen jetzt auf echten Provider-Tokens (neue CSV-Spalten `input_tokens`/`output_tokens`, Visible-Output-Formel fixt), 1572 Tests grün. Vorher: Code-Review-Umsetzung v5.1.4 (Session 83).
+- **Nächster Schritt:** Verlorene CSV-Row `qwen3_8-27b-nvfp4 / code_quality_001` neu laufen lassen (durch Simulations-Write ersetzt, Audit-Log intakt), dann Arbeitsbaum committen (v5.1.4 + v5.1.5) auf Zuruf und `make docs-version-sync YES=1` beim Release.
+- **Offen/Risiko:** (1) TPS-Semantik-Wechsel v5.1.5 — historische CSV-Zeilen behalten Schätzwerte (Upsert rechnet nicht neu durch), Leaderboard mischt alte/neue TPS bis Re-Runs. (2) `reasoning_tokens`-Spalte teils leer bei vLLM-Standard-Profilen — `think_content` ist die zuverlässigere Thinking-Quelle. (3) kilo.jsonc-API-Key in Git-Historie (lokaler Endpoint) — akzeptiertes Restrisiko.

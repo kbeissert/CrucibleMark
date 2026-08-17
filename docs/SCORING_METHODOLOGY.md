@@ -118,6 +118,8 @@ Thought-Tag Compliance = Einhaltung der Metakognitions-Tags (<thought>)
 Coverage % = Erfolgreich geparst
 ```
 
+> **Semantik von `Tokens/s` (ab v5.1.5):** `tokens_per_second` = echte Output-Tokens (inkl. Thinking) / Wall-Time — SSoT in `base_runner.build_base_result()`. Historische Zeilen bis v5.1.4 enthalten Modul-Schätzungen (Wörter × 1.3, ohne Thinking) und sind bei Thinking-Modellen massiv unterbewertet. Das Leaderboard mischt beide Semantiken, bis die betroffenen Modelle neu gelaufen sind.
+
 > **Hinweis zur Judge-Coverage-Berechnung:** Zeilen mit `judge_prog=⚠️ Judge: skip (zu kurz/abgelehnt)`
 > werden seit v4.8.6 **vor** der Coverage-Formel herausgefiltert. Diese Skips sind absichtlich
 > (Antwort zu kurz, Modell hat abgelehnt) und zählen nicht als fehlgeschlagene Judge-Aufrufe.

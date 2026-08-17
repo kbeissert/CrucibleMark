@@ -6,6 +6,9 @@
 
 ## Abgeschlossen
 
+### Echte-Token-Pipeline (v5.1.5 – 17.08.26, Session 84)
+`tokens_per_second` wurde aus der Modul-Schätzung (Wörter × 1.3, ohne Thinking) berechnet, während `tokens_used` die echten Provider-Usage-Werte enthielt — zwei Spalten, zwei Token-Zahlen, bei Thinking-Modellen massiv unterbewertet. Fix: TPS = echte Output-Tokens (inkl. Thinking) / Wall-Time, neue CSV-Spalten `input_tokens`/`output_tokens` (selbstkonsistent: `tokens_used = input + output`), Judge-Context und Audit-Log mit echter Breakdown, Visible-Output-Formel fixt (`output_tokens − reasoning_tokens` statt `tokens_used − reasoning_tokens`, die alte Formel hätte Input-Tokens als sichtbaren Output gezählt). Provider lieferten bereits echte Usage (vLLM, OpenRouter, llama.cpp, Ollama) — keine Provider-Änderung. Doku-Sync: ARCHITECTURE.md (TPS-SSoT + TOKEN-USAGE-Block), DEVELOPER_GUIDE.md (Schema-Felder `input_tokens`/`output_tokens`), SCORING_METHODOLOGY.md + MODEL_CLASSIFICATION.md (Tokens/s-Semantik-Hinweis). 1572 Tests grün (+12 neue), Lint 0, Naming-Gate 123 Cards OK.
+
 ### Code-Review-Umsetzung (v5.1.4 – 15.08.26, Session 83)
 Vollständige Umsetzung eines 23-Findings-Reviews: 5 kritische Fixes (Ollama-Loop-Break, lifecycle_hooks-Logging, combined_score-0.0-Fallback, doppelter probe_thinking-Key, Preis-Split-Bug mit neuer SSoT config/model_pricing.yaml), Shell-Injection-Flächen geschlossen, exponentieller Rate-Limit-Backoff, Judge-Prompt Name-Priming entfernt (Blind-Evaluierung), 8 C901-Verstöße verhaltenstreu aufgesplittet (audit_logger CC 67, Roundtrip-Diff byte-identisch), Ruff 409→0, DRY-Konsolidierung (utils/provider_config_text.py), ConfigValidator-mtime-Cache, Maintenance-Skripte gehärtet (--dry-run, Heuristik-Entschärfung). 1411 Tests grün, Naming-Gate 122 Cards OK.
 

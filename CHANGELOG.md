@@ -5,6 +5,50 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v5.1.5] - 2026-08-17
+
+**Patch-Release: Echte Token-Daten in TPS, Judge-Context und Audit-Log.**
+
+Behebt einen Architektur-Denkfehler: `tokens_per_second` wurde aus der
+Modul-Schätzung (Wörter × 1.3 bzw. Zeichen/4) berechnet, während `tokens_used`
+die echten Provider-Usage-Werte (Input + Output inkl. Thinking) enthielt.
+Zwei benachbarte CSV-Spalten nutzten damit zwei verschiedene Token-Zahlen —
+bei Thinking-Modellen massiv unterbewertet (Nenner enthält Thinking-Zeit,
+Zähler ignorierte Thinking-Tokens).
+
+- **TPS-SSoT:** `tokens_per_second` = echte Output-Tokens (inkl. Thinking) /
+  Wall-Time. Misst den tatsächlichen Decode-Durchsatz (Denken + Antworten).
+  Fallback auf die Modul-Schätzung nur wenn der Provider kein Usage meldet.
+  **Comparability-Hinweis:** Semantik-Wechsel — historische CSV-Zeilen
+  behalten die alten Schätzwerte (Upsert rechnet sie nicht neu durch).
+- **Neue CSV-Spalten** `input_tokens` + `output_tokens` (echte
+  Provider-Usage-Werte, 0 = nicht gemeldet). CSV ist damit selbstkonsistent:
+  `tokens_used = input + output`, `tps × time ≈ output`,
+  `reasoning_tokens ⊆ output`.
+- **LLMClient:** Neues `last_input_tokens`-Attribut neben
+  `last_output_tokens` (beide pro Query aus echtem Usage, bestehender
+  Estimate-Fallback pro Feld).
+- **Judge-Context:** TOKEN-USAGE-Block zeigt die echte Breakdown
+  (Input + Output, Thinking-Anteil relativ zu Output statt Total).
+  **Formel-Fix:** "Visible output tokens" = `output_tokens −
+  reasoning_tokens` — die alte Formel `tokens_used − reasoning_tokens`
+  hätte Input-Tokens fälschlich als sichtbaren Output gezählt.
+- **Audit-Log:** Breakdown auf der `**Tokens Used:**`-Zeile (bleibt für
+  `_strip_metric_lines` intakt); "Verbleibende Output-Tokens" im
+  Reasoning-Warning nutzt echte Output-Tokens (Legacy-Fallback als
+  geschätzt markiert).
+- **ToolUse-Modul:** Akkumuliert `last_input_tokens`/`last_output_tokens`
+  über beide LLM-Calls (Multi-Call-Summe schlägt Client-Last-Call,
+  analog zum bestehenden `tokens_used`-Pattern).
+- **Verifiziert:** OpenRouter, vLLM, llama.cpp und Ollama liefern bereits
+  echte Usage-Daten (completion_tokens inkl. Reasoning) — keine
+  Provider-Änderungen nötig. Regressionstests in
+  `tests/test_real_token_tps.py` (12 Tests).
+- **Doku-Sync:** `docs/ARCHITECTURE.md` (TPS-SSoT + TOKEN-USAGE-Block),
+  `docs/DEVELOPER_GUIDE.md` (BenchmarkResult-Schema mit `input_tokens`/
+  `output_tokens`), `docs/SCORING_METHODOLOGY.md` + `docs/MODEL_CLASSIFICATION.md`
+  (Tokens/s-Semantik-Hinweis für v5.1.5-Schneide).
+
 ## [v5.1.4] - 2026-08-15
 
 **Patch-Release: Code-Review-Umsetzung (Sicherheit, Konsistenz, Robustheit).**
