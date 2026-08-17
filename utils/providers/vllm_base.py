@@ -77,6 +77,7 @@ _VLLM_EXTRA_BODY_KEYS: tuple[str, ...] = (
     "min_p",
     "repetition_penalty",
     "chat_template_kwargs",
+    "reasoning_effort",
     "guided_json",
     "guided_regex",
     "guided_choice",

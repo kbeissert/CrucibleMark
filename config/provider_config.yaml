@@ -903,6 +903,22 @@ providers:
         top_k: 20
         enable_thinking: true
 
+      # Qwen 3.8 27B Dense — NVFP4 compressed-tensors (mixed-precision), MTP, Thinking-Parser aktiv.
+      # 262K Context. vLLM-nightly 0.27.2rc1 (Ziel-Port 3305).
+      # Architektur: 1:3-Interleaving (16 full_attn + 48 Mamba2) — UMGEKEHRT zu Qwen3.6-27B.
+      # 48 Mamba2-Layer = gdn-prefill-backend-abhängig (flashinfer).
+      # Sampling synchron mit TOML: temperature=1.0, top_p=0.95, top_k=20.
+      - id: qwen3_8-27b-nvfp4
+        name: Qwen 3.8 27B NVFP4 (vLLM, Dense, MTP)
+        config: Qwen3.8-27B-NVFP4
+        max_tokens: 16384
+        temperature: 1.0
+        top_p: 0.95
+        top_k: 20
+        reasoning_effort: medium  # Begrenzt Endlos-Reasoning (vLLM 0.27.2rc1 + MOD thinking-budget-by-effort)
+        # repetition_penalty:  # TOML-Default (kein Override)
+        enable_thinking: true
+
       # Laguna S 2.1 — Poolside NVFP4 MoE (117.6B total / 8.5B active),
       # custom LagunaForCausalLM (trust_remote_code=true), DFlash Speculative
       # Decoding (15 Tokens, ~2x decode-speedup), 256K Context.
