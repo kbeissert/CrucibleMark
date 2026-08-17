@@ -107,8 +107,9 @@ class BaseBenchmarkRunner:
         """Überträgt relevante Client-/Response-Metadaten in das Exec-Result.
 
         Setzt token_limit_fallback, finish_reason, token_limit_cutoff,
-        token_limit_used, tps_eval, reasoning_tokens und think_content aus
-        ``self.client.last_response_metadata``, falls vorhanden.
+        token_limit_used, tps_eval, reasoning_tokens, think_content sowie
+        die echten Token-Breakdown-Felder input_tokens/output_tokens aus
+        ``self.client``, falls vorhanden.
         """
         if not hasattr(self.client, "last_response_metadata"):
             return
@@ -142,6 +143,17 @@ class BaseBenchmarkRunner:
         if tc is not None:
             exec_result.think_content = tc
 
+        # Echte Token-Breakdown aus dem Client (SSoT: LLMClient.query()).
+        # Nur überschreiben, wenn das Modul keinen höheren Aggregat-Wert
+        # gesetzt hat (Multi-Call-Module wie ToolUse summieren mehrere Calls).
+        it = getattr(self.client, "last_input_tokens", 0)
+        if it and (not exec_result.input_tokens or it > exec_result.input_tokens):
+            exec_result.input_tokens = it
+
+        ot = getattr(self.client, "last_output_tokens", 0)
+        if ot and (not exec_result.output_tokens or ot > exec_result.output_tokens):
+            exec_result.output_tokens = ot
+
     # pylint: disable=too-many-arguments, too-many-positional-arguments
     def build_base_result(
         self,
@@ -162,10 +174,17 @@ class BaseBenchmarkRunner:
         total_score = exec_result.primary_score if exec_result.primary_score is not None else 0.0
         percentage = round((total_score / max_score * 100), 1) if max_score > 0 else 0.0
 
-        # Prepare tokens per second logic
+        # Prepare tokens per second logic (SSoT):
+        # Primär: echte Output-Tokens (inkl. Thinking) / Wall-Time — misst den
+        # tatsächlichen Decode-Durchsatz des Modells (Denken + Antworten).
+        # Fallback (nur wenn der Provider kein Usage meldet): Modul-Schätzung.
         tps = 0.0
-        if exec_result.execution_time > 0 and getattr(exec_result, "tokens_used", 0) > 0:
-            tps = round(exec_result.tokens_used / exec_result.execution_time, 2)
+        _real_output = getattr(exec_result, "output_tokens", 0) or 0
+        if exec_result.execution_time > 0:
+            if _real_output > 0:
+                tps = round(_real_output / exec_result.execution_time, 2)
+            elif getattr(exec_result, "tokens_used", 0) > 0:
+                tps = round(exec_result.tokens_used / exec_result.execution_time, 2)
 
         # Native eval speed: eval_count / eval_duration from Ollama response (excludes prefill).
         # Remains None when not available (cloud proxy, non-Ollama providers).
@@ -190,6 +209,8 @@ class BaseBenchmarkRunner:
             # Use object attributes
             "execution_time": round(exec_result.execution_time, 4),
             "tokens_used": getattr(exec_result, "tokens_used", 0),
+            "input_tokens": getattr(exec_result, "input_tokens", 0) or 0,
+            "output_tokens": getattr(exec_result, "output_tokens", 0) or 0,
             "tokens_per_second": tps,
             "tps_eval": tps_eval,
             "load_time": round(getattr(exec_result, "load_time", 0.0), 4),

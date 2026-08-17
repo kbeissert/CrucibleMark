@@ -262,6 +262,8 @@ class ToolUseTest(BaseTest):
         ) or ""
         call1_tokens: int = getattr(llm_client, "last_token_usage", 0) or 0
         call1_cost: float = getattr(llm_client, "last_request_cost", 0.0) or 0.0
+        call1_input_tokens: int = getattr(llm_client, "last_input_tokens", 0) or 0
+        call1_output_tokens: int = getattr(llm_client, "last_output_tokens", 0) or 0
 
         response_1_clean = _clean_reasoning(response_1)
         tool_call_dict, _parse_error = _parse_tool_call(response_1_clean)
@@ -282,6 +284,8 @@ class ToolUseTest(BaseTest):
             ) or ""
             call1_tokens += getattr(llm_client, "last_token_usage", 0) or 0
             call1_cost += getattr(llm_client, "last_request_cost", 0.0) or 0.0
+            call1_input_tokens += getattr(llm_client, "last_input_tokens", 0) or 0
+            call1_output_tokens += getattr(llm_client, "last_output_tokens", 0) or 0
             response_1_clean = _clean_reasoning(response_1)
             tool_call_dict, _parse_error = _parse_tool_call(response_1_clean)
 
@@ -317,12 +321,16 @@ class ToolUseTest(BaseTest):
             call2_time = time.time() - call2_start
             call2_tokens: int = getattr(llm_client, "last_token_usage", 0) or 0
             call2_cost: float = getattr(llm_client, "last_request_cost", 0.0) or 0.0
+            call2_input_tokens: int = getattr(llm_client, "last_input_tokens", 0) or 0
+            call2_output_tokens: int = getattr(llm_client, "last_output_tokens", 0) or 0
             return _build_result(
                 response_2, call1_time + call2_time, tool_transcript,
                 tool_call_dict, response_1, self.asset, llm_client=llm_client,
                 call1_time_s=call1_time, mcp_latency_s=mcp_latency,
                 call2_time_s=call2_time, total_time_s=call1_time + call2_time,
                 call1_tokens=call1_tokens, call2_tokens=call2_tokens,
+                input_tokens=call1_input_tokens + call2_input_tokens,
+                output_tokens=call1_output_tokens + call2_output_tokens,
                 cost_usd=call1_cost + call2_cost,
                 tool_call_attempts=tool_call_attempts, parse_error_flag=parse_error_flag,
             )
@@ -343,6 +351,8 @@ class ToolUseTest(BaseTest):
         call2_time = time.time() - call2_start
         call2_tokens = getattr(llm_client, "last_token_usage", 0) or 0
         call2_cost = getattr(llm_client, "last_request_cost", 0.0) or 0.0
+        call2_input_tokens = getattr(llm_client, "last_input_tokens", 0) or 0
+        call2_output_tokens = getattr(llm_client, "last_output_tokens", 0) or 0
 
         total_time = call1_time + mcp_latency + call2_time
         execution_time = call1_time + call2_time
@@ -354,6 +364,8 @@ class ToolUseTest(BaseTest):
             call1_time_s=call1_time, mcp_latency_s=mcp_latency,
             call2_time_s=call2_time, total_time_s=total_time,
             call1_tokens=call1_tokens, call2_tokens=call2_tokens,
+            input_tokens=call1_input_tokens + call2_input_tokens,
+            output_tokens=call1_output_tokens + call2_output_tokens,
             cost_usd=call1_cost + call2_cost,
             tool_call_attempts=tool_call_attempts, parse_error_flag=parse_error_flag,
         )
@@ -783,6 +795,8 @@ def _build_result(
     total_time_s: float = 0.0,
     call1_tokens: int = 0,
     call2_tokens: int = 0,
+    input_tokens: int = 0,
+    output_tokens: int = 0,
     cost_usd: float = 0.0,
     tool_call_attempts: int = 1,
     parse_error_flag: bool = False,
@@ -797,6 +811,8 @@ def _build_result(
         raw_response=response_2,
         execution_time=execution_time,
         tokens_used=call1_tokens + call2_tokens,
+        input_tokens=input_tokens,
+        output_tokens=output_tokens,
         cost_usd=cost_usd,
         meta=meta,
         data={

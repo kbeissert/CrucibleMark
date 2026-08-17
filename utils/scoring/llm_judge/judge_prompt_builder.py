@@ -204,9 +204,13 @@ def build_prompts(
             from output_quality if the visible response is unnecessarily verbose
             beyond the standard budget.
         token_usage_context: Optional dict with actual token consumption data.
-            Keys: ``tokens_used``, ``reasoning_tokens``, ``token_budget``,
-            ``module_budget``, ``truncated``. Universal — provided for ALL models
-            so the judge can assess whether the model followed its token budget.
+            Keys: ``tokens_used``, ``input_tokens``, ``output_tokens``,
+            ``reasoning_tokens``, ``token_budget``, ``module_budget``,
+            ``truncated``. ``tokens_used`` is the real total (input + output);
+            ``output_tokens`` includes internal thinking; ``reasoning_tokens``
+            is the thinking share of the output. Universal — provided for ALL
+            models so the judge can assess whether the model followed its
+            token budget.
 
     Returns:
         Tuple of (system_prompt, user_prompt).
@@ -348,9 +352,19 @@ def _format_token_usage_lines(token_usage_context: dict[str, Any]) -> list[str]:
     """Baut die Bullet-Liste für den TOKEN-USAGE-Block aus den Verbrauchsdaten.
 
     Universelle Token-Verbrauchsinformation für JEDE Aufgabe.
-    Der Judge sieht: Budget, Verbrauch, Thinking-Tokens, Truncation.
+    Der Judge sieht: Budget, echte Verbrauch-Breakdown (Input/Output),
+    Thinking-Tokens, Truncation.
+
+    Echte Daten (SSoT: LLMClient-Usage): ``tokens_used`` = Input + Output,
+    ``output_tokens`` = generierte Tokens inkl. Thinking, ``reasoning_tokens``
+    = Thinking-Anteil des Outputs. Visible Output = ``output_tokens -
+    reasoning_tokens`` (nur bei bekannten Output-Tokens; die alte Formel
+    ``tokens_used - reasoning_tokens`` hätte Input-Tokens fälschlich als
+    sichtbaren Output gezählt).
     """
     _tu_used = token_usage_context.get("tokens_used")
+    _tu_input = token_usage_context.get("input_tokens")
+    _tu_output = token_usage_context.get("output_tokens")
     _tu_reasoning = token_usage_context.get("reasoning_tokens")
     _tu_budget = token_usage_context.get("token_budget")
     _tu_module = token_usage_context.get("module_budget")
@@ -369,14 +383,21 @@ def _format_token_usage_lines(token_usage_context: dict[str, Any]) -> list[str]:
                 _lines.append(f"  (⚠️ **{_pct}%** of budget — exceeded allocated budget)")
             else:
                 _lines.append(f"  ({_pct}% of budget)")
+    if _tu_input and _tu_output:
+        _lines.append(
+            f"- **Breakdown (real provider usage)**: {_tu_input:,} input + "
+            f"{_tu_output:,} output tokens (output includes internal thinking)"
+        )
     if _tu_reasoning is not None and _tu_reasoning > 0:
         _lines.append(f"- **Thinking / reasoning tokens**: **{_tu_reasoning:,} tokens**")
-        if _tu_used and _tu_used > 0:
-            _think_pct = round(_tu_reasoning / _tu_used * 100)
-            _lines.append(f"  ({_think_pct}% of total consumption)")
-        if _tu_used and _tu_reasoning:
-            _visible = _tu_used - _tu_reasoning
-            _lines.append(f"- **Visible output tokens** (approx.): {_visible:,} tokens")
+        _denominator = _tu_output if _tu_output else _tu_used
+        if _denominator and _denominator > 0:
+            _think_pct = round(_tu_reasoning / _denominator * 100)
+            _scope = "of generated output" if _tu_output else "of total consumption"
+            _lines.append(f"  ({_think_pct}% {_scope})")
+        if _tu_output:
+            _visible = max(0, _tu_output - _tu_reasoning)
+            _lines.append(f"- **Visible output tokens**: {_visible:,} tokens")
     if _tu_truncated:
         _lines.append("- **Truncated**: YES (response was cut off at budget limit)")
     return _lines

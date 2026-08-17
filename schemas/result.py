@@ -58,8 +58,10 @@ class BenchmarkResult(BaseModel):
     load_time: float = Field(
         default=0.0, description="Model loading time in seconds (cold start)"
     )
-    tokens_used: int = Field(default=0, description="Total tokens consumed")
-    tokens_per_second: float = Field(default=0.0, description="Output speed in t/s (wall-time based, includes prefill)")
+    tokens_used: int = Field(default=0, description="Total tokens consumed (input + output, real provider usage when available)")
+    input_tokens: int = Field(default=0, description="Real prompt tokens from provider usage (0 if not reported)")
+    output_tokens: int = Field(default=0, description="Real completion tokens from provider usage, includes reasoning/thinking tokens (0 if not reported)")
+    tokens_per_second: float = Field(default=0.0, description="Output speed in t/s based on real output tokens (incl. thinking); wall-time based, includes prefill. Falls back to module estimate when the provider reports no usage.")
     tps_eval: Optional[float] = Field(default=None, description="Native generation speed: eval_count / eval_duration from Ollama (excludes prefill). None if not available (e.g. cloud proxy).")
     cost_usd: float = Field(default=0.0, description="Estimated cost in USD")
     finish_reason: Optional[str] = Field(default=None, description="The reason the model stopped generating (e.g. length/max_tokens)")

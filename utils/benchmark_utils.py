@@ -277,12 +277,17 @@ def save_audit_log(
     cost: float | None = None,
     provider: str | None = None,
     reasoning_tokens: int | None = None,
+    input_tokens: int | None = None,
+    output_tokens: int | None = None,
     think_content: str | None = None,
     thinking_mode: str | None = None,
     **kwargs
 ) -> None:
     """
     Saves a comprehensive audit log for every test, containing prompt, response, and judge feedback.
+
+    ``input_tokens``/``output_tokens`` sind die echten Provider-Usage-Werte
+    (Output inkl. Thinking) und werden als Breakdown in den Header geschrieben.
     """
     try:
         # Create subdirectories for the model
@@ -303,6 +308,8 @@ def save_audit_log(
                 execution_time=execution_time,
                 tokens_used=tokens_used,
                 reasoning_tokens=reasoning_tokens,
+                input_tokens=input_tokens,
+                output_tokens=output_tokens,
                 tokens_per_second=tokens_per_second,
                 cost=cost,
             )
@@ -315,6 +322,7 @@ def save_audit_log(
                 asset_id=asset_id,
                 tokens_used=tokens_used,
                 reasoning_tokens=reasoning_tokens,
+                output_tokens=output_tokens,
                 token_limit_cutoff=token_limit_cutoff,
             )
 
@@ -345,10 +353,17 @@ def _write_audit_header(
     execution_time: float | None,
     tokens_used: int | None,
     reasoning_tokens: int | None,
+    input_tokens: int | None,
+    output_tokens: int | None,
     tokens_per_second: float | None,
     cost: float | None,
 ) -> None:
-    """Schreibt den oberen Markdown-Header eines Audit-Logs (Metadaten-Block)."""
+    """Schreibt den oberen Markdown-Header eines Audit-Logs (Metadaten-Block).
+
+    Die Token-Breakdown bleibt auf der ``**Tokens Used:**``-Zeile, weil
+    ``generate_review._strip_metric_lines()`` genau diese Zeile aus dem
+    Review-Prompt-Kontext entfernt (Review-Prosa-Vertrag).
+    """
     from datetime import datetime  # noqa: PLC0415  (lokal: vermeidet Module-Init-Kosten)
 
     f.write(f"# Audit Log: {asset_id}\n")
@@ -362,7 +377,12 @@ def _write_audit_header(
         f.write(f"**Execution Time:** {execution_time:.2f} s\n")
     if tokens_used is not None:
         f.write(f"**Tokens Used:** {tokens_used}")
-        if reasoning_tokens:
+        if input_tokens and output_tokens:
+            _detail = f" — {input_tokens} Input + {output_tokens} Output (echte Usage, Output inkl. Thinking)"
+            if reasoning_tokens:
+                _detail += f", davon {reasoning_tokens} Reasoning-Tokens"
+            f.write(_detail)
+        elif reasoning_tokens:
             f.write(f" _(davon {reasoning_tokens} Reasoning-Tokens, die intern verbraucht wurden)_")
         f.write("\n")
     if tokens_per_second is not None:
@@ -381,17 +401,25 @@ def _write_token_limit_warnings(
     asset_id: str,
     tokens_used: int | None,
     reasoning_tokens: int | None,
+    output_tokens: int | None,
     token_limit_cutoff: bool,
 ) -> None:
     """Schreibt die Warn-/Hinweis-Blöcke rund um Token-Limit-Cutoff & Reasoning-Verbrauch."""
     # Reasoning-Token-Budget-Block: Reasoning-Tokens haben Output verdrängt
     if reasoning_tokens and reasoning_tokens > 0 and token_limit_cutoff:
-        output_tokens = (tokens_used or 0) - reasoning_tokens
+        if output_tokens:
+            # Echte Usage: Output-Tokens (inkl. Thinking) minus Thinking = sichtbarer Output
+            visible_output = max(0, output_tokens - reasoning_tokens)
+            _approx_note = ""
+        else:
+            # Legacy-Fallback (keine Output-Usage): grobe Schätzung aus der Gesamtsumme
+            visible_output = max(0, (tokens_used or 0) - reasoning_tokens)
+            _approx_note = " (geschätzt)"
         f.write(
             f"> [!WARNING]\n"
             f"> **Reasoning-Tokens haben Output-Budget verdrängt:** Dieses Reasoning-Modell hat {reasoning_tokens} Tokens intern "
             f"für Denk-/Chain-of-Thought-Prozesse verbraucht, die nicht im Output erscheinen. "
-            f"Verbleibende Output-Tokens: {max(0, output_tokens)}. "
+            f"Verbleibende Output-Tokens: {visible_output}{_approx_note}. "
             f"Das Token-Budget wurde erschöpft bevor die vollständige Antwort generiert werden konnte. "
             f"Dies ist kein Fehler, sondern eine modellspezifische Eigenschaft von Reasoning-Modellen (z.B. MiniMax M2, DeepSeek R1).\n\n"
         )

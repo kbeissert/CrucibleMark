@@ -66,15 +66,27 @@ def _inject_token_usage_context(
     result: dict[str, Any],
     eval_module_id: str,
 ) -> None:
-    """Universal token usage context für ALLE Modelle."""
+    """Universal token usage context für ALLE Modelle.
+
+    Echte Token-Breakdown (SSoT: LLMClient-Usage): ``tokens_used`` ist die
+    Gesamtsumme (Input + Output), ``input_tokens``/``output_tokens`` die
+    echten Provider-Werte (Output inkl. Thinking), ``reasoning_tokens``
+    der Thinking-Anteil des Outputs.
+    """
     _token_usage: dict[str, Any] = {}
     _tokens_used = result.get("tokens_used")
     _reasoning_tokens = result.get("reasoning_tokens")
+    _input_tokens = result.get("input_tokens")
+    _output_tokens = result.get("output_tokens")
     _token_limit_used = result.get("token_limit_used")
     if _tokens_used is not None:
         _token_usage["tokens_used"] = int(_tokens_used)
     if _reasoning_tokens is not None:
         _token_usage["reasoning_tokens"] = int(_reasoning_tokens)
+    if _input_tokens:
+        _token_usage["input_tokens"] = int(_input_tokens)
+    if _output_tokens:
+        _token_usage["output_tokens"] = int(_output_tokens)
     if _token_limit_used is not None:
         _token_usage["token_budget"] = int(_token_limit_used)
     if result.get("token_limit_cutoff"):
@@ -383,6 +395,8 @@ def generate_audit_log(
         cost=result.get("cost_usd"),
         provider=result.get("provider"),
         reasoning_tokens=result.get("reasoning_tokens"),
+        input_tokens=result.get("input_tokens"),
+        output_tokens=result.get("output_tokens"),
         think_content=result.get("think_content"),
         thinking_mode=result.get("thinking_mode"),
     )
