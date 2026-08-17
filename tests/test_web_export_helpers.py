@@ -11,6 +11,8 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from scripts.web_export import (
+    ProviderMap,
+    resolve_inference_provider,
     slugify,
     sanitize_audit_log,
     parse_tests_run,
@@ -27,6 +29,7 @@ from scripts.web_export import (
     _build_block_scores,
     _build_leaderboard_entry,
 )
+from scripts.web_export.loader import _extract_short_codes
 
 
 class TestSlugify:
@@ -342,3 +345,78 @@ class TestSynthesisQualityDatenbasiert:
         # Test sichert lediglich, dass die Score-Entscheidung das Flag nicht
         # mutiert (Datenpraesenz schlaegt Capability-Verdict).
         assert entry["scores"]["synthesis_quality"] == 51.67
+
+
+class TestResolveInferenceProviderByCode:
+    """Provider-Code-first-Auflösung (SPRK-Fehlzuordnung, 2026-08-17).
+
+    Der Provider Code der CSV-Zeile identifiziert den Inferenz-Server
+    run-autoritativ — model_ids laufen serverübergreifend (qwen bei Groq
+    UND llama.cpp/GX10) und lieferten vorher falsche Display-Namen.
+    """
+
+    PMAP = ProviderMap(
+        mapping={"qwen3-5-35b-a3b-q4": "Groq Cloud"},
+        fallbacks={"ollama": "Ollama (Local)"},
+        by_short_code={
+            "SPRK": "Llama.cpp (asusGX10)",
+            "VSPK": "vLLM (asusGX10)",
+            "M4APL": "Llama.cpp (MacBook Pro)",
+        },
+    )
+
+    def test_code_wins_over_model_name(self):
+        # model_id würde "Groq Cloud" liefern — Run lief auf llama.cpp/GX10.
+        assert resolve_inference_provider(
+            "qwen3-5-35b-a3b-q4", self.PMAP, provider_code="SPRK",
+        ) == "Llama.cpp (asusGX10)"
+
+    def test_vspk_code(self):
+        assert resolve_inference_provider(
+            "gemma-4-26b", self.PMAP, provider_code="VSPK",
+        ) == "vLLM (asusGX10)"
+
+    def test_code_normalized_case_and_whitespace(self):
+        assert resolve_inference_provider(
+            "x", self.PMAP, provider_code=" sprk ",
+        ) == "Llama.cpp (asusGX10)"
+
+    def test_ambiguous_code_falls_back_to_model_name(self):
+        # "API" ist mehrfach vergeben → nicht in by_short_code → model-basiert.
+        assert resolve_inference_provider(
+            "qwen3-5-35b-a3b-q4", self.PMAP, provider_code="API",
+        ) == "Groq Cloud"
+
+    def test_no_code_keeps_legacy_resolution(self):
+        assert resolve_inference_provider(
+            "qwen3-5-35b-a3b-q4", self.PMAP,
+        ) == "Groq Cloud"
+
+
+class TestExtractShortCodes:
+    """short_code-Extraktion: eindeutige Codes ja, mehrdeutige nein."""
+
+    def test_ambiguous_codes_excluded(self):
+        providers = {
+            "commercial": {
+                "openai": {"name": "OpenAI", "short_code": "API"},
+                "anthropic": {"name": "Anthropic", "short_code": "API"},
+            },
+            "local": {
+                "llamacpp_spark": {
+                    "name": "Llama.cpp (asusGX10)",
+                    "short_code": "SPRK",
+                },
+            },
+        }
+        assert _extract_short_codes(providers) == {"SPRK": "Llama.cpp (asusGX10)"}
+
+    def test_config_subblocks_and_missing_codes_skipped(self):
+        providers = {
+            "local": {
+                "config": {"context_window": 32768},
+                "ollama_local": {"name": "Ollama (Local)", "short_code": "LCL"},
+                "codeless": {"name": "NoCode Provider"},
+            },
+        }
+        assert _extract_short_codes(providers) == {"LCL": "Ollama (Local)"}

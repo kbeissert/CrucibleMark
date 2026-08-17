@@ -464,11 +464,12 @@ providers:
         n_gpu_layers: 99
         enable_thinking: false
 
-    # llama.cpp auf DGX Spark (NVIDIA CUDA, lokaler Server im Intranet).
+    # llama.cpp auf asusGX10 (DGX Spark, NVIDIA CUDA, lokaler Server im Intranet).
     # Steuerung per SSH vom Benchmark-Host. GGUF-Pfad: /home/kay_beissert/ai/models/llm/gguf/
     # Server-Log wird lokal auf dem Mac gespeichert (SSH-Redirect).
     llamacpp_spark:
-      name: Llama.cpp (DGX Spark)
+      # Name konsistent mit vllm_spark ("vLLM (asusGX10)") — dieselbe Hardware.
+      name: Llama.cpp (asusGX10)
       short_code: SPRK
       api_type: llamacpp
       model_type: open_weights_local

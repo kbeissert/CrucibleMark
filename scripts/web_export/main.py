@@ -342,6 +342,10 @@ def _build_row_entry(
         inference_provider=resolve_inference_provider(
             raw_model_id if raw_model_id and raw_model_id != "nan" else model_name,
             ctx["provider_map"],
+            # Run-autoritativ: Provider Code der Zeile vor model-basierter
+            # Auflösung (SPRK-Runs liefen auf llama.cpp/GX10, obwohl die
+            # model_ids auch Groq/Ollama-Config-Einträgen entsprechen).
+            provider_code=str(row.get(LdbCols.PROVIDER_CODE, "")).strip() or None,
         ),
         vendor_card_ref=ctx["vendor_card_id_lookup"].get(vendor) if vendor else None,
         community=community,

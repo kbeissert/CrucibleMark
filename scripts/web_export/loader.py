@@ -14,11 +14,43 @@ from utils.text_helpers import slugify
 class ProviderMap(NamedTuple):
     """Kapselt Provider-Lookup-Daten ohne Magic-String-Keys.
 
-    mapping:  model_id → human-readable Provider-Display-Name.
-    fallbacks: api_type → Display-Name (für Heuristic-Fallback).
+    mapping:       model_id → human-readable Provider-Display-Name.
+    fallbacks:     api_type → Display-Name (für Heuristic-Fallback).
+    by_short_code: provider_code → Display-Name (nur eindeutig vergebene
+                   Codes). Run-autoritativ: Der Provider Code der CSV-Zeile
+                   identifiziert den Inferenz-Server eindeutig (SPRK/VSPK/
+                   M4APL/LCL), während model_ids serverübergreifend laufen
+                   können (z.B. qwen bei Groq UND llama.cpp/GX10).
     """
     mapping: dict[str, str]
     fallbacks: dict[str, str]
+    by_short_code: dict[str, str] = {}
+
+def _extract_short_codes(providers_block: dict) -> dict[str, str]:
+    """Extrahiert eindeutige short_code → Display-Name-Zuordnungen.
+
+    Mehrfach vergebene Codes (z.B. "API" über fünf Anbieter) sind nicht
+    server-eindeutig und werden ausgeschlossen — ihre Auflösung bleibt
+    model-basiert (Fallback-Kette in resolve_inference_provider).
+    """
+    names: dict[str, str] = {}
+    seen: set[str] = set()
+    for tier_val in providers_block.values():
+        if not isinstance(tier_val, dict):
+            continue
+        for prov_val in tier_val.values():
+            if not isinstance(prov_val, dict) or "name" not in prov_val:
+                continue  # Skip config/settings sub-blocks (e.g. local.config)
+            code = str(prov_val.get("short_code", "")).strip().upper()
+            if not code:
+                continue
+            if code in seen:
+                names.pop(code, None)  # mehrdeutig → dauerhaft ausgeschlossen
+            else:
+                seen.add(code)
+                names[code] = prov_val["name"]
+    return names
+
 
 def build_provider_map(config_path: Path) -> ProviderMap:
     """Builds a model_id → provider display name map from benchmark_config.yaml.
@@ -61,17 +93,31 @@ def build_provider_map(config_path: Path) -> ProviderMap:
     if "ollama" not in fallbacks:
         fallbacks["ollama"] = fallbacks.get("ollama_local", "Ollama")
 
-    return ProviderMap(mapping=mapping, fallbacks=fallbacks)
+    return ProviderMap(
+        mapping=mapping,
+        fallbacks=fallbacks,
+        by_short_code=_extract_short_codes(providers_block),
+    )
 
 
-def resolve_inference_provider(model_name: str, provider_map: ProviderMap) -> str | None:
+def resolve_inference_provider(
+    model_name: str,
+    provider_map: ProviderMap,
+    provider_code: str | None = None,
+) -> str | None:
     """Returns the display name of the inference provider for a given model.
 
     Lookup order:
-    1. Exact match in config map
-    2. Strip org prefix and retry
-    3. resolve_provider() heuristic → map to display name via fallback table
+    1. provider_code (run-autoritativ) — nur eindeutig vergebene Codes
+       (SPRK → "Llama.cpp (asusGX10)", VSPK → "vLLM (asusGX10)", …).
+       Mehrfach vergebene Codes (API/OR) werden übersprungen.
+    2. Exact match in config map
+    3. Strip org prefix and retry
+    4. resolve_provider() heuristic → map to display name via fallback table
     """
+    code = (provider_code or "").strip().upper()
+    if code and code in provider_map.by_short_code:
+        return provider_map.by_short_code[code]
     if model_name in provider_map.mapping:
         return provider_map.mapping[model_name]
     short = model_name.rsplit("/", maxsplit=1)[-1]
