@@ -43,6 +43,11 @@ from utils.model_utils import resolve_provider
         # 'qwen'-Präfix → groq zurück. Canonical-Form wird weiterhin korrekt
         # aufgelöst, nur der Provider hat sich geändert.
         ("qwen3_5-35b-a3b-q8", "groq"),
+        # o4-mini: OpenAI o-Serie. Lief vor dem Fix (2026-08-17) durch die
+        # Präfix-Heuristik ("gpt-", "o1-", "o3-" — ohne "o4-") und fiel auf
+        # den Ollama-Default → Web-Export zeigte "Ollama (Local)" für einen
+        # API-Run (Provider Code API = kommerzielle Standard-API).
+        ("o4-mini", "openai"),
     ],
 )
 def test_resolve_provider_matches_canonical_underscore_against_dot_config(

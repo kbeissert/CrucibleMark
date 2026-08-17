@@ -44,6 +44,7 @@ _PROVIDER_SHORTCODES: dict[str, str] = {
     "google": "API",
     "xai": "API",
     "mistral": "API",
+    "cohere": "API",  # wie provider_config.yaml (short_code: API); war vorher COHE-Fallback
     # Cloud inference proxies (HTTP-JSON)
     "openrouter": "OR",
     "groq": "GR",
@@ -58,7 +59,8 @@ _PROVIDER_SHORTCODES: dict[str, str] = {
     "llamacpp_local": "M4APL",  # Alias
     # vLLM local inference server (OpenAI-compatible) — V-Prefix für Engine
     "vllm_spark": "VSPK",       # asusGX10/DGX Spark + vLLM
-    # Ollama as cloud proxy (e.g. qwen3.5:397b-cloud via remote Ollama endpoint)
+    # Ollama as cloud proxy — HISTORISCH (Provider aus Config entfernt,
+    # keine aktiven Runs; Mapping bleibt für alte CSV-Zeilen dokumentiert)
     "ollama_cloud": "CLD",
 }
 
@@ -479,7 +481,7 @@ def _resolve_provider_by_heuristic(model_name: str, name_lower: str) -> tuple[st
     """Fallback: Prefix-Matching für nicht konfigurierte Modelle."""
     if name_lower.startswith(("mistral-", "open-mixtral", "ministral")):
         return "mistral", model_name
-    if name_lower.startswith(("gpt-", "o1-", "o3-")) or name_lower in ("o1", "o3-mini"):
+    if name_lower.startswith(("gpt-", "o1-", "o3-", "o4-")) or name_lower in ("o1", "o3-mini"):
         return "openai", model_name
     if name_lower.startswith("claude-"):
         return "anthropic", model_name
