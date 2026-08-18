@@ -360,12 +360,15 @@ def test_per_model_thinking_max_tokens_overrides_provider_default(tmp_path: Path
 # ---------------------------------------------------------------------------
 
 
-def test_provider_config_yaml_ornith_is_expanded(tmp_path: Path, monkeypatch):
-    """End-to-End: Die echte provider_config.yaml expandiert Ornith korrekt.
+def test_provider_config_yaml_ornith_is_single_thinking_profile(tmp_path: Path, monkeypatch):
+    """End-to-End: Ornith ist ein einzelnes Always-Thinking-Profil (2026-08-17).
 
-    Verifiziert, dass die ``enable_thinking: true``-Zeile am Ornith-vLLM-
-    Eintrag tatsächlich zwei Profile erzeugt — und keine Regression
-    bestehender Modelle verursacht.
+    Ornith 1.0 ist ein reines Thinking-Modell (kein Instruct-Modus) — der
+    ``enable_thinking: true``-Dual-Profile-Trigger wurde aus der Config
+    entfernt (er hätte ein invalides Non-Thinking-Standard-Profil erzeugt).
+    Thinking wird pro Request über ``chat_template_kwargs`` erzwungen;
+    ``max_tokens`` ist das Thinking-Budget. Die Expansion-Mechanik selbst
+    bleibt für andere Modelle aktiv (Synthetik-Tests oben).
     """
     # benchmark_config.yaml (minimal) in tmp_path schreiben.
     bench_cfg = tmp_path / "benchmark_config.yaml"
@@ -375,20 +378,15 @@ def test_provider_config_yaml_ornith_is_expanded(tmp_path: Path, monkeypatch):
     models = validator.config["providers"]["local"]["vllm_spark"]["models"]
     ids = {m["id"] for m in models}
 
-    # Ornith muss expandiert sein.
+    # Ornith existiert als EIN Profil — KEIN -thinking-Sibling mehr.
     assert "ornith-1.0-35B-FP8" in ids
-    assert "ornith-1.0-35B-FP8-thinking" in ids
+    assert "ornith-1.0-35B-FP8-thinking" not in ids
 
-    # Standard-Profil: enable_thinking konsumiert, explizit False.
-    standard = next(m for m in models if m["id"] == "ornith-1.0-35B-FP8")
-    assert "enable_thinking" not in standard
-    assert standard["chat_template_kwargs"] == {"enable_thinking": False}
-
-    # Thinking-Profil: card_model_id + enable_thinking=true.
-    thinking = next(m for m in models if m["id"] == "ornith-1.0-35B-FP8-thinking")
-    assert thinking["card_model_id"] == "ornith-1.0-35B-FP8"
-    assert thinking["chat_template_kwargs"] == {"enable_thinking": True}
-    assert thinking["max_tokens"] == THINKING_MAX_TOKENS  # 32768 aus Provider-Default
+    # Einzelprofil: Always-Thinking per chat_template_kwargs, kein Trigger-Feld.
+    profile = next(m for m in models if m["id"] == "ornith-1.0-35B-FP8")
+    assert "enable_thinking" not in profile
+    assert profile["chat_template_kwargs"] == {"enable_thinking": True}
+    assert profile["max_tokens"] == 32768  # Thinking-Budget (vorher 8192)
 
     # Bestehende Modelle ohne Trigger müssen unverändert sein.
     gemma26 = next(m for m in models if m["id"] == "Gemma-4-26B")

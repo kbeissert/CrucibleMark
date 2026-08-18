@@ -821,20 +821,21 @@ providers:
       # vLLM kennt keinen --reasoning-Flag — enable_thinking wird über die Remote-TOML
       # (~/ai/shared/configs/vllm/models/Ornith1-35B-FP8.toml) gesteuert.
       - id: ornith-1.0-35B-FP8
-        name: Ornith 1.0 35B FP8 (vLLM, aktiv)
+        name: Ornith 1.0 35B FP8 (vLLM, Thinking-only)
         config: Ornith1-35B-FP8
-        max_tokens: 8192
+        max_tokens: 32768
         temperature: 0.6
         top_p: 0.95
         top_k: 20
         # repetition_penalty:  # Card: null — vLLM-Server-Default greift
-
-        # Dual-Thinking-Profile-Trigger: erzeugt zusätzlich
-        # ``ornith-1.0-35B-FP8-thinking`` mit enable_thinking=true und
-        # max_tokens=32768 (provider-default thinking_max_tokens). Beide
-        # Profile zeigen auf dasselbe TOML → kein Container-Swap beim
-        # Profil-Wechsel (Connector entscheidet config-basiert).
-        enable_thinking: true
+        # Ornith 1.0 ist ein reines Thinking-Modell (kein Instruct-Modus).
+        # KEIN enable_thinking — das würde eine Dual-Profile-Expansion mit
+        # einem invaliden Non-Thinking-Standard-Profil auslösen (der
+        # config_validator expandiert nur auf enable_thinking: true).
+        # Stattdessen Thinking pro Request via chat_template_kwargs erzwungen
+        # (via extra_body an vLLM). Einzelnes Always-Thinking-Profil;
+        # max_tokens = Thinking-Budget.
+        chat_template_kwargs: {enable_thinking: true}
 
       # Gemma 4 Familie — NVFP4 (modelopt), 131k Context.
       # MoE 26B / Dense 31B (Base) / Dense 31B-Wordsmith (W4A16, uncensored).

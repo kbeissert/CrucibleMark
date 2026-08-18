@@ -5,8 +5,7 @@
     "MoE",
     "Open-Weight",
     "Coder",
-    "Agentic",
-    "Instruct"
+    "Agentic"
   ],
   "card_status": "complete",
   "commercial_use_allowed": true,
@@ -18,7 +17,7 @@
   "developer": "DeepReinforce",
   "developer_jurisdiction": "US",
   "display_name": "Ornith 1.0 35B",
-  "dual_profile": true,
+  "dual_profile": false,
   "frequency_penalty": null,
   "generated_at": "2026-07-07T01:25:00+00:00",
   "hardware_profile": null,
@@ -88,16 +87,11 @@
       "tested_at": "2026-07-27T11:16:11Z",
       "score_p1": 80.83,
       "score_p2": 62.5
-    },
-    "ornith-1_0-35B-FP8-thinking": {
-      "tested_at": "2026-07-27T20:32:49Z",
-      "score_p1": 89.17,
-      "score_p2": 60.0
     }
   },
-  "tooluse_score_p1": null,
-  "tooluse_score_p2": null,
-  "tooluse_tested_at": null,
+  "tooluse_score_p1": 80.83,
+  "tooluse_score_p2": 62.5,
+  "tooluse_tested_at": "2026-07-27T11:16:11Z",
   "top_k": 20,
   "top_p": 0.95,
   "unknown": false,

@@ -181,7 +181,7 @@ modules:
     enabled: true
   political_compass:
     path: benchmark_modules/political_compass
-    enabled: false
+    enabled: true
   tooluse:
     path: benchmark_modules/tooluse
     enabled: true
