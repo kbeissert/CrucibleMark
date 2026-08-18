@@ -710,19 +710,6 @@ providers:
       #   presence_penalty: 1.5
       #   repeat_penalty: 1.0
 
-      # ── Auskommentiert 2026-08-10: Nicht auf llama.cpp-Server gx10:2234 verfügbar.
-      # Sampling identisch mit vllm_spark.ornith-1.0-35B-FP8 (Cross-Backend-Vergleich).
-      # - id: ornith-1-0-35b
-      #   name: Ornith 1.0 35B Q8_0 (GGUF)
-      #   model_file: Ornith1-35B/ornith-1.0-35b-Q8_0.gguf
-      #   n_gpu_layers: 99
-      #   context_length: 131072
-      #   max_tokens: 8192
-      #   enable_thinking: false  # Reasoning-Loop auf ux_writing 8-Scenario-Aufgaben (Constraint-Konflikt Verb-First vs. destruktive Aktion). Card-Override deaktiviert Thinking für Spark-Runs.
-      #   temperature: 0.6
-      #   top_p: 0.95
-      #   top_k: 20
-
       # - id: gemma-4-31b-it-creative-wordsmith-q8
       #   name: Gemma 4 31B Creative Wordsmith Uncensored Q8_0 (GGUF)
       #   model_file: Gemma4-Creative-Wordsmith/gemma-4-Creative-Wordsmith-31B-it-uncensored-heretic-Q8_0.gguf
@@ -815,9 +802,6 @@ providers:
       #   # Mini-Modell: 30 s sind mehr als ausreichend (real <10 s).
       #   server_ready_timeout_sec: 30
       # Hauptmodell: läuft bereits auf dem Main-Container (Port 3300 via Proxy 4300).
-      # Sampling-Parameter MÜSSEN identisch mit llamacpp_spark.ornith-1-0-35b sein
-      # (Cross-Backend-Vergleich: Q8_0-GGUF vs FP8 ist bereits asymmetrisch,
-      # die Sampling-Ebene soll aber apples-to-apples bleiben).
       # vLLM kennt keinen --reasoning-Flag — enable_thinking wird über die Remote-TOML
       # (~/ai/shared/configs/vllm/models/Ornith1-35B-FP8.toml) gesteuert.
       - id: ornith-1.0-35B-FP8
