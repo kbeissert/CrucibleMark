@@ -694,7 +694,7 @@ Die drei Naming-Regeln:
 
 1. **Namespaced IDs** (`/` enthalten): `safe_name.json` — Provider-Namespace ist eingebettet
 2. **Direct-API** (Shortcode `API`): `safe_name.json` — proprietäre Namen sind global eindeutig
-3. **Non-namespaced + non-API** (`LCL`, `GR`): `{SHORTCODE}_safe_name.json` — verhindert Card-Kollisionen wenn dasselbe Modell über mehrere Provider getestet wird (z.B. `llama3.3:70b` via Ollama *und* Groq)
+3. **Non-namespaced + non-API** (`LCL`, `GR`, `M4APL`, `SPRK`, `VSPK`): `{SHORTCODE}_safe_name.json` — verhindert Card-Kollisionen wenn dasselbe Modell über mehrere Provider getestet wird (z.B. `llama3.3:70b` via Ollama *und* Groq)
 
 Backward-Compat: `_card_path(for_write=False)` fällt auf existierende Legacy-Cards ohne Prefix zurück.
 
@@ -704,13 +704,20 @@ Backward-Compat: `_card_path(for_write=False)` fällt auf existierende Legacy-Ca
 
 Jeder Leaderboard-Eintrag trägt eine kombinierte Versionskennung (`k2-0711/OR`, `4-mini/API`, `4760c3/LCL`).
 
+Schema: optionaler Engine-Prefix (1 Zeichen) + Hardware-Kürzel (max. 3 Zeichen).
+Der vLLM-Engine erhält den Präfix `V` — llama.cpp ohne Prefix.
+Lokale Hardware: `M4xx` = Apple M4 (MacBook Pro), `SPK` = DGX Spark (asusGX10).
+Proprietäre APIs und Cloud-Proxies nutzen kürzere 2–3-Buchstaben-Codes ohne Hardware-Bezug.
+
 | Shortcode | Bedeutung | Provider-Schlüssel |
 |---|---|---|
-| `API` | Proprietäre Direkt-API | Anthropic, OpenAI, Google, xAI, Mistral |
-| `OR` | OpenRouter | `openrouter` |
-| `GR` | Groq | `groq` |
-| `LCL` | Lokales Ollama-Modell | `ollama_local` |
-| `LCL` | Lokales llama.cpp-Modell | `llamacpp` |
+| `API` | Proprietäre Direkt-API | Anthropic, OpenAI, Google, xAI, Mistral, Cohere |
+| `OR` | OpenRouter (Routing-Layer) | `openrouter` |
+| `GR` | Groq Cloud | `groq` |
+| `M4APL` | MacBook Pro + llama.cpp | `llamacpp` |
+| `SPRK` | DGX Spark (asusGX10) + llama.cpp | `llamacpp_spark` |
+| `VSPK` | DGX Spark (asusGX10) + vLLM | `vllm_spark` |
+| `LCL` | Lokales Ollama-Modell | `ollama_local`, `ollama`, `local` |
 
 SSoT: `_PROVIDER_SHORTCODES`-Dict in `utils/model_utils.py` + `short_code`-Feld pro Provider-Block in `config/provider_config.yaml` (beide müssen synchron gehalten werden).
 

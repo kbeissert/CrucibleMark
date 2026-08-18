@@ -38,7 +38,7 @@ Diese Eigenschaften sind **bewusste Design-Entscheidungen** für faire, reproduz
 | **Card-First CSV-Senke** | `result_manager.save_results()` | `enforce_card_first()` (Draft wenn fehlt, KEIN Hard-Fail) |
 | **Hardware-Profile (Review-Kontext)** | `provider_config.yaml → <provider>.hardware_profile` → `benchmark_config.yaml → runner_environment.profiles` | `_get_hardware_profile_for_model()` in `generate_review.py`; `get_editor_prompt_injection(hardware_profile_key=...)` |
 | **Modell-Kategorie** | Card `weights_license_tier` | `get_model_category()` (3 Tiers: `proprietary`/`restricted-weights`/`open-weights`) |
-| **Provider-Shortcodes** | `_PROVIDER_SHORTCODES` + `short_code` in Config | `API`/`OR`/`GR`/`LCL` — alle lokalen Provider (ollama, llamacpp, llamacpp_spark) → `LCL` |
+| **Provider-Shortcodes** | `_PROVIDER_SHORTCODES` in `utils/model_id_base.py` + `short_code` in Config | Schema: optionaler Engine-Prefix (V=vLLM) + Hardware-Kürzel. `API` (proprietär), `OR`, `GR`, `M4APL` (Mac+llama.cpp), `SPRK` (Spark+llama.cpp), `VSPK` (Spark+vLLM), `LCL` (Ollama Lokal). |
 | **Deployment-Category** | `_PROVIDER_DEPLOYMENT_CATEGORY` in `model_utils.py` + `deployment_category` in `provider_config.yaml` | `get_deployment_category(provider)` → `"api"` / `"cloud"` / `"local"` |
 | **Hardware-Profile (Deployment-Badge)** | `_PROVIDER_HARDWARE_PROFILES` in `model_utils.py` + `hardware_profiles` in `provider_config.yaml` | `get_hardware_profile(provider)` → `"m4_macbook_pro_metal"` / `"dgx_spark_cuda"` / `"rtx4070_cuda"` / `None` |
 | **Sampling-Defaults (llama.cpp)** | `providers.local.config.llama_cpp_defaults` | 7 Parameter, Pro-Modell-Override schlägt Default |

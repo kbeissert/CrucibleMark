@@ -913,16 +913,23 @@ canonical, has_card = enforce_card_first("unregistered-model-xyz")
 
 Shortcodes sind an zwei Stellen synchron gepflegt:
 
-1. **`utils/model_utils.py`** → `_PROVIDER_SHORTCODES: dict[str, str]` + `get_provider_shortcode(provider)`
+1. **`utils/model_id_base.py`** → `_PROVIDER_SHORTCODES: dict[str, str]` + `get_provider_shortcode(provider)`
 2. **`config/provider_config.yaml`** → `providers.<section>.<provider>.short_code`
+
+Schema: optionaler Engine-Prefix (1 Zeichen) + Hardware-Kürzel (max. 3 Zeichen).
+Der vLLM-Engine erhält den Präfix `V` — llama.cpp ohne Prefix.
+Lokale Hardware: `M4xx` = Apple M4 (MacBook Pro), `SPK` = DGX Spark (asusGX10).
+Proprietäre APIs und Cloud-Proxies nutzen kürzere 2–3-Buchstaben-Codes ohne Hardware-Bezug.
 
 | Shortcode | Bedeutung | Provider-Schlüssel |
 |---|---|---|
-| `API` | Proprietäre Direkt-API | `anthropic`, `openai`, `google`, `xai`, `mistral` |
+| `API` | Proprietäre Direkt-API | `anthropic`, `openai`, `google`, `xai`, `mistral`, `cohere` |
 | `OR` | OpenRouter (Routing-Layer) | `openrouter` |
-| `GR` | Groq (Inferenz-Dienst) | `groq` |
+| `GR` | Groq Cloud | `groq` |
+| `M4APL` | MacBook Pro + llama.cpp | `llamacpp` |
+| `SPRK` | DGX Spark (asusGX10) + llama.cpp | `llamacpp_spark` |
+| `VSPK` | DGX Spark (asusGX10) + vLLM | `vllm_spark` |
 | `LCL` | Lokales Ollama-Modell | `ollama_local`, `ollama`, `local` |
-| `LCL` | Lokales llama.cpp-Modell | `llamacpp` |
 
 Der Shortcode erscheint im Leaderboard als Suffix der Versionsspalte (`k2/OR`, `4-mini/API`, `4760c3/LCL`).
 

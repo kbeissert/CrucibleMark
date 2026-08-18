@@ -188,7 +188,7 @@ Hier liegt die Historie mit Rationale.
 **Problem:** Card-ID-Kollisionen (z.B. `qwen3.5-4b` als Cloud-Variante und als lokales Ollama-Modell) überschrieben sich gegenseitig. Cache-Lookup scheiterte zwischen Punkt- und Underscore-Schreibweise.
 
 **Lösung in 3 Bausteinen:**
-1. `build_card_id(model_id, provider)` in `utils/model_utils.py` — Schema `{base_after_last_slash}--{suffix}`. Suffix = `provider.lower()` für API-Provider, Shortcode (`OR`, `SPRK`, `LCL`) für lokale Provider.
+1. `build_card_id(model_id, provider)` in `utils/model_utils.py` — Schema `{base_after_last_slash}--{suffix}`. Suffix = `provider.lower()` für API-Provider, Shortcode (`OR`, `GR`, `M4APL`, `SPRK`, `VSPK`, `LCL`) für lokale Provider.
 2. `resolve_unique_card_id(desired_id, card_dir=None)` — prüft Disk-Konflikt, hängt `-2`, `-3` an. Logger-WARNING.
 3. `ensure_card(..., provider=...)` in `utils/card_utils.py` — `provider` hat Vorrang vor explizitem `card_path`.
 

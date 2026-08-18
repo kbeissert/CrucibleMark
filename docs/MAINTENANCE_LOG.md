@@ -942,9 +942,9 @@ als eine mit expliziten "laut Wikipedia"-Phrasen.
 Das Leaderboard zeigte für viele Modelle `k.A.` als Versions-String (fehlende Behandlung neuer Modell-Familien wie Qwen, GLM, MiniMax, o4-Series, Kimi). Außerdem fehlte jede Information, über welchen Provider ein Modell getestet wurde — bei Modellen wie `kimi-k2`, die sowohl via OpenRouter als auch Groq laufen, war das Ergebnis ohne Provider-Kontext nicht interpretierbar.
 
 ### Lösung
-
 1. **`_PROVIDER_SHORTCODES` + `get_provider_shortcode()` in `utils/model_utils.py`:**
-   Neues Mapping-Dict und neue Funktion für die Shortcodes `API` (proprietäre Direkt-APIs), `OR` (OpenRouter), `GR` (Groq), `LCL` (Ollama/Lokal).
+
+   Neues Mapping-Dict und neue Funktion für die Shortcodes `API` (proprietäre Direkt-APIs), `OR` (OpenRouter), `GR` (Groq), `M4APL` (MacBook Pro + llama.cpp), `SPRK` (DGX Spark + llama.cpp), `VSPK` (DGX Spark + vLLM), `LCL` (Ollama/Lokal). Schema: optionaler Engine-Prefix (`V` = vLLM) + Hardware-Kürzel (`M4xx` = Apple M4, `SPK` = DGX Spark).
 
 2. **`short_code`-Feld pro Provider in `benchmark_config.yaml`:**
    Jeder Provider-Block trägt jetzt ein `short_code`-Feld. Beide Orte (Config + `model_utils.py`) müssen synchron gehalten werden.
