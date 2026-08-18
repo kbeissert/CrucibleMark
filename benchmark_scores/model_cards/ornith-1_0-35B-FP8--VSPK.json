@@ -84,14 +84,14 @@
   "tooluse_recommendation": null,
   "tooluse_runs": {
     "ornith-1_0-35B-FP8": {
-      "tested_at": "2026-07-27T11:16:11Z",
+      "tested_at": "2026-08-18T04:29:33Z",
       "score_p1": 80.83,
       "score_p2": 62.5
     }
   },
   "tooluse_score_p1": 80.83,
   "tooluse_score_p2": 62.5,
-  "tooluse_tested_at": "2026-07-27T11:16:11Z",
+  "tooluse_tested_at": "2026-08-18T04:29:33Z",
   "top_k": 20,
   "top_p": 0.95,
   "unknown": false,

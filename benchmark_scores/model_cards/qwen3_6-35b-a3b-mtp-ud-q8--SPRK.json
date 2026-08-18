@@ -85,9 +85,9 @@
       "score_p2": 63.68
     }
   },
-  "tooluse_score_p1": null,
-  "tooluse_score_p2": null,
-  "tooluse_tested_at": null,
+  "tooluse_score_p1": 68.33,
+  "tooluse_score_p2": 63.68,
+  "tooluse_tested_at": "2026-07-10T08:45:08Z",
   "top_k": 20,
   "top_p": 0.8,
   "unknown": false,
