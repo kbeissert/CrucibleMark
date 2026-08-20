@@ -1,6 +1,6 @@
 {
   "model_id": "google/gemini-3.7-flash",
-  "display_name": "Gemini 3.7 Flash via OpenRouter",
+  "display_name": "Gemini 3.7 Flash",
   "developer": "Google DeepMind",
   "origin_country": "USA",
   "developer_jurisdiction": "US",

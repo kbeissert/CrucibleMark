@@ -41,6 +41,9 @@ model_pricing:
     output: 5.00
 
 # Anthropic — aus Anthropic API Pricing (2026)
+  "claude-opus-5":
+    input: 5.00
+    output: 25.00
   "claude-opus-4-6":
     input: 5.00
     output: 25.00

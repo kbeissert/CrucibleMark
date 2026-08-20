@@ -18,6 +18,23 @@
 #     scripts/web_export._safe_name() (Slashes, Punkte → Underscores).
 #   - fnmatch-Patterns sind erlaubt (Sonderzeichen * ? [ erkennen via _is_blacklisted()).
 #
+# Sortierung (Audit-Stand 2026-08-19)
+# ------------------------------------
+#   1) Anbieter (alphabetisch): Anthropic → DeepSeek → Google → Hermes → Mistral
+#      → Moonshot → OpenAI → Ornith → Qwable → Qwen → xAI.
+#   2) Pro Anbieter: Produktlinie (neueste Generation zuerst).
+#   3) Pro Linie: Modell-Version (neueste zuerst).
+#
+# Konsolidierungsregel 2026-08-19
+# --------------------------------
+#   - Kommerzielle Modelle in derselben Produktlinie: nur die letzten 2 Modelle
+#     im Web-Export behalten (Claude Opus/Sonnet, GPT-Hauptlinie/Mini/Nano,
+#     Grok 4.x, GLM 5, DeepSeek V4, etc.).
+#   - Ausnahme Kimi K: 3 Modelle (K3, K2.6, K2.5) wegen 264K → 1M Context-Window-Übergang.
+#   - Kimi Code (kimi-k2.7-code) ist eine Sonderlinie und bleibt unberührt.
+#   - GPT-4 und o-Serie: komplett entfernt (Legacy; GPT-5 + reasoning_effort
+#     ersetzt beide Linien).
+#
 # Filter-Regeln (Audit-Stand 2026-07-10)
 # --------------------------------------
 #   - Gleiche Param-Größe, schwächere Quant/Variante → blacklist.
@@ -31,64 +48,112 @@
 blacklist:
 
   # -----------------------------------------------------------------
+  # Anthropic — Claude
+  # -----------------------------------------------------------------
+  # Regel: pro Produktlinie die letzten 2 Modelle behalten.
+  # Opus 5 / Opus 4.8 und Sonnet 5 / Sonnet 4.6 bleiben im Web-Export.
+
+  # Opus-Linie (behalten: Opus 5, Opus 4.8)
+  - "claude-opus-4-7"                  # ersetzt durch Opus 4.8 / Opus 5
+  - "claude-opus-4-6"                  # ersetzt durch Opus 4.8 / Opus 5
+
+  # Sonnet-Linie (behalten: Sonnet 5, Sonnet 4.6)
+  - "claude-sonnet-4-5-20250929"       # ersetzt durch Sonnet 4.6 / Sonnet 5
+
+
+  # -----------------------------------------------------------------
   # DeepSeek
   # -----------------------------------------------------------------
-  - "deepseek_deepseek-chat-v3_1"           # Rank 22, ersetzt durch V3.2 / V4
-  - "deepseek-r1-distill-qwen-32b"          # Rank 108, distil veraltet
+  # V3-Linie — V4 (Pro/Flash) ist die aktuelle Generation.
+  - "deepseek_deepseek-chat-v3_1"      # ersetzt durch V4 Pro / V4 Flash
+  - "deepseek_deepseek-v3_2"           # ersetzt durch V4 Pro / V4 Flash
+  - "deepseek-r1-distill-qwen-32b"     # Rank 108, distil veraltet
+
 
   # -----------------------------------------------------------------
   # Google — Gemini
   # -----------------------------------------------------------------
+  # Flash 3.5 / 3.7 und Pro 2.5 GA bleiben; 3.1 Pro Preview ohne GA-Nachfolger.
   - "gemini-3.1-pro-preview"
 
+
   # -----------------------------------------------------------------
-  # Google — Gemma 3
+  # Google — Gemma 3 (12B)
   # -----------------------------------------------------------------
+  # Q4-K_M Spark-Variante stärkster; Q8 schwächer.
   - "gemma-3-12b-it"                        # Rank 101, schwächer als Q4-K_M
   - "gemma-3-12b-it-q8"                     # Rank 83
   - "gemma-3-12b-it-q8-spark"               # [Spark] Q8 — Q4-Spark (89.64) behalten
 
+
   # -----------------------------------------------------------------
   # Google — Gemma 4 (12B Q8 stärkster; E4B/26B/31B Base NVFP4 stärkste)
   # -----------------------------------------------------------------
-  # 12B
+
+  # 12B Desktop (stärkster: q8)
   - "gemma-4-12b-it-ud-q4_k_xl"             # schwächer als q8 (Rank 67, 72.03)
   - "gemma-4-12b-it-ud-q6_k_xl"             # schwächer als q8
 
-  # 26B-A4B (MoE) — alle schwächer als Gemma-4-26B NVFP4 (Rank 37, 74.21)
+  # 26B-A4B Workstation (stärkster: Gemma-4-26B NVFP4, Rank 37, 74.21)
   - "gemma-4-26b-a4b-q8"                    # Standard-q8 (74)
   - "gemma-4-26B-A4B-it-UD-Q8_K_XL"         # UD-Q8_K_XL [Spark]
   - "gemma-4-26B-A4B-it-UD-Q5_K_XL-mtp"     # UD-Q5, MTP [Spark]
   - "gemma-4-26B-A4B-it-qat-ud-q4"          # QAT, UD-Q4 [Spark]
 
-  # 31B — alle schwächer als Gemma-4-31B NVFP4 (Rank 18, 76.03)
+  # 31B Workstation (stärkster: Gemma-4-31B NVFP4, Rank 18, 76.03)
   - "gemma-4-31B-it-qat-ud-q4"              # QAT, UD-Q4 [Spark]
   - "gemma-4-31B-it-UD-Q8_K_XL-mtp"         # UD-Q8, MTP [Spark]
   - "gemma-4-31b-it-creative-wordsmith-q8"  # Wordsmith Q8 (Rank 73, 70.93) — ersetzt durch vLLM Wordsmith-NVFP4
+
 
   # -----------------------------------------------------------------
   # Hermes (NousResearch)
   # -----------------------------------------------------------------
   - "hermes-4_3-36b-q6"                     # ~3 tok/s auf Spark → bremst Auto-Benchmark
 
+
   # -----------------------------------------------------------------
   # Mistral AI
   # -----------------------------------------------------------------
   - "mistral-medium-2312"                   # Legacy, ersetzt durch Medium 3.5
 
-  # -----------------------------------------------------------------
-  # Moonshot AI
-  # -----------------------------------------------------------------
 
   # -----------------------------------------------------------------
-  # OpenAI — GPT-OSS (Cloud/Groq only; vLLM Benchmarks bleiben)
+  # Moonshot AI — Kimi
   # -----------------------------------------------------------------
-  - "openai/gpt-oss-120b"                    # Cloud/Groq — Blacklist auf Anfrage
+  # Kimi-K-Linie: 3 Modelle behalten (K3, K2.6, K2.5) wegen
+  # 264K → 1M Context-Window-Übergang.
+  # Kimi-Code (kimi-k2.7-code) ist Sonderlinie und bleibt unberührt.
+  - "moonshotai_kimi-k2-thinking-20251106"  # ersetzt durch K2.5 / K2.6 / K3
+  - "moonshotai_kimi-k2"                    # K2 0711 — Legacy
+
+
+  # -----------------------------------------------------------------
+  # OpenAI
+  # -----------------------------------------------------------------
+
+  # GPT-Hauptlinie (behalten: GPT-5.5, GPT-5.4)
+  - "gpt-5-2025-08-07"                      # GPT-5 — ersetzt durch 5.4 / 5.5
+
+  # GPT-Mini-Linie (behalten: GPT-5.4 Mini)
+  - "gpt-5-mini-2025-08-07"                 # GPT-5 Mini — ersetzt durch 5.4 Mini
+
+  # GPT-4-Linie (Legacy, komplett — GPT-5 mit thinking_effort ersetzt die Reihe)
+  - "gpt-4o"                                # Legacy
+  - "gpt-4o-mini"                           # Legacy
+
+  # o-Serie (Reasoning-Linie, Legacy) — o4-mini / o3-mini bleiben erhalten
+  - "o1"                                    # ersetzt durch o3-mini / o4-mini
+
+  # GPT-OSS (Cloud/Groq only; vLLM Benchmarks bleiben)
+  - "openai/gpt-oss-120b"                   # Cloud/Groq — Blacklist auf Anfrage
+
 
   # -----------------------------------------------------------------
   # Ornith (DeepReinforce) — 35B-A3B
   # -----------------------------------------------------------------
-  - "ornith-1-0-35b"                         # SPRK/llama.cpp Rank 14 (76.30), schwächer als FP8-thinking (77.38)
+  - "ornith-1-0-35b"                        # SPRK/llama.cpp Rank 14 (76.30), schwächer als FP8-thinking (77.38)
+
 
   # -----------------------------------------------------------------
   # Qwable (Qwen-Derivat, Fable5-tune)
@@ -98,32 +163,54 @@ blacklist:
   # bei Re-Aktivierung.
   - "qwable-3_6-27b-q4"
 
+
   # -----------------------------------------------------------------
+  # Qwen
+  # -----------------------------------------------------------------
+
   # Qwen 3.5 (35B-q4 stärkster, 4B-q6 stärkster)
-  # -----------------------------------------------------------------
+  # 27B — Pattern: alle Varianten AUSSER der vllm NVFP4 (qwen3_5-27b-nvfp4 / -thinking).
+  # fnmatch [!n] matcht kein 'n' an Position 1 nach "qwen3_5-27b-" → nvfp4 oben ausgenommen.
+  # Hintergrund: Benchmark-Eintrag bleibt im Leaderboard, wird aber nicht ins Web exportiert.
+  # Die vllm-NVFP4-Variante ist die einzige offiziell unterstützte Web-Export-Form.
+  - "qwen3_5-27b-[!n]*"                     # 27B Q4/Q5/Q6/Q8/BF16/FP8/GGUF etc. — alles ausser NVFP4
   # 35B-A3B (MoE)
   - "qwen3_5-35b-a3b-q8"                    # schwächer + langsamer als q4 (74.66 vs 74.72)
-
   # 4B
   - "qwen3_5-4b-q4"                         # schwächer als q6 (68.09)
   - "qwen3_5-4b-q8"                         # schwächster 4B (67.69)
 
-  # -----------------------------------------------------------------
   # Qwen 3.6 (35B-A3B: mtp-ud-q8 stärkster Standard; Uncensored als Ausnahme)
-  # -----------------------------------------------------------------
   - "qwen3_6-35b-a3b-mtp-ud-q4"             # schwächster 35B (72.58)
   - "qwen3_6-35b-a3b-q8"                    # schwächer als mtp-ud-q8 (73.17)
 
-  # -----------------------------------------------------------------
   # Qwen 3 Coder (q8 schwächer + langsamer als q4)
-  # -----------------------------------------------------------------
   - "qwen3-coder-next-q8"                   # q4 (Rank 34) schneller UND stärker
 
-  # -----------------------------------------------------------------
   # Qwen 3.6 27B — historische pre-vLLM-0.25.1-Variante (NVFP4 ersetzt)
-  # -----------------------------------------------------------------
   - "qwen3_6-27B-pre025"                    # vLLM vor 0.25.1, Standard
-  - "qwen3_6-27B-pre025-thinking"            # vLLM vor 0.25.1, Thinking
+  - "qwen3_6-27B-pre025-thinking"           # vLLM vor 0.25.1, Thinking
+
+
+  # -----------------------------------------------------------------
+  # xAI (Grok)
+  # -----------------------------------------------------------------
+
+  # Grok-4.x-Linie (behalten: 4.6, 4.5)
+  - "grok-4_3"                              # ersetzt durch Grok 4.5 / 4.6
+
+  # Grok-4.20-Linie (älter als 4.3, komplett entfernt)
+  - "grok-4_20-0309-reasoning"              # Legacy
+  - "grok-4_20-0309-non-reasoning"          # Legacy
+
+
+  # -----------------------------------------------------------------
+  # Zhipu GLM (via OpenRouter)
+  # -----------------------------------------------------------------
+  # GLM-5-Linie (behalten: 5.2, 5.1-20260406).
+  # GLM-4-Linie (4.7, 4.6) ist nur 2 Modelle stark → komplett erhalten.
+  - "z-ai_glm-5-turbo-20260315"             # ersetzt durch 5.1 / 5.2
+  - "z-ai_glm-5-20260211"                   # ersetzt durch 5.1 / 5.2
 
 
 # ============================================================================
@@ -134,10 +221,42 @@ blacklist:
 # sie hier dokumentiert sind — alle anderen (nicht hier gelisteten, nicht in
 # `blacklist` enthaltenen) Modell-IDs werden automatisch exportiert.
 #
-# Stand: 2026-07-10 — Gemma-4 / Qwen 3.5 / 3.6 Konsolidierung
+# Stand: 2026-08-19 — kommerzielle Konsolidierung (Claude / GPT / Grok / GLM /
+# Kimi / DeepSeek) + bestehende Gemma-4 / Qwen 3.5 / 3.6 Einträge.
 # Quelle: benchmark_scores/benchmark_leaderboard.csv
 
 kept_overrides:
+
+  # -----------------------------------------------------------------
+  # Anthropic — Claude (behalten)
+  # -----------------------------------------------------------------
+  claude:
+    rationale: "Pro Produktlinie die letzten 2 Modelle (Haiku nur 1 Modell vorhanden)."
+    models:
+      # Opus-Linie
+      - id: claude-opus-5
+        reason: "neueste Opus-Generation"
+      - id: claude-opus-4-8
+        reason: "zweite Opus-Generation"
+      # Sonnet-Linie
+      - id: claude-sonnet-5
+        reason: "neueste Sonnet-Generation"
+      - id: claude-sonnet-4-6
+        reason: "zweite Sonnet-Generation"
+      # Haiku-Linie
+      - id: claude-haiku-4-5-20251001
+        reason: "einziges Haiku-Modell"
+
+  # -----------------------------------------------------------------
+  # DeepSeek (behalten)
+  # -----------------------------------------------------------------
+  deepseek:
+    rationale: "V4 ist die aktuelle Generation (Pro + Flash)."
+    models:
+      - id: deepseek/deepseek-v4-pro
+        reason: "V4 Pro — Frontier"
+      - id: deepseek/deepseek-v4-flash
+        reason: "V4 Flash — schnelle Variante"
 
   # -----------------------------------------------------------------
   # Gemma 3
@@ -220,6 +339,59 @@ kept_overrides:
         reason: "API-Modell (OpenRouter) — schnellste 31B-Variante (31 tok/s)"
 
   # -----------------------------------------------------------------
+  # Google — Gemini (behalten)
+  # -----------------------------------------------------------------
+  gemini:
+    rationale: "Flash 3.5/3.7 + Pro 2.5 GA; 3.1 Pro Preview blacklisted."
+    models:
+      - id: gemini-3.5-flash
+        reason: "Flash 3.5 — aktuelle Generation"
+      - id: google/gemini-3.7-flash
+        reason: "Flash 3.7 via OpenRouter — neueste Flash-Generation"
+      - id: gemini-2.5-pro
+        reason: "Pro 2.5 — einzige GA-Pro-Variante"
+
+  # -----------------------------------------------------------------
+  # Moonshot Kimi (behalten)
+  # -----------------------------------------------------------------
+  kimi:
+    rationale: "K-Linie 3 Modelle (264K → 1M Übergang); Code-Linie Sonderlinie komplett."
+    models:
+      # K-Linie (3 wegen 264K → 1M Context-Window-Übergang)
+      - id: moonshotai/kimi-k3
+        reason: "neueste K-Generation (1M Context)"
+      - id: moonshotai/kimi-k2.6
+        reason: "zweite K-Generation (1M Context)"
+      - id: moonshotai/kimi-k2.5-0127
+        reason: "Übergangs-Modell (264K Context) — Benchmark des Sprungs"
+      # Code-Sonderlinie (nicht unter Konsolidierungsregel)
+      - id: moonshotai/kimi-k2.7-code
+        reason: "Sonderlinie Code — vollständig erhalten"
+
+  # -----------------------------------------------------------------
+  # OpenAI (behalten)
+  # -----------------------------------------------------------------
+  openai:
+    rationale: "Pro Produktlinie die letzten 2 Modelle (Nano nur 1)."
+    models:
+      # GPT-Hauptlinie
+      - id: gpt-5.5-2026-04-23
+        reason: "neueste GPT-Generation"
+      - id: gpt-5.4-2026-03-05
+        reason: "zweite GPT-Generation"
+      # GPT-Mini-Linie
+      - id: gpt-5.4-mini-2026-03-17
+        reason: "einzige aktuelle Mini-Variante"
+      # GPT-Nano-Linie
+      - id: gpt-5.4-nano-2026-03-17
+        reason: "einzige aktuelle Nano-Variante"
+      # o-Serie (Reasoning)
+      - id: o4-mini
+        reason: "neueste o-Generation"
+      - id: o3-mini
+        reason: "zweite o-Generation"
+
+  # -----------------------------------------------------------------
   # Qwen 3.5
   # -----------------------------------------------------------------
   qwen3_5:
@@ -245,6 +417,11 @@ kept_overrides:
         score: 68.56
         size: Nano
         reason: "stärkster 4B"
+      - id: qwen3_5-27b-nvfp4
+        rank: null
+        score: null
+        size: Workstation
+        reason: "vllm NVFP4 (asusGX10) — Always-Thinking-Modell, einzelnes Profil (kein -thinking-Suffix). Einzige 27B-Variante im Web-Export; alle anderen qwen3.5-27B-Varianten (Q4/Q5/Q6/Q8/BF16/FP8/GGUF) per Pattern 'qwen3_5-27b-[!n]*' geblacklistet — Leaderboard-Eintrag bleibt, kein Web-Export."
 
   # -----------------------------------------------------------------
   # Qwen 3.6
@@ -279,3 +456,31 @@ kept_overrides:
         score: 74.56
         size: Workstation
         reason: "q4-Spark schneller und stärker als q8"
+
+  # -----------------------------------------------------------------
+  # xAI Grok (behalten)
+  # -----------------------------------------------------------------
+  grok:
+    rationale: "Pro Produktlinie die letzten 2 Modelle."
+    models:
+      - id: grok-4.6
+        reason: "neueste Grok-Generation"
+      - id: grok-4.5
+        reason: "zweite Grok-Generation"
+
+  # -----------------------------------------------------------------
+  # Zhipu GLM (behalten)
+  # -----------------------------------------------------------------
+  glm:
+    rationale: "Pro Hauptlinie die letzten 2 Modelle (GLM 4 nur 2 vorhanden)."
+    models:
+      # GLM 5
+      - id: z-ai/glm-5.2
+        reason: "neueste GLM-5-Generation"
+      - id: z-ai/glm-5.1-20260406
+        reason: "zweite GLM-5-Generation"
+      # GLM 4 (komplett erhalten — nur 2 Modelle)
+      - id: z-ai/glm-4.7
+        reason: "aktuelle GLM-4-Generation"
+      - id: z-ai/glm-4.6
+        reason: "zweite GLM-4-Generation"

@@ -37,9 +37,11 @@ TIMEOUT_HTTP_FETCH = 10         # Allgemeine HTTP-Fetches (LiteLLM Pricing)
 TIMEOUT_ANTHROPIC_API = 600.0   # Anthropic SDK: 8000+-Token-Generierungen
 
 # Anthropic-Modelle, die `temperature` nicht unterstützen (Adaptive Thinking)
-# Quelle: https://platform.claude.com/docs/en/docs/about-claude/models (Apr 2026)
-# Ab Opus 4.8 / Sonnet 5 ist Adaptive Thinking für alle nachfolgenden Modelle aktiv.
+# Quelle: https://platform.claude.com/docs/en/about-claude/models
+# Adaptive Thinking (Opus 4.7+, Sonnet 4.6+, alle 5er Modelle) deprecated den
+# `temperature`-Parameter — API liefert HTTP 400 'temperature is deprecated'.
 ANTHROPIC_NO_TEMPERATURE_MODELS: frozenset[str] = frozenset({
+    "claude-opus-5",
     "claude-opus-4-8",
     "claude-sonnet-5",
     "claude-opus-4-7",

@@ -16,6 +16,7 @@ Vor jeder neuen Task diese Dateien lesen:
 1. `memory-bank/activeContext.md` — aktueller Fokus und offene Punkte
 2. `memory-bank/progress.md` — Release-Historie
 3. `memory-bank/systemPatterns.md` — Architektur-Regeln, SSoT-Brücken und Pitfalls
+4. `memory-bank/corrections.md` — dokumentierte Fehler/Korrekturen/modell-spezifische Anomalien
 
 Regel: Nur aktive, ungelöste Themen als Baustelle melden. Abgeschlossene Integrationen, akzeptierte Known Limitations und BACKLOG-Items sind keine Baustellen.
 

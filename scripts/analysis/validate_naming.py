@@ -6,7 +6,8 @@ Regeln:
   display_name:
     - Format: {Basismodellname} ({Community-Gruppe ODER Variante})
     - VERBOTEN: Quantisierung (NVFP4, FP8, MXFP4), Deployment (vLLM, GGUF),
-                Architektur (Dense, MoE, MTP, DFlash), Seed-OSS, Llama-3.1
+                Architektur (Dense, MoE, MTP, DFlash), Seed-OSS, Llama-3.1,
+                Provider-Suffixe (via OpenRouter, via Groq)
   model_version:
     - Reine Versionsnummer (z.B. 3.6, 4, 5.4)
     - VERBOTEN: Parameteranzahl (27B, 120B), Quantisierung (FP8, NVFP4, MXFP4),
@@ -56,6 +57,9 @@ _DISPLAY_NAME_FORBIDDEN_PATTERNS = [
         r"\bDFlash\b",
         r"\bSeed-OSS\b",
         r"\bLlama-3\.1\b",
+        r"\bvia OpenRouter\b",
+        r"\bvia Groq\b",
+        r"\bvia [A-Z][a-z]+\sCloud\b",
     ]
 ]
 
