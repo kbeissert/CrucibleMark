@@ -199,8 +199,9 @@ providers:
       - id: nvidia/nemotron-3-nano-30b-a3b
         name: NVIDIA Nemotron 3 Nano 30B A3B
 
-      - id: nvidia/nemotron-3.5-lightning
-        name: NVIDIA Nemotron 3.5 Lightning
+      # Auskommentiert 2026-08-22 via make clean-model.
+      # - id: nvidia/nemotron-3.5-lightning
+      # name: NVIDIA Nemotron 3.5 Lightning
 
 
       # Xiaomi MiMo — neueste zuerst (getestet 22. Juni 2026)
@@ -823,6 +824,36 @@ providers:
         # max_tokens = Thinking-Budget.
         chat_template_kwargs: {enable_thinking: true}
 
+      # Ornith 1.5 35B-A3B NVFP4 — Nachfolger von Ornith 1.0, MoE 256/8 active.
+      # Architektur: Qwen3_5MoeForConditionalGeneration (40 Layer, 30 Mamba2 + 10 Full-Attention).
+      # Quantisierung: NVIDIA ModelOpt NVFP4 mixed-precision (FP8-Attention + NVFP4-MLP + BF16-MTP).
+      # Multimedial (Text + Vision + Video), 262k nativer Kontext, 32k produktiv.
+      # License: MIT. Disk: ~23 GB auf GB10. vLLM-nightly 0.27.2rc1.
+      # TOML: ~/ai/shared/configs/vllm/models/Ornith-1.5-35B-A3B-NVFP4.toml
+      # Sampling synchron mit TOML: temperature=1.0, top_p=0.95, top_k=20,
+      # repetition_penalty=1.08 (2026-08-20: angepasst an Werks-Default-Familie,
+      # identisch zu Ornith 1.0).
+      # KEIN enable_thinking — Ornith 1.5 ist wie Ornith 1.0 ein reines Thinking-Modell
+      # (kein Non-Thinking-Modus, HF-Card Werks-Default: "by default the assistant turn opens
+      # with a  ̶t̶h̶i̶n̶k̶...̶t̶h̶i̶n̶k̶ block"). KEIN Dual-Profile, KEIN Hybrid-Test.
+      # Thinking pro Request via chat_template_kwargs erzwungen (extra_body an vLLM).
+      # Einzelnes Always-Thinking-Profil; max_tokens = Thinking-Budget.
+      # 2026-08-20: max_tokens 32768→16384 (Half-of-Context-Sweet-Spot) nach
+      # Server-Upgrade max_model_len 16384→32768. Reasoning-intensive Tasks
+      # (z.B. UX-Writing) brauchten vorher 12k+ Reasoning-Tokens ohne sichtbaren
+      # Output — jetzt 16k Output-Budget, Reasoning+Visible passen gemeinsam rein.
+      # 2026-08-20: temperature 0.6→1.0 + repetition_penalty 1.0→1.08 — angeglichen
+      # an Ornith-Werks-Default-Familie (deckt sich mit Ornith-1.0-TOML).
+      - id: ornith-1_5-35b-a3b-nvfp4
+        name: Ornith 1.5 35B-A3B NVFP4 (vLLM, Thinking-only)
+        config: Ornith-1.5-35B-A3B-NVFP4
+        max_tokens: 16384
+        temperature: 1.0
+        top_p: 0.95
+        top_k: 20
+        repetition_penalty: 1.08
+        chat_template_kwargs: {enable_thinking: true}
+
       # Gemma 4 Familie — NVFP4 (modelopt), 131k Context.
       # MoE 26B / Dense 31B (Base) / Dense 31B-Wordsmith (W4A16, uncensored).
       # Sampling-Parameter synchron mit Model Cards (SSoT: Card dokumentiert
@@ -852,16 +883,6 @@ providers:
         # (Dense, multimodal, Apache-2.0). Siehe Hinweis oben zu
         # ``config`` ↔ TOML-Filename-Mismatch.
         config: Gemma-4-31B-it-NVFP4
-        max_tokens: 16384
-        temperature: 1.0
-        top_p: 0.95
-        top_k: 64
-        # repetition_penalty:  # Card: null — vLLM-Server-Default greift
-        enable_thinking: true
-
-      - id: Gemma-4-31B-Wordsmith-NVFP4
-        name: Gemma 4 31B Wordsmith NVFP4 (vLLM, Dense, uncensored)
-        config: Gemma-4-31B-Wordsmith-NVFP4
         max_tokens: 16384
         temperature: 1.0
         top_p: 0.95
@@ -901,14 +922,14 @@ providers:
       # auf enable_thinking: true). Stattdessen Thinking per Request via
       # chat_template_kwargs erzwungen (extra_body an vLLM). Einzelnes
       # Always-Thinking-Profil; max_tokens = Thinking-Budget.
-      - id: qwen3_5-27b-nvfp4
-        name: Qwen 3.5 27B NVFP4 (vLLM, Dense, MTP, Always-Thinking)
-        config: Qwen3.5-27B-NVFP4-MTP
-        max_tokens: 32768
-        temperature: 1.0
-        top_p: 0.95
-        top_k: 20
-        chat_template_kwargs: {enable_thinking: true}
+      # - id: qwen3_5-27b-nvfp4
+      #   name: Qwen 3.5 27B NVFP4 (vLLM, Dense, MTP, Always-Thinking)
+      #   config: Qwen3.5-27B-NVFP4-MTP
+      #   max_tokens: 32768
+      #   temperature: 1.0
+      #   top_p: 0.95
+      #   top_k: 20
+      #   chat_template_kwargs: {enable_thinking: true}
 
       # Qwen 3.8 27B Dense — NVFP4 compressed-tensors (mixed-precision), MTP, Thinking-Parser aktiv.
       # 262K Context. vLLM-nightly 0.27.2rc1 (Ziel-Port 3305).
@@ -924,43 +945,6 @@ providers:
         top_k: 20
         reasoning_effort: medium  # Begrenzt Endlos-Reasoning (vLLM 0.27.2rc1 + MOD thinking-budget-by-effort)
         # repetition_penalty:  # TOML-Default (kein Override)
-        enable_thinking: true
-
-      # Laguna S 2.1 — Poolside NVFP4 MoE (117.6B total / 8.5B active),
-      # custom LagunaForCausalLM (trust_remote_code=true), DFlash Speculative
-      # Decoding (15 Tokens, ~2x decode-speedup), 256K Context.
-      # Sampling synchron mit TOML (HF-Card-Empfehlung
-      # temperature=0.7/top_p=0.95). top_k=20 wird via
-      # ``--generation-config auto`` aus Checkpoint geladen — KEIN
-      # ``min_p`` (vLLM rejects min_p under speculative decoding -> 400).
-      # Thinking: KEIN Dual-Profile (enable_thinking weggelassen). Laguna ist
-      # ein selektives Reasoning-Modell ("thinks when needed", HF Discussion
-      # #13) — kein Always-Thinking wie Qwen3.6. Das TOML setzt
-      # --default-chat-template-kwargs {"enable_thinking":true} serverseitig,
-      # das Modell entscheidet pro Request selbst ob es denkt. Ein
-      # Non-Thinking-Profil würde eine Kernfähigkeit künstlich unterdrücken
-      # und verzerrt den Benchmark. Das Thinking-Profil enthält bereits
-      # Non-Thinking-Antworten (Modell-Entscheidung). Cold-Start ~15 Min.
-      - id: Laguna-S-2_1-NVFP4
-        name: Laguna S 2.1 NVFP4 (vLLM, MoE, DFlash)
-        config: Laguna-S-2.1-NVFP4
-        max_tokens: 16384
-        temperature: 0.7
-        top_p: 0.95
-        top_k: 20
-        # repetition_penalty:  # TOML-Default (kein Override)
-        # KEIN enable_thinking — siehe Kommentar oben (selektives Reasoning).
-
-      # Sampling synchron mit TOML: temperature=0.6, top_p=0.95, top_k=20.
-      # 2026-07-20: Auskommentiert — 36B BF16 Hermes-4.3 braucht ~40 Min/Test
-      # (enable_thinking=true + 32K Thinking-Budget), Benchmark-Lauf wird auf
-      - id: hermes-4-3-36b
-        name: Hermes 4.3 36B (vLLM, Seed-OSS, Dense, NVFP4)
-        config: Hermes4.3-36B
-        max_tokens: 16384
-        temperature: 0.6
-        top_p: 0.95
-        top_k: 20
         enable_thinking: true
 
       # GPT-OSS 120B — lokales vLLM auf gx10 (MoE 117B total / 5.1B active, MXFP4).
@@ -979,6 +963,62 @@ providers:
         top_p: 0.95
         top_k: 20
         enable_thinking: true
+
+      # GPT-OSS 20B — kleines Schwestermodell zu 120B, gleiche Harmony-Architektur.
+      # MoE 21B total / 3.6B active, native MXFP4 (kein NVFP4-PTQ).
+      # 128K Context via YaRN factor=32 von 4096.
+      # Sampling konsistent mit gpt-oss-120b (HF-Card-Defaults, --generation-config auto).
+      # Reasoning-Effort per Request (low/medium/high) via Harmony-Chat-Template;
+      # --reasoning-parser openai_gptoss, --reasoning-config reasoniert Channel-Extraction.
+      # TOML: ~/ai/shared/configs/vllm/models/gpt-oss-20b.toml
+      # Rest-Klasse auf GB10 (gpu_memory_utilization 0.72, ~14 GB Weights).
+      # Dual-Profile via enable_thinking: true (Standard + Thinking).
+      - id: gpt-oss-20b
+        name: GPT-OSS 20B (vLLM, MoE, MXFP4, 128K)
+        config: gpt-oss-20b
+        max_tokens: 16384
+        temperature: 0.6
+        top_p: 0.95
+        top_k: 20
+        enable_thinking: true
+
+      # Muse Glimmer 30B NVFP4 — Meta Superintelligence Labs, Dense Multimodal
+      # (30B Text-Decoder + 1.8B ViT-G/14 Perception-Encoder), Apache-2.0,
+      # NVFP4-W4A4 (ModelOpt), 131k Context, channel-scoped Reasoning
+      # (muse_glimmer parser), XML-ATEM tool-calls.
+      # TOML: ~/ai/shared/configs/vllm/models/Muse-Glimmer-30B-NVFP4.toml
+      # Disk: ~/ai/models/llm/hf/Muse-Glimmer-30B-NVFP4-W4A4/ (~26 GB VRAM, 55 GB Disk)
+      # Sampling synchron mit TOML: temperature=1.0, top_p=0.95, top_k=64,
+      # repetition_penalty=1.0 (2026-08-21).
+      # KEIN enable_thinking — Muse Glimmer hat eigenes Reasoning via
+      # ``--reasoning-parser muse_glimmer`` (channel-scoped), nicht qwen3-style
+      # think-tags.
+      # Stand 2026-08-21: TOML + Disk vorhanden auf gx10, Server NOCH NICHT
+      # gestartet. Start mit ``vllm-start --config Muse-Glimmer-30B-NVFP4``.
+      - id: muse-glimmer
+        name: Muse Glimmer 30B NVFP4 (vLLM, Dense, multimodal)
+        config: Muse-Glimmer-30B-NVFP4
+        max_tokens: 16384
+        temperature: 1.0
+        top_p: 0.95
+        top_k: 64
+        repetition_penalty: 1.0
+
+      # NVIDIA Nemotron 3.5 Lightning 30B-A3B NVFP4 — Mamba-Hybrid MoE (Thinking-only).
+      # Modell-Details (Architektur, Sampling-Defaults, Kontext): Model-Card (SSoT).
+      # TOML: ~/ai/shared/configs/vllm/models/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-NVFP4.toml
+      # (``config`` MUSS exakt dem TOML-Namen ohne .toml entsprechen, sonst stummer
+      # vllm-start-Fehler). Thinking pro Request via chat_template_kwargs (extra_body
+      # an vLLM) — KEIN enable_thinking, das wuerde eine Dual-Profile-Expansion mit
+      # invalidem Non-Thinking-Profil ausloesen (Basis-ID existiert nicht mehr).
+      - id: nemotron-3_5-lightning-30b-a3b-nvfp4-thinking
+        name: NVIDIA Nemotron 3.5 Lightning 30B NVFP4 (vLLM, Mamba-Hybrid MoE, Thinking)
+        config: NVIDIA-Nemotron-3.5-Lightning-30B-A3B-NVFP4
+        max_tokens: 16384
+        temperature: 1.0
+        top_p: 0.95
+        top_k: 20
+        chat_template_kwargs: {enable_thinking: true}
 
       # Weitere verfügbare TOMLs (per Auto-Discovery entdeckbar, nicht im Benchmark):
       # - Qwen3-Embedding-0.6B-NVFP4: Embedding-Modell (kein LLM-Target)

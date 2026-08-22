@@ -1,0 +1,112 @@
+{
+  "model_id": "gpt-oss-20b",
+  "display_name": "GPT-OSS 20B",
+  "developer": "OpenAI",
+  "origin_country": "US",
+  "developer_jurisdiction": "US",
+  "deployment_type": "open-weights-local",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "low",
+  "weights_provenance_risk_rationale": "OpenAI ist ein US-Unternehmen; das Modell wird unter Apache-2.0 als Open Weights veröffentlicht. Lokales Deployment vermeidet vollständig jeglichen API-Datenabfluss an OpenAI-Server, wodurch das Risiko trotz US-Jurisdiktion (CLOUD Act) als gering eingestuft wird.",
+  "model_family": "GPT-OSS",
+  "vendor": "OpenAI",
+  "primary_focus": "agentic-coding",
+  "use_case_primary": "generalist",
+  "parameter_architecture": "moe",
+  "params_total_b": 21.0,
+  "params_active_b": 3.6,
+  "context_window_k": 128,
+  "knowledge_cutoff": "2024-06",
+  "summary": "Was die meisten OpenAI-Modelle nicht können: GPT-OSS 20B ist OpenAIs erste Open-Weights-Veröffentlichung seit GPT-2 (5. August 2025) unter Apache-2.0-Lizenz. Das MoE mit 21 Milliarden Gesamt- und 3,6 Milliarden aktiven Parametern läuft dank nativer MXFP4-Quantisierung mit nur rund 16 GB Speicher auf einer einzelnen Consumer-GPU, unterstützt Tool-Use über das Harmony-Format und bietet 131.072 Tokens Kontext sowie konfigurierbare Reasoning-Intensität (low/medium/high).",
+  "strengths": [
+    "Apache-2.0-Lizenz ohne EU-Ausschlussklausel — frei kommerziell und offline betreibbar.",
+    "Erste Open-Weights-Veröffentlichung von OpenAI seit GPT-2.",
+    "MoE mit 3,6 Mrd. aktiven Parametern — Rechenaufwand nahe einem 4B-Dense-Modell.",
+    "Native MXFP4-Quantisierung: läuft mit nur rund 16 GB auf einer Consumer-GPU.",
+    "131.072 Tokens Kontext für lange Dokumente trotz Desktop-Größe.",
+    "Reasoning-Intensität konfigurierbar (low/medium/high) plus Tool-Use via Harmony-Format."
+  ],
+  "known_limitations": [
+    "Reines Text-Modell — keine Bild- oder Multimodal-Unterstützung.",
+    "Wissensstand Juni 2024 — kein aktuelles Weltwissen ohne externe Tools.",
+    "Allgemeine Wissensbreite bleibt unter dem größeren GPT-OSS-120B-Geschwistermodell.",
+    "Reasoning im Harmony-analysis-Channel erhöht Tokenverbrauch und sichtbare Antwortlänge.",
+    "Performance unter GPT-OSS 120B und vielen proprietären Modellen."
+  ],
+  "judge_context_hint": "GPT-OSS 20B ist OpenAIs Open-Weights-Modell (Apache-2.0, US/CLOUD Act, lokal). MoE 21B/3,6B-aktiv, native MXFP4-Quantisierung (~16 GB VRAM), 131K Kontext, Reasoning-Effort low/medium/high, natives Tool-Use via Harmony-Format (analysis/commentary/final-Channels). Bewerte Coding, Reasoning und Tool-Use in der Desktop-Klasse.",
+  "architecture_tags": [
+    "Reasoning",
+    "Thinking",
+    "Open-Weight",
+    "MoE",
+    "Coder",
+    "Agentic",
+    "Long-Context"
+  ],
+  "input_modalities": [
+    "text"
+  ],
+  "output_modalities": [
+    "text"
+  ],
+  "supports_tool_use": true,
+  "tooluse_tested_at": "2026-08-21T13:15:41Z",
+  "tooluse_score_p1": 35.0,
+  "tooluse_score_p2": 20.0,
+  "tooluse_runs": {
+    "gpt-oss-20b": {
+      "tested_at": "2026-08-21T13:15:41Z",
+      "score_p1": 35.0,
+      "score_p2": 20.0
+    },
+    "gpt-oss-20b-thinking": {
+      "tested_at": "2026-08-21T14:41:41Z",
+      "score_p1": 35.0,
+      "score_p2": 16.67
+    }
+  },
+  "tooluse_recommendation": null,
+  "dual_profile": true,
+  "temperature": 0.6,
+  "system_prompt_override": null,
+  "cot_marker_family": "harmony",
+  "cot_tags_detected": [
+    "analysis",
+    "final"
+  ],
+  "top_p": 0.95,
+  "top_k": 20,
+  "repetition_penalty": null,
+  "frequency_penalty": null,
+  "presence_penalty": null,
+  "seed": null,
+  "stop_sequences": null,
+  "license": "Apache-2.0",
+  "license_url": "https://huggingface.co/openai/gpt-oss-20b/blob/main/LICENSE",
+  "commercial_use_allowed": true,
+  "weights_license_tier": "open-weights",
+  "model_version": "1.0",
+  "input_price_per_1m": 0.0,
+  "output_price_per_1m": 0.0,
+  "hardware_profile": "VSPK",
+  "inference_engine": "vLLM",
+  "quantization_format": "MXFP4",
+  "model_variant": "20b",
+  "unknown": false,
+  "card_status": "draft",
+  "size_class": "Desktop",
+  "generated_at": "2026-08-20T06:42:57.539004+00:00",
+  "thinking_probe_detected": true,
+  "thinking_probe_evidence": "Multi-Probe (3 prompts, 3 detected, best confidence=medium):\n  - math: [math] Inline CoT im content-Feld: Antwort 889 chars (>200) mit 32 Berechnungs-Operatoren. First 200 chars: **Step‑by‑step solution**\n\n1. **Identify the known quantities**  \n   - Distance traveled, \\(d = 120\\) km  \n   - Time taken, \\(t = 1.5\\) h  \n\n2. **Recall the formula for average speed**  \n   \\[\n   \\tex\n  - code: [code] Inline CoT im content-Feld: Antwort 2409 chars (>200) mit 29 Berechnungs-Operatoren. First 200 chars: ## 1.  What algorithm do we use?\n\nWe’ll use **Insertion Sort** – a very intuitive, “hand‑sorting” style algorithm.  \nIt works like the way you might sort a hand of playing cards:\n\n1. Take the first ca\n  - decision: [decision] Inline CoT im content-Feld: Antwort 6675 chars (>200) mit 90 Berechnungs-Operatoren. First 200 chars: ### Step‑by‑step ethical analysis\n\nBelow is a structured walk‑through of the key moral, legal, and practical questions that arise when an autonomous vehicle (AV) faces a split‑second decision: *“Shoul",
+  "thinking_probe_confidence": "medium",
+  "thinking_probe_at": "2026-08-21T08:46:32.977212+00:00",
+  "thinking_probe_manual_override": null,
+  "profile_verified": false,
+  "profile_verified_at": null,
+  "profile_verified_by": null,
+  "last_modified_at": "2026-08-20",
+  "heritage_ids": [
+    "gpt-oss-120b"
+  ],
+  "community": null
+}

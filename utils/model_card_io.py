@@ -266,6 +266,49 @@ def _try_thinking_suffix_lookup(lookup_id: str, card_dir: Path) -> Path | None:
     return None
 
 
+# Bekannte Quantizer-Suffixe, die in provider_config.yaml als kanonische
+# Card-IDs verwendet werden (z.B. ``ornith-1_5-35b-a3b-nvfp4``).
+# Wenn die Input-ID KEINEN Suffix trägt, soll die Variante MIT Suffix gefunden
+# werden, damit Served-Name (``ornith-1.5-35b-a3b``) und Config-ID
+# (``ornith-1_5-35b-a3b-nvfp4``) auf dieselbe Card mappen.
+_KNOWN_QUANTIZER_SUFFIXES: tuple[str, ...] = (
+    "-nvfp4",
+    "-fp8",
+    "-mxfp4",
+    "-int4",
+    "-int8",
+    "-q4",
+    "-q5",
+    "-q6",
+    "-q8",
+)
+
+
+def _try_quantizer_suffix_lookup(lookup_id: str, safe: str, card_dir: Path) -> Path | None:
+    """Wenn die ID keinen bekannten Quantizer-Suffix traegt, probiere suffixed Varianten.
+
+    Hintergrund: provider_config.yaml fuehrt Modelle mit kanonischem Suffix
+    (``ornith-1_5-35b-a3b-nvfp4``), waehrend der Served-Name auf vLLM diesen
+    Suffix nicht enthaelt (``ornith-1.5-35b-a3b``). Ohne diesen Fallback
+    wuerde der Served-Name-Pfad eine Skeleton-Card anlegen und die
+    nachfolgenden ``_safe_name``-Lookups die ``-nvfp4``-Card nie finden.
+    """
+    lower = lookup_id.lower()
+    for suffix in _KNOWN_QUANTIZER_SUFFIXES:
+        if lower.endswith(suffix):
+            return None  # ID hat schon Suffix — kein Fallback noetig
+    for suffix in _KNOWN_QUANTIZER_SUFFIXES:
+        candidate = card_dir / f"{safe}{suffix}.json"
+        if candidate.exists():
+            import logging as _logging
+            _logging.debug(
+                "_find_card: quantizer-suffix fallback matched '%s' for input '%s'",
+                candidate.name, lookup_id,
+            )
+            return candidate
+    return None
+
+
 def _try_prefixed_shortcode_lookup(safe: str, card_dir: Path) -> Path | None:
     """Suffixed- und Legacy-Prefix-Pfade für non-namespaced IDs durchsuchen.
 
@@ -387,6 +430,14 @@ def _find_card(
         thinking_hit = _try_thinking_suffix_lookup(lookup_id, _cd)
         if thinking_hit is not None:
             return thinking_hit
+
+    # Quantizer-Suffix-Fallback: Wenn die Input-ID keinen bekannten
+    # Quantizer-Suffix traegt (z.B. ``ornith-1_5-35b-a3b``), probiere
+    # suffixed Varianten (``ornith-1_5-35b-a3b-nvfp4.json``). Stellt sicher,
+    # dass Served-Name und Config-ID auf dieselbe Card mappen.
+    quantizer_hit = _try_quantizer_suffix_lookup(lookup_id, safe, _cd)
+    if quantizer_hit is not None:
+        return quantizer_hit
 
     return unprefixed  # May or may not exist — caller checks
 

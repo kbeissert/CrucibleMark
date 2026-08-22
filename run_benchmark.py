@@ -168,11 +168,16 @@ class BenchmarkRunner:
         """
         # SSoT: Kanonische model_id früh im Entry-Point resolven, damit
         # alle Sub-Prozesse (Delegate-Scripts, run_tooluse_benchmark.py)
-        # bereits die kanonisierte ID erhalten.
+        # bereits die kanonisierte ID erhalten. Reihenfolge ist kritisch:
+        # ``resolve_provider`` matcht gegen Config-IDs (Underscores +
+        # ``-nvfp4``-Suffix), der rohe Served-Name (``ornith-1.5-35b-a3b``)
+        # matcht dort NICHT — Kanonisierung MUSS vor dem Provider-Lookup
+        # erfolgen, sonst fällt die Heuristik auf "ollama" zurück und
+        # schmeißt den falschen "not found in Ollama"-Error.
         from utils.model_utils import resolve_canonical_model_id
 
-        provider, model_id = resolve_provider(model_name)
-        model_id = resolve_canonical_model_id(model_id)
+        model_id = resolve_canonical_model_id(model_name)
+        provider, model_id = resolve_provider(model_id)
         if provider != "ollama":
             return provider, model_id
 

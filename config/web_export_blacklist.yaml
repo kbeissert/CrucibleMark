@@ -180,9 +180,10 @@ blacklist:
   - "qwen3_5-4b-q4"                         # schwächer als q6 (68.09)
   - "qwen3_5-4b-q8"                         # schwächster 4B (67.69)
 
-  # Qwen 3.6 (35B-A3B: mtp-ud-q8 stärkster Standard; Uncensored als Ausnahme)
+  # Qwen 3.6 (35B-A3B: Uncensored als Ausnahme im Whitelist)
   - "qwen3_6-35b-a3b-mtp-ud-q4"             # schwächster 35B (72.58)
   - "qwen3_6-35b-a3b-q8"                    # schwächer als mtp-ud-q8 (73.17)
+  - "qwen3_6-35b-a3b-mtp-ud-q8"            # MTP/UD-Q8 (73.52) — Duplikat zur Unsloth-Gruppe, Whitelist-Austrag
 
   # Qwen 3 Coder (q8 schwächer + langsamer als q4)
   - "qwen3-coder-next-q8"                   # q4 (Rank 34) schneller UND stärker
@@ -439,11 +440,6 @@ kept_overrides:
         score: 73.55
         size: Desktop
         reason: "Uncensored Community-Finetune (Highest-Score 35B-Variante)"
-      - id: qwen3_6-35b-a3b-mtp-ud-q8
-        rank: 45
-        score: 73.52
-        size: Desktop
-        reason: "stärkster 35B Standard-Mode (MTP, UD-Q8)"
 
   # -----------------------------------------------------------------
   # Qwen 3 Coder

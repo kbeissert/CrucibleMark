@@ -7,7 +7,7 @@
 
 CrucibleMark ist ein modulares LLM-Benchmark-Framework für Python 3.12. Es testet AI-Modelle gegen praxisnahe Aufgaben, bewertet Antworten blind über einen unabhängigen LLM-Judge und generiert Leaderboards.
 
-**Stand:** v5.1.2 · 2026-08-03 · Production-Ready
+**Stand:** v5.1.5 · 2026-08-17 · Production-Ready
 
 ## Session-Start
 
@@ -63,6 +63,7 @@ make docs-version-sync YES=1   # Doku-Stempel angleichen
 - **Selektives Reasoning beachten:** Modelle, die selbst entscheiden, wann sie denken, dürfen keine Always-Thinking-Konfiguration erhalten. `enable_thinking: true` kann sonst eine falsche Dual-Profile-Expansion auslösen.
 - **`# noqa: C901` nicht verwenden:** Die CC-≤-12-Regel bleibt verbindlich. Stattdessen Methoden nach Pfaden aufteilen.
 - **File-level `# ruff: noqa: F401` nur in `__init__.py`:** In anderen Modulen verbirgt es tote Imports und Redefinitions. Stattdessen gezielte `# noqa: F401` an Re-Export-Zeilen oder gar keine verwenden.
+- **Versions-Labels konsistent halten (Session 87):** Der Web-Export liest `model_version` pro Datenquelle (Leaderboard aus der Card, Political Compass aus `political_compass_results.csv`) — ein veraltetes `k.A.` in einer Ergebnis-CSV wird als Versions-Widerspruch auf der Modellseite sichtbar. `model_version`-Änderungen immer in Card UND allen Ergebnis-CSVs zusammen synchronisieren.
 
 ## Security
 
