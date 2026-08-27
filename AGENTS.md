@@ -64,6 +64,8 @@ make docs-version-sync YES=1   # Doku-Stempel angleichen
 - **`# noqa: C901` nicht verwenden:** Die CC-≤-12-Regel bleibt verbindlich. Stattdessen Methoden nach Pfaden aufteilen.
 - **File-level `# ruff: noqa: F401` nur in `__init__.py`:** In anderen Modulen verbirgt es tote Imports und Redefinitions. Stattdessen gezielte `# noqa: F401` an Re-Export-Zeilen oder gar keine verwenden.
 - **Versions-Labels konsistent halten (Session 87):** Der Web-Export liest `model_version` pro Datenquelle (Leaderboard aus der Card, Political Compass aus `political_compass_results.csv`) — ein veraltetes `k.A.` in einer Ergebnis-CSV wird als Versions-Widerspruch auf der Modellseite sichtbar. `model_version`-Änderungen immer in Card UND allen Ergebnis-CSVs zusammen synchronisieren.
+- **Card-Preise nur via Pricing-Table befüllen (Session 88):** `input_price_per_1m`/`output_price_per_1m` nie manuell in der Card setzen — erst `config/model_pricing.yaml` pflegen, dann `scripts/update_model_pricing.py` laufen lassen. Varianten-IDs brauchen dort exakte Keys (`…-thinking-…`, `…-pro`), sonst prefix-matched die Variante auf die Basis-ID und erbt deren Preis.
+- **OpenRouter-Reasoning deckelt Output (Session 89):** OpenRouter rechnet Reasoning-Tokens gegen `max_tokens` — Thinking-Modelle mit nicht-terminierendem CoT verbrennen sonst das komplette Budget (0 sichtbarer Output). Per-Modell über `model_reasoning_config` (Unified-Parameter `reasoning.max_tokens`) deckeln; ein reiner `model_max_tokens`-Override reicht nicht.
 
 ## Security
 

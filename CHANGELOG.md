@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [Unreleased]
+
+- **Preis-SSoT-Sync:** `config/model_pricing.yaml` auf verifizierte Standardpreise gebracht (OpenRouter Endpoints-API mit `discount: 0`, Stand 2026-08-27) und um 17 OpenRouter-Modelle ergänzt (DeepSeek, Kimi, GLM, Nemotron-Ultra, MiMo, Qwen3.7-Max/3.8-Flash, Gemma-4-31b, Codestral, Devstral). Korrigierte Alt-Werte: gpt-4o-mini (1.25/5.00 → 0.15/0.60), gpt-5 (2.50/15.00 → 1.25/10.00), gpt-5-mini (0.75/4.50 → 0.25/2.00), mistral-large-2512 (2.00/6.00 → 0.50/1.50), mistral-small-2603 (0.10/0.30 → 0.15/0.60). glm-5.3-flash auf Standardpreis 0.15/0.50 gesetzt (50%-Promo bis 09.09.2026 bewusst nicht verwendet).
+- **Preis-Pipeline dokumentiert:** Card-Preise werden ausschließlich via `update_model_pricing.py` aus der Pricing-Table befüllt — nie manuell in der Card (Prefix-Match-Risiko: `gpt-5-2025-08-07` matcht sonst auf `gpt-5` und setzt falsche Preise zurück). Workflow im add-model-Skill (Schritt 3b) und YAML-Header ergänzt.
+- **Card-Template-Drift geschlossen:** `dual_profile` (load-bearing in `utils/model_id.py` / `unified_runner.py`) und `tooluse_runs` in `config/card_template_model.yaml` optional_fields aufgenommen; redundanter Tag `Always-Thinking` aus GLM-Cards entfernt (reservierter Tag `Thinking` deckt das ab).
+- **Neue Modelle:** qwen/qwen3.8-flash (OpenRouter, cloud-only) sowie lokales Switch-Backup-Profil qwen3_8-27b-uncensored-fp8 (vLLM, FP8, Dense).
+- **Streaming:** `streaming_output_commercial_providers` auf `true`; Default-Stream-Printer loggt Chunks auf DEBUG statt INFO (landen nur im Logfile, Console bleibt ruhig).
+- **run_cross_model_benchmark.py:** sys.path-Setup vor alle Package-Imports gezogen (absolut, mit `resolve()`); toten kommentierten Import entfernt.
+
 ## [v5.1.5] - 2026-08-17
 
 **Patch-Release: Echte Token-Daten in TPS, Judge-Context und Audit-Log.**

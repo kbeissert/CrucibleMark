@@ -72,6 +72,19 @@ Die folgenden Felder werden vom LLM **NICHT** gefüllt (werden als "already vali
 
 **Namenskonventionen:** Siehe `memory-bank/reference/data-schema.md` (Feldbeschreibungen fuer `display_name` und `model_version`). Diese Datei ist die SSoT — hier NICHT aendern.
 
+### 3b. Preise: Erst Pricing-Table, dann Skript
+
+Card-Preise (`input_price_per_1m` / `output_price_per_1m`) werden **nie manuell in der Card** gesetzt. Die Pipeline ist:
+
+1. **Preis in `config/model_pricing.yaml` pflegen** — Key = exakte Card-`model_id` (mit Slash/Punkten, z.B. `"qwen/qwen3.8-flash"`). Quelle: Provider-Standardpreis (OpenRouter Endpoints-API mit `discount: 0` bzw. offizielle Vendor-Pricing-Seite). Keine Promo-/Discount-Preise.
+2. **Skript laufen lassen**, das die Werte in die Card schreibt:
+   ```bash
+   .venv/bin/python scripts/update_model_pricing.py
+   ```
+3. Prüfen, dass die Card den Preis trägt und das Skript sonst keine Cards unerwartet ändert.
+
+Begründung: `config/model_pricing.yaml` ist die Preis-SSoT; ein späterer Skript-Lauf würde manuell gesetzte Card-Werte sonst zurücksetzen oder per Prefix-Match (`gpt-5-2025-08-07` → `gpt-5`) falsche Preise schreiben. Lokale Modelle bekommen keinen Eintrag (Preise bleiben `null`).
+
 ### 4. LLM-Recherche laufen lassen
 
 ```bash
@@ -115,6 +128,7 @@ Prüft Schema-Konformität und Pflichtfeld-Abdeckung.
 | `scripts/manage_model_cards.py --mode research` | LLM-Recherche — füllt nur 5 Text-Felder |
 | `scripts/analysis/sync_cards.py` | Synchronisiert fehlende Template-Felder (kein LLM) |
 | `scripts/tools/probe_thinking.py` | Thinking-Probe für `thinking_probe_*`-Felder |
+| `scripts/update_model_pricing.py` | Schreibt Preise aus `config/model_pricing.yaml` in die Cards (Preis-Pipeline, Schritt 3b) |
 | `utils/card_utils.ensure_card()` | Interner Aufruf von create_model_card.py |
 
 ## Häufige Fallstricke
