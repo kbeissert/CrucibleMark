@@ -24,7 +24,7 @@
   "input_modalities": [
     "text"
   ],
-  "input_price_per_1m": 0.435,
+  "input_price_per_1m": 0.87,
   "judge_context_hint": "Flaggschiff-Reasoning-Modell der DeepSeek-V4-Linie mit konfigurierbarem Thinking-Modus. Bei der Bewertung Argumentationsqualität und Aufgabenlösung gewichten, nicht lokale Betriebsfähigkeit. Chinesische Jurisdiktion macht eine gesonderte Bewertung des Cloud-Einsatzes erforderlich.",
   "knowledge_cutoff": "2025-05",
   "known_limitations": [
@@ -32,7 +32,7 @@
     "Höhere Latenz und Kosten als die V4-Flash-Variante bei gleicher Kontextgrösse",
     "Lokaler Betrieb der vollen Variante erfordert extreme Hardware-Kapazität"
   ],
-  "last_modified_at": "2026-06-20",
+  "last_modified_at": "2026-08-27",
   "license": "MIT",
   "license_url": "https://github.com/deepseek-ai/DeepSeek-V4/blob/main/LICENSE",
   "local_deployment_possible": true,
@@ -44,7 +44,7 @@
   "output_modalities": [
     "text"
   ],
-  "output_price_per_1m": 0.87,
+  "output_price_per_1m": 1.74,
   "parameter_architecture": "moe",
   "params_active_b": 49,
   "params_total_b": 1600,

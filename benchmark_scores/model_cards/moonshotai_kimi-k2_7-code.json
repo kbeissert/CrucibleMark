@@ -58,8 +58,8 @@
   "commercial_use_allowed": true,
   "weights_license_tier": "open-weights",
   "model_version": "2.7-code",
-  "input_price_per_1m": 0.74,
-  "output_price_per_1m": 3.5,
+  "input_price_per_1m": 0.67,
+  "output_price_per_1m": 3.4,
   "input_modalities": [
     "text",
     "image",
@@ -83,7 +83,7 @@
   "cot_marker_family": null,
   "cot_tags_detected": null,
   "profile_verified_by": "llm:perplexity",
-  "last_modified_at": "2026-06-20",
+  "last_modified_at": "2026-08-27",
   "heritage_ids": [],
   "community": null,
   "tooluse_runs": {

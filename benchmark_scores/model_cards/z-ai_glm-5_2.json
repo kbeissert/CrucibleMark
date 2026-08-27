@@ -26,7 +26,7 @@
   "input_modalities": [
     "text"
   ],
-  "input_price_per_1m": 1.4,
+  "input_price_per_1m": 1.19,
   "judge_context_hint": "Frontier-Coding-Modell mit langem Kontext und starken Agentic-Fähigkeiten. Bei der Bewertung Coding-Qualität in langen Kontexten und Tool-Use priorisieren. Thinking per API schaltbar.",
   "knowledge_cutoff": "2025-12",
   "known_limitations": [
@@ -35,7 +35,7 @@
     "Erhöhte Latenz bei voller Kontextauslastung ohne IndexShare-Optimierung in manchen Backends",
     "Bei rein lokaler Nutzung entfällt das Cloud-Risiko"
   ],
-  "last_modified_at": "2026-06-22",
+  "last_modified_at": "2026-08-27",
   "license": "MIT",
   "license_url": "https://opensource.org/licenses/MIT",
   "local_deployment_possible": true,
@@ -47,7 +47,7 @@
   "output_modalities": [
     "text"
   ],
-  "output_price_per_1m": 4.4,
+  "output_price_per_1m": 3.74,
   "parameter_architecture": "moe",
   "params_active_b": 40.0,
   "params_total_b": 744.0,

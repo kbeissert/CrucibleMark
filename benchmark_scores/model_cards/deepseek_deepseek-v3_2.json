@@ -22,7 +22,7 @@
   "input_modalities": [
     "text"
   ],
-  "input_price_per_1m": 0.14,
+  "input_price_per_1m": 0.26,
   "judge_context_hint": "Frontier-Modell von DeepSeek aus chinesischer Jurisdiktion. Bei politisch sensiblen Themen mit China-Bezug können Antworten ausweichen oder verweigert werden. Bei sachlichen und technischen Aufgaben vergleichbare Leistung wie westliche Top-Modelle. Lokaler Betrieb reduziert das Datentransfer-Risiko erheblich.",
   "knowledge_cutoff": "2025-01",
   "known_limitations": [
@@ -30,7 +30,7 @@
     "Bei politisch sensiblen Themen mit China-Bezug zensierte oder ausweichende Antworten",
     "Architekturdetails gegenüber dem V3-Vorgänger noch nicht vollständig dokumentiert"
   ],
-  "last_modified_at": "2026-06-20",
+  "last_modified_at": "2026-08-27",
   "license": "DeepSeek License",
   "license_url": "https://github.com/deepseek-ai/DeepSeek-V3/blob/main/LICENSE",
   "local_deployment_possible": true,
@@ -42,7 +42,7 @@
   "output_modalities": [
     "text"
   ],
-  "output_price_per_1m": 0.28,
+  "output_price_per_1m": 0.38,
   "parameter_architecture": "moe",
   "params_active_b": 37.0,
   "params_total_b": 671.0,

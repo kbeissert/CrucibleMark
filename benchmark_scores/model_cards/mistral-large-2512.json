@@ -24,7 +24,7 @@
     "text",
     "image"
   ],
-  "input_price_per_1m": 2.0,
+  "input_price_per_1m": 0.5,
   "judge_context_hint": "Offenes Frontier-MoE-Modell von Mistral AI mit 256.000-Token-Kontext und multimodalem Eingang. Bei der Bewertung qualitativ hochwertige Antworten erwarten, zugleich als offen deploybare Alternative zu proprietären Frontier-APIs einordnen.",
   "knowledge_cutoff": "2024-12",
   "known_limitations": [
@@ -32,7 +32,7 @@
     "Tool- und Agent-Workflows abhängig von Serving-Stack und Parser-Konfiguration",
     "Nicht so kostengünstig oder leichtgewichtig wie die Small- und Medium-Modelle von Mistral"
   ],
-  "last_modified_at": "2026-06-20",
+  "last_modified_at": "2026-08-27",
   "license": "Apache 2.0",
   "license_url": "https://huggingface.co/mistralai/Mistral-Large-Instruct-2511",
   "local_deployment_possible": true,
@@ -44,7 +44,7 @@
   "output_modalities": [
     "text"
   ],
-  "output_price_per_1m": 6.0,
+  "output_price_per_1m": 1.5,
   "parameter_architecture": "moe",
   "params_active_b": 41,
   "params_total_b": 675,

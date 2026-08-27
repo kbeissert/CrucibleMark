@@ -22,7 +22,7 @@
   "input_modalities": [
     "text"
   ],
-  "input_price_per_1m": 0.14,
+  "input_price_per_1m": 0.55,
   "judge_context_hint": "DeepSeek V3.1 ist ein MoE-Modell mit 671 Milliarden Gesamt- und 37 Milliarden aktiven Parametern. Bei der Bewertung die chinesische Jurisdiktion berücksichtigen, insbesondere beim Cloud-Einsatz. Lokaler Betrieb reduziert das Datentransfer-Risiko erheblich.",
   "knowledge_cutoff": "2025-01",
   "known_limitations": [
@@ -30,7 +30,7 @@
     "Lokaler Betrieb der vollen Variante erfordert erhebliche GPU-Infrastruktur",
     "Bei politisch sensiblen Themen mit China-Bezug gelegentlich zensierte oder ausweichende Antworten"
   ],
-  "last_modified_at": "2026-06-20",
+  "last_modified_at": "2026-08-27",
   "license": "DeepSeek License",
   "license_url": "https://github.com/deepseek-ai/DeepSeek-V3/blob/main/LICENSE",
   "local_deployment_possible": true,
@@ -42,7 +42,7 @@
   "output_modalities": [
     "text"
   ],
-  "output_price_per_1m": 0.28,
+  "output_price_per_1m": 1.65,
   "parameter_architecture": "moe",
   "params_active_b": 37.0,
   "params_total_b": 671.0,

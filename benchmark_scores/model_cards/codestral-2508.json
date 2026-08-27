@@ -21,7 +21,7 @@
   "input_modalities": [
     "text"
   ],
-  "input_price_per_1m": 0.2,
+  "input_price_per_1m": 0.3,
   "judge_context_hint": "Spezialisiertes Code-Modell von Mistral AI für Programmieraufgaben. Bei der Bewertung Codequalität, Vollständigkeit und Praxistauglichkeit stärker gewichten als allgemeines Weltwissen. Fill-in-the-Middle und breite Sprachabdeckung als Stärken erwartbar.",
   "knowledge_cutoff": "2025-07",
   "known_limitations": [
@@ -30,7 +30,7 @@
     "Kein Allround-Modell, ausschliesslich für Coding optimiert",
     "Das volle Kontextfenster von 128.000 Tokens erfordert einen API-Upgrade"
   ],
-  "last_modified_at": "2026-06-20",
+  "last_modified_at": "2026-08-27",
   "license": "Mistral Codestral License",
   "license_url": "https://mistral.ai/licenses/MCSL-0.1.md",
   "local_deployment_possible": true,
@@ -42,7 +42,7 @@
   "output_modalities": [
     "text"
   ],
-  "output_price_per_1m": 0.6,
+  "output_price_per_1m": 0.9,
   "parameter_architecture": "dense",
   "params_active_b": null,
   "params_total_b": 22.0,

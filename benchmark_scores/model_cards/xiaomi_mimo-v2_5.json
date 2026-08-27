@@ -30,7 +30,7 @@
     "video",
     "audio"
   ],
-  "input_price_per_1m": 0.4,
+  "input_price_per_1m": 0.14,
   "judge_context_hint": "Omnimodales MoE-Modell mit Text-, Bild-, Video- und Audio-Verarbeitung. Bei der Bewertung Modalitäten-Abdeckung und Agentic-Fähigkeiten gewichten.",
   "knowledge_cutoff": "2025-05",
   "known_limitations": [
@@ -39,7 +39,7 @@
     "Geringere Reasoning-Tiefe bei hochkomplexen Aufgaben im Vergleich zur Pro-Variante",
     "Bei rein lokaler Nutzung entfällt das Cloud-Risiko"
   ],
-  "last_modified_at": "2026-06-21",
+  "last_modified_at": "2026-08-27",
   "license": "MIT",
   "license_url": "https://opensource.org/licenses/MIT",
   "local_deployment_possible": true,
@@ -51,7 +51,7 @@
   "output_modalities": [
     "text"
   ],
-  "output_price_per_1m": 2.0,
+  "output_price_per_1m": 0.28,
   "parameter_architecture": "moe",
   "params_active_b": 15.0,
   "params_total_b": 310.0,

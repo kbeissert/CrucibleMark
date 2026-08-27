@@ -26,7 +26,7 @@
   "input_modalities": [
     "text"
   ],
-  "input_price_per_1m": 0.38,
+  "input_price_per_1m": 0.4,
   "judge_context_hint": "Bilingual optimiertes Modell mit Frontier-Coding-Fähigkeiten. Bei der Bewertung chinesisch-englische Bilingualität und Agentic-Coding-Aufgaben gewichten. Thinking-Modus per API schaltbar.",
   "knowledge_cutoff": "2025-12",
   "known_limitations": [
@@ -35,7 +35,7 @@
     "Chinesischer Anbieter mit erhöhtem Sovereign-Risk bei Cloud-Nutzung",
     "Bei rein lokaler Inferenz entfällt das Cloud-Act-äquivalente Risiko"
   ],
-  "last_modified_at": "2026-06-22",
+  "last_modified_at": "2026-08-27",
   "license": "GLM-4 License",
   "license_url": "https://huggingface.co/zai-org/glm-4-9b/blob/main/LICENSE",
   "local_deployment_possible": true,
@@ -47,7 +47,7 @@
   "output_modalities": [
     "text"
   ],
-  "output_price_per_1m": 1.74,
+  "output_price_per_1m": 1.75,
   "parameter_architecture": "moe",
   "params_active_b": 32.0,
   "params_total_b": 355.0,

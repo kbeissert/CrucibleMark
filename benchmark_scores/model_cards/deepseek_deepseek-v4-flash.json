@@ -23,7 +23,7 @@
   "input_modalities": [
     "text"
   ],
-  "input_price_per_1m": 0.14,
+  "input_price_per_1m": 0.0795,
   "judge_context_hint": "Effizienzoptimierte Variante aus der DeepSeek-V4-Familie mit konfigurierbaren Thinking-Modi. Antworten sollten auf Nutzwert und Argumentationsqualität geprüft werden. Chinesische Jurisdiktion macht eine gesonderte Bewertung des Cloud-Einsatzes erforderlich.",
   "knowledge_cutoff": "2025-05",
   "known_limitations": [
@@ -31,7 +31,7 @@
     "Schwächer als die V4-Pro-Variante bei komplexen Agent-Tasks und reinem Faktenwissen",
     "Bei sensiblen Themen potenziell restriktive Antworten"
   ],
-  "last_modified_at": "2026-06-20",
+  "last_modified_at": "2026-08-27",
   "license": "MIT",
   "license_url": "https://github.com/deepseek-ai/DeepSeek-V4/blob/main/LICENSE",
   "local_deployment_possible": true,
@@ -43,7 +43,7 @@
   "output_modalities": [
     "text"
   ],
-  "output_price_per_1m": 0.28,
+  "output_price_per_1m": 0.159,
   "parameter_architecture": "moe",
   "params_active_b": 13,
   "params_total_b": 284,

@@ -15,7 +15,7 @@
   "display_name": "GPT-4o Mini",
   "dual_profile": null,
   "frequency_penalty": null,
-  "generated_at": "2026-06-10T18:28:14.912446+00:00",
+  "generated_at": "2026-08-26T20:20:37.500860+00:00",
   "hardware_profile": null,
   "heritage_ids": [],
   "inference_engine": null,
@@ -31,7 +31,7 @@
     "Kein lokaler Betrieb möglich, vollständige Abhängigkeit von OpenAIs Cloud-Infrastruktur",
     "Kein nachweisbarer Thinking-Modus"
   ],
-  "last_modified_at": "2026-06-20",
+  "last_modified_at": "2026-08-27",
   "license": "Proprietary",
   "license_url": null,
   "local_deployment_possible": false,

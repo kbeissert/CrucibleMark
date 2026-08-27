@@ -24,7 +24,7 @@
     "text",
     "image"
   ],
-  "input_price_per_1m": 0.4,
+  "input_price_per_1m": 0.44,
   "judge_context_hint": "Code-Agent-Modell mit Fokus auf Projektarbeit und Debugging. Bei der Bewertung praktische Code-Fortschritte und Robustheit in Multi-File-Workflows gewichten. Europäischer Anbieter unter DSGVO und AI Act, niedriges Sovereign-Risk.",
   "knowledge_cutoff": "2024-12",
   "known_limitations": [
@@ -32,7 +32,7 @@
     "Tool- und Parser-Fehler können in komplexen Workflows auftreten",
     "Kein Thinking-Modus, reines Instruction-Following-Modell"
   ],
-  "last_modified_at": "2026-06-20",
+  "last_modified_at": "2026-08-27",
   "license": "modified-MIT",
   "license_url": "https://huggingface.co/mistralai/Devstral-2-123B-Instruct-2512",
   "local_deployment_possible": true,
@@ -44,7 +44,7 @@
   "output_modalities": [
     "text"
   ],
-  "output_price_per_1m": 2.0,
+  "output_price_per_1m": 2.2,
   "parameter_architecture": "dense",
   "params_active_b": null,
   "params_total_b": 123,

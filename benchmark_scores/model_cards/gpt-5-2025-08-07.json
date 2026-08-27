@@ -16,7 +16,7 @@
   "display_name": "GPT-5",
   "dual_profile": null,
   "frequency_penalty": null,
-  "generated_at": "2026-06-10T18:28:14.913671+00:00",
+  "generated_at": "2026-08-26T20:20:37.501481+00:00",
   "hardware_profile": null,
   "heritage_ids": [],
   "inference_engine": null,
@@ -32,7 +32,7 @@
     "Im OpenAI-Portfolio durch neuere Modelle abgelöst, nicht mehr die empfohlene Standardwahl",
     "Architektur- und Parameterdetails sind öffentlich nicht dokumentiert"
   ],
-  "last_modified_at": "2026-06-20",
+  "last_modified_at": "2026-08-27",
   "license": "Proprietary",
   "license_url": null,
   "local_deployment_possible": false,

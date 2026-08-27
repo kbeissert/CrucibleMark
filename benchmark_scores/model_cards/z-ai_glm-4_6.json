@@ -22,7 +22,7 @@
   "input_modalities": [
     "text"
   ],
-  "input_price_per_1m": 0.39,
+  "input_price_per_1m": 0.43,
   "judge_context_hint": "Allround-Modell mit starkem Fokus auf chinesische und englische Aufgaben. Bei der Bewertung Sprachqualität in diesen Hauptsprachen gewichten.",
   "knowledge_cutoff": "2025-06",
   "known_limitations": [
@@ -31,7 +31,7 @@
     "Chinesischer Anbieter mit erhöhtem Sovereign-Risk bei Cloud-Nutzung",
     "Kommerzielle Nutzung unterliegt Lizenz-Einschränkungen"
   ],
-  "last_modified_at": "2026-06-20",
+  "last_modified_at": "2026-08-27",
   "license": "GLM-4 License",
   "license_url": "https://huggingface.co/THUDM/glm-4-9b/blob/main/LICENSE",
   "local_deployment_possible": true,
@@ -43,7 +43,7 @@
   "output_modalities": [
     "text"
   ],
-  "output_price_per_1m": 1.9,
+  "output_price_per_1m": 1.75,
   "parameter_architecture": "dense",
   "params_active_b": null,
   "params_total_b": null,

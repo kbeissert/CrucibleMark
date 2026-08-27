@@ -14,7 +14,7 @@
   "developer_jurisdiction": "EU",
   "display_name": "Mistral Small 4",
   "generated_at": "2026-05-21T00:00:00.000000+00:00",
-  "input_price_per_1m": 0.1,
+  "input_price_per_1m": 0.15,
   "judge_context_hint": "Kompaktes Open-Weights-Modell mit Fokus auf Effizienz und allgemeine Produktivaufgaben. Antworten als pragmatische Allround-Ausgaben einordnen.",
   "knowledge_cutoff": "2026-01",
   "known_limitations": [
@@ -29,7 +29,7 @@
   "model_id": "mistral-small-2603",
   "model_version": "4",
   "origin_country": "France",
-  "output_price_per_1m": 0.3,
+  "output_price_per_1m": 0.6,
   "parameter_architecture": "moe",
   "params_active_b": 6.5,
   "params_total_b": 119.0,
@@ -75,7 +75,7 @@
   "cot_marker_family": null,
   "cot_tags_detected": null,
   "profile_verified_by": "llm:perplexity",
-  "last_modified_at": "2026-06-20",
+  "last_modified_at": "2026-08-27",
   "heritage_ids": [],
   "community": null,
   "tooluse_runs": {

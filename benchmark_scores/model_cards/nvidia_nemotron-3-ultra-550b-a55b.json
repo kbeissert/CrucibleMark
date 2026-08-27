@@ -24,7 +24,7 @@
   "input_modalities": [
     "text"
   ],
-  "input_price_per_1m": 0.5,
+  "input_price_per_1m": 0.6,
   "judge_context_hint": "Frontier-Hybrid-Modell aus der Nemotron-3-Serie mit Mamba-Transformer-Architektur. Thinking-Optional mit Budget-Steuerung, stark bei agentischer Orchestrierung und Multi-Step-Reasoning.",
   "knowledge_cutoff": "2026-04",
   "known_limitations": [
@@ -33,7 +33,7 @@
     "US-Jurisdiktion mit CLOUD-Act-Risiko bei API-Nutzung über NVIDIA-Infrastruktur",
     "Text-only ohne nativen Bild- oder Audio-Eingang"
   ],
-  "last_modified_at": "2026-06-21",
+  "last_modified_at": "2026-08-27",
   "license": "NVIDIA Open Model License v1",
   "license_url": "https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/",
   "local_deployment_possible": true,
@@ -45,7 +45,7 @@
   "output_modalities": [
     "text"
   ],
-  "output_price_per_1m": 2.5,
+  "output_price_per_1m": 3.6,
   "parameter_architecture": "moe",
   "params_active_b": 55,
   "params_total_b": 550,
