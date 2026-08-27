@@ -17,18 +17,22 @@ import logging
 import subprocess
 from pathlib import Path
 
-# pylint: disable=import-error
-from rich.console import Console
-from rich.table import Table
-from rich import print as rprint
+# Pfad setup — MUSS vor den `from utils...` Imports stehen!
+# Ohne absolutes Path-Vorab-Setting schlagen Package-Imports bei direktem
+# Skript-Aufruf (`python scripts/core/...`) fehl, da das Repo-Root dann nicht
+# auf sys.path liegt.
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+
+# pylint: disable=import-error, wrong-import-position
+from rich.console import Console  # noqa: E402
+from rich.table import Table  # noqa: E402
+from rich import print as rprint  # noqa: E402
 
 # pylint: enable=import-error
 
-from utils.config_validator import ConfigValidator
-
-# Add project root to path
-ROOT_DIR = Path(__file__).parent.parent.parent
-sys.path.insert(0, str(ROOT_DIR))
+from utils.config_validator import ConfigValidator  # noqa: E402
 
 try:
     from utils.constants import MODEL_TYPE_OPEN_WEIGHTS_CLOUD, TIMEOUT_OLLAMA_HEALTH  # noqa: E402
@@ -36,8 +40,6 @@ try:
         get_ollama_models_info,
         get_commercial_models_from_config,
     )
-
-    # from utils.config_validator import ConfigValidator
     from utils.module_registry import get_active_modules
     from utils.benchmark_utils import select_from_list
     from utils.llm_client import LLMClient

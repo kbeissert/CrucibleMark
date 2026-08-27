@@ -114,7 +114,13 @@ class TestRealCardsCompliance:
         )
 
     def test_at_least_one_false_card_exists(self):
-        """Sanity-Check: DeepSeek sollte die einzige false-Card sein."""
+        """Sanity-Check: false-Cards (falls vorhanden) sind expected-false-Modelle.
+
+        deepseek-r1-distill-qwen-32b war historisch die einzige false-Card
+        und wurde im Cleanup d00ae5b7 entfernt — aktuell existiert keine
+        false-Card mehr. Der Test bleibt als Guard fuer kuenftige false-Cards:
+        neue Eintraege muessen bewusst gesetzt sein (nicht per Default).
+        """
         cards = self._load_all_cards()
         false_cards = [
             p.stem for p, data in cards
@@ -124,7 +130,9 @@ class TestRealCardsCompliance:
                 and data["supports_tool_use"].lower() == "false"
             )
         ]
-        assert "deepseek-r1-distill-qwen-32b" in false_cards, (
-            f"DeepSeek R1 Distill sollte supports_tool_use=false haben. "
-            f"Gefundene false-Cards: {false_cards}"
+        known_false = {"deepseek-r1-distill-qwen-32b"}
+        unexpected = set(false_cards) - known_false
+        assert not unexpected, (
+            f"Unerwartete supports_tool_use=false Cards: {sorted(unexpected)}. "
+            f"Falls bewusst: in known_false ergaenzen. Gefundene false-Cards: {false_cards}"
         )
