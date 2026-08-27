@@ -466,6 +466,26 @@ optional_fields:
     since: "v3.14"
     example: "PRODUCTION"
 
+  - name: tooluse_runs
+    type: object
+    required: false
+    description: "Per-Modell ToolUse-Run-Ergebnisse (Key = model_id, Werte: tested_at/score_p1/score_p2)"
+    consumers: [tooluse, leaderboard]
+    since: "v5.1.5"
+    example: {}
+
+  # --- Dual-Profile-Marker (runtime, ab v4.x) ---
+  # Load-bearing: utils/model_id.py und scripts/core/unified_runner.py lesen
+  # dieses Feld fuer resolve_canonical_model_id / Card-Sharing zwischen
+  # Standard- und Thinking-Profil (vLLM Dual-Profil-Expansion).
+  - name: dual_profile
+    type: bool
+    required: false
+    description: "true wenn Card von Standard- und Thinking-Profil geteilt wird (nur vLLM); null bei Cloud/lokal ohne Expansion"
+    consumers: [runner, model_id]
+    since: "v4.10"
+    example: false
+
   - name: temperature
     type: float
     required: false
