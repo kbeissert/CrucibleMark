@@ -205,7 +205,10 @@ class LLMClient:
         ):
 
             def _default_stream_printer(chunk: str) -> None:
-                logger.info("%s", chunk)
+                # DEBUG statt INFO: Streaming-Chunks (Ø ~4-5 Zeichen) sollen nicht
+                # die Console fluten — sie landen nur im Logfile (file_level: DEBUG).
+                # Console-Handler (console_level: INFO) filtert sie heraus.
+                logger.debug("%s", chunk)
 
             stream_handler = _default_stream_printer
             use_default_stream = True
