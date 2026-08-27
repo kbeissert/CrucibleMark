@@ -1,0 +1,102 @@
+{
+  "model_id": "z-ai/glm-5.3",
+  "display_name": "GLM-5.3",
+  "developer": "Z.AI (formerly Zhipu AI)",
+  "origin_country": "CN",
+  "developer_jurisdiction": "CN",
+  "deployment_type": "cloud-only",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "high",
+  "weights_provenance_risk_rationale": "Das Entwicklerunternehmen Z.AI hat seinen Sitz in China. Die Entwicklung des Modells unterliegt somit der chinesischen Gesetzgebung, was im internationalen Kontext ein erhöhtes Risiko in Bezug auf Datensicherheit und staatlichen Einfluss darstellt. Zum aktuellen Stand (23. August 2026) sind die Gewichte noch nicht veröffentlicht; das Modell ist ausschließlich über den GLM Coding Plan und die Z.AI-Cloud-Infrastruktur nutzbar, wodurch sämtliche Anfragen über chinesische Server laufen. Eine Risikominderung durch lokalen Betrieb ist derzeit nicht möglich.",
+  "model_family": "GLM",
+  "vendor": "Z.AI (formerly Zhipu AI)",
+  "primary_focus": "coding",
+  "use_case_primary": "agentic",
+  "parameter_architecture": "moe",
+  "params_total_b": 744.0,
+  "params_active_b": 40.0,
+  "context_window_k": 1000,
+  "knowledge_cutoff": "2026-04",
+  "summary": "GLM-5.3 ist Z.AIs Frontier-Coding-Flaggschiff vom 14. August 2026 mit 744 Milliarden Gesamt- und 40 Milliarden aktiven Parametern. Alle Fortschritte gegenüber GLM-5.2 stammen aus Post-Training: Terminal-Bench 3.0 stieg von 4,6 auf 28,3 Prozent, ExploitBench mehr als verdoppelt. Reasoning ist verpflichtend aktiv, Kontext eine Million Tokens. Gewichte und Lizenz noch nicht veröffentlicht, chinesische Cloud-Infrastruktur.",
+  "strengths": [
+    "744 Milliarden Gesamtparameter mit nur 40 Milliarden aktiven pro Token für effiziente Inferenz.",
+    "Eine Million Tokens Kontext, bis zu 128.000 Output-Tokens.",
+    "Coding- und Security-Sprung allein durch Post-Training: Terminal-Bench 3.0 von 4,6 auf 28,3 Prozent.",
+    "Bietet drei Reasoning-Effort-Stufen (low, high, max) zur Balance zwischen Tiefe und Latenz.",
+    "Spricht drei API-Protokolle: OpenAI Chat Completions, OpenAI Responses und Anthropic Messages."
+  ],
+  "known_limitations": [
+    "Keine Lizenz bestätigt — GLM-5.2 lief unter MIT, Z.AI hat für 5.3 keine Freigabe erteilt.",
+    "Per-Token-Preise nicht offiziell; kursierende Werte (1,40/4,40 USD) stammen aus GLM-5.2.",
+    "Reasoning nicht abschaltbar — Anfragen mit disabled-Flag schlagen fehl, kein Fallback.",
+    "Nur über GLM Coding Plan (18 bis 168 USD monatlich) und ZCode nutzbar.",
+    "Reines Text-Modell ohne Bild- oder Audio-Verarbeitung.",
+    "Chinesische Jurisdiktion schränkt Anwendungen mit strengen Datensouveränitäts-Vorgaben ein.",
+    "Wissensstand bis April 2026, auf Basis von GLM-5.2 ohne neues Pretraining."
+  ],
+  "judge_context_hint": "GLM-5.3 ist ein 744-Milliarden-Parameter-MoE-Modell mit 40 Milliarden aktiven Parametern pro Token, optimiert für agentische Coding- und Security-Aufgaben. Reasoning ist verpflichtend aktiv und nicht deaktivierbar; CoT erscheint als reasoning_content oder reasoning_tokens in Provider-Metadaten, nicht als Inline-Tag im Antworttext. Bewerte Programmier- und Schlussfolgerungs-Leistung mit drei Effort-Stufen (low, high, max, Standard max); offene Gewichte und bestätigte Lizenz lagen zum Bewertungszeitpunkt noch nicht vor.",
+  "architecture_tags": [
+    "Thinking",
+    "Coder",
+    "Agentic-Orchestrator",
+    "Long-Context"
+  ],
+  "input_modalities": [
+    "text"
+  ],
+  "output_modalities": [
+    "text"
+  ],
+  "supports_tool_use": true,
+  "tooluse_tested_at": "2026-08-24T11:29:07Z",
+  "tooluse_score_p1": 90.0,
+  "tooluse_score_p2": 73.33,
+  "tooluse_runs": {
+    "z-ai/glm-5.3": {
+      "tested_at": "2026-08-24T11:29:07Z",
+      "score_p1": 90.0,
+      "score_p2": 73.33
+    }
+  },
+  "tooluse_recommendation": null,
+  "dual_profile": false,
+  "temperature": 1.0,
+  "system_prompt_override": null,
+  "cot_marker_family": "reasoning-tokens",
+  "cot_tags_detected": false,
+  "top_p": 0.95,
+  "top_k": null,
+  "repetition_penalty": null,
+  "frequency_penalty": null,
+  "presence_penalty": null,
+  "seed": null,
+  "stop_sequences": null,
+  "license": "Unannounced (pending, erwartet ~Ende August 2026)",
+  "license_url": null,
+  "commercial_use_allowed": null,
+  "weights_license_tier": "pending",
+  "model_version": "5.3",
+  "input_price_per_1m": 1.4,
+  "output_price_per_1m": 4.4,
+  "hardware_profile": null,
+  "inference_engine": null,
+  "quantization_format": null,
+  "model_variant": null,
+  "unknown": false,
+  "card_status": "draft",
+  "size_class": "Frontier",
+  "generated_at": "2026-08-26T20:20:37.508668+00:00",
+  "thinking_probe_detected": true,
+  "thinking_probe_evidence": "Multi-Probe (3 prompts, 3 detected, best confidence=medium):\n  - math: [math] reasoning_tokens=165 in provider metadata.\n  - code: [code] reasoning_tokens=5592 in provider metadata.\n  - decision: [decision] reasoning_tokens=1232 in provider metadata.\nKonsistent mit offizieller Z.AI-Dokumentation: Reasoning ist verpflichtend aktiv (thinking.type='enabled', nicht deaktivierbar) und erscheint als reasoning_content/reasoning_tokens in separaten Provider-Metadaten, nicht als sichtbares <thought>-Inline-Tag im Content-Feld — der vorherige cot_tags_detected-Wert war widersprüchlich zur eigenen Probe-Evidenz.",
+  "thinking_probe_confidence": "medium",
+  "thinking_probe_at": "2026-08-23T19:12:03.766791+00:00",
+  "thinking_probe_manual_override": null,
+  "profile_verified": false,
+  "profile_verified_at": null,
+  "profile_verified_by": null,
+  "last_modified_at": "2026-08-23",
+  "heritage_ids": [
+    "z-ai/glm-5.2"
+  ],
+  "community": null
+}
