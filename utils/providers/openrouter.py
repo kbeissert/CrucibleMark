@@ -149,7 +149,23 @@ class OpenRouterClient(BaseProviderClient):
         # Alibaba Cloud (Qwen) und andere Anbieter erfordern explizite Zustimmung
         # zur Datenverarbeitung — per-Request-Override der Account-Policy.
         params["extra_body"] = {"data_collection": "allow"}
+        # Per-Modell Reasoning-Config (OpenRouter Unified-Parameter `reasoning`).
+        # Begrenzt das Thinking-Budget separat vom Output-Budget — bei Modellen
+        # mit nicht-terminierendem CoT frisst sonst das Reasoning das komplette
+        # max_tokens (0 sichtbarer Output).
+        reasoning_cfg = self._resolve_reasoning_config(model, api_model)
+        if reasoning_cfg:
+            params["extra_body"]["reasoning"] = reasoning_cfg
         return params, token_param_name, req_tokens
+
+    def _resolve_reasoning_config(self, model: str, api_model: str) -> dict[str, Any] | None:
+        """Löst die Per-Modell Reasoning-Config aus provider_config.yaml.
+
+        Lookup-Key ist die Modell-ID (Config-Form oder Internal-Form), analog zu
+        ``model_max_tokens`` in ``_resolve_request_tokens()``.
+        """
+        cfg_map = self._get_provider_cfg().get("model_reasoning_config", {})
+        return cfg_map.get(model) or cfg_map.get(api_model)
 
     def _process_openrouter_stream(
         self,

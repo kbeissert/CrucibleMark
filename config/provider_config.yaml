@@ -187,6 +187,35 @@ providers:
         xiaomi/mimo-v2.5-pro: 20000
         xiaomi/mimo-v2.5: 24000
 
+        # GLM-5.3 — Always-Thinking (Reasoning nicht deaktivierbar, Effort-Default max).
+        # Bei 16384 frisst der CoT das komplette Budget (Session-Befund: 16328 Reasoning-
+        # Tokens, 56 sichtbare Tokens, 16% Score durch Truncation). Cap über Modul-Budget
+        # (code_quality reasoning: 20000) legen, damit min()-Kaskade nicht auf Provider-
+        # Default 16384 drosselt.
+        z-ai/glm-5.3: 24000
+
+        # GLM-5.3-Flash — Always-Thinking (Reasoning mandatory, nicht deaktivierbar:
+        # HTTP 400 "Reasoning is mandatory for this endpoint"). Gleiche Cap-Logik wie
+        # z-ai/glm-5.3 (verifiziert 2026-08-26).
+        z-ai/glm-5.3-flash: 24000
+
+        # Qwen3.8-Flash — Thinking-Optional, aber nicht-terminierender CoT.
+        # Session-Befund 2026-08-27 (code_quality_001): 16384 → 20000 Output-Tokens,
+        # jeweils 100% Reasoning, 0 sichtbarer Output, Score 0%. Höheres max_tokens
+        # löst das nicht — das Thinking-Budget wird separat gedeckelt (siehe
+        # model_reasoning_config).
+        qwen/qwen3.8-flash: 24000
+      # Per-Modell Reasoning-Config (OpenRouter Unified-Parameter `reasoning`).
+      # Begrenzt das Thinking-Budget separat vom Output-Budget für Modelle mit
+      # nicht-terminierendem CoT. Wird in _build_openrouter_params() in extra_body
+      # geschrieben; Modell ohne Eintrag → kein reasoning-Parameter im Request.
+      model_reasoning_config:
+        # 12000 Reasoning + 12000 sichtbarer Output innerhalb von max_tokens=24000.
+        # Flash kennt KEIN reasoning_effort (OpenRouter-Metadaten: nur
+        # supports_max_tokens) — das Token-Cap ist die einzige Loop-Terminierung.
+        qwen/qwen3.8-flash:
+          max_tokens: 12000
+
       models:
 
       # NVIDIA Nemotron 3 — neueste zuerst (getestet 22. Juni 2026)
@@ -213,6 +242,12 @@ providers:
 
 
       # Zhipu GLM — neueste zuerst (getestet 22. Juni 2026)
+      - id: z-ai/glm-5.3-flash
+        name: GLM 5.3 Flash (Z.ai)
+
+      - id: z-ai/glm-5.3
+        name: GLM 5.3 (Z.ai)
+
       - id: z-ai/glm-5.2
         name: GLM 5.2 (Z.ai)
 
@@ -285,6 +320,9 @@ providers:
         name: Hermes 4 70B
 
       # Qwen — neueste zuerst
+      - id: qwen/qwen3.8-flash
+        name: Qwen 3.8 Flash
+
       - id: qwen/qwen3.8-2.4t-a95b
         name: Qwen 3.8 2.4T A95B
 
@@ -945,6 +983,24 @@ providers:
         top_k: 20
         reasoning_effort: medium  # Begrenzt Endlos-Reasoning (vLLM 0.27.2rc1 + MOD thinking-budget-by-effort)
         # repetition_penalty:  # TOML-Default (kein Override)
+        enable_thinking: true
+
+      # Qwen3.8 27B Uncensored FP8 — Switch-Backup-Profil (default.env VLLM_ACTIVE_CONFIG
+      # wechselt zwischen NVFP4-Daily und diesem Uncensored-Eintrag).
+      # TOML: ~/ai/shared/configs/vllm/models/Qwen3.8-27B-Uncensored-FP8.toml
+      # Dense (64 Layer: 48 linear_attention + 16 full_attention), FP8, 262K Context.
+      # vLLM-nightly 0.27.2rc1, via vllm-start auf base_url-Port 4300.
+      # Reasoning landet im OpenAI-kompatiblen Feld "reasoning" (nicht "reasoning_content");
+      # vom Framework dual-field gelesen (vllm_base.py:1328-1330).
+      # Sampling synchron mit TOML: temperature=1.0, top_p=0.95, top_k=20.
+      - id: qwen3_8-27b-uncensored-fp8
+        name: Qwen 3.8 27B Uncensored FP8 (vLLM, Dense, MTP)
+        config: Qwen3.8-27B-Uncensored-FP8
+        max_tokens: 16384
+        temperature: 1.0
+        top_p: 0.95
+        top_k: 20
+        reasoning_effort: medium  # Begrenzt Endlos-Reasoning
         enable_thinking: true
 
       # GPT-OSS 120B — lokales vLLM auf gx10 (MoE 117B total / 5.1B active, MXFP4).
