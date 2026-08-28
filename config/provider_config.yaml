@@ -530,8 +530,15 @@ providers:
       # der Remote-Session können Mac-localhost auf GX10-Ports mappen (Kollisionsfall
       # 2026-08-27: Mac:1235 → GX10:1234). Der Mac-Connector erkennt solche Hijacks
       # seit 2026-08-28 (Ownership-Check in llamacpp_base) und bricht Fail-Fast ab.
-      base_url: "http://100.89.110.0:1234/v1"
-      api_key: "sk-local"
+      base_url: "http://100.89.110.0:2234/v1"
+      api_key: "sk-local-mg2026"
+      # Metrics-Proxy-Setup (2026-08-28): base_url zeigt auf den authentifi-
+      # zierenden metrics_proxy (:2234), der die generierten Tokens erfasst und
+      # an den llama-server weiterleitet. `server_port` entkoppelt den Bind-Port
+      # des llama-server (:1234) von der base_url — ohne diesen Override würde
+      # der Connector den Server per SSH mit --port 2234 starten und mit dem
+      # Proxy kollidieren. Probes senden seit 2026-08-28 Bearer-Auth.
+      server_port: 1234
       # GGUF-Basispfad auf der GX10; `model_file` der Modelle ist relativ dazu.
       model_dir: /home/kay_beissert/ai/models/llm/gguf
       token_param_name: max_tokens

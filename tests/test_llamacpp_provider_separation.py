@@ -707,6 +707,84 @@ def test_cold_start_fails_fast_on_foreign_port(tmp_path, monkeypatch):
 
 
 # ---------------------------------------------------------------------------
+# Metrics-Proxy-Support (2026-08-28): Bearer-Auth auf Probes + server_port
+# ---------------------------------------------------------------------------
+
+def test_health_probe_sends_bearer_auth(two_provider_config, monkeypatch):
+    """_is_healthy muss den api_key als Bearer senden (Metrics-Proxy 401-Defense).
+
+    Der metrics_proxy auf der GX10 verlangt Auth auf ALLEN Pfaden inklusive
+    /health — ohne Header hielte der Connector einen laufenden Server für down.
+    """
+    client = LlamaCppSparkClient(two_provider_config)
+    captured: dict[str, object] = {}
+
+    class _Resp:
+        status = 200
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+    def fake_urlopen(req, timeout=None):  # noqa: ANN001, ANN201
+        captured["headers"] = dict(req.headers)
+        return _Resp()
+
+    monkeypatch.setattr("utils.providers.llamacpp_base.urllib.request.urlopen", fake_urlopen)
+    assert client._is_healthy() is True
+    assert captured["headers"].get("Authorization") == "Bearer sk-local-spark"
+
+
+def test_query_active_model_sends_bearer_auth(two_provider_config, monkeypatch):
+    """/v1/models-Adoption-Probe muss ebenfalls Bearer-Auth senden."""
+    client = LlamaCppSparkClient(two_provider_config)
+    captured: dict[str, object] = {}
+
+    class _Resp:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+        def read(self):  # noqa: ANN201
+            return b'{"data": [{"id": "spark-model"}]}'
+
+    def fake_urlopen(req, timeout=None):  # noqa: ANN001, ANN201
+        captured["headers"] = dict(req.headers)
+        return _Resp()
+
+    monkeypatch.setattr("utils.providers.llamacpp_base.urllib.request.urlopen", fake_urlopen)
+    assert client._query_active_model() == "spark-model"
+    assert captured["headers"].get("Authorization") == "Bearer sk-local-spark"
+
+
+def test_build_server_cmd_server_port_override(two_provider_config):
+    """`server_port` entkoppelt den Bind-Port von der base_url (Proxy-Setup).
+
+    base_url :1235 (Proxy), server_port 1234 → llama-server bindet 1234,
+    nicht den Proxy-Port.
+    """
+    config = two_provider_config
+    config["providers"]["local"]["llamacpp"]["base_url"] = "http://127.0.0.1:2234/v1"
+    config["providers"]["local"]["llamacpp"]["server_port"] = 1234
+    client = LlamaCppLocalClient(config)
+    cmd = client._build_server_cmd("m4-model")
+
+    assert "--port 1234" in cmd
+    assert "--port 2234" not in cmd
+
+
+def test_build_server_cmd_port_defaults_to_base_url(two_provider_config):
+    """Ohne server_port-Override gilt weiter der base_url-Port (Legacy-Verhalten)."""
+    client = LlamaCppLocalClient(two_provider_config)
+    cmd = client._build_server_cmd("m4-model")
+    assert "--port 1235" in cmd
+
+
+# ---------------------------------------------------------------------------
 # Separation-Fix 2026-08-28: Strict Adoption-Matching (_detected_matches_model)
 # ---------------------------------------------------------------------------
 

@@ -98,3 +98,14 @@ werden — sonst 400-Fehler bei allen API-Calls (ThinkingProbe + Benchmark).
 **Verifikations-Datum:** 2026-08-28 (37 Separation-Tests + 96 kombiniert grün; Live-Check echte CSV: Spark-Assets offen, Mac-Assets gecached; Routing `qwen3_5-4b-q8`→llamacpp_spark, `qwen3.5-4b-q8`→llamacpp; Full Suite 1591 passed, 2 Card-Fehler sind Bestand)
 
 ---
+## llama.cpp Spark via Metrics-Proxy: base_url :2234, Bearer-Probes, server_port-Override (2026-08-28)
+
+**Setup:** Der Spark-llama.cpp-Provider läuft seit 2026-08-28 durch den authentifizierenden `metrics_proxy` (Python, GX10 :2234, Bearer aus `LLAMA_PROXY_BEARER_TOKEN`), damit die generierten Tokens des Benchmarks erfasst werden. `base_url` zeigt auf den Proxy; der llama-server selbst bindet weiter :1234.
+
+**Pitfalls (beide hätten die Proxy-Umstellung gebrochen):** (1) `_is_healthy()`/`_query_active_model()` sendeten keinen Authorization-Header — der Proxy verlangt Bearer auf ALLEN Pfaden (401), der Connector hätte einen laufenden Server permanent für down gehalten und endlos Cold-Starts versucht. (2) `_build_server_cmd()` leitet `--port` aus der `base_url` ab — ohne Override hätte der SSH-Start den llama-server auf :2234 starten wollen und mit dem Proxy kollidiert (180s Readiness-Timeout).
+
+**Lösung:** `_auth_headers()` (Bearer aus `api_key`) auf allen Probes — harmlos für direkte llama-server ohne `--api-key`; neuer config-getriebener `server_port`-Override in `_build_server_cmd()` entkoppelt Bind-Port (:1234) von der base_url (:2234). Config: `server_port: 1234` im llamacpp_spark-Block; `server_stop_cmd` (pkill `--port 1234`) unverändert gültig.
+
+**Pflege:** Proxy-Token steht bewusst direkt in provider_config.yaml (lokales Infrastruktur-Token `sk-local-mg2026`, kein Cloud-Secret). Bei Proxy-Port- oder Token-Änderung: `base_url`/`api_key` UND Proxy-Env (`LLAMA_PROXY_BEARER_TOKEN`) synchron halten. Der Token-Capture funktioniert nur, wenn der Benchmark-Traffic durch :2234 fließt — direkte Calls auf :1234 umgehen die Erfassung.
+
+**Verifikations-Datum:** 2026-08-28 (Live: /health 200, Adoption 0,4s, Query 'OK' via Proxy; 41 Separation-Tests grün, Ruff clean)

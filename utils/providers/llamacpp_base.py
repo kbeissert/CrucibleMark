@@ -246,10 +246,20 @@ class LlamaCppBaseClient(BaseProviderClient):
     # Health- und Readiness-Checks
     # ------------------------------------------------------------------
 
+    def _auth_headers(self) -> dict[str, str]:
+        """Bearer-Header für alle Probes (Metrics-Proxy verlangt Auth auf allen Pfaden).
+
+        llama-server ohne --api-key ignoriert den Header harmlos — das Senden
+        ist für beide Provider-Typen (direkt und via Proxy) sicher.
+        """
+        key = self._api_key()
+        return {"Authorization": f"Bearer {key}"} if key else {}
+
     def _is_healthy(self) -> bool:
         """Returns True when the /health endpoint responds with HTTP 200."""
+        req = urllib.request.Request(self._health_url(), headers=self._auth_headers())
         try:
-            with urllib.request.urlopen(self._health_url(), timeout=3) as resp:
+            with urllib.request.urlopen(req, timeout=3) as resp:
                 return resp.status == HTTP_OK
         except (urllib.error.URLError, OSError):
             return False
@@ -317,7 +327,8 @@ class LlamaCppBaseClient(BaseProviderClient):
         """Ask the running server which model it currently serves (via /v1/models)."""
         try:
             models_url = f"{self._server_root_url()}/v1/models"
-            with urllib.request.urlopen(models_url, timeout=3) as resp:
+            req = urllib.request.Request(models_url, headers=self._auth_headers())
+            with urllib.request.urlopen(req, timeout=3) as resp:
                 data = json.loads(resp.read())
                 entries = data.get("data", [])
                 if entries:
@@ -341,7 +352,10 @@ class LlamaCppBaseClient(BaseProviderClient):
         prov_cfg = self._provider_cfg()
         llama_cpp_defaults = self._llama_cpp_defaults()
 
-        port = _extract_port(self._base_url())
+        # Server-Bind-Port: normalerweise aus der base_url abgeleitet. Bei einem
+        # Proxy-Setup (Metrics-Proxy: base_url :2234 → llama-server :1234) entkoppelt
+        # `server_port` den Bind-Port von der base_url (SSoT: provider_config.yaml).
+        port = int(prov_cfg.get("server_port", _extract_port(self._base_url())))
 
         ctx_size = model_cfg.get(
             "context_length",
