@@ -1,6 +1,6 @@
 {
   "model_id": "gemma-4-12b-it-ud-q6_k_xl-spark",
-  "display_name": "Gemma 4 12B Instruct (Unsloth GGUF, Q6_K_XL)",
+  "display_name": "Gemma 4 12B Instruct (Unsloth, Q6_K_XL)",
   "developer": "Google DeepMind (base) / Unsloth (distribution)",
   "origin_country": "US",
   "developer_jurisdiction": "US",
@@ -37,7 +37,6 @@
     "Thinking",
     "Instruct",
     "Multimodal",
-    "Vision-Language",
     "Dense",
     "Open-Weight",
     "Local",

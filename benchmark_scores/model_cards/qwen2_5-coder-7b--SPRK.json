@@ -56,5 +56,12 @@
   "card_status": "complete",
   "size_class": "Desktop",
   "cot_marker_family": null,
-  "cot_tags_detected": null
+  "cot_tags_detected": null,
+  "top_p": null,
+  "top_k": null,
+  "repetition_penalty": null,
+  "frequency_penalty": null,
+  "presence_penalty": null,
+  "seed": null,
+  "stop_sequences": null
 }

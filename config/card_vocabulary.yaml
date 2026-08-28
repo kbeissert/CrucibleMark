@@ -147,6 +147,14 @@ reserved_tags:
     display_role: category
     since: v4.10.11
 
+  - slug: Local
+    label: "Local (lokal gehostet)"
+    description: "Modell läuft auf eigener Hardware (Mac, GX10 Spark, Workstation) statt über einen Cloud-Provider. Redundant mit model_type='open_weights_local', aber als Web-Export-Filter nützlich — Gegenstück zum CLD-Tag der Cloud-angebundenen Modelle."
+    consumers: [web_export_filter]
+    programmatic_effect: "Web-Export-Filter 'Local' (lokal vs. Cloud)."
+    display_role: category
+    since: v5.1.5
+
 # ---------------------------------------------------------------------------
 # 3. Informational Tags (redaktionell, Web-Export-Filter, kein Code-Effekt)
 # ---------------------------------------------------------------------------
@@ -154,6 +162,13 @@ reserved_tags:
 # Auswirkung auf Token-Budget, use_case-Inferenz oder Validator-Warnungen.
 # Alle informational_tags haben display_role=badge (kein dediziertes Feld).
 informational_tags:
+
+  - slug: Edge
+    label: "Edge"
+    description: "Modell ist für den Betrieb auf Edge-Geräten / lokaler Klein-Hardware optimiert (z.B. Gemma-E-Serie für On-Device-Einsatz)."
+    consumers: [web_export_filter]
+    display_role: badge
+    since: v5.1.5
 
   - slug: Long-Context
     label: "Long Context"

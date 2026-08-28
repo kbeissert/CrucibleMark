@@ -1,6 +1,6 @@
 {
   "model_id": "qwen3_6-27b-fable-fusion-711-uncensored--SPRK",
-  "display_name": "Qwen 3.6 27B Fable-Fusion-711 Uncensored Q5_K_M (GGUF)",
+  "display_name": "Qwen 3.6 27B Fable-Fusion-711 Uncensored Q5_K_M",
   "developer": "Community (Fable-Fusion-711) / Alibaba (base model)",
   "origin_country": "CN",
   "developer_jurisdiction": "CN",
@@ -58,5 +58,12 @@
   "quantization_format": "Q5_K_M GGUF",
   "model_variant": "Uncensored Q5_K_M GGUF",
   "card_status": "complete",
-  "size_class": "Workstation"
+  "size_class": "Workstation",
+  "top_p": null,
+  "top_k": null,
+  "repetition_penalty": null,
+  "frequency_penalty": null,
+  "presence_penalty": null,
+  "seed": null,
+  "stop_sequences": null
 }

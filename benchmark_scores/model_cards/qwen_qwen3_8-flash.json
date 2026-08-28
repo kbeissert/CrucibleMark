@@ -51,10 +51,16 @@
     "text"
   ],
   "supports_tool_use": true,
-  "tooluse_tested_at": null,
-  "tooluse_score_p1": null,
-  "tooluse_score_p2": null,
-  "tooluse_runs": null,
+  "tooluse_tested_at": "2026-08-28T09:41:27Z",
+  "tooluse_score_p1": 90.0,
+  "tooluse_score_p2": 62.5,
+  "tooluse_runs": {
+    "qwen/qwen3.8-flash": {
+      "tested_at": "2026-08-28T09:41:27Z",
+      "score_p1": 90.0,
+      "score_p2": 62.5
+    }
+  },
   "tooluse_recommendation": null,
   "dual_profile": null,
   "temperature": null,
@@ -71,7 +77,7 @@
   "license": "qwen-community-1.0 (Basis-Gewichte Qwen3.8-Flash-Next); getesteter Service-Build via Qwen Cloud/OpenRouter",
   "license_url": "https://huggingface.co/Qwen/Qwen3.8-Flash-Next/blob/main/LICENSE",
   "commercial_use_allowed": true,
-  "weights_license_tier": "proprietary",
+  "weights_license_tier": "open-weights",
   "model_version": "3.8-Flash",
   "input_price_per_1m": 0.16,
   "output_price_per_1m": 0.47,
@@ -94,5 +100,5 @@
   "last_modified_at": null,
   "heritage_ids": [],
   "community": null,
-  "weights_provenance_rationale": "Alibaba hat seinen Sitz in China; Entwicklung, Betrieb und Datenhaltung unterliegen chinesischer Jurisdiktion. Für Qwen3.8-Flash sind keine offenen Gewichte verfügbar, der Zugang erfolgt über Alibaba Cloud bzw. Aggregatoren wie OpenRouter. Dadurch bleiben Cloud-Inferenz und Datensouveränität der zentrale Risikofaktor, auch wenn der Preis und die Leistung sehr attraktiv sind.[web:728][web:732][web:741]"
+  "weights_provenance_rationale": "Basis-Gewichte sind unter qwen-community-1.0 offen verfuegbar (Qwen/Qwen3.8-Flash-Next, offizielle NVFP4/GGUF/FP8-Quants), lokales Deployment ist moeglich. Alibaba hat seinen Sitz in China; Entwicklung, Betrieb und Datenhaltung unterliegen chinesischer Jurisdiktion. Der getestete Zugang erfolgt ueber Alibaba Cloud bzw. OpenRouter — Datensouveraenitaet bleibt der zentrale Risikofaktor, auch wenn Preis und Leistung sehr attraktiv sind."
 }

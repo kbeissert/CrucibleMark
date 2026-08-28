@@ -57,5 +57,12 @@
   "quantization_format": "Q5_K_M GGUF",
   "model_variant": "ARA-Abliterated Q5",
   "card_status": "complete",
-  "size_class": "Workstation"
+  "size_class": "Workstation",
+  "top_p": null,
+  "top_k": null,
+  "repetition_penalty": null,
+  "frequency_penalty": null,
+  "presence_penalty": null,
+  "seed": null,
+  "stop_sequences": null
 }

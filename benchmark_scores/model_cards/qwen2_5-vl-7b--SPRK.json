@@ -1,6 +1,6 @@
 {
   "model_id": "qwen2_5-vl-7b--SPRK",
-  "display_name": "Qwen 2.5 Vision 7B Q4_K_M (GGUF)",
+  "display_name": "Qwen 2.5 Vision 7B Q4_K_M",
   "developer": "Alibaba / Qwen Team",
   "origin_country": "CN",
   "developer_jurisdiction": "CN",
@@ -35,7 +35,6 @@
     "General",
     "Instruct",
     "Multimodal",
-    "Vision-Language",
     "Dense",
     "Open-Weight",
     "Local",
@@ -59,5 +58,12 @@
   "quantization_format": "Q4_K_M GGUF",
   "model_variant": "Q4_K_M GGUF",
   "card_status": "complete",
-  "size_class": "Workstation"
+  "size_class": "Workstation",
+  "top_p": null,
+  "top_k": null,
+  "repetition_penalty": null,
+  "frequency_penalty": null,
+  "presence_penalty": null,
+  "seed": null,
+  "stop_sequences": null
 }

@@ -40,8 +40,7 @@
     "Multimodal",
     "Edge",
     "Open-Weight",
-    "Local",
-    "Audio"
+    "Local"
   ],
   "input_modalities": [
     "text",
@@ -60,5 +59,12 @@
   "quantization_format": "GGUF",
   "model_variant": "E4B",
   "card_status": "complete",
-  "size_class": "Edge"
+  "size_class": "Edge",
+  "top_p": null,
+  "top_k": null,
+  "repetition_penalty": null,
+  "frequency_penalty": null,
+  "presence_penalty": null,
+  "seed": null,
+  "stop_sequences": null
 }

@@ -65,5 +65,12 @@
     "</think>",
     "<tool_call>",
     "</tool_call>"
-  ]
+  ],
+  "top_p": null,
+  "top_k": null,
+  "repetition_penalty": null,
+  "frequency_penalty": null,
+  "presence_penalty": null,
+  "seed": null,
+  "stop_sequences": null
 }
