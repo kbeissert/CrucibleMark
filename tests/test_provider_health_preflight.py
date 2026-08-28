@@ -60,31 +60,37 @@ def ollama_installed_list() -> MagicMock:
 
 class TestGetInstalledOllamaModels:
     def test_returns_set_with_installed_names(self, ollama_installed_list: MagicMock) -> None:
-        with patch("shutil.which", return_value="/usr/local/bin/ollama"):
-            with patch("subprocess.run", ollama_installed_list):
-                from utils.provider_health import get_installed_ollama_models
-                result = get_installed_ollama_models()
+        with (
+            patch("shutil.which", return_value="/usr/local/bin/ollama"),
+            patch("subprocess.run", ollama_installed_list),
+        ):
+            from utils.provider_health import get_installed_ollama_models
+            result = get_installed_ollama_models()
         assert "gemma3:12b" in result
         assert "qwen3:32b" in result
         assert "ministral-3:14b" in result
         assert len(result) == 3
 
     def test_caches_result(self, ollama_installed_list: MagicMock) -> None:
-        with patch("shutil.which", return_value="/usr/local/bin/ollama"):
-            with patch("subprocess.run", ollama_installed_list) as m:
-                from utils.provider_health import get_installed_ollama_models
-                get_installed_ollama_models()
-                get_installed_ollama_models()
-                get_installed_ollama_models()
+        with (
+            patch("shutil.which", return_value="/usr/local/bin/ollama"),
+            patch("subprocess.run", ollama_installed_list) as m,
+        ):
+            from utils.provider_health import get_installed_ollama_models
+            get_installed_ollama_models()
+            get_installed_ollama_models()
+            get_installed_ollama_models()
         # subprocess.run wird nur EINMAL aufgerufen (danach Cache)
         assert m.call_count == 1
 
     def test_force_refresh_reruns(self, ollama_installed_list: MagicMock) -> None:
-        with patch("shutil.which", return_value="/usr/local/bin/ollama"):
-            with patch("subprocess.run", ollama_installed_list) as m:
-                from utils.provider_health import get_installed_ollama_models
-                get_installed_ollama_models()
-                get_installed_ollama_models(force_refresh=True)
+        with (
+            patch("shutil.which", return_value="/usr/local/bin/ollama"),
+            patch("subprocess.run", ollama_installed_list) as m,
+        ):
+            from utils.provider_health import get_installed_ollama_models
+            get_installed_ollama_models()
+            get_installed_ollama_models(force_refresh=True)
         assert m.call_count == 2
 
     def test_missing_binary_returns_empty(self) -> None:
@@ -94,10 +100,12 @@ class TestGetInstalledOllamaModels:
         assert result == set()
 
     def test_timeout_returns_empty(self) -> None:
-        with patch("shutil.which", return_value="/usr/local/bin/ollama"):
-            with patch("subprocess.run", side_effect=subprocess.TimeoutExpired(cmd="ollama", timeout=5)):
-                from utils.provider_health import get_installed_ollama_models
-                result = get_installed_ollama_models()
+        with (
+            patch("shutil.which", return_value="/usr/local/bin/ollama"),
+            patch("subprocess.run", side_effect=subprocess.TimeoutExpired(cmd="ollama", timeout=5)),
+        ):
+            from utils.provider_health import get_installed_ollama_models
+            result = get_installed_ollama_models()
         assert result == set()
 
 
@@ -107,23 +115,29 @@ class TestGetInstalledOllamaModels:
 
 class TestIsOllamaModelInstalled:
     def test_installed_model(self, ollama_installed_list: MagicMock) -> None:
-        with patch("shutil.which", return_value="/usr/local/bin/ollama"):
-            with patch("subprocess.run", ollama_installed_list):
-                from utils.provider_health import is_ollama_model_installed
-                assert is_ollama_model_installed("gemma3:12b") is True
+        with (
+            patch("shutil.which", return_value="/usr/local/bin/ollama"),
+            patch("subprocess.run", ollama_installed_list),
+        ):
+            from utils.provider_health import is_ollama_model_installed
+            assert is_ollama_model_installed("gemma3:12b") is True
 
     def test_not_installed_model(self, ollama_installed_list: MagicMock) -> None:
-        with patch("shutil.which", return_value="/usr/local/bin/ollama"):
-            with patch("subprocess.run", ollama_installed_list):
-                from utils.provider_health import is_ollama_model_installed
-                assert is_ollama_model_installed("qwen2.5vl:7b") is False
+        with (
+            patch("shutil.which", return_value="/usr/local/bin/ollama"),
+            patch("subprocess.run", ollama_installed_list),
+        ):
+            from utils.provider_health import is_ollama_model_installed
+            assert is_ollama_model_installed("qwen2.5vl:7b") is False
 
     def test_strips_ollama_prefix(self, ollama_installed_list: MagicMock) -> None:
-        with patch("shutil.which", return_value="/usr/local/bin/ollama"):
-            with patch("subprocess.run", ollama_installed_list):
-                from utils.provider_health import is_ollama_model_installed
-                # 'ollama/gemma3:12b' muss als 'gemma3:12b' erkannt werden
-                assert is_ollama_model_installed("ollama/gemma3:12b") is True
+        with (
+            patch("shutil.which", return_value="/usr/local/bin/ollama"),
+            patch("subprocess.run", ollama_installed_list),
+        ):
+            from utils.provider_health import is_ollama_model_installed
+            # 'ollama/gemma3:12b' muss als 'gemma3:12b' erkannt werden
+            assert is_ollama_model_installed("ollama/gemma3:12b") is True
 
     def test_empty_string_returns_false(self) -> None:
         from utils.provider_health import is_ollama_model_installed
@@ -176,20 +190,24 @@ class TestIsApiProviderAvailable:
 
 class TestValidateUntestedCard:
     def test_valid_ollama_card_installed(self, ollama_installed_list: MagicMock) -> None:
-        with patch("shutil.which", return_value="/usr/local/bin/ollama"):
-            with patch("subprocess.run", ollama_installed_list):
-                from utils.provider_health import validate_untested_card
-                card = {"model_id": "gemma3:12b", "provider": "ollama"}
-                ok, reason = validate_untested_card(card)
+        with (
+            patch("shutil.which", return_value="/usr/local/bin/ollama"),
+            patch("subprocess.run", ollama_installed_list),
+        ):
+            from utils.provider_health import validate_untested_card
+            card = {"model_id": "gemma3:12b", "provider": "ollama"}
+            ok, reason = validate_untested_card(card)
         assert ok is True
         assert reason is None
 
     def test_ollama_card_not_installed(self, ollama_installed_list: MagicMock) -> None:
-        with patch("shutil.which", return_value="/usr/local/bin/ollama"):
-            with patch("subprocess.run", ollama_installed_list):
-                from utils.provider_health import validate_untested_card
-                card = {"model_id": "qwen2.5vl:7b", "provider": "ollama"}
-                ok, reason = validate_untested_card(card)
+        with (
+            patch("shutil.which", return_value="/usr/local/bin/ollama"),
+            patch("subprocess.run", ollama_installed_list),
+        ):
+            from utils.provider_health import validate_untested_card
+            card = {"model_id": "qwen2.5vl:7b", "provider": "ollama"}
+            ok, reason = validate_untested_card(card)
         assert ok is False
         assert reason and "ollama_model_not_installed" in reason
 
@@ -257,20 +275,22 @@ class TestValidateUntestedCard:
 
 class TestFilterTestableCards:
     def test_splits_testable_and_unreachable(self, ollama_installed_list: MagicMock) -> None:
-        with patch("shutil.which", return_value="/usr/local/bin/ollama"):
-            with patch("subprocess.run", ollama_installed_list):
-                from utils.provider_health import filter_testable_cards
-                cards = [
-                    ("gemma3:12b", "Gemma 3 12B"),
-                    ("qwen2.5vl:7b", "Qwen 2.5 VL 7B"),
-                    ("nonexistent:7b", "Nonexistent 7B"),
-                ]
-                card_lookup = {
-                    "gemma3:12b": {"model_id": "gemma3:12b", "provider": "ollama"},
-                    "qwen2.5vl:7b": {"model_id": "qwen2.5vl:7b", "provider": "ollama"},
-                    "nonexistent:7b": {"model_id": "nonexistent:7b", "provider": "ollama"},
-                }
-                testable, unreachable = filter_testable_cards(cards, card_lookup)
+        with (
+            patch("shutil.which", return_value="/usr/local/bin/ollama"),
+            patch("subprocess.run", ollama_installed_list),
+        ):
+            from utils.provider_health import filter_testable_cards
+            cards = [
+                ("gemma3:12b", "Gemma 3 12B"),
+                ("qwen2.5vl:7b", "Qwen 2.5 VL 7B"),
+                ("nonexistent:7b", "Nonexistent 7B"),
+            ]
+            card_lookup = {
+                "gemma3:12b": {"model_id": "gemma3:12b", "provider": "ollama"},
+                "qwen2.5vl:7b": {"model_id": "qwen2.5vl:7b", "provider": "ollama"},
+                "nonexistent:7b": {"model_id": "nonexistent:7b", "provider": "ollama"},
+            }
+            testable, unreachable = filter_testable_cards(cards, card_lookup)
         assert len(testable) == 1
         assert testable[0][0] == "gemma3:12b"
         assert len(unreachable) == 2
@@ -285,14 +305,16 @@ class TestFilterTestableCards:
         assert unreachable == []
 
     def test_unreachable_with_reason(self, ollama_installed_list: MagicMock) -> None:
-        with patch("shutil.which", return_value="/usr/local/bin/ollama"):
-            with patch("subprocess.run", ollama_installed_list):
-                from utils.provider_health import filter_testable_cards
-                cards = [("qwen2.5vl:7b", "Qwen VL")]
-                card_lookup = {
-                    "qwen2.5vl:7b": {"model_id": "qwen2.5vl:7b", "provider": "ollama"},
-                }
-                _, unreachable = filter_testable_cards(cards, card_lookup)
+        with (
+            patch("shutil.which", return_value="/usr/local/bin/ollama"),
+            patch("subprocess.run", ollama_installed_list),
+        ):
+            from utils.provider_health import filter_testable_cards
+            cards = [("qwen2.5vl:7b", "Qwen VL")]
+            card_lookup = {
+                "qwen2.5vl:7b": {"model_id": "qwen2.5vl:7b", "provider": "ollama"},
+            }
+            _, unreachable = filter_testable_cards(cards, card_lookup)
         assert len(unreachable) == 1
         mid, name, reason = unreachable[0]
         assert mid == "qwen2.5vl:7b"

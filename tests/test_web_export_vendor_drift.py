@@ -13,7 +13,6 @@ aktiv ist, muss sie den Drift erkennen.
 
 from __future__ import annotations
 
-import logging
 import sys
 from pathlib import Path
 

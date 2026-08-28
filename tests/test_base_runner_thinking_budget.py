@@ -27,7 +27,7 @@ Disk-IO wird über ``monkeypatch`` vermieden, indem ``_find_card`` und
 import json
 import logging
 import sys
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, UTC
 from pathlib import Path
 
 import pytest
@@ -223,7 +223,7 @@ def test_override_value_true_5x(stub_card_loader):
 
 def test_override_expired_falls_back_to_trigger(stub_card_loader):
     """Override active_until in der Vergangenheit → inaktiv, Trigger-Liste greift."""
-    past = (datetime.now(timezone.utc) - timedelta(days=1)).isoformat()
+    past = (datetime.now(UTC) - timedelta(days=1)).isoformat()
     stub_card_loader["provider_card"] = _vendor_card_dict({
         "value": False,
         "reason": "Saisonale CoT-Suppression",

@@ -102,7 +102,8 @@ def test_pipeline_integration_disabled(mock_local_runner, mock_dependencies):
 
     # Assert judge keys exist but are None
     assert "llm_judge_score" in result
-    print("\nRESULT:", result); assert result["llm_judge_score"] is None
+    print("\nRESULT:", result)
+    assert result["llm_judge_score"] is None
     # Ensure unload was NOT called
     mock_dependencies["req"].assert_not_called()
 
@@ -121,7 +122,8 @@ def test_pipeline_integration_not_applicable(mock_local_runner, mock_dependencie
     )
 
     # Assert judge keys exist but are None
-    print("\nRESULT:", result); assert result["llm_judge_score"] is None
+    print("\nRESULT:", result)
+    assert result["llm_judge_score"] is None
     mock_dependencies["req"].assert_not_called()
 
 

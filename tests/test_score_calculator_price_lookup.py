@@ -30,7 +30,6 @@ def _lookup_for_card(card: dict) -> dict[str, float]:
     """
     from unittest.mock import patch
 
-    fake_path = Path("/fake/card.json")
     with patch.object(score_calculator.ROOT_DIR, "__truediv__") as _:
         # Direct approach: monkey-patch the function's card_dir access.
         # Instead, we build a tiny temp dir on disk and let the real code run.
@@ -46,8 +45,6 @@ def _lookup_for_card(card: dict) -> dict[str, float]:
             # Patch the `__truediv__` chain by giving a real path that contains
             # the temp dir under the expected layout.
             fake_root.__truediv__ = lambda *parts: Path(td) / Path(*parts) if parts and parts[0] == "benchmark_scores" else Path(td) / "__".join(parts)
-            # Simpler: just re-implement the relevant slice.
-            lookup = score_calculator._build_price_lookup.__wrapped__ if hasattr(score_calculator._build_price_lookup, "__wrapped__") else score_calculator._build_price_lookup
         return _build_lookup_from_dir(card_dir)
 
 
@@ -57,7 +54,6 @@ def _build_lookup_from_dir(card_dir: Path) -> dict[str, float]:
     Used by tests to avoid filesystem monkey-patching.
     """
     LOCAL_DEPLOYMENT_TYPES = frozenset({"localweights", "local-weights"})
-    import yaml
     lookup: dict[str, float] = {}
     for card_path in card_dir.glob("*.json"):
         try:
@@ -246,7 +242,7 @@ def test_real_cloud_model_price_unchanged():
 # =============================================================================
 
 
-import tempfile
+import tempfile  # noqa: E402
 
 
 def _write_card(

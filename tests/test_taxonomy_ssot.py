@@ -375,7 +375,7 @@ class TestNoPlaceholderStrings:
                     )
 
         assert not violations, (
-            f"Verbotene Placeholder gefunden:\n  " + "\n  ".join(violations)
+            "Verbotene Placeholder gefunden:\n  " + "\n  ".join(violations)
             + "\n\nVerwende stattdessen die echten Taxonomie-Werte aus config/classification_taxonomy.json."
         )
 

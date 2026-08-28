@@ -13,8 +13,8 @@ import sys
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from scripts.web_export import _build_characteristics
-from utils.card_utils import get_tag_display_roles
+from scripts.web_export import _build_characteristics  # noqa: E402
+from utils.card_utils import get_tag_display_roles  # noqa: E402
 
 
 _CATEGORY_TAGS = {

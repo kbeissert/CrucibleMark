@@ -2,14 +2,14 @@ import sys
 from pathlib import Path
 import json
 import csv
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 # Add root directory to sys.path so we can import from scripts
 ROOT_DIR = Path(__file__).parent.parent
 sys.path.append(str(ROOT_DIR))
 
-from scripts.core.verify_compass_anomalies import run_verification
-from schemas.result import BenchmarkResult
+from scripts.core.verify_compass_anomalies import run_verification  # noqa: E402
+from schemas.result import BenchmarkResult  # noqa: E402
 
 def test_verify_compass_persistence(tmp_path):
     """

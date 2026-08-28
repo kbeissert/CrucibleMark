@@ -9,8 +9,6 @@ Abgedeckte Szenarien:
 from __future__ import annotations
 
 import json
-import pytest
-from pathlib import Path
 
 
 # ---------------------------------------------------------------------------
@@ -183,7 +181,7 @@ def test_heritage_slug_without_safe_name_strips_org_prefix():
 
 def test_heritage_ids_in_export_dict_empty_list(tmp_path):
     """heritage_ids im model_card-Export-Dict ist [] wenn Feld nicht gesetzt."""
-    from scripts.web_export import _build_leaderboard_entry, _normalize_export_tags
+    from scripts.web_export import _build_leaderboard_entry
     import pandas as pd
 
     card = {

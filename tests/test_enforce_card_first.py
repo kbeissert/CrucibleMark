@@ -8,7 +8,6 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from utils.model_utils import (  # noqa: E402
-    CARD_DIR,
     enforce_card_first,
     resolve_canonical_model_id,
 )

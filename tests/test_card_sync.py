@@ -169,7 +169,6 @@ class TestPlanSync:
         card_path.write_text(json.dumps(card), encoding="utf-8")
 
         plan = plan_sync(card_path, "vendor")
-        keeps = [a for a in plan.actions if a.kind == "keep"]
         # provider_id ist nicht in der Karte → add, nicht delete-keep
         # some_drift ist in Karte, nicht in Template → delete
         deletes = [a for a in plan.actions if a.kind == "delete"]

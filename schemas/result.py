@@ -5,7 +5,7 @@ Defines the strictly typed Data Transfer Object (DTO) for all benchmark results.
 Ensures consistency between Modules, Runners, and the Leaderboard.
 """
 
-from typing import Dict, Any, Optional
+from typing import Any
 from pydantic import BaseModel, Field, field_validator, ConfigDict
 
 
@@ -36,7 +36,7 @@ class BenchmarkResult(BaseModel):
     )
 
     # --- Scoring ---
-    primary_score: Optional[float] = Field(
+    primary_score: float | None = Field(
         default=None,
         description="The main numerical score (0.0-100.0) for ranking. 'None' implies purely informational or pending scoring.",
     )
@@ -62,30 +62,30 @@ class BenchmarkResult(BaseModel):
     input_tokens: int = Field(default=0, description="Real prompt tokens from provider usage (0 if not reported)")
     output_tokens: int = Field(default=0, description="Real completion tokens from provider usage, includes reasoning/thinking tokens (0 if not reported)")
     tokens_per_second: float = Field(default=0.0, description="Output speed in t/s based on real output tokens (incl. thinking); wall-time based, includes prefill. Falls back to module estimate when the provider reports no usage.")
-    tps_eval: Optional[float] = Field(default=None, description="Native generation speed: eval_count / eval_duration from Ollama (excludes prefill). None if not available (e.g. cloud proxy).")
+    tps_eval: float | None = Field(default=None, description="Native generation speed: eval_count / eval_duration from Ollama (excludes prefill). None if not available (e.g. cloud proxy).")
     cost_usd: float = Field(default=0.0, description="Estimated cost in USD")
-    finish_reason: Optional[str] = Field(default=None, description="The reason the model stopped generating (e.g. length/max_tokens)")
-    reasoning_tokens: Optional[int] = Field(default=None, description="Reasoning/thinking tokens used internally by the model (not returned in content). Counted against max_tokens budget on OpenRouter.")
+    finish_reason: str | None = Field(default=None, description="The reason the model stopped generating (e.g. length/max_tokens)")
+    reasoning_tokens: int | None = Field(default=None, description="Reasoning/thinking tokens used internally by the model (not returned in content). Counted against max_tokens budget on OpenRouter.")
     token_limit_cutoff: bool = Field(default=False, description="Flag indicating if the response was cut off due to max_token limits")
     token_limit_fallback: bool = Field(default=False, description="Flag indicating if the system dynamically lowered the requested max_tokens to accommodate model constraints (e.g. 8192 -> 4096)")
-    token_limit_used: Optional[int] = Field(default=None, description="The actual max_tokens value used for the successful generation (metadata/Kopfnote)")
+    token_limit_used: int | None = Field(default=None, description="The actual max_tokens value used for the successful generation (metadata/Kopfnote)")
     raw_response: str = Field(default="", description="The raw string output from the model")
     evaluated_prompt: str = Field(
         default="",
         description="The actual prompt that was sent to the model after evaluation/variable substitution",
     )
 
-    run_id: Optional[str] = Field(
+    run_id: str | None = Field(
         default=None,
         description="Unique identifier linking all tasks of a single model benchmark run",
     )
 
     # --- Judge Sub-Scores ---
-    judge_task_compliance: Optional[float] = Field(default=None, description="Task Compliance sub-score from LLM Judge (0-5)")
-    judge_output_quality: Optional[float] = Field(default=None, description="Output Quality sub-score from LLM Judge (0-5)")
-    judge_standard_adherence: Optional[float] = Field(default=None, description="Standard Adherence sub-score from LLM Judge (0-5)")
-    thought_tag_compliance: Optional[float] = Field(default=None, description="Score for compliance with thinking tag constraints")
-    think_content: Optional[str] = Field(default=None, description="Internal reasoning content from ThinkChunks (e.g. Magistral Small). Not scored; surfaced in audit log only.")
+    judge_task_compliance: float | None = Field(default=None, description="Task Compliance sub-score from LLM Judge (0-5)")
+    judge_output_quality: float | None = Field(default=None, description="Output Quality sub-score from LLM Judge (0-5)")
+    judge_standard_adherence: float | None = Field(default=None, description="Standard Adherence sub-score from LLM Judge (0-5)")
+    thought_tag_compliance: float | None = Field(default=None, description="Score for compliance with thinking tag constraints")
+    think_content: str | None = Field(default=None, description="Internal reasoning content from ThinkChunks (e.g. Magistral Small). Not scored; surfaced in audit log only.")
 
     # --- Identification ---
     model_version: str = Field(
@@ -93,12 +93,12 @@ class BenchmarkResult(BaseModel):
     )
 
     # --- Details ---
-    data: Dict[str, Any] = Field(
+    data: dict[str, Any] = Field(
         default_factory=dict,
         description="Module-specific detailed metrics, sub-scores, and artifacts.",
     )
 
-    meta: Dict[str, Any] = Field(
+    meta: dict[str, Any] = Field(
         default_factory=dict, description="Contextual metadata (timestamp, flags)."
     )
 
@@ -113,7 +113,7 @@ class BenchmarkResult(BaseModel):
 
     @field_validator("data")
     @classmethod
-    def validate_nested_depth(cls, v: Dict[str, Any]) -> Dict[str, Any]:
+    def validate_nested_depth(cls, v: dict[str, Any]) -> dict[str, Any]:
         """
         Performance Guard: Prevents excessively deep nesting in the metrics object,
         which could cause issues with serialization or the Leaderboard parser.

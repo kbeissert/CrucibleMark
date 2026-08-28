@@ -18,7 +18,7 @@ import pytest
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from scripts.web_export import (
+from scripts.web_export import (  # noqa: E402
     _PLACEHOLDER_VENDOR_IDS,
     _collect_community_cards,
     _collect_vendor_cards,
@@ -79,7 +79,7 @@ def root_dir(tmp_path: Path) -> Path:
 class TestPlaceholderFilter:
     def test_placeholder_vendor_ids_constant(self):
         """SSoT: nur 'todo' und 'unknown' sind Platzhalter-IDs."""
-        assert _PLACEHOLDER_VENDOR_IDS == frozenset({"todo", "unknown"})
+        assert frozenset({"todo", "unknown"}) == _PLACEHOLDER_VENDOR_IDS
 
     def test_unknown_true_filtered(self, root_dir):
         """Karten mit unknown=true werden in JEDEM Filter-Modus uebersprungen."""

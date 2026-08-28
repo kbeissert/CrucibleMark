@@ -12,7 +12,6 @@ Pruefungen:
      Wird ueber statischen AST-Sweep erzwungen.
 """
 import ast
-import json
 import sys
 from pathlib import Path
 

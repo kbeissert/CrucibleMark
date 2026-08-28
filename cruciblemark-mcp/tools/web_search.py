@@ -3,7 +3,7 @@
 import json
 import logging
 import os
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 from urllib import request as urllib_request
 from urllib.parse import urlencode
 
@@ -16,7 +16,7 @@ _TITLE_MAX_CHARS = 80
 
 
 def _now() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 def _format_results(query: str, results: list[dict]) -> str:

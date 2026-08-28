@@ -3,7 +3,7 @@
 import json
 import logging
 import re
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 from urllib import error as urllib_error
 from urllib import request as urllib_request
 from urllib.parse import urlparse
@@ -60,7 +60,7 @@ def _extract_text(html: str, max_chars: int) -> str:
 
 
 def _now() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 class HttpFetchTool:

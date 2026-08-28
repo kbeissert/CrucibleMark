@@ -10,8 +10,7 @@ vollstaendig ist.
 
 from __future__ import annotations
 
-import json
-import shutil
+import contextlib
 import sys
 from pathlib import Path
 
@@ -22,7 +21,6 @@ sys.path.insert(0, str(ROOT))
 try:
     from scripts.maintenance.clean_results import (
         _extract_model_from_dispatch_summary,
-        CLEAN_CSV_FILES,
         LEADERBOARD_CSVS,
     )
 except ImportError as e:
@@ -120,10 +118,8 @@ class TestEndToEndCleanupDryRun:
         ns.prune_orphans = False
         ns.force = False
 
-        try:
+        with contextlib.suppress(SystemExit):
             main_with_args(ns)
-        except SystemExit:
-            pass
 
         out = capsys.readouterr().out
         # Sub-Family-LBs (gemma/qwen) wurden in v4.10.15 entfernt — verwaistes

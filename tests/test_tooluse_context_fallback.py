@@ -7,7 +7,6 @@ im score_contributions-Dict. Der Fallback muss diese Spalten korrekt lesen.
 from __future__ import annotations
 
 import csv
-import textwrap
 from pathlib import Path
 
 import pytest

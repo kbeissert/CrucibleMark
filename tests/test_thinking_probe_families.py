@@ -13,7 +13,6 @@ scripts/tools/discover_thinking_tags.py.
 
 from __future__ import annotations
 
-import json
 import logging
 import sys
 from pathlib import Path

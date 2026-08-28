@@ -26,7 +26,7 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts" / "analysis"))
 
 # generate_review als Modul laden
-import importlib.util
+import importlib.util  # noqa: E402
 spec = importlib.util.spec_from_file_location(
     "gr_under_test",
     ROOT / "scripts" / "analysis" / "generate_review.py",

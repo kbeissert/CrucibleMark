@@ -1,5 +1,4 @@
 """Test for _BLACKLIST_PATH ROOT_DIR resolution (Phase 3)."""
-from pathlib import Path
 from scripts.web_export import _BLACKLIST_PATH, _ROOT_DIR
 
 

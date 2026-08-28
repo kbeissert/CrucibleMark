@@ -1,11 +1,11 @@
 """Mock fixture provider — returns deterministic responses for CI/dev without network access."""
 
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 
 
 def _now() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 def new_request_id() -> str:

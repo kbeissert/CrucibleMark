@@ -65,7 +65,7 @@ def test_taxonomy_thresholds_match_param_ranges():
     sc = _load_size_class_taxonomy()
     non_fallback_tiers = sc["tier_order"][:-1]  # alles ausser Frontier
     assert len(sc["thresholds_b"]) == len(non_fallback_tiers)
-    for threshold, tier in zip(sc["thresholds_b"], non_fallback_tiers):
+    for threshold, tier in zip(sc["thresholds_b"], non_fallback_tiers, strict=False):
         assert threshold == sc["values"][tier]["max_params_b"], (
             f"thresholds_b-Eintrag {threshold} passt nicht zu {tier}.max_params_b="
             f"{sc['values'][tier]['max_params_b']}"
@@ -167,7 +167,7 @@ def test_card_vocabulary_size_class_uses_taxonomy():
 
 def test_card_vocabulary_size_class_marker_uses_taxonomy():
     """Wenn values_from gesetzt ist, MUSS der Loader daraus ableiten."""
-    raw = yaml_text = (ROOT / "config" / "card_vocabulary.yaml").read_text(encoding="utf-8")
+    raw = (ROOT / "config" / "card_vocabulary.yaml").read_text(encoding="utf-8")
     assert "values_from" in raw, "card_vocabulary.yaml enthaelt keinen values_from-Hinweis"
     assert "tier_order" in raw, "card_vocabulary.yaml verweist nicht auf tier_order"
 

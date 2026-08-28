@@ -26,7 +26,7 @@ def test_provenance_risk_proprietary_usa_low_triggers_error() -> None:
         "weights_provenance_risk": "low",
     }
     issues = check_card(Path("test.json"), data)
-    
+
     # Muss Fehler enthalten
     assert any("[PROVENANCE RISK]" in issue for issue in issues), \
         f"Erwartet [PROVENANCE RISK] Fehler, bekommen: {issues}"
@@ -47,7 +47,7 @@ def test_provenance_risk_proprietary_china_low_triggers_error() -> None:
         "weights_provenance_risk": "low",
     }
     issues = check_card(Path("test.json"), data)
-    
+
     assert any("[PROVENANCE RISK]" in issue for issue in issues)
     assert any("China" in issue for issue in issues)
 
@@ -66,7 +66,7 @@ def test_provenance_risk_proprietary_usa_medium_ok() -> None:
         "weights_provenance_risk": "medium",
     }
     issues = check_card(Path("test.json"), data)
-    
+
     # Keine PROVENANCE RISK Fehler
     assert not any("[PROVENANCE RISK]" in issue for issue in issues), \
         f"Keine Provenance-Fehler erwartet, bekommen: {issues}"
@@ -86,7 +86,7 @@ def test_provenance_risk_proprietary_usa_high_ok() -> None:
         "weights_provenance_risk": "high",
     }
     issues = check_card(Path("test.json"), data)
-    
+
     assert not any("[PROVENANCE RISK]" in issue for issue in issues)
 
 
@@ -104,7 +104,7 @@ def test_provenance_risk_proprietary_eu_low_ok() -> None:
         "weights_provenance_risk": "low",
     }
     issues = check_card(Path("test.json"), data)
-    
+
     assert not any("[PROVENANCE RISK]" in issue for issue in issues)
 
 
@@ -123,7 +123,7 @@ def test_provenance_risk_open_weights_cloud_only_usa_low_triggers_error() -> Non
         "weights_provenance_risk": "low",
     }
     issues = check_card(Path("test.json"), data)
-    
+
     assert any("[PROVENANCE RISK]" in issue for issue in issues)
     assert any("cloud-only" in issue for issue in issues)
 
@@ -143,7 +143,7 @@ def test_provenance_risk_open_weights_local_usa_low_ok() -> None:
         "weights_provenance_risk": "low",
     }
     issues = check_card(Path("test.json"), data)
-    
+
     # Keine PROVENANCE RISK Fehler (local-runnable → kein CLOUD Act-Zugriff)
     assert not any("[PROVENANCE RISK]" in issue for issue in issues)
 
@@ -161,6 +161,6 @@ def test_provenance_risk_missing_fields_no_crash() -> None:
         # origin_country, weights_provenance_risk fehlen
     }
     issues = check_card(Path("test.json"), data)
-    
+
     # Keine PROVENANCE RISK Fehler bei fehlenden Feldern
     assert not any("[PROVENANCE RISK]" in issue for issue in issues)

@@ -8,11 +8,8 @@ zu liefern).
 from __future__ import annotations
 
 import logging
-import sys
 from pathlib import Path
 
-import pandas as pd
-import pytest
 
 
 def _load_module():
@@ -27,21 +24,23 @@ class TestLoadModelCardLogging:
         """Wenn load_model_card() None liefert, soll ein WARNING erscheinen."""
         _load_module()
 
-        with caplog.at_level(logging.WARNING, logger="root"):
-            # Dummy-Aufruf: card ist None, raw_model_id + model_name gesetzt
-            with caplog.at_level(logging.WARNING):
-                _card = None  # would have been loaded, but no card file
-                # Hier den direkten Pfad: wir rufen die Logik nach
-                # if card is None and (raw_model_id or model_name): direkt auf.
-                # Da der Code in main() liegt, testen wir minimal-invasiv, indem
-                # wir prüfen, dass die WARNING-Logik überhaupt feuert.
-                if _card is None and ("test-model-id" or "Test Model"):
-                    logging.getLogger().warning(
-                        "  ⚠️  [1/1] Test Model (raw_model_id=test-model-id): "
-                        "keine Model Card gefunden. Web-Export liefert model_card=null. "
-                        "Bitte Card manuell anlegen oder scripts/maintenance/"
-                        "create_model_card.py ausfuehren."
-                    )
+        # Dummy-Aufruf: card ist None, raw_model_id + model_name gesetzt
+        with (
+            caplog.at_level(logging.WARNING, logger="root"),
+            caplog.at_level(logging.WARNING),
+        ):
+            _card = None  # would have been loaded, but no card file
+            # Hier den direkten Pfad: wir rufen die Logik nach
+            # if card is None and (raw_model_id or model_name): direkt auf.
+            # Da der Code in main() liegt, testen wir minimal-invasiv, indem
+            # wir prüfen, dass die WARNING-Logik überhaupt feuert.
+            if _card is None:
+                logging.getLogger().warning(
+                    "  ⚠️  [1/1] Test Model (raw_model_id=test-model-id): "
+                    "keine Model Card gefunden. Web-Export liefert model_card=null. "
+                    "Bitte Card manuell anlegen oder scripts/maintenance/"
+                    "create_model_card.py ausfuehren."
+                )
 
         # Suche nach dem WEBEXP-010-typischen WARNING-Text
         assert any(

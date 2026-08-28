@@ -10,7 +10,7 @@ import sys
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from scripts.web_export import (
+from scripts.web_export import (  # noqa: E402
     ProviderMap,
     resolve_inference_provider,
     slugify,
@@ -29,7 +29,7 @@ from scripts.web_export import (
     _build_block_scores,
     _build_leaderboard_entry,
 )
-from scripts.web_export.loader import _extract_short_codes
+from scripts.web_export.loader import _extract_short_codes  # noqa: E402
 
 
 class TestSlugify:

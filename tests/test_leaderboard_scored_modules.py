@@ -10,7 +10,6 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-import pytest
 
 from scripts.core.llamacpp_batch import (
     LEADERBOARD_COLUMN_FOR_MODULE,

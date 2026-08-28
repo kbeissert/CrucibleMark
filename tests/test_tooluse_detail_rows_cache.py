@@ -16,7 +16,7 @@ import pytest
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from scripts.core.tooluse_exporter import ToolUseExporter
+from scripts.core.tooluse_exporter import ToolUseExporter  # noqa: E402
 
 
 @pytest.fixture

@@ -42,9 +42,8 @@ def _load_web_export_consumer_fields() -> set[str]:
     fields: set[str] = set()
     for group in ("required_fields", "optional_fields"):
         for spec in tmpl.get(group, []):
-            if "web_export" in (spec.get("consumers") or []):
-                if spec["name"] not in _CONDITIONAL:
-                    fields.add(spec["name"])
+            if "web_export" in (spec.get("consumers") or []) and spec["name"] not in _CONDITIONAL:
+                fields.add(spec["name"])
     return fields
 
 

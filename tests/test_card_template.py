@@ -9,7 +9,6 @@ import pytest
 
 from utils.card_template import (
     CardFieldSpec,
-    CardTemplate,
     clear_cache,
     load_card_template,
 )
@@ -255,17 +254,19 @@ class TestValidateCard:
 
     def test_index_files_skipped(self, tmp_path: Path) -> None:
         """_index.json und ähnliche Helper werden ignoriert."""
-        with patch.object(self.vc, "MODEL_CARDS_DIR", tmp_path):
-            with patch.object(self.vc, "PROVIDER_CARDS_DIR", tmp_path):
-                self._write_card(tmp_path, "_index", ["list", "not", "dict"])
-                self._write_card(tmp_path, "True", {"m": 1})
-                self._write_card(tmp_path, "real_card", {"model_id": "r"})
-                reports = self.vc.validate_all("model")
-                # _index und True werden gefiltert
-                names = {r.card_file for r in reports}
-                assert "_index.json" not in names
-                assert "True.json" not in names
-                assert "real_card.json" in names
+        with (
+            patch.object(self.vc, "MODEL_CARDS_DIR", tmp_path),
+            patch.object(self.vc, "PROVIDER_CARDS_DIR", tmp_path),
+        ):
+            self._write_card(tmp_path, "_index", ["list", "not", "dict"])
+            self._write_card(tmp_path, "True", {"m": 1})
+            self._write_card(tmp_path, "real_card", {"model_id": "r"})
+            reports = self.vc.validate_all("model")
+            # _index und True werden gefiltert
+            names = {r.card_file for r in reports}
+            assert "_index.json" not in names
+            assert "True.json" not in names
+            assert "real_card.json" in names
 
 
 # ===========================================================================

@@ -18,7 +18,7 @@ Coverage:
  10. Card mit thinking_probe_detected=null → Fallback auf (None, 'none')
 """
 
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, UTC
 
 import pytest
 
@@ -82,7 +82,7 @@ def test_is_override_active_not_dict():
 
 def test_is_override_active_future_expiry_active():
     """active_until in der Zukunft → Override ist aktiv."""
-    now = datetime(2026, 6, 10, tzinfo=timezone.utc)
+    now = datetime(2026, 6, 10, tzinfo=UTC)
     expiry = (now + timedelta(days=30)).isoformat()
     assert _is_override_active(
         {"value": False, "reason": "test", "active_until": expiry},
@@ -92,7 +92,7 @@ def test_is_override_active_future_expiry_active():
 
 def test_is_override_active_past_expiry_inactive():
     """active_until in der Vergangenheit → Override ist abgelaufen."""
-    now = datetime(2026, 6, 10, tzinfo=timezone.utc)
+    now = datetime(2026, 6, 10, tzinfo=UTC)
     expiry = (now - timedelta(days=1)).isoformat()
     assert _is_override_active(
         {"value": False, "reason": "test", "active_until": expiry},
@@ -102,7 +102,7 @@ def test_is_override_active_past_expiry_inactive():
 
 def test_is_override_active_exact_now_inactive():
     """Exakt-Gleichheit (now == expiry) → Override gilt als abgelaufen."""
-    now = datetime(2026, 6, 10, 12, 0, 0, tzinfo=timezone.utc)
+    now = datetime(2026, 6, 10, 12, 0, 0, tzinfo=UTC)
     assert _is_override_active(
         {"value": True, "reason": "test", "active_until": now.isoformat()},
         now=now,
@@ -111,7 +111,7 @@ def test_is_override_active_exact_now_inactive():
 
 def test_is_override_active_naive_datetime_treated_as_utc():
     """Naive Datetime (kein tz) → wird als UTC interpretiert."""
-    now = datetime(2026, 6, 10, 12, 0, 0, tzinfo=timezone.utc)
+    now = datetime(2026, 6, 10, 12, 0, 0, tzinfo=UTC)
     naive_expiry = "2026-07-10T12:00:00"
     assert _is_override_active(
         {"value": False, "reason": "test", "active_until": naive_expiry},
@@ -121,7 +121,7 @@ def test_is_override_active_naive_datetime_treated_as_utc():
 
 def test_is_override_active_invalid_iso_inactive():
     """Ungültiges active_until-Format → inaktiv (Fail-Safe)."""
-    now = datetime(2026, 6, 10, tzinfo=timezone.utc)
+    now = datetime(2026, 6, 10, tzinfo=UTC)
     assert _is_override_active(
         {"value": True, "reason": "test", "active_until": "not-a-date"},
         now=now,
@@ -134,7 +134,7 @@ def test_is_override_active_invalid_iso_inactive():
 
 def test_is_override_active_z_suffix_accepted():
     """ISO-8601 mit Z-Suffix → korrekt geparst."""
-    now = datetime(2026, 6, 10, tzinfo=timezone.utc)
+    now = datetime(2026, 6, 10, tzinfo=UTC)
     expiry_z = "2026-07-10T12:00:00Z"
     assert _is_override_active(
         {"value": True, "reason": "test", "active_until": expiry_z},
@@ -190,7 +190,7 @@ def test_resolve_active_override_overrides_card_true_inverse():
 
 def test_resolve_expired_override_falls_back_to_card():
     """Abgelaufener Override (active_until in Vergangenheit) → Card gewinnt."""
-    now = datetime(2026, 6, 10, tzinfo=timezone.utc)
+    now = datetime(2026, 6, 10, tzinfo=UTC)
     expired = (now - timedelta(days=1)).isoformat()
     cfg = _model_cfg(
         {"value": False, "reason": "Cost-Benchmark (expired)", "active_until": expired},

@@ -144,12 +144,11 @@ class TestRunUntestedTooluseModels(unittest.TestCase):
         # Pre-Flight überspringen — alle Modelle gelten als testbar.
         with patch.object(
             benchmark_auto, "filter_testable_cards", return_value=(models, [])
-        ):
-            with patch.object(benchmark_auto.subprocess, "run") as mock_run:
-                mock_run.return_value = subprocess.CompletedProcess(args=[], returncode=0)
-                result = benchmark_auto._run_untested_tooluse_models(
-                    models, mcp_mode="live", force=False, silent=False
-                )
+        ), patch.object(benchmark_auto.subprocess, "run") as mock_run:
+            mock_run.return_value = subprocess.CompletedProcess(args=[], returncode=0)
+            result = benchmark_auto._run_untested_tooluse_models(
+                models, mcp_mode="live", force=False, silent=False
+            )
         self.assertTrue(result)
         mock_run.assert_called_once()
         cmd = mock_run.call_args[0][0]
@@ -168,12 +167,11 @@ class TestRunUntestedTooluseModels(unittest.TestCase):
         models = [("m", "M")]
         with patch.object(
             benchmark_auto, "filter_testable_cards", return_value=(models, [])
-        ):
-            with patch.object(benchmark_auto.subprocess, "run") as mock_run:
-                mock_run.return_value = subprocess.CompletedProcess(args=[], returncode=0)
-                benchmark_auto._run_untested_tooluse_models(
-                    models, mcp_mode="mock", force=True, silent=True
-                )
+        ), patch.object(benchmark_auto.subprocess, "run") as mock_run:
+            mock_run.return_value = subprocess.CompletedProcess(args=[], returncode=0)
+            benchmark_auto._run_untested_tooluse_models(
+                models, mcp_mode="mock", force=True, silent=True
+            )
         cmd = mock_run.call_args[0][0]
         self.assertIn("--force", cmd)
         self.assertIn("--silent", cmd)
@@ -184,26 +182,23 @@ class TestRunUntestedTooluseModels(unittest.TestCase):
         models = [("m", "M")]
         with patch.object(
             benchmark_auto, "filter_testable_cards", return_value=(models, [])
-        ):
-            with patch.object(benchmark_auto.subprocess, "run") as mock_run:
-                mock_run.return_value = subprocess.CompletedProcess(args=[], returncode=1)
-                result = benchmark_auto._run_untested_tooluse_models(
-                    models, mcp_mode="live"
-                )
+        ), patch.object(benchmark_auto.subprocess, "run") as mock_run:
+            mock_run.return_value = subprocess.CompletedProcess(args=[], returncode=1)
+            result = benchmark_auto._run_untested_tooluse_models(
+                models, mcp_mode="live"
+            )
         self.assertFalse(result)
 
     def test_propagates_keyboard_interrupt(self):
         models = [("m", "M")]
         with patch.object(
             benchmark_auto, "filter_testable_cards", return_value=(models, [])
-        ):
-            with patch.object(
-                benchmark_auto.subprocess, "run", side_effect=KeyboardInterrupt
-            ):
-                with self.assertRaises(KeyboardInterrupt):
-                    benchmark_auto._run_untested_tooluse_models(
-                        models, mcp_mode="live"
-                    )
+        ), patch.object(
+            benchmark_auto.subprocess, "run", side_effect=KeyboardInterrupt
+        ), self.assertRaises(KeyboardInterrupt):
+            benchmark_auto._run_untested_tooluse_models(
+                models, mcp_mode="live"
+            )
 
     def test_returns_false_if_script_missing(self):
         """Wenn scripts/run_tooluse_benchmark.py nicht existiert, returnt die Funktion False."""
@@ -247,10 +242,12 @@ class TestPhaseBRobustnessWarnings(unittest.TestCase):
             "skip_if_card_false": "supports_tool_use",
         }
 
-        with patch.object(benchmark_auto, "ROOT_DIR", self.tmp):
-            with patch("utils.model_utils._find_card", return_value=bad_card):
-                with self.assertLogs("scripts.core.llamacpp_batch", level="WARNING") as logs:
-                    assets = benchmark_auto.get_startable_assets(module, "model_a", set())
+        with (
+            patch.object(benchmark_auto, "ROOT_DIR", self.tmp),
+            patch("utils.model_utils._find_card", return_value=bad_card),
+            self.assertLogs("scripts.core.llamacpp_batch", level="WARNING") as logs,
+        ):
+            assets = benchmark_auto.get_startable_assets(module, "model_a", set())
 
         self.assertEqual(len(assets), 1)
         self.assertTrue(
@@ -284,9 +281,11 @@ class TestPhaseBRobustnessWarnings(unittest.TestCase):
         cards_dir.mkdir(parents=True, exist_ok=True)
         (cards_dir / "model_a.json").write_text("{ invalid", encoding="utf-8")
 
-        with patch.object(benchmark_auto, "CARD_DIR", cards_dir):
-            with self.assertLogs("auto_benchmark", level="WARNING") as logs:
-                cards = benchmark_auto._load_cards_for_models(["model_a", "model_missing"])
+        with (
+            patch.object(benchmark_auto, "CARD_DIR", cards_dir),
+            self.assertLogs("auto_benchmark", level="WARNING") as logs,
+        ):
+            cards = benchmark_auto._load_cards_for_models(["model_a", "model_missing"])
 
         self.assertEqual(cards, {})
         self.assertTrue(
@@ -308,17 +307,19 @@ class TestIterationDScoreDelegation(unittest.TestCase):
     def test_run_module_for_model_uses_score_delegate(self):
         module = {"key": "code_quality", "name": "Code Quality", "path": "unused"}
 
-        with patch.object(benchmark_auto, "get_startable_assets", return_value=[Path("x.yaml")]):
-            with patch.object(benchmark_auto, "_run_score_delegate_for_model", return_value=True) as score_del:
-                with patch.object(benchmark_auto, "_run_delegate_for_model") as generic_del:
-                    result = benchmark_auto._run_module_for_model(
-                        runner=object(),
-                        model="gemma-3-12b-it",
-                        module=module,
-                        existing_tests=set(),
-                        force=True,
-                        audit=False,
-                    )
+        with (
+            patch.object(benchmark_auto, "get_startable_assets", return_value=[Path("x.yaml")]),
+            patch.object(benchmark_auto, "_run_score_delegate_for_model", return_value=True) as score_del,
+            patch.object(benchmark_auto, "_run_delegate_for_model") as generic_del,
+        ):
+            result = benchmark_auto._run_module_for_model(
+                runner=object(),
+                model="gemma-3-12b-it",
+                module=module,
+                existing_tests=set(),
+                force=True,
+                audit=False,
+            )
 
         # Phase 21: Tristate-Return ("ran" | "skipped" | "failed")
         self.assertEqual(result, "ran")
@@ -343,16 +344,18 @@ class TestRunModuleForModelTristate(unittest.TestCase):
         Jetzt ist get_startable_assets() die alleinige Autorität."""
         module = {"key": "code_quality", "name": "Code Quality", "path": "unused"}
 
-        with patch.object(benchmark_auto, "get_startable_assets", return_value=[Path("x.yaml")]):
-            with patch.object(benchmark_auto, "_run_score_delegate_for_model", return_value=True) as score_del:
-                result = benchmark_auto._run_module_for_model(
-                    runner=object(),
-                    model="gemma-4-12b-it-ud-q6-k-xl",
-                    module=module,
-                    existing_tests=set(),
-                    force=False,
-                    audit=False,
-                )
+        with (
+            patch.object(benchmark_auto, "get_startable_assets", return_value=[Path("x.yaml")]),
+            patch.object(benchmark_auto, "_run_score_delegate_for_model", return_value=True) as score_del,
+        ):
+            result = benchmark_auto._run_module_for_model(
+                runner=object(),
+                model="gemma-4-12b-it-ud-q6-k-xl",
+                module=module,
+                existing_tests=set(),
+                force=False,
+                audit=False,
+            )
 
         self.assertEqual(result, "ran")
         score_del.assert_called_once()
@@ -361,17 +364,19 @@ class TestRunModuleForModelTristate(unittest.TestCase):
         """Wenn keine Assets zu testen sind, returnt die Funktion 'skipped'."""
         module = {"key": "code_quality", "name": "Code Quality", "path": "unused"}
 
-        with patch.object(benchmark_auto, "get_startable_assets", return_value=[]):
-            with patch.object(benchmark_auto, "_run_score_delegate_for_model") as score_del:
-                with patch.object(benchmark_auto, "_run_delegate_for_model") as generic_del:
-                    result = benchmark_auto._run_module_for_model(
-                        runner=object(),
-                        model="hermes-4.3-36b-q6",
-                        module=module,
-                        existing_tests=set(),
-                        force=False,
-                        audit=False,
-                    )
+        with (
+            patch.object(benchmark_auto, "get_startable_assets", return_value=[]),
+            patch.object(benchmark_auto, "_run_score_delegate_for_model") as score_del,
+            patch.object(benchmark_auto, "_run_delegate_for_model") as generic_del,
+        ):
+            result = benchmark_auto._run_module_for_model(
+                runner=object(),
+                model="hermes-4.3-36b-q6",
+                module=module,
+                existing_tests=set(),
+                force=False,
+                audit=False,
+            )
 
         self.assertEqual(result, "skipped")
         score_del.assert_not_called()
@@ -381,16 +386,18 @@ class TestRunModuleForModelTristate(unittest.TestCase):
         """Wenn der Score-Delegate erfolgreich ist, returnt die Funktion 'ran'."""
         module = {"key": "code_quality", "name": "Code Quality", "path": "unused"}
 
-        with patch.object(benchmark_auto, "get_startable_assets", return_value=[Path("x.yaml")]):
-            with patch.object(benchmark_auto, "_run_score_delegate_for_model", return_value=True) as score_del:
-                result = benchmark_auto._run_module_for_model(
-                    runner=object(),
-                    model="gemma-3-12b-it",
-                    module=module,
-                    existing_tests=set(),
-                    force=True,
-                    audit=False,
-                )
+        with (
+            patch.object(benchmark_auto, "get_startable_assets", return_value=[Path("x.yaml")]),
+            patch.object(benchmark_auto, "_run_score_delegate_for_model", return_value=True) as score_del,
+        ):
+            result = benchmark_auto._run_module_for_model(
+                runner=object(),
+                model="gemma-3-12b-it",
+                module=module,
+                existing_tests=set(),
+                force=True,
+                audit=False,
+            )
 
         self.assertEqual(result, "ran")
         score_del.assert_called_once()
@@ -399,16 +406,18 @@ class TestRunModuleForModelTristate(unittest.TestCase):
         """Wenn der Score-Delegate fehlschlägt, returnt die Funktion 'failed'."""
         module = {"key": "code_quality", "name": "Code Quality", "path": "unused"}
 
-        with patch.object(benchmark_auto, "get_startable_assets", return_value=[Path("x.yaml")]):
-            with patch.object(benchmark_auto, "_run_score_delegate_for_model", return_value=False):
-                result = benchmark_auto._run_module_for_model(
-                    runner=object(),
-                    model="gemma-3-12b-it",
-                    module=module,
-                    existing_tests=set(),
-                    force=True,
-                    audit=False,
-                )
+        with (
+            patch.object(benchmark_auto, "get_startable_assets", return_value=[Path("x.yaml")]),
+            patch.object(benchmark_auto, "_run_score_delegate_for_model", return_value=False),
+        ):
+            result = benchmark_auto._run_module_for_model(
+                runner=object(),
+                model="gemma-3-12b-it",
+                module=module,
+                existing_tests=set(),
+                force=True,
+                audit=False,
+            )
 
         self.assertEqual(result, "failed")
 
@@ -416,16 +425,18 @@ class TestRunModuleForModelTristate(unittest.TestCase):
         """Mit force=True und keine offenen Assets → skipped."""
         module = {"key": "code_quality", "name": "Code Quality", "path": "unused"}
 
-        with patch.object(benchmark_auto, "get_startable_assets", return_value=[]):
-            with patch.object(benchmark_auto, "_run_score_delegate_for_model") as score_del:
-                result = benchmark_auto._run_module_for_model(
-                    runner=object(),
-                    model="gemma-3-12b-it",
-                    module=module,
-                    existing_tests=set(),
-                    force=True,
-                    audit=False,
-                )
+        with (
+            patch.object(benchmark_auto, "get_startable_assets", return_value=[]),
+            patch.object(benchmark_auto, "_run_score_delegate_for_model") as score_del,
+        ):
+            result = benchmark_auto._run_module_for_model(
+                runner=object(),
+                model="gemma-3-12b-it",
+                module=module,
+                existing_tests=set(),
+                force=True,
+                audit=False,
+            )
 
         self.assertEqual(result, "skipped")
         score_del.assert_not_called()
@@ -439,18 +450,20 @@ class TestRunModuleForModelTristate(unittest.TestCase):
             "delegate_script": "scripts/run_benchmark.py",
         }
 
-        with patch.object(benchmark_auto, "get_startable_assets", return_value=[Path("x.yaml")]):
-            with patch.object(benchmark_auto, "_run_score_delegate_for_model") as score_del:
-                with patch.object(benchmark_auto, "_run_delegate_for_model", return_value=True) as generic_del:
-                    result = benchmark_auto._run_module_for_model(
-                        runner=object(),
-                        model="hermes-4.3-36b-q6",
-                        module=module,
-                        existing_tests=set(),
-                        force=True,
-                        audit=False,
-                        provider="llamacpp_spark",
-                    )
+        with (
+            patch.object(benchmark_auto, "get_startable_assets", return_value=[Path("x.yaml")]),
+            patch.object(benchmark_auto, "_run_score_delegate_for_model") as score_del,
+            patch.object(benchmark_auto, "_run_delegate_for_model", return_value=True) as generic_del,
+        ):
+            result = benchmark_auto._run_module_for_model(
+                runner=object(),
+                model="hermes-4.3-36b-q6",
+                module=module,
+                existing_tests=set(),
+                force=True,
+                audit=False,
+                provider="llamacpp_spark",
+            )
 
         # llama.cpp → KEIN Score-Delegate, stattdessen generischer Delegate
         self.assertEqual(result, "ran")
@@ -469,16 +482,18 @@ class TestRunModuleForModelTristate(unittest.TestCase):
             "delegate_script": "scripts/run_tooluse_benchmark.py",
         }
 
-        with patch.object(benchmark_auto, "get_startable_assets", return_value=[Path("x.yaml")]):
-            with patch.object(benchmark_auto, "_run_delegate_for_model", return_value=False):
-                result = benchmark_auto._run_module_for_model(
-                    runner=object(),
-                    model="gemma-3-12b-it",
-                    module=module,
-                    existing_tests=set(),
-                    force=True,
-                    audit=False,
-                )
+        with (
+            patch.object(benchmark_auto, "get_startable_assets", return_value=[Path("x.yaml")]),
+            patch.object(benchmark_auto, "_run_delegate_for_model", return_value=False),
+        ):
+            result = benchmark_auto._run_module_for_model(
+                runner=object(),
+                model="gemma-3-12b-it",
+                module=module,
+                existing_tests=set(),
+                force=True,
+                audit=False,
+            )
 
         self.assertEqual(result, "failed")
 
@@ -522,19 +537,21 @@ class TestRunModuleForModelTristate(unittest.TestCase):
         mock_runner = MagicMock()
         mock_runner.run_benchmark.return_value = [{"asset_id": "ux_writing_001", "status": "success"}]
 
-        with patch.object(benchmark_auto, "get_startable_assets", return_value=[Path("x.yaml")]):
-            with patch.object(benchmark_auto, "update_leaderboard", return_value=True) as mock_lb:
-                with patch.object(benchmark_auto, "_run_score_delegate_for_model") as score_del:
-                    with patch.object(benchmark_auto, "_run_delegate_for_model") as generic_del:
-                        result = benchmark_auto._run_module_for_model(
-                            runner=mock_runner,
-                            model="gemma-4-12b-it-ud-q6-k-xl",
-                            module=module,
-                            existing_tests=set(),
-                            force=False,
-                            audit=False,
-                            provider="llamacpp",
-                        )
+        with (
+            patch.object(benchmark_auto, "get_startable_assets", return_value=[Path("x.yaml")]),
+            patch.object(benchmark_auto, "update_leaderboard", return_value=True) as mock_lb,
+            patch.object(benchmark_auto, "_run_score_delegate_for_model") as score_del,
+            patch.object(benchmark_auto, "_run_delegate_for_model") as generic_del,
+        ):
+            result = benchmark_auto._run_module_for_model(
+                runner=mock_runner,
+                model="gemma-4-12b-it-ud-q6-k-xl",
+                module=module,
+                existing_tests=set(),
+                force=False,
+                audit=False,
+                provider="llamacpp",
+            )
 
         self.assertEqual(result, "ran")
         # Pfad 3 wurde genutzt (nicht Score-Delegate, nicht generic Delegate)

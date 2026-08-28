@@ -103,107 +103,149 @@ def _setup_logging(config: dict) -> None:
     )
 
 
-def _make_handler(config: dict, mode: str, last_activity: list[float]) -> type:
-    """Build and return the MCPHandler class with config, mode, and activity tracker bound via closure."""
-    web_search = WebSearchTool(config, mode)
-    http_fetch = HttpFetchTool(config, mode)
+class MCPHandler(BaseHTTPRequestHandler):
+    """HTTP request handler for MCP tool endpoints.
 
-    class MCPHandler(BaseHTTPRequestHandler):
-        """HTTP request handler for MCP tool endpoints."""
-        def log_message(self, format: str, *args: object) -> None:  # noqa: A002  # pylint: disable=redefined-builtin
-            pass  # suppress default access log; structured logging is done in tools
+    http.server erzeugt pro Request eine neue Handler-Instanz; ``config``,
+    ``mode``, die Tool-Instanzen und der Activity-Tracker werden daher vom
+    Factory-Aufruf (``_make_handler``) als Klassenattribute gebunden und
+    über alle Request-Instanzen geteilt.
+    """
 
-        def _send_json(self, data: dict, status: int = 200) -> None:
-            body = json.dumps(data).encode()
-            self.send_response(status)
-            self.send_header("Content-Type", "application/json")
-            self.send_header("Content-Length", str(len(body)))
+    config: dict
+    mode: str
+    last_activity: list[float]
+    web_search: WebSearchTool
+    http_fetch: HttpFetchTool
+
+    def log_message(self, format: str, *args: object) -> None:  # noqa: A002  # pylint: disable=redefined-builtin
+        pass  # suppress default access log; structured logging is done in tools
+
+    def _send_json(self, data: dict, status: int = 200) -> None:
+        body = json.dumps(data).encode()
+        self.send_response(status)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _read_json_body(self) -> dict:
+        length = int(self.headers.get("Content-Length", 0))
+        return json.loads(self.rfile.read(length)) if length else {}
+
+    def do_GET(self) -> None:
+        """Handle GET /health."""
+        self.last_activity[0] = time.monotonic()
+        if self.path == "/health":
+            self._send_json({"status": "ok", "mode": self.mode, "version": VERSION})
+        else:
+            self._send_json({"error": "not found"}, 404)
+
+    def _handle_initialize(self, rpc_id: object) -> None:
+        """Respond to the JSON-RPC `initialize` handshake."""
+        result: dict = {
+            "protocolVersion": "2024-11-05",
+            "capabilities": {"tools": {}},
+            "serverInfo": {"name": "cruciblemark-mcp", "version": VERSION},
+        }
+        self._send_json({"jsonrpc": "2.0", "id": rpc_id, "result": result})
+
+    def _handle_tools_list(self, rpc_id: object) -> None:
+        """Respond to `tools/list` with the static TOOL_DEFINITIONS."""
+        self._send_json({
+            "jsonrpc": "2.0",
+            "id": rpc_id,
+            "result": {"tools": TOOL_DEFINITIONS},
+        })
+
+    def _call_web_search(self, arguments: dict) -> dict:
+        """Dispatch a `web_search` tool call."""
+        return self.web_search.search(
+            query=arguments.get("query", ""),
+            max_results=arguments.get("max_results", self.config["web_search"]["max_results"]),
+        )
+
+    def _call_fetch(self, arguments: dict) -> dict:
+        """Dispatch a `fetch` tool call (with start_index pagination)."""
+        # Accept both Anthropic-standard `max_length` and our internal `max_chars`
+        max_chars = (
+            arguments.get("max_length")
+            or arguments.get("max_chars")
+            or self.config["http_fetch"]["max_chars"]
+        )
+        start_index: int = arguments.get("start_index") or 0
+        raw_result = self.http_fetch.fetch(
+            url=arguments.get("url", ""),
+            max_chars=max_chars,
+        )
+        # Apply start_index slicing to content text (pagination support)
+        if start_index > 0 and isinstance(raw_result.get("content"), list):
+            for block in raw_result["content"]:
+                if block.get("type") == "text" and block.get("text"):
+                    block["text"] = block["text"][start_index : start_index + max_chars]
+        return raw_result
+
+    def _handle_tools_call(self, rpc_id: object, params: dict) -> None:
+        """Dispatch a `tools/call` request to the configured tools."""
+        name = params.get("name", "")
+        arguments = params.get("arguments") or {}
+        if name == "web_search":
+            tool_result = self._call_web_search(arguments)
+        elif name == "fetch":
+            tool_result = self._call_fetch(arguments)
+        else:
+            self._send_json({
+                "jsonrpc": "2.0",
+                "id": rpc_id,
+                "error": {"code": -32601, "message": f"Unknown tool: {name}"},
+            })
+            return
+        self._send_json({"jsonrpc": "2.0", "id": rpc_id, "result": tool_result})
+
+    def do_POST(self) -> None:
+        """JSON-RPC 2.0 dispatcher — handles initialize, tools/list, tools/call."""
+        self.last_activity[0] = time.monotonic()
+        body = self._read_json_body()
+        rpc_id = body.get("id")
+        method = body.get("method", "")
+        params = body.get("params") or {}
+
+        if method == "initialize":
+            self._handle_initialize(rpc_id)
+
+        elif method == "notifications/initialized":
+            # Client acknowledgement — no response required for notifications
+            self.send_response(204)
             self.end_headers()
-            self.wfile.write(body)
 
-        def _read_json_body(self) -> dict:
-            length = int(self.headers.get("Content-Length", 0))
-            return json.loads(self.rfile.read(length)) if length else {}
+        elif method == "tools/list":
+            self._handle_tools_list(rpc_id)
 
-        def do_GET(self) -> None:
-            """Handle GET /health."""
-            last_activity[0] = time.monotonic()
-            if self.path == "/health":
-                self._send_json({"status": "ok", "mode": mode, "version": VERSION})
-            else:
-                self._send_json({"error": "not found"}, 404)
+        elif method == "tools/call":
+            self._handle_tools_call(rpc_id, params)
 
-        def do_POST(self) -> None:
-            """JSON-RPC 2.0 dispatcher — handles initialize, tools/list, tools/call."""
-            last_activity[0] = time.monotonic()
-            body = self._read_json_body()
-            rpc_id = body.get("id")
-            method = body.get("method", "")
-            params = body.get("params") or {}
+        else:
+            self._send_json({
+                "jsonrpc": "2.0",
+                "id": rpc_id,
+                "error": {"code": -32601, "message": f"Method not found: {method}"},
+            }, 404)
 
-            if method == "initialize":
-                result: dict = {
-                    "protocolVersion": "2024-11-05",
-                    "capabilities": {"tools": {}},
-                    "serverInfo": {"name": "cruciblemark-mcp", "version": VERSION},
-                }
-                self._send_json({"jsonrpc": "2.0", "id": rpc_id, "result": result})
 
-            elif method == "notifications/initialized":
-                # Client acknowledgement — no response required for notifications
-                self.send_response(204)
-                self.end_headers()
+def _make_handler(config: dict, mode: str, last_activity: list[float]) -> type:
+    """Build and return a bound MCPHandler subclass for the HTTP server.
 
-            elif method == "tools/list":
-                self._send_json({
-                    "jsonrpc": "2.0",
-                    "id": rpc_id,
-                    "result": {"tools": TOOL_DEFINITIONS},
-                })
-
-            elif method == "tools/call":
-                name = params.get("name", "")
-                arguments = params.get("arguments") or {}
-                if name == "web_search":
-                    tool_result = web_search.search(
-                        query=arguments.get("query", ""),
-                        max_results=arguments.get("max_results", config["web_search"]["max_results"]),
-                    )
-                elif name == "fetch":
-                    # Accept both Anthropic-standard `max_length` and our internal `max_chars`
-                    max_chars = (
-                        arguments.get("max_length")
-                        or arguments.get("max_chars")
-                        or config["http_fetch"]["max_chars"]
-                    )
-                    start_index: int = arguments.get("start_index") or 0
-                    raw_result = http_fetch.fetch(
-                        url=arguments.get("url", ""),
-                        max_chars=max_chars,
-                    )
-                    # Apply start_index slicing to content text (pagination support)
-                    if start_index > 0 and isinstance(raw_result.get("content"), list):
-                        for block in raw_result["content"]:
-                            if block.get("type") == "text" and block.get("text"):
-                                block["text"] = block["text"][start_index : start_index + max_chars]
-                    tool_result = raw_result
-                else:
-                    self._send_json({
-                        "jsonrpc": "2.0",
-                        "id": rpc_id,
-                        "error": {"code": -32601, "message": f"Unknown tool: {name}"},
-                    })
-                    return
-                self._send_json({"jsonrpc": "2.0", "id": rpc_id, "result": tool_result})
-
-            else:
-                self._send_json({
-                    "jsonrpc": "2.0",
-                    "id": rpc_id,
-                    "error": {"code": -32601, "message": f"Method not found: {method}"},
-                }, 404)
-
-    return MCPHandler
+    Bindet config, mode, activity tracker und die Tool-Instanzen als
+    Klassenattribute einer dynamischen Subklasse (http.server instanziiert
+    die Handler-Klasse pro Request — Klassenattribute sind geteilt).
+    """
+    return type("BoundMCPHandler", (MCPHandler,), {
+        "config": config,
+        "mode": mode,
+        "last_activity": last_activity,
+        "web_search": WebSearchTool(config, mode),
+        "http_fetch": HttpFetchTool(config, mode),
+    })
 
 
 def main() -> None:

@@ -9,10 +9,9 @@ from __future__ import annotations
 
 import os
 import sys
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, UTC
 from pathlib import Path
 
-import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -117,7 +116,7 @@ def test_cleanup_runs_above_threshold_marks_for_deletion(tmp_path, capsys):
         f.write_text("{}")
         files.append(f)
         # mtime explizit setzen, damit die Sortierung stabil ist
-        ts = (datetime(2026, 1, i + 1, 12, 0, 0, tzinfo=timezone.utc)).timestamp()
+        ts = (datetime(2026, 1, i + 1, 12, 0, 0, tzinfo=UTC)).timestamp()
         os.utime(f, (ts, ts))
 
     deleted = cleanup_runs.cleanup_runs(runs_dir, keep=5, force=True, dry_run=True)
@@ -138,7 +137,7 @@ def test_cleanup_runs_force_deletion(tmp_path, capsys):
         f = runs_dir / f"results_foo_{i:08d}_120000.json"
         f.write_text("{}")
         files.append(f)
-        ts = (datetime(2026, 1, i + 1, 12, 0, 0, tzinfo=timezone.utc)).timestamp()
+        ts = (datetime(2026, 1, i + 1, 12, 0, 0, tzinfo=UTC)).timestamp()
         os.utime(f, (ts, ts))
 
     deleted = cleanup_runs.cleanup_runs(runs_dir, keep=2, force=True, dry_run=False)
@@ -165,14 +164,14 @@ def test_cleanup_runs_keeps_newest_per_model(tmp_path):
     for i in range(4):
         f = runs_dir / f"results_foo_{i:08d}_120000.json"
         f.write_text("{}")
-        ts = (datetime(2026, 1, i + 1, 12, 0, 0, tzinfo=timezone.utc)).timestamp()
+        ts = (datetime(2026, 1, i + 1, 12, 0, 0, tzinfo=UTC)).timestamp()
         os.utime(f, (ts, ts))
 
     # 2 bar-Runs (soll: 1 behalten, 1 loeschen bei keep=1)
     for i in range(2):
         f = runs_dir / f"results_bar_{i:08d}_120000.json"
         f.write_text("{}")
-        ts = (datetime(2026, 2, i + 1, 12, 0, 0, tzinfo=timezone.utc)).timestamp()
+        ts = (datetime(2026, 2, i + 1, 12, 0, 0, tzinfo=UTC)).timestamp()
         os.utime(f, (ts, ts))
 
     deleted = cleanup_runs.cleanup_runs(runs_dir, keep=1, force=True, dry_run=False)

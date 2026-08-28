@@ -11,10 +11,9 @@ from __future__ import annotations
 
 import os
 import sys
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, UTC
 from pathlib import Path
 
-import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -107,12 +106,12 @@ def test_canonicalize_run_grouping_sorts_newest_first(tmp_path):
     f_old = tmp_path / "results_foo_20260101_120000.json"
     f_old.write_text("{}")
     # mtime explizit setzen (aelter)
-    old_time = (datetime.now(tz=timezone.utc) - timedelta(days=2)).timestamp()
+    old_time = (datetime.now(tz=UTC) - timedelta(days=2)).timestamp()
     os.utime(f_old, (old_time, old_time))
 
     f_new = tmp_path / "results_foo_20260103_120000.json"
     f_new.write_text("{}")
-    new_time = (datetime.now(tz=timezone.utc) - timedelta(hours=1)).timestamp()
+    new_time = (datetime.now(tz=UTC) - timedelta(hours=1)).timestamp()
     os.utime(f_new, (new_time, new_time))
 
     result = cleanup_helpers.canonicalize_run_grouping([f_old, f_new])
@@ -142,7 +141,7 @@ def test_pre_backup_hygiene_dry_run_does_not_modify(tmp_path):
     outputs.mkdir()
     f = outputs / "tooluse_unreachable_20260101.json"
     f.write_text("{}")
-    old_time = (datetime.now(tz=timezone.utc) - timedelta(days=10)).timestamp()
+    old_time = (datetime.now(tz=UTC) - timedelta(days=10)).timestamp()
     os.utime(f, (old_time, old_time))
 
     stats = cleanup_helpers.pre_backup_hygiene(tmp_path, dry_run=True)
@@ -157,12 +156,12 @@ def test_pre_backup_hygiene_deletes_old_unreachable_logs(tmp_path):
     outputs.mkdir()
     f_old = outputs / "tooluse_unreachable_20260101.json"
     f_old.write_text("{}")
-    old_time = (datetime.now(tz=timezone.utc) - timedelta(days=10)).timestamp()
+    old_time = (datetime.now(tz=UTC) - timedelta(days=10)).timestamp()
     os.utime(f_old, (old_time, old_time))
 
     f_new = outputs / "tooluse_unreachable_20260601.json"
     f_new.write_text("{}")
-    new_time = datetime.now(tz=timezone.utc).timestamp()
+    new_time = datetime.now(tz=UTC).timestamp()
     os.utime(f_new, (new_time, new_time))
 
     stats = cleanup_helpers.pre_backup_hygiene(tmp_path, dry_run=False)
@@ -238,7 +237,7 @@ def test_run_pre_backup_hygiene_is_convenience_wrapper(tmp_path, caplog):
     outputs.mkdir()
     f = outputs / "tooluse_unreachable_20260101.json"
     f.write_text("{}")
-    old_time = (datetime.now(tz=timezone.utc) - timedelta(days=10)).timestamp()
+    old_time = (datetime.now(tz=UTC) - timedelta(days=10)).timestamp()
     os.utime(f, (old_time, old_time))
 
     with caplog.at_level(logging.INFO):

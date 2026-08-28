@@ -85,7 +85,7 @@ class TestAtomicWriteText:
         os.chmod(tmp_path, 0o444)
         try:
             _atomic_write_text(tmp_path / "new.md", "content")
-            assert False, "Sollte OSError werfen"
+            raise AssertionError("Sollte OSError werfen")
         except (OSError, PermissionError):
             pass
         finally:

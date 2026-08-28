@@ -9,7 +9,7 @@ import sys
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from scripts.web_export import _resolve_model_dirs_and_card, _should_skip_model
+from scripts.web_export import _resolve_model_dirs_and_card, _should_skip_model  # noqa: E402
 
 
 class TestResolveModelDirsAndCard:
@@ -119,7 +119,6 @@ class TestShouldSkipModel:
         import pandas as pd
         caplog.set_level(logging.INFO)
         row = pd.Series({"Total Score": "8.5/10"})
-        audit_path = Path("/tmp/nonexistent_for_test")
         result = _should_skip_model(
             model_name="GPT-5",
             raw_model_id="gpt-5",

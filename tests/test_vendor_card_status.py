@@ -2,12 +2,10 @@
 from __future__ import annotations
 
 import json
-import tempfile
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, UTC
 from pathlib import Path
 from unittest.mock import patch
 
-import pytest
 
 
 # ===========================================================================
@@ -37,7 +35,7 @@ class TestProviderCardStatus:
 
     def test_verified_card_recent_timestamp(self, tmp_path: Path) -> None:
         """Card mit recent last_verified_at → status=verified."""
-        recent = datetime.now(timezone.utc) - timedelta(days=10)
+        recent = datetime.now(UTC) - timedelta(days=10)
         card = {
             "vendor_id": "testprov",
             "display_name": "TestProv",
@@ -57,7 +55,7 @@ class TestProviderCardStatus:
 
     def test_stale_card_old_timestamp(self, tmp_path: Path) -> None:
         """Card mit last_verified_at älter als stale_days → status=stale."""
-        old = datetime.now(timezone.utc) - timedelta(days=120)
+        old = datetime.now(UTC) - timedelta(days=120)
         card = {
             "vendor_id": "oldprov",
             "display_name": "OldProv",
@@ -76,7 +74,7 @@ class TestProviderCardStatus:
 
     def test_unknown_flag_counts_as_unknown(self, tmp_path: Path) -> None:
         """Card mit unknown=true → status=unknown (auch wenn Timestamp neu)."""
-        recent = datetime.now(timezone.utc).isoformat()
+        recent = datetime.now(UTC).isoformat()
         card = {
             "vendor_id": "broken",
             "unknown": True,
@@ -120,7 +118,7 @@ class TestProviderCardStatus:
 
     def test_unknown_deployment_fields_detected(self, tmp_path: Path) -> None:
         """deployment-Felder mit 'unknown' oder -1 werden gemeldet."""
-        recent = datetime.now(timezone.utc).isoformat()
+        recent = datetime.now(UTC).isoformat()
         card = {
             "vendor_id": "incomplete",
             "display_name": "Incomplete",
@@ -155,7 +153,7 @@ class TestProviderCardStatus:
 
     def test_format_status_readable(self, tmp_path: Path) -> None:
         """format_vendor_card_status liefert lesbaren CLI-Output."""
-        recent = datetime.now(timezone.utc).isoformat()
+        recent = datetime.now(UTC).isoformat()
         card = {
             "vendor_id": "ok",
             "display_name": "OK Provider",

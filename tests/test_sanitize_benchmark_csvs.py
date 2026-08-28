@@ -52,7 +52,6 @@ def _row(
     score: str = "4.0",
 ) -> list[str]:
     """Erzeugt eine Standard-Datenzeile (Status success, score 4.0)."""
-    header = _standard_header()
     return [
         asset_id, module, "test", asset_id, "2026-06-08T00:00:00Z", model,
         "ollama", "latest", "prompt", "response", score, "5.0", "0.0", "0.0",

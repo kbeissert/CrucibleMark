@@ -4,7 +4,6 @@ from __future__ import annotations
 import json
 import tempfile
 
-import pytest
 
 from utils.vendor_card_template import (
     PROVIDER_CARD_FIELD_NAMES,
@@ -170,4 +169,4 @@ class TestLoadProviderCard:
         assert card["deployment"]["applicable_law"] == "US (CLOUD Act)"
         assert "origin_country" not in card
         assert "summary" not in card
-        assert card["unknown"] == False
+        assert not card["unknown"]

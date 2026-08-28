@@ -12,7 +12,6 @@ import sys
 from pathlib import Path
 
 import pandas as pd
-import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -81,7 +80,6 @@ def test_normalize_model_column_returns_copy_not_view():
 
 def test_normalize_model_column_handles_none_values():
     """None/NaN-Werte in model-Spalte crashen nicht und werden zu NaN."""
-    import numpy as np
     df = pd.DataFrame({
         "model": [None, "valid"],
         "asset_id": ["a1", "a2"],

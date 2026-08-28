@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts" / "analysis"))
 
-from scripts.analysis.review.metrics import _flatten_strings, get_model_card_context
+from scripts.analysis.review.metrics import _flatten_strings, get_model_card_context  # noqa: E402
 
 
 class TestFlattenStrings:
@@ -73,7 +73,6 @@ class TestGetModelCardContext:
         ``utils/model_utils.py:107``). Wir monkeypatchen den Helper, damit
         der Test unabhängig vom aktuellen Arbeitsverzeichnis läuft.
         """
-        from utils.model_utils import _find_card
 
         real_card = ROOT / "benchmark_scores" / "model_cards" / "gpt-5-2025-08-07.json"
         assert real_card.exists(), f"Card nicht gefunden: {real_card}"
@@ -90,7 +89,6 @@ class TestGetModelCardContext:
         """Card mit verschachtelter strengths/known_limitations darf nicht
         TypeError werfen. Verwendet eine synthetische Card in einem
         tmp-Verzeichnis, damit keine echte Card gemockt werden muss."""
-        from utils.model_utils import _find_card
 
         # Synthetische Card schreiben + _find_card monkeypatchen
         fake_card = tmp_path / "test-card.json"

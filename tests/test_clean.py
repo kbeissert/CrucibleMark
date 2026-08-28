@@ -1,9 +1,8 @@
 """Phase 28: Tests fuer clean.py (Dispatcher, ohne Subprozess)."""
+import contextlib
 import sys
-from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
-import pytest
 
 from scripts.maintenance import clean as clean_module
 
@@ -66,11 +65,12 @@ def test_clean_dispatcher_invokes_run_clean_results(monkeypatch):
     )
 
     test_argv = ["clean.py", "--model", "qwen2.5:14b"]
-    with patch.object(sys, "argv", test_argv):
-        try:
-            clean_module.main()
-        except SystemExit:
-            pass  # argparse kann sys.exit rufen, ist hier egal
+    # argparse kann sys.exit rufen, ist hier egal
+    with (
+        patch.object(sys, "argv", test_argv),
+        contextlib.suppress(SystemExit),
+    ):
+        clean_module.main()
     # Wenn main() durchlaeuft, ist _run_clean_results aufgerufen worden
     assert len(called) == 1
     assert called[0][0] == "qwen2.5:14b"

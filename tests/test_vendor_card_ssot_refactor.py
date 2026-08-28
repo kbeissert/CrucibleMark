@@ -13,12 +13,9 @@ import tempfile
 from pathlib import Path
 from unittest.mock import patch
 
-import pytest
 
 from utils.vendor_card_template import (
-    CARDS_DIR,
     _safe_id,
-    ensure_vendor_card,
     load_vendor_card,
 )
 
@@ -92,7 +89,6 @@ class TestRiskCalculatorSSoT:
                 # hat. Da wir die Model-Card nicht mocken können, prüfen wir
                 # nur, dass der Code-Pfad korrekt ist.
                 from scripts.analysis.review import risk_calculator
-                source = risk_calculator.get_vendor_card_context.__code__.co_consts
                 # Die Funktion MUSS die unknown-Prüfung weiterhin selbst machen,
                 # weil load_vendor_card sie nicht durchsetzt.
                 # Wir prüfen, dass der String "unknown" im Source vorkommt.

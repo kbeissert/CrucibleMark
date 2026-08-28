@@ -10,7 +10,7 @@ from pathlib import Path
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_PROJECT_ROOT))
 
-from utils.scoring.llm_judge.judge_prompt_builder import build_prompts
+from utils.scoring.llm_judge.judge_prompt_builder import build_prompts  # noqa: E402
 
 
 class TestConnectorThinkWrapping:

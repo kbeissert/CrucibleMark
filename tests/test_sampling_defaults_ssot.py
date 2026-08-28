@@ -14,7 +14,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-import pytest
 
 # sys.path-Fix für direkten pytest-Aufruf
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent

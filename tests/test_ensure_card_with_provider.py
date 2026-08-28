@@ -11,7 +11,6 @@ from pathlib import Path
 
 import pytest
 
-import utils.card_utils as card_utils_module
 import utils.model_utils
 import utils.model_card_io as model_card_io_module
 from utils.card_utils import ensure_card
