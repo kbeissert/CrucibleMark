@@ -112,6 +112,7 @@ model_reasoning_config:
 - Wird in `utils/providers/openrouter.py:_build_openrouter_params()` als Unified-Parameter `reasoning` in `extra_body` geschrieben; Lookup analog zu `model_max_tokens` (Modell-ID, Config- und Internal-Form).
 - Mit Budget-Signal terminiert das Modell sein Reasoning selbstständig (~2k Tokens im verifizierten Re-Run); ohne Signal kann es endlos loopen. Ein reiner `model_max_tokens`-Override verschiebt den Cut nur.
 - `reasoning_effort` (low/medium/xhigh) unterstützen nur manche OpenRouter-Modelle (z.B. qwen3.8-27b, Default xhigh) — qwen3.8-flash kennt nur das Token-Cap. Vor Nutzung OpenRouter-Model-Metadaten prüfen.
+- **Invariante `thinking_budget < max_completion_tokens` (2026-08-28):** Der Alibaba-Upstream lehnt Requests mit `thinking_budget >= max_completion_tokens` strikt mit HTTP 400 `invalid_parameter_error` ab. Da das Cap fix in der Config steht, das Output-Budget aber aus der Modul-Kaskade kommt (`min(Modul-Budget, model_max_tokens)`), kann beides kollidieren (Befund: ux_writing 12000 == Cap 12000). `_clamp_reasoning_budget()` in `utils/providers/openrouter.py` reduziert das Cap auf `req_tokens // 2`, wenn die Invariante verletzt wäre — valide Konfigurationen bleiben unverändert; der Eingriff ist per Warn-Logzeile („reduziert auf") im Benchmark-Log erkennbar.
 
 ---
 

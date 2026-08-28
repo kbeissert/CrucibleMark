@@ -1,0 +1,64 @@
+{
+  "model_id": "gemma-4-e4b-spark",
+  "display_name": "Gemma 4 E4B",
+  "developer": "Google DeepMind",
+  "origin_country": "USA",
+  "developer_jurisdiction": "US",
+  "deployment_type": "localweights",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "low",
+  "weights_provenance_rationale": "Google DeepMind ist ein US-amerikanisches Unternehmen. Bei lokalem Betrieb der Apache-2.0-lizenzierten Gewichte ohne Cloud-Verbindung ist das Souveränitätsrisiko gering; CLOUD-Act-Relevanz entsteht primär bei API-/Cloud-Nutzung.[web:827][web:831][web:842]",
+  "model_family": "Gemma",
+  "vendor": "Google DeepMind",
+  "primary_focus": "generalist",
+  "use_case_primary": "generalist",
+  "parameter_architecture": "dense",
+  "params_total_b": 4.5,
+  "params_active_b": 4.5,
+  "context_window_k": 128,
+  "knowledge_cutoff": "2025-01",
+  "summary": "4,5 Milliarden effektive Parameter, Apache-2.0-Lizenz und Edge-Klasse: Gemma 4 E4B ist Googles Per-Layer-Embedding-Hybrid mit nativem Text-, Bild- und Audio-Verständnis. Läuft lokal mit sehr geringem Speicherbedarf, bietet 128.000 Tokens Kontext und konfigurierbares Thinking. Eine leistungs-fähige Wahl für multimodale Edge-Setups, die nicht in die Frontier-Klasse zielt — Reserven für sehr komplexe Aufgaben fehlen.",
+  "strengths": [
+    "Nativ multimodale Eingabe für Text, Bild und Audio.",
+    "Per-Layer-Embeddings für höhere Qualität pro Parameter als klassisches Dense.",
+    "Konfigurierbare Thinking-Modi mit Reasoning-Token-Feld.",
+    "Sehr geringer Speicherbedarf bei lokaler Nutzung.",
+    "Kommerziell nutzbar und modifizierbar unter Apache-2.0-Lizenz."
+  ],
+  "known_limitations": [
+    "Leistung fällt deutlich hinter die größeren 26B- und 31B-Gemma-4-Varianten zurück.",
+    "Audio-Eingabe ist auf maximal 30 Sekunden begrenzt.",
+    "Video-Eingabe ist in den offiziellen Quellen nicht als Standardmodalität belegt.",
+    "Thinking wird per `reasoning_content` getriggert und ist nicht bei jeder Aufgabe sichtbar.",
+    "Edge-Klasse bedeutet geringere Reserven für komplexe Langkontext-Workloads."
+  ],
+  "judge_context_hint": "Gemma 4 E4B als Edge-Modell mit Per-Layer-Embedding-Hybrid-Architektur und nativer Verarbeitung von Text, Bild und Audio. Bei der Bewertung Effizienz und Modalitäten-Abdeckung gegen die reduzierte Kapazität der 4,5-Milliarden-Parameter-Klasse gewichten. Thinking-Modus wird über das Reasoning-Token-Feld gesteuert und ist nicht bei jeder Aufgabe sichtbar — CoT-Extraktion entsprechend vorsichtig. Lokaler Betrieb ohne Cloud-Verbindung, Apache-2.0-Lizenz.",
+  "architecture_tags": [
+    "General",
+    "Instruct",
+    "Thinking-Optional",
+    "Multimodal",
+    "Edge",
+    "Open-Weight",
+    "Local",
+    "Audio"
+  ],
+  "input_modalities": [
+    "text",
+    "image",
+    "audio"
+  ],
+  "output_modalities": [
+    "text"
+  ],
+  "supports_tool_use": true,
+  "license": "Apache 2.0",
+  "license_url": "https://opensource.org/licenses/Apache-2.0",
+  "commercial_use_allowed": true,
+  "weights_license_tier": "open-weights",
+  "model_version": "4",
+  "quantization_format": "GGUF",
+  "model_variant": "E4B",
+  "card_status": "complete",
+  "size_class": "Edge"
+}

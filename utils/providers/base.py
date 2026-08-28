@@ -3,9 +3,22 @@ Provider-spezifische LLM Clients
 Getrennte Implementierungen für Ollama, Anthropic, Mistral
 """
 import logging
+import re
 from typing import Any
 from collections.abc import Callable
 logger = logging.getLogger(__name__)
+
+# Budget-/Quota-Fehlererkennung mit Word-Boundaries: Substring-Matching
+# (``"budget" in err_str``) matcht fälschlich Parameternamen wie
+# ``thinking_budget`` (Alibaba/Qwen-HTTP-400: "max_completion_tokens must be
+# greater than thinking_budget") — Underscore ist ein Word-Charakter, daher
+# greift \b dort nicht. Phrasen ohne Ambiguität bleiben Substring-Matches.
+_BUDGET_ERROR_PATTERN = re.compile(r"\b(quota|budget|billing|credits?|payment)\b")
+_BUDGET_ERROR_PHRASES = (
+    "insufficient_funds",
+    "402 payment required",
+    "exceeded your current quota",
+)
 
 
 class ThinkAccumulator:
@@ -315,12 +328,21 @@ class BaseProviderClient:
                         rate_limit_attempts += 1
                         continue # Retry in the inner while-loop
                     # --- FAST FAIL für Budget/Quota-Fehler ---
-                    budget_keywords = [
-                        "quota", "budget", "billing", "credit", "insufficient_funds",
-                        "payment", "402 payment required", "exceeded your current quota"
-                    ]
-                    if any(kw in err_str for kw in budget_keywords):
-                        logger.error("💸 Budget/Quota erschöpft! API-Anfrage sofort abgebrochen (kein Token-Fallback).")
+                    # Status 402 ist immer Budget; sonst Word-Boundary-Matching
+                    # (verhindert False-Positives auf Parameternamen wie
+                    # ``thinking_budget`` bei HTTP-400-Parameterfehlern).
+                    status_code = getattr(e, "status_code", None)
+                    is_budget_error = (
+                        status_code == 402
+                        or bool(_BUDGET_ERROR_PATTERN.search(err_str))
+                        or any(p in err_str for p in _BUDGET_ERROR_PHRASES)
+                    )
+                    if is_budget_error:
+                        logger.error(
+                            "💸 Budget/Quota erschöpft! API-Anfrage sofort abgebrochen "
+                            "(kein Token-Fallback). Original-Fehler: %s",
+                            str(e)[:300],
+                        )
                         raise e
                     # --- Token-Fallback Check ---
                     is_token_error = any(kw.lower() in err_str for kw in error_keywords)

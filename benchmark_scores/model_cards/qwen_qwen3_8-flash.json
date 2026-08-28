@@ -5,9 +5,9 @@
   "origin_country": "CN",
   "developer_jurisdiction": "CN",
   "deployment_type": "cloud-only",
-  "local_deployment_possible": false,
-  "weights_provenance_risk": "high",
-  "weights_provenance_risk_rationale": "TODO",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "Basis-Gewichte sind offen verfuegbar (Qwen/Qwen3.8-Flash-Next, qwen-community-1.0, offizielle NVFP4/GGUF/FP8-Quants) — lokales Deployment moeglich. Der getestete OpenRouter-Endpoint ist jedoch Alibabas Produktions-Build (Qwen3.8-Flash, 1M Kontext, built-in Tools), dessen exakte Post-Training-Differenzen zu Flash-Next nicht offengelegt sind. Entwicklung/Betrieb unterliegen chinesischer Jurisdiktion.",
   "model_family": "Qwen3.8",
   "vendor": "Alibaba Cloud",
   "primary_focus": "generalist",
@@ -17,24 +17,24 @@
   "params_active_b": null,
   "context_window_k": 1024,
   "knowledge_cutoff": null,
-  "summary": "Qwen3.8 Flash ist Alibabas cloud-only Multimodal-Reasoning-Modell mit einer Million Tokens Kontext und auff\u00e4llig niedrigen 0,16 / 0,47 USD pro Million Tokens. Verarbeitet Text, Bild und Video mit Tool Calling und Structured Outputs, ausschlie\u00dflich \u00fcber Alibaba Cloud und Aggregatoren wie OpenRouter \u2014 keine offenen Gewichte, keine lokale Option. Architektur und Parameteranzahl sind nicht offengelegt, Daten laufen \u00fcber chinesische Jurisdiktion.",
+  "summary": "Qwen3.8 Flash ist Alibabas cloud-only Multimodal-Reasoning-Modell mit einer Million Tokens Kontext und 0,16 / 0,47 USD pro Million Tokens. Verarbeitet Text, Bild und Video mit Tool Calling, erreichbar über Alibaba Cloud und OpenRouter. Die offene Basis Qwen3.8-Flash-Next ist verfügbar, der getestete Build ist Cloud-only. Architektur und Parameteranzahl sind nicht offengelegt, Daten laufen über chinesische Jurisdiktion.",
   "strengths": [
     "Liefert eine Million Tokens Kontext bei bis zu 131.072 Completion-Tokens.",
     "Verarbeitet Text, Bild und Video nativ in einem einzigen Modell.",
-    "Unterst\u00fctzt Reasoning, Tool Calling und JSON-Schema strukturierte Ausgaben.",
-    "Bleibt im Cloud-Frontier-Segment mit 0,16 / 0,47 USD pro Million Tokens preislich auff\u00e4llig niedrig.",
-    "L\u00e4uft \u00fcber Alibaba Cloud und ist \u00fcber OpenRouter als Multi-Provider-Routing erreichbar."
+    "Unterstützt Reasoning, Tool Calling und JSON-Schema strukturierte Ausgaben.",
+    "Bleibt im Cloud-Frontier-Segment mit 0,16 / 0,47 USD pro Million Tokens preislich auffällig niedrig.",
+    "Läuft über Alibaba Cloud und ist über OpenRouter als Multi-Provider-Routing erreichbar."
   ],
   "known_limitations": [
-    "Cloud-only ohne offene Gewichte, kein lokales Deployment m\u00f6glich.",
-    "Chinesische Jurisdiktion bleibt bei Datenhaltung und Inferenz als Souver\u00e4nit\u00e4tsfaktor.",
+    "Getesteter Build ist Cloud-only; Differenz zur offenen Basis Qwen3.8-Flash-Next nicht dokumentiert.",
+    "Chinesische Jurisdiktion bleibt bei Datenhaltung und Inferenz als Souveränitätsfaktor.",
     "Parameteranzahl und Architektur werden von Alibaba nicht offengelegt.",
     "Knowledge-Cutoff offiziell nicht dokumentiert.",
-    "Routing nur \u00fcber Alibaba Cloud reduziert Ausfallsicherheit gegen\u00fcber Multi-Provider-Setups.",
-    "Kein reasoning_effort-Parameter (OpenRouter-Metadaten): Thinking-Tiefe ist nicht in Stufen (low/medium/xhigh) w\u00e4hlbar \u2014 nur ein hartes Token-Cap via reasoning.max_tokens.",
-    "Ohne Budget-Signal nicht-terminierendes CoT m\u00f6glich: verbrannte im Benchmark 16384 bzw. 20000 Output-Tokens zu 100% als Reasoning (0 sichtbarer Output)."
+    "Routing nur über Alibaba Cloud reduziert Ausfallsicherheit gegenüber Multi-Provider-Setups.",
+    "Kein reasoning_effort-Parameter — Thinking-Tiefe nur per reasoning.max_tokens deckbar.",
+    "Ohne Budget-Cap nicht-terminierendes CoT möglich: 0 sichtbarer Output bei vollem Token-Budget."
   ],
-  "judge_context_hint": "Qwen3.8 Flash ist Alibabas cloud-only multimodales Reasoning-Modell mit einer Million Tokens Kontext f\u00fcr Coding-, Agentic- und Analyse-Workloads. Bei der Bewertung Coding-St\u00e4rke, Tool-Use und Langkontext priorisieren; Reasoning wird providerseitig geliefert und ist nicht als sichtbarer Think-Tag im Antworttext zu erwarten. Modell ist nur \u00fcber Alibaba Cloud und Aggregatoren wie OpenRouter erreichbar \u2014 Souver\u00e4nit\u00e4t und Datentransfer sind zentrale Bewertungskriterien, ebenso fehlende Offenlegung von Parameteranzahl und Architektur. Reasoning-Verhalten (Benchmark-Befund 2026-08-27): Ohne Budget-Signal kann das Thinking nicht terminieren und den kompletten Output-Budget konsumieren; mit gesetztem reasoning.max_tokens steuert das Modell sein Reasoning selbstst\u00e4ndig und beendet es typischerweise nach ~2k Tokens. Bewertungen sollen daher von einem fokussierten, nicht abgehackten Reasoning ausgehen.",
+  "judge_context_hint": "Qwen3.8 Flash ist Alibabas cloud-only Multimodal-Reasoning-Modell mit einer Million Tokens Kontext; priorisiere Coding-Stärke, Tool-Use und Langkontext bei der Bewertung. Reasoning wird providerseitig geliefert — kein sichtbarer Think-Tag im Antworttext; Modell ist nur über Alibaba Cloud und OpenRouter erreichbar. Benchmark-Befund 2026-08-27: ohne reasoning.max_tokens verbraucht das Thinking das gesamte Output-Budget ohne Terminierung; mit Cap endet es typischerweise selbst nach rund 2.000 Tokens — Bewertung von fokussiertem Reasoning ausgehen.",
   "architecture_tags": [
     "Thinking",
     "Agentic-Orchestrator",
@@ -68,8 +68,8 @@
   "presence_penalty": null,
   "seed": null,
   "stop_sequences": null,
-  "license": "Proprietary (Alibaba Cloud Service)",
-  "license_url": "https://www.alibabacloud.com/legal/terms",
+  "license": "qwen-community-1.0 (Basis-Gewichte Qwen3.8-Flash-Next); getesteter Service-Build via Qwen Cloud/OpenRouter",
+  "license_url": "https://huggingface.co/Qwen/Qwen3.8-Flash-Next/blob/main/LICENSE",
   "commercial_use_allowed": true,
   "weights_license_tier": "proprietary",
   "model_version": "3.8-Flash",
@@ -84,7 +84,7 @@
   "size_class": "Frontier",
   "generated_at": "2026-08-27T06:57:25.448727+00:00",
   "thinking_probe_detected": true,
-  "thinking_probe_evidence": "Multi-Probe (3 prompts, 3 detected, best confidence=medium):\n  - math: [math] reasoning_tokens=49 in provider metadata. First 200 chars: To find average speed, use:\n\n\\[\n\\text{Average speed} = \\frac{\\text{distance}}{\\text{time}}\n\\]\n\nGiven:\n\n\\[\n\\text{distance} = 120 \\text{ km}\n\\]\n\n\\[\n\\text{time} = 1.5 \\text{ hours}\n\\]\n\nSo:\n\n\\[\n\\text{Aver\n  - code: [code] reasoning_tokens=2285 in provider metadata. First 200 chars: I\u2019ll sort the list in **ascending order** using **insertion sort**.\n\n## Algorithm: Insertion Sort\n\nInsertion sort works like sorting playing cards in your hand:\n\n1. Treat the first element as already \n  - decision: [decision] reasoning_tokens=593 in provider metadata. First 200 chars: There is no simple universal \u201cyes\u201d or \u201cno.\u201d The right answer depends on the specific situation, the probabilities of harm, and the ethical rules we are willing to give machines.\n\nA defensible principl",
+  "thinking_probe_evidence": "Multi-Probe (3 prompts, 3 detected, best confidence=medium):\n  - math: [math] reasoning_tokens=49 in provider metadata. First 200 chars: To find average speed, use:\n\n\\[\n\\text{Average speed} = \\frac{\\text{distance}}{\\text{time}}\n\\]\n\nGiven:\n\n\\[\n\\text{distance} = 120 \\text{ km}\n\\]\n\n\\[\n\\text{time} = 1.5 \\text{ hours}\n\\]\n\nSo:\n\n\\[\n\\text{Aver\n  - code: [code] reasoning_tokens=2285 in provider metadata. First 200 chars: I’ll sort the list in **ascending order** using **insertion sort**.\n\n## Algorithm: Insertion Sort\n\nInsertion sort works like sorting playing cards in your hand:\n\n1. Treat the first element as already \n  - decision: [decision] reasoning_tokens=593 in provider metadata. First 200 chars: There is no simple universal “yes” or “no.” The right answer depends on the specific situation, the probabilities of harm, and the ethical rules we are willing to give machines.\n\nA defensible principl",
   "thinking_probe_confidence": "medium",
   "thinking_probe_at": "2026-08-27T06:57:25.448636+00:00",
   "thinking_probe_manual_override": null,
@@ -94,5 +94,5 @@
   "last_modified_at": null,
   "heritage_ids": [],
   "community": null,
-  "weights_provenance_rationale": "Alibaba hat seinen Sitz in China; Entwicklung, Betrieb und Datenhaltung unterliegen chinesischer Jurisdiktion. F\u00fcr Qwen3.8-Flash sind keine offenen Gewichte verf\u00fcgbar, der Zugang erfolgt \u00fcber Alibaba Cloud bzw. Aggregatoren wie OpenRouter. Dadurch bleiben Cloud-Inferenz und Datensouver\u00e4nit\u00e4t der zentrale Risikofaktor, auch wenn der Preis und die Leistung sehr attraktiv sind.[web:728][web:732][web:741]"
+  "weights_provenance_rationale": "Alibaba hat seinen Sitz in China; Entwicklung, Betrieb und Datenhaltung unterliegen chinesischer Jurisdiktion. Für Qwen3.8-Flash sind keine offenen Gewichte verfügbar, der Zugang erfolgt über Alibaba Cloud bzw. Aggregatoren wie OpenRouter. Dadurch bleiben Cloud-Inferenz und Datensouveränität der zentrale Risikofaktor, auch wenn der Preis und die Leistung sehr attraktiv sind.[web:728][web:732][web:741]"
 }

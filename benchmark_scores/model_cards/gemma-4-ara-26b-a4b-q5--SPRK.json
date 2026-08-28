@@ -1,0 +1,61 @@
+{
+  "model_id": "gemma-4-ara-26b-a4b-q5",
+  "display_name": "Gemma 4 26B-A4B Q5_K_M (ARA-Abliterated)",
+  "developer": "Google DeepMind / ARA-APEX",
+  "origin_country": "US",
+  "developer_jurisdiction": "US",
+  "deployment_type": "localweights",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_rationale": "Die Basisgewichte stammen von Google DeepMind und sind unter Apache 2.0 veröffentlicht. Diese Karte beschreibt jedoch eine Community-Abliteration durch ARA-APEX, also eine modifizierte Derivat-Variante mit entfernten Sicherheitsfiltern und zusätzlicher Quantisierung. Der rein lokale Betrieb vermeidet Cloud-Risiken, aber die fehlende offizielle Dokumentation der Modifikation und die uncensored Abliteration erhöhen das Provenance-Risiko gegenüber der unveränderten Basis.[web:809][web:812][web:821]",
+  "model_family": "Gemma 4",
+  "vendor": "Google DeepMind / ARA-APEX",
+  "primary_focus": "generalist",
+  "use_case_primary": "generalist",
+  "parameter_architecture": "moe",
+  "params_total_b": 25.2,
+  "params_active_b": 4.0,
+  "context_window_k": 256,
+  "knowledge_cutoff": "2025-01",
+  "summary": "Diese ARA-Abliterated-Variante entfernt die Sicherheitsfilter von Googles Gemma 4 26B-A4B MoE und bringt das Modell als Q5-GGUF auf Workstation-Hardware. Die Architektur bleibt mit 25 Milliarden Gesamt- und rund 4 Milliarden aktiven Parametern pro Token effizient; 256.000 Tokens Kontext, Apache-2.0-Lizenz. Thinking-Status und multimodale Fähigkeiten sind in der Variante noch nicht sauber verifiziert — für Forschung und Red-Teaming gedacht, nicht als Endkonsumenten-Assistant.",
+  "strengths": [
+    "MoE-Architektur mit 25 Milliarden Gesamt- und rund 4 Milliarden aktiven Parametern pro Token.",
+    "Q5_K_M-Quantisierung als Kompromiss zwischen Präzision und Speicherbedarf.",
+    "Abliterated Build mit dokumentierter Zwei-Pass-Methode zur Filterentfernung.",
+    "256.000 Tokens Kontext für lange Dokumente und Agentic-Workflows.",
+    "Apache-2.0-Lizenz mit kommerzieller Nutzbarkeit."
+  ],
+  "known_limitations": [
+    "Abliteration entfernt die Sicherheitsfilter, daher ungeeignet als Endkonsumenten-Assistant.",
+    "ARA-APEX-Modifikationen sind nicht offiziell durch Google dokumentiert.",
+    "Multimodalität für Bild, Audio und Video hängt von einer separaten Projektor-Datei ab.",
+    "Thinking-Status unklar; eine neue Probe steht aus.",
+    "Q5-Quantisierung zeigt bei hochkomplexen Reasoning-Aufgaben Einbußen gegenüber Q8."
+  ],
+  "judge_context_hint": "Gemma 4 26B-A4B als ARA-APEX-Abliterated-Variante mit Q5_K_M-Quantisierung, lokales Deployment ohne Cloud-Verbindung. Bei der Bewertung die MoE-Basis (25 Milliarden Gesamt-, rund 4 Milliarden aktive Parameter), die Q5-Quantisierung und die abliterierte Modifikation getrennt gewichten. Thinking-Status ist unklar — keine Annahmen über Reasoning-Fähigkeit treffen, CoT-Format erst nach Probe verifizieren. Bewertung läuft textuell, sodass multimodale Fähigkeiten nur sekundär ins Gewicht fallen.",
+  "architecture_tags": [
+    "General",
+    "Instruct",
+    "Uncensored",
+    "Multimodal",
+    "MoE",
+    "Open-Weight",
+    "Local"
+  ],
+  "input_modalities": [
+    "text"
+  ],
+  "output_modalities": [
+    "text"
+  ],
+  "supports_tool_use": true,
+  "license": "Apache 2.0",
+  "license_url": "https://opensource.org/licenses/Apache-2.0",
+  "commercial_use_allowed": true,
+  "weights_license_tier": "open-weights",
+  "model_version": "4",
+  "quantization_format": "Q5_K_M GGUF",
+  "model_variant": "ARA-Abliterated Q5",
+  "card_status": "complete",
+  "size_class": "Workstation"
+}

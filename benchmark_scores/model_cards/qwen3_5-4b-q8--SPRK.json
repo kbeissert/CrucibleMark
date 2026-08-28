@@ -1,0 +1,62 @@
+{
+  "model_id": "qwen3_5-4b-q8",
+  "display_name": "Qwen 3.5 4B (Unsloth)",
+  "developer": "Alibaba Cloud (Base) / Unsloth (GGUF-Quant)",
+  "origin_country": "China",
+  "developer_jurisdiction": "CN",
+  "deployment_type": "localweights",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "low",
+  "weights_provenance_rationale": "Die Gewichte stammen aus der Apache-2.0-lizenzierten Qwen3.5-Familie und werden hier als lokale Unsloth-GGUF-Variante ausgeführt. Ohne Cloud-Verbindung ist das operative Risiko gering; die lokale Nutzung minimiert Datentransfer- und Jurisdiktionsfragen.[web:883][web:885][web:886]",
+  "model_family": "Qwen",
+  "vendor": "Alibaba",
+  "primary_focus": "generalist",
+  "use_case_primary": "generalist",
+  "parameter_architecture": "dense",
+  "params_total_b": 4.0,
+  "params_active_b": 4.0,
+  "context_window_k": 262,
+  "knowledge_cutoff": "2025-06",
+  "summary": "Die Q8-Referenzvariante von Qwen 3.5 4B: Unsloth-Dynamic-GGUF in UD-Q8_K_XL mit nahezu Vollpräzision als hochwertigste Stufe der 4B-Reihe. Vier Milliarden dichte Parameter, 262.000 Tokens Kontext, Apache-2.0-Lizenz, komplett lokal betreibbar. Thinking lässt sich optional zuschalten; eignet sich als Quantisierungs-Referenz für Vergleiche gegenüber Q4- und Q6-Varianten derselben Familie.",
+  "strengths": [
+    "Thinking-Optional für zuschaltbares Reasoning bei komplexeren Aufgaben.",
+    "Q8-Quantisierung mit nahezu Vollpräzision als hochwertigste Variante der 4B-Reihe.",
+    "Optimale Referenzvariante für Quantisierungsvergleiche.",
+    "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit.",
+    "Lokaler Betrieb ohne Cloud-Zwang."
+  ],
+  "known_limitations": [
+    "Höherer VRAM-Bedarf als bei niedriger quantisierten 4B-Varianten.",
+    "Begrenzte Reasoning-Kapazität bei hochkomplexen Aufgaben.",
+    "Mögliche zensierte oder ausweichende Antworten bei sensiblen Themen mit China-Bezug."
+  ],
+  "judge_context_hint": "Qwen 3.5 4B als Unsloth-Dynamic-GGUF in UD-Q8_K_XL, die hochwertigste Quantisierungs-Stufe der 4B-Reihe mit nahezu Vollpräzision. Bei der Bewertung die 4-Milliarden-Architektur und die Q8-Referenzrolle berücksichtigen — die Karte eignet sich als Vergleichsanker gegen Q4- und Q6-Varianten derselben Familie, nicht gegen größere Modelle. Thinking ist konfigurationsabhängig zuschaltbar, CoT-Extraktion erst nach expliziter Aktivierung verlässlich. Zensur-Tendenzen bei China-bezogenen Themen gehören zur Standard-Bewertung.",
+  "architecture_tags": [
+    "General",
+    "Instruct",
+    "Thinking-Optional",
+    "Open-Weight",
+    "Local",
+    "Dense"
+  ],
+  "input_modalities": [
+    "text"
+  ],
+  "output_modalities": [
+    "text"
+  ],
+  "supports_tool_use": true,
+  "license": "Apache 2.0",
+  "license_url": "https://opensource.org/licenses/Apache-2.0",
+  "commercial_use_allowed": true,
+  "weights_license_tier": "open-weights",
+  "model_version": "3.5",
+  "quantization_format": "UD-Q8_K_XL GGUF",
+  "model_variant": "Unsloth Dynamic Q8",
+  "card_status": "complete",
+  "size_class": "Nano",
+  "thinking_probe_detected": false,
+  "thinking_probe_confidence": "low",
+  "cot_marker_family": null,
+  "cot_tags_detected": null
+}

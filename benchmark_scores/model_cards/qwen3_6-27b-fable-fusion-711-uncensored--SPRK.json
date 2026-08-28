@@ -1,0 +1,62 @@
+{
+  "model_id": "qwen3_6-27b-fable-fusion-711-uncensored--SPRK",
+  "display_name": "Qwen 3.6 27B Fable-Fusion-711 Uncensored Q5_K_M (GGUF)",
+  "developer": "Community (Fable-Fusion-711) / Alibaba (base model)",
+  "origin_country": "CN",
+  "developer_jurisdiction": "CN",
+  "deployment_type": "localweights",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_rationale": "Die Basisgewichte stammen aus der Apache-2.0-lizenzierten Qwen3.6-27B-Familie von Alibaba. Diese Karte beschreibt jedoch einen Community-Fine-Tune mit uncensored Modifikation und GGUF-Quantisierung; die Inferenz läuft vollständig lokal ohne Cloud-Verbindung. Das Risiko liegt daher weniger in Datenabfluss als in der intransparenten Fine-Tune-Herkunft und der fehlenden offiziellen Modellkarte des Derivat-Builds.[web:707][web:727][web:785]",
+  "model_family": "Qwen3.6",
+  "vendor": "Alibaba",
+  "primary_focus": "general",
+  "use_case_primary": "generalist",
+  "parameter_architecture": "dense",
+  "params_total_b": 27.8,
+  "params_active_b": 27.8,
+  "context_window_k": 262,
+  "knowledge_cutoff": "2025-06",
+  "summary": "Uncensored Community-Fine-Tune auf Alibabas Qwen3.6-27B-Dense-Basis mit Always-Thinking-Verhalten und MTP-Speculative-Decoding: 27,8 Milliarden dichte Parameter, Q5_K_M-GGUF-Quantisierung, 262.000 Tokens Kontext, Apache-2.0-Lizenz. Lokal betreibbar ohne Cloud-Verbindung, eignet sich für experimentelle Coding- und Agenten-Szenarien — nicht für streng regulierte Produktivumgebungen.",
+  "strengths": [
+    "Always-Thinking-Verhalten der Qwen3.6-Basis mit starkem Reasoning-Potenzial.",
+    "MTP-Heads im GGUF ermöglichen Speculative Decoding für bessere lokale Durchsatzwerte.",
+    "Q5_K_M-Quantisierung bietet einen brauchbaren Qualitäts- und Speicher-Kompromiss.",
+    "Vollständig lokaler Betrieb ohne Cloud-Abhängigkeit.",
+    "Uncensored Fine-Tune reduziert Ablehnungen bei sensiblen Prompts."
+  ],
+  "known_limitations": [
+    "Uncensored-Training kann Qualität und Faktentreue mindern.",
+    "Community-Fine-Tune ohne offizielle Modellkarte; Trainingsdaten-Historie teils intransparent.",
+    "MTP- und Thinking-Setups können je nach llama.cpp-Fork experimentell sein oder Flags benötigen.",
+    "Lange Reasoning-Ketten können das Tokenbudget ausreizen.",
+    "27B dense bleibt lokal speicherintensiv, auch in Q5_K_M."
+  ],
+  "judge_context_hint": "Uncensored Community-Fine-Tune auf Qwen3.6-27B-Dense mit Always-Thinking und MTP-Speculative-Decoding, lokal als Q5_K_M-GGUF betreibbar. Bei der Bewertung die 27,8-Milliarden-Klasse, die Q5-Quantisierung und die Uncensored-Modifikation getrennt gewichten — Safety-Refusals sind per Fine-Tune entfernt und kein Bewertungskriterium. Längere Reasoning-Ketten sind erwartbar; Qualitäts- und Sicherheitsabstriche gegenüber dem Basismodell sind möglich. Lokales Deployment ohne Cloud-Verbindung, Apache-2.0-Lizenz.",
+  "architecture_tags": [
+    "Thinking",
+    "Dense",
+    "MTP",
+    "Tool-Use",
+    "Open-Weight",
+    "Local",
+    "Uncensored",
+    "Configurable-Reasoning"
+  ],
+  "input_modalities": [
+    "text"
+  ],
+  "output_modalities": [
+    "text"
+  ],
+  "supports_tool_use": true,
+  "license": "Apache-2.0",
+  "license_url": "https://opensource.org/licenses/Apache-2.0",
+  "commercial_use_allowed": true,
+  "weights_license_tier": "open-weights",
+  "model_version": "3.6",
+  "quantization_format": "Q5_K_M GGUF",
+  "model_variant": "Uncensored Q5_K_M GGUF",
+  "card_status": "complete",
+  "size_class": "Workstation"
+}

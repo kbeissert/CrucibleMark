@@ -71,3 +71,17 @@ werden — sonst 400-Fehler bei allen API-Calls (ThinkingProbe + Benchmark).
 **Verifikations-Datum:** 2026-08-19
 
 ---
+
+## OpenRouter: „Budget/Quota erschöpft" als False Positive bei HTTP 400 thinking_budget (2026-08-28)
+
+**Befund:** Benchmark-Abbruch qwen/qwen3.8-flash (ux_writing u.a.) mit „💸 Budget/Quota erschöpft!" trotz ausreichender OpenRouter-Credits (~$12.70 Rest verifiziert).
+
+**Ursache (zweifach):** (1) Der Alibaba-Upstream lehnt Requests mit `thinking_budget >= max_completion_tokens` strikt ab — Modul-Budget (12000) == Reasoning-Cap (12000) → HTTP 400 `invalid_parameter_error` („max_completion_tokens [12000] must be greater than thinking_budget [12000]"). (2) Der Budget-Fast-Fail in `utils/providers/base.py` matchte per Substring; `thinking_budget` enthält `budget` → der Parameter-Fehler wurde als Budget-Erschöpfung fehlklassifiziert. Die Frühdiagnose „transienter Upstream-Fehler" war falsch: Die 429-Rate-Limits des Alibaba-Shared-Pools sind real (~40% der Test-Requests), aber nicht abort-ursächlich.
+
+**Lösung:** `_clamp_reasoning_budget()` (openrouter.py) reduziert das Reasoning-Cap auf `req_tokens // 2`, nur wenn die Invariante verletzt wäre; Budget-Erkennung (base.py) auf Word-Boundary-Regex + `status_code == 402` umgestellt; der Fast-Fail loggt jetzt den Original-Fehlertext (erste 300 Zeichen).
+
+**Pflege:** Bei scheinbaren Budget-Abbrüchen immer den Original-Fehler im Log prüfen (seit 2026-08-28 mitgeloggt). Module mit 12000-Budget laufen qwen3.8-flash mit reduzierten 6000 Reasoning-Tokens — ausreichend, bei Score-Auffälligkeiten Modul-Budget oder Cap adjustieren.
+
+**Verifikations-Datum:** 2026-08-28 (Live-Repro 12000/12000 → HTTP 400, 12000/6000 → OK; 45 Tests grün, Ruff clean)
+
+---

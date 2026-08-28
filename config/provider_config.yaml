@@ -391,7 +391,7 @@ providers:
       short_code: LCL
       api_type: ollama
       enabled: false
-      auto_discover: true
+      auto_discover: false
       models_filter: local
 
     # llama.cpp: Lokaler Inferenz-Server (OpenAI-kompatible API).
@@ -404,7 +404,7 @@ providers:
       short_code: M4APL
       api_type: llamacpp
       model_type: open_weights_local
-      enabled: true
+      enabled: false
       context_window: 32000
       base_url: "http://127.0.0.1:1235/v1"
       api_key: "sk-local"
@@ -514,28 +514,55 @@ providers:
       short_code: SPRK
       api_type: llamacpp
       model_type: open_weights_local
-      enabled: true
-      read_timeout: 2400
+      enabled: true  # asusGX10 erreichbar; Benchmark-llama-server läuft auf :1234.
+      read_timeout: 2400  # 40 Min httpx-Read-Timeout — Thinking-/Long-Output-Modelle brauchen lange.
+      # Wird beim Serverstart als --ctx-size gebacken (llamacpp_base.py:
+      # _build_server_cmd); pro Modell via `context_length` überschreibbar.
       context_window: 65536
+      # BEFUND (2026-08-27): vom llama.cpp-Connector NICHT gelesen — num_predict
+      # ist ein Ollama-Konzept. Output-Budget läuft über token_param_name (max_tokens).
       num_predict: 65536
+      # Benchmark-Port auf der GX10 (Tailscale-IP). Vorsicht: VS-Code-Port-Forwards
+      # der Remote-Session können Mac-localhost auf GX10-Ports mappen und so den
+      # Mac-Provider blockieren (Kollisionsfall 2026-08-27: Mac:1235 → GX10:1234).
       base_url: "http://100.89.110.0:1234/v1"
       api_key: "sk-local"
+      # GGUF-Basispfad auf der GX10; `model_file` der Modelle ist relativ dazu.
       model_dir: /home/kay_beissert/ai/models/llm/gguf
       token_param_name: max_tokens
+      # SSH-Wrapper: nur das Remote-Binary angeben — Modellpfad, --alias,
+      # --ctx-size, --threads/--parallel, --host/--port, Sampling-Defaults und
+      # --reasoning on/off baut der Connector in _build_server_cmd() und hängt
+      # den Log-Redirect an. Flags hier würden doppelt/inkonsistent sein.
       server_start_cmd: ssh -o BatchMode=yes -o ConnectTimeout=10 -p 22 kay_beissert@100.89.110.0 /home/kay_beissert/ai/apps/llama.cpp/build/bin/llama-server
+      # Stoppt NUR den Benchmark-Server auf :1234 — weitere llama-server auf der
+      # GX10 (:1235 Coder, :1230 Embeddings) bleiben unberührt.
       server_stop_cmd: ssh -o BatchMode=yes -o ConnectTimeout=10 -p 22 kay_beissert@100.89.110.0 "pkill -f 'llama-server.*--port 1234'"
+      # true → server_post_stop_cmd läuft nach dem Batch-Stop
+      # (llamacpp_batch.run_llamacpp_provider_cleanup).
       cleanup_on_exit: true
+      # Remote-Caches nach dem Batch räumen (KV-Cache-/tmp-Reste der GGUF-Loads).
       server_post_stop_cmd: ssh -o BatchMode=yes -o ConnectTimeout=10 -p 22 kay_beissert@100.89.110.0 "rm -rf ~/.cache/llama.cpp /tmp/llama.cpp*"
-      server_ready_timeout_sec: 180
-      existing_server_ready_timeout_sec: 120
-      server_ready_poll_sec: 5
+      server_ready_timeout_sec: 180  # Kaltstart: große GGUFs laden von SSD ins Unified Memory.
+      existing_server_ready_timeout_sec: 120  # Adoption eines bereits laufenden Servers.
+      server_ready_poll_sec: 5  # Poll-Intervall der /health- + Modell-Bereitschaftsprobe.
+      # HTTP-Timeout der einzelnen Readiness-Probe (Hallo-Request); muss über
+      # der Latenz des ersten Warmup-Requests liegen.
       server_ready_probe_timeout_sec: 60
-      server_log: ~/ai/llama-lab-spark.log
+      server_log: ~/ai/llama-lab-spark.log  # Lokales Log (SSH-Redirect >> log 2>&1).
+      # Server lauscht auf allen Interfaces — nur so ist der Zugriff vom
+      # Benchmark-Host per Tailscale-IP möglich (Default 127.0.0.1 wäre GX10-lokal).
       bind_host: 0.0.0.0
-      threads: 10
+      threads: 10  # CPU-Threads (--threads) im Server-Cmd.
+      # Slots (--parallel); pro Modell via `parallel` überschreibbar
+      # (z.B. Hybrid-Attention-Modelle mit parallel=1).
       parallel: 2
       hardware_profile: dgx_spark_cuda
-      models: []
+      # Pro Modell: id (eindeutig ggü. Mac-Provider), name, model_file (relativ
+      # zu model_dir), n_gpu_layers, enable_thinking (→ --reasoning on/off),
+      # optional context_length, parallel, reasoning, model_draft_file,
+      # extra_server_args (z.B. --jinja, --reasoning-format deepseek).
+      models:
       # - id: qwable-3.6-27b-q4
       #   name: Qwable 3.6 27B Q4_K_M (GGUF, Fable5-tune)
       #   model_file: Qwable27B/Qwable-27b_Q4_K_M.gguf
@@ -631,7 +658,64 @@ providers:
       #   model_file: gemma-4-31B-it-qat-UD-Q4_K_XL.gguf
       #   n_gpu_layers: 99
 
-      # ── Aktive Spark-Modelle ──
+      # ── Aktive Spark-Modelle (Inventar-Check 2026-08-27) ──
+      # llama.cpp wurde auf dem gx10 reaktiviert. IDs sind eindeutig gegenüber
+      # local/llamacpp (Mac): Underscores statt Mac-Dots (qwen3_5-4b-q8 statt
+      # qwen3.5-4b-q8) bzw. '-spark'-Suffix bei identischem Mac-ID
+      # (gemma-4-e4b-spark). Cards: benchmark_scores/model_cards/<id>--SPRK.json.
+      # BGE-M3 (Embedding-GGUF) ist kein Benchmark-Kandidat und bewusst nicht
+      # als Modell-Eintrag geführt.
+
+      - id: qwen3_5-4b-q4
+        name: Qwen 3.5 4B Q4_K_XL (GGUF)
+        model_file: Qwen3.5-4B-UD-Q4_K_XL/Qwen3.5-4B-UD-Q4_K_XL.gguf
+        n_gpu_layers: 99
+        enable_thinking: false
+      - id: qwen3_5-4b-q8
+        name: Qwen 3.5 4B Q8_K_XL (GGUF)
+        model_file: Qwen3.5-4B-UD-Q8_K_XL/Qwen3.5-4B-UD-Q8_K_XL.gguf
+        n_gpu_layers: 99
+        enable_thinking: false
+      - id: gemma-4-12b-it-ud-q6_k_xl-spark
+        name: Gemma 4 12B Instruct UD-Q6_K_XL (GGUF)
+        model_file: Gemma4-12B-it-UD-Q6_K_XL/gemma-4-12b-it-UD-Q6_K_XL.gguf
+        n_gpu_layers: 99
+        enable_thinking: true  # Gemma 4 Channel-Tokens (<|channel|>): --jinja + --reasoning-format deepseek separiert Thinking in reasoning_content
+        extra_server_args:
+          - "--jinja"
+          - "--reasoning-format deepseek"
+      - id: gemma-4-e4b-spark
+        name: Gemma 4 E4B (GGUF)
+        model_file: Gemma4-E4B/gemma-4-E4B.gguf
+        n_gpu_layers: 99
+      - id: hermes-4-14b-abliterated-spark
+        name: Hermes 4 14B BF16 Abliterated (GGUF)
+        model_file: hermes-4-14b-abliterated-q6_k/hermes-4-14b-bf16-abliterated-q6_k.gguf
+        n_gpu_layers: 99
+      - id: qwen2_5-coder-7b
+        name: Qwen 2.5 Coder 7B Instruct Q6_K (GGUF)
+        model_file: qwen2.5-coder-7b-instruct-q6_k/qwen2.5-coder-7b-instruct-q6_k.gguf
+        n_gpu_layers: 99
+        enable_thinking: false
+      - id: gemma-4-ara-26b-a4b-q5
+        name: Gemma 4 ARA 26B-A4B APEX Q5_K_M (GGUF, abliterated)
+        model_file: Gemma4-26B-ara-abliterated/gemma4-ara-2pass-APEX-Q5_K_M.gguf
+        n_gpu_layers: 99
+        # mmproj-gemma4-f16.gguf liegt alongside (Vision-fähig); Benchmark rein textuell.
+
+      - id: qwen2_5-vl-7b
+        name: Qwen 2.5 Vision 7B Q4_K_M (GGUF)
+        model_file: qwen2.5-vl-7b-instruct-q4_k_m/qwen2.5-vl-7b-instruct-q4_k_m.gguf
+        n_gpu_layers: 99
+        enable_thinking: false
+      - id: qwen3_6-27b-fable-fusion-711-uncensored
+        name: Qwen 3.6 27B Fable-Fusion-711 Uncensored Q5_K_M (GGUF)
+        model_file: Qwen3.6-27B-Fable-Fusion-711-Uncensored/Qwen3.6-27B-Fable-Fus-711-UnHeretic-NM-DAU-NEO-MAX-NEO-MTP-Q5_K_M.gguf
+        n_gpu_layers: 99
+        enable_thinking: true  # Qwen3.6-Basis: Always-Thinking-Klasse (Dual-Profile-Expansion)
+        # mmproj-F16.gguf liegt alongside (Vision-fähig); Benchmark rein textuell.
+
+      # ── Historische Einträge (Stand 2026-08-27: GGUFs nicht mehr auf der Disk) ──
 
       # Auskommentiert 2026-08-14: Modell entfernt via make clean-model.
       # DeepSeek V4 Flash — lokale GGUF (IQ2_M, 3-teilig), llama.cpp auf gx10:2234.

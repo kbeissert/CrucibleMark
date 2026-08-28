@@ -155,8 +155,32 @@ class OpenRouterClient(BaseProviderClient):
         # max_tokens (0 sichtbarer Output).
         reasoning_cfg = self._resolve_reasoning_config(model, api_model)
         if reasoning_cfg:
+            reasoning_cfg = self._clamp_reasoning_budget(reasoning_cfg, req_tokens)
             params["extra_body"]["reasoning"] = reasoning_cfg
         return params, token_param_name, req_tokens
+
+    def _clamp_reasoning_budget(
+        self, reasoning_cfg: dict[str, Any], req_tokens: int
+    ) -> dict[str, Any]:
+        """Reduziert das Reasoning-Cap unter das effektive Output-Budget.
+
+        Upstream-Provider (z.B. Alibaba/Qwen) verlangen strikt
+        ``max_completion_tokens > thinking_budget``. Erreicht das konfigurierte
+        Reasoning-Cap das Modul-Budget (z.B. ux_writing 12000 == Cap 12000),
+        lehnt der Provider den Request mit HTTP 400 invalid_parameter_error ab.
+        Reduziert auf die Hälfte des Output-Budgets — nur wenn die Invariante
+        verletzt wäre; valide Konfigurationen bleiben unverändert.
+        """
+        rtok = reasoning_cfg.get("max_tokens")
+        if isinstance(rtok, int) and rtok >= req_tokens:
+            clamped = max(1, req_tokens // 2)
+            logger.warning(
+                "Reasoning-Cap %d >= Output-Budget %d — reduziert auf %d "
+                "(Upstream verlangt thinking_budget < max_completion_tokens).",
+                rtok, req_tokens, clamped,
+            )
+            return {**reasoning_cfg, "max_tokens": clamped}
+        return reasoning_cfg
 
     def _resolve_reasoning_config(self, model: str, api_model: str) -> dict[str, Any] | None:
         """Löst die Per-Modell Reasoning-Config aus provider_config.yaml.

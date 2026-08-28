@@ -1,0 +1,60 @@
+{
+  "model_id": "qwen2_5-coder-7b",
+  "display_name": "Qwen 2.5 Coder 7B",
+  "developer": "Alibaba Cloud",
+  "origin_country": "China",
+  "developer_jurisdiction": "CN",
+  "deployment_type": "localweights",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "low",
+  "weights_provenance_rationale": "Die Gewichte stammen aus der Apache-2.0-lizenzierten Qwen2.5-Coder-Familie von Alibaba und werden hier vollständig lokal ausgeführt. Ohne Cloud-Verbindung ist das operative Risiko gering; die Herkunft bleibt zwar chinesisch-juristisch, aber die lokale Open-Weights-Nutzung minimiert den Datenabfluss.[web:875][web:876][web:878]",
+  "model_family": "Qwen",
+  "vendor": "Alibaba",
+  "primary_focus": "coding",
+  "use_case_primary": "coding",
+  "parameter_architecture": "dense",
+  "params_total_b": 7.61,
+  "params_active_b": 7.61,
+  "context_window_k": 128,
+  "knowledge_cutoff": "2024-09",
+  "summary": "Eine Q6_K-GGUF-Distribution von Qwen 2.5 Coder 7B für lokales Coding: 7,6 Milliarden dichte Parameter, Apache-2.0-Lizenz, spezialisiert auf Code-Generierung, Debugging und Reparatur. Die Familie unterstützt 128.000 Tokens Kontext, im GGUF-Setup sind nativ oft nur 32.000 ohne Long-Context-Konfiguration verfügbar. Voll kommerziell nutzbar, kompakt und effizient auf Workstation-Hardware.",
+  "strengths": [
+    "Spezialisierte Leistung in Code-Generierung, Debugging und Reparatur.",
+    "Kompakte 7,6-Milliarden-Architektur für effiziente lokale Ausführung.",
+    "Familie unterstützt 128.000 Tokens Kontext für größere Codebasen.",
+    "Q6_K-Quantisierung mit minimalem Qualitätsverlust und reduziertem VRAM-Bedarf.",
+    "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit."
+  ],
+  "known_limitations": [
+    "Geringere Reasoning-Kapazität als deutlich größere Modelle.",
+    "Eingeschränkte Leistung bei allgemeinen Chat-Aufgaben außerhalb des Coding-Kontexts.",
+    "Im GGUF-Setup ist 128K oft nur als 32K nativ verfügbar.",
+    "Tool-Calling-Tokens sind in Coder-Varianten nicht immer sauber trainiert."
+  ],
+  "judge_context_hint": "Qwen 2.5 Coder 7B als Q6_K-GGUF-Distribution für lokales Deployment, spezialisiert auf Code-Generierung, Debugging und Reparatur. Bei der Bewertung Coding-Fähigkeiten gewichten, nicht mit allgemeinen Reasoning-Modellen vergleichen. GGUF-Context-Limitierung beachten: 128K aus der Familie ist im Setup oft nur als 32K nativ verfügbar und benötigt passende Long-Context-Konfiguration für den vollen Kontext. Tool-Calling ist möglich, aber in der Coder-Variante nicht zuverlässig trainiert — bei Tool-Aufgaben entsprechend vorsichtig bewerten.",
+  "architecture_tags": [
+    "Instruct",
+    "Coder",
+    "Open-Weight",
+    "Local",
+    "Dense"
+  ],
+  "input_modalities": [
+    "text"
+  ],
+  "output_modalities": [
+    "text"
+  ],
+  "supports_tool_use": true,
+  "license": "Apache 2.0",
+  "license_url": "https://opensource.org/licenses/Apache-2.0",
+  "commercial_use_allowed": true,
+  "weights_license_tier": "open-weights",
+  "model_version": "2.5",
+  "quantization_format": "Q6_K GGUF",
+  "model_variant": "Q6_K GGUF",
+  "card_status": "complete",
+  "size_class": "Desktop",
+  "cot_marker_family": null,
+  "cot_tags_detected": null
+}

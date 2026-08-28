@@ -1,0 +1,69 @@
+{
+  "model_id": "hermes-4-14b-abliterated-spark",
+  "display_name": "Hermes 4 14B (Abliterated)",
+  "developer": "NousResearch",
+  "origin_country": "USA",
+  "developer_jurisdiction": "US",
+  "deployment_type": "localweights",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_rationale": "Die Gewichte stammen aus einer US-jurisdiktierten Hermes-4-14B-Linie von NousResearch auf Basis von Qwen3-14B. Der lokale Open-Weights-Betrieb minimiert Cloud-Act-Relevanz, aber die Herkunft der Gewichte bleibt ein moderater Provenance-Faktor, und die Abliteration verändert das Modellverhalten zusätzlich.[web:541][web:635][web:849][web:850]",
+  "model_family": "Hermes",
+  "vendor": "NousResearch",
+  "primary_focus": "generalist",
+  "use_case_primary": "generalist",
+  "parameter_architecture": "dense",
+  "params_total_b": 14.0,
+  "params_active_b": 14.0,
+  "context_window_k": 128,
+  "knowledge_cutoff": "2024-09",
+  "summary": "Hermes 4 14B Abliterated ist die offene, ungebremste Variante von NousResearch auf Qwen3-14B-Basis: 14 Milliarden dichte Parameter, Apache-2.0-Lizenz, 128.000 Tokens Kontext, hybrides Reasoning mit Think-Tags und Tool-Use. Die Sicherheitsfilter wurden gezielt entfernt, wodurch sich das Modell für Forschung, kreative Schreibarbeit und Agenten-Workflows eignet — nicht als produktionskonservativer Assistant.",
+  "strengths": [
+    "Starkes Instruction-Following als direkter Erweis.",
+    "Sehr offene Antworttendenz durch Abliteration der Schutzmechanismen.",
+    "Geeignet für kreative und unzensierte Nutzungsszenarien.",
+    "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit.",
+    "Tool-Use-Fähigkeit im internen Test bestätigt."
+  ],
+  "known_limitations": [
+    "Sicherheitsmechanismen wurden bewusst entfernt.",
+    "Kann bei sensiblen Themen problematische oder ungebremste Antworten liefern.",
+    "Nicht als konservativ oder produktionssicher einzustufen.",
+    "Trotz Qwen-Basis unter US-Jurisdiktion, Provenance bleibt relevant.",
+    "Reasoning-Ketten können lang werden und Token-Budget belasten."
+  ],
+  "judge_context_hint": "Hermes 4 14B Abliterated von NousResearch auf Qwen3-14B-Basis mit entfernten Sicherheitsmechanismen. Bei der Bewertung die offene Antwortweise und das hybride Reasoning mit Think-Tags berücksichtigen — Safety-Refusals sind per Abliteration entfernt und kein Bewertungskriterium. Tool-Use bestätigt. Lokaler Betrieb ohne Cloud-Verbindung, US-Jurisdiktion sekundär. Kein produktionskonservatives Profil.",
+  "architecture_tags": [
+    "Instruct",
+    "Thinking-Optional",
+    "Uncensored",
+    "Tool-Use",
+    "Agentic-Orchestrator",
+    "Dense",
+    "Open-Weight",
+    "Local"
+  ],
+  "input_modalities": [
+    "text"
+  ],
+  "output_modalities": [
+    "text"
+  ],
+  "supports_tool_use": true,
+  "license": "Apache 2.0",
+  "license_url": "https://opensource.org/licenses/Apache-2.0",
+  "commercial_use_allowed": true,
+  "weights_license_tier": "open-weights",
+  "model_version": "4.0",
+  "quantization_format": "Q6_K GGUF",
+  "model_variant": "Abliterated",
+  "card_status": "complete",
+  "size_class": "Desktop",
+  "cot_marker_family": "think-tags",
+  "cot_tags_detected": [
+    "<think>",
+    "</think>",
+    "<tool_call>",
+    "</tool_call>"
+  ]
+}

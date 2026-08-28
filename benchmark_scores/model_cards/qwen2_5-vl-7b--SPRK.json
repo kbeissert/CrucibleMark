@@ -1,0 +1,63 @@
+{
+  "model_id": "qwen2_5-vl-7b--SPRK",
+  "display_name": "Qwen 2.5 Vision 7B Q4_K_M (GGUF)",
+  "developer": "Alibaba / Qwen Team",
+  "origin_country": "CN",
+  "developer_jurisdiction": "CN",
+  "deployment_type": "localweights",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "low",
+  "weights_provenance_rationale": "Die Basisgewichte stammen von Alibaba/Qwen und sind unter Apache 2.0 veröffentlicht. Diese Karte beschreibt eine vollständig lokale GGUF-Quantisierung (Q4_K_M) für llama.cpp; es findet keine Cloud-Inferenz statt, sodass kein externer Datenabfluss über Alibaba-Infrastruktur entsteht.",
+  "model_family": "Qwen2.5-VL",
+  "vendor": "Alibaba / Qwen Team",
+  "primary_focus": "vision-language",
+  "use_case_primary": "generalist",
+  "parameter_architecture": "dense",
+  "params_total_b": 7.6,
+  "params_active_b": null,
+  "context_window_k": 128,
+  "knowledge_cutoff": "2024-10",
+  "summary": "Qwen 2.5 Vision 7B ist Alibabas kompaktes Vision-Language-Modell mit Bild- und Textverständnis, hier als Q4_K_M-GGUF für lokalen Betrieb. 7,6 Milliarden dichte Parameter, 128.000 Tokens Kontext, Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit. Der Benchmark läuft rein textuell, sodass die Bildfähigkeiten in diesem Run ungetestet bleiben — der Stack eignet sich besonders für Aufgaben mit gemischten Text- und Bildeingaben.",
+  "strengths": [
+    "Multimodales Bild- und Textverstehen in kompakter 7,6-Milliarden-Klasse.",
+    "Q4_K_M-Quantisierung mit gutem Qualitäts- und Speicher-Kompromiss.",
+    "Apache-2.0-Lizenz mit vollständig kommerzieller Nutzbarkeit.",
+    "Lokaler Betrieb ohne Cloud-Abhängigkeit und externe Datenweitergabe."
+  ],
+  "known_limitations": [
+    "Q4-Quantisierung begrenzt Feinpräzision gegenüber höheren Quant-Stufen.",
+    "Benchmark-Pipeline ist rein textuell — Bildfähigkeiten bleiben ungetestet.",
+    "Begrenzte Reasoning-Kapazität bei hochkomplexen Aufgaben.",
+    "Wissensstand Oktober 2024."
+  ],
+  "judge_context_hint": "Qwen 2.5 Vision 7B als Q4_K_M-GGUF-Distribution für lokales Deployment, spezialisiert auf Bild- und Textverständnis. Bei der Bewertung die 7,6-Milliarden-Klasse, die Q4-Quantisierung und den lokalen GGUF-Stack berücksichtigen. Benchmark läuft rein textuell — Bildfähigkeiten sind in diesem Run nicht direkt prüfbar und nur sekundär in die Bewertung einzubeziehen. Apache-2.0-Lizenz erlaubt kommerzielle Nutzung ohne Alibaba-Cloud-Pflicht.",
+  "architecture_tags": [
+    "General",
+    "Instruct",
+    "Multimodal",
+    "Vision-Language",
+    "Dense",
+    "Open-Weight",
+    "Local",
+    "Tool-Use"
+  ],
+  "input_modalities": [
+    "text",
+    "image"
+  ],
+  "output_modalities": [
+    "text"
+  ],
+  "supports_tool_use": true,
+  "license": "Apache 2.0",
+  "license_url": "https://opensource.org/licenses/Apache-2.0",
+  "commercial_use_allowed": true,
+  "weights_license_tier": "open-weights",
+  "model_version": "2.5",
+  "hardware_profile": "dgx_spark_cuda",
+  "inference_engine": "llama.cpp",
+  "quantization_format": "Q4_K_M GGUF",
+  "model_variant": "Q4_K_M GGUF",
+  "card_status": "complete",
+  "size_class": "Workstation"
+}
