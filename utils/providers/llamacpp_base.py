@@ -18,6 +18,7 @@ import json
 import logging
 import os
 import shlex
+import shutil
 import subprocess
 import time
 import urllib.error
@@ -154,11 +155,6 @@ class LlamaCppBaseClient(BaseProviderClient):
         if not model_id:
             return ""
         return model_id.lower().replace(".", "_").replace("-", "_")
-
-    @staticmethod
-    def _strip_model_name(model_id: str) -> str:
-        """Nicht-alphanumerische Zeichen entfernen (für Adopt-Pfad)."""
-        return model_id.lower().replace(".gguf", "").replace(".", "").replace("-", "").replace("_", "")
 
     def _model_cfg(self, model_id: str) -> dict[str, Any]:
         """Provider-Models-Config-Lookup mit Defense-in-Depth für ID-Varianten.
@@ -503,7 +499,7 @@ class LlamaCppBaseClient(BaseProviderClient):
             return True
         return False
 
-    def start_server(self, model_id: str | None = None) -> bool:
+    def start_server(self, model_id: str | None = None, *, _conflict_retry: bool = False) -> bool:
         """Start the llama.cpp server for the given model id.
 
         Baut den vollständigen llama-server-Befehl, startet ihn im Hintergrund
@@ -513,11 +509,29 @@ class LlamaCppBaseClient(BaseProviderClient):
 
         Args:
             model_id: Config-ID des zu ladenden Modells.
+            _conflict_retry: Intern — True wenn dieser Aufruf bereits der
+                Konflikt-Restart ist (Terminierungsguard gegen Endlos-Rekursion,
+                wenn der Konflikt-Endpoint per stop_cmd nicht killbar ist).
 
         Returns:
             True bei erfolgreichem Start, False sonst.
         """
         healthy = self._is_healthy()
+
+        # Endpoint-Hijack-Guard (Separation-Fix 2026-08-28): Endpoint antwortet,
+        # aber wir haben ihn nicht gestartet und er gehört nachweislich keinem
+        # lokalen llama-server (z.B. VS-Code-Port-Forward auf eine Remote-Maschine).
+        # Weder Adoption noch Stop+Restart wären korrekt → Fail-Fast.
+        if self._endpoint_hijack_detected(healthy):
+            error = (
+                f"Endpoint {self._base_url()} antwortet, wird aber von einem "
+                "fremden Prozess bedient (kein lokaler llama-server lauscht auf "
+                "dem Port). Vermutlich ein Port-Forward/Proxy (z.B. VS-Code "
+                "Remote-Session). Kein Adoption/Restart — Benchmark wird beendet."
+            )
+            logger.error(error)
+            print(f"   ❌ {error}")
+            return False
 
         _active_normalized = self._normalize_model_name(self._active_model)
         _model_normalized = self._normalize_model_name(model_id)
@@ -534,61 +548,11 @@ class LlamaCppBaseClient(BaseProviderClient):
             logger.debug("llama.cpp server already running at %s", self._base_url())
             return True
 
-        # Pfad 2: Server gesund, aber kein _active_model gesetzt → versuchen zu adoptieren
+        # Pfad 2: Server gesund, aber kein _active_model gesetzt → adoptieren
+        # oder Konflikt auflösen (Separation-Fix 2026-08-28: eigene Methode,
+        # hält start_server unter der CC-≤-12-Grenze).
         if healthy and self._active_model is None:
-            detected = self._query_active_model()
-            if self._detected_matches_model(detected, model_id):
-                if model_id and self._is_model_ready(model_id):
-                    self._active_model = model_id
-                    logger.debug(
-                        "Adopting already running llama.cpp endpoint at %s with model '%s'",
-                        self._base_url(), model_id,
-                    )
-                    return True
-
-                prov_cfg = self._provider_cfg()
-                adopt_timeout = int(prov_cfg.get(
-                    "existing_server_ready_timeout_sec",
-                    prov_cfg.get("server_ready_timeout_sec", 60),
-                ))
-                adopt_poll = int(prov_cfg.get("server_ready_poll_sec", 5))
-                print(
-                    f"   ⏳ Server läuft bereits mit '{model_id}' — "
-                    f"warte auf Modell-Bereitschaft (Timeout: {adopt_timeout}s) ...",
-                    flush=True,
-                )
-                if self._wait_for_model_ready(
-                    model_id, timeout_sec=adopt_timeout, poll_sec=adopt_poll,
-                    log_prefix="Adopt warmup",
-                ):
-                    self._active_model = model_id
-                    print(f"   ✅ Modell bereit nach {adopt_timeout}s                              ", flush=True)
-                    logger.debug(
-                        "Adopted already running llama.cpp endpoint at %s with model '%s'",
-                        self._base_url(), model_id,
-                    )
-                    return True
-
-                warning = (
-                    f"OpenAI-kompatibler Endpunkt unter {self._base_url()} läuft bereits mit '{model_id}', "
-                    "antwortet aber auch nach Wartezeit noch nicht stabil auf den Hallo-Probe-Request. "
-                    "Benchmark wird beendet."
-                )
-                logger.warning(warning)
-                print(f"   ⚠️  {warning}")
-                return False
-
-            # Endpoint-Konflikt: anderes Modell läuft → Server stoppen und neu starten
-            warning = (
-                f"OpenAI-kompatibler Endpunkt unter {self._base_url()} ist bereits aktiv"
-                f"{f' (aktives Modell: {detected})' if detected else ''}. "
-                f"Starte Server mit '{model_id}' neu..."
-            )
-            logger.warning(warning)
-            print(f"   ⚠️  {warning}")
-            self.stop_server()
-            time.sleep(2)
-            return self.start_server(model_id)
+            return self._adopt_running_server(model_id, _conflict_retry)
 
         # Pfad 3: Server läuft mit einem ANDEREN bekannten Modell → Restart
         if healthy and self._active_model and self._active_model != model_id:
@@ -601,14 +565,125 @@ class LlamaCppBaseClient(BaseProviderClient):
             return self.start_server(model_id)
 
         # Pfad 4: Cold-Start — llama-server launchen und auf Readiness warten
-        # Pre-Flight-Check: existiert die model_file auf der Disk? Spart 180s Timeout
-        # bei Tippfehlern in `model_file` (z.B. fehlendes 'L' bei Q4_K_XL).
+        return self._cold_start_server(model_id)
+
+    def _adopt_running_server(self, model_id: str | None, _conflict_retry: bool) -> bool:
+        """Pfad 2 aus start_server: laufenden Endpoint adoptieren oder Konflikt lösen.
+
+        Wird aufgerufen, wenn der Endpoint healthy ist, aber kein
+        ``_active_model`` gesetzt ist (wir haben den Server nicht selbst
+        in dieser Session gestartet).
+
+        Args:
+            model_id: Config-ID des zu ladenden Modells.
+            _conflict_retry: Intern — True wenn der Aufruf bereits der
+                Konflikt-Restart ist (Terminierungsguard, siehe start_server).
+
+        Returns:
+            True bei erfolgreicher Adoption, False sonst.
+        """
+        detected = self._query_active_model()
+        if self._detected_matches_model(detected, model_id):
+            return self._adopt_matching_model(model_id)
+
+        # Endpoint-Konflikt: anderes Modell läuft → Server stoppen und neu starten
+        if _conflict_retry:
+            # Terminierungsguard: der Restart hat den Konflikt nicht aufgelöst
+            # (fremder Endpoint via stop_cmd nicht killbar, z.B. Port-Forward).
+            error = (
+                f"Endpoint-Konflikt unter {self._base_url()} besteht nach Stop+Restart "
+                f"weiterhin (fremdes Modell: {detected or 'unbekannt'}). "
+                "Benchmark wird beendet."
+            )
+            logger.error(error)
+            print(f"   ❌ {error}")
+            return False
+        warning = (
+            f"OpenAI-kompatibler Endpunkt unter {self._base_url()} ist bereits aktiv"
+            f"{f' (aktives Modell: {detected})' if detected else ''}. "
+            f"Starte Server mit '{model_id}' neu..."
+        )
+        logger.warning(warning)
+        print(f"   ⚠️  {warning}")
+        self.stop_server()
+        time.sleep(2)
+        return self.start_server(model_id, _conflict_retry=True)
+
+    def _adopt_matching_model(self, model_id: str | None) -> bool:
+        """Adoptiert den laufenden Endpoint (Alias matcht das Wunsch-Modell).
+
+        Wartet bei Bedarf auf Modell-Bereitschaft (existing_server_ready_timeout_sec).
+        """
+        if model_id and self._is_model_ready(model_id):
+            self._active_model = model_id
+            logger.debug(
+                "Adopting already running llama.cpp endpoint at %s with model '%s'",
+                self._base_url(), model_id,
+            )
+            return True
+
+        prov_cfg = self._provider_cfg()
+        adopt_timeout = int(prov_cfg.get(
+            "existing_server_ready_timeout_sec",
+            prov_cfg.get("server_ready_timeout_sec", 60),
+        ))
+        adopt_poll = int(prov_cfg.get("server_ready_poll_sec", 5))
+        print(
+            f"   ⏳ Server läuft bereits mit '{model_id}' — "
+            f"warte auf Modell-Bereitschaft (Timeout: {adopt_timeout}s) ...",
+            flush=True,
+        )
+        if self._wait_for_model_ready(
+            model_id, timeout_sec=adopt_timeout, poll_sec=adopt_poll,
+            log_prefix="Adopt warmup",
+        ):
+            self._active_model = model_id
+            print(f"   ✅ Modell bereit nach {adopt_timeout}s                              ", flush=True)
+            logger.debug(
+                "Adopted already running llama.cpp endpoint at %s with model '%s'",
+                self._base_url(), model_id,
+            )
+            return True
+
+        warning = (
+            f"OpenAI-kompatibler Endpunkt unter {self._base_url()} läuft bereits mit '{model_id}', "
+            "antwortet aber auch nach Wartezeit noch nicht stabil auf den Hallo-Probe-Request. "
+            "Benchmark wird beendet."
+        )
+        logger.warning(warning)
+        print(f"   ⚠️  {warning}")
+        return False
+
+    def _cold_start_server(self, model_id: str | None) -> bool:
+        """Pfad 4 aus start_server: llama-server launchen und auf Readiness warten.
+
+        Enthält zwei Fail-Fast-Guards vor dem eigentlichen Launch (je <1s statt
+        180s Readiness-Timeout):
+        - Pre-Flight: existiert die model_file auf der Disk? (Tippfehler,
+          z.B. fehlendes 'L' bei Q4_K_XL — Pitfall 2026-06-10)
+        - Pre-Bind: belegt ein fremder Prozess den Port? (VS-Code-Port-Forward,
+          Kollisionsfall 2026-08-27/28 — llama-server könnte nicht binden)
+        """
         if model_id:
             ok, err = self._preflight_check_model_file(model_id)
             if not ok:
                 logger.error(err)
                 print(f"   ❌ {err}")
                 return False
+
+        # Pre-Bind-Check (Separation-Fix 2026-08-28): belegt ein NICHT-llama-
+        # Prozess den base_url-Port (z.B. VS-Code-Port-Forward Mac:1235 →
+        # GX10:1234), kann llama-server nicht binden → Fail-Fast mit Diagnose.
+        if self._foreign_process_owns_port():
+            error = (
+                f"Port von {self._base_url()} ist von einem fremden Prozess belegt "
+                "(kein llama-server) — vermutlich ein VS-Code-Port-Forward. "
+                "llama-server kann nicht starten. Forward entfernen "
+                "(VS-Code Ports-Panel) und Batch erneut ausführen."
+            )
+            logger.error(error)
+            print(f"   ❌ {error}")
+            return False
 
         cmd = self._build_server_cmd(model_id) if model_id else self._server_start_cmd()
         logger.debug("Starting llama.cpp server: %s", cmd)
@@ -647,16 +722,90 @@ class LlamaCppBaseClient(BaseProviderClient):
         return False
 
     def _detected_matches_model(self, detected: str | None, model_id: str | None) -> bool:
-        """Prüfe, ob das vom Server gemeldete Modell dem gewünschten entspricht."""
+        """Prüfe, ob das vom Server gemeldete Modell dem gewünschten entspricht.
+
+        Strikte Gleichheit nach Normalisierung (Punkt/Bindestrich → Underscore,
+        lowercase) — bewusst KEIN Substring-Match (Separation-Fix 2026-08-28):
+        ``gemma-4-e4b`` (Mac) darf ``gemma-4-e4b-spark`` (Spark) nicht matchen.
+        Die Dot↔Underscore-Toleranz bleibt für dieselbe ID erhalten
+        (``qwen3.5-4b-q8`` ≡ ``qwen3_5-4b-q8``), damit Adoption auch nach
+        ``resolve_canonical_model_id()`` funktioniert.
+        """
         if not (detected and model_id):
             return False
-        detected_normalized = self._strip_model_name(detected)
-        model_normalized = self._strip_model_name(model_id)
-        return (
-            model_normalized in detected_normalized
-            or detected_normalized in model_normalized
-            or detected == model_id
-        )
+        return self._normalize_model_name(detected) == self._normalize_model_name(model_id)
+
+    def _port_listener_output(self) -> str | None:
+        """lsof-Ausgabe der Listener auf dem base_url-Port; None = nicht prüfbar.
+
+        Nicht prüfbar für Remote-Provider (SSH), non-localhost-Hosts und ohne
+        lsof-Binary — Caller müssen dann fail-open agieren.
+        """
+        if self._is_remote_provider():
+            return None
+        host = urllib.parse.urlparse(self._base_url()).hostname or ""
+        if host not in ("127.0.0.1", "localhost", "::1"):
+            return None
+        if shutil.which("lsof") is None:
+            return None
+
+        port = _extract_port(self._base_url())
+        try:
+            proc = subprocess.run(
+                ["lsof", "-nP", f"-iTCP:{port}", "-sTCP:LISTEN"],
+                capture_output=True, text=True, timeout=5, check=False,
+            )
+        except (OSError, subprocess.SubprocessError):
+            return None
+        return proc.stdout
+
+    def _local_endpoint_owned_by_llama_server(self) -> bool | None:
+        """Prüft, ob ein lokaler llama-server-Prozess auf dem base_url-Port lauscht.
+
+        Defense gegen Endpoint-Hijacks (Kollisionsfall 2026-08-27: ein VS-Code-
+        Port-Forward der Remote-Session mappte Mac-localhost:1235 auf GX10:1234
+        — der Mac-Connector hätte den fremden Server adoptiert). Nur prüfbar
+        für lokale Provider mit localhost-base_url und verfügbarem lsof.
+
+        Returns:
+            True:  ein lokaler llama-Prozess lauscht auf dem Port.
+            False: der Port ist von einem NICHT-llama-Prozess belegt
+                   (Forward/Proxy-Tunnel) — der Endpoint ist fremd.
+            None:  Check nicht möglich (Remote-Provider via SSH, non-localhost
+                   Host oder lsof nicht installiert) → Caller fail-open.
+        """
+        listeners = self._port_listener_output()
+        if listeners is None:
+            return None
+        if not listeners.strip():
+            # Nichts lauscht lokal, trotzdem "healthy" → Endpoint kommt
+            # anderweitig herein (anderer Network-Path) → als fremd werten.
+            return False
+        return "llama" in listeners.lower()
+
+    def _foreign_process_owns_port(self) -> bool:
+        """True wenn ein NICHT-llama-Prozess den base_url-Port belegt.
+
+        Pre-Bind-Check im Cold-Start-Pfad (Separation-Fix 2026-08-28): llama-server
+        kann den Port dann nicht binden → Fail-Fast in <1s statt 180s
+        Readiness-Timeout. Fail-open (False), wenn der Check nicht möglich ist
+        oder der Port frei ist.
+        """
+        listeners = self._port_listener_output()
+        if listeners is None or not listeners.strip():
+            return False
+        return "llama" not in listeners.lower()
+
+    def _endpoint_hijack_detected(self, healthy: bool) -> bool:
+        """True wenn der Endpoint antwortet, aber nachweislich NICHT unser llama-server ist.
+
+        Wird in start_server() vor Adoption und Konflikt-Restart geprüft.
+        Gibt nur True zurück, wenn der Ownership-Check eindeutig False liefert
+        (fail-open bei None: nicht prüfbare Konstellationen blockieren nicht).
+        """
+        if not healthy or self._server_pid is not None:
+            return False
+        return self._local_endpoint_owned_by_llama_server() is False
 
     def stop_server(self) -> None:
         """Stop the llama.cpp server — by PID if known, then always via stop command."""

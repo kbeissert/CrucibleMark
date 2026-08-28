@@ -85,3 +85,16 @@ werden — sonst 400-Fehler bei allen API-Calls (ThinkingProbe + Benchmark).
 **Verifikations-Datum:** 2026-08-28 (Live-Repro 12000/12000 → HTTP 400, 12000/6000 → OK; 45 Tests grün, Ruff clean)
 
 ---
+## llama.cpp Mac ↔ Spark: Separation brach außerhalb der Connectoren (2026-08-28)
+
+**Befund:** benchmark-auto konnte mit gleichzeitig aktiviertem Mac-llama.cpp und GX10-Spark-llama.cpp die Provider nicht trennen; die 3 kanonisch kollidierenden Spark-Modelle (`qwen3_5-4b-q4`, `qwen3_5-4b-q8`, `qwen2_5-coder-7b`) wurden kommentarlos als „bereits benchmarked" übersprungen (alte Mac-Rows in derselben CSV). Workaround war, den Mac-Provider zu deaktivieren.
+
+**Ursache (vierfach, alle außerhalb der Connector-Klassen):** (1) `get_existing_results()` cachte `(model, asset)`-Keys provider-blind; `canonical_lookup_keys()` normalisiert Dot↔Underscore, sodass Mac `qwen3.5-4b-q8` und Spark `qwen3_5-4b-q8` identische Keys erzeugen — auch Political-Compass (`provider_type`-Spalte) war betroffen. (2) `resolve_provider()` matchte config_form-Bridge im ersten Provider-Treffer → Spark-IDs routeten zum Mac (Config-Reihenfolge). (3) `_detected_matches_model()` matchte bidirektional per Substring → `gemma-4-e4b` adoptierte `gemma-4-e4b-spark`. (4) `start_server()` Konfliktpfad rekursierte endlos bei unkillbarem Konflikt-Endpoint (VS-Code-Port-Forward Mac:1235→GX10:1234, live reproduziert 2026-08-28: Code Helper PID 22404 auf 127.0.0.1:1235).
+
+**Lösung:** (1) `get_existing_results(..., provider_key=)` filtert Benchmark- und Political-Compass-Zeilen provider-scoped (Alias-normalisiert via `_PROVIDER_ALIAS_MAP`); llamacpp-/vllm-/ollama-Batches in benchmark_auto.py übergeben ihren provider_key. (2) `_resolve_provider_from_config()` zwei Durchläufe: exakte Config-ID über alle Provider zuerst, config_form-Bridge danach. (3) `_detected_matches_model()` strikte normalisierte Gleichheit. (4) `_conflict_retry`-Guard terminiert den Konflikt-Restart; `_port_listener_output()`/`_local_endpoint_owned_by_llama_server()` (lsof-Ownership) + `_foreign_process_owns_port()` (Pre-Bind-Check im Cold-Start: fremd belegter Port → Fail-Fast <1s statt 180s Timeout). Pfad 2/4 zur CC-Entlastung in `_adopt_running_server`/`_adopt_matching_model`/`_cold_start_server` aufgeteilt.
+
+**Pflege:** Beide llama.cpp-Provider können jetzt gleichzeitig aktiviert sein; künstliche ID-Unterscheidung (Underscores/-spark-Suffix) ist nicht mehr die Trennursache, bleibt aber aus Card-/CSV-Konsistenz bestehen. Vor einem Mac-Batch muss der VS-Code-Port-Forward auf 1235 entfernt werden (Ports-Panel) — der Connector meldet das jetzt Fail-Fast. `run_score_benchmark.py` nutzt weiterhin den provider-blinden Cache (bewusst, gemischte Modell-Listen).
+
+**Verifikations-Datum:** 2026-08-28 (37 Separation-Tests + 96 kombiniert grün; Live-Check echte CSV: Spark-Assets offen, Mac-Assets gecached; Routing `qwen3_5-4b-q8`→llamacpp_spark, `qwen3.5-4b-q8`→llamacpp; Full Suite 1591 passed, 2 Card-Fehler sind Bestand)
+
+---

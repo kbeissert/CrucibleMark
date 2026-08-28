@@ -673,6 +673,9 @@ def test_start_server_proceeds_to_popen_when_preflight_passes(tmp_path, monkeypa
     )
     monkeypatch.setattr(client, "_is_healthy", lambda: False)
     monkeypatch.setattr(client, "_query_active_model", lambda: None)
+    # Pre-Bind-Check deterministisch mocken (Port-Belegung der Test-Maschine
+    # darf den Test nicht beeinflussen).
+    monkeypatch.setattr(client, "_foreign_process_owns_port", lambda: False)
     # Readiness-Loop sofort beenden (sonst 180s Wartezeit)
     monkeypatch.setattr(client, "_wait_for_model_ready", lambda *a, **kw: False)
 
@@ -680,3 +683,307 @@ def test_start_server_proceeds_to_popen_when_preflight_passes(tmp_path, monkeypa
 
     assert popen_called.get("called") is True, "Popen wurde nicht aufgerufen"
     assert result is False  # Server wird nicht ready → False
+
+
+def test_cold_start_fails_fast_on_foreign_port(tmp_path, monkeypatch):
+    """Pre-Bind-Check: fremd belegter Port → Fail-Fast, kein Popen-Aufruf.
+
+    Kollisionsfall 2026-08-27/28 (live reproduziert): VS-Code-Port-Forward
+    (Code Helper) belegt Mac:1235 → llama-server könnte nicht binden und
+    würde 180s in den Readiness-Timeout laufen. Der Check meldet den
+    Konflikt in <1s mit klarer Diagnose.
+    """
+    client = LlamaCppLocalClient(_hijack_test_config(tmp_path))
+    monkeypatch.setattr(client, "_is_healthy", lambda: False)
+    monkeypatch.setattr(client, "_query_active_model", lambda: None)
+    monkeypatch.setattr(client, "_foreign_process_owns_port", lambda: True)
+
+    def fail_popen(*args, **kwargs):  # noqa: ANN001, ANN002, ANN201
+        raise AssertionError("Popen darf bei fremd belegtem Port nie aufgerufen werden.")
+
+    monkeypatch.setattr("utils.providers.llamacpp_base.subprocess.Popen", fail_popen)
+
+    assert client.start_server("wanted-model") is False
+
+
+# ---------------------------------------------------------------------------
+# Separation-Fix 2026-08-28: Strict Adoption-Matching (_detected_matches_model)
+# ---------------------------------------------------------------------------
+
+def test_detected_matches_model_no_suffix_substring_match(two_provider_config):
+    """Substring-Logs entfernt: Mac-ID darf Spark-ID mit Suffix NICHT matchen.
+
+    Vor dem Fix: ``gemma-4-e4b`` (detected) matchte ``gemma-4-e4b-spark``
+    (wanted) per ``in``-Substring → falsche Adoption des falschen Backends.
+    """
+    client = LlamaCppLocalClient(two_provider_config)
+    assert client._detected_matches_model("gemma-4-e4b", "gemma-4-e4b-spark") is False
+    assert client._detected_matches_model("gemma-4-e4b-spark", "gemma-4-e4b") is False
+
+
+def test_detected_matches_model_dot_underscore_tolerance_kept(two_provider_config):
+    """Dieselbe ID in Dot-/Underscore-Form matcht weiterhin (Adoption nach
+    resolve_canonical_model_id bleibt funktionsfähig)."""
+    client = LlamaCppLocalClient(two_provider_config)
+    assert client._detected_matches_model("qwen3.5-4b-q8", "qwen3_5-4b-q8") is True
+    assert client._detected_matches_model("qwen3_5-4b-q8", "qwen3.5-4b-q8") is True
+    assert client._detected_matches_model("Qwen3.5-4B-Q8", "qwen3_5-4b-q8") is True
+
+
+def test_detected_matches_model_rejects_empty(two_provider_config):
+    """None/leere Werte matchen nie (kein versehentlicher Nonsens-Match)."""
+    client = LlamaCppLocalClient(two_provider_config)
+    assert client._detected_matches_model(None, "m4-model") is False
+    assert client._detected_matches_model("m4-model", None) is False
+    assert client._detected_matches_model(None, None) is False
+
+
+# ---------------------------------------------------------------------------
+# Separation-Fix 2026-08-28: Endpoint-Ownership-Check (Port-Forward-Hijack)
+# ---------------------------------------------------------------------------
+
+def _hijack_test_config(tmp_path):
+    """Minimale Mac-Provider-Config für Hijack-/Konflikt-Tests."""
+    return {
+        "providers": {
+            "local": {
+                "llamacpp": {
+                    "base_url": "http://127.0.0.1:1235/v1",
+                    "model_dir": str(tmp_path),
+                    "server_start_cmd": "llama-server",
+                    "server_stop_cmd": "true",  # harmlos im Test
+                    "bind_host": "127.0.0.1",
+                    "models": [
+                        {"id": "wanted-model", "model_file": "wanted.gguf"},
+                    ],
+                },
+            },
+        },
+    }
+
+
+def test_ownership_check_returns_none_for_remote_provider(two_provider_config):
+    """SSH-Provider (Spark): Ownership-Check nicht anwendbar → None (fail-open)."""
+    client = LlamaCppSparkClient(two_provider_config)
+    assert client._local_endpoint_owned_by_llama_server() is None
+
+
+def test_ownership_check_detects_foreign_listener(tmp_path, monkeypatch):
+    """Lauscht ein NICHT-llama-Prozess auf dem Port (Port-Forward) → False."""
+    client = LlamaCppLocalClient(_hijack_test_config(tmp_path))
+    monkeypatch.setattr("utils.providers.llamacpp_base.shutil.which", lambda _: "/usr/sbin/lsof")
+
+    def fake_run(cmd, **kwargs):  # noqa: ANN001, ANN201
+        class _Proc:
+            returncode = 0
+            stdout = (
+                "COMMAND   PID  USER   FD   TYPE DEVICE ADDRESS\n"
+                "Code Hel 1234 user   10u  IPv4 0x123  TCP 127.0.0.1:1235 (LISTEN)\n"
+            )
+        return _Proc()
+
+    monkeypatch.setattr("utils.providers.llamacpp_base.subprocess.run", fake_run)
+    assert client._local_endpoint_owned_by_llama_server() is False
+
+
+def test_ownership_check_accepts_llama_listener(tmp_path, monkeypatch):
+    """Lauscht ein llama-server lokal auf dem Port → True (legale Adoption)."""
+    client = LlamaCppLocalClient(_hijack_test_config(tmp_path))
+    monkeypatch.setattr("utils.providers.llamacpp_base.shutil.which", lambda _: "/usr/sbin/lsof")
+
+    def fake_run(cmd, **kwargs):  # noqa: ANN001, ANN201
+        class _Proc:
+            returncode = 0
+            stdout = (
+                "COMMAND      PID  USER   FD   TYPE DEVICE ADDRESS\n"
+                "llama-serve 5678 user   12u  IPv4 0x456  TCP 127.0.0.1:1235 (LISTEN)\n"
+            )
+        return _Proc()
+
+    monkeypatch.setattr("utils.providers.llamacpp_base.subprocess.run", fake_run)
+    assert client._local_endpoint_owned_by_llama_server() is True
+
+
+def test_start_server_fails_fast_on_hijacked_endpoint(tmp_path, monkeypatch):
+    """Hijack-Fall (VS-Code-Port-Forward): Fail-Fast statt Adoption/Restart.
+
+    Kollisionsfall 2026-08-27: Mac:1235 → GX10:1234. Der Connector darf den
+    fremden Server weder adoptieren noch endlos neu starten.
+    """
+    client = LlamaCppLocalClient(_hijack_test_config(tmp_path))
+    monkeypatch.setattr(client, "_is_healthy", lambda: True)
+    monkeypatch.setattr(
+        client, "_local_endpoint_owned_by_llama_server", lambda: False,
+    )
+
+    def fail_popen(*args, **kwargs):  # noqa: ANN001, ANN002, ANN201
+        raise AssertionError("Popen darf im Hijack-Fall nie aufgerufen werden.")
+
+    monkeypatch.setattr("utils.providers.llamacpp_base.subprocess.Popen", fail_popen)
+
+    assert client.start_server("wanted-model") is False
+
+
+def test_start_server_conflict_path_terminates(tmp_path, monkeypatch):
+    """Konflikt-Restart terminiert: fremder Endpoint, den stop_cmd nicht killt.
+
+    Vor dem Fix: stop_server() → rekursiver start_server() → RecursionError,
+    wenn der Konflikt-Endpoint (z.B. Port-Forward) pkill-unerreichbar ist.
+    Jetzt: genau EIN Retry, dann Fail-Fast mit klarer Meldung.
+    """
+    client = LlamaCppLocalClient(_hijack_test_config(tmp_path))
+    monkeypatch.setattr(client, "_is_healthy", lambda: True)
+    monkeypatch.setattr(client, "_query_active_model", lambda: "other-model")
+    monkeypatch.setattr(client, "_endpoint_hijack_detected", lambda healthy: False)
+    monkeypatch.setattr("utils.providers.llamacpp_base.time.sleep", lambda *_: None)
+
+    # Kein RecursionError, terminiert mit False
+    assert client.start_server("wanted-model") is False
+
+
+# ---------------------------------------------------------------------------
+# Separation-Fix 2026-08-28: Provider-Scoped Result-Cache
+# ---------------------------------------------------------------------------
+
+def _write_scoped_csv(path, rows):
+    import csv as _csv
+
+    with open(path, "w", newline="", encoding="utf-8") as f:
+        writer = _csv.DictWriter(
+            f, fieldnames=["model", "asset_id", "status", "provider"],
+        )
+        writer.writeheader()
+        writer.writerows(rows)
+
+
+def test_get_existing_results_provider_scoped(tmp_path, monkeypatch):
+    """Alte Mac-Ergebnisse suppressen Spark-Modelle nicht mehr (Hauptbug).
+
+    Szenario: lokale CSV enthält Mac-Row ``qwen3.5-4b-q8`` (provider=llamacpp).
+    Der Spark-Batch fragt mit provider_key='llamacpp_spark' — die kanonisch
+    identische ID ``qwen3_5-4b-q8`` darf dadurch NICHT als erledigt gelten.
+    """
+    from scripts.core import llamacpp_batch
+
+    local_csv = tmp_path / "local.csv"
+    _write_scoped_csv(local_csv, [
+        {"model": "qwen3.5-4b-q8", "asset_id": "code_quality_001",
+         "status": "success", "provider": "llamacpp"},
+    ])
+
+    class _FakeValidator:
+        config = {
+            "output": {
+                "local_models_csv": str(local_csv),
+                "cloud_models_csv": str(tmp_path / "cloud.csv"),
+                "commercial_models_csv": str(tmp_path / "commercial.csv"),
+            },
+        }
+
+    monkeypatch.setattr("utils.config_validator.ConfigValidator", _FakeValidator)
+    # Political-Compass-CSV auf leeres tmp-ROOT_DIR umleiten
+    monkeypatch.setattr(llamacpp_batch, "ROOT_DIR", tmp_path)
+
+    # Spark-Scope: Mac-Row wird ignoriert → Modell gilt als offen
+    spark_cache = llamacpp_batch.get_existing_results(
+        local_csv, provider_key="llamacpp_spark",
+    )
+    assert ("qwen3_5-4b-q8", "code_quality_001") not in spark_cache
+    assert ("qwen3.5-4b-q8", "code_quality_001") not in spark_cache
+
+    # Mac-Scope: eigene Row wird weiterhin gefunden (kein Re-Run)
+    mac_cache = llamacpp_batch.get_existing_results(
+        local_csv, provider_key="llamacpp",
+    )
+    assert ("qwen3_5-4b-q8", "code_quality_001") in mac_cache
+    assert ("qwen3.5-4b-q8", "code_quality_001") in mac_cache
+
+    # Legacy (None): provider-blind, wie vor dem Fix
+    legacy_cache = llamacpp_batch.get_existing_results(local_csv)
+    assert ("qwen3_5-4b-q8", "code_quality_001") in legacy_cache
+
+
+def test_get_existing_results_political_compass_scoped(tmp_path, monkeypatch):
+    """Political-Compass-Cache respektiert provider_type (Separation)."""
+    import pandas as pd
+
+    from scripts.core import llamacpp_batch
+
+    pc_csv = tmp_path / "benchmark_scores" / "political_compass_leaderboard.csv"
+    pc_csv.parent.mkdir(parents=True, exist_ok=True)
+    pd.DataFrame([
+        {"model": "qwen3.5-4b-q8", "provider_type": "llamacpp"},
+    ]).to_csv(pc_csv, index=False)
+
+    class _FakeValidator:
+        # Output-Pfade auf nicht-existierende tmp-Dateien zeigen lassen,
+        # sonst läse der Test die echte Repo-CSV (benchmark_scores/...).
+        config = {
+            "output": {
+                "local_models_csv": str(tmp_path / "nope-local.csv"),
+                "cloud_models_csv": str(tmp_path / "nope-cloud.csv"),
+                "commercial_models_csv": str(tmp_path / "nope-commercial.csv"),
+            },
+        }
+
+    monkeypatch.setattr("utils.config_validator.ConfigValidator", _FakeValidator)
+    monkeypatch.setattr(llamacpp_batch, "ROOT_DIR", tmp_path)
+
+    spark_cache = llamacpp_batch.get_existing_results(
+        tmp_path / "ignored.csv", provider_key="llamacpp_spark",
+    )
+    assert ("qwen3_5-4b-q8", "political_compass_v3") not in spark_cache
+
+    mac_cache = llamacpp_batch.get_existing_results(
+        tmp_path / "ignored.csv", provider_key="llamacpp",
+    )
+    assert ("qwen3_5-4b-q8", "political_compass_v3") in mac_cache
+
+
+# ---------------------------------------------------------------------------
+# Separation-Fix 2026-08-28: resolve_provider() Exact-Match vor Config-Form
+# ---------------------------------------------------------------------------
+
+def test_resolve_provider_exact_match_beats_dot_bridge(monkeypatch):
+    """Spark-ID (Underscore) routet zum Spark-Provider, nicht zum Mac.
+
+    Vor dem Fix: ``internal_id_to_config_form('qwen3_5-4b-q8')`` →
+    ``'qwen3.5-4b-q8'`` traf den Mac-Eintrag, weil 'llamacpp' in der Config
+    vor 'llamacpp_spark' iteriert wurde.
+    """
+    from utils.model_id_base import resolve_provider
+
+    fixture_sources = [{
+        "local": {
+            "llamacpp": {
+                "models": [{"id": "qwen3.5-4b-q8"}],
+            },
+            "llamacpp_spark": {
+                "models": [{"id": "qwen3_5-4b-q8"}],
+            },
+        },
+    }]
+    monkeypatch.setattr(
+        "utils.model_id_base._load_provider_sources", lambda: fixture_sources,
+    )
+
+    assert resolve_provider("qwen3_5-4b-q8")[0] == "llamacpp_spark"
+    assert resolve_provider("qwen3.5-4b-q8")[0] == "llamacpp"
+
+
+def test_resolve_provider_config_form_fallback_still_works(monkeypatch):
+    """Reine Dot-Config ohne exakte Underscore-ID: Bridge greift weiter."""
+    from utils.model_id_base import resolve_provider
+
+    fixture_sources = [{
+        "local": {
+            "vllm_spark": {
+                "models": [{"id": "ornith-1.0-35B-FP8"}],
+            },
+        },
+    }]
+    monkeypatch.setattr(
+        "utils.model_id_base._load_provider_sources", lambda: fixture_sources,
+    )
+
+    assert resolve_provider("ornith-1_0-35B-FP8")[0] == "vllm_spark"

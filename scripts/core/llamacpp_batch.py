@@ -22,6 +22,8 @@ import time
 import pandas as pd
 import yaml
 
+from utils.model_id_base import _PROVIDER_ALIAS_MAP
+
 logger = logging.getLogger(__name__)
 
 # ROOT_DIR für absolute Pfade
@@ -194,6 +196,7 @@ def llamacpp_model_session(
 def get_existing_results(
     csv_path: Path,
     force: bool = False,
+    provider_key: str | None = None,
 ) -> set[tuple[str, str]]:
     """Lädt Set von (Model, AssetID) für bereits existierende Tests.
 
@@ -203,6 +206,12 @@ def get_existing_results(
     Args:
         csv_path: Pfad zur primären CSV-Datei (wird ignoriert wenn force=True)
         force: Wenn True, leeres Set zurückgeben (Cache ignorieren)
+        provider_key: Optional — Provider-Scoping (Separation-Fix 2026-08-28).
+            Nur Zeilen dieses Providers werden gecacht. Alte Ergebnisse eines
+            ANDEREN Providers mit identischer kanonischer Modell-ID
+            (Mac ``qwen3.5-4b-q8`` ↔ Spark ``qwen3_5-4b-q8``) suppressen
+            den Batch dann nicht mehr. None = provider-blind (Legacy,
+            z.B. Commercial-Batch mit eindeutigen Modell-IDs).
 
     Returns:
         Set von (model_id, asset_id) Tupeln
@@ -232,7 +241,7 @@ def get_existing_results(
             continue
         try:
             df = pd.read_csv(path)
-            _add_existing_result_rows(cache, df)
+            _add_existing_result_rows(cache, df, provider_key)
         except Exception as e:
             print(f"⚠️ Warnung beim Lesen von {path}: {e}")
 
@@ -241,14 +250,45 @@ def get_existing_results(
     if pc_csv.exists():
         try:
             df_pc = pd.read_csv(pc_csv)
-            _add_political_compass_rows(cache, df_pc)
+            _add_political_compass_rows(cache, df_pc, provider_key)
         except Exception as e:
             print(f"⚠️ Warnung beim Lesen von {pc_csv}: {e}")
 
     return cache
 
 
-def _add_existing_result_rows(cache: set[tuple[str, str]], df: Any) -> None:
+def _normalize_provider_key(provider: Any) -> str:
+    """Normalisiert Provider-Bezeichner aus CSV-Zeilen/Config für den Vergleich.
+
+    Nutzt die SSoT-Alias-Map (``llama_cpp``/``llamacpp_local`` → ``llamacpp``,
+    ``ollama`` → ``ollama_local``), damit Legacy-Zeilen mit alten Aliasen
+    weiterhin zum richtigen Provider matchen.
+    """
+    key = str(provider or "").strip().lower()
+    return _PROVIDER_ALIAS_MAP.get(key, key)
+
+
+def _provider_row_matches(df: Any, row: Any, provider_key: str | None) -> bool:
+    """True wenn die CSV-Zeile zum angeforderten Provider passt (Separation).
+
+    Provider-Spalte: ``provider`` (Benchmark-CSVs) bzw. ``provider_type``
+    (Political Compass). Ohne provider_key (None) matcht alles (Legacy).
+    Fehlt die Spalte, ist die Zeile im gescopeten Modus nicht attribuierbar
+    → nicht cachen (lieber neu laufen lassen als fremde Results suppressen).
+    """
+    if provider_key is None:
+        return True
+    column = "provider" if "provider" in df.columns else "provider_type"
+    if column not in df.columns:
+        return False
+    return _normalize_provider_key(row.get(column)) == _normalize_provider_key(provider_key)
+
+
+def _add_existing_result_rows(
+    cache: set[tuple[str, str]],
+    df: Any,
+    provider_key: str | None = None,
+) -> None:
     """Adds completed (model, asset_id) entries from a benchmark CSV into the cache.
 
     Fügt jede kanonische Lookup-Variante des Modellnamens hinzu, damit der
@@ -265,6 +305,8 @@ def _add_existing_result_rows(cache: set[tuple[str, str]], df: Any) -> None:
             status = str(row.get("status", "")).lower()
             if status not in completed_statuses:
                 continue
+        if not _provider_row_matches(df, row, provider_key):
+            continue
 
         model_str = str(row["model"])
         asset_str = str(row["asset_id"])
@@ -272,17 +314,23 @@ def _add_existing_result_rows(cache: set[tuple[str, str]], df: Any) -> None:
             cache.add((variant, asset_str))
 
 
-def _add_political_compass_rows(cache: set[tuple[str, str]], df: Any) -> None:
+def _add_political_compass_rows(
+    cache: set[tuple[str, str]],
+    df: Any,
+    provider_key: str | None = None,
+) -> None:
     """Adds political-compass leaderboard rows to the cache using the batch ID.
 
     Multi-Key: alle kanonischen Lookup-Varianten des Modellnamens werden
     gecacht, damit der Cache-Lookup unabhängig von der Schreibweise des
-    Callers funktioniert.
+    Callers funktioniert. Provider-Scoping analog zu _add_existing_result_rows.
     """
     if "model" not in df.columns:
         return
 
     for _, row in df.iterrows():
+        if not _provider_row_matches(df, row, provider_key):
+            continue
         model_str = str(row["model"])
         for variant in canonical_lookup_keys(model_str):
             cache.add((variant, "political_compass_v3"))

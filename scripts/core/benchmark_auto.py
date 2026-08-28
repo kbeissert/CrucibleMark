@@ -236,7 +236,9 @@ def _run_single_llamacpp_provider_batch(
     csv_path = Path(
         validator.config.get("output", {}).get("local_models_csv", "benchmark_scores/local_models_benchmark.csv")
     )
-    existing_tests = get_existing_results(csv_path, force=force)
+    # Provider-Scoping: alte Mac-Ergebnisse (provider=llamacpp) dürfen Spark-
+    # Modelle mit identischer kanonischer ID nicht suppressen (Separation-Fix).
+    existing_tests = get_existing_results(csv_path, force=force, provider_key=provider_key)
     runner, lcpp_client = _setup_llamacpp_runner_and_client(
         provider_key, force, audit_mode,
     )
@@ -436,7 +438,8 @@ def _run_single_vllm_provider_batch(
             "local_models_csv", "benchmark_scores/local_models_benchmark.csv"
         )
     )
-    existing_tests = get_existing_results(csv_path, force=force)
+    # Provider-Scoping analog zum llama.cpp-Batch (Separation-Fix 2026-08-28).
+    existing_tests = get_existing_results(csv_path, force=force, provider_key=provider_key)
     runner, vllm_client = _setup_vllm_runner_and_client(
         provider_key, force, audit_mode,
     )
@@ -638,7 +641,8 @@ def run_local_batch(
         return
 
     csv_path = Path(validator.config.get("output", {}).get("local_models_csv", "benchmark_scores/local_models_benchmark.csv"))
-    existing_tests = get_existing_results(csv_path, force=force)
+    # Provider-Scoping: Ollama-Zeilen tragen provider=ollama (Alias → ollama_local).
+    existing_tests = get_existing_results(csv_path, force=force, provider_key="ollama_local")
     suitable_models = _resolve_suitable_local_models(ollama_cfg)
     if not suitable_models:
         print("⚠️  Keine geeigneten lokalen Modelle gefunden.")

@@ -404,7 +404,11 @@ providers:
       short_code: M4APL
       api_type: llamacpp
       model_type: open_weights_local
-      enabled: false
+      # 2026-08-28 wieder aktiviert: Separation-Fix (provider-scoped Result-Cache,
+      # resolve_provider Exact-First, Endpoint-Ownership-Check in llamacpp_base)
+      # erlaubt Gleichzeitigkeit mit llamacpp_spark trotz kanonisch identischer
+      # Modell-IDs (Mac qwen3.5-4b-q8 ↔ Spark qwen3_5-4b-q8).
+      enabled: true
       context_window: 32000
       base_url: "http://127.0.0.1:1235/v1"
       api_key: "sk-local"
@@ -523,8 +527,9 @@ providers:
       # ist ein Ollama-Konzept. Output-Budget läuft über token_param_name (max_tokens).
       num_predict: 65536
       # Benchmark-Port auf der GX10 (Tailscale-IP). Vorsicht: VS-Code-Port-Forwards
-      # der Remote-Session können Mac-localhost auf GX10-Ports mappen und so den
-      # Mac-Provider blockieren (Kollisionsfall 2026-08-27: Mac:1235 → GX10:1234).
+      # der Remote-Session können Mac-localhost auf GX10-Ports mappen (Kollisionsfall
+      # 2026-08-27: Mac:1235 → GX10:1234). Der Mac-Connector erkennt solche Hijacks
+      # seit 2026-08-28 (Ownership-Check in llamacpp_base) und bricht Fail-Fast ab.
       base_url: "http://100.89.110.0:1234/v1"
       api_key: "sk-local"
       # GGUF-Basispfad auf der GX10; `model_file` der Modelle ist relativ dazu.
@@ -659,10 +664,14 @@ providers:
       #   n_gpu_layers: 99
 
       # ── Aktive Spark-Modelle (Inventar-Check 2026-08-27) ──
-      # llama.cpp wurde auf dem gx10 reaktiviert. IDs sind eindeutig gegenüber
-      # local/llamacpp (Mac): Underscores statt Mac-Dots (qwen3_5-4b-q8 statt
-      # qwen3.5-4b-q8) bzw. '-spark'-Suffix bei identischem Mac-ID
-      # (gemma-4-e4b-spark). Cards: benchmark_scores/model_cards/<id>--SPRK.json.
+      # llama.cpp wurde auf dem gx10 reaktiviert. Separation-Fix 2026-08-28:
+      # Result-Cache (get_existing_results) und Provider-Routing
+      # (resolve_provider) arbeiten provider-scoped — Mac- und Spark-Provider
+      # können GLEICHZEITIG aktiviert sein, auch mit kanonisch identischen
+      # Modell-IDs (qwen3.5-4b-q8 ↔ qwen3_5-4b-q8). Die historischen
+      # ID-Varianten (Underscores/-spark-Suffix) bleiben aus
+      # Card-/CSV-Konsistenz bestehen, sind aber nicht mehr die Trennursache.
+      # Cards: benchmark_scores/model_cards/<id>--SPRK.json.
       # BGE-M3 (Embedding-GGUF) ist kein Benchmark-Kandidat und bewusst nicht
       # als Modell-Eintrag geführt.
 

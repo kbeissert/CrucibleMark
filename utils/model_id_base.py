@@ -443,8 +443,18 @@ def _lookup_model_in_section(
     section_cfg: dict,
     model_name: str,
     config_form: str,
+    *,
+    exact_only: bool = False,
 ) -> tuple[str, str] | None:
     """Sucht *model_name* in einer Provider-Section (commercial oder local).
+
+    Args:
+        exact_only: Wenn True, matcht NUR die exakte Config-ID (kein
+            Underscore→Dot-Bridge). Der Aufrufer macht damit einen ersten
+            exakten Durchlauf über alle Provider, bevor der tolerante
+            config_form-Match greift — sonst würde ``qwen3_5-4b-q8``
+            (Spark) über die Bridge ``qwen3.5-4b-q8`` dem zuerst
+            iterierten Mac-Provider zugeordnet (Separation-Fix 2026-08-28).
 
     Returns ``(prov_key, model_name)`` on hit, ``None`` on miss.
     """
@@ -454,7 +464,9 @@ def _lookup_model_in_section(
         for _m in _prov_cfg.get("models", []):
             if isinstance(_m, dict):
                 _m_id = _m.get("id", "")
-                if _m_id in (model_name, config_form):
+                if _m_id == model_name:
+                    return _prov_key, model_name
+                if not exact_only and _m_id == config_form:
                     return _prov_key, model_name
     return None
 
@@ -462,11 +474,30 @@ def _lookup_model_in_section(
 def _resolve_provider_from_config(model_name: str, config_form: str) -> tuple[str, str] | None:
     """Resolve provider from config sources (ConfigValidator + YAML fallback).
 
+    Zwei Durchläufe (Separation-Fix 2026-08-28): erst exakte ID-Treffer über
+    ALLE Provider/Quellen, danach erst der tolerante config_form-Match
+    (Underscore→Dot). So gewinnt die exakte Config-ID eines zweiten
+    llama.cpp-Providers gegen die Dot-Variante des ersten.
+
     Returns ``(provider_key, model_name)`` on hit, ``None`` on miss.
     """
-    for _providers in _load_provider_sources():
-        if not isinstance(_providers, dict):
-            continue
+    sources = [
+        _providers for _providers in _load_provider_sources()
+        if isinstance(_providers, dict)
+    ]
+    # Durchlauf 1: exakte Config-ID (höchste Präzision)
+    for _providers in sources:
+        for section_name in ("commercial", "local"):
+            section = _providers.get(section_name, {})
+            if not isinstance(section, dict):
+                continue
+            hit = _lookup_model_in_section(
+                section, model_name, config_form, exact_only=True,
+            )
+            if hit is not None:
+                return hit
+    # Durchlauf 2: toleranter config_form-Match (kanonisierte IDs)
+    for _providers in sources:
         for section_name in ("commercial", "local"):
             section = _providers.get(section_name, {})
             if not isinstance(section, dict):
