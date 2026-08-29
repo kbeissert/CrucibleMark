@@ -146,6 +146,8 @@ Zwei verschiedene Probes, beide laufen VOR dem Benchmark — Namen NICHT synonym
 | Card-Felder | `thinking_probe_detected` (Capability, stabil — vgl. Session-54-Trennung) | `pc_token_calibration` + `pc_profile` |
 | Wirkung | `is_reasoning_model()` → 5×-Reasoning-Multiplikator (Modell bekommt Raum für CoT) | Profil steuert den Betriebsmodus; `get_calibrated_pc_budget()` → kalibriertes Budget gewinnt über Config-Modul-Eintrag (Card-First, nur `module_key="political_compass"`) |
 
+**Connector-Matrix (Messung vs. Umsetzung):** Die Probe-MESSUNG läuft connector-unabhängig über `LLMClient.query()` (alle Connectoren). Die UMSETZUNG des Profils ist connector-spezifisch: `thinking`-Budget wirkt überall (`get_calibrated_pc_budget()` ist provider-unabhängig); Thinking-Off für `instruct`/`hybrid_dual` nur auf vLLM per-Request (`PC_THINKING_OFF_PROVIDER_PREFIXES = ("vllm",)`, test.py) — llama.cpp braucht ein manuelles Instruct-Profil (`enable_thinking: false`, Server-Flag), Cloud-Connectoren das Reasoning-Cap (`model_reasoning_config`, Session 89).
+
 **Abgrenzung:** „Denken **können**" (Capability) weist das Thinking-Probe nach; „beim Lauf denken **dürfen**" entscheidet operationell der PC-Token-Probe (Profil `instruct` = Thinking-Off) bzw. die Runtime-Config (`enable_thinking`, vgl. Session-54-Trennung Capability vs. Runtime). Der PC-Token-Probe ersetzt das Thinking-Probe NICHT: Andere Module nutzen weiterhin `thinking_probe_detected` für den Multiplikator. Laufzeit-Priorität in `resolve_token_budget` für PC: `pc_token_calibration.budget` > Config-Modul-Budget > 5×-Multiplikator-Pfad.
 
 ### PC v3 Token-Probe (2026-08-29): Card-First-Budget-Kalibrierung

@@ -24,7 +24,7 @@ Regel: Nur aktive, ungelöste Themen als Baustelle melden. Abgeschlossene Integr
 
 ```bash
 make benchmark-auto            # Vollautomatischer Batch-Run
-make validate                  # Lint (Ruff und Pylint)
+make lint                      # Lint-Gate (Ruff C901≤12 + Pylint E-Level) — make validate ist nur Asset-Check!
 make validate-naming           # Naming-Validator (Publication-Gate)
 make validate-csv              # CSV-Sanitizer
 make test                      # Full Test Suite (pytest)
