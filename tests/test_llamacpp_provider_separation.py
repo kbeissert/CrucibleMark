@@ -784,6 +784,49 @@ def test_build_server_cmd_port_defaults_to_base_url(two_provider_config):
     assert "--port 1235" in cmd
 
 
+def test_build_server_cmd_provider_level_extra_server_args(two_provider_config):
+    """Provider-Level `extra_server_args` landen im Server-Cmd (Optimierung 2026-08-28).
+
+    Ermöglicht Flags für alle Modelle eines Providers (z.B. --flash-attn,
+    --cache-type-k/v q8_0 auf der Spark), ohne sie pro Modell zu wiederholen.
+    Model-Level-Args werden zusätzlich angehängt (last-one-wins bei
+    Single-Value-Flags) und bleiben damit der feinere Override.
+    """
+    config = two_provider_config
+    config["providers"]["local"]["llamacpp_spark"]["extra_server_args"] = [
+        "--flash-attn on",
+        "--cache-type-k q8_0",
+        "--cache-type-v q8_0",
+    ]
+    config["providers"]["local"]["llamacpp_spark"]["models"] = [
+        {"id": "spark-model", "model_file": "spark-model.gguf"},
+        {
+            "id": "spark-mtp",
+            "model_file": "spark-mtp.gguf",
+            "extra_server_args": ["--spec-type draft-mtp"],
+        },
+    ]
+    client = LlamaCppSparkClient(config)
+
+    plain_cmd = client._build_server_cmd("spark-model")
+    assert "--flash-attn on" in plain_cmd
+    assert "--cache-type-k q8_0" in plain_cmd
+    assert "--cache-type-v q8_0" in plain_cmd
+    assert "--spec-type draft-mtp" not in plain_cmd
+
+    mtp_cmd = client._build_server_cmd("spark-mtp")
+    assert "--flash-attn on" in mtp_cmd          # Provider-Level greift weiter
+    assert "--spec-type draft-mtp" in mtp_cmd    # Model-Level kommt zusätzlich
+
+
+def test_build_server_cmd_without_provider_extra_args_is_unchanged(two_provider_config):
+    """Fehlt Provider-Level `extra_server_args`, bleibt das Cmd unverändert (Backward-Compat)."""
+    client = LlamaCppSparkClient(two_provider_config)
+    cmd = client._build_server_cmd("spark-model")
+    assert "--flash-attn" not in cmd
+    assert "--cache-type-k" not in cmd
+
+
 # ---------------------------------------------------------------------------
 # Separation-Fix 2026-08-28: Strict Adoption-Matching (_detected_matches_model)
 # ---------------------------------------------------------------------------
@@ -1010,12 +1053,12 @@ def test_get_existing_results_political_compass_scoped(tmp_path, monkeypatch):
     spark_cache = llamacpp_batch.get_existing_results(
         tmp_path / "ignored.csv", provider_key="llamacpp_spark",
     )
-    assert ("qwen3_5-4b-q8", "political_compass_v3") not in spark_cache
+    assert ("qwen3_5-4b-q8", "political_compass_v4") not in spark_cache
 
     mac_cache = llamacpp_batch.get_existing_results(
         tmp_path / "ignored.csv", provider_key="llamacpp",
     )
-    assert ("qwen3_5-4b-q8", "political_compass_v3") in mac_cache
+    assert ("qwen3_5-4b-q8", "political_compass_v4") in mac_cache
 
 
 # ---------------------------------------------------------------------------

@@ -421,6 +421,15 @@ class LlamaCppBaseClient(BaseProviderClient):
             draft_path = self._resolve_model_path_from_dir(draft_file, prov_cfg.get("model_dir"))
             cmd += f" --model-draft {shlex.quote(str(draft_path))}"
 
+        # Provider-Level extra_server_args (z.B. --flash-attn, --cache-type-k/v).
+        # Gelten für alle Modelle des Providers; Model-Level-Args werden danach
+        # angehängt und gewinnen damit bei Single-Value-Flags (last-one-wins).
+        provider_extra_args = prov_cfg.get("extra_server_args", [])
+        if isinstance(provider_extra_args, list):
+            for arg in provider_extra_args:
+                if isinstance(arg, str) and arg.strip():
+                    cmd += f" {arg.strip()}"
+
         # Zusätzliche Server-Flags aus der Modell-Config (extra_server_args).
         # Ermöglicht die Übergabe beliebiger llama.cpp-Flags wie --spec-type,
         # --spec-draft-n-max, --flash-attn, --jinja, --cache-type-k/v etc.
@@ -1012,12 +1021,22 @@ class LlamaCppBaseClient(BaseProviderClient):
         kwargs: dict[str, Any],
         stream_handler: Callable[[str], None] | None,
     ) -> tuple[int, str, dict[str, Any]]:
-        """Berechnet Token-Budget und Request-Parameter fuer llama.cpp."""
+        """Berechnet Token-Budget und Request-Parameter fuer llama.cpp.
+
+        Hinweis (PC v3): Ein per-Request Thinking-Toggle (z.B.
+        ``chat_template_kwargs={"enable_thinking": False}`` bei vLLM) ist hier
+        NICHT moeglich — ``enable_thinking`` ist bei llama.cpp ein
+        Server-Start-Flag (``--reasoning on``), kein Request-Parameter
+        (SSoT: memory-bank/systemPatterns.md). Caller, die Thinking pro Request
+        abschalten wollen, muessen auf Budget-Eskalation degradieren; ein hier
+        uebergebenes ``chat_template_kwargs`` wird bewusst ignoriert.
+        """
         _prov_cfg = self._provider_cfg()
         token_param_name = _prov_cfg.get("token_param_name", "max_tokens")
         raw_requested: int | None = kwargs.get("max_tokens")
         initial_tokens, _ = resolve_token_budget(
-            model, raw_requested, self.config, kwargs.get("_module_key")
+            model, raw_requested, self.config, kwargs.get("_module_key"),
+            exact=bool(kwargs.get("_budget_exact")),
         )
         model_cfg_max_tokens = self._model_cfg(model).get("max_tokens")
         if model_cfg_max_tokens is not None:

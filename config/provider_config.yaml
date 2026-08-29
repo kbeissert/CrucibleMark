@@ -408,7 +408,7 @@ providers:
       # resolve_provider Exact-First, Endpoint-Ownership-Check in llamacpp_base)
       # erlaubt Gleichzeitigkeit mit llamacpp_spark trotz kanonisch identischer
       # Modell-IDs (Mac qwen3.5-4b-q8 ↔ Spark qwen3_5-4b-q8).
-      enabled: true
+      enabled: false
       context_window: 32000
       base_url: "http://127.0.0.1:1235/v1"
       api_key: "sk-local"
@@ -565,10 +565,24 @@ providers:
       # Server lauscht auf allen Interfaces — nur so ist der Zugriff vom
       # Benchmark-Host per Tailscale-IP möglich (Default 127.0.0.1 wäre GX10-lokal).
       bind_host: 0.0.0.0
-      threads: 10  # CPU-Threads (--threads) im Server-Cmd.
+      threads: 16  # CPU-Threads (--threads) im Server-Cmd. 2026-08-28: 10→16 (GB10 hat 20 Cores — 10 halbierte den Durchsatz).
       # Slots (--parallel); pro Modell via `parallel` überschreibbar
       # (z.B. Hybrid-Attention-Modelle mit parallel=1).
-      parallel: 2
+      # 2026-08-28: 2→1 — der Benchmark läuft strikt sequenziell (Single-Request);
+      # parallel=1 gibt dem einzigen Slot die volle --ctx-size (vorher Teilung
+      # durch 2 Slots) und spart Slot-Overhead.
+      parallel: 1
+      # Provider-Level Server-Flags für alle Spark-Modelle (llamacpp_base.
+      # _build_server_cmd hängt sie nach den Basis-Flags an; Model-Level-
+      # extra_server_args werden danach angehängt und gewinnen last-one-wins).
+      # flash-attn ist Voraussetzung für quantisierten KV-Cache (q8_0):
+      # halbiert den KV-Speicherbedarf → mehr Compute-Headroom.
+      # Achtung: q8_0-KV ändert die Numerik leicht — Läufe sind nicht direkt
+      # mit historischen fp16-KV-Ergebnissen vergleichbar.
+      extra_server_args:
+        - "--flash-attn on"
+        - "--cache-type-k q8_0"
+        - "--cache-type-v q8_0"
       hardware_profile: dgx_spark_cuda
       # Pro Modell: id (eindeutig ggü. Mac-Provider), name, model_file (relativ
       # zu model_dir), n_gpu_layers, enable_thinking (→ --reasoning on/off),
@@ -697,6 +711,21 @@ providers:
         model_file: Gemma4-12B-it-UD-Q6_K_XL/gemma-4-12b-it-UD-Q6_K_XL.gguf
         n_gpu_layers: 99
         enable_thinking: true  # Gemma 4 Channel-Tokens (<|channel|>): --jinja + --reasoning-format deepseek separiert Thinking in reasoning_content
+        extra_server_args:
+          - "--jinja"
+          - "--reasoning-format deepseek"
+      # PC-Instruct-Profil (2026-08-29): Eigenständige Modell-ID nach Dual-Profil-
+      # Pattern (analog qwen3_8-27b-nvfp4 vs. -thinking) — KEIN Flag-Flip am
+      # Thinking-Eintrag (schützt 93 Rows in local_models_benchmark.csv).
+      # Anlass: Thinking-Run mit 39% Truncation-Verlust, Ausfälle konzentriert
+      # auf die X-Achse (Coverage 61%) — siehe docs/POLITICAL_COMPASS_KONZEPT.md
+      # Abschnitt 11 (Coverage-Regel). Gleiche GGUF, gleiche Quant — nur der
+      # Betriebsmodus unterscheidet sich (--reasoning off statt on).
+      - id: gemma-4-12b-it-ud-q6_k_xl-instruct-spark
+        name: Gemma 4 12B Instruct UD-Q6_K_XL Instruct-Modus (GGUF)
+        model_file: Gemma4-12B-it-UD-Q6_K_XL/gemma-4-12b-it-UD-Q6_K_XL.gguf
+        n_gpu_layers: 99
+        enable_thinking: false  # Instruct-Modus: kein CoT — PC-Truncation-Verluste vermeiden
         extra_server_args:
           - "--jinja"
           - "--reasoning-format deepseek"
