@@ -95,5 +95,12 @@
   "last_modified_at": null,
   "heritage_ids": [],
   "community": null,
-  "weights_provenance_rationale": "Die Basisgewichte stammen von Google DeepMind und sind unter Apache 2.0 veröffentlicht. Diese Karte beschreibt eine lokale Unsloth-GGUF-Distribution; die Inferenz läuft ohne Cloud-Verbindung und ohne externen Datentransfer. Das CLOUD-Act-Risiko betrifft primär Cloud-/API-Nutzung, nicht den rein lokalen Betrieb.[web:790][web:792][web:796]"
+  "weights_provenance_rationale": "Die Basisgewichte stammen von Google DeepMind und sind unter Apache 2.0 veröffentlicht. Diese Karte beschreibt eine lokale Unsloth-GGUF-Distribution; die Inferenz läuft ohne Cloud-Verbindung und ohne externen Datentransfer. Das CLOUD-Act-Risiko betrifft primär Cloud-/API-Nutzung, nicht den rein lokalen Betrieb.[web:790][web:792][web:796]",
+  "pc_token_calibration": {
+    "budget": 3120,
+    "classification": "inconsistent",
+    "tested": "2026-08-29T11:17:14.117431+00:00",
+    "converged_stage": null,
+    "notes": "Frageabhängiges Terminierungsverhalten: höchste Stufe mit mindestens einer Konvergenz = 2400. Budget = 2400 × 1.3. Messung nicht vollständig stabil — Anmerkung im Audit-Log."
+  }
 }
