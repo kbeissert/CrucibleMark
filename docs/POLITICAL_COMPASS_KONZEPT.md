@@ -279,6 +279,8 @@ Ein PC-Thinking-Lauf wird abgebrochen und auf ein Instruct-Profil umgestellt, we
 
 ### 11.1 Probe v2: Von der Budget-Zahl zur Profil-Entscheidung (2026-08-29)
 
+> **Terminologie (SSoT: memory-bank/systemPatterns.md):** **Thinking-Probe** (`probe_thinking.py`, `make probe-thinking`) = globale Reasoning-Erkennung → `thinking_probe_detected` → 5×-Multiplikator für alle Module. **PC-Token-Probe** (`pc_calibrate.py --probe`, `make probe-pc-budget`) = PC-spezifische Kalibrierung → `pc_token_calibration` + `pc_profile` → Budget + Betriebsmodus nur für political_compass. Namen nicht synonym verwenden; der PC-Token-Probe subsumiert die Darf-denken-Frage für den PC-Kontext, ersetzt das Thinking-Probe aber nicht.
+
 Der Gemma-4-Fall hat den Kreis geschlossen: Der gesamte Live-Entscheidungsprozess (Coverage beobachten, Schwelle prüfen, Instruct-Fallback) ist exakt das, was die Token-Probe vorab leisten soll. Die v1-Probe versagte dabei, weil sie 4 Fragen aus 4 Blöcken samplete und Block 7.2 durchrutschte. Die v2-Probe behebt das mit **stratifiziertem zweistufigem Sampling**:
 
 - **Stufe 1 (Screening, billig):** Genau 1 Frage pro Block (alle 9 Blöcke) bei 300 Tokens — 9 kurze Requests markieren verdächtige Blöcke. Saubere Blöcke werden nicht weiter angefasst.

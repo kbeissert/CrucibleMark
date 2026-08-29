@@ -133,6 +133,20 @@ model_reasoning_config:
 
 **Kalibrierung:** `scripts/tools/pc_calibrate.py` — Ziel: P95(reasoning) + 200 ≤ Budget, Truncation-Rate < 5%. Console-Warnung im Modul bei Ø reasoning > 2 × Budget.
 
+### Terminologie: Thinking-Probe vs. PC-Token-Probe (SSoT-Namenskonvention, 2026-08-29)
+
+Zwei verschiedene Probes — Namen NICHT synonym verwenden:
+
+| | **Thinking-Probe** | **PC-Token-Probe** |
+|---|---|---|
+| Script / Target | `scripts/tools/probe_thinking.py` / `make probe-thinking` | `scripts/tools/pc_calibrate.py --probe` / `make probe-pc-budget` |
+| Frage | „**Ist** das Modell ein Reasoning-Modell?" (binär) | „**Wie** terminiert der CoT unter PC-Bedingungen — blockweise, mit welchem Budget, welcher Betriebsmodus?" |
+| Scope | Global, modul-agnostisch (alle Benchmarks) | PC-spezifisch (PC-Fragen, PC-Budget-Regime) |
+| Card-Felder | `thinking_probe_detected` | `pc_token_calibration` + `pc_profile` |
+| Wirkung | `is_reasoning_model()` → 5×-Reasoning-Multiplikator | `get_calibrated_pc_budget()` → kalibriertes Budget gewinnt über Config-Modul-Eintrag (Card-First, nur `module_key="political_compass"`) |
+
+**Subsumption:** Der PC-Token-Probe beantwortet die Darf-denken-Frage für den PC-Kontext feiner (Profil-Entscheidung `thinking`/`hybrid_dual`/`instruct` statt binär) — er ersetzt das Thinking-Probe NICHT: Andere Module nutzen weiterhin `thinking_probe_detected` für den Multiplikator. Laufzeit-Priorität in `resolve_token_budget` für PC: `pc_token_calibration.budget` > Config-Modul-Budget > 5×-Multiplikator-Pfad.
+
 ### PC v3 Token-Probe (2026-08-29): Card-First-Budget-Kalibrierung
 
 Kalibrierungs-Befund Gemma-4-12b (Spark): CoT-Länge ist fragenabhängig schwer verteilt (714 / 2246 / 2210 / >8000 Tokens) — ein Einheits-Cap kann nicht passen: zu knapp zensiert tiefe Denker (misst „CoT passt in 800" statt politische Position), zu hoch reaktiviert die 30-min-Latenz. Lösung: gestufter Token-Probe nach dem Thinking-Probe-Pattern (Probe einmal → Card → automatisch honorieren, NICHT pro Run).
