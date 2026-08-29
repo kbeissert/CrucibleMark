@@ -116,6 +116,37 @@ model_reasoning_config:
 
 ---
 
+## Political Compass v3 (2026-08-29): Budget-Wiring, Klassifikation, Eskalations-Traceability
+
+**Root Cause 25k-Fallback:** PC hatte keinen `token_budgets`-Eintrag UND verschluckte die `max_tokens`/`_module_key`-kwargs aus `base_runner.py` (`**_kwargs`). `resolve_token_budget()` fiel bei Reasoning-Modellen auf `REASONING_MIN_BUDGET_TOKENS = 25000` zurück → ~30 min/Frage bei 14 t/s (Vorfall Gemma-4-12b-it-ud-q6_k_xl-spark). Beides behoben: YAML-Einträge (800) + Wiring `execute()` → `context` → `_run_single_block()` → `query()`.
+
+**Klassifikations-Kaskade** (`core/refusal_classifier.py`): Strict-Letter-Match (`_parse_choice(strict=True)` — bewusst OHNE Loose-Fallback #4, sonst wären Refusal-Texte mit zufälligem Buchstaben Antworten) → Truncation (`finish_reason=length`/leerer Content + Reasoning) → Keywords (config.yaml, de+en) → Embeddings (nur wenn sentence-transformers verfügbar). Kein LLM-Judge, keine Live-Endpoints.
+
+**Retry-Semantik pro Run:**
+- Vanilla (run_idx ungerade): REFUSAL = Datenpunkt, KEIN Retry, kein Anti-Refusal-Prompt, keine Temp-Eskalation. TRUNCATION/FORMAT: je EIN günstiger Re-Ask (temp 0.1, Budget ×2 / Format-Erinnerung).
+- Forced (run_idx gerade): REFUSAL behält Eskalationsleiter (0.1→0.4→0.7 + Anti-Refusal-Append). API-Fehler (leere Antwort + Timeout) eskalieren in BEIDEN Runs — Hard-Refusal-Accounting ist die Datenbasis für den Systematic-Failure-Break.
+- Thinking-Off-Re-Ask nur bei per-Request-Toggle: vLLM ja (`chat_template_kwargs={"enable_thinking": False}`, Merging in `extra_body` in `vllm_base.py:query()`), llama.cpp NEIN (Server-Start-Flag `--reasoning on`), Cloud: kein trivialer Disable → Budget-Eskalation.
+
+**Eskalations-Datenkette:** Checkpoint `detailed_responses[cache_key].escalation_ladder` (Attempts mit stage/temperature/trigger/max_tokens/finish_reason/reasoning_tokens/output_tokens) → `report.statistics.token_stats`/`escalation`/`methodology: pc-v3` (metrics_json der political_compass_results.csv) → Bias-Report Sektion 2.9 + Ladder-Badges (audit_logger.py). Der Bias-Reviewer liest NUR `00_bias_report.md` (+ Leaderboard-Zeile) und der Log wird HEAD-truncatet — deshalb ist Sektion 2.9 VOR den Detail-Antworten platziert.
+
+**Invalidierung bei Methodik-Wechsel:** (1) Checkpoint führt `module_version` — Mismatch → Checkpoint verwerfen (sonst serviert Resume alte 25k-Ära-Antworten). (2) Batch-ID bumpen (`political_compass_v3` → `_v4`, Usages: llamacpp_batch.py:336+490, political_compass_handler.py, clean_results.py, Separation-Test) — sonst suppresst `get_existing_results` alte Läufe. Beide Mechanismen bei jedem PC-Methodik-Wechsel mitziehen.
+
+**Kalibrierung:** `scripts/tools/pc_calibrate.py` — Ziel: P95(reasoning) + 200 ≤ Budget, Truncation-Rate < 5%. Console-Warnung im Modul bei Ø reasoning > 2 × Budget.
+
+### PC v3 Token-Probe (2026-08-29): Card-First-Budget-Kalibrierung
+
+Kalibrierungs-Befund Gemma-4-12b (Spark): CoT-Länge ist fragenabhängig schwer verteilt (714 / 2246 / 2210 / >8000 Tokens) — ein Einheits-Cap kann nicht passen: zu knapp zensiert tiefe Denker (misst „CoT passt in 800" statt politische Position), zu hoch reaktiviert die 30-min-Latenz. Lösung: gestufter Token-Probe nach dem Thinking-Probe-Pattern (Probe einmal → Card → automatisch honorieren, NICHT pro Run).
+
+**v2 (2026-08-29, Auditor-Review): Stratifiziertes Sampling + Profil-Entscheidung.** Die v1 samplete 4 Fragen aus 4 Blöcken — Block 7.2 rutschte durch (71 % Verlust erst im Live-Run entdeckt). v2: Stufe 1 = 1 Frage/Block (alle 9 Blöcke) @ 300 Tokens (Screening); Stufe 2 = vollständige Eskalation nur für verdächtige Blöcke (3 Fragen, 600/1200/2400 + Kontrolle; Cost-Bound 4 Blöcke, Früh-Abbruch bei bestätigtem Hybrid). Die Probe trifft eine **Profil-Entscheidung** (Card-Feld `pc_profile`): `thinking` (ein Lauf, kalibriertes Budget) | `hybrid_dual` (ZWEI Läufe: Thinking capped + Instruct — ermöglicht den Shift-Vergleich) | `instruct` (nur Instruct). Mapping: self_limiting→thinking, inconsistent→hybrid_dual, greedy_uncapped→instruct.
+
+- **Probe:** `make probe-pc-budget MODEL=<id>` → `scripts/tools/pc_calibrate.py --probe --write-card`. Stufen `[300, 600, 1200, 2400]` (geometrisch — Terminierung ist sprunghaft), 4 Fragen aus 4 Dimensionen (7.1/7.4/7.5/7.8 — qwen3-Befund: 146 bis 6392 Output-Tokens innerhalb eines Moduls, Einzelfrage kalibriert auf Zufall). Konvergenz = `finish_reason != length` UND strict-parsebarer Buchstabe. Abbruch bei erster vollständig konvergenter Stufe + Kontrollstufe darüber (Regressionscheck: schöpft das Modell mehr Raum doch aus?).
+- **Dreiwertige Klassifikation** (angelehnt an `verbose_outlier`): `self_limiting` (Budget = Stufe × 1.3), `inconsistent` (Kontrolle instabil → Budget OHNE Marge — Marge führt in die Ausschöpfungszone; oder frageabhängig gemischt → höchste any-converged Stufe × 1.3), `greedy_uncapped` (nichts konvergiert → Budget None, Instruct-Modus).
+- **Card-Feld** `pc_token_calibration: {budget, classification, tested, converged_stage, notes}` — `resolve_token_budget()` honoriert es für `module_key="political_compass"` (Card-First, gewinnt über Config-Eintrag); `greedy_uncapped` bekommt bewusst KEIN Budget (Eskalation sinnlos).
+- **Exact-Bypass:** Probe-Stufen liegen UNTER dem Modul-Budget — die max()-Eskalations-Semantik würde 300/600 still auf 800 anheben. `resolve_token_budget(..., exact=True)` umgeht Modul-Budget/Multiplikator (Card-Cap bleibt); Provider threaden `_budget_exact` durch (llamacpp_base/vllm_base/base.py). Nur für Probe (und künftige Exact-Use-Cases) — der Standard-Pfad behält max()-Semantik (Truncation-Re-Ask ×2).
+- **Instruct-Modus:** `greedy_uncapped` + vLLM → Thinking-Off per Request ab Attempt 1 (`force_thinking_off`); + llama.cpp → Warnung, Instruct-Profil in provider_config.yaml anlegen (enable_thinking: false) oder Verluste akzeptieren. Redaktionelle Transparenz: `report.statistics.pc_calibration` → metrics_json → Audit-Log Sektion 2.9 („abweichende Messbedingungen sichtbar halten, nicht verstecken" — Pattern wie Reasoning-Paradoxon).
+
+---
+
 ## Konventionen
 
 - **Naming:** BEM (CSS) / snake_case (Python) / kebab-case (YAML-Keys)

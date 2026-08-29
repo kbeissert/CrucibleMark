@@ -111,6 +111,16 @@ make probe-thinking MODEL=<slug-id>
 
 Füllt die `thinking_probe_*`-Felder (die nach card-research noch null bleiben).
 
+**Pflicht vor dem ersten Political-Compass-Run (PC v3):** Die Probe MUSS vor dem ersten PC-Lauf jedes lokalen Thinking-Modells erfolgt sein. Die PC-v3-Truncation-Klassifikation und Budget-Auflösung (`resolve_token_budget`) hängen an `thinking_probe_detected` — ohne Probe-Eintrag greift bei Reasoning-Modellen der falsche Budget-Pfad (25k-Fallback-Historie, Gemma-4/reasoning_content-Fall). Details: `memory-bank/reference/provider-models.md` → „Probe-vor-PC-Run".
+
+### 5b. PC-Token-Probe durchführen (nur Thinking-Modelle)
+
+```bash
+make probe-pc-budget MODEL=<slug-id>
+```
+
+Kalibriert das Political-Compass-Budget pro Modell (Stufen 300/600/1200/2400, 4 Dimension-Fragen) und schreibt `pc_token_calibration` in die Card. Klassifikationen: `self_limiting` (kalibriertes Budget = Stufe × 1.3), `inconsistent` (Budget ohne Marge, Audit-Log-Anmerkung), `greedy_uncapped` (kein kalibriertes Budget — PC-Lauf im Instruct-Modus bzw. Instruct-Profil in provider_config.yaml anlegen). Zeitbedarf: 8–16 Queries, bei nicht-terminierenden CoTs 30–60 min. Details: `memory-bank/systemPatterns.md` → „PC v3 Token-Probe".
+
 ### 6. Validierung
 
 ```bash

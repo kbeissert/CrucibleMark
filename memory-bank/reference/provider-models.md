@@ -97,6 +97,10 @@ Modelle wie Gemma-4 E4B geben Reasoning im Feld `reasoning_content` zurück (nic
 
 Zusätzlich: `reasoning_tokens` wird bevorzugt aus `usage.completion_tokens_details.reasoning_tokens` gelesen (llama.cpp-native), Fallback auf `completion_tokens` nur wenn Content leer.
 
+### Probe-vor-PC-Run (PC v3, 2026-08-29)
+
+`make probe-thinking MODEL=<id>` VOR dem ersten Political-Compass-Run jedes lokalen Thinking-Modells ausführen. Die PC-v3-Truncation-Klassifikation verlässt sich auf `reasoning_tokens`/`think_content` in `last_response_metadata` — ein fehlender Card-Probe-Eintrag (`thinking_probe_detected`) lässt `resolve_token_budget()` Reasoning-Modelle falsch auflösen (25k-Fallback-Historie, Gemma-4/reasoning_content-Fall). Die Probe setzt `thinking_probe_manual_override` korrekt und kostet Sekunden; ein PC-Re-Run nach falscher Budget-Auflösung kostet Stunden.
+
 ## Spark Token-Management (Session 26)
 
 `llamacpp_spark` ist ein eigenständiger Server mit eigenem Kontextfenster. Drei Config-Ebenen pro Modell:
