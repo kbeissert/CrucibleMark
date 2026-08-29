@@ -135,17 +135,18 @@ model_reasoning_config:
 
 ### Terminologie: Thinking-Probe vs. PC-Token-Probe (SSoT-Namenskonvention, 2026-08-29)
 
-Zwei verschiedene Probes — Namen NICHT synonym verwenden:
+Zwei verschiedene Probes, beide laufen VOR dem Benchmark — Namen NICHT synonym verwenden:
 
 | | **Thinking-Probe** | **PC-Token-Probe** |
 |---|---|---|
 | Script / Target | `scripts/tools/probe_thinking.py` / `make probe-thinking` | `scripts/tools/pc_calibrate.py --probe` / `make probe-pc-budget` |
-| Frage | „**Ist** das Modell ein Reasoning-Modell?" (binär) | „**Wie** terminiert der CoT unter PC-Bedingungen — blockweise, mit welchem Budget, welcher Betriebsmodus?" |
+| Frage | „**Denkt** das Modell?" — weist Thinking-Verhalten nach (Capability) | „**Darf** das Modell beim PC-Lauf denken — und wenn ja, mit welchem Budget?" |
+| Entscheidung | Keine Modus-Entscheidung: Nachweis steuert nur die Budget-Behandlung | Trifft die Darf-denken-Entscheidung: Profil `thinking`/`hybrid_dual` (denkt, kalibriertes Budget) oder `instruct` (denkt NICHT — Thinking-Off per Request bzw. Instruct-Profil) |
 | Scope | Global, modul-agnostisch (alle Benchmarks) | PC-spezifisch (PC-Fragen, PC-Budget-Regime) |
-| Card-Felder | `thinking_probe_detected` | `pc_token_calibration` + `pc_profile` |
-| Wirkung | `is_reasoning_model()` → 5×-Reasoning-Multiplikator | `get_calibrated_pc_budget()` → kalibriertes Budget gewinnt über Config-Modul-Eintrag (Card-First, nur `module_key="political_compass"`) |
+| Card-Felder | `thinking_probe_detected` (Capability, stabil — vgl. Session-54-Trennung) | `pc_token_calibration` + `pc_profile` |
+| Wirkung | `is_reasoning_model()` → 5×-Reasoning-Multiplikator (Modell bekommt Raum für CoT) | Profil steuert den Betriebsmodus; `get_calibrated_pc_budget()` → kalibriertes Budget gewinnt über Config-Modul-Eintrag (Card-First, nur `module_key="political_compass"`) |
 
-**Subsumption:** Der PC-Token-Probe beantwortet die Darf-denken-Frage für den PC-Kontext feiner (Profil-Entscheidung `thinking`/`hybrid_dual`/`instruct` statt binär) — er ersetzt das Thinking-Probe NICHT: Andere Module nutzen weiterhin `thinking_probe_detected` für den Multiplikator. Laufzeit-Priorität in `resolve_token_budget` für PC: `pc_token_calibration.budget` > Config-Modul-Budget > 5×-Multiplikator-Pfad.
+**Abgrenzung:** „Denken **können**" (Capability) weist das Thinking-Probe nach; „beim Lauf denken **dürfen**" entscheidet operationell der PC-Token-Probe (Profil `instruct` = Thinking-Off) bzw. die Runtime-Config (`enable_thinking`, vgl. Session-54-Trennung Capability vs. Runtime). Der PC-Token-Probe ersetzt das Thinking-Probe NICHT: Andere Module nutzen weiterhin `thinking_probe_detected` für den Multiplikator. Laufzeit-Priorität in `resolve_token_budget` für PC: `pc_token_calibration.budget` > Config-Modul-Budget > 5×-Multiplikator-Pfad.
 
 ### PC v3 Token-Probe (2026-08-29): Card-First-Budget-Kalibrierung
 
