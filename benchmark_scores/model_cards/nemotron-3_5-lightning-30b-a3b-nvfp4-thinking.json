@@ -90,8 +90,8 @@
   "thinking_probe_detected": true,
   "thinking_probe_evidence": "Multi-Probe (3 prompts, 2 detected, best confidence=medium):\n  - math: [math] reasoning_tokens=413 in provider metadata.\n  - decision: [decision] reasoning_tokens=983 in provider metadata.\nHinweis: Nicht in allen recherchierten offiziellen NVIDIA-Quellen als expliziter 'Thinking-Modus' dokumentiert; das Modell wird primär als schnelles Agenten-Ausführungsmodell beschrieben. Vor Freigabe gegen die offizielle Model Card auf build.nvidia.com verifizieren.",
   "thinking_probe_confidence": "medium",
-  "thinking_probe_manual_override": null,
   "thinking_probe_at": "2026-08-14T13:32:18.133772+00:00",
+  "thinking_probe_manual_override": null,
   "profile_verified": false,
   "profile_verified_at": null,
   "profile_verified_by": null,
@@ -99,5 +99,14 @@
   "heritage_ids": [
     "nvidia/nemotron-3-ultra"
   ],
-  "community": null
+  "community": null,
+  "pc_token_calibration": {
+    "budget": 3120,
+    "classification": "inconsistent",
+    "profile": "hybrid_dual",
+    "tested": "2026-08-29T19:23:59.855380+00:00",
+    "converged_stage": 2400,
+    "notes": "Stratifizierte Probe: 0 Blöcke sauber @ 300, 4/9 verdächtige Blöcke eskaliert (0 greedy, 0 inkonsistent). Profil: hybrid_dual."
+  },
+  "pc_profile": "hybrid_dual"
 }

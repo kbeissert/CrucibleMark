@@ -104,5 +104,14 @@
     "ornith-1_0-35B-FP8",
     "qwen3_5-35b-a3b"
   ],
-  "community": null
+  "community": null,
+  "pc_token_calibration": {
+    "budget": 3120,
+    "classification": "inconsistent",
+    "profile": "hybrid_dual",
+    "tested": "2026-08-29T19:12:25.082881+00:00",
+    "converged_stage": 2400,
+    "notes": "Stratifizierte Probe: 1 Blöcke sauber @ 300, 4/8 verdächtige Blöcke eskaliert (0 greedy, 1 inkonsistent). Profil: hybrid_dual."
+  },
+  "pc_profile": "hybrid_dual"
 }

@@ -108,5 +108,14 @@
   "heritage_ids": [
     "gpt-oss-120b"
   ],
-  "community": null
+  "community": null,
+  "pc_token_calibration": {
+    "budget": 780,
+    "classification": "self_limiting",
+    "profile": "thinking",
+    "tested": "2026-08-29T18:49:54.993096+00:00",
+    "converged_stage": 600,
+    "notes": "Stratifizierte Probe: 8 Blöcke sauber @ 300, 1/1 verdächtige Blöcke eskaliert (0 greedy, 0 inkonsistent). Profil: thinking."
+  },
+  "pc_profile": "thinking"
 }
