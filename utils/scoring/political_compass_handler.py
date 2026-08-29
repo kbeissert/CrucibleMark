@@ -10,6 +10,7 @@ from pathlib import Path
 from datetime import datetime
 from typing import Any
 
+from utils.module_registry import load_module_config
 from utils.benchmark_utils import (
     format_pc_run_data,
     format_political_compass_data,
@@ -41,9 +42,70 @@ class PoliticalCompassHandler:
         """Determines if the benchmark is the Political Compass module."""
         module_id = benchmark_info.get("id", "")
         return (
-            module_id in ["political_compass", "political_compass_v3"]
+            module_id in ["political_compass", "political_compass_v3", "political_compass_v4"]
             or benchmark_info.get("name", "") == "Political Compass"
         )
+
+    @staticmethod
+    def build_replacement_calibration(note_suffix: str = "") -> dict[str, Any]:
+        """Baut das pc_calibration-Transparenz-Flag für Coverage-Regel-Ersatzläufe.
+
+        SSoT für Handler und Verifikationsskript — verhindert Struktur-/Text-
+        Drift zwischen den beiden Injektionsstellen.
+        """
+        notes = (
+            "Instruct-Ersatzlauf laut Coverage-Regel (Konzept-Doc Abschn. 11): "
+            "Thinking-Run wegen Truncation-Verlusten abgebrochen, Ergebnis "
+            "unter der Original-Modell-ID attribuiert."
+        )
+        if note_suffix:
+            notes = f"{notes} {note_suffix}"
+        return {
+            "classification": "instruct_profile",
+            "budget": None,
+            "tested": None,
+            "pc_profile_forced_instruct": True,
+            "notes": notes,
+        }
+
+    @staticmethod
+    def _load_result_attribution_mapping() -> dict[str, str]:
+        """Lädt das Attribution-Mapping aus der PC-Modul-Config (SSoT)."""
+        try:
+            # Root-Anker statt CWD-relativ: bei Aufruf aus anderem Verzeichnis
+            # würde ein relativer Pfad stille {} liefern (Attribution aus).
+            _module_dir = (
+                Path(__file__).resolve().parents[2]
+                / "benchmark_modules" / "political_compass"
+            )
+            module_config = load_module_config(_module_dir)
+            mapping = (module_config.get("config") or {}).get("result_attribution") or {}
+            return {str(k): str(v) for k, v in mapping.items()}
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            logger.debug("Result-Attribution konnte nicht geladen werden: %s", e)
+            return {}
+
+    @classmethod
+    def _resolve_result_attribution(cls, model: str) -> str | None:
+        """Löst die Ergebnis-Attribution für Coverage-Regel-Ersatzläufe auf.
+
+        Mapping in der PC-Modul-Config (``config.result_attribution``):
+        Instruct-Profil-ID → Original-Modell-ID. Ein Treffer bedeutet: Der
+        Lauf ist ein Instruct-Ersatzlauf, dessen Ergebnis unter der
+        Original-ID persistiert wird (ein Leaderboard-Eintrag pro Modell).
+        """
+        attributed = cls._load_result_attribution_mapping().get(model)
+        return attributed or None
+
+    @classmethod
+    def _is_attributed_target(cls, model: str) -> bool:
+        """True, wenn ``model`` ein Attributions-Ziel (Original-ID) ist.
+
+        Ergebnisse unter dieser ID stammen aus einem Instruct-Ersatzlauf —
+        die Shift-Verifikation darf sie nicht mit einem Thinking-Triple-Run
+        überschreiben (Coverage-Regel, Konzept-Doc Abschn. 11).
+        """
+        return model in set(cls._load_result_attribution_mapping().values())
 
     @classmethod
     def handle_results(
@@ -64,6 +126,32 @@ class PoliticalCompassHandler:
                 "PoliticalCompassResultManager could not be imported. Skipping PC outputs."
             )
             return
+
+        # Coverage-Regel-Ersatzlauf (Konzept-Doc Abschn. 11): Ergebnisse eines
+        # Instruct-Ersatzlaufs werden unter der ORIGINAL-Modell-ID attribuiert
+        # (ein Leaderboard-Eintrag pro Modell). Die methodische Abweichung bleibt
+        # transparent: pc_calibration in metrics_json + ⚙️-Annotation im Report.
+        attribution = cls._resolve_result_attribution(model)
+        if attribution:
+            stats = report.setdefault("statistics", {})
+            if not stats.get("pc_calibration"):
+                stats["pc_calibration"] = cls.build_replacement_calibration()
+            logger.info(
+                "[PC] Ergebnis von Ersatzlauf '%s' wird unter Original-ID '%s' attribuiert.",
+                model, attribution,
+            )
+            report["model"] = attribution
+            model = attribution
+            # Versions-Label konsistent halten (AGENTS.md, Session 87):
+            # model_version aus der Card der Original-ID auflösen — die
+            # Ersatzlauf-Profil-ID hat keine eigene Card und würde als
+            # 'k.A.'-Widerspruch auf der Modellseite sichtbar.
+            try:
+                from utils.model_version import get_model_version
+                model_version = get_model_version(attribution, provider_type)
+                report["model_version"] = model_version
+            except Exception as e:  # pylint: disable=broad-exception-caught
+                logger.debug("model_version-Re-Resolution fehlgeschlagen: %s", e)
 
         try:
             PCResultManager.print_summary(report)
@@ -94,7 +182,10 @@ class PoliticalCompassHandler:
             shift_dist = float(report.get("shift", {}).get("distance", 0.0))
             config = getattr(test_instance, "config", {})
             threshold = float(config.get("anomaly_shift_threshold", 1.0))
-            if shift_dist > threshold and not is_retest:
+            # Coverage-Regel (Konzept-Doc Abschn. 11): Attribuierte Ersatz-
+            # Läufe nicht verifizieren — der Triple-Run würde das Thinking-
+            # Profil fahren und das Ersatzlauf-Ergebnis überschreiben.
+            if shift_dist > threshold and not is_retest and not attribution:
                 import subprocess
                 import sys
                 print(f"\n🚨 [SAFETY ALERT] Automatischer Sicherheits-Trigger: Shift ({shift_dist:.2f} > {threshold}) bei '{model}' erkannt!")
@@ -160,6 +251,9 @@ class PoliticalCompassHandler:
             },
             include_extremism=True,
         )
+        _calibration = report.get("statistics", {}).get("pc_calibration")
+        if _calibration:
+            avg_formatted["pc_calibration"] = _calibration
 
         rows_to_write.append(
             {
@@ -226,6 +320,9 @@ class PoliticalCompassHandler:
 
         data_object = format_political_compass_data(report)
         data_object["module_stats"] = report.get("statistics", {}).get("module_stats", {})
+        _calibration = report.get("statistics", {}).get("pc_calibration")
+        if _calibration:
+            data_object["pc_calibration"] = _calibration
         new_row = prepare_pc_csv_row(
             model, report, data_object, model_version=model_version
         )
@@ -283,6 +380,7 @@ class PoliticalCompassHandler:
                     total_tokens=stats.get("total_tokens"),
                     cost=cost_str,
                     provider=provider_type,
+                    calibration=stats.get("pc_calibration"),
                 )
             except Exception as e:
                 logger.error("Political Compass Audit Error: %s", e)

@@ -244,6 +244,10 @@ probe-thinking:
 	@if [ -z "$(MODEL)" ]; then echo "Fehler: MODEL=<model-id> ist erforderlich."; exit 1; fi
 	$(PYTHON) scripts/tools/probe_thinking.py --model "$(MODEL)" $(if $(PROVIDER),--provider $(PROVIDER))
 
+probe-pc-budget:
+	@if [ -z "$(MODEL)" ]; then echo "Fehler: MODEL=<model-id> ist erforderlich."; exit 1; fi
+	$(PYTHON) scripts/tools/pc_calibrate.py --model "$(MODEL)" --probe --write-card $(if $(PROVIDER),--provider $(PROVIDER))
+
 probe-all-thinking:
 	@echo "Probe fuer alle Cards ohne Probe-Feld..."
 	$(PYTHON) scripts/tools/probe_thinking.py --missing

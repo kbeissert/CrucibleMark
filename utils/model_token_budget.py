@@ -78,6 +78,40 @@ def _apply_provider_thinking_override(
     return None
 
 
+def _reasoning_module_budget(
+    config: dict,
+    module_key: str | None,
+    pc_calibrated_budget: int | None,
+) -> int | None:
+    """Modul-Budget für Reasoning-/Thinking-Optional-Pfade (PC-Card-First).
+
+    PC v3: Eine Card-Kalibrierung (Token-Probe) gewinnt über den Config-
+    Eintrag (Card-First-Lookup-Pattern wie thinking_probe_detected).
+    """
+    if pc_calibrated_budget is not None:
+        return pc_calibrated_budget
+    if module_key:
+        return config.get("token_budgets_reasoning_models", {}).get(module_key)
+    return None
+
+
+def _small_model_budget_boost(
+    tokens: int, model: str, config: dict, module_key: str | None,
+) -> int:
+    """Erhöhtes Budget für kleine lokale Modelle (GGUF-Ausgabefenster).
+
+    Kleine lokale Modelle (Nano, Edge, Desktop, Workstation): GGUF-Quantisierungen
+    haben strukturell kürzere effektive Ausgabefenster und truncaten bei bestimmten
+    aufwendigen Modulen (z.B. documentation_quality_005, ux_writing).
+    """
+    if get_model_size_class(model) not in ("Nano", "Edge", "Desktop", "Workstation"):
+        return tokens
+    small_budget = config.get("token_budgets_small_models", {}).get(module_key)
+    if small_budget and small_budget > tokens:
+        return small_budget
+    return tokens
+
+
 def resolve_token_budget(
     model: str,
     requested_max_tokens: int | None,
@@ -85,6 +119,7 @@ def resolve_token_budget(
     module_key: str | None = None,
     *,
     provider: str | None = None,
+    exact: bool = False,
 ) -> tuple[int, bool]:
     """
     Berechnet das effektive Token-Budget für einen API-Request.
@@ -100,6 +135,14 @@ def resolve_token_budget(
       2. Probe-Resultat aus Model-Card (``thinking_probe_detected``) gewinnt
          über Trigger-Liste.
       3. Trigger-Liste (z.B. "magistral", "o1") als Fallback.
+
+    PC v3 Token-Probe (2026-08-29):
+      - Für ``module_key="political_compass"`` gewinnt eine Card-Kalibrierung
+        (``pc_token_calibration.budget`` aus dem Token-Probe) über den
+        Config-Modul-Budget-Eintrag (Card-First-Lookup-Pattern).
+      - ``exact=True`` umgeht Modul-Budget/Multiplikator komplett — der
+        angefragte Wert gewinnt exakt (nur der Card-Cap bleibt). Genutzt vom
+        PC-Token-Probe für Stufen unterhalb des Modul-Budgets.
 
     Args:
         model: Modell-ID (z.B. "magistral-medium-latest")
@@ -128,9 +171,31 @@ def resolve_token_budget(
     explicit_budget = requested_max_tokens is not None
     tokens: int = requested_max_tokens or config.get("defaults", {}).get("generation", {}).get("num_predict", 8192)
 
+    # PC v3 Token-Probe: Exact-Modus umgeht Modul-Budget/Multiplikator komplett
+    # (Probe-Stufen 300/600 liegen UNTER dem Modul-Budget — max()-Semantik würde
+    # sie still anheben und die Stufen-Differenzierung zerstören).
+    if exact and explicit_budget:
+        card_cap = _read_max_output_tokens_from_card(model)
+        if card_cap is not None:
+            tokens = min(tokens, card_cap)
+        return tokens, reasoning
+
+    # PC v3 Token-Probe: Card-Kalibrierung gewinnt über den Config-Modul-Eintrag
+    # (Card-First-Lookup-Pattern wie thinking_probe_detected).
+    pc_calibrated_budget = (
+        get_calibrated_pc_budget(model) if module_key == "political_compass" else None
+    )
+
     if reasoning and explicit_budget:
-        budgets = config.get("token_budgets_reasoning_models", {})
-        tokens = budgets[module_key] if (module_key and module_key in budgets) else tokens * REASONING_BUDGET_MULTIPLIER
+        module_budget = _reasoning_module_budget(config, module_key, pc_calibrated_budget)
+        if module_budget is not None:
+            # Modul-Budget ist das MINIMUM (Comparability über Provider hinweg —
+            # der Standard-Pfad vom base_runner requested exakt diesen Wert).
+            # Explizit höhere Requests gewinnen (PC v3 Truncation-Re-Ask:
+            # Budget-×2-Eskalation muss das Modul-Budget durchbrechen können).
+            tokens = max(module_budget, tokens)
+        else:
+            tokens = tokens * REASONING_BUDGET_MULTIPLIER
     elif reasoning:
         # Ohne explicit_budget: Mindest-Budget für Reasoning-Modelle sicherstellen.
         # max() statt fester Schwelle — robust auch wenn defaults.generation.num_predict
@@ -140,20 +205,16 @@ def resolve_token_budget(
         # Thinking-Optional models (e.g. Gemini 2.5 Flash, Qwen3) activate internal
         # thinking adaptively and consume the same max_output_tokens quota.
         # Grant the reasoning budget so visible output is not crowded out.
-        budgets = config.get("token_budgets_reasoning_models", {})
-        tokens = budgets[module_key] if (module_key and module_key in budgets) else tokens * THINKING_OPTIONAL_BUDGET_MULTIPLIER
+        # Gleiche max()-Semantik wie oben: Modul-Budget als Minimum, explizite
+        # Eskalation (PC v3 Re-Ask) gewinnt.
+        module_budget = _reasoning_module_budget(config, module_key, pc_calibrated_budget)
+        if module_budget is not None:
+            tokens = max(module_budget, tokens)
+        else:
+            tokens = tokens * THINKING_OPTIONAL_BUDGET_MULTIPLIER
 
     elif not reasoning and explicit_budget and module_key:
-        # Kleine lokale Modelle (Desktop, Edge, Nano, Workstation): GGUF-Quantisierungen
-        # haben strukturell kürzere effektive Ausgabefenster und truncaten bei bestimmten
-        # aufwendigen Modulen (z.B. documentation_quality_005, ux_writing).
-        # Falls token_budgets_small_models > Standard-Budget → erhöhtes Budget anwenden.
-        _size = get_model_size_class(model)
-        if _size in ("Nano", "Edge", "Desktop", "Workstation"):
-            _small_budgets = config.get("token_budgets_small_models", {})
-            _small_budget = _small_budgets.get(module_key)
-            if _small_budget and _small_budget > tokens:
-                tokens = _small_budget
+        tokens = _small_model_budget_boost(tokens, model, config, module_key)
 
     # Model-Card-Cap: Wenn die Card ein explizites max_output_tokens definiert,
     # wird das Budget darauf begrenzt. So können modellspezifische API-Limits
@@ -163,3 +224,66 @@ def resolve_token_budget(
         tokens = min(tokens, card_cap)
 
     return tokens, reasoning
+
+
+def read_pc_calibration(model_id: str) -> dict | None:
+    """Liest ``pc_token_calibration`` aus der Model Card (PC v3 Token-Probe).
+
+    Erwartetes Card-Feld (geschrieben von scripts/tools/pc_calibrate.py --probe):
+        {"budget": int | None, "classification": "self_limiting" | "inconsistent" |
+         "greedy_uncapped", "tested": ISO-Datum, "converged_stage": int | None,
+         "notes": str}
+
+    Returns:
+        Kalibrierungs-Dict oder None (keine Card / kein Feld / Lesefehler).
+    """
+    card_path = _find_card(model_id)
+    if not card_path.exists():
+        return None
+    try:
+        data = json.loads(card_path.read_text(encoding="utf-8"))
+        cal = data.get("pc_token_calibration")
+        if isinstance(cal, dict) and cal.get("classification"):
+            return cal
+    except (json.JSONDecodeError, OSError) as exc:
+        logger.debug("Card-Lesefehler (pc_token_calibration) für %s: %s", card_path, exc)
+    return None
+
+
+def get_calibrated_pc_budget(model_id: str) -> int | None:
+    """Kalibriertes PC-Budget aus der Card — nur für konvergente Klassifikationen.
+
+    ``greedy_uncapped``-Modelle bekommen bewusst KEIN erhöhtes Budget (None):
+    ihr CoT terminiert nicht — mehr Budget verbrennt nur Zeit (Kalibrierungs-
+    befund Gemma-4: 800/4000/8000 jeweils voll ausgeschöpft). Diese Modelle
+    laufen im Instruct-Modus bzw. mit dem Config-Modul-Budget weiter.
+    """
+    cal = read_pc_calibration(model_id)
+    if cal is None:
+        return None
+    if cal.get("classification") not in ("self_limiting", "inconsistent"):
+        return None
+    budget = cal.get("budget")
+    if isinstance(budget, int) and budget > 0:
+        return budget
+    return None
+
+
+def read_pc_profile_flag(model_id: str) -> bool:
+    """Liest ``pc_profile_forced_instruct`` aus der Model Card.
+
+    Card-getriebener Transparenz-Pfad für Instruct-Ersatz-Läufe nach der
+    Coverage-Regel (Konzept-Doc Abschn. 11) — unabhängig vom Token-Probe:
+    Das Modell läuft aus Verlustgründen im Instruct-Modus, nicht wegen einer
+    ``greedy_uncapped``-Klassifikation. Der Flag landet im PC-Report
+    (``statistics.pc_calibration``) und in der Bias-Report-Annotation.
+    """
+    card_path = _find_card(model_id)
+    if not card_path.exists():
+        return False
+    try:
+        data = json.loads(card_path.read_text(encoding="utf-8"))
+        return bool(data.get("pc_profile_forced_instruct"))
+    except (json.JSONDecodeError, OSError) as exc:
+        logger.debug("Card-Lesefehler (pc_profile_forced_instruct) für %s: %s", card_path, exc)
+        return False

@@ -162,7 +162,8 @@ class BaseProviderClient:
 
         # 1. Reasoning-/Thinking-Budget auflösen
         req_tokens, _ = resolve_token_budget(
-            model, kwargs.get("max_tokens"), self.config, kwargs.get("_module_key")
+            model, kwargs.get("max_tokens"), self.config, kwargs.get("_module_key"),
+            exact=bool(kwargs.get("_budget_exact")),
         )
 
         # 2. Zweistufige Token-Kaskade:

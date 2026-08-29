@@ -22,6 +22,7 @@ import time
 import pandas as pd
 import yaml
 
+from benchmark_modules.political_compass.core.constants import PC_BATCH_ID
 from utils.model_id_base import _PROVIDER_ALIAS_MAP
 
 logger = logging.getLogger(__name__)
@@ -333,7 +334,7 @@ def _add_political_compass_rows(
             continue
         model_str = str(row["model"])
         for variant in canonical_lookup_keys(model_str):
-            cache.add((variant, "political_compass_v3"))
+            cache.add((variant, PC_BATCH_ID))
 
 
 def canonical_lookup_keys(model: Any) -> set[str]:
@@ -487,7 +488,7 @@ def _is_batch_module_done(
     is_batch = module.get("execution_mode") == "batch" or module.get("key") == "political_compass"
     if not is_batch:
         return False
-    batch_id = "political_compass_v3"
+    batch_id = PC_BATCH_ID
     return any(
         (variant, batch_id) in existing_tests
         for variant in canonical_lookup_keys(model)

@@ -567,8 +567,24 @@ class BaseBenchmarkRunner:
         min_runs = benchmark_info.get("min_runs", 1)
         test.num_runs = max(num_runs, min_runs)
 
+        # Inject module token-budget as max_tokens API cap — identisch zum
+        # Non-Batch-Pfad (Zeilen 84-95). Ohne diese Injection läuft PC auf dem
+        # 25k-Reasoning-Fallback (Review 2026-08-29: Budget 800, Card-Kalibrierung
+        # und Truncation-Re-Ask-Eskalation greiften im Batch-Pfad nie).
+        _module_key = Path(str(benchmark_info.get("module_path", ""))).name
+        _raw_budget: int | None = self.validator.config.get("token_budgets", {}).get(_module_key)
+        _token_budget, _ = resolve_token_budget(
+            model, _raw_budget, self.validator.config, _module_key, provider=provider
+        )
+
         # Execution
-        result_wrapper = test.execute(model=model, llm_client=self.client, provider=provider)
+        if _token_budget is not None:
+            result_wrapper = test.execute(
+                model=model, llm_client=self.client, provider=provider,
+                max_tokens=_token_budget, _module_key=_module_key,
+            )
+        else:
+            result_wrapper = test.execute(model=model, llm_client=self.client, provider=provider)
 
         # Propagate quota/budget exhaustion detected inside the module
         if getattr(test, "_quota_exhausted", False):
@@ -617,6 +633,16 @@ class BaseBenchmarkRunner:
                 audit_mode=getattr(self, "audit_mode", True),
                 provider_type=provider
             )
+            # Coverage-Regel (Konzept-Doc Abschn. 11): Auch die Haupt-CSV-Row
+            # (local_models_benchmark.csv) unter der Original-ID attribuieren —
+            # ein Leaderboard-Eintrag pro Modell, sonst polluiert die
+            # Ersatzlauf-Profil-ID das Haupt-Leaderboard.
+            _attr = PoliticalCompassHandler._resolve_result_attribution(model)
+            if _attr:
+                model = _attr
+                model_version = get_model_version(
+                    _attr, provider=provider, client=self.client,
+                )
         else:
             logger.info(f"\n📊 {benchmark_info.get('name', 'Batch Module')} Summary:")
             logger.info(f"Modell: {model}")

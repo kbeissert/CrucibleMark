@@ -539,6 +539,38 @@ def calculate_timeout_metrics(execution_times: list[float], timeout_count: int, 
         "rate": rate
     }
 
+
+def token_distribution(values: list[int]) -> dict[str, int]:
+    """Median/avg/P95/Max-Verteilung über Token-Werte (leer-sicher).
+
+    SSoT für PC-v3-Statistiken (Modul-Monitoring, Bias-Report, Kalibrierungs-
+    skript) — ein gemeinsamer P95-Schätzer verhindert Drift zwischen
+    Kalibrierungs-Empfehlung und Monitoring-Warnung (Review 2026-08-29).
+    Verwendet statistics.quantiles (n=20, Index 18) wie calculate_timeout_metrics.
+    """
+    import statistics
+
+    if not values:
+        return {"median": 0, "avg": 0, "p95": 0, "max": 0}
+    sorted_vals = sorted(values)
+    try:
+        p95 = (
+            statistics.quantiles(sorted_vals, n=20)[18]
+            if len(sorted_vals) > 1
+            else sorted_vals[0]
+        )
+    except statistics.StatisticsError:
+        p95 = sorted_vals[-1]
+    # Exclusive-Quantile extrapolieren bei kleinen n über das Maximum hinaus
+    # (n=4: P95 > Max) — für Token-Reports unsinnig, daher geclampt.
+    p95 = min(int(p95), sorted_vals[-1])
+    return {
+        "median": int(statistics.median(sorted_vals)),
+        "avg": int(sum(sorted_vals) / len(sorted_vals)),
+        "p95": p95,
+        "max": sorted_vals[-1],
+    }
+
 def append_global_run_metrics(model: str, asset_ids: list[str],
                               execution_times: list[float],
                               timeout_count: int,

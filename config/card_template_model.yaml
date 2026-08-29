@@ -486,6 +486,31 @@ optional_fields:
     since: "v4.10"
     example: false
 
+  # --- PC v3 Token-Probe (Card-First-Lookup-Pattern wie thinking_probe_*) ---
+  # Load-bearing: utils/model_token_budget.get_calibrated_pc_budget() liest
+  # budget/classification für module_key="political_compass"; geschrieben von
+  # scripts/tools/pc_calibrate.py --probe --write-card. NICHT pro PC-Run neu
+  # proben — Probe einmal, Card, wiederverwenden.
+  - name: pc_token_calibration
+    type: object
+    required: false
+    description: "PC-Token-Probe-Ergebnis: {budget (int|null), classification (self_limiting|inconsistent|greedy_uncapped), profile (thinking|hybrid_dual|instruct), tested (ISO-Datum), converged_stage (int|null), notes (str)}"
+    consumers: [probe, political_compass, token_budget]
+    since: "v5.2"
+    example: {"budget": 780, "classification": "self_limiting", "profile": "thinking", "tested": "2026-08-29", "converged_stage": 600, "notes": "Konvergiert bei 600, Kontrollstufe 1200 stabil."}
+
+  # PC-Profil-Entscheidung (v2-Probe, stratifiziertes Sampling über alle Blöcke):
+  # thinking = ein Lauf mit kalibriertem Budget; hybrid_dual = ZWEI Läufe
+  # (Thinking capped + Instruct, ermöglicht Shift-Vergleich); instruct = nur
+  # Instruct. Konsequenzen: docs/POLITICAL_COMPASS_KONZEPT.md Abschn. 11.
+  - name: pc_profile
+    type: str
+    required: false
+    description: "PC-Betriebsmodus laut Token-Probe: thinking | hybrid_dual | instruct"
+    consumers: [probe, political_compass, runner]
+    since: "v5.2"
+    example: "thinking"
+
   - name: temperature
     type: float
     required: false

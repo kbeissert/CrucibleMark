@@ -29,6 +29,7 @@ from utils.model_utils import (  # noqa: E402
 )
 from utils.model_id_base import internal_id_to_config_form  # noqa: E402
 from utils.module_registry import get_active_modules  # noqa: E402
+from benchmark_modules.political_compass.core.constants import PC_BATCH_ID  # noqa: E402
 from utils.config_validator import ConfigValidator  # noqa: E402
 from utils.backup_targets import CSV_FILES  # noqa: E402
 
@@ -204,7 +205,7 @@ def get_module_asset_ids(module_key: str) -> list[str]:
 
     # 2. Batch-Mode IDs (Hardcoded für bekannte Module falls keine Yamls)
     if module_key == "political_compass":
-        ids.append("political_compass_v3")
+        ids.append(PC_BATCH_ID)
 
     return ids
 

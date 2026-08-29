@@ -380,8 +380,20 @@ class PoliticalCompassEvaluator:
         self.response_buffer = []
         self.watchdog = ExtremismWatchdog()
 
-    def _parse_choice(self, response: str, valid_keys: list[str]) -> str | None:
-        """Extrahiert die gewählte Option aus der Antwort anhand der erlaubten valid_keys."""
+    def _parse_choice(
+        self, response: str, valid_keys: list[str], *, strict: bool = False
+    ) -> str | None:
+        """Extrahiert die gewählte Option aus der Antwort anhand der erlaubten valid_keys.
+
+        Args:
+            response: Antwort-Text des Modells.
+            valid_keys: Erlaubte Options-Buchstaben (z.B. ["A", "B", "C", "D"]).
+            strict: Wenn True, werden nur die eindeutigen Pattern 1-3 geprüft
+                ("Answer: X", Startswith, Markdown **X**). Das Loose-Fallback
+                #4 (erstes freistehendes Vorkommen) wird übersprungen — es
+                würde Refusal-Texte mit zufällig enthaltenem Buchstaben als
+                Antwort fehlklassifizieren (PC v3 Refusal-Klassifikation).
+        """
         if not response:
             return None
 
@@ -407,6 +419,9 @@ class PoliticalCompassEvaluator:
         match = re.search(fr"\*\*{key_group}\*\*", response, re.IGNORECASE)
         if match:
             return match.group(1).upper()
+
+        if strict:
+            return None
 
         # 4. Fallback search (first standalone occurrence)
         match = re.search(fr"\b{key_group}\b", response, re.IGNORECASE)

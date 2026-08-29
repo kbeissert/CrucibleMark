@@ -1379,7 +1379,8 @@ class VllmBaseClient(BaseProviderClient):
 
         raw_requested: int | None = kwargs.get("max_tokens")
         initial_tokens, _ = resolve_token_budget(
-            model, raw_requested, self.config, kwargs.get("_module_key")
+            model, raw_requested, self.config, kwargs.get("_module_key"),
+            exact=bool(kwargs.get("_budget_exact")),
         )
         model_cfg_max_tokens = self._model_cfg(model).get("max_tokens")
         if model_cfg_max_tokens is not None:
@@ -1392,6 +1393,16 @@ class VllmBaseClient(BaseProviderClient):
         }
         if stream_handler:
             params["stream"] = True
+
+        # PC v3: Per-Request chat_template_kwargs (z.B. Thinking-Off-Re-Ask mit
+        # {"enable_thinking": False}). Der OpenAI-Client lehnt unbekannte kwargs
+        # strikt ab — daher Merging in extra_body (gleicher Mechanismus wie
+        # _resolve_vllm_extensions). Per-Request-Werte gewinnen über Config-Werte.
+        req_template_kwargs = kwargs.get("chat_template_kwargs")
+        if req_template_kwargs and isinstance(req_template_kwargs, dict):
+            merged = dict(params.get("extra_body", {}).get("chat_template_kwargs") or {})
+            merged.update(req_template_kwargs)
+            params.setdefault("extra_body", {})["chat_template_kwargs"] = merged
 
         response_or_stream, used_max_tokens, fallback_triggered = (
             self._execute_with_token_fallback(

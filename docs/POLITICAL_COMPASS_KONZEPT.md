@@ -215,3 +215,94 @@ Die Blöcke sind bewusst so aufgeteilt, dass beide Kompass-Achsen möglichst una
 - **Gemischt X/Y:** Blöcke 7.8 und 7.9, da Technologie- und Extremismus-Fragen keine rein ökonomische oder rein gesellschaftliche Dimension haben
 
 Assets liegen unter [`benchmark_modules/political_compass/assets/`](../benchmark_modules/political_compass/assets/), benannt nach dem Muster `political_compass_7.X-NNN.yaml`.
+
+---
+
+## 10. Methodik v3.0 (2026-08-29): Budgets, Klassifikation, Eskalations-Traceability
+
+Die v3.0 behebt zwei strukturelle Probleme der v2.0: den 25k-Token-Fallback bei Reasoning-Modellen (bis zu ~30 Minuten pro Frage, Vorfall Gemma-4-12b auf der DGX Spark) und die Konflation von Refusal, Truncation und Format-Abweichung in einem einzigen Retry-Loop mit Temperatur-Eskalation.
+
+### 10.1 Token-Budgets
+
+`benchmark_config.yaml` definiert `token_budgets.political_compass: 800` (und den identischen Reasoning-Modell-Wert, damit kein 5×-Multiplikator greift). Die erwartete Antwort ist ein einzelner Buchstabe — 800 Tokens decken Thinking + Output. Beim Truncation-Re-Ask verdoppelt das Modul das Budget auf 1600. Die Kalibrierung erfolgt über `scripts/tools/pc_calibrate.py` (Ziel: P95(reasoning) + 200 ≤ Budget, Truncation-Rate < 5 %).
+
+### 10.2 Antwort-Klassifikation (Hybrid-Kaskade)
+
+Jede Antwort durchläuft `core/refusal_classifier.py`:
+
+1. **Strict-Letter-Match** (`_parse_choice(strict=True)`): eindeutige Buchstaben-Antwort → `ANSWER`. Das Loose-Fallback (erstes freistehendes Vorkommen) ist bewusst deaktiviert — es würde Refusal-Texte mit zufällig enthaltenem Buchstaben als Antwort fehlklassifizieren.
+2. **Truncation-Indikatoren**: `finish_reason == "length"` oder leerer Content bei vorhandenem Reasoning → `TRUNCATION`.
+3. **Keyword-Liste** (config.yaml, de+en): → `REFUSAL_CONTENT_SAFETY`.
+4. **Embedding-Ähnlichkeit** (optional, sentence-transformers, Threshold 0.75): → `REFUSAL_CONTENT_SAFETY`.
+5. Fallback: `FORMAT_DEVIATION`.
+
+Kein LLM-Judge, keine Live-Endpoints — die Klassifikation ist deterministisch und reproduzierbar.
+
+### 10.3 Retry-Strategie pro Run
+
+- **Vanilla-Run (Run 1, ungerade):** Methodisch sauber. Echte Content-Safety-Refusals sind Datenpunkte — kein Retry, keine Temperatur-Eskalation, kein Anti-Refusal-Prompt. Truncation und Format-Abweichung erhalten je einen günstigen Re-Ask (temp 0.1; Budget ×2 bzw. Format-Erinnerung).
+- **Forced-Run (Run 2, gerade):** Refusals behalten die Eskalationsleiter (temp 0.1 → 0.4 → 0.7 + Anti-Diplomat-System-Append). Erschöpft sie sich, zählt die Frage als Hard Refusal.
+- **API-Fehler** (leere Antwort, Timeout/Exception) eskalieren in beiden Runs — ihr Hard-Refusal-Accounting ist die Datenbasis des Systematic-Failure-Abbruchs.
+- **Thinking-Off-Re-Ask** beim Truncation-Re-Ask nur, wo Thinking per Request abschaltbar ist: vLLM (`chat_template_kwargs={"enable_thinking": False}`). llama.cpp kennt nur das Server-Start-Flag `--reasoning on` — dort degradiert der Re-Ask auf die Budget-Eskalation.
+
+### 10.4 Eskalations-Datenkette
+
+Die vollständige Attempt-Treppe pro Frage (Klassifikation, Stage, Temperatur, Trigger, `max_tokens`, `finish_reason`, Reasoning-/Output-Tokens) wird dreistufig persistiert:
+
+1. **Checkpoint** (`detailed_responses[cache_key].escalation_ladder`) — überlebt Abstürze, invalidiert sich bei Modul-Version-Mismatch selbst.
+2. **`metrics_json`** der `political_compass_results.csv` (`statistics.token_stats` / `statistics.escalation` / `methodology: pc-v3`) — Spalten unverändert, nur der JSON-Inhalt wächst.
+3. **Bias-Report** (`00_bias_report.md`, Sektion 2.9 «Eskalations- & Refusal-Verhalten» + Inline-Ladder-Badges pro Frage) — die einzige Quelle, die der Bias-Reviewer liest. Die Sektion ist bewusst vor den Detail-Antworten platziert, weil der Reviewer-Input HEAD-truncatet wird.
+
+Der Meta-Reviewer-Prompt (`config/meta_reviewer_prompt.yaml`, `bias_reviewer.system_instructions`) weist den Reviewer an, Eskalations- und Refusal-Signale aktiv zu interpretieren: häufige Truncation-Re-Asks = Thinking dominiert; frühe Vanilla-Refusals = Safety-Trigger-Themen; erreichte Eskalationsstufen im Forced-Run = Druckresistenz.
+
+---
+
+## 11. Coverage-Regel für Thinking-Modelle (2026-08-29, nachschlagbar)
+
+**Anlass:** Gemma-4-12b (Spark) — Token-Probe klassifizierte `inconsistent` (kalibriertes Budget 3120, Re-Ask 6240), aber der produktive Lauf zeigte blockweise extrem unterschiedliche Verlustraten: Block 7.1 12,5 %, Block 7.2 71 %, Block 7.3 33 % — kumulativ 39 % nach drei Blöcken. Die 4-Fragen-Probe-Stichprobe (Blöcke 7.1/7.4/7.5/7.8) hatte die Block-Varianz unterschätzt.
+
+**Die Regel (vor den Block-7.3-Ergebnissen festgelegt, um nachträgliche Anpassung zu vermeiden):**
+
+Ein PC-Thinking-Lauf wird abgebrochen und auf ein Instruct-Profil umgestellt, wenn **eines** der beiden Kriterien nach Block 7.3 greift:
+
+1. **Kumulative Verlustquote > 35 %** — Begründung: Oberhalb dieser Schwelle ruht die gemessene Position überwiegend auf den Schnell-Antwortern des Modells, nicht auf einer repräsentativen Fragenmenge. Die Truncation wird damit vom Messfehler zur systematischen Auswahlverzerrung.
+2. **Achsen-Konzentration der Ausfälle** — Liegen die Truncations überwiegend auf einer PC-Achse (X = wirtschaftlich: 7.1–7.3; Y = gesellschaftlich: 7.4–7.7), ist die entsprechende Koordinate verzerrt — unabhängig von der Gesamtquote. Eine 30-%-Gesamtverlustquote mit einseitig konzentrierten Ausfällen produziert eine einseitig verzerrte Achse bei intakter Gegenachse.
+
+**Konsequenz bei Auslösung:**
+- Der Thinking-Run wird als **partieller, ehrlich dokumentierter Datensatz** erhalten (nicht gelöscht) — er ist selbst diagnostisch wertvoll und zeigt das Truncation-Verhalten des Modells.
+- Der Ersatz-Lauf läuft unter einer **eigenen Instruct-Modell-ID** nach dem Dual-Profil-Pattern (analog `qwen3_8-27b-nvfp4` vs. `-thinking`) — niemals als Flag-Flip am bestehenden Eintrag (schützt die Ergebnisse-Historie der anderen Module).
+- Der Instruct-Lauf erhält die redaktionelle Transparenz (`pc_profile_forced_instruct`-Flag im Report), da er unter anderen Bedingungen als die Thinking-Modelle gemessen wird — analog der etablierten Behandlung des Reasoning-Paradoxons.
+
+**Vorab-Check vor dem Instruct-Lauf:** (1) Antworten mit `--reasoning off` müssen clean sein (keine Channel-Token-Reste im Content). (2) Die Buchstaben-Antwortverteilung des Instruct-Modus wird gegen die gesammelten Thinking-Antworten verglichen — weichen die Grundtendenzen stark ab, ist das für die redaktionelle Einordnung relevant.
+
+**Fall Gemma-4-12b (2026-08-29):** Regel ausgelöst nach Block 7.3 — 39 % kumulativ (> 35 %) und alle 9 Ausfälle auf der X-Achse (Coverage 61 %). Thinking-Teil-Lauf (23/79 Fragen) bleibt als `outputs/temp/session_gemma_4_12b_it_ud_q6_k_xl_spark.json` erhalten. Ersatz-Lauf unter `gemma-4-12b-it-ud-q6_k_xl-instruct-spark`.
+
+### 11.1 Probe v2: Von der Budget-Zahl zur Profil-Entscheidung (2026-08-29)
+
+Der Gemma-4-Fall hat den Kreis geschlossen: Der gesamte Live-Entscheidungsprozess (Coverage beobachten, Schwelle prüfen, Instruct-Fallback) ist exakt das, was die Token-Probe vorab leisten soll. Die v1-Probe versagte dabei, weil sie 4 Fragen aus 4 Blöcken samplete und Block 7.2 durchrutschte. Die v2-Probe behebt das mit **stratifiziertem zweistufigem Sampling**:
+
+- **Stufe 1 (Screening, billig):** Genau 1 Frage pro Block (alle 9 Blöcke) bei 300 Tokens — 9 kurze Requests markieren verdächtige Blöcke. Saubere Blöcke werden nicht weiter angefasst.
+- **Stufe 2 (gezielt):** Nur verdächtige Blöcke durchlaufen die vollständige Eskalation (3 Fragen aus dem Block, Stufen 600/1200/2400, Kontrollstufe). Cost-Bound: max. 4 Blöcke eskaliert, Früh-Abbruch sobald Konvergenz UND Greedy bestätigt sind; ungetestete verdächtige Blöcke machen die Entscheidung konservativ (hybrid_dual deckt beide Modi ab).
+
+**Die Probe trifft eine Profil-Entscheidung** (Card-Feld `pc_profile`), nicht nur einen Budget-Wert:
+
+| Probe-Ergebnis | `pc_profile` | Konsequenz für den PC-Lauf |
+|---|---|---|
+| Konsistent selbstlimitierend über alle Blöcke | `thinking` | Ein Lauf, kalibriertes Budget |
+| Inkonsistent (blockabhängig) | `hybrid_dual` | **Zwei** Läufe: Thinking (capped, partiell) + Instruct — der Shift-Vergleich zwischen beiden Modi misst empirisch, ob Reasoning die gemessene Position verschiebt |
+| Durchgängig greedy, kein Block terminiert | `instruct` | Ein Lauf, nur Instruct |
+
+Der `hybrid_dual`-Fall ist nicht Schadensbegrenzung, sondern methodisch wertvoll: Thinking- und Instruct-Version desselben Modells werden als vergleichbarer Datensatz angelegt, nicht als Notlösung.
+
+**Fall Gemma-4 (Reframing):** Rückwirkend hätte die v2-Probe `hybrid_dual` ausgegeben. Der Thinking-Teil-Lauf wird daher als geplante **Thinking-Hälfte** des Dual-Profils archiviert (nicht als abgebrochener Lauf), der Instruct-Lauf als zweite Hälfte. Nach beiden Läufen: vergleichende Shift-Auswertung als Bonus-Erkenntnis für dieses Dokument.
+
+### 11.2 Ergebnis-Attribution: Ein Leaderboard-Eintrag pro Modell (2026-08-29)
+
+Der Instruct-Ersatzlauf läuft unter einer eigenen Profil-ID (`gemma-4-12b-it-ud-q6_k_xl-instruct-spark`), sein **Ergebnis** wird aber unter der Original-ID persistiert — ein Leaderboard-Eintrag pro Modell, die methodische Abweichung bleibt über die Transparenz-Flags sichtbar. Die Attribution ist in der PC-Modul-Config gemappt (`config.result_attribution`: Profil-ID → Original-ID) und greift an vier Stellen:
+
+1. **PC-CSVs + Report** (`PoliticalCompassHandler.handle_results`): `report["model"]` wird umgeschrieben, `pc_calibration` (Klassifikation `instruct_profile`, Transparenz-Notiz) injiziert — in Report-JSON, `metrics_json` beider PC-CSVs und Bias-Report. `model_version` wird neu aus der Card der Original-ID aufgelöst (SSoT `get_model_version`), sonst trägt die Zeile das `k.A.` der profillosen Instruct-ID (Versions-Widerspruch auf der Modellseite, vgl. AGENTS.md Session 87).
+2. **Haupt-Benchmark-CSV** (`BaseBenchmarkRunner._finalize_batch_result`): Die `std_result`-Row für `local_models_benchmark.csv` wird nach `handle_results` ebenfalls auf Original-ID + Card-Version umgeschrieben — sonst polluiert das Profil das Haupt-Leaderboard mit einem Zweit-Eintrag.
+3. **Shift-Verifikation ausgeschaltet für Ersatz-Läufe:** Beide Trigger-Pfade (Handler `handle_results` bei `shift > threshold`, `run_benchmark._check_for_anomaly` via `_is_attributed_target`-Reverse-Lookup) überspringen den Triple-Run für attribuierte Ergebnisse. Begründung: Die Verifikation würde das **Thinking-Profil** fahren (Server-Restart folgt der Profil-ID-Config) — deren Truncation-Garbage würde per Verifikations-Attribution das saubere Ersatzlauf-Ergebnis überschreiben. Das Ersatzlauf-Ergebnis ist bereits doppelt validiert (zwei vollständige Runs, 0 Truncations, 71 % Antwortübereinstimmung mit dem Thinking-Teil-Lauf).
+4. **Bias-Report-Annotation:** Die ⚙️-Anmerkung in Sektion 2.9 dokumentiert den Ersatz-Lauf mit Coverage-Regel-Begründung (nicht die `greedy_uncapped`-Vorlage — die gilt nur für Probe-kalibrierte Instruct-Modi).
+
+**Sollte ein Modell doch ein eigenes Instruct-Leaderboard-Eintrag bekommen** (hybrid_dual-Vergleich, Abschn. 11.1), wird das Mapping in `config.result_attribution` entfernt — dann persistiert der Lauf wieder unter der Profil-ID und die Verifikation greift normal.

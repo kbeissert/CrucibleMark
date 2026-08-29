@@ -115,7 +115,22 @@ def _run_one_verification_iteration(
     test.verification_mode = True
     test.num_runs = 2
 
-    base_result = test.execute(model, client, provider=provider)
+    # PC v3: Budget-Wiring wie base_runner._run_batch_test — ohne diese kwargs
+    # läuft die Verification auf dem 25k-Reasoning-Fallback und misst unter
+    # anderen Bedingungen als der Hauptlauf (Review 2026-08-29).
+    from utils.model_utils import resolve_token_budget
+    config = ConfigValidator("benchmark_config.yaml").config
+    _raw_budget = config.get("token_budgets", {}).get("political_compass")
+    _token_budget, _ = resolve_token_budget(
+        model, _raw_budget, config, "political_compass", provider=provider,
+    )
+    if _token_budget is not None:
+        base_result = test.execute(
+            model, client, provider=provider,
+            max_tokens=_token_budget, _module_key="political_compass",
+        )
+    else:
+        base_result = test.execute(model, client, provider=provider)
 
     if not base_result or base_result.status != "success":
         print(f"[{model}] Iteration {iteration} failed. Skipping model.")
@@ -290,6 +305,15 @@ def _verify_single_model(
     if len(vanilla_coords) != 3:
         return
 
+    # Coverage-Regel-Ersatzlauf (Konzept-Doc Abschn. 11): Verifikationsergebnis
+    # unter der ORIGINAL-Modell-ID attribuieren — Ausführung bleibt beim
+    # Instruct-Profil, nur die Persistenz folgt der Attribution.
+    try:
+        from utils.scoring.political_compass_handler import PoliticalCompassHandler
+        _attribution = PoliticalCompassHandler._resolve_result_attribution(model)
+    except Exception:  # pylint: disable=broad-exception-caught
+        _attribution = None
+
     final_v = cluster_and_drop_outlier(vanilla_coords)
     final_f = cluster_and_drop_outlier(forced_coords)
     final_shift_mag = math.hypot(final_f[0] - final_v[0], final_f[1] - final_v[1])
@@ -311,8 +335,18 @@ def _verify_single_model(
         safe_report = json.loads(raw)
         _inject_verified_coordinates(safe_report, final_v, final_f)
         polarity_flip_rate = _set_shift_block(safe_report, final_v, final_f, final_shift_mag)
-        _write_audit_log_and_csv(model, safe_report, final_v, final_f, final_shift_mag, polarity_flip_rate)
-        _regenerate_leaderboard_and_review(model)
+        if _attribution:
+            safe_report["model"] = _attribution
+            stats = safe_report.setdefault("statistics", {})
+            if not stats.get("pc_calibration"):
+                stats["pc_calibration"] = (
+                    PoliticalCompassHandler.build_replacement_calibration(
+                        note_suffix="Verifiziert per Triple-Run."
+                    )
+                )
+            print(f"[{_attribution}] Verifikationsergebnis unter Original-ID attribuiert (Ersatzlauf).")
+        _write_audit_log_and_csv(_attribution or model, safe_report, final_v, final_f, final_shift_mag, polarity_flip_rate)
+        _regenerate_leaderboard_and_review(_attribution or model)
     except Exception as e:
         print(f"[{model}] Fehler beim Generieren des Reviews/Protokolls: {e}")
 
@@ -329,6 +363,21 @@ def run_verification(provider_filter=None, model_id=None, threshold=1.0):
     client = LLMClient(config=val.config)
 
     for model in anomalies:
+        # Coverage-Regel (Konzept-Doc Abschn. 11.2): Attribuierte Ziele
+        # überspringen — der Triple-Run würde das Thinking-Profil fahren und
+        # das Instruct-Ersatzlauf-Ergebnis unter der Original-ID überschreiben.
+        try:
+            from utils.scoring.political_compass_handler import PoliticalCompassHandler
+            if PoliticalCompassHandler._is_attributed_target(model):
+                print(
+                    f"[{model}] Übersprungen: Ergebnis stammt aus attribuiertem "
+                    f"Instruct-Ersatzlauf (Coverage-Regel) — Triple-Run würde das "
+                    f"Thinking-Profil messen."
+                )
+                continue
+        except Exception:  # pylint: disable=broad-exception-caught
+            pass
+
         print(f"\n[{model}] Starting Anomaly Verification Protocol (Triple-Run)...")
         provider, _ = resolve_provider(model)
         vanilla_coords, forced_coords, last_base_result = _run_triple_iterations(model, client, provider)

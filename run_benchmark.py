@@ -456,6 +456,33 @@ class BenchmarkRunner:
                     raw = json.loads(r.get("raw_response") or "{}")
                     shift = float(raw.get("shift", {}).get("distance", 0.0))
 
+                    # Coverage-Regel (Konzept-Doc Abschn. 11): Ergebnisse unter
+                    # einer attribuierten Original-ID stammen aus einem
+                    # Instruct-Ersatzlauf. Ein Triple-Run würde das Thinking-
+                    # Profil fahren und das Ersatzlauf-Ergebnis überschreiben.
+                    # Hinweis: raw_response ist hier noch PRE-Attribution
+                    # (pc_calibration wird erst im Handler injiziert), daher
+                    # Reverse-lookup über die PC-Modul-Config (SSoT: Handler).
+                    try:
+                        from utils.scoring.political_compass_handler import (
+                            PoliticalCompassHandler,
+                        )
+                        _is_attributed_target = (
+                            PoliticalCompassHandler._is_attributed_target(model)
+                        )
+                    except Exception:  # pylint: disable=broad-exception-caught
+                        _is_attributed_target = False
+
+                    if _is_attributed_target or raw.get("statistics", {}).get("pc_calibration"):
+                        logger.info(
+                            "[PC] Shift-Verifikation für %s übersprungen: Ergebnis stammt "
+                            "aus einem attribuierten Instruct-Ersatzlauf (Coverage-Regel, "
+                            "Konzept-Doc Abschn. 11) — ein Triple-Run unter Thinking-"
+                            "Bedingungen würde das Ersatzlauf-Ergebnis verfälschen.",
+                            model,
+                        )
+                        break
+
                     if shift > 1.0:
                         print(f"\n⚠️ [ANOMALY DETECTED] Shift_Distance für {model} liegt bei {shift:.2f}.")
                         print("🔄 Automatische Einleitung des Safety-Runs (Triple-Run Verification)...")

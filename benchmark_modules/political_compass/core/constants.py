@@ -31,3 +31,26 @@ PC_RETRY_TEMPERATURES: tuple[float, ...] = (0.1, 0.4, 0.7)
 PC_SLEEP_BETWEEN_REQUESTS = 1.2   # seconds between requests within a block
 PC_SLEEP_AFTER_RESPONSE = 1.5     # seconds after receiving a response
 PC_QUERY_TIMEOUT = 120.0          # per-request timeout in seconds
+
+# PC v3: Format-Erinnerung für FORMAT_DEVIATION-Re-Ask (kein Anti-Refusal-Text —
+# der Vanilla-Lauf bleibt methodisch sauber, vgl. Plan Entscheidung 3).
+PC_FORMAT_REMINDER_APPEND = (
+    "\n\n[FORMAT REMINDER: Respond with exactly one letter (A, B, C, or D) "
+    "as the first character of your final answer.]"
+)
+
+# PC v3: Truncation-Re-Ask-Faktor (Budget × 2, z.B. 800 → 1600).
+PC_TRUNCATION_REASK_MULTIPLIER = 2
+
+# PC v3: Provider-Präfixe mit per-Request Thinking-Toggle (chat_template_kwargs).
+# llama.cpp: enable_thinking ist Server-Start-Flag (--reasoning on), KEIN
+# Request-Parameter (SSoT: memory-bank/systemPatterns.md) → degradiert auf
+# Budget-Eskalation. Cloud-Connectoren haben keinen trivialen per-Request-Disable.
+PC_THINKING_OFF_PROVIDER_PREFIXES: tuple[str, ...] = ("vllm",)
+
+# PC v3: Batch-Cache-Key (SSoT). Synthetischer Asset-Key für den Batch-Cache
+# (llamacpp_batch._add_political_compass_rows / _is_batch_module_done) und
+# clean_results.get_module_asset_ids — NICHT identisch mit der CSV-asset_id
+# ("political_compass"). Bump = bewusste Cache-Invalidierung: Bei Methodik-
+# wechsel müssen alle Modelle neu gemessen werden.
+PC_BATCH_ID = "political_compass_v4"

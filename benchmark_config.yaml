@@ -232,6 +232,9 @@ token_budgets:
   documentation_quality: 8000
   code_quality: 6000
   cli_benchmark: 4000
+  # PC v3 (2026-08-29): Erwartete Antwort ist ein einzelner Buchstabe (+ kurze
+  # Begründung). 800 deckt Thinking + Output; Truncation-Re-Ask verdoppelt auf 1600.
+  political_compass: 800
 
 # Token-Budget für kleine lokale Modelle (Desktop, Workstation, Edge, Nano).
 # Gilt für GGUF-Quantisierungen, die durch kürzere effektive Ausgabefenster
@@ -266,3 +269,6 @@ token_budgets_reasoning_models:
   code_quality: 20000
   cli_benchmark: 16000
   tooluse: 20000
+  # PC v3: Kein 5×-Multiplikator — die Antwort ist ein Buchstabe. Gleicher Wert
+  # wie das Standard-Budget, damit Reasoning-Modelle nicht auf 4000 hochskaliert werden.
+  political_compass: 800
