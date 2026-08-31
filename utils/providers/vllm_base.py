@@ -153,16 +153,11 @@ class VllmBaseClient(BaseProviderClient):
     def _api_key(self) -> str:
         """API-Key für den vLLM-Server.
 
-        Unterstützt ``${VAR}``-Syntax: Wenn der Config-Wert mit ``$``
-        beginnt, wird er als Environment-Variablen-Name interpretiert.
-        Dies verhindert, dass API-Keys im Git-tracked Config-File
-        stehen (CLAUDE.md: „API Keys NIEMALS in Git").
+        Unterstützt ``${VAR}``-Syntax (Auflösung via
+        ``BaseProviderClient._resolve_env_ref``): Tokens stehen in der
+        ``.env``, nicht im Git-tracked Config-File.
         """
-        raw = self._provider_cfg().get("api_key", "sk-local")
-        if isinstance(raw, str) and raw.startswith("${") and raw.endswith("}"):
-            env_name = raw[2:-1]
-            return os.environ.get(env_name, "sk-local")
-        return raw
+        return self._resolve_env_ref(self._provider_cfg().get("api_key", "sk-local"))
 
     def _server_start_cmd(self) -> str:
         """Komplettes Start-Kommando inkl. SSH-Wrapper.
@@ -537,10 +532,15 @@ class VllmBaseClient(BaseProviderClient):
         )
         try:
             with urllib.request.urlopen(req, timeout=10) as resp:
+                self._last_health_code = resp.status
                 if resp.status == HTTP_OK:
                     return "healthy"
                 return "loading"
         except urllib.error.HTTPError as exc:
+            # Letzten Status-Code für Poll-Loop-Diagnose merken (2026-08-31:
+            # 401-Token-Desync war im "health pending"-Log unsichtbar).
+            self._last_health_code = exc.code
+            logger.debug("vLLM /health -> HTTP %d (url=%s)", exc.code, self._health_url())
             # 502/503 = Proxy erreicht, aber Backend nicht bereit (lädt noch)
             if exc.code in (502, 503):
                 return "loading"
@@ -548,11 +548,13 @@ class VllmBaseClient(BaseProviderClient):
             # Als "loading" behandeln — verhindert unnötigen Server-Restart bei
             # transienten Auth-Issues. Bei dauerhaft falschem Token läuft der
             # start_server-Timeout ins Leere, was sicherer ist als ein
-            # fälschlicher Server-Kill.
+            # fälschlicher Server-Kill. Der Poll-Loop warnt sichtbar (HTTP-Code
+            # im Pending-Log + einmalige 401-Warnung mit Token-Diagnose-Hinweis).
             if exc.code in (401, 403):
                 return "loading"
             return "down"
         except (urllib.error.URLError, OSError):
+            self._last_health_code = None
             return "down"
 
     def _is_model_ready(self, model_id: str) -> bool:
@@ -790,13 +792,24 @@ class VllmBaseClient(BaseProviderClient):
         """
         poll_sec = max(1, poll_sec)
         attempts = max(1, (timeout_sec + poll_sec - 1) // poll_sec)
+        auth_warned = False
         for attempt in range(attempts):
             time.sleep(poll_sec)
             if not self._is_healthy():
+                code = getattr(self, "_last_health_code", None)
                 logger.debug(
-                    "%s health pending (provider=%s, model=%s, attempt=%d/%d)",
+                    "%s health pending (provider=%s, model=%s, attempt=%d/%d, health HTTP %s)",
                     log_prefix, self._PROVIDER_KEY, model_id, attempt + 1, attempts,
+                    code if code is not None else "nicht erreichbar",
                 )
+                if code in (401, 403) and not auth_warned:
+                    auth_warned = True
+                    logger.warning(
+                        "%s: /health meldet HTTP %d (Auth verweigert) — Token prüfen: "
+                        "DGX_AUTH_TOKEN in .env UND Shell-Export (load_dotenv überschreibt "
+                        "bestehende Env-Variablen nicht). Warte weiter, kein Server-Stop.",
+                        log_prefix, code,
+                    )
                 continue
             if model_id and not self._is_model_ready(model_id):
                 logger.debug(

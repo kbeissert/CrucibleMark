@@ -3,6 +3,7 @@ Provider-spezifische LLM Clients
 Getrennte Implementierungen für Ollama, Anthropic, Mistral
 """
 import logging
+import os
 import re
 from typing import Any
 from collections.abc import Callable
@@ -81,6 +82,19 @@ class BaseProviderClient:
         self.config = config
         self.last_response_metadata = {}
         self.fingerprint_cache = {}
+
+    @staticmethod
+    def _resolve_env_ref(raw: str, default: str = "sk-local") -> str:
+        """Löst ``${VAR}``-Referenzen in Config-Werten über die Umgebung auf.
+
+        SSoT für die api_key-Auflösung der lokalen Server-Connectoren
+        (llama.cpp, vLLM): Tokens stehen in ``.env``, nicht im Git-tracked
+        Config-File. Fehlt die Variable, greift der Default (lokaler
+        Proxy-Fallback) — Fail-Soft analog zur bisherigen vllm_base-Logik.
+        """
+        if isinstance(raw, str) and raw.startswith("${") and raw.endswith("}"):
+            return os.environ.get(raw[2:-1], default)
+        return raw
     def get_fingerprint(self, model: str) -> str:
         """
         Retrieves or generates a fingerprint for the given model.

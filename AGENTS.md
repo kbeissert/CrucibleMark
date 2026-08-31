@@ -74,7 +74,7 @@ make docs-version-sync YES=1   # Doku-Stempel angleichen
 ## Security
 
 - API-Keys niemals in Code, Logs, Kommentaren oder Git speichern. Ausschließlich `.env` verwenden.
-- Dokumentierte Ausnahme: Lokale Proxy-Auth-Tokens (`sk-local`, `sk-metrics-mg2026` in `provider_config.yaml`) schützen llama.cpp-/Metrics-Proxy-Endpoints im Tailscale-LAN vor Fremd-Requests — keine Cloud-Secrets, bewusst versioniert. Cloud-API-Keys bleiben ausschließlich in `.env`.
+- Lokale Proxy-Auth-Tokens (z.B. GX10-Metrics-Proxy) stehen ebenfalls in `.env` (seit 2026-08-31, Variable `DGX_AUTH_TOKEN`) — `provider_config.yaml` referenziert sie per `${DGX_AUTH_TOKEN}`-Syntax, die Connectoren lösen sie zur Laufzeit auf (`BaseProviderClient._resolve_env_ref`). Keine Tokens mehr im Git.
 - `.env` muss in `.gitignore` stehen. Vor jedem Commit prüfen.
 - Tests dürfen keine Live-Endpoints aufrufen. Mocks verwenden.
 

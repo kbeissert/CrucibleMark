@@ -116,7 +116,14 @@ class LlamaCppBaseClient(BaseProviderClient):
         return self._provider_cfg().get("base_url", "http://127.0.0.1:1235/v1")
 
     def _api_key(self) -> str:
-        return self._provider_cfg().get("api_key", "sk-local")
+        """API-Key (z.B. Metrics-Proxy-Bearer-Auth).
+
+        Unterstützt ``${VAR}``-Syntax via
+        ``BaseProviderClient._resolve_env_ref`` — Tokens stehen in der
+        ``.env``, nicht im Git-tracked Config-File (SSoT seit 2026-08-31,
+        zuvor war hier keine Env-Auflösung implementiert).
+        """
+        return self._resolve_env_ref(self._provider_cfg().get("api_key", "sk-local"))
 
     def _model_dir(self) -> str:
         return self._provider_cfg().get("model_dir", "~/models")
@@ -256,12 +263,24 @@ class LlamaCppBaseClient(BaseProviderClient):
         return {"Authorization": f"Bearer {key}"} if key else {}
 
     def _is_healthy(self) -> bool:
-        """Returns True when the /health endpoint responds with HTTP 200."""
+        """Returns True when the /health endpoint responds with HTTP 200.
+
+        Speichert den letzten Health-Status-Code in ``_last_health_code``
+        (200, Fehler-Code oder None bei Verbindungsfehler) — die Poll-Loops
+        geben ihn im Pending-Log aus (Diagnose 2026-08-31: 401-Token-Desync
+        vs. 502-Backend-down war im "health pending"-Log unsichtbar).
+        """
         req = urllib.request.Request(self._health_url(), headers=self._auth_headers())
         try:
             with urllib.request.urlopen(req, timeout=3) as resp:
+                self._last_health_code = resp.status
                 return resp.status == HTTP_OK
+        except urllib.error.HTTPError as exc:
+            self._last_health_code = exc.code
+            logger.debug("llama.cpp /health -> HTTP %d (url=%s)", exc.code, self._health_url())
+            return False
         except (urllib.error.URLError, OSError):
+            self._last_health_code = None
             return False
 
     def _is_model_ready(self, model_id: str) -> bool:
@@ -505,13 +524,24 @@ class LlamaCppBaseClient(BaseProviderClient):
         """
         poll_sec = max(1, poll_sec)
         attempts = max(1, (timeout_sec + poll_sec - 1) // poll_sec)
+        auth_warned = False
         for attempt in range(attempts):
             time.sleep(poll_sec)
             if not self._is_healthy():
+                code = getattr(self, "_last_health_code", None)
                 logger.debug(
-                    "%s health pending (provider=%s, model=%s, attempt=%d/%d)",
+                    "%s health pending (provider=%s, model=%s, attempt=%d/%d, health HTTP %s)",
                     log_prefix, self._PROVIDER_KEY, model_id, attempt + 1, attempts,
+                    code if code is not None else "nicht erreichbar",
                 )
+                if code in (401, 403) and not auth_warned:
+                    auth_warned = True
+                    logger.warning(
+                        "%s: /health meldet HTTP %d (Auth verweigert) — Token prüfen: "
+                        "DGX_AUTH_TOKEN in .env UND Shell-Export (load_dotenv überschreibt "
+                        "bestehende Env-Variablen nicht). Warte weiter, kein Server-Stop.",
+                        log_prefix, code,
+                    )
                 continue
             if model_id and not self._is_model_ready(model_id):
                 logger.debug(

@@ -536,10 +536,10 @@ providers:
       # 2026-08-27: Mac:1235 → GX10:1234). Der Mac-Connector erkennt solche Hijacks
       # seit 2026-08-28 (Ownership-Check in llamacpp_base) und bricht Fail-Fast ab.
       base_url: "http://100.89.110.0:2234/v1"
-      # Lokaler Metrics-Proxy-Auth-Token (bewusste Ausnahme von der
-      # .env-Regel, s. AGENTS.md Security): schützt den Proxy im
-      # Tailscale-LAN vor Fremd-Requests — kein Cloud-Secret.
-      api_key: "sk-metrics-mg2026"
+      # Lokaler Metrics-Proxy-Auth-Token: schützt den Proxy im Tailscale-LAN
+      # vor Fremd-Requests. Wert steht als DGX_AUTH_TOKEN in der .env —
+      # keine Tokens im Git (Auflösung via BaseProviderClient._resolve_env_ref).
+      api_key: "${DGX_AUTH_TOKEN}"
       # Metrics-Proxy-Setup (2026-08-28): base_url zeigt auf den authentifi-
       # zierenden metrics_proxy (:2234), der die generierten Tokens erfasst und
       # an den llama-server weiterleitet. `server_port` entkoppelt den Bind-Port
@@ -941,7 +941,7 @@ providers:
     #   Main-Chat läuft nativ auf :3300, Embed-Sidecar auf :3301 (kein Docker mehr).
     #   Metrics-Proxy (Token-Capture) routet permanent :4300→:3300 (Chat) und
     #   :4301→:3301 (Embed), authentifiziert jeden Request (/health, /v1/models,
-    #   Chat Completions). Auth-Token: sk-local-mg2026.
+    #   Chat Completions). Auth-Token: ${DGX_AUTH_TOKEN} aus der .env.
     #   base_url zeigt auf den Proxy-Port 4300 (Tailscale-IP 100.89.110.0).
     vllm_spark:
       name: vLLM (asusGX10)
@@ -952,10 +952,10 @@ providers:
       read_timeout: 3600  # 60 Min — synthese-starke Modelle brauchen lange für lange Outputs
       context_window: 131072  # konservativer Subset; qwen3.6-27B unterstützt 262144 (laut /v1/models)
       base_url: "http://100.89.110.0:4300/v1"
-      # Lokaler Metrics-Proxy-Auth-Token (bewusste Ausnahme von der
-      # .env-Regel, s. AGENTS.md Security): schützt den Proxy im
-      # Tailscale-LAN vor Fremd-Requests — kein Cloud-Secret.
-      api_key: "sk-metrics-mg2026"
+      # Lokaler Metrics-Proxy-Auth-Token: Wert steht als DGX_AUTH_TOKEN in
+      # der .env — keine Tokens im Git (Auflösung via
+      # BaseProviderClient._resolve_env_ref).
+      api_key: "${DGX_AUTH_TOKEN}"
       token_param_name: max_tokens
       # Default-Budget für Thinking-Profile (max_tokens des generierten
       # ``{id}-thinking``-Eintrags via Config-Expansion). Pro Modell via

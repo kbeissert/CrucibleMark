@@ -12,6 +12,7 @@ Verifiziert:
 import pytest
 
 from utils.providers.base import BaseProviderClient
+from utils.providers.llamacpp_spark import LlamaCppSparkClient
 from utils.providers.vllm_base import VllmBaseClient
 from utils.providers.vllm_spark import VllmSparkClient
 
@@ -1079,3 +1080,60 @@ def test_adopt_matches_through_real_config_expansion(vllm_provider_config):
 
     # Server meldet TOML-Namen → _adopt_matches muss True liefern (kein Stop).
     assert client._adopt_matches("Qwen3.6-35B-NVFP4", "qwen3_6-35b-a3b-nvfp4-thinking") is True
+
+
+# ---------------------------------------------------------------------------
+# API-Key-Env-Referenzen (${VAR}-Syntax, Migration 2026-08-31)
+# ---------------------------------------------------------------------------
+
+class TestApiKeyEnvResolution:
+    """Regression (2026-08-31): api_key via ``${DGX_AUTH_TOKEN}`` aus .env.
+
+    Vorher hatte nur vllm_base eine Env-Auflösung; llamacpp_base gab den
+    Rohwert durch — eine ``${VAR}``-Referenz wäre als Literal-Bearer
+    gesendet worden (401 gegen den Metrics-Proxy). Beide Connectoren
+    nutzen jetzt ``BaseProviderClient._resolve_env_ref``.
+    """
+
+    def test_resolve_env_ref_resolves_env_var(self, monkeypatch):
+        monkeypatch.setenv("DGX_AUTH_TOKEN", "sk-test-token")
+        assert BaseProviderClient._resolve_env_ref("${DGX_AUTH_TOKEN}") == "sk-test-token"
+
+    def test_resolve_env_ref_falls_back_when_unset(self, monkeypatch):
+        monkeypatch.delenv("DGX_AUTH_TOKEN", raising=False)
+        assert BaseProviderClient._resolve_env_ref("${DGX_AUTH_TOKEN}") == "sk-local"
+
+    def test_resolve_env_ref_passes_literal_through(self):
+        assert BaseProviderClient._resolve_env_ref("sk-literal") == "sk-literal"
+
+    def test_vllm_client_resolves_env_ref(self, vllm_provider_config, monkeypatch):
+        monkeypatch.setenv("DGX_AUTH_TOKEN", "sk-test-token")
+        vllm_provider_config["providers"]["local"]["vllm_spark"]["api_key"] = "${DGX_AUTH_TOKEN}"
+        client = VllmSparkClient(vllm_provider_config)
+        assert client._api_key() == "sk-test-token"
+
+    def test_llamacpp_client_resolves_env_ref(self, monkeypatch):
+        """llamacpp_base hatte VOR der Migration keine Env-Auflösung —
+        der Kern-Regressionstest des Token-Umzugs in die .env."""
+        monkeypatch.setenv("DGX_AUTH_TOKEN", "sk-test-token")
+        cfg = {
+            "providers": {
+                "local": {
+                    "llamacpp_spark": {"api_key": "${DGX_AUTH_TOKEN}"},
+                },
+            },
+        }
+        client = LlamaCppSparkClient(cfg)
+        assert client._api_key() == "sk-test-token"
+
+    def test_llamacpp_client_falls_back_when_env_unset(self, monkeypatch):
+        monkeypatch.delenv("DGX_AUTH_TOKEN", raising=False)
+        cfg = {
+            "providers": {
+                "local": {
+                    "llamacpp_spark": {"api_key": "${DGX_AUTH_TOKEN}"},
+                },
+            },
+        }
+        client = LlamaCppSparkClient(cfg)
+        assert client._api_key() == "sk-local"
