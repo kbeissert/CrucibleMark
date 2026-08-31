@@ -136,6 +136,10 @@ integration:
           file: "political_compass_leaderboard.csv"
           value_template: "{vanilla_label} (Shift: {shift_distance})"
           missing_value: "Pending"
+          # Coverage-Regel (Abschn. 11): Ersatzlauf-Ergebnisse liegen unter der
+          # Original-ID (config.result_attribution) — Leaderboard-Join spiegelt
+          # sie auf die Profil-ID, damit deren Zeile nicht dauerhaft "Pending" bleibt.
+          attribution_module: "political_compass"
 
 # ================================
 # EXECUTION: Test Runner Settings

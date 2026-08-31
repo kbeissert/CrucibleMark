@@ -239,6 +239,59 @@ def _canonicalize_source_df(source_df: pd.DataFrame) -> pd.DataFrame:
     return source_df
 
 
+def _load_attribution_pairs(module_name: str) -> dict[str, str]:
+    """Liest ``config.result_attribution`` (alias -> original) aus einem Modul-Config.
+
+    SSoT bleibt die Modul-Config (z. B. political_compass): Der Handler persistiert
+    Ersatzlauf-Ergebnisse unter der Original-ID; dieses Mapping spiegelt sie im
+    Leaderboard-Join auf die Profil-ID.
+    """
+    try:
+        from utils.module_registry import load_module_config
+        module_cfg = load_module_config(ROOT_DIR / "benchmark_modules" / module_name)
+    except Exception as exc:  # pylint: disable=broad-exception-caught
+        logger.debug("Attribution-Config (%s) nicht lesbar: %s", module_name, exc)
+        return {}
+    pairs = (module_cfg.get("config") or {}).get("result_attribution") or {}
+    return {str(k): str(v) for k, v in pairs.items()}
+
+
+def _apply_result_attribution(
+    source_df: pd.DataFrame, source_config: dict[str, Any]
+) -> pd.DataFrame:
+    """Spiegelt attribuierte Ersatzlauf-Zeilen auf die Profil-ID des Alias.
+
+    Coverage-Regel (Konzept-Doc Abschn. 11): Instruct-Ersatzlaeufe werden unter
+    der Original-ID im Quellen-CSV persistiert ("ein Eintrag pro Modell").
+    Fuehrt das Hauptboard trotzdem eine eigene Zeile fuer die Profil-ID, bliebe
+    deren Zelle "Pending", obwohl die Daten existieren. Pro Alias->Original-Paar
+    wird die Original-Zeile dupliziert — nur wenn der Alias keine eigene Zeile
+    besitzt (bestehende Direkt-Ergebnisse haben Vorrang).
+    """
+    module_name = source_config.get("attribution_module")
+    if not module_name or "model" not in source_df.columns:
+        return source_df
+    pairs = _load_attribution_pairs(str(module_name))
+    if not pairs:
+        return source_df
+
+    canonical_ids = set(source_df["model"])
+    extra_rows = []
+    for alias, original in pairs.items():
+        alias_id = _resolve_to_canonical_id(alias)
+        original_id = _resolve_to_canonical_id(original)
+        if alias_id in canonical_ids or original_id not in canonical_ids:
+            continue
+        row = source_df[source_df["model"] == original_id].iloc[-1].copy()
+        row["model"] = alias_id
+        extra_rows.append(row)
+    if extra_rows:
+        source_df = pd.concat(
+            [source_df, pd.DataFrame(extra_rows)], ignore_index=True
+        )
+    return source_df
+
+
 def _attach_canonical_key(result: pd.DataFrame) -> pd.DataFrame:
     """Adds '_model_canonical' join key on result for matching canonical IDs."""
     if "model" in result.columns:
@@ -471,6 +524,9 @@ def _enrich_from_csv_source(
         # 1. SSoT: Map both sides to canonical model_id (no string truncation)
         source_df = _canonicalize_source_df(source_df)
         result = _attach_canonical_key(result)
+
+        # 1b. Attribution-Mirror: Ersatzlauf-Zeilen auf Profil-ID spiegeln
+        source_df = _apply_result_attribution(source_df, source_config)
 
         # 2. Key Filtering
         source_df = _apply_source_filters(source_df, source_config.get("filter", {}))
