@@ -507,7 +507,14 @@ def _write_response_block(f, response: str, think_content: str | None) -> None:
     f.write(f"{safe_response}\n\n")
 
 def calculate_timeout_metrics(execution_times: list[float], timeout_count: int, total_tests: int) -> dict:
-    """Berechnet globale P95-Antwortzeiten und kategorisiert die Timeout-Rate des aktuellen Modul-Durchlaufs."""
+    """Berechnet globale P95-Antwortzeiten und kategorisiert die Timeout-Rate des aktuellen Modul-Durchlaufs.
+
+    Semantik von ``timeout_count`` (2026-09-01): Zählt ausschließlich echte
+    Fehler/Abbrüche (``status == "error"``) — siehe
+    ``UnifiedBenchmarkRunner._record_global_metrics``. Die Antwortdauer fließt
+    bewusst NICHT ein (P95-Antwortzeit + Tokens/s + Speed-Badge decken sie ab);
+    ein langsamer, aber vollständiger Lauf ist zuverlässig, nicht ausgefallen.
+    """
     import statistics
 
     p95 = 0.0

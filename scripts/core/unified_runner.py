@@ -31,7 +31,6 @@ from utils.constants import (
     MODEL_TYPE_OPEN_WEIGHTS_CLOUD,
     OLLAMA_DEFAULT_BASE_URL,
     OLLAMA_UNLOAD_SETTLE_SEC,
-    TIMEOUT_DEFAULT,
     TIMEOUT_OLLAMA_LIST_FAST,
     TIMEOUT_OLLAMA_WARMUP,
     TRUNCATION_THRESHOLDS,
@@ -1468,7 +1467,16 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         results: list[dict[str, Any]],
         benchmark_info: dict[str, Any],
     ) -> None:
-        """Sammelt execution_times + timeout_count und ruft append_global_run_metrics."""
+        """Sammelt execution_times + timeout_count und ruft append_global_run_metrics.
+
+        Semantik der Timeout-Rate (2026-09-01, Review-Entscheidung): Gezählt
+        werden AUSSCHLIESSLICH echte Fehler/Abbrüche (``status == "error"``).
+        Die reine Antwortdauer fließt NICHT ein — sie ist bereits über
+        P95-Antwortzeit, Tokens/s und den Speed-Badge abgebildet. Ein langsamer,
+        aber vollständiger Lauf ist zuverlässig, nicht ausgefallen. Vorher
+        zählte ``execution_time > TIMEOUT_DEFAULT`` (120 s) als Timeout und
+        stufte erfolgreiche lokale Läufe fälschlich als „Nicht einsetzbar" ein.
+        """
         if not (self.audit_mode and results):
             return
         execution_times: list[float] = []
@@ -1482,7 +1490,7 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
                 asset_ids.append(a_id)
             t_exe = res.get("execution_time", 0.0)
             execution_times.append(t_exe)
-            if res.get("status") == "error" or t_exe > TIMEOUT_DEFAULT:
+            if res.get("status") == "error":
                 timeout_count += 1
         if asset_ids:
             append_global_run_metrics(
