@@ -84,3 +84,32 @@ def test_uses_resolve_canonical_model_id_pipeline(isolated_card_dir):
     assert canonical == resolve_canonical_model_id(model)
     assert has_card is False  # keine Card vorhanden → Platzhalter angelegt
     assert (isolated_card_dir / f"{canonical}.json").exists()
+
+
+class TestDualProfileCasefoldReconciliation:
+    """Regression (2026-08-31): Server-Schreibweisen duellferter Case durften
+    bei dual_profile-Cards nicht unveraendert durchgereicht werden — Folge
+    waren zwei Leaderboard-Zeilen fuer ein Modell (Fall qwen3_8-27b-uncensored-nvfp4).
+    """
+
+    @pytest.fixture
+    def dual_card(self, isolated_card_dir):
+        canonical = "qwen3_8-27b-uncensored-nvfp4"
+        (isolated_card_dir / f"{canonical}.json").write_text(
+            json.dumps({"model_id": canonical, "dual_profile": True}),
+            encoding="utf-8",
+        )
+        return canonical
+
+    def test_titlecase_input_normalizes_to_card_spelling(self, dual_card):
+        assert resolve_canonical_model_id("Qwen3_8-27B-Uncensored-NVFP4") == dual_card
+
+    def test_uppercase_input_normalizes_to_card_spelling(self, dual_card):
+        assert resolve_canonical_model_id("QWEN3_8-27B-UNCENSORED-NVFP4") == dual_card
+
+    def test_exact_input_unchanged(self, dual_card):
+        assert resolve_canonical_model_id(dual_card) == dual_card
+
+    def test_thinking_profile_keeps_own_id(self, dual_card):
+        profile = f"{dual_card}-thinking"
+        assert resolve_canonical_model_id(profile) == profile

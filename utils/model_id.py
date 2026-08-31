@@ -117,6 +117,16 @@ def resolve_canonical_model_id(
         # Profil-ID, NICHT card.model_id der Basis-Card. Sonst verschmelzen
         # Basis- und Thinking-Profil im Leaderboard zu einer ID.
         if _used_card_redirect or _is_dual_profile:
+            # Casefold-Versöhnung (2026-08-31): Server-gemeldete Namen (z. B.
+            # vLLM served_model_name "Qwen3_8-27B-Uncensored-NVFP4") duerfen
+            # nicht in der Server-Schreibweise durchgereicht werden — das
+            # spaltet ein Modell allein durch Gross-/Kleinschreibung in zwei
+            # Leaderboard-Zeilen. Nur exakter Casefold-Match auf card.model_id
+            # normalisiert; Profil-IDs (-thinking) weichen ab und bleiben
+            # unberuehrt (Shared-Card-Semantik bleibt erhalten).
+            card_model = data.get("model_id") if isinstance(data, dict) else None
+            if isinstance(card_model, str) and card_model and card_model.casefold() == str(base).casefold():
+                return card_model
             return _safe_name(base)
 
         # Standalone-Card: card.model_id zurückgeben (kanonische Form)
