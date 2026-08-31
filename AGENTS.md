@@ -59,6 +59,7 @@ make docs-version-sync YES=1   # Doku-Stempel angleichen
 - **vLLM-Server nicht unnötig neu starten:** Der Start kann mehrere Minuten dauern. Während Diagnose und Tests gegen den laufenden Server arbeiten.
 - **Reports als flüchtig behandeln:** Benchmark-Reports werden pro Lauf überschrieben. Verbindlich sind die versionierten Ergebnisdateien in `outputs/runs/`.
 - **ToolUse-Leaderboard bereinigen:** `tooluse_leaderboard.csv` ist ein Upsert-File. Bei Modell-ID-Renames alte IDs vor der Aggregation entfernen.
+- **Blacklist blockt nur den Web-Export:** `config/web_export_blacklist.yaml` wird von `benchmark-auto` nicht gelesen — ein Modell wirklich aus dem Batch nehmen heißt: zusätzlich seinen Entry in `provider_config.yaml` auskommentieren oder deaktivieren.
 - **`save_results`-Simulationen nicht gegen echte CSVs laufen lassen:** `benchmark_scores/*.csv` ist gitignored — es gibt kein Git-Sicherheitsnetz für Benchmark-Daten. In Tests und Simulationen `config['output']` explizit auf Temp-Pfade umleiten.
 - **Selektives Reasoning beachten:** Modelle, die selbst entscheiden, wann sie denken, dürfen keine Always-Thinking-Konfiguration erhalten. `enable_thinking: true` kann sonst eine falsche Dual-Profile-Expansion auslösen.
 - **`# noqa: C901` nicht verwenden:** Die CC-≤-12-Regel bleibt verbindlich. Stattdessen Methoden nach Pfaden aufteilen.
@@ -67,10 +68,13 @@ make docs-version-sync YES=1   # Doku-Stempel angleichen
 - **Card-Preise nur via Pricing-Table befüllen (Session 88):** `input_price_per_1m`/`output_price_per_1m` nie manuell in der Card setzen — erst `config/model_pricing.yaml` pflegen, dann `scripts/update_model_pricing.py` laufen lassen. Varianten-IDs brauchen dort exakte Keys (`…-thinking-…`, `…-pro`), sonst prefix-matched die Variante auf die Basis-ID und erbt deren Preis.
 - **OpenRouter-Reasoning deckelt Output (Session 89):** OpenRouter rechnet Reasoning-Tokens gegen `max_tokens` — Thinking-Modelle mit nicht-terminierendem CoT verbrennen sonst das komplette Budget (0 sichtbarer Output). Per-Modell über `model_reasoning_config` (Unified-Parameter `reasoning.max_tokens`) deckeln; ein reiner `model_max_tokens`-Override reicht nicht.
 - **Reasoning-Cap strikt unter dem Modul-Budget halten (2026-08-28):** Alibaba-Upstream (qwen3.8-flash) lehnt `thinking_budget >= max_completion_tokens` mit HTTP 400 ab — der Connector reduziert das Cap automatisch auf die Hälfte des Output-Budgets (`_clamp_reasoning_budget`). „Budget/Quota erschöpft"-Abbrüche können False Positives sein; der Original-Fehler wird seit 2026-08-28 im Fast-Fail-Log mitgeschrieben.
+- **llama.cpp-Timeouts: zwei Keys, zwei Wände (2026-08-30):** Chat-Requests laufen über den OpenAI-Connector und lesen den Provider-Key `request_timeout` (Default 600 s) — `read_timeout` deckt nur die Server-Verwaltung ab. Zusätzlich hat der Metrics-Proxy auf der GX10 ein eigenes `request_timeout_s` (`/home/kay_beissert/ai/metrics/config/metrics-proxy.json`). Wird eine der beiden Wände nicht angehoben, livelockt jeder Task, der länger als das Cap rechnet: Retry startet die Generierung bei Null. Beide seit 2026-08-30 auf 2400 s für `llamacpp_spark`.
+- **Card-`model_id` muss exakt der provider_config-ID entsprechen (2026-08-30):** `--SPRK`/`--VSPK` ist reine Dateinamen-Konvention — weicht der interne `model_id` ab, skippt der Batch das Modell still mit „no model_file configured" (Fall fable-fusion).
 
 ## Security
 
 - API-Keys niemals in Code, Logs, Kommentaren oder Git speichern. Ausschließlich `.env` verwenden.
+- Dokumentierte Ausnahme: Lokale Proxy-Auth-Tokens (`sk-local`, `sk-metrics-mg2026` in `provider_config.yaml`) schützen llama.cpp-/Metrics-Proxy-Endpoints im Tailscale-LAN vor Fremd-Requests — keine Cloud-Secrets, bewusst versioniert. Cloud-API-Keys bleiben ausschließlich in `.env`.
 - `.env` muss in `.gitignore` stehen. Vor jedem Commit prüfen.
 - Tests dürfen keine Live-Endpoints aufrufen. Mocks verwenden.
 

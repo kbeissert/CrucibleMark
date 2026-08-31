@@ -151,7 +151,7 @@ Aktuell genutzte Delegate-Module:
 
 | Modul | Sub-Runner | Besonderheit |
 |---|---|---|
-| `political_compass` | `scripts/core/run_cross_model_benchmark.py --module political_compass` | Batch-Modus: 81+ Fragen pro Modell, eigene CSV-Architektur (`political_compass_results.csv`, `political_compass_leaderboard.csv`) |
+| `political_compass` | `scripts/core/run_cross_model_benchmark.py --module political_compass` | Batch-Modus: 79 Fragen × 2 Runs (Vanilla/Forced) pro Modell; v3-Methodik (Token-Probe-Profilentscheidung, Eskalations-Treppe, Refusal/Truncation-Klassifikation, Ergebnis-Attribution — SSoT `docs/POLITICAL_COMPASS_KONZEPT.md`); eigene CSV-Architektur (`political_compass_results.csv`, `political_compass_leaderboard.csv`) |
 | `tooluse` | `scripts/run_tooluse_benchmark.py` | Benötigt aktiven MCP-Server; Zwei-Phasen-Scoring; eigene Leaderboard-CSV |
 
 **Skip-Logik für Delegate-Module:** `benchmark_auto.py` prüft vor dem Delegate-Aufruf anhand der jeweiligen Leaderboard-CSV (z. B. `political_compass_leaderboard.csv`), ob ein Modell bereits getestet wurde. Das vermeidet teure Re-Runs ohne `--force`.
@@ -434,7 +434,7 @@ Aktivierungs-Regeln (`_is_override_active`): `value` muss bool sein, `reason` Pf
    - Probe-Fehler 403 (Subscription) → clean Warning, Modell in `_probed_models`, Benchmark läuft weiter
    - Probe-Fehler (sonstiger) → clean Warning, Modell in `_probed_models`, Benchmark läuft weiter
 
-6. **`scripts/tools/probe_thinking.py`** (Standalone-CLI): Retroaktiver und On-Demand-Probe-Betrieb. Modi: `--model <id>`, `--missing` (Batch: alle Cards ohne Feld), `--all` (Force-Rescan). Provider-Inference: Config → `/` im ID → `openrouter` → sonst `ollama`. Batch-Modus bricht bei Einzelfehlern nicht ab.
+6. **`scripts/tools/probe_thinking.py`** (Standalone-CLI): Retroaktiver und On-Demand-Probe-Betrieb. Modi: `--model <id>`, `--missing` (Batch: alle Cards ohne Feld), `--all` (Force-Rescan). Provider-Inference: Config → `/` im ID → Fallback-Provider/-Modell aus `benchmark_config.yaml:probe_thinking` (Session 81: kein Hardcoding, kein Ollama-Dead-Code-Fallback mehr). Batch-Modus bricht bei Einzelfehlern nicht ab.
 
 > **Wichtig:** Zwei Modellklassen können via Probe nicht erkannt werden und benötigen manuellen Override: (1) **OpenAI o-Series** (o1/o3-mini/o4-mini) — verbergen Reasoning intern, liefern keine `reasoning_tokens`. (2) **llama.cpp-Modelle mit `reasoning_content`-Feld** (z. B. Gemma-4 E4B) — Reasoning landet in einem separaten API-Response-Feld, das der Standard-Probe nicht auswertet. Für beide Klassen gilt: `thinking_probe_detected: true` + `thinking_probe_manual_override: true` manuell in der Card setzen.
 

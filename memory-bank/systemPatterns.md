@@ -150,6 +150,17 @@ Zwei verschiedene Probes, beide laufen VOR dem Benchmark — Namen NICHT synonym
 
 **Abgrenzung:** „Denken **können**" (Capability) weist das Thinking-Probe nach; „beim Lauf denken **dürfen**" entscheidet operationell der PC-Token-Probe (Profil `instruct` = Thinking-Off) bzw. die Runtime-Config (`enable_thinking`, vgl. Session-54-Trennung Capability vs. Runtime). Der PC-Token-Probe ersetzt das Thinking-Probe NICHT: Andere Module nutzen weiterhin `thinking_probe_detected` für den Multiplikator. Laufzeit-Priorität in `resolve_token_budget` für PC: `pc_token_calibration.budget` > Config-Modul-Budget > 5×-Multiplikator-Pfad.
 
+**Thinking-only-Ausnahme (Regel 2026-08-29):** Die Profil-Entscheidung des PC-Token-Probe ist durch `dual_profile` (Card-SSoT für Modi-Fähigkeit) gegatet: `hybrid_dual`/`instruct` nur bei `dual_profile: true` (beide Betriebsmodi). Thinking-only-Modelle (`dual_profile: false`, z. B. Ornith, Nemotron-3.5-Lightning) bleiben auch bei `inconsistent`/`greedy_uncapped` im `thinking`-Profil — nur Modelle, die beide Modi anbieten, werden in beiden Modi getestet (Konzept-Doc Abschn. 11; Implementierung: `probe_pc_profile(supports_instruct_mode=…)` + `read_dual_profile()` in utils/model_card_io.py, Runtime-Guards in political_compass/test.py).
+**Achtung — `dual_profile` trägt Doppelsemantik:** (a) Kanonisierung („registrierte Thinking-Variante vorhanden", schützt `resolve_canonical_model_id`) und (b) Modi-Fähigkeit (Gate der Thinking-only-Ausnahme). Randfall `gemma-4-12b-it-ud-q6_k_xl-spark`: `false` ist kanonisierungs-korrekt (keine `-thinking`-Variante), obwohl das Modell faktisch einen Instruct-Modus hat (separates Profil-Entry, Coverage-Regel). Bei Zielkonflikt wiegt die Kanonisierungs-Semantik schwerer — Card nicht für das Probe-Gate umbiegen.
+
+**Kein Familien-Blanket für `dual_profile` (Entscheidung 2026-08-30):** Terminierungsverhalten ist ein Merkmal der konkreten Variante (Größe/Quantisierung/Konfiguration), nicht der Modellfamilie — die Gemma-4-Spark-Daten belegen das (e4b/ara-26b `self_limiting` @ 390 vs. 12b `inconsistent`). Die Spark-Familien-Cards bleiben deshalb `dual_profile: null` (thinking-only-Ausnahme greift); ein pauschales `true` für die Familie ist abgelehnt. Bestehende `true`-Setter bei Gemma-4-26B/31B/Wordsmith (vLLM) sind kanonisierungs-begründet (registrierte `-thinking`-Variante), kein Blanket. Ein `dual_profile: true` für 12b bleibt als bewusster Per-Modell-Override möglich (geplanter Dual-Run mit Shift-Vergleich) — separate Einzelentscheidung, nicht aus der Familienlogik abgeleitet.
+
+**benchmark-auto hat kein per-Modell-Modul-Scoping:** Neue Config-Entries (z. B. Instruct-Profile) bekommen im Batch die **volle** Modul-Suite, nicht nur PC (`get_all_modules` lädt global, keine Ausschlussliste; Stand 2026-08-29). PC-Instruct-Läufe für Profil-IDs daher vorab manuell fahren (`run_political_compass_benchmark.py --model <id>`) oder die Suite bewusst in Kauf nehmen (Dual-Profil-Pattern: qwen3_8-Basis/-thinking sind ebenfalls vollwertige Einträge).
+
+### Card-Feld-Migration `weights_provenance_rationale` (2026-08-31)
+
+Das Card-Template hat das Rationale-Feld in `weights_provenance_risk_rationale` umbenannt (Default "TODO"); ALLE Consumer (Web-Export `entry_builders.py`, `risk_calculator.py`, `metrics.py`) lesen ausschließlich das neue Feld. Ein Card-Repair-Lauf schrieb das neue Feld mit "TODO", während der echte Text im toten Alt-Feld liegen blieb — Web-Export hätte "TODO" exportiert. Fix 2026-08-31: 6 Changeset-Cards migriert (Inhalt verschoben, Alt-Feld entfernt; Referenz: e4b). 17 ältere committete Cards tragen das Alt-Feld noch als totes Duplikat (neues Feld gefüllt) — bekannt, kosmetisch. Merksatz: Nach Template-Feld-Renames immer prüfen, ob Card-Repair den INHALT migriert, nicht nur das Feld ergänzt.
+
 ### PC v3 Token-Probe (2026-08-29): Card-First-Budget-Kalibrierung
 
 Kalibrierungs-Befund Gemma-4-12b (Spark): CoT-Länge ist fragenabhängig schwer verteilt (714 / 2246 / 2210 / >8000 Tokens) — ein Einheits-Cap kann nicht passen: zu knapp zensiert tiefe Denker (misst „CoT passt in 800" statt politische Position), zu hoch reaktiviert die 30-min-Latenz. Lösung: gestufter Token-Probe nach dem Thinking-Probe-Pattern (Probe einmal → Card → automatisch honorieren, NICHT pro Run).
@@ -161,6 +172,32 @@ Kalibrierungs-Befund Gemma-4-12b (Spark): CoT-Länge ist fragenabhängig schwer 
 - **Card-Feld** `pc_token_calibration: {budget, classification, tested, converged_stage, notes}` — `resolve_token_budget()` honoriert es für `module_key="political_compass"` (Card-First, gewinnt über Config-Eintrag); `greedy_uncapped` bekommt bewusst KEIN Budget (Eskalation sinnlos).
 - **Exact-Bypass:** Probe-Stufen liegen UNTER dem Modul-Budget — die max()-Eskalations-Semantik würde 300/600 still auf 800 anheben. `resolve_token_budget(..., exact=True)` umgeht Modul-Budget/Multiplikator (Card-Cap bleibt); Provider threaden `_budget_exact` durch (llamacpp_base/vllm_base/base.py). Nur für Probe (und künftige Exact-Use-Cases) — der Standard-Pfad behält max()-Semantik (Truncation-Re-Ask ×2).
 - **Instruct-Modus:** `greedy_uncapped` + vLLM → Thinking-Off per Request ab Attempt 1 (`force_thinking_off`); + llama.cpp → Warnung, Instruct-Profil in provider_config.yaml anlegen (enable_thinking: false) oder Verluste akzeptieren. Redaktionelle Transparenz: `report.statistics.pc_calibration` → metrics_json → Audit-Log Sektion 2.9 („abweichende Messbedingungen sichtbar halten, nicht verstecken" — Pattern wie Reasoning-Paradoxon).
+- **Coverage-Regel ist KEIN Laufzeit-Trigger (präzisiert 2026-08-30):** Die 35 %-Verlustschwelle (Konzept-Doc Abschn. 11) ist ein Review-Kriterium für eine Operator-Entscheidung — gestoppter Thinking-Run → `pc_instruct_check.py` → Card-Flag `pc_profile_forced_instruct` + `result_attribution`-Mapping → Instruct-Ersatzlauf unter Original-ID. Automatisch laufen im Run ausschließlich die Re-Ask-Leitern (×2-Eskalation, Format-Erinnerung, Refusal-Temp). muse-glimmer-Befund: ~64 % Re-Ask-Quote bei nur ~7 % Final-Verlust ohne Kalibrierung — die Leitern verbrennen Laufzeit, nicht Validität; der Hebel ist die Probe, nicht die Coverage-Regel.
+- **12b-Kalibrierung bewusst überschrieben (2026-08-30):** Re-Probe lieferte `inconsistent` ohne Voll-Konvergenz → Budget **None** (überschreibt das alte 3120 von 11:17). Konsequenz: 12b läuft am Modul-Floor 800, Truncations fängt die Coverage-Regel (Operator-Pfad) — kein Probe-Bug, sondern konservative Regelkonsequenz; erneutes Kalibrieren nur bei ruhender Last sinnvoll.
+
+---
+
+## Leaderboard-Trigger-Architektur (2026-08-31)
+
+**Konzept:** Messung (Runner) → SSoT-CSVs → Aggregation (`update_leaderboard()` ≡ `make leaderboard`, beides Wrapper um `scripts/core/generate_leaderboard.py`) → Web-Export als bewusster manueller Publishing-Gate (niemals automatisch — unfertige Benchmarks dürfen nicht auf die Webseite gelangen, dort erscheinen auch Magazin-Artikel). Jeder `update_leaderboard()`-Aufruf sammelt IMMER alle Subbenchmark-Quellen ein: 3 Detail-CSVs (7 Score-Module) + `tooluse_leaderboard.csv` (P1/P2/Combined) + `political_compass_leaderboard.csv` (Political Bias) — config-getrieben via `integration.leaderboard.columns[*].source`.
+
+**Trigger-Matrix (SSoT-Kommentar in `runner_contract.py`):** Jeder Sub-Worker ist für sein eigenes Leaderboard-Update verantwortlich; der Auto-Orchestrator triggert nichts zusätzlich.
+
+| Pfad | Granularität |
+|---|---|
+| benchmark-auto, Cloud-Score-Module (Subprocess pro Modell×Modul) | pro Modul |
+| benchmark-auto, lokale Provider in-process (`benchmark_auto.py:_run_module_for_model`) | pro Modul |
+| `run_benchmark.py` (`finally`-Garantie, auch bei Fehlern/Timeouts) | pro Modul |
+| `run_score_benchmark.py` llama.cpp-In-Process-Pfad | pro Modul (seit 2026-08-31, war Lücke: nur Batch-Ende) |
+| PC-/ToolUse-Runner | Worker-Ende; ToolUse zusätzlich mid-run alle 5 Modelle |
+
+**Fix 2026-08-31 (Lücke 1):** `run_score_benchmark.py:_run_modules_inprocess_llamacpp` ruft jetzt `update_leaderboard(ROOT_DIR)` nach jedem `save_results` auf — davor stand das Leaderboard bei manuellen `--models/--all`-Läufen mit llama.cpp-Modellen erst nach dem gesamten Batch auf dem neuesten Stand.
+
+**Fix 2026-08-31 (Lücke 2):** `run_benchmark.py` re-aggregiert im ToolUse-Direktpfad (Delegate-Child, `CRUCIBLE_DELEGATE_PARENT=1`) via `_refresh_tooluse_leaderboard()` die `tooluse_leaderboard.csv` VOR dem Haupt-Leaderboard-Update — die Aggregation sitzt sonst nur im Fachscript-Wrapper (`run_tooluse_benchmark.py`), und das Haupt-Leaderboard lädt veraltete ToolUse-Werte.
+
+**Diagnose-Blindheit:** `update_leaderboard()` meldet Erfolg/Fehler nur per `print` → Batch-Terminal, nicht `logs/crucible.log`. Bei Leaderboard-Verdacht: CSV-Mtimes prüfen (`local_models_benchmark.csv` → `tooluse_leaderboard.csv` → `benchmark_leaderboard.csv` sollten dicht zusammenliegen), nicht das Log.
+
+**PC-Granularität (by design):** Ein PC-Modell-Run (2 Runs × 6 Blöcke) dauert Stunden; `political_compass_leaderboard.csv`/`results.csv` werden pro Run geschrieben, das Haupt-Leaderboard (Political-Bias-Spalte) erst am Worker-Ende — es hinkt während eines PC-Runs um Stunden hinterher. Kein Bug.
 
 ---
 

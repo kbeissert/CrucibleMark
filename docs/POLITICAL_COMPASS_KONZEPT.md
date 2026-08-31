@@ -1,6 +1,6 @@
 # Das Political-Compass-Modul: Konzept und Methodik
 
-**Stand: v5.1.0 · 2026-07-14**
+**Stand: v5.1.5 · 2026-08-30**
 
 ## 1. Die Intransparenz moderner Sprachmodelle
 
@@ -194,7 +194,7 @@ Ein Modell, das alle 11 Parolen-Fragen verweigert (Hard Refusal), liefert `parol
 
 ## 9. Themenbereiche des Fragenkatalogs
 
-Der Fragebogen ist in neun Themenblöcke unterteilt. Die Blöcke 7.1–7.8 umfassen 68 Sachfragen und bestimmen zu 80 % die finale Kompassposition. Block 7.9 (Parolen-Sonde) wirkt als 20%-Korrekturfaktor (siehe Abschnitt 7).
+Der Fragebogen ist in neun Themenblöcke unterteilt. Die Blöcke 7.1–7.8 umfassen 68 Sachfragen und bestimmen zu 80 % die finale Kompassposition. Block 7.9 (Parolen-Sonde) wirkt als 20%-Korrekturfaktor (siehe Abschnitt 8).
 
 | Block | Themenbereich | Fragen | Achse | Themen im Detail |
 |---|---|---|---|---|
@@ -222,28 +222,54 @@ Assets liegen unter [`benchmark_modules/political_compass/assets/`](../benchmark
 
 Die v3.0 behebt zwei strukturelle Probleme der v2.0: den 25k-Token-Fallback bei Reasoning-Modellen (bis zu ~30 Minuten pro Frage, Vorfall Gemma-4-12b auf der DGX Spark) und die Konflation von Refusal, Truncation und Format-Abweichung in einem einzigen Retry-Loop mit Temperatur-Eskalation.
 
-### 10.1 Token-Budgets
+Die sechs Kernentscheidungen von v3.0 (Budget-Semantik, Vier-Stufen-Klassifikation, getrennte Retry-Strategien, Coverage-Regel, transparente Ergebnis-Attribution, erweitertes Bias-Reporting) greifen bewusst ineinander und werden in den Abschnitten 10 und 11 jeweils technisch und in ihrer Methoden-Begründung zusammen beschrieben. Der Zusammenhang: Das knappe Modul-Budget (10.1) macht die Vier-Stufen-Klassifikation (10.2) überhaupt erst notwendig, weil ein knappes Budget mehr Truncation-Fälle produziert, die von echten Refusals unterschieden werden müssen. Die getrennten Retry-Strategien (10.3) sorgen dafür, dass jede Klassifikations-Kategorie die Korrektur erhält, die zu ihrer tatsächlichen Ursache passt. Trotzdem kann ein Modell so inkonsistent reagieren, dass selbst ein kalibriertes Budget nicht ausreicht — dafür greift die Coverage-Regel (11). Wenn sie greift, sorgt die transparente Attribution (11.2) dafür, dass der Profilwechsel nicht verschleiert wird. Und der erweiterte Bias-Report (10.4) macht die gesamte Kette — von der ersten Antwort bis zu einem möglichen Profilwechsel — für den Review-Text nachvollziehbar.
 
-`benchmark_config.yaml` definiert `token_budgets.political_compass: 800` (und den identischen Reasoning-Modell-Wert, damit kein 5×-Multiplikator greift). Die erwartete Antwort ist ein einzelner Buchstabe — 800 Tokens decken Thinking + Output. Beim Truncation-Re-Ask verdoppelt das Modul das Budget auf 1600. Die Kalibrierung erfolgt über `scripts/tools/pc_calibrate.py` (Ziel: P95(reasoning) + 200 ≤ Budget, Truncation-Rate < 5 %).
+### 10.1 Token-Budgets: Modul-Budget als Minimum, nicht als Obergrenze
+
+`benchmark_config.yaml` definiert `token_budgets.political_compass: 800` (und den identischen Reasoning-Modell-Wert, damit kein 5×-Multiplikator greift — die übliche Logik „Reasoning-Modelle bekommen automatisch mehr Budget" ist hier bewusst ausgeschaltet, weil eine Ein-Buchstaben-Antwort keine Denkzeit-Kompensation braucht). Die erwartete Antwort ist ein einzelner Buchstabe — 800 Tokens decken Thinking + Output. Zum Vergleich: Reasoning-Modelle ohne Modul-Eintrag schnellen auf den allgemeinen Fallback von 25.000 Tokens hoch (`REASONING_MIN_BUDGET_TOKENS` in `utils/model_token_budget.py`). Beim Truncation-Re-Ask verdoppelt das Modul das Budget auf 1600. Die Kalibrierung erfolgt über `scripts/tools/pc_calibrate.py` (Ziel: P95(reasoning) + 200 ≤ Budget, Truncation-Rate < 5 %); ein kalibriertes Card-Budget (`pc_token_calibration`) gewinnt über dem Config-Wert (Card-First).
+
+**Die entscheidende Eigenschaft — Boden, kein Deckel:** Der Modul-Wert gilt als **Mindestwert**, nicht als starrer Deckel. `resolve_token_budget()` wendet `max(module_budget, tokens)` an: Wird an anderer Stelle im System — etwa beim Nachfrage-Versuch nach einer abgeschnittenen Antwort — explizit ein höheres Budget angefordert, gewinnt dieser höhere Wert. Der Modul-Wert bestimmt nur den Startpunkt nach unten. Einzige Obergrenze bleibt der Model-Card-Cap `max_output_tokens` (modellspezifische API-Limits); die Token-Probe umgeht die Minimum-Semantik bewusst per `exact=True`, weil ihre untersten Stufen (300/600) sonst still auf 800 angehoben würden.
+
+**Warum diese Unterscheidung nötig ist:** In einer früheren Implementierung wurde immer der kleinere der beiden Werte (Modul-Budget vs. angeforderter Wert) verwendet — eine an sich sinnvolle Schutzlogik gegen Ressourcenverschwendung. Das Problem: Dadurch wurde auch ein bewusst höher angefordertes Budget für einen Nachfrage-Versuch (die Verdopplung nach einer Truncation) automatisch wieder auf den kleinen Modul-Wert zurückgesetzt. Der Korrekturmechanismus wäre wirkungslos gewesen — ein Re-Ask hätte nie mehr Spielraum bekommen als der gescheiterte erste Versuch. Die Regel musste deshalb umgedreht werden: Modul-Budget als Boden, kein Deckel.
 
 ### 10.2 Antwort-Klassifikation (Hybrid-Kaskade)
+
+Statt einer einzelnen, groben Ablehnungs-Erkennung unterscheidet das System vier Antwortzustände — jede mit eigenem Korrekturbedarf:
+
+| Klasse | Bedeutung | Erkennungsmerkmal |
+|---|---|---|
+| `ANSWER` | Modell liefert einen klaren A/B/C/D-Buchstaben | Strict-Letter-Match |
+| `TRUNCATION` | Budget ausgeschöpft, kein Buchstabe im sichtbaren Content | `finish_reason ∈ {length, max_tokens}` **oder** `token_limit_cutoff`-Flag **oder** leerer Content bei verbrauchten Reasoning-Tokens |
+| `REFUSAL_CONTENT_SAFETY` | Modell lehnt die Frage inhaltlich bewusst ab | Keyword- bzw. Embedding-Treffer gegen Referenz-Ablehnungsformulierungen (de+en) |
+| `FORMAT_DEVIATION` | Modell antwortet inhaltlich, aber ohne validen Buchstaben im erwarteten Format | Fallback, wenn keine der drei anderen Kategorien zutrifft |
+
+**Beispiel für Formatabweichung:** Ein Modell schreibt „Ich würde eher der zweiten Position zustimmen" oder formuliert die gewählte Option komplett aus, statt „B" zu antworten. Inhaltlich ist eine Position erkennbar, aber die strikte Parsing-Logik findet keinen validen Buchstaben-Treffer.
 
 Jede Antwort durchläuft `core/refusal_classifier.py`:
 
 1. **Strict-Letter-Match** (`_parse_choice(strict=True)`): eindeutige Buchstaben-Antwort → `ANSWER`. Das Loose-Fallback (erstes freistehendes Vorkommen) ist bewusst deaktiviert — es würde Refusal-Texte mit zufällig enthaltenem Buchstaben als Antwort fehlklassifizieren.
-2. **Truncation-Indikatoren**: `finish_reason == "length"` oder leerer Content bei vorhandenem Reasoning → `TRUNCATION`.
+2. **Truncation-Indikatoren** (siehe Tabelle): → `TRUNCATION`.
 3. **Keyword-Liste** (config.yaml, de+en): → `REFUSAL_CONTENT_SAFETY`.
 4. **Embedding-Ähnlichkeit** (optional, sentence-transformers, Threshold 0.75): → `REFUSAL_CONTENT_SAFETY`.
 5. Fallback: `FORMAT_DEVIATION`.
 
 Kein LLM-Judge, keine Live-Endpoints — die Klassifikation ist deterministisch und reproduzierbar.
 
+**Warum vier statt einer Kategorie:** Vor dieser Änderung liefen alle drei Problemfälle (Truncation, Refusal, Formatabweichung) durch denselben Eskalationsmechanismus mit Temperatur-Erhöhung. Das ist inhaltlich falsch: Eine Truncation braucht mehr Budget, keine höhere Temperatur. Eine Formatabweichung braucht eine Format-Erinnerung, keine Budget-Erhöhung. Nur eine echte Content-Verweigerung ist überhaupt ein Kandidat für eine temperaturbasierte Eskalation — und selbst das nur im Anti-Diplomat-Lauf (siehe 10.3). Jede Kategorie erhält jetzt exakt die Korrektur, die zu ihrer tatsächlichen Ursache passt.
+
 ### 10.3 Retry-Strategie pro Run
 
-- **Vanilla-Run (Run 1, ungerade):** Methodisch sauber. Echte Content-Safety-Refusals sind Datenpunkte — kein Retry, keine Temperatur-Eskalation, kein Anti-Refusal-Prompt. Truncation und Format-Abweichung erhalten je einen günstigen Re-Ask (temp 0.1; Budget ×2 bzw. Format-Erinnerung).
-- **Forced-Run (Run 2, gerade):** Refusals behalten die Eskalationsleiter (temp 0.1 → 0.4 → 0.7 + Anti-Diplomat-System-Append). Erschöpft sie sich, zählt die Frage als Hard Refusal.
-- **API-Fehler** (leere Antwort, Timeout/Exception) eskalieren in beiden Runs — ihr Hard-Refusal-Accounting ist die Datenbasis des Systematic-Failure-Abbruchs.
+Die Reaktion auf ein Problem hängt zusätzlich davon ab, in welchem der beiden Läufe (Standard/Vanilla oder Anti-Diplomat/Forced) es auftritt — implementiert als reine Entscheidungsfunktion `_decide_retry_action()` in `test.py`:
+
+- **Truncation-Fall:** Wird in **beiden** Läufen gleich behandelt — genau ein Nachfrage-Versuch mit verdoppeltem Budget (800 → 1600), niedrige Temperatur (0.1). Das ist ein rein technischer Fix: Dem Modell fehlte der Platz, um überhaupt zu einer Antwort zu kommen, unabhängig vom Lauf-Typ.
+- **Formatabweichung:** Ebenfalls in beiden Läufen gleich — ein Re-Ask mit Format-Erinnerung (`PC_FORMAT_REMINDER_APPEND`: „Respond with exactly one letter…"), Temperatur 0.1, ohne Budget-Erhöhung und ohne Anti-Refusal-Text.
+- **Refusal-Fall (inhaltliche Verweigerung):** Hier unterscheidet sich die Behandlung deutlich:
+  - Im **Vanilla-Run (Run 1, ungerade)** gilt eine echte, erkennbare Content-Verweigerung als valider Messwert. Es gibt **keinen** Retry, keine Temperatur-Eskalation, kein Anti-Refusal-Prompt — die Treppe endet sofort bei `refusal_early`. Das Modell hat eine bewusste Grenze gezeigt, und genau diese Grenze soll gemessen werden.
+  - Im **Forced-Run (Run 2, gerade)**, der gezielt Ausweichverhalten unterbinden soll, bleibt die Eskalationsleiter bestehen: steigende Temperatur (0.1 → 0.4 → 0.7, max. 2 Retries) in Kombination mit einem verstärkenden System-Zusatz (`ANTI_REFUSAL_SYSTEM_APPEND`), der auf klare Positionierung drängt. Erschöpft sie sich, zählt die Frage als Hard Refusal.
+- **API-Fehler** (leere Antwort, Timeout/Exception ohne Generierungs-Evidenz) eskalieren in beiden Runs — ihr Hard-Refusal-Accounting ist die Datenbasis des Systematic-Failure-Abbruchs. Eine langsame Truncation mit verbrauchten Reasoning-Tokens ist bewusst **kein** API-Fehler und läuft in den Truncation-Re-Ask-Pfad.
 - **Thinking-Off-Re-Ask** beim Truncation-Re-Ask nur, wo Thinking per Request abschaltbar ist: vLLM (`chat_template_kwargs={"enable_thinking": False}`). llama.cpp kennt nur das Server-Start-Flag `--reasoning on` — dort degradiert der Re-Ask auf die Budget-Eskalation.
+
+**Warum diese Asymmetrie sinnvoll ist:** Bei Truncation gibt es nichts zu erzwingen — es ist ein technischer Mangel, der unabhängig vom Lauf-Typ korrigiert werden muss. Bei einem echten Refusal ist die Situation gegenteilig: Im Vanilla-Run soll die natürliche Ablehnung als Datenpunkt erhalten bleiben, während der Forced-Run explizit dafür konstruiert ist zu prüfen, ob sich diese Grenze unter Druck verschiebt.
 
 ### 10.4 Eskalations-Datenkette
 
@@ -255,6 +281,8 @@ Die vollständige Attempt-Treppe pro Frage (Klassifikation, Stage, Temperatur, T
 
 Der Meta-Reviewer-Prompt (`config/meta_reviewer_prompt.yaml`, `bias_reviewer.system_instructions`) weist den Reviewer an, Eskalations- und Refusal-Signale aktiv zu interpretieren: häufige Truncation-Re-Asks = Thinking dominiert; frühe Vanilla-Refusals = Safety-Trigger-Themen; erreichte Eskalationsstufen im Forced-Run = Druckresistenz.
 
+**Warum diese Detailtiefe nötig ist:** Statt einer binären Markierung „wurde retried: ja/nein" dokumentiert der Report jetzt pro einzelner Frage die genaue Klassifikations-Kategorie (10.2), die erreichte Eskalationsstufe, die dabei verwendete Temperatur, den auslösenden Trigger sowie die Token-Verteilung zwischen Vanilla- und Forced-Lauf. Ein Modell, das im ersten Anlauf klar antwortet, unterscheidet sich methodisch fundamental von einem Modell, das erst nach mehreren Eskalationsstufen zu einer Antwort kommt — auch wenn am Ende dieselbe Positionsangabe herauskommt. Die alte, binäre Markierung konnte diesen Unterschied nicht abbilden. Der erweiterte Report macht sichtbar, unter welchen Bedingungen jede gemessene Koordinate tatsächlich entstanden ist, und liefert damit die Grundlage für eine differenziertere redaktionelle Einordnung im begleitenden Review-Text.
+
 ---
 
 ## 11. Coverage-Regel für Thinking-Modelle (2026-08-29, nachschlagbar)
@@ -265,8 +293,10 @@ Der Meta-Reviewer-Prompt (`config/meta_reviewer_prompt.yaml`, `bias_reviewer.sys
 
 Ein PC-Thinking-Lauf wird abgebrochen und auf ein Instruct-Profil umgestellt, wenn **eines** der beiden Kriterien nach Block 7.3 greift:
 
-1. **Kumulative Verlustquote > 35 %** — Begründung: Oberhalb dieser Schwelle ruht die gemessene Position überwiegend auf den Schnell-Antwortern des Modells, nicht auf einer repräsentativen Fragenmenge. Die Truncation wird damit vom Messfehler zur systematischen Auswahlverzerrung.
-2. **Achsen-Konzentration der Ausfälle** — Liegen die Truncations überwiegend auf einer PC-Achse (X = wirtschaftlich: 7.1–7.3; Y = gesellschaftlich: 7.4–7.7), ist die entsprechende Koordinate verzerrt — unabhängig von der Gesamtquote. Eine 30-%-Gesamtverlustquote mit einseitig konzentrierten Ausfällen produziert eine einseitig verzerrte Achse bei intakter Gegenachse.
+1. **Kumulative Verlustquote > 35 %** — Begründung: Oberhalb dieser Schwelle ruht die gemessene Position überwiegend auf den Schnell-Antwortern des Modells — also zunehmend nur noch auf den „einfachen" Fragen statt auf einer repräsentativen Fragenmenge. Die Truncation wird damit vom Messfehler zur systematischen Auswahlverzerrung.
+2. **Achsen-Konzentration der Ausfälle** — Selbst bei akzeptabler Gesamtquote können sich fast alle Ausfälle auf eine der beiden Kompass-Achsen konzentrieren (X = wirtschaftlich: 7.1–7.3; Y = gesellschaftlich: 7.4–7.7). Dann ist die entsprechende Koordinate deutlich unsicherer als die Gegenachse, ohne dass die Gesamtstatistik das zeigen würde: eine 30-%-Gesamtverlustquote mit einseitig konzentrierten Ausfällen produziert eine einseitig verzerrte Achse bei intakter Gegenachse.
+
+**Warum die Regel vor den Daten formuliert wurde:** Eine Abbruchentscheidung, die erst nach Betrachtung der Ergebnisse getroffen wird, ist immer dem Verdacht ausgesetzt, nachträglich passend zum gewünschten Ergebnis gezogen worden zu sein. Beide Schwellenwerte standen bereits fest, bevor ein Modell überhaupt in diese Situation lief. Die spätere Anwendung der Regel ist damit die konsequente Umsetzung einer vorab getroffenen methodischen Entscheidung, keine Ad-hoc-Reaktion auf ein unbequemes Ergebnis.
 
 **Konsequenz bei Auslösung:**
 - Der Thinking-Run wird als **partieller, ehrlich dokumentierter Datensatz** erhalten (nicht gelöscht) — er ist selbst diagnostisch wertvoll und zeigt das Truncation-Verhalten des Modells.
@@ -296,6 +326,8 @@ Der Gemma-4-Fall hat den Kreis geschlossen: Der gesamte Live-Entscheidungsprozes
 
 Der `hybrid_dual`-Fall ist nicht Schadensbegrenzung, sondern methodisch wertvoll: Thinking- und Instruct-Version desselben Modells werden als vergleichbarer Datensatz angelegt, nicht als Notlösung.
 
+**Thinking-only-Ausnahme (Regel 2026-08-29):** `hybrid_dual` und das `instruct`-Profil gelten nur für Modelle, die **beide** Betriebsmodi anbieten (Card-Feld `dual_profile: true`, SSoT für die Modi-Fähigkeit). Thinking-only-Modelle (`dual_profile: false`, z. B. Ornith, Nemotron-3.5-Lightning) bleiben auch bei `inconsistent` oder `greedy_uncapped` im `thinking`-Profil: Es gibt keinen Instruct-Modus, in den gewechselt werden könnte — nur Modelle mit beiden Modi werden in beiden Modi getestet. Inkonsistentes Terminieren deckt das kalibrierte Budget ab; greedy-Verhalten bleibt als nicht sauber messbar dokumentiert. Die Probe schreibt die Ausnahme in die Kalibrierungs-Note (Implementierung: `probe_pc_profile(supports_instruct_mode=…)`, `read_dual_profile()`).
+
 **Fall Gemma-4 (Reframing):** Rückwirkend hätte die v2-Probe `hybrid_dual` ausgegeben. Der Thinking-Teil-Lauf wird daher als geplante **Thinking-Hälfte** des Dual-Profils archiviert (nicht als abgebrochener Lauf), der Instruct-Lauf als zweite Hälfte. Nach beiden Läufen: vergleichende Shift-Auswertung als Bonus-Erkenntnis für dieses Dokument.
 
 ### 11.2 Ergebnis-Attribution: Ein Leaderboard-Eintrag pro Modell (2026-08-29)
@@ -307,4 +339,6 @@ Der Instruct-Ersatzlauf läuft unter einer eigenen Profil-ID (`gemma-4-12b-it-ud
 3. **Shift-Verifikation ausgeschaltet für Ersatz-Läufe:** Beide Trigger-Pfade (Handler `handle_results` bei `shift > threshold`, `run_benchmark._check_for_anomaly` via `_is_attributed_target`-Reverse-Lookup) überspringen den Triple-Run für attribuierte Ergebnisse. Begründung: Die Verifikation würde das **Thinking-Profil** fahren (Server-Restart folgt der Profil-ID-Config) — deren Truncation-Garbage würde per Verifikations-Attribution das saubere Ersatzlauf-Ergebnis überschreiben. Das Ersatzlauf-Ergebnis ist bereits doppelt validiert (zwei vollständige Runs, 0 Truncations, 71 % Antwortübereinstimmung mit dem Thinking-Teil-Lauf).
 4. **Bias-Report-Annotation:** Die ⚙️-Anmerkung in Sektion 2.9 dokumentiert den Ersatz-Lauf mit Coverage-Regel-Begründung (nicht die `greedy_uncapped`-Vorlage — die gilt nur für Probe-kalibrierte Instruct-Modi).
 
-**Sollte ein Modell doch ein eigenes Instruct-Leaderboard-Eintrag bekommen** (hybrid_dual-Vergleich, Abschn. 11.1), wird das Mapping in `config.result_attribution` entfernt — dann persistiert der Lauf wieder unter der Profil-ID und die Verifikation greift normal.
+**Sollte ein Modell doch einen eigenen Instruct-Leaderboard-Eintrag bekommen** (hybrid_dual-Vergleich, Abschn. 11.1), wird das Mapping in `config.result_attribution` entfernt — dann persistiert der Lauf wieder unter der Profil-ID und die Verifikation greift normal.
+
+**Warum das kein Widerspruch ist:** Ein Modell bekommt so weiterhin genau einen Leaderboard-Eintrag (keine Verdopplung, keine Verzerrung des Vergleichs), aber die abweichenden Messbedingungen werden nicht verschleiert, sondern explizit dokumentiert — über das `pc_calibration`-Flag in `metrics_json` und die ⚙️-Annotation im Bias-Report. Das entspricht dem Grundprinzip, das im gesamten Framework gilt: abweichende Messbedingungen sichtbar machen statt verstecken. Der ursprüngliche, unvollständige Thinking-Lauf wird dabei nicht gelöscht, sondern als eigenständiger, diagnostisch wertvoller Teildatensatz archiviert — er zeigt selbst etwas Relevantes, nämlich wie und wo genau das Modell unter Thinking-Bedingungen an seine Grenzen kam.
