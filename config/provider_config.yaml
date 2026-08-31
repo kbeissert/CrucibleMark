@@ -520,6 +520,11 @@ providers:
       model_type: open_weights_local
       enabled: true  # asusGX10 erreichbar; Benchmark-llama-server läuft auf :1234.
       read_timeout: 2400  # 40 Min httpx-Read-Timeout — Thinking-/Long-Output-Modelle brauchen lange.
+      # Chat-Pfad läuft über den OpenAI-Connector (utils/providers/openai.py) —
+      # der liest `request_timeout` (Default 600s), NICHT `read_timeout`.
+      # Ohne diesen Key war die Client-Wand bei 600s → Livelock bei langen
+      # Reasoning-Generierungen (hermes docs 25000-Tokens-Task, 2026-08-30).
+      request_timeout: 2400  # analog read_timeout-Präzedenzfall oben.
       # Wird beim Serverstart als --ctx-size gebacken (llamacpp_base.py:
       # _build_server_cmd); pro Modell via `context_length` überschreibbar.
       context_window: 65536
@@ -531,7 +536,10 @@ providers:
       # 2026-08-27: Mac:1235 → GX10:1234). Der Mac-Connector erkennt solche Hijacks
       # seit 2026-08-28 (Ownership-Check in llamacpp_base) und bricht Fail-Fast ab.
       base_url: "http://100.89.110.0:2234/v1"
-      api_key: "sk-local-mg2026"
+      # Lokaler Metrics-Proxy-Auth-Token (bewusste Ausnahme von der
+      # .env-Regel, s. AGENTS.md Security): schützt den Proxy im
+      # Tailscale-LAN vor Fremd-Requests — kein Cloud-Secret.
+      api_key: "sk-metrics-mg2026"
       # Metrics-Proxy-Setup (2026-08-28): base_url zeigt auf den authentifi-
       # zierenden metrics_proxy (:2234), der die generierten Tokens erfasst und
       # an den llama-server weiterleitet. `server_port` entkoppelt den Bind-Port
@@ -748,16 +756,20 @@ providers:
         n_gpu_layers: 99
         # mmproj-gemma4-f16.gguf liegt alongside (Vision-fähig); Benchmark rein textuell.
 
-      - id: qwen2_5-vl-7b
-        name: Qwen 2.5 Vision 7B Q4_K_M (GGUF)
-        model_file: qwen2.5-vl-7b-instruct-q4_k_m/qwen2.5-vl-7b-instruct-q4_k_m.gguf
-        n_gpu_layers: 99
-        enable_thinking: false
-      - id: qwen3_6-27b-fable-fusion-711-uncensored
-        name: Qwen 3.6 27B Fable-Fusion-711 Uncensored Q5_K_M (GGUF)
-        model_file: Qwen3.6-27B-Fable-Fusion-711-Uncensored/Qwen3.6-27B-Fable-Fus-711-UnHeretic-NM-DAU-NEO-MAX-NEO-MTP-Q5_K_M.gguf
-        n_gpu_layers: 99
-        enable_thinking: true  # Qwen3.6-Basis: Always-Thinking-Klasse (Dual-Profile-Expansion)
+      # ── Auskommentiert + blacklisted 2026-08-29: Vision-Modell — der
+      # PC-Benchmark ist Text-only, die Suite läuft hier sinnlos. Blacklist
+      # blockt nur den Web-Export; das Auskommentieren hält den Batch ab.
+      # - id: qwen2_5-vl-7b
+      #   name: Qwen 2.5 Vision 7B Q4_K_M (GGUF)
+      #   model_file: qwen2.5-vl-7b-instruct-q4_k_m/qwen2.5-vl-7b-instruct-q4_k_m.gguf
+      #   n_gpu_layers: 99
+      #   enable_thinking: false
+      # Auskommentiert 2026-08-30 via make clean-model.
+      # - id: qwen3_6-27b-fable-fusion-711-uncensored
+      # name: Qwen 3.6 27B Fable-Fusion-711 Uncensored Q5_K_M (GGUF)
+      # model_file: Qwen3.6-27B-Fable-Fusion-711-Uncensored/Qwen3.6-27B-Fable-Fus-711-UnHeretic-NM-DAU-NEO-MAX-NEO-MTP-Q5_K_M.gguf
+      # n_gpu_layers: 99
+      # enable_thinking: true  # Qwen3.6-Basis: Always-Thinking-Klasse (Dual-Profile-Expansion)
         # mmproj-F16.gguf liegt alongside (Vision-fähig); Benchmark rein textuell.
 
       # ── Historische Einträge (Stand 2026-08-27: GGUFs nicht mehr auf der Disk) ──
@@ -940,7 +952,10 @@ providers:
       read_timeout: 3600  # 60 Min — synthese-starke Modelle brauchen lange für lange Outputs
       context_window: 131072  # konservativer Subset; qwen3.6-27B unterstützt 262144 (laut /v1/models)
       base_url: "http://100.89.110.0:4300/v1"
-      api_key: "sk-local-mg2026"
+      # Lokaler Metrics-Proxy-Auth-Token (bewusste Ausnahme von der
+      # .env-Regel, s. AGENTS.md Security): schützt den Proxy im
+      # Tailscale-LAN vor Fremd-Requests — kein Cloud-Secret.
+      api_key: "sk-metrics-mg2026"
       token_param_name: max_tokens
       # Default-Budget für Thinking-Profile (max_tokens des generierten
       # ``{id}-thinking``-Eintrags via Config-Expansion). Pro Modell via
@@ -1044,18 +1059,22 @@ providers:
         # repetition_penalty:  # Card: null — vLLM-Server-Default greift
         enable_thinking: true
 
-      - id: Gemma-4-31B
-        name: Gemma 4 31B NVFP4 (vLLM, Dense, multimodal)
-        # TOML: ~/ai/shared/configs/vllm/models/Gemma-4-31B-it-NVFP4.toml
-        # (Dense, multimodal, Apache-2.0). Siehe Hinweis oben zu
-        # ``config`` ↔ TOML-Filename-Mismatch.
-        config: Gemma-4-31B-it-NVFP4
-        max_tokens: 16384
-        temperature: 1.0
-        top_p: 0.95
-        top_k: 64
-        # repetition_penalty:  # Card: null — vLLM-Server-Default greift
-        enable_thinking: true
+      # ── Auskommentiert 2026-08-29: TOML (Gemma-4-31B-it-NVFP4.toml) UND
+      # Weights auf der GX10 gelöscht (Inventar-Check per SSH verifiziert).
+      # Entry wäre ein 600-s-Timeout im Batch. Historische Benchmark-Daten
+      # bleiben in den CSVs; Re-Aktivierung erst nach Neu-Download + TOML.
+      # - id: Gemma-4-31B
+      #   name: Gemma 4 31B NVFP4 (vLLM, Dense, multimodal)
+      #   # TOML: ~/ai/shared/configs/vllm/models/Gemma-4-31B-it-NVFP4.toml
+      #   # (Dense, multimodal, Apache-2.0). Siehe Hinweis oben zu
+      #   # ``config`` ↔ TOML-Filename-Mismatch.
+      #   config: Gemma-4-31B-it-NVFP4
+      #   max_tokens: 16384
+      #   temperature: 1.0
+      #   top_p: 0.95
+      #   top_k: 64
+      #   # repetition_penalty:  # Card: null — vLLM-Server-Default greift
+      #   enable_thinking: true
 
       # Qwen 3.6 27B Dense — NVFP4 compressed-tensors, MTP, Thinking-Parser aktiv.
       # 32k Context (Sweet-Spot für DGX Spark bei 0.70 gpu-mem-util).

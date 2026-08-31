@@ -7,7 +7,6 @@
   "deployment_type": "localweights",
   "local_deployment_possible": true,
   "weights_provenance_risk": "low",
-  "weights_provenance_rationale": "Die Basisgewichte stammen von Alibaba/Qwen und sind unter Apache 2.0 veröffentlicht. Diese Karte beschreibt eine vollständig lokale GGUF-Quantisierung (Q4_K_M) für llama.cpp; es findet keine Cloud-Inferenz statt, sodass kein externer Datenabfluss über Alibaba-Infrastruktur entsteht.",
   "model_family": "Qwen2.5-VL",
   "vendor": "Alibaba / Qwen Team",
   "primary_focus": "vision-language",
@@ -65,5 +64,6 @@
   "frequency_penalty": null,
   "presence_penalty": null,
   "seed": null,
-  "stop_sequences": null
+  "stop_sequences": null,
+  "weights_provenance_risk_rationale": "Die Basisgewichte stammen von Alibaba/Qwen und sind unter Apache 2.0 veröffentlicht. Diese Karte beschreibt eine vollständig lokale GGUF-Quantisierung (Q4_K_M) für llama.cpp; es findet keine Cloud-Inferenz statt, sodass kein externer Datenabfluss über Alibaba-Infrastruktur entsteht."
 }

@@ -7,7 +7,6 @@
   "deployment_type": "open-weights-cloud-available",
   "local_deployment_possible": true,
   "weights_provenance_risk": "high",
-  "weights_provenance_rationale": "Moonshot AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten ermöglichen kann. Das BSI hat im Februar 2025 explizit vor der Nutzung chinesischer KI-Cloud-Dienste gewarnt; diese Risikoeinschätzung gilt konservativ auch hier.",
   "model_family": "Kimi",
   "vendor": "Moonshot AI",
   "primary_focus": "coding",
@@ -92,5 +91,6 @@
       "score_p1": 90.0,
       "score_p2": 70.0
     }
-  }
+  },
+  "weights_provenance_risk_rationale": "Moonshot AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten ermöglichen kann. Das BSI hat im Februar 2025 explizit vor der Nutzung chinesischer KI-Cloud-Dienste gewarnt; diese Risikoeinschätzung gilt konservativ auch hier."
 }

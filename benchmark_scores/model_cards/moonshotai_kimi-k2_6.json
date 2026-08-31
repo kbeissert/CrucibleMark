@@ -7,7 +7,6 @@
   "deployment_type": "open-weights-cloud-available",
   "local_deployment_possible": true,
   "weights_provenance_risk": "high",
-  "weights_provenance_rationale": "Moonshot AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten ermöglichen kann. Das BSI hat im Februar 2025 explizit vor der Nutzung chinesischer KI-Cloud-Dienste gewarnt; diese Risikoeinschätzung gilt konservativ auch hier.",
   "model_family": "Kimi",
   "primary_focus": "agentic",
   "summary": "Kimi K2.6 ist Moonshot AIs multimodales Modell für agentische Aufgaben, Coding und toolgestützte Workflows mit nativem Eingang für Text, Bild und Video. Die MoE-Architektur aktiviert pro Token nur 32 Milliarden der insgesamt eine Billion Gesamtparameter, das Kontextfenster umfasst 256.000 Tokens. Als Open-Weights-Modell lokal oder über Cloud-API verfügbar, mit chinesischer Jurisdiktion als wesentlichem Cloud-Risikofaktor.",
@@ -84,5 +83,6 @@
       "score_p1": 86.67,
       "score_p2": 63.33
     }
-  }
+  },
+  "weights_provenance_risk_rationale": "Moonshot AI ist ein chinesisches Unternehmen und unterliegt dem chinesischen National Security Law (NSL), das staatlichen Zugriff auf Daten ermöglichen kann. Das BSI hat im Februar 2025 explizit vor der Nutzung chinesischer KI-Cloud-Dienste gewarnt; diese Risikoeinschätzung gilt konservativ auch hier."
 }

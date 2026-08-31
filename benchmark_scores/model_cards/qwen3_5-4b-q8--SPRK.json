@@ -7,7 +7,6 @@
   "deployment_type": "localweights",
   "local_deployment_possible": true,
   "weights_provenance_risk": "low",
-  "weights_provenance_rationale": "Die Gewichte stammen aus der Apache-2.0-lizenzierten Qwen3.5-Familie und werden hier als lokale Unsloth-GGUF-Variante ausgeführt. Ohne Cloud-Verbindung ist das operative Risiko gering; die lokale Nutzung minimiert Datentransfer- und Jurisdiktionsfragen.[web:883][web:885][web:886]",
   "model_family": "Qwen",
   "vendor": "Alibaba",
   "primary_focus": "generalist",
@@ -72,5 +71,6 @@
   "frequency_penalty": null,
   "presence_penalty": null,
   "seed": null,
-  "stop_sequences": null
+  "stop_sequences": null,
+  "weights_provenance_risk_rationale": "Die Gewichte stammen aus der Apache-2.0-lizenzierten Qwen3.5-Familie und werden hier als lokale Unsloth-GGUF-Variante ausgeführt. Ohne Cloud-Verbindung ist das operative Risiko gering; die lokale Nutzung minimiert Datentransfer- und Jurisdiktionsfragen.[web:883][web:885][web:886]"
 }

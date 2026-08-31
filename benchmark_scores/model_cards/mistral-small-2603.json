@@ -52,7 +52,6 @@
   "vendor": "Mistral AI",
   "weights_license_tier": "open-weights",
   "weights_provenance_risk": "low",
-  "weights_provenance_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU. Es unterliegt der europäischen Gesetzgebung, wobei die Risiken für staatliche Zugriffe im Vergleich zu US-amerikanischen Anbietern oder chinesischen Jurisdiktionen als geringer eingestuft werden.",
   "top_p": null,
   "top_k": null,
   "repetition_penalty": null,
@@ -84,5 +83,6 @@
       "score_p1": 66.67,
       "score_p2": 39.17
     }
-  }
+  },
+  "weights_provenance_risk_rationale": "Mistral AI ist ein französisches Unternehmen mit Sitz in der EU. Es unterliegt der europäischen Gesetzgebung, wobei die Risiken für staatliche Zugriffe im Vergleich zu US-amerikanischen Anbietern oder chinesischen Jurisdiktionen als geringer eingestuft werden."
 }

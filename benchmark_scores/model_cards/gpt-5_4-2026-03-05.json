@@ -7,7 +7,6 @@
   "deployment_type": "cloud-only",
   "local_deployment_possible": false,
   "weights_provenance_risk": "medium",
-  "weights_provenance_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act. Bei API-Nutzung verlassen Eingabedaten das lokale Netz – behördlicher Zugriff auf verarbeitete Daten ist rechtlich möglich.",
   "model_family": "GPT",
   "vendor": "OpenAI",
   "primary_focus": "general",
@@ -82,5 +81,6 @@
       "score_p1": 61.67,
       "score_p2": 55.0
     }
-  }
+  },
+  "weights_provenance_risk_rationale": "OpenAI ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act. Bei API-Nutzung verlassen Eingabedaten das lokale Netz – behördlicher Zugriff auf verarbeitete Daten ist rechtlich möglich."
 }

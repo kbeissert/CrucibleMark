@@ -51,7 +51,6 @@
   "vendor": "NousResearch",
   "weights_license_tier": "open-weights",
   "weights_provenance_risk": "medium",
-  "weights_provenance_rationale": "Nous Research ist ein US-basiertes Unternehmen, wodurch die US-Jurisdiktion und der CLOUD Act relevant sind. Da es sich um Open Weights handelt, können die Modelle lokal betrieben werden, was das Risiko eines unkontrollierten Datenabflusses über eine API minimiert.",
   "top_p": null,
   "top_k": null,
   "repetition_penalty": null,
@@ -82,5 +81,6 @@
       "score_p1": 88.33,
       "score_p2": 41.67
     }
-  }
+  },
+  "weights_provenance_risk_rationale": "Nous Research ist ein US-basiertes Unternehmen, wodurch die US-Jurisdiktion und der CLOUD Act relevant sind. Da es sich um Open Weights handelt, können die Modelle lokal betrieben werden, was das Risiko eines unkontrollierten Datenabflusses über eine API minimiert."
 }

@@ -103,10 +103,10 @@
   "pc_token_calibration": {
     "budget": 3120,
     "classification": "inconsistent",
-    "profile": "hybrid_dual",
+    "profile": "thinking",
     "tested": "2026-08-29T19:23:59.855380+00:00",
     "converged_stage": 2400,
-    "notes": "Stratifizierte Probe: 0 Blöcke sauber @ 300, 4/9 verdächtige Blöcke eskaliert (0 greedy, 0 inkonsistent). Profil: hybrid_dual."
+    "notes": "Stratifizierte Probe: 0 Blöcke sauber @ 300, 4/9 verdächtige Blöcke eskaliert (0 greedy, 0 inkonsistent). Profil: thinking (Thinking-only-Ausnahme, dual_profile: false, Regel 2026-08-29 — Instruct-Modus nicht verfügbar, einzelner Thinking-Lauf statt Modus-Wechsel, Konzept-Doc Abschn. 11)."
   },
-  "pc_profile": "hybrid_dual"
+  "pc_profile": "thinking"
 }

@@ -103,5 +103,14 @@
     "meta_muse-glimmer-30b",
     "meta/muse-spark-1.2"
   ],
-  "community": null
+  "community": null,
+  "pc_token_calibration": {
+    "budget": 3120,
+    "classification": "inconsistent",
+    "profile": "thinking",
+    "tested": "2026-08-30T23:18:20.814049+00:00",
+    "converged_stage": 2400,
+    "notes": "Stratifizierte Probe: 0 Blöcke sauber @ 300, 4/9 verdächtige Blöcke eskaliert (0 greedy, 2 inkonsistent). Profil: thinking. Thinking-only-Ausnahme (dual_profile: false): Instruct-Modus nicht verfügbar — einzelner Thinking-Lauf statt Modus-Wechsel (Konzept-Doc Abschn. 11)."
+  },
+  "pc_profile": "thinking"
 }

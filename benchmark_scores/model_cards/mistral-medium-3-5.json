@@ -52,7 +52,6 @@
   "vendor": "Mistral AI",
   "weights_license_tier": "open-weights",
   "weights_provenance_risk": "low",
-  "weights_provenance_rationale": "Mistral AI ist in Frankreich ansässig. Als EU-Unternehmen unterliegt die Speicherung und der Zugriff auf die Gewichte nicht den US-amerikanischen CLOUD-Act-Bestimmungen oder chinesischen Sicherheitsgesetzen.",
   "top_p": null,
   "top_k": null,
   "repetition_penalty": null,
@@ -84,5 +83,6 @@
       "score_p1": 90.0,
       "score_p2": 59.17
     }
-  }
+  },
+  "weights_provenance_risk_rationale": "Mistral AI ist in Frankreich ansässig. Als EU-Unternehmen unterliegt die Speicherung und der Zugriff auf die Gewichte nicht den US-amerikanischen CLOUD-Act-Bestimmungen oder chinesischen Sicherheitsgesetzen."
 }

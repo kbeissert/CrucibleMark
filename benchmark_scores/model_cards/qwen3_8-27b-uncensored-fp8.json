@@ -7,7 +7,7 @@
   "deployment_type": "open-weights-local",
   "local_deployment_possible": true,
   "weights_provenance_risk": "high",
-  "weights_provenance_risk_rationale": "TODO",
+  "weights_provenance_risk_rationale": "Das Basismodell stammt von Alibaba/Z.AI in China und unterliegt chinesischer Jurisdiktion. Die lokalen open-weights Builds reduzieren Cloud-Risiken, aber die Herkunft aus einer Hochrisiko-Jurisdiktion bleibt relevant. Die uncensored FP8-Variante ist ein abliterierter Derivat-Build für lokale Forschung, Red-Teaming und Sicherheitsstudien.[web:693][web:694][web:699]",
   "model_family": "Qwen3.8",
   "vendor": "Alibaba / Qwen",
   "primary_focus": "reasoning/coding",
@@ -60,6 +60,11 @@
       "tested_at": "2026-08-27T02:24:17Z",
       "score_p1": 90.0,
       "score_p2": 59.17
+    },
+    "qwen3_8-27b-uncensored-fp8-thinking": {
+      "tested_at": "2026-08-30T20:38:41Z",
+      "score_p1": 90.0,
+      "score_p2": 78.33
     }
   },
   "tooluse_recommendation": null,
@@ -101,7 +106,6 @@
   "last_modified_at": null,
   "heritage_ids": [],
   "community": null,
-  "weights_provenance_rationale": "Das Basismodell stammt von Alibaba/Z.AI in China und unterliegt chinesischer Jurisdiktion. Die lokalen open-weights Builds reduzieren Cloud-Risiken, aber die Herkunft aus einer Hochrisiko-Jurisdiktion bleibt relevant. Die uncensored FP8-Variante ist ein abliterierter Derivat-Build für lokale Forschung, Red-Teaming und Sicherheitsstudien.[web:693][web:694][web:699]",
   "pc_token_calibration": {
     "budget": 390,
     "classification": "self_limiting",

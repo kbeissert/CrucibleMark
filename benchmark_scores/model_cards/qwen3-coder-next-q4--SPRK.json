@@ -7,7 +7,6 @@
   "deployment_type": "localweights",
   "local_deployment_possible": true,
   "weights_provenance_risk": "low",
-  "weights_provenance_rationale": "Rein lokale Inferenz ohne Cloud-Verbindung. Die Gewichte sind öffentlich verfügbar und werden vollständig lokal ausgeführt. NSL ist für den lokalen Einsatz ohne Datenabfluss nicht relevant.",
   "model_family": "Qwen",
   "vendor": "Alibaba",
   "primary_focus": "general",
@@ -83,5 +82,6 @@
       "score_p1": 90.0,
       "score_p2": 51.67
     }
-  }
+  },
+  "weights_provenance_risk_rationale": "Rein lokale Inferenz ohne Cloud-Verbindung. Die Gewichte sind öffentlich verfügbar und werden vollständig lokal ausgeführt. NSL ist für den lokalen Einsatz ohne Datenabfluss nicht relevant."
 }

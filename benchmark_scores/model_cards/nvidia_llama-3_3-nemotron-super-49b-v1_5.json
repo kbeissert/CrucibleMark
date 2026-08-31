@@ -7,7 +7,6 @@
   "deployment_type": "open-weights-cloud-available",
   "local_deployment_possible": true,
   "weights_provenance_risk": "medium",
-  "weights_provenance_rationale": "NVIDIA ist ein US-Unternehmen (CLOUD Act Risiko). Das Modell basiert auf Meta Llama 3.3 70B und wurde durch NVIDIAs Pruning- und Destillationsverfahren auf 49B Parameter optimiert. Die Gewichte sind offen verfügbar unter der NVIDIA Open Model License.",
   "model_family": "Nemotron",
   "vendor": "NVIDIA",
   "primary_focus": "reasoning",
@@ -76,5 +75,6 @@
       "score_p1": 90.0,
       "score_p2": 55.83
     }
-  }
+  },
+  "weights_provenance_risk_rationale": "NVIDIA ist ein US-Unternehmen (CLOUD Act Risiko). Das Modell basiert auf Meta Llama 3.3 70B und wurde durch NVIDIAs Pruning- und Destillationsverfahren auf 49B Parameter optimiert. Die Gewichte sind offen verfügbar unter der NVIDIA Open Model License."
 }

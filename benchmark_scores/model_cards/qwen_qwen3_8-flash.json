@@ -99,6 +99,5 @@
   "profile_verified_by": null,
   "last_modified_at": null,
   "heritage_ids": [],
-  "community": null,
-  "weights_provenance_rationale": "Basis-Gewichte sind unter qwen-community-1.0 offen verfuegbar (Qwen/Qwen3.8-Flash-Next, offizielle NVFP4/GGUF/FP8-Quants), lokales Deployment ist moeglich. Alibaba hat seinen Sitz in China; Entwicklung, Betrieb und Datenhaltung unterliegen chinesischer Jurisdiktion. Der getestete Zugang erfolgt ueber Alibaba Cloud bzw. OpenRouter — Datensouveraenitaet bleibt der zentrale Risikofaktor, auch wenn Preis und Leistung sehr attraktiv sind."
+  "community": null
 }

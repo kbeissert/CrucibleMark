@@ -177,6 +177,7 @@ blacklist:
   # 35B-A3B (MoE)
   - "qwen3_5-35b-a3b-q8"                    # schwächer + langsamer als q4 (74.66 vs 74.72)
   # 4B
+  - "qwen2_5-vl-7b"                        # Vision-Modell — PC/Text-Suite nicht sinnvoll (2026-08-29)
   - "qwen3_5-4b-q4"                         # schwächer als q6 (68.09)
   - "qwen3_5-4b-q8"                         # schwächster 4B (67.69)
 
