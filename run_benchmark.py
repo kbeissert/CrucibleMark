@@ -32,6 +32,7 @@ from utils.similarity import SemanticSimilarity
 from utils.config_validator import ConfigValidator
 from utils.module_registry import load_module_config, get_active_modules
 from scripts.core.runner_contract import write_run_summary, update_leaderboard
+from scripts.core.tooluse_exporter import ToolUseExporter
 
 # Configure logging
 logging.basicConfig(
@@ -232,6 +233,28 @@ class BenchmarkRunner:
         )
         run_config.force = True
 
+    def _refresh_tooluse_leaderboard(self, model_id: str) -> None:
+        """Re-aggregiert tooluse_leaderboard.csv für ein Modell (best-effort).
+
+        Nur im ToolUse-Direktpfad (Delegate-Child, CRUCIBLE_DELEGATE_PARENT=1)
+        nötig: Der direkte Run schreibt Per-Asset-Zeilen in die Detail-CSVs,
+        aber die Aggregation zu tooluse_leaderboard.csv sitzt im Fachscript-
+        Wrapper (run_tooluse_benchmark.py) — im Direktpfad fehlt sie. Ohne
+        diesen Schritt lädt update_leaderboard() veraltete ToolUse-Werte.
+        """
+        try:
+            exporter = ToolUseExporter(self.config)
+            written = exporter.aggregate_from_benchmark_csvs(
+                target_model_ids=[model_id]
+            )
+            if written > 0:
+                print(
+                    f"   ToolUse-Leaderboard aktualisiert: "
+                    f"{written} Modell(e) → tooluse_leaderboard.csv"
+                )
+        except Exception as exc:  # noqa: BLE001 — leaderboard update must not crash CLI
+            print(f"   [WARN] ToolUse-Leaderboard-Update fehlgeschlagen: {exc}")
+
     def _execute_one_module(
         self,
         mod_id: str,
@@ -275,6 +298,12 @@ class BenchmarkRunner:
                 audit_mode=run_config.audit_mode,
             )
         finally:
+            # ToolUse-Direktpfad: Detail-CSV-Zeilen wurden geschrieben, aber
+            # tooluse_leaderboard.csv wird nur vom Fachscript re-aggregiert.
+            # Re-Aggregation VOR dem Haupt-Leaderboard-Update, sonst liest
+            # update_leaderboard() veraltete ToolUse-Werte.
+            if mod_id == "tooluse":
+                self._refresh_tooluse_leaderboard(model_id)
             # Leaderboard nach jedem Modul aktualisieren (SSoT-Parität
             # mit benchmark_auto.py). finally stellt sicher, dass das
             # Update auch bei Teil-Ergebnissen nach Fehlern/Timeouts

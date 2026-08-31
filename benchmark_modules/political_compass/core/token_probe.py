@@ -29,6 +29,14 @@ Entscheidung konservativ (hybrid_dual deckt beide Betriebsmodi ab).
 | Konvergenz + Greedy gemischt | ``hybrid_dual`` | Zwei Läufe: Thinking (capped, partiell) + Instruct — ermöglicht den Shift-Vergleich zwischen beiden Modi |
 | Durchgängig greedy | ``instruct`` | Ein Lauf, nur Instruct |
 
+**Thinking-only-Ausnahme (Regel 2026-08-29):** ``hybrid_dual`` und die
+``greedy_uncapped`` → ``instruct``-Umschaltung setzen voraus, dass das Modell
+beide Betriebsmodi beherrscht (Card-Feld ``dual_profile: true``, SSoT).
+Thinking-only-Modelle (``dual_profile: false``, z. B. Ornith,
+Nemotron-3.5-Lightning) bleiben im ``thinking``-Profil: inkonsistentes
+Terminieren wird mit kalibriertem Budget akzeptiert, greedy-Verhalten als
+nicht sauber messbar dokumentiert (Konzept-Doc Abschn. 11).
+
 Kein LLM-Judge, keine Live-Endpoints außer dem getesteten Modell selbst.
 """
 
@@ -285,6 +293,7 @@ def _finalize(
     converged_stage: int | None,
     block_report: list[dict[str, Any]],
     notes: str,
+    profile: str,
 ) -> PcTokenCalibration:
     return PcTokenCalibration(
         budget=budget,
@@ -292,7 +301,7 @@ def _finalize(
         tested=datetime.now(UTC).isoformat(),
         converged_stage=converged_stage,
         notes=notes,
-        profile=classification.profile,
+        profile=profile,
         block_report=block_report,
     )
 
@@ -303,6 +312,7 @@ def probe_pc_profile(
     client: Any,
     screening_questions: list[dict[str, Any]],
     test: Any,
+    supports_instruct_mode: bool,
     stages: tuple[int, ...] | None = None,
     evaluator: PoliticalCompassEvaluator | None = None,
 ) -> PcTokenCalibration:
@@ -314,6 +324,9 @@ def probe_pc_profile(
         client: LLMClient-Instanz.
         screening_questions: Von :func:`select_screening_questions` (1 Frage/Block).
         test: PoliticalCompassTest-Instanz (für Stufe-2-Blockfragen).
+        supports_instruct_mode: Modell beherrscht beide Betriebsmodi
+            (Card-Feld ``dual_profile: true``). False = Thinking-only —
+            ``inconsistent``/``greedy_uncapped`` bleiben im thinking-Profil.
         stages: Budget-Stufen (Default ``PC_PROBE_STAGES``; Stufe 1 = Screening).
         evaluator: Optionaler Evaluator (Default: neue Instanz).
 
@@ -397,6 +410,23 @@ def probe_pc_profile(
     else:
         classification = PcProbeClassification.GREEDY_UNCAPPED
 
+    # Thinking-only-Ausnahme (Regel 2026-08-29, Konzept-Doc Abschn. 11):
+    # hybrid_dual/instruct setzen beide Betriebsmodi voraus (dual_profile:
+    # true). Thinking-only-Modelle bleiben im thinking-Profil — nur Modelle,
+    # die beide Modi anbieten, werden in beiden Modi getestet.
+    profile = classification.profile
+    thinking_only_note = ""
+    if (
+        classification != PcProbeClassification.SELF_LIMITING
+        and not supports_instruct_mode
+    ):
+        profile = "thinking"
+        thinking_only_note = (
+            " Thinking-only-Ausnahme (dual_profile: false): Instruct-Modus "
+            "nicht verfügbar — einzelner Thinking-Lauf statt Modus-Wechsel "
+            "(Konzept-Doc Abschn. 11)."
+        )
+
     budget: int | None = None
     converged_stage: int | None = None
     if classification != PcProbeClassification.GREEDY_UNCAPPED and converged_stages:
@@ -408,6 +438,8 @@ def probe_pc_profile(
         f"Stratifizierte Probe: {len(clean_blocks)} Blöcke sauber @ {stages[0]}, "
         f"{escalated}/{len(suspicious_blocks)} verdächtige Blöcke eskaliert "
         f"({greedy_blocks} greedy, {inconsistent_blocks} inkonsistent). "
-        f"Profil: {classification.profile}."
+        f"Profil: {profile}.{thinking_only_note}"
     )
-    return _finalize(classification, budget, converged_stage, block_report, notes)
+    return _finalize(
+        classification, budget, converged_stage, block_report, notes, profile,
+    )

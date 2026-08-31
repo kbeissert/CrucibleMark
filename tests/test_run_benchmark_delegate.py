@@ -254,6 +254,7 @@ class TestRunBenchmarkDispatch(unittest.TestCase):
         with patch.dict(os.environ, {"CRUCIBLE_DELEGATE_PARENT": "1"}, clear=False), \
              patch.object(self.runner, "_run_delegate") as mock_delegate, \
              patch.object(self.runner, "_run_benchmark") as mock_bench, \
+             patch.object(self.runner, "_refresh_tooluse_leaderboard") as mock_refresh, \
              patch.object(self.runner, "select_module", return_value=("tooluse", delegate_cfg)), \
              patch("run_benchmark.resolve_provider", return_value=("openrouter", "minimax/minimax-m3")), \
              patch("run_benchmark.subprocess.run", return_value=_FakeCompletedProcess(0)):
@@ -261,6 +262,30 @@ class TestRunBenchmarkDispatch(unittest.TestCase):
 
         mock_delegate.assert_not_called()
         mock_bench.assert_called_once()
+        # Direktpfad für tooluse MUSS die ToolUse-Leaderboard-Re-Aggregation
+        # triggern (Lücke 2: sonst veraltete ToolUse-Werte im Haupt-Leaderboard).
+        mock_refresh.assert_called_once_with("minimax/minimax-m3")
+
+    def test_refresh_tooluse_leaderboard_targets_single_model(self) -> None:
+        """_refresh_tooluse_leaderboard aggregiert gezielt für das gelaufene
+        Modell (target_model_ids) — Pattern-Parität zum Einzelmodus im
+        Fachscript (run_tooluse_benchmark.py)."""
+        with patch("run_benchmark.ToolUseExporter") as mock_exporter_cls:
+            exporter = mock_exporter_cls.return_value
+            exporter.aggregate_from_benchmark_csvs.return_value = 1
+
+            self.runner._refresh_tooluse_leaderboard("m1")
+
+        mock_exporter_cls.assert_called_once_with(self.runner.config)
+        exporter.aggregate_from_benchmark_csvs.assert_called_once_with(
+            target_model_ids=["m1"]
+        )
+
+    def test_refresh_tooluse_leaderboard_best_effort(self) -> None:
+        """Exporter-Fehler dürfen den Benchmark-Lauf nie abbrechen
+        (best-effort, analog runner_contract.update_leaderboard)."""
+        with patch("run_benchmark.ToolUseExporter", side_effect=RuntimeError("boom")):
+            self.runner._refresh_tooluse_leaderboard("m1")  # kein Raise
 
 
 if __name__ == "__main__":

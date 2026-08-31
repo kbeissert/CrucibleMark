@@ -56,7 +56,7 @@ from utils.benchmark_utils import token_distribution  # noqa: E402
 from utils.config_validator import ConfigValidator  # noqa: E402
 from utils.io_helpers import atomic_write_json  # noqa: E402
 from utils.llm_client import LLMClient  # noqa: E402
-from utils.model_card_io import _find_card  # noqa: E402
+from utils.model_card_io import _find_card, read_dual_profile  # noqa: E402
 from utils.model_id_base import resolve_provider  # noqa: E402
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
@@ -227,8 +227,19 @@ def run_probe_mode(args: argparse.Namespace, config: dict[str, Any]) -> int:
     )
 
     client = LLMClient(config=config)
+    # Thinking-only-Ausnahme (Regel 2026-08-29): dual_profile aus der Card ist
+    # die SSoT für die Modi-Fähigkeit — nur Modelle mit beiden Betriebsmodi
+    # dürfen hybrid_dual/instruct-Profile bekommen (Konzept-Doc Abschn. 11).
+    supports_instruct = read_dual_profile(args.model)
+    if not supports_instruct:
+        print(
+            f"[PC-Probe] {args.model}: Thinking-only (dual_profile != true) — "
+            f"kein Instruct-Gegenlauf möglich.",
+            flush=True,
+        )
     calibration = probe_pc_profile(
         args.model, provider, client, screening, test,
+        supports_instruct_mode=supports_instruct,
     )
     _print_probe_report(calibration, args.model)
 

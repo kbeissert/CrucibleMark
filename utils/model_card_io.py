@@ -442,6 +442,34 @@ def _find_card(
     return unprefixed  # May or may not exist — caller checks
 
 
+def read_dual_profile(model_id: str, card_dir: Path | None = None) -> bool:
+    """Liest ``dual_profile`` aus der Model Card (SSoT für Modi-Fähigkeit).
+
+    ``true`` = das Modell bietet beide Betriebsmodi (Thinking + Instruct) —
+    Hybrid-Dual-Läufe und Instruct-Umschaltung sind zulässig. ``false`` oder
+    fehlende/unlesbare Card = Einzelprofil (Thinking-only) — keine
+    Modus-Umschaltung: nur Modelle, die beide Modi anbieten, werden in
+    beiden Modi getestet (Konzept-Doc Abschn. 11, Thinking-only-Ausnahme).
+    """
+    card_path = _find_card(model_id, card_dir=card_dir)
+    if not card_path.exists():
+        return False
+    try:
+        data = json.loads(card_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError) as exc:
+        # Konservativer Fallback ist beabsichtigt (thinking-only), aber nicht
+        # stumm: Eine unlesbare Card ist ein anormaler Zustand und muss im
+        # Log sichtbar sein (Fail-Fast-Transparenz).
+        logger.warning(
+            "[dual_profile] Model Card %s unlesbar — fällt konservativ auf "
+            "False zurück (thinking-only): %s",
+            card_path,
+            exc,
+        )
+        return False
+    return data.get("dual_profile") is True
+
+
 def find_card_by_heritage_id(legacy_id: str, card_dir: Path | None = None) -> Path | None:
     """Findet die Card, die *legacy_id* in ihren ``heritage_ids`` listet.
 

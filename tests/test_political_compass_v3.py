@@ -911,13 +911,16 @@ OK = object()   # Sentinel: konvergierte Antwort mit Prompt-validem Buchstaben
 TRUNC = ("", "length")
 
 
-def _run_probe(script, num_blocks=None):
+def _run_probe(script, num_blocks=None, supports_instruct_mode=True):
     test = PoliticalCompassTest()
     screening = select_screening_questions(test)
     if num_blocks is not None:
         screening = screening[:num_blocks]
     client = _MockProbeClient(script)
-    cal = probe_pc_profile("m", "llamacpp", client, screening, test)
+    cal = probe_pc_profile(
+        "m", "llamacpp", client, screening, test,
+        supports_instruct_mode=supports_instruct_mode,
+    )
     return cal, client
 
 
@@ -992,6 +995,31 @@ def test_probe_cap_hit_conservative_hybrid(monkeypatch):
     cal, client = _run_probe(script)
     assert cal.profile == "hybrid_dual"  # konservativ: 2 verdächtige Blöcke ungetestet
     assert cal.classification == PcProbeClassification.INCONSISTENT.value
+
+
+def test_probe_inconsistent_thinking_only_stays_thinking():
+    """Thinking-only-Ausnahme (Regel 2026-08-29): inconsistent + kein
+    Instruct-Modus (dual_profile: false) → thinking statt hybrid_dual.
+    Klassifikation und Budget bleiben unverändert (Messverhalten vs.
+    Profil-Entscheidung)."""
+    script = [OK] * 5 + [TRUNC] * 4  # Screening: 5 clean, 4 verdächtig
+    script += [TRUNC] * (3 * 3)      # Stufe 2 Block 1: durchgängig greedy
+    cal, _client = _run_probe(script, supports_instruct_mode=False)
+    assert cal.classification == PcProbeClassification.INCONSISTENT.value
+    assert cal.profile == "thinking"  # Ausnahme: kein hybrid_dual
+    assert cal.budget == 390          # kalibriertes Budget gilt weiter
+    assert "Thinking-only-Ausnahme" in cal.notes
+
+
+def test_probe_greedy_thinking_only_stays_thinking():
+    """Thinking-only-Ausnahme: durchgängig greedy + kein Instruct-Modus →
+    thinking statt instruct (keine saubere Messung, aber kein Modus-Wechsel
+    in einen nicht existierenden Modus)."""
+    cal, _client = _run_probe([TRUNC] * 100, supports_instruct_mode=False)
+    assert cal.classification == PcProbeClassification.GREEDY_UNCAPPED.value
+    assert cal.profile == "thinking"  # Ausnahme: kein instruct
+    assert cal.budget is None
+    assert "Thinking-only-Ausnahme" in cal.notes
 
 
 def test_probe_card_dict_shape():
@@ -1449,6 +1477,10 @@ def test_handler_trigger_skips_verification_for_attributed_run(monkeypatch):
     monkeypatch.setattr(pch.PCResultManager, "print_summary", lambda report: None)
     monkeypatch.setattr(pch.PCResultManager, "save_json", lambda report, d: None)
     monkeypatch.setattr(pch.PoliticalCompassHandler, "_update_local_pc_csv", lambda *a: None)
+    # provider_type='llamacpp_spark' dispatcht in den Commercial-Zweig —
+    # auch der muss gemockt sein (sonst KeyError 'coordinates' im Log und
+    # Upsert-Gefahr für die echte political_compass_results.csv).
+    monkeypatch.setattr(pch.PoliticalCompassHandler, "_update_commercial_pc_csv", lambda *a: None)
     monkeypatch.setattr(pch.PoliticalCompassHandler, "_generate_derivatives", lambda *a: None)
 
     report = {
@@ -1480,6 +1512,10 @@ def test_handler_trigger_fires_for_normal_model(monkeypatch):
     monkeypatch.setattr(pch.PCResultManager, "print_summary", lambda report: None)
     monkeypatch.setattr(pch.PCResultManager, "save_json", lambda report, d: None)
     monkeypatch.setattr(pch.PoliticalCompassHandler, "_update_local_pc_csv", lambda *a: None)
+    # provider_type='llamacpp_spark' dispatcht in den Commercial-Zweig —
+    # auch der muss gemockt sein (sonst KeyError 'coordinates' im Log und
+    # Upsert-Gefahr für die echte political_compass_results.csv).
+    monkeypatch.setattr(pch.PoliticalCompassHandler, "_update_commercial_pc_csv", lambda *a: None)
     monkeypatch.setattr(pch.PoliticalCompassHandler, "_generate_derivatives", lambda *a: None)
 
     report = {

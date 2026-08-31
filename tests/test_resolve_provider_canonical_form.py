@@ -67,7 +67,8 @@ def test_resolve_provider_matches_canonical_underscore_against_dot_config(
         # Gemma-4 enthält keinen Digit-Underscore-Digit-Pattern;
         # dient als Sanity-Check, dass die Normalisierung keine Regression
         # für Modelle ohne Version-Underscore einführt.
-        ("Gemma-4-31B", "vllm_spark"),
+        # (Gemma-4-31B war hier ebenfalls parametrisiert — Entry 2026-08-29
+        # aus provider_config.yaml entfernt: TOML + Weights auf GX10 gelöscht.)
         ("Gemma-4-26B", "vllm_spark"),
     ],
 )

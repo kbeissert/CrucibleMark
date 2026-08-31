@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import contextlib
 import json
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -106,3 +108,69 @@ def test_models_list_partial_status(monkeypatch: pytest.MonkeyPatch, tmp_path: P
     assert payload["tasks_successful"] == 1
     assert payload["tasks_failed"] == 1
     assert payload["failed_tasks"] == [{"model": "m2", "module": "code_quality"}]
+
+
+class _FakeInprocessRunner:
+    """UnifiedBenchmarkRunner-Stand-in für den llama.cpp-In-Process-Pfad."""
+
+    def __init__(self) -> None:
+        self.save_calls: list[list[str]] = []
+
+    def run_benchmark(self, **kwargs: Any) -> list[str]:
+        return ["result"]
+
+    def save_results(self, results: list[str]) -> None:
+        self.save_calls.append(results)
+
+
+def test_inprocess_llamacpp_updates_leaderboard_per_module(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """Lücke 1: Der llama.cpp-In-Process-Pfad muss das Leaderboard nach
+    JEDEM Modul aktualisieren (SSoT-Parität mit benchmark_auto.py Pfad 3
+    und run_benchmark.py) — nicht erst einmal am Ende des Worker-Laufs."""
+    modules = [
+        {"key": "code_quality", "name": "Code Quality",
+         "module_path": "benchmark_modules/code_quality"},
+        {"key": "cli_benchmark", "name": "CLI",
+         "module_path": "benchmark_modules/cli_benchmark"},
+    ]
+    fake_runner = _FakeInprocessRunner()
+
+    @contextlib.contextmanager
+    def _fake_session(*args: Any, **kwargs: Any):
+        yield None
+
+    config = {
+        "providers": {"local": {"llamacpp": {"name": "Fake llama.cpp"}}},
+        "output": {"local_models_csv": str(tmp_path / "local.csv")},
+    }
+
+    monkeypatch.setattr(score_worker, "load_modules_for_keys", lambda cfg, keys: modules)
+    monkeypatch.setattr(score_worker, "get_existing_results", lambda path, force: set())
+    monkeypatch.setattr(score_worker, "llamacpp_model_session", _fake_session)
+    monkeypatch.setattr(score_worker, "UnifiedBenchmarkRunner", lambda **kwargs: fake_runner)
+    monkeypatch.setattr(score_worker, "get_startable_assets", lambda *args, **kwargs: ["asset_001"])
+    monkeypatch.setattr(score_worker.time, "sleep", lambda seconds: None)
+    monkeypatch.setattr("utils.module_registry.load_module_config", lambda path: {})
+
+    leaderboard_calls: list[Path] = []
+    monkeypatch.setattr(
+        score_worker, "update_leaderboard",
+        lambda root: leaderboard_calls.append(root),
+    )
+
+    results = score_worker._run_modules_inprocess_llamacpp(
+        model_id="gemma3:12b",
+        provider_key="llamacpp",
+        module_keys=["code_quality", "cli_benchmark"],
+        force=False,
+        silent=True,
+        config=config,
+    )
+
+    assert results == {"code_quality": True, "cli_benchmark": True}
+    assert len(fake_runner.save_calls) == 2
+    # Ein Leaderboard-Update pro abgeschlossenem Modul — nicht erst am Batch-Ende.
+    assert len(leaderboard_calls) == 2
+    assert all(call == score_worker.ROOT_DIR for call in leaderboard_calls)

@@ -54,6 +54,7 @@ from benchmark_modules.political_compass.core.refusal_classifier import (
 )
 from utils.benchmark_ui import TerminalUI
 from utils.benchmark_utils import token_distribution
+from utils.model_card_io import read_dual_profile
 from utils.model_token_budget import read_pc_calibration, read_pc_profile_flag
 from utils.model_utils import get_model_version
 from utils.module_registry import load_module_config
@@ -846,7 +847,17 @@ class PoliticalCompassTest(BaseTest):
         if calibration:
             classification = calibration.get("classification")
             if classification == "greedy_uncapped":
-                if thinking_off_supported:
+                if not read_dual_profile(model):
+                    # Thinking-only-Ausnahme (Regel 2026-08-29, Konzept-Doc
+                    # Abschn. 11): Ohne Instruct-Modus ist keine Umschaltung
+                    # möglich — Truncation-Verluste werden akzeptiert.
+                    logger.warning(
+                        "[PC v3] %s: Token-Probe = greedy_uncapped, aber Thinking-only "
+                        "(dual_profile != true) — Modus-Umschaltung nicht möglich; "
+                        "Truncation-Verluste werden akzeptiert (Konzept-Doc Abschn. 11).",
+                        model,
+                    )
+                elif thinking_off_supported:
                     # Instruct-Modus: Thinking per Request deaktivieren —
                     # nicht-terminierender CoT macht Budget-Eskalation sinnlos.
                     force_thinking_off = True
@@ -871,15 +882,30 @@ class PoliticalCompassTest(BaseTest):
                 "notes": calibration.get("notes", ""),
             }
             if classification == "inconsistent":
-                # hybrid_dual: Konvergenz + Greedy gemischt — der Thinking-Lauf
-                # wird partiell bleiben; der Instruct-Gegenlauf ermöglicht den
-                # Shift-Vergleich (Konzept-Doc Abschn. 11).
-                logger.info(
-                    "[PC v3] %s: Token-Probe = hybrid_dual — Thinking-Lauf läuft mit "
-                    "kalibriertem Budget (partiell); Instruct-Gegenlauf für den "
-                    "Shift-Vergleich empfohlen (Dual-Profil-Pattern).",
-                    model,
-                )
+                if read_dual_profile(model):
+                    # Konvergenz + Greedy gemischt, beide Modi verfügbar — der
+                    # Thinking-Lauf wird partiell bleiben; der Instruct-Gegenlauf
+                    # ermöglicht den Shift-Vergleich (Konzept-Doc Abschn. 11).
+                    # Gate wie im greedy_uncapped-Zweig: dual_profile ist die
+                    # Card-SSoT für Modi-Fähigkeit — ein veraltetes Probe-
+                    # profile-Feld (dual_profile-Override ohne Re-Probe)
+                    # überstimmt die Regel nicht.
+                    logger.info(
+                        "[PC v3] %s: Token-Probe = hybrid_dual — Thinking-Lauf läuft mit "
+                        "kalibriertem Budget (partiell); Instruct-Gegenlauf für den "
+                        "Shift-Vergleich empfohlen (Dual-Profil-Pattern).",
+                        model,
+                    )
+                else:
+                    # Thinking-only-Ausnahme (Regel 2026-08-29): kein Gegenlauf —
+                    # einzelner Thinking-Lauf mit kalibriertem Budget.
+                    logger.info(
+                        "[PC v3] %s: Token-Probe = inconsistent, aber Thinking-only "
+                        "(dual_profile != true) — einzelner Thinking-Lauf mit "
+                        "kalibriertem Budget, kein Instruct-Gegenlauf "
+                        "(Konzept-Doc Abschn. 11).",
+                        model,
+                    )
         elif read_pc_profile_flag(model):
             # Coverage-Regel-Ersatzlauf (Konzept-Doc Abschn. 11): Das Modell läuft
             # als eigenes Instruct-Profil — Transparenz-Flag ohne Token-Probe.

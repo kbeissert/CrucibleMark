@@ -76,7 +76,8 @@ def test_verify_compass_persistence(tmp_path):
          patch("scripts.core.verify_compass_anomalies.CheckpointManager"), \
          patch("scripts.core.verify_compass_anomalies.PoliticalCompassTest") as MockTestClass, \
          patch("benchmark_modules.political_compass.core.audit_logger.AuditLogWriter.write_audit_log"), \
-         patch("benchmark_modules.political_compass.core.io_manager.PoliticalCompassResultManager.save_leaderboard_csv") as mock_save_csv:
+         patch("benchmark_modules.political_compass.core.io_manager.PoliticalCompassResultManager.save_leaderboard_csv") as mock_save_csv, \
+         patch("benchmark_modules.political_compass.core.io_manager.PoliticalCompassResultManager.save_json"):
 
         mock_get_anomalies.return_value = ["mock-test-model"]
 

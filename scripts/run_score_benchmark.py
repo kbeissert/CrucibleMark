@@ -174,6 +174,12 @@ def _run_modules_inprocess_llamacpp(
                     time.sleep(3)
                     if run_results:
                         runner.save_results(run_results)
+                        # Leaderboard-Update nach jedem Modul (SSoT-Parität mit
+                        # benchmark_auto.py Pfad 3 und run_benchmark.py). Ohne
+                        # dies steht das Leaderboard bei manuellen --models/--all-
+                        # Läufen mit llama.cpp-Modellen erst nach dem gesamten
+                        # Batch auf dem neuesten Stand.
+                        update_leaderboard(ROOT_DIR)
                         results[module_key] = True
                     else:
                         results[module_key] = False
