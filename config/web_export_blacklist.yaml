@@ -309,31 +309,9 @@ kept_overrides:
         size: Workstation
         reason: "Aramia-Abliterated (Uncensored-Ausnahme)"
 
-      # 31B Workstation
-      - id: Gemma-4-31B
-        rank: 18
-        score: 76.03
-        size: Workstation
-        mode: Standard
-        reason: "stärkster 31B (Base NVFP4)"
-      - id: Gemma-4-31B-thinking
-        rank: 66
-        score: 72.06
-        size: Workstation
-        mode: Thinking
-        reason: "Thinking-Variante 31B"
-      - id: Gemma-4-31B-Wordsmith-NVFP4
-        rank: 43
-        score: 73.67
-        size: Workstation
-        mode: Standard
-        reason: "Wordsmith-Tune (Unsloth Creative-Wordsmith)"
-      - id: Gemma-4-31B-Wordsmith-NVFP4-thinking
-        rank: 51
-        score: 72.9
-        size: Workstation
-        mode: Thinking
-        reason: "Wordsmith + Thinking"
+      # 31B Workstation — NVFP4-Familie (Base, Thinking, Wordsmith ±Thinking)
+      # 2026-08-31 aus dem Benchmark entfernt (zu langsam; Weights+TOML von der
+      # GX10 gelöscht, Karten entfernt). Verbleibende 31B-Referenz: API-Modell.
       - id: google/gemma-4-31b-it
         rank: 47
         score: 73.24

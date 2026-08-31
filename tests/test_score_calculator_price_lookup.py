@@ -222,13 +222,6 @@ def test_real_gemma_4_26b_card_has_zero_price():
     assert lookup["Gemma-4-26B"] == 0.0
 
 
-def test_real_gemma_4_31b_card_has_zero_price():
-    """Regression: Gemma-4-31B Card nach Fix → price = 0.0."""
-    lookup = _build_lookup_from_dir(_REAL_CARDS_DIR)
-    assert "Gemma-4-31B" in lookup
-    assert lookup["Gemma-4-31B"] == 0.0
-
-
 def test_real_cloud_model_price_unchanged():
     """Sanity: Cloud-Modell mit explizitem Preis bleibt unverändert."""
     lookup = _build_lookup_from_dir(_REAL_CARDS_DIR)
