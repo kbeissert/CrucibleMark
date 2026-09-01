@@ -50,10 +50,21 @@
     "text"
   ],
   "supports_tool_use": true,
-  "tooluse_tested_at": null,
-  "tooluse_score_p1": null,
-  "tooluse_score_p2": null,
-  "tooluse_runs": null,
+  "tooluse_tested_at": "2026-09-01T20:10:31Z",
+  "tooluse_score_p1": 90.0,
+  "tooluse_score_p2": 65.83,
+  "tooluse_runs": {
+    "qwen3_8-27b-uncensored-nvfp4-thinking": {
+      "tested_at": "2026-09-01T08:55:29Z",
+      "score_p1": 90.0,
+      "score_p2": 59.17
+    },
+    "qwen3_8-27b-uncensored-nvfp4": {
+      "tested_at": "2026-09-01T20:10:31Z",
+      "score_p1": 90.0,
+      "score_p2": 65.83
+    }
+  },
   "tooluse_recommendation": null,
   "dual_profile": true,
   "temperature": null,

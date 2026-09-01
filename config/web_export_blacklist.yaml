@@ -168,6 +168,10 @@ blacklist:
   # Qwen
   # -----------------------------------------------------------------
 
+  # Qwen 3.8 (27B Uncensored) — komplettes FP8-Profil (Standard + Thinking)
+  - "qwen3_8-27b-uncensored-fp8"            # Standard-Variante FP8 (2026-09-01 auf Anfrage)
+  - "qwen3_8-27b-uncensored-fp8-thinking"   # Thinking-Variante FP8 (2026-09-01 auf Anfrage)
+
   # Qwen 3.5 (35B-q4 stärkster, 4B-q6 stärkster)
   # 27B — Pattern: alle Varianten AUSSER der vllm NVFP4 (qwen3_5-27b-nvfp4 / -thinking).
   # fnmatch [!n] matcht kein 'n' an Position 1 nach "qwen3_5-27b-" → nvfp4 oben ausgenommen.
