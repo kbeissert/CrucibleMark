@@ -485,6 +485,10 @@ class LlamaCppBaseClient(BaseProviderClient):
         if self._client is not None and self._client_base_url == current_base_url:
             return self._client
 
+        # Alten Client bei URL-Wechsel explizit schließen (TCP FIN), statt
+        # ihn nur zu überschreiben und die Connection undicht zu fallen.
+        self.close()
+
         import httpx  # lokaler Import: nur aktiv, wenn openai lib vorhanden
 
         prov_cfg = self._provider_cfg()
@@ -500,6 +504,21 @@ class LlamaCppBaseClient(BaseProviderClient):
         )
         self._client_base_url = current_base_url
         return self._client
+
+    def close(self) -> None:
+        """OpenAI/httpx-Client explizit schließen — sendet TCP FIN an den Server.
+
+        Notwendig bei Abbruch mitten im Request (Ctrl+C): ohne close() bleibt
+        die Connection halb offen und der Server generiert den abgebrochenen
+        Request weiter, bis das OS-TCP-Keepalive greift.
+        """
+        client, self._client = self._client, None
+        self._client_base_url = None
+        if client is not None:
+            try:
+                client.close()
+            except Exception as exc:  # pylint: disable=broad-exception-caught
+                logger.debug("Schließen des llama.cpp-HTTP-Clients fehlgeschlagen: %s", exc)
 
     # ------------------------------------------------------------------
     # Server-Lifecycle
@@ -862,6 +881,10 @@ class LlamaCppBaseClient(BaseProviderClient):
 
     def stop_server(self) -> None:
         """Stop the llama.cpp server — by PID if known, then always via stop command."""
+        # HTTP-Verbindung zuerst sauber schließen (TCP FIN), damit der Server
+        # einen ggf. noch laufenden Request sofort abbricht.
+        self.close()
+
         if self._server_pid is not None:
             logger.debug("Stopping llama.cpp server (PID %d)", self._server_pid)
             try:
@@ -878,8 +901,6 @@ class LlamaCppBaseClient(BaseProviderClient):
             logger.warning("Could not stop llama.cpp server: %s", exc)
 
         self._active_model = None
-        self._client = None
-        self._client_base_url = None
 
     def _run_cleanup(self) -> None:
         """Post-Stop-Cleanup (Cache-Bereinigung) — typischerweise für Remote-Provider."""
@@ -1006,11 +1027,11 @@ class LlamaCppBaseClient(BaseProviderClient):
                 f"llamacpp endpoint conflict or startup failure for model '{model}'"
             )
 
-        # FIX: Client nach langen Queries zurücksetzen, um Connection-Leaks zu verhindern.
+        # FIX: Client nach langen Queries schließen und neu aufbauen, um
+        # Connection-Leaks zu verhindern (close() sendet TCP FIN).
         _should_reset = not getattr(self, "_skip_llamacpp_cleanup", False)
         if _should_reset:
-            self._client = None
-            self._client_base_url = None
+            self.close()
 
         messages = self._build_messages(prompt, kwargs.get("system"))
         initial_tokens, token_param_name, params = self._prepare_llamacpp_params(

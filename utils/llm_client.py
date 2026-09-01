@@ -3,6 +3,7 @@ LLM Client Wrapper
 Unified Interface für Ollama und Anthropic Claude API
 """
 
+import atexit
 import logging
 from pathlib import Path
 from typing import Any
@@ -67,6 +68,21 @@ class LLMClient:
 
         # Load Model Version Locks
         self.model_locks = self._load_model_locks()
+
+        # HTTP-Connections beim Programm-Ende sauber schließen (TCP FIN).
+        # Greift bei normalem Exit, sys.exit(), Ctrl+C (KeyboardInterrupt)
+        # und ungefangenen Exceptions — sonst erkennt z. B. vLLM einen
+        # client-seitig abgebrochenen Request nicht und generiert weiter,
+        # bis das OS-TCP-Keepalive greift (Linux-Default ~2 h).
+        atexit.register(self.close)
+
+    def close(self) -> None:
+        """Schließt alle Provider-Clients (freigegebene HTTP-Connections)."""
+        for name, client in self.clients.items():
+            try:
+                client.close()
+            except Exception as e:  # pylint: disable=broad-exception-caught
+                logger.debug("Provider-Client %s konnte nicht geschlossen werden: %s", name, e)
 
     def _load_model_locks(self) -> dict[str, Any]:
         """Loads fixed model versions from config."""

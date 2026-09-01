@@ -753,6 +753,10 @@ class VllmBaseClient(BaseProviderClient):
         if self._client is not None and self._client_base_url == current_base_url:
             return self._client
 
+        # Alten Client bei URL-Wechsel explizit schließen (TCP FIN), statt
+        # ihn nur zu überschreiben und die Connection undicht zu fallen.
+        self.close()
+
         import httpx  # lokaler Import: nur aktiv, wenn openai lib vorhanden
 
         prov_cfg = self._provider_cfg()
@@ -768,6 +772,21 @@ class VllmBaseClient(BaseProviderClient):
         )
         self._client_base_url = current_base_url
         return self._client
+
+    def close(self) -> None:
+        """OpenAI/httpx-Client explizit schließen — sendet TCP FIN an den Server.
+
+        Notwendig bei Abbruch mitten im Request (Ctrl+C): ohne close() bleibt
+        die Connection halb offen, vLLM erkennt die Trennung nicht und
+        generiert weiter, bis das OS-TCP-Keepalive greift (~2 h).
+        """
+        client, self._client = self._client, None
+        self._client_base_url = None
+        if client is not None:
+            try:
+                client.close()
+            except Exception as exc:  # pylint: disable=broad-exception-caught
+                logger.debug("Schließen des vLLM-HTTP-Clients fehlgeschlagen: %s", exc)
 
     # ------------------------------------------------------------------
     # Server-Lifecycle
@@ -1179,6 +1198,10 @@ class VllmBaseClient(BaseProviderClient):
 
     def stop_server(self) -> None:
         """Stop the vLLM server via the configured stop command."""
+        # HTTP-Verbindung zuerst sauber schließen (TCP FIN), damit der Server
+        # einen ggf. noch laufenden Request sofort abbricht.
+        self.close()
+
         if self._server_pid is not None:
             logger.debug("Stopping vLLM server (PID %d)", self._server_pid)
             try:
@@ -1197,8 +1220,6 @@ class VllmBaseClient(BaseProviderClient):
         self._active_model = None
         self._active_config = None
         self._server_model_name = None
-        self._client = None
-        self._client_base_url = None
 
     def _run_cleanup(self) -> None:
         """Post-Stop-Cleanup (Cache-Bereinigung) — typischerweise für Remote-Provider."""
@@ -1378,11 +1399,11 @@ class VllmBaseClient(BaseProviderClient):
                 f"vLLM endpoint conflict or startup failure for model '{model}'"
             )
 
-        # Client nach langen Queries zurücksetzen, um Connection-Leaks zu verhindern.
+        # Client nach langen Queries schließen und neu aufbauen, um
+        # Connection-Leaks zu verhindern (close() sendet TCP FIN).
         _should_reset = not getattr(self, "_skip_vllm_cleanup", False)
         if _should_reset:
-            self._client = None
-            self._client_base_url = None
+            self.close()
 
         messages = self._build_messages(prompt, kwargs.get("system"))
 

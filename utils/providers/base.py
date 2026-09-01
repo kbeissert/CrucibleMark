@@ -128,6 +128,15 @@ class BaseProviderClient:
     def get_available_models(self) -> list[str]:
         """Listet verfügbare Modelle"""
         raise NotImplementedError
+    def close(self) -> None:
+        """Schließt dauerhafte HTTP-Connections des Providers (Default: nichts).
+
+        Subklassen mit gecachten OpenAI-/httpx-Clients überschreiben dies,
+        damit beim Programm-Ende (Ctrl+C, sys.exit, Exception) ein TCP FIN an
+        den Server geht. Sonst erkennt z. B. vLLM einen client-seitig
+        abgebrochenen Request nicht und generiert weiter, bis das
+        OS-TCP-Keepalive greift (Linux-Default ~2 h).
+        """
     def is_accessible(self) -> bool:
         """
         Prüft, ob der Provider zugänglich ist (API Key, Budget/Quota).
