@@ -202,6 +202,14 @@ Kalibrierungs-Befund Gemma-4-12b (Spark): CoT-Länge ist fragenabhängig schwer 
 
 ---
 
+## HTTP-Client-Close-Kette (2026-08-31, Session 93)
+
+**Problem:** vLLM 0.27 nightly prüft keinen TCP-Heartbeat auf der Client-Seite. Bricht der Benchmark mitten im Request ab (Ctrl+C), ohne dass die HTTP-Connection sauber geschlossen wird, generiert der Server weiter, bis das OS-TCP-Keepalive greift (Linux-Default ~2 h) — der „hängende Request" auf der GX10 war client-seitig, kein Server-Defekt.
+
+**Pattern:** Close-Kette `LLMClient.close()` (iteriert alle Provider-Clients, registriert via `atexit` in `__init__`) → `BaseProviderClient.close()` (No-op-Default in `utils/providers/base.py`) → Overrides in `VllmBaseClient`/`LlamaCppBaseClient` (schließt den OpenAI/httpx-Client und sendet TCP FIN). Alle Stellen, die den Client bisher per `self._client = None` nur *fallen ließen*, rufen jetzt `close()` auf: `client`-Property (URL-Wechsel), `stop_server()` (FIN vor Server-Stop), per-Query-Reset. `atexit` greift bei normalem Exit, `sys.exit()`, KeyboardInterrupt und ungefangenen Exceptions — NICHT bei SIGKILL/hartem Kill; dort bleibt nur der Server-Stop.
+
+---
+
 ## Konventionen
 
 - **Naming:** BEM (CSS) / snake_case (Python) / kebab-case (YAML-Keys)

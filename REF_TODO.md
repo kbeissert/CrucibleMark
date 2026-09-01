@@ -6,7 +6,10 @@
 
 ## Abgeschlossen
 
-### PC v3.0, Token-Probe & Thinking-only-Regel (Unreleased – 29.08.26, Session 88)
+### Provider-Härtung & Abbruch-Cleanliness (v5.2.0 – 31.08.26, Sessions 90–93)
+llama.cpp Mac/Spark-Separation (Cache, Routing, Endpoint-Ownership) + GX10-Metrics-Proxy-Connector (Bearer-Probes, `server_port`-Override, Token via `DGX_AUTH_TOKEN` in `.env`, 401-Diagnose im Poll). Timeout-Livelock: Chat-Pfad liest `request_timeout` (nicht `read_timeout`) — beide Wände auf 2400 s. Thinking-only-Ausnahme + Leaderboard-Trigger pro Modul in allen Pfaden + Attribution-Mirror (PC-Ersatzlauf → Profil-ID). Web-Export: `resolve_inference_provider()` run-autoritativ per Provider-Code. Timeout-Metrik zählt nur echte Fehler. HTTP-Client-Close-Kette (`LLMClient.close` + `atexit`, vllm/llamacpp-Overrides): vLLM 0.27 nightly erkennt abgebrochene Requests ohne TCP FIN erst nach OS-Keepalive (~2 h). Modell-Hygiene: Gemma-4-31B + fable-fusion entfernt, Rationale-Feld-Migration (17 Cards). 1704 Tests grün, Lint 9.99/10.
+
+### PC v3.0, Token-Probe & Thinking-only-Regel (v5.2.0 – 29.08.26, Session 88)
 Political Compass v3.0 re-aktiviert: Token-Budget-Regime (Modul-Budget 800), Refusal/Truncation-Klassifikator, begrenzte Eskalations-Treppe, Token-Probe v2 mit Profil-Entscheidung (thinking/hybrid_dual/instruct, Card-First) und Ergebnis-Attribution für Instruct-Ersatzläufe (Original-ID, alle vier Persistenz-Pfade, Verifikations-Skip). Folge-Regel: Thinking-only-Ausnahme — Profil-Entscheidung via `dual_profile` gegatet (`probe_pc_profile(supports_instruct_mode=…)`, `read_dual_profile()`, Runtime-Guards in `political_compass/test.py`); nur Modelle mit beiden Betriebsmodi werden in beiden Modi getestet. Batch-Vorbereitung: PC-Einträge von 12 lokalen Modellen geräumt, Gemma-4-31B + qwen2_5-vl-7b aus der Config (Blacklist). Doku: Konzept-Doc Abschn. 11, ARCHITECTURE.md (Delegate-Modul-Tabelle, Probe-Fallback). 1528 Tests grün (+2), make lint exit 0.
 
 ### Echte-Token-Pipeline (v5.1.5 – 17.08.26, Session 84)

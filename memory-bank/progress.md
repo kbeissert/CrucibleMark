@@ -1,15 +1,15 @@
 # Progress
 Letzte Releases + aktueller Stand.
 
-### 2026-08-30 (Session 90) — PC-v3-Batchläufe + Probe-Follow-up [läuft] (Unreleased)
+### 2026-08-30 (Session 90) — PC-v3-Batchläufe + Probe-Follow-up [DONE] v5.2.0
 
 Zwei Batch-Nächte mit PC-v3-Livetest (Thinking-only-Ausnahme an ornith/vLLM end-to-end verifiziert; self_limiting-Modelle korrekt am Floor 800). Probe-Follow-up-Kampagne: e4b/coder-7b/hermes/ara-26b → self_limiting @390, muse-glimmer → inconsistent @3120, 12b Re-Probe → Budget None (bewusste Überschreibung, Coverage-Netz greift). Timeout-Livelock gefixt (`request_timeout: 2400` llamacpp_spark + GX10-Metrics-Proxy 600→2400 — Chat-Pfad las je anderen Key als `read_timeout`). Card-Cleanup (e4b, instruct-Flag, fable model_id), fable-fusion aus Suite entfernt (7 tok/s NEO-MAX BF16-OT CPU-Offload), Test-Pollution `outputs/runs` behoben. Nächster Schritt: Batch beenden (Coverage-Validierung 12b beobachten) → `make leaderboard` + `make web-export`.
 
-### 2026-08-29 (Session 88) — PC v3.0 + Token-Probe-Kampagne + Attributions-Pipeline [DONE] (Unreleased)
+### 2026-08-29 (Session 88) — PC v3.0 + Token-Probe-Kampagne + Attributions-Pipeline [DONE] v5.2.0
 
 PC v3.0 (Token-Budget 800, Refusal/Truncation-Klassifikator, begrenzte Retry-Treppe, Token-Probe v2 mit Profil-Entscheidung thinking/hybrid_dual/instruct, Ergebnis-Attribution Instruct-Ersatzlauf→Original-ID über alle 4 Persistenz-Pfade, Verifikations-Skip an beiden Trigger-Pfaden) — Gemma-4-12b-Fall komplett attribuiert ((-2.26, 2.56), Shift 2.85, ⚙️-Coverage-Regel-Annotation). Probe-Kampagne: 10 Thinking-Modelle kalibriert (7× self_limiting→thinking @ 390/780, 2× inconsistent→hybrid_dual @ 3120). SSoT-Konsolidierung: PC_BATCH_ID, question_seed(), build_replacement_calibration(), Root-Anker; C901-Split resolve_token_budget (make lint war rot — validate ist nur Asset-Check!). Terminologie-SSoT: Thinking-Probe (Capability, global) vs. PC-Token-Probe (Darf-denken + Budget, nur PC) + Connector-Matrix. 76 PC-v3-Tests, Suite 1527 grün, make lint exit 0. 6 Commits (c20d5e64..710e9963). Folge-Arbeit (spät, gleicher Tag): Thinking-only-Ausnahmeregel (Profil-Gate via `dual_profile`; ornith-1_5/nemotron → thinking, kein Gegenlauf) + Batch-Vorbereitung (PC-Einträge ×12 geräumt, Gemma-4-31B + qwen2_5-vl-7b aus Config, Blacklist) — Suite 1528 grün.
 
-### 2026-08-17 (Session 85) — Web-Export: Provider-Code-first-Auflösung [DONE]
+### 2026-08-17 (Session 85) — Web-Export: Provider-Code-first-Auflösung [DONE] v5.2.0
 
 `resolve_inference_provider()` löste den Inferenz-Server **model-basiert** auf (Config-Map + Heuristik) — SPRK-Runs (llama.cpp auf asusGX10) fielen auf 'Groq Cloud'/'Ollama (Local)', weil ihre model_ids auch Groq-/Ollama-Config-Einträgen entsprechen (5 von 7 SPRK-Runs falsch im Export; nur qwen3-6-35b-a3b-mtp-ud-q8 stand explizit im llamacpp_spark-Block). Fix: `ProviderMap.by_short_code` (eindeutig vergebene short_codes aus provider_config.yaml, mehrdeutige wie 'API' ausgeschlossen) + `resolve_inference_provider(..., provider_code=...)` prüft den Run-Provider-Code der CSV-Zeile zuerst — run-autoritativ statt name-basiert. `main.py` reicht `LdbCols.PROVIDER_CODE` durch. Bonus: eindeutige Cloud-Codes (GR/OR) lösen jetzt ebenfalls run-autoritativ. `llamacpp_spark.name` auf 'Llama.cpp (asusGX10)' umbenannt (konsistent mit vllm_spark, gleiche Hardware; CrucibleMark-Web-Rohdaten hatten manuell schon diesen Wert). 10 neue Tests (Code-first, Mehrdeutigkeits-Fallback, _extract_short_codes), 432 passed im Web-Export/Provider-Umfeld, Ruff scripts/ clean.
 

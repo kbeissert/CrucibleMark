@@ -7,7 +7,7 @@
 
 CrucibleMark ist ein modulares LLM-Benchmark-Framework für Python 3.12. Es testet AI-Modelle gegen praxisnahe Aufgaben, bewertet Antworten blind über einen unabhängigen LLM-Judge und generiert Leaderboards.
 
-**Stand:** v5.1.5 · 2026-08-17 · Production-Ready
+**Stand:** v5.2.0 · 2026-08-31 · Production-Ready
 
 ## Session-Start
 
@@ -70,6 +70,7 @@ make docs-version-sync YES=1   # Doku-Stempel angleichen
 - **Reasoning-Cap strikt unter dem Modul-Budget halten (2026-08-28):** Alibaba-Upstream (qwen3.8-flash) lehnt `thinking_budget >= max_completion_tokens` mit HTTP 400 ab — der Connector reduziert das Cap automatisch auf die Hälfte des Output-Budgets (`_clamp_reasoning_budget`). „Budget/Quota erschöpft"-Abbrüche können False Positives sein; der Original-Fehler wird seit 2026-08-28 im Fast-Fail-Log mitgeschrieben.
 - **llama.cpp-Timeouts: zwei Keys, zwei Wände (2026-08-30):** Chat-Requests laufen über den OpenAI-Connector und lesen den Provider-Key `request_timeout` (Default 600 s) — `read_timeout` deckt nur die Server-Verwaltung ab. Zusätzlich hat der Metrics-Proxy auf der GX10 ein eigenes `request_timeout_s` (`/home/kay_beissert/ai/metrics/config/metrics-proxy.json`). Wird eine der beiden Wände nicht angehoben, livelockt jeder Task, der länger als das Cap rechnet: Retry startet die Generierung bei Null. Beide seit 2026-08-30 auf 2400 s für `llamacpp_spark`.
 - **Card-`model_id` muss exakt der provider_config-ID entsprechen (2026-08-30):** `--SPRK`/`--VSPK` ist reine Dateinamen-Konvention — weicht der interne `model_id` ab, skippt der Batch das Modell still mit „no model_file configured" (Fall fable-fusion).
+- **HTTP-Clients schließen statt fallen lassen (2026-08-31):** vLLM 0.27 nightly erkennt einen client-seitig abgebrochenen Request ohne TCP FIN nicht und generiert bis zum OS-Keepalive (~2 h) weiter — Connectoren schließen via `close()`-Kette (`LLMClient.close` + `atexit`, Override in vllm/llamacpp); `self._client = None` ohne `close()` ist ein Bug. Bei SIGKILL hilft nur der Server-Stop.
 
 ## Security
 

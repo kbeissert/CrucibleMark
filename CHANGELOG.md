@@ -5,7 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [Unreleased]
+## [v5.2.0] - 2026-08-31
+
+**Minor-Release: Political Compass v3.0, Provider-Härtung (llama.cpp/vLLM/Spark) und Abbruch-Cleanliness.**
+Kern des Releases ist PC v3.0 (Token-Budget-Regime statt 25k-Fallback, Refusal-Klassifikation,
+Token-Probe mit Profil-Entscheidung, Ergebnis-Attribution); dazu Connector-Fixes aus den
+Batch-Nächten (Mac/Spark-Separation, Metrics-Proxy, Timeout-Wände) und der Client-seitige
+Connection-Close gegen hängende vLLM-Generierungen nach Abbruch. 1704 Tests grün, Lint 9.99/10.
 
 - **Political Compass v3.0 — Token-Budget, Refusal-Klassifikation, Monitoring:** Behebt die ~30-min/Frage-Latenz bei Reasoning-Modellen (25k-Token-Fallback, Vorfall Gemma-4-12b-it-ud-q6_k_xl-spark) und konflatierte Fehlerklassen im Retry-Loop.
   - **Token-Budget:** `token_budgets.political_compass: 800` + `token_budgets_reasoning_models.political_compass: 800` (kein 5×-Multiplikator, kein 25k-Fallback). Wiring-Lücke geschlossen: `execute()` reicht `max_tokens`/`_module_key` an `query()` durch.
@@ -20,6 +26,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - **Neue Modelle:** qwen/qwen3.8-flash (OpenRouter, cloud-only) sowie lokales Switch-Backup-Profil qwen3_8-27b-uncensored-fp8 (vLLM, FP8, Dense).
 - **Streaming:** `streaming_output_commercial_providers` auf `true`; Default-Stream-Printer loggt Chunks auf DEBUG statt INFO (landen nur im Logfile, Console bleibt ruhig).
 - **run_cross_model_benchmark.py:** sys.path-Setup vor alle Package-Imports gezogen (absolut, mit `resolve()`); toten kommentierten Import entfernt.
+- **llama.cpp Mac/Spark-Separation + Metrics-Proxy:** Cache/Routing/Endpoint-Ownership zwischen beiden Connectoren getrennt (unabhängige Autoläufe); Spark-Zugriff über den GX10-Metrics-Proxy (`:2234`, Bearer-Probes, `server_port`-Override, Token via `DGX_AUTH_TOKEN` in `.env` statt Config); 401-Diagnose im Health-Poll sichtbar. Timeout-Livelock gefixt: Chat-Pfad liest `request_timeout` (nicht `read_timeout`) — beide Wände (Connector + Proxy `request_timeout_s`) auf 2400 s.
+- **Thinking-only-Ausnahme + Leaderboard-Trigger:** Profil-Entscheidung via `dual_profile` gegatet (keine falsche Dual-Expansion bei Thinking-only-Modellen); `update_leaderboard()` jetzt pro Modul in allen Runner-Pfaden (Lücken in `run_score_benchmark` In-Process und ToolUse-Re-Aggregation geschlossen); Attribution-Mirror spiegelt PC-Ersatzlauf-Ergebnisse auf die Profil-ID.
+- **Web-Export Provider-Code-first (Session 85):** `resolve_inference_provider()` löst den Inferenz-Server run-autoritativ über den Provider-Code der CSV-Zeile auf (vorher model-basiert — SPRK-Runs fielen auf 'Groq Cloud'/'Ollama'); `llamacpp_spark.name` → 'Llama.cpp (asusGX10)'.
+- **Timeout-Metrik korrigiert:** Timeout-Rate zählt nur noch echte Fehler (`status == error`) — lange, aber erfolgreiche Generierungen sind kein Ausfall (`unified_runner.py`, `benchmark_utils.py`).
+- **HTTP-Client-Close-Kette (Session 93):** vLLM 0.27 nightly erkennt client-seitig abgebrochene Requests ohne TCP FIN nicht und generiert bis zum OS-Keepalive (~2 h) weiter. `LLMClient.close()` registriert via `atexit`, `close()`-Overrides in vllm/llamacpp-Connectoren; alle `self._client = None`-Stellen (Property, `stop_server`, Query-Reset) schließen jetzt explizit.
+- **Modell-Hygiene:** Gemma-4-31B-Familie entfernt, fable-fusion wegen 7 tok/s (NEO-MAX BF16-OT CPU-Offload) aus der Suite, Card-Rationale-Migration `weights_provenance_risk_rationale` (17 Cards aufgefüllt), Vocabulary Local/Edge + GGUF-Naming, ToolUse-Scores nachgetragen, `dual_profile`/`tooluse_runs` in Card-Template-Schema.
 
 ## [v5.1.5] - 2026-08-17
 
