@@ -129,6 +129,15 @@ model_pricing:
     input: 0.50
     output: 1.50
 
+# Lokale vLLM-Modelle (Selbst-Hosting, kein API-Preis) — Preis = 0.0/0.0,
+# analog zum Basis-Modell qwen3_8-27b-nvfp4 (gleicher Compute, kein Cloud-API).
+  "qwen3_8-27b-uncensored-fp8":
+    input: 0.0
+    output: 0.0
+  "qwen3_8-27b-uncensored-nvfp4":
+    input: 0.0
+    output: 0.0
+
 # OpenRouter-Modelle — exakte Card-model_id als Key (verifiziert 2026-08-27,
 # OpenRouter Endpoints-API mit discount: 0 = Standardpreis)
   "codestral-2508":
