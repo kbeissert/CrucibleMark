@@ -67,7 +67,6 @@ blacklist:
   # V3-Linie — V4 (Pro/Flash) ist die aktuelle Generation.
   - "deepseek_deepseek-chat-v3_1"      # ersetzt durch V4 Pro / V4 Flash
   - "deepseek_deepseek-v3_2"           # ersetzt durch V4 Pro / V4 Flash
-  - "deepseek-r1-distill-qwen-32b"     # Rank 108, distil veraltet
 
 
   # -----------------------------------------------------------------
@@ -80,8 +79,8 @@ blacklist:
   # -----------------------------------------------------------------
   # Google — Gemma 3 (12B)
   # -----------------------------------------------------------------
-  # Q4-K_M Spark-Variante stärkster; Q8 schwächer.
-  - "gemma-3-12b-it"                        # Rank 101, schwächer als Q4-K_M
+  # Mac-Q8 und Spark-Q8 im Leaderboard; Spark-Q4-K_M (gemma-3-12b-it-spark)
+  # bleibt als Referenz via kept_overrides exportiert.
   - "gemma-3-12b-it-q8"                     # Rank 83
   - "gemma-3-12b-it-q8-spark"               # [Spark] Q8 — Q4-Spark (89.64) behalten
 
@@ -103,19 +102,12 @@ blacklist:
   # 31B Workstation (stärkster: Gemma-4-31B NVFP4, Rank 18, 76.03)
   - "gemma-4-31B-it-qat-ud-q4"              # QAT, UD-Q4 [Spark]
   - "gemma-4-31B-it-UD-Q8_K_XL-mtp"         # UD-Q8, MTP [Spark]
-  - "gemma-4-31b-it-creative-wordsmith-q8"  # Wordsmith Q8 (Rank 73, 70.93) — ersetzt durch vLLM Wordsmith-NVFP4
 
 
   # -----------------------------------------------------------------
   # Hermes (NousResearch)
   # -----------------------------------------------------------------
   - "hermes-4_3-36b-q6"                     # ~3 tok/s auf Spark → bremst Auto-Benchmark
-
-
-  # -----------------------------------------------------------------
-  # Mistral AI
-  # -----------------------------------------------------------------
-  - "mistral-medium-2312"                   # Legacy, ersetzt durch Medium 3.5
 
 
   # -----------------------------------------------------------------
@@ -150,21 +142,6 @@ blacklist:
 
 
   # -----------------------------------------------------------------
-  # Ornith (DeepReinforce) — 35B-A3B
-  # -----------------------------------------------------------------
-  - "ornith-1-0-35b"                        # SPRK/llama.cpp Rank 14 (76.30), schwächer als FP8-thinking (77.38)
-
-
-  # -----------------------------------------------------------------
-  # Qwable (Qwen-Derivat, Fable5-tune)
-  # -----------------------------------------------------------------
-  # Präventiv: Modell ist in provider_config.yaml deaktiviert (auskommentiert)
-  # und damit nicht im Leaderboard — Eintrag verhindert ungewollten Export
-  # bei Re-Aktivierung.
-  - "qwable-3_6-27b-q4"
-
-
-  # -----------------------------------------------------------------
   # Qwen
   # -----------------------------------------------------------------
 
@@ -173,15 +150,9 @@ blacklist:
   - "qwen3_8-27b-uncensored-fp8-thinking"   # Thinking-Variante FP8 (2026-09-01 auf Anfrage)
 
   # Qwen 3.5 (35B-q4 stärkster, 4B-q6 stärkster)
-  # 27B — Pattern: alle Varianten AUSSER der vllm NVFP4 (qwen3_5-27b-nvfp4 / -thinking).
-  # fnmatch [!n] matcht kein 'n' an Position 1 nach "qwen3_5-27b-" → nvfp4 oben ausgenommen.
-  # Hintergrund: Benchmark-Eintrag bleibt im Leaderboard, wird aber nicht ins Web exportiert.
-  # Die vllm-NVFP4-Variante ist die einzige offiziell unterstützte Web-Export-Form.
-  - "qwen3_5-27b-[!n]*"                     # 27B Q4/Q5/Q6/Q8/BF16/FP8/GGUF etc. — alles ausser NVFP4
   # 35B-A3B (MoE)
   - "qwen3_5-35b-a3b-q8"                    # schwächer + langsamer als q4 (74.66 vs 74.72)
   # 4B
-  - "qwen2_5-vl-7b"                        # Vision-Modell — PC/Text-Suite nicht sinnvoll (2026-08-29)
   - "qwen3_5-4b-q4"                         # schwächer als q6 (68.09)
   - "qwen3_5-4b-q8"                         # schwächster 4B (67.69)
 
@@ -192,10 +163,6 @@ blacklist:
 
   # Qwen 3 Coder (q8 schwächer + langsamer als q4)
   - "qwen3-coder-next-q8"                   # q4 (Rank 34) schneller UND stärker
-
-  # Qwen 3.6 27B — historische pre-vLLM-0.25.1-Variante (NVFP4 ersetzt)
-  - "qwen3_6-27B-pre025"                    # vLLM vor 0.25.1, Standard
-  - "qwen3_6-27B-pre025-thinking"           # vLLM vor 0.25.1, Thinking
 
 
   # -----------------------------------------------------------------
@@ -405,7 +372,7 @@ kept_overrides:
         rank: null
         score: null
         size: Workstation
-        reason: "vllm NVFP4 (asusGX10) — Always-Thinking-Modell, einzelnes Profil (kein -thinking-Suffix). Einzige 27B-Variante im Web-Export; alle anderen qwen3.5-27B-Varianten (Q4/Q5/Q6/Q8/BF16/FP8/GGUF) per Pattern 'qwen3_5-27b-[!n]*' geblacklistet — Leaderboard-Eintrag bleibt, kein Web-Export."
+        reason: "vllm NVFP4 (asusGX10) — Always-Thinking-Modell, einzelnes Profil (kein -thinking-Suffix). Einzige qwen3.5-27B-Variante im Leaderboard und damit im Web-Export."
 
   # -----------------------------------------------------------------
   # Qwen 3.6

@@ -13,6 +13,11 @@
 # (z.B. "gpt-4o-mini-2024-07-18" -> "gpt-4o-mini", NICHT "gpt-4o").
 model_pricing:
 
+# Cohere — offizielle Cohere API Pricing (2026-09-02 verifiziert)
+  "command-a-plus-05-2026":
+    input: 2.50
+    output: 10.00
+
 # OpenAI — aus OpenAI API Pricing (2026)
   "gpt-5-5":
     input: 5.00

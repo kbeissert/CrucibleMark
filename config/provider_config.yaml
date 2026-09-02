@@ -45,14 +45,17 @@ providers:
         name: Claude Opus 4.8
       - id: claude-sonnet-5
         name: Claude Sonnet 5
-      - id: claude-opus-4-7
-        name: Claude Opus 4.7
-      - id: claude-opus-4-6
-        name: Claude Opus 4.6
+      # (2026-09-02) nicht mehr im Web-Export:
+      #   - id: claude-opus-4-7
+      #   name: Claude Opus 4.7
+      # (2026-09-02) nicht mehr im Web-Export:
+      #   - id: claude-opus-4-6
+      #   name: Claude Opus 4.6
       - id: claude-sonnet-4-6
         name: Claude Sonnet 4.6
-      - id: claude-sonnet-4-5-20250929
-        name: Claude Sonnet 4.5
+      # (2026-09-02) nicht mehr im Web-Export:
+      #   - id: claude-sonnet-4-5-20250929
+      #   name: Claude Sonnet 4.5
       - id: claude-haiku-4-5-20251001
         name: Claude Haiku 4.5
 
@@ -67,13 +70,7 @@ providers:
       max_tokens: 16384
       env_var: OPENAI_API_KEY
       request_timeout: 600
-      model_max_tokens:
-        gpt-4o: 4096
-        gpt-4o-mini: 4096
       models:
-      #- id: gpt-5.5-pro-2026-04-23   # DISABLED: $30/$180 per 1M tokens — too expensive for benchmark budget
-      #  name: GPT-5.5 Pro
-      #  responses_only: true
       - id: gpt-5.5-2026-04-23
         name: GPT-5.5
       - id: gpt-5.4-2026-03-05
@@ -82,10 +79,12 @@ providers:
         name: GPT-5.4 Mini
       - id: gpt-5.4-nano-2026-03-17
         name: GPT-5.4 Nano
-      - id: gpt-5-2025-08-07
-        name: GPT-5
-      - id: gpt-5-mini-2025-08-07
-        name: GPT-5 Mini
+      # (2026-09-02) nicht mehr im Web-Export:
+      #   - id: gpt-5-2025-08-07
+      #   name: GPT-5
+      # (2026-09-02) nicht mehr im Web-Export:
+      #   - id: gpt-5-mini-2025-08-07
+      #   name: GPT-5 Mini
 
     #Preview-Modelle von Google grundsätzlich nicht in den aktiven Leaderboard-Test aufnehmen – nur GA-Versionen. Exception: wenn kein GA-Äquivalent existiert und das Preview strategisch relevant ist.
     google:
@@ -101,8 +100,9 @@ providers:
         name: Gemini 3.5 Flash
       - id: gemini-2.5-pro
         name: Gemini 2.5 Pro
-      - id: gemini-3.1-pro-preview
-        name: Gemini 3.1 Pro (Preview)
+      # (2026-09-02) nicht mehr im Web-Export:
+      #   - id: gemini-3.1-pro-preview
+      #   name: Gemini 3.1 Pro (Preview)
 
     xai:
       name: xAI (Grok)
@@ -118,12 +118,15 @@ providers:
         name: Grok 4.6
       - id: grok-4.5
         name: Grok 4.5
-      - id: grok-4.3
-        name: Grok 4.3
-      - id: grok-4.20-0309-reasoning
-        name: Grok 4.20 Reasoning (0309)
-      - id: grok-4.20-0309-non-reasoning
-        name: Grok 4.20 Non-Reasoning (0309)
+      # (2026-09-02) nicht mehr im Web-Export:
+      #   - id: grok-4.3
+      #   name: Grok 4.3
+      # (2026-09-02) nicht mehr im Web-Export:
+      #   - id: grok-4.20-0309-reasoning
+      #   name: Grok 4.20 Reasoning (0309)
+      # (2026-09-02) nicht mehr im Web-Export:
+      #   - id: grok-4.20-0309-non-reasoning
+      #   name: Grok 4.20 Non-Reasoning (0309)
 
     groq:
       name: Groq Cloud
@@ -228,11 +231,6 @@ providers:
       - id: nvidia/nemotron-3-nano-30b-a3b
         name: NVIDIA Nemotron 3 Nano 30B A3B
 
-      # Auskommentiert 2026-08-22 via make clean-model.
-      # - id: nvidia/nemotron-3.5-lightning
-      # name: NVIDIA Nemotron 3.5 Lightning
-
-
       # Xiaomi MiMo — neueste zuerst (getestet 22. Juni 2026)
       - id: xiaomi/mimo-v2.5-pro
         name: Xiaomi MiMo V2.5 Pro (Flagship)
@@ -254,11 +252,13 @@ providers:
       - id: z-ai/glm-5.1-20260406
         name: GLM 5.1-20260406 (Z.ai)
 
-      - id: z-ai/glm-5-turbo-20260315
-        name: GLM 5 Turbo-20260315 (Z.ai)
+      # (2026-09-02) nicht mehr im Web-Export:
+      #   - id: z-ai/glm-5-turbo-20260315
+      #   name: GLM 5 Turbo-20260315 (Z.ai)
 
-      - id: z-ai/glm-5-20260211
-        name: GLM 5-20260211 (Z.ai)
+      # (2026-09-02) nicht mehr im Web-Export:
+      #   - id: z-ai/glm-5-20260211
+      #   name: GLM 5-20260211 (Z.ai)
 
       - id: z-ai/glm-4.7
         name: GLM 4.7 (Z.ai)
@@ -274,20 +274,24 @@ providers:
         name: Kimi K2.6
       - id: moonshotai/kimi-k2.5-0127
         name: Kimi K2.5-0127
-      - id: moonshotai/kimi-k2-thinking-20251106
-        name: Kimi K2 Thinking-20251106
-      - id: moonshotai/kimi-k2
-        name: Kimi K2 0711
+      # (2026-09-02) nicht mehr im Web-Export:
+      #   - id: moonshotai/kimi-k2-thinking-20251106
+      #   name: Kimi K2 Thinking-20251106
+      # (2026-09-02) nicht mehr im Web-Export:
+      #   - id: moonshotai/kimi-k2
+      #   name: Kimi K2 0711
 
       # DeepSeek — neueste zuerst (getestet 22. Juni 2026)
       - id: deepseek/deepseek-v4-pro
         name: DeepSeek V4 Pro
       - id: deepseek/deepseek-v4-flash
         name: DeepSeek V4 Flash
-      - id: deepseek/deepseek-chat-v3.1
-        name: DeepSeek V3.1 671B
-      - id: deepseek/deepseek-v3.2
-        name: DeepSeek V3.2
+      # (2026-09-02) nicht mehr im Web-Export:
+      #   - id: deepseek/deepseek-chat-v3.1
+      #   name: DeepSeek V3.1 671B
+      # (2026-09-02) nicht mehr im Web-Export:
+      #   - id: deepseek/deepseek-v3.2
+      #   name: DeepSeek V3.2
 
       # Google — neueste zuerst (Providervergleich)
       - id: google/gemini-3.7-flash
@@ -597,17 +601,6 @@ providers:
       # optional context_length, parallel, reasoning, model_draft_file,
       # extra_server_args (z.B. --jinja, --reasoning-format deepseek).
       models:
-      # - id: qwable-3.6-27b-q4
-      #   name: Qwable 3.6 27B Q4_K_M (GGUF, Fable5-tune)
-      #   model_file: Qwable27B/Qwable-27b_Q4_K_M.gguf
-      #   n_gpu_layers: 99
-      #   enable_thinking: true
-      # - id: qwable-3.6-35b-q5
-      #   name: Qwable 3.6 35B Q5_K_M (GGUF, Fable5-tune)
-      #   model_file: Qwable35b/Qwable-3.6-35b_q5_k_m.gguf
-      #   n_gpu_layers: 99
-      #   enable_thinking: true
-
       # ── Auskommentiert: nano-desktop-models (nicht auf Spark) ──
       # - id: gemma-3-12b-it-spark
       #   name: Gemma 3 12B Instruct Q4_K_M (GGUF)
@@ -617,25 +610,9 @@ providers:
       #   name: Gemma 3 12B Instruct Q8_0 (GGUF)
       #   model_file: nano-desktop-modells/google_gemma-3-12b-it-Q8_0.gguf
       #   n_gpu_layers: 99
-      # - id: gemma-4-12b-it-q4
-      #   name: Gemma 4 12B Instruct Q4_K_XL (GGUF)
-      #   model_file: nano-desktop-modells/gemma-4-12b-it-UD-Q4_K_XL.gguf
-      #   n_gpu_layers: 99
-      # - id: gemma-4-12b-it-q6
-      #   name: Gemma 4 12B Instruct Q6_K_XL (GGUF)
-      #   model_file: gemma-4-12b-it-UD-Q6_K_XL.gguf
-      #   n_gpu_layers: 99
-      # - id: gemma-4-12b-it-q8
-      #   name: Gemma 4 12B Instruct Q8_K_XL (GGUF)
-      #   model_file: nano-desktop-modells/gemma-4-12b-it-UD-Q8_K_XL.gguf
-      #   n_gpu_layers: 99
       # - id: gemma-4-e4b
       #   name: Gemma 4 E4B (GGUF)
       #   model_file: nano-desktop-modells/gemma-4-E4B.gguf
-      #   n_gpu_layers: 99
-      # - id: google-gemma-3-12b-it-q8
-      #   name: Google Gemma 3 12B Q8_0 (GGUF)
-      #   model_file: nano-desktop-modells/google_gemma-3-12b-it-Q8_0.gguf
       #   n_gpu_layers: 99
       # - id: hermes-3-8b
       #   name: Hermes 3 Llama 3.1 8B Q6_K_L (GGUF)
@@ -652,10 +629,6 @@ providers:
       # - id: qwen2.5-coder-7b
       #   name: Qwen 2.5 Coder 7B Instruct Q6_K (GGUF)
       #   model_file: nano-desktop-modells/qwen2.5-coder-7b-instruct-q6_k.gguf
-      #   n_gpu_layers: 99
-      # - id: qwen2.5-vl-7b
-      #   name: Qwen 2.5 Vision 7B Q4_K_M (GGUF)
-      #   model_file: nano-desktop-modells/qwen2.5-vl-7b-instruct-q4_k_m.gguf
       #   n_gpu_layers: 99
       # - id: qwen3-14b
       #   name: Qwen 3 14B Q6_K (GGUF)
@@ -756,37 +729,7 @@ providers:
         n_gpu_layers: 99
         # mmproj-gemma4-f16.gguf liegt alongside (Vision-fähig); Benchmark rein textuell.
 
-      # ── Auskommentiert + blacklisted 2026-08-29: Vision-Modell — der
-      # PC-Benchmark ist Text-only, die Suite läuft hier sinnlos. Blacklist
-      # blockt nur den Web-Export; das Auskommentieren hält den Batch ab.
-      # - id: qwen2_5-vl-7b
-      #   name: Qwen 2.5 Vision 7B Q4_K_M (GGUF)
-      #   model_file: qwen2.5-vl-7b-instruct-q4_k_m/qwen2.5-vl-7b-instruct-q4_k_m.gguf
-      #   n_gpu_layers: 99
-      #   enable_thinking: false
-      # Auskommentiert 2026-08-30 via make clean-model.
-      # - id: qwen3_6-27b-fable-fusion-711-uncensored
-      # name: Qwen 3.6 27B Fable-Fusion-711 Uncensored Q5_K_M (GGUF)
-      # model_file: Qwen3.6-27B-Fable-Fusion-711-Uncensored/Qwen3.6-27B-Fable-Fus-711-UnHeretic-NM-DAU-NEO-MAX-NEO-MTP-Q5_K_M.gguf
-      # n_gpu_layers: 99
-      # enable_thinking: true  # Qwen3.6-Basis: Always-Thinking-Klasse (Dual-Profile-Expansion)
-        # mmproj-F16.gguf liegt alongside (Vision-fähig); Benchmark rein textuell.
-
       # ── Historische Einträge (Stand 2026-08-27: GGUFs nicht mehr auf der Disk) ──
-
-      # Auskommentiert 2026-08-14: Modell entfernt via make clean-model.
-      # DeepSeek V4 Flash — lokale GGUF (IQ2_M, 3-teilig), llama.cpp auf gx10:2234.
-      # Server: http://100.89.110.0:2234, Split-GGUF unter DeepSeek-V4-Flash/.
-      # Sampling: temperature=0.7/top_p=0.95 gemäß HF-Card-Empfehlung.
-      # - id: deepseek-v4-flash-ud-iq2
-      #   name: DeepSeek V4 Flash UD-Q2_M (GGUF, 3-part, llama.cpp)
-      #   model_file: DeepSeek-V4-Flash-0731-IQ2_M/UD-IQ2_M/DeepSeek-V4-Flash-0731-UD-IQ2_M-00001-of-00003.gguf
-      #   n_gpu_layers: 99
-      #   context_length: 262144
-      #   enable_thinking: false  # Reasoning kann serverseitig aktiviert werden, aber kein Always-Thinking
-      #   temperature: 0.7
-      #   top_p: 0.95
-      #   top_k: 20
 
       # ── Auskommentiert 2026-07-08: Q8_K_XL-Datei existiert nicht auf der Spark.
       # Auf der Disk liegt nur Q5_K_XL (+ MTP-Draft) — siehe Modell unten.
@@ -880,59 +823,6 @@ providers:
       #   context_length: 65536
       #   enable_thinking: false
 
-      # - id: deepseek-r1-distill-qwen-32b
-      #   name: DeepSeek R1 Distill Qwen 32B Q5_K_M (GGUF)
-      #   model_file: DeepSeek-R1-Distill-Qwen-32B/DeepSeek-R1-Distill-Qwen-32B-Q5_K_M.gguf
-      #   n_gpu_layers: 99
-      #   context_length: 65536
-      #   enable_thinking: true
-      #   temperature: 0.7
-      #   top_p: 0.8
-      #   top_k: 20
-      #   presence_penalty: 1.5
-      #   repeat_penalty: 1.0
-
-      # - id: gemma-4-31b-it-creative-wordsmith-q8
-      #   name: Gemma 4 31B Creative Wordsmith Uncensored Q8_0 (GGUF)
-      #   model_file: Gemma4-Creative-Wordsmith/gemma-4-Creative-Wordsmith-31B-it-uncensored-heretic-Q8_0.gguf
-      #   n_gpu_layers: 99
-      #   enable_thinking: false
-
-      # Qwopus: Qwen3.6-Base → multi-stage Trace Inversion SFT (Claude Opus 4.6/4.7).
-      # MTP-Heads eingebettet im Haupt-GGUF (keine separate Draft-Datei).
-      # - id: qwopus3_6-27b-v2-mtp-q8
-      #   name: Qwopus 3.6-27B-v2 MTP-Q8_0 (GGUF)
-      #   model_file: Qwopus3.6-27B-v2/Qwopus3.6-27B-v2-MTP-Q8_0.gguf
-      #   n_gpu_layers: 99
-      #   context_length: 32768
-      #   max_tokens: 16384
-      #   enable_thinking: true
-      #   temperature: 0.7
-      #   top_p: 0.8
-      #   top_k: 20
-      #   presence_penalty: 1.5
-      #   repeat_penalty: 1.0
-      #   extra_server_args:
-      #     - "--spec-type draft-mtp"
-      #     - "--spec-draft-n-max 2"
-
-      # Qwopus Coder: v2 → Agentic Coding SFT (Hermes-agent-reasoning-traces).
-      # - id: qwopus-3_6-27b-coder-mtp-q8
-      #   name: Qwopus-3.6-27B-Coder MTP-Q8_0 (GGUF)
-      #   model_file: Qwopus3.6-27B/Qwopus3.6-27B-Coder-MTP-Q8_0.gguf
-      #   n_gpu_layers: 99
-      #   context_length: 32768
-      #   max_tokens: 16384
-      #   enable_thinking: true
-      #   temperature: 0.7
-      #   top_p: 0.8
-      #   top_k: 20
-      #   presence_penalty: 1.5
-      #   repeat_penalty: 1.0
-      #   extra_server_args:
-      #     - "--spec-type draft-mtp"
-      #     - "--spec-draft-n-max 2"
-
     # vLLM auf asusGX10 (NVIDIA Blackwell, Remote via SSH/Tailscale).
     # Steuerung per SSH vom Benchmark-Host. Modelle werden über TOML-Configs
     # in ~/ai/shared/configs/vllm/models/ ausgewählt; ``vllm-start --config <NAME>``
@@ -978,14 +868,6 @@ providers:
       # bereits beim Serverstart in die Remote-TOML gebacken. Fehlt ein Wert hier,
       # greift der vLLM-Server-Default aus der TOML. Siehe utils/providers/vllm_base.py.
       models:
-      # Smoke-Test: klein, schnell, niedriger VRAM (kein NVFP4 noetig).
-      # TOML: ~/ai/shared/configs/vllm/models/Qwen2.5-0.5B.toml (915 B).
-      # - id: Qwen2.5-0.5B
-      #   name: Qwen 2.5 0.5B Instruct (vLLM, Smoke-Test)
-      #   config: Qwen2.5-0.5B
-      #   max_tokens: 2048
-      #   # Mini-Modell: 30 s sind mehr als ausreichend (real <10 s).
-      #   server_ready_timeout_sec: 30
       # Hauptmodell: läuft bereits auf dem Main-Container (Port 3300 via Proxy 4300).
       # vLLM kennt keinen --reasoning-Flag — enable_thinking wird über die Remote-TOML
       # (~/ai/shared/configs/vllm/models/Ornith1-35B-FP8.toml) gesteuert.
@@ -1058,23 +940,6 @@ providers:
         top_k: 64
         # repetition_penalty:  # Card: null — vLLM-Server-Default greift
         enable_thinking: true
-
-      # ── Auskommentiert 2026-08-29: TOML (Gemma-4-31B-it-NVFP4.toml) UND
-      # Weights auf der GX10 gelöscht (Inventar-Check per SSH verifiziert).
-      # Entry wäre ein 600-s-Timeout im Batch. Historische Benchmark-Daten
-      # bleiben in den CSVs; Re-Aktivierung erst nach Neu-Download + TOML.
-      # - id: Gemma-4-31B
-      #   name: Gemma 4 31B NVFP4 (vLLM, Dense, multimodal)
-      #   # TOML: ~/ai/shared/configs/vllm/models/Gemma-4-31B-it-NVFP4.toml
-      #   # (Dense, multimodal, Apache-2.0). Siehe Hinweis oben zu
-      #   # ``config`` ↔ TOML-Filename-Mismatch.
-      #   config: Gemma-4-31B-it-NVFP4
-      #   max_tokens: 16384
-      #   temperature: 1.0
-      #   top_p: 0.95
-      #   top_k: 64
-      #   # repetition_penalty:  # Card: null — vLLM-Server-Default greift
-      #   enable_thinking: true
 
       # Qwen 3.6 27B Dense — NVFP4 compressed-tensors, MTP, Thinking-Parser aktiv.
       # 32k Context (Sweet-Spot für DGX Spark bei 0.70 gpu-mem-util).
