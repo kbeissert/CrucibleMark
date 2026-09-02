@@ -108,6 +108,30 @@ class PoliticalCompassHandler:
         return model in set(cls._load_result_attribution_mapping().values())
 
     @classmethod
+    def update_results_csv(
+        cls,
+        model: str,
+        report: dict[str, Any],
+        model_version: str,
+        provider_type: str = "ollama",
+    ) -> None:
+        """Upsertet die PC-Ergebniszeilen in political_compass_results.csv (SSoT).
+
+        Eine Funktionalität = ein Modul: Lauf-Pfad (handle_results) und
+        Verifikations-Writeback (verify_compass_anomalies) persistieren über
+        DIESE Methode. Ohne gemeinsamen Pfad driftet results.csv (Web-Export-
+        Quelle für x/y/label) gegen political_compass_leaderboard.csv
+        (vanilla_*/is_retest aus dem Triple-Run) — Befund 2026-09-01: Nach
+        einer Anomaly-Verifikation zeigte die Modellseite die unverifizierten
+        Einzel-Lauf-Koordinaten, während das Leaderboard die verifizierten
+        Cluster-Werte trug.
+        """
+        if provider_type == "ollama":
+            cls._update_local_pc_csv(model, report, model_version)
+        else:
+            cls._update_commercial_pc_csv(model, report, model_version)
+
+    @classmethod
     def handle_results(
         cls,
         model: str,
@@ -162,10 +186,7 @@ class PoliticalCompassHandler:
             logger.error("Political compass manager print/JSON failed: %s", e)
 
         try:
-            if provider_type == "ollama":
-                cls._update_local_pc_csv(model, report, model_version)
-            else:
-                cls._update_commercial_pc_csv(model, report, model_version)
+            cls.update_results_csv(model, report, model_version, provider_type)
         except Exception as e:
             logger.error("Political compass CSV update failed: %s", e)
 

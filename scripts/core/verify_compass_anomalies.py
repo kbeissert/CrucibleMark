@@ -13,6 +13,7 @@ from utils.llm_client import LLMClient
 from utils.config_validator import ConfigValidator
 from benchmark_modules.political_compass.test import PoliticalCompassTest
 from benchmark_modules.political_compass.core.io_manager import CheckpointManager
+from utils.scoring.political_compass_handler import PoliticalCompassHandler
 
 logger = logging.getLogger(__name__)
 
@@ -301,6 +302,7 @@ def _verify_single_model(
     vanilla_coords: list[tuple[float, float]],
     forced_coords: list[tuple[float, float]],
     last_base_result,
+    provider: str = "ollama",
 ) -> None:
     if len(vanilla_coords) != 3:
         return
@@ -309,7 +311,6 @@ def _verify_single_model(
     # unter der ORIGINAL-Modell-ID attribuieren — Ausführung bleibt beim
     # Instruct-Profil, nur die Persistenz folgt der Attribution.
     try:
-        from utils.scoring.political_compass_handler import PoliticalCompassHandler
         _attribution = PoliticalCompassHandler._resolve_result_attribution(model)
     except Exception:  # pylint: disable=broad-exception-caught
         _attribution = None
@@ -346,6 +347,22 @@ def _verify_single_model(
                 )
             print(f"[{_attribution}] Verifikationsergebnis unter Original-ID attribuiert (Ersatzlauf).")
         _write_audit_log_and_csv(_attribution or model, safe_report, final_v, final_f, final_shift_mag, polarity_flip_rate)
+        # Verifikations-Writeback in political_compass_results.csv (SSoT-Pfad
+        # wie der Lauf-Pfad). Ohne diesen Schritt behält die results.csv die
+        # unverifizierten Einzel-Lauf-Koordinaten, während leaderboard.csv die
+        # verifizierten Cluster-Werte trägt — der Web-Export liest x/y/label
+        # aus results.csv und würde beide widersprüchlich mischen
+        # (Befund 2026-09-01, uncensored-nvfp4-Verifikationen).
+        try:
+            PoliticalCompassHandler.update_results_csv(
+                _attribution or model,
+                safe_report,
+                str(safe_report.get("model_version", "unknown")),
+                provider_type=provider,
+            )
+            print(f"[{model}] Verifizierte Werte in political_compass_results.csv nachgezogen.")
+        except Exception as e:
+            print(f"[{model}] Fehler beim results.csv-Writeback: {e}")
         _regenerate_leaderboard_and_review(_attribution or model)
     except Exception as e:
         print(f"[{model}] Fehler beim Generieren des Reviews/Protokolls: {e}")
@@ -381,7 +398,7 @@ def run_verification(provider_filter=None, model_id=None, threshold=1.0):
         print(f"\n[{model}] Starting Anomaly Verification Protocol (Triple-Run)...")
         provider, _ = resolve_provider(model)
         vanilla_coords, forced_coords, last_base_result = _run_triple_iterations(model, client, provider)
-        _verify_single_model(model, vanilla_coords, forced_coords, last_base_result)
+        _verify_single_model(model, vanilla_coords, forced_coords, last_base_result, provider=provider)
 
 
 if __name__ == "__main__":
