@@ -45,6 +45,7 @@ from benchmark_modules.political_compass.core.constants import (  # noqa: E402
     PC_SLEEP_BETWEEN_REQUESTS,
 )
 from benchmark_modules.political_compass.core.token_probe import (  # noqa: E402
+    PcProbeError,
     probe_pc_profile,
     select_screening_questions,
 )
@@ -237,10 +238,18 @@ def run_probe_mode(args: argparse.Namespace, config: dict[str, Any]) -> int:
             f"kein Instruct-Gegenlauf möglich.",
             flush=True,
         )
-    calibration = probe_pc_profile(
-        args.model, provider, client, screening, test,
-        supports_instruct_mode=supports_instruct,
-    )
+    try:
+        calibration = probe_pc_profile(
+            args.model, provider, client, screening, test,
+            supports_instruct_mode=supports_instruct,
+        )
+    except PcProbeError as exc:
+        # Fast-Fail-Guard: systematische Provider-Fehler — bewusst kein
+        # Card-Write (sonst würde z. B. greedy_uncapped/Budget-None persistiert).
+        print(f"\n❌ {exc}", file=sys.stderr, flush=True)
+        print("   Kein Card-Write. Provider/Modell prüfen und Probe wiederholen.",
+              file=sys.stderr, flush=True)
+        return 1
     _print_probe_report(calibration, args.model)
 
     if args.write_card:

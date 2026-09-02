@@ -37,6 +37,13 @@ Nemotron-3.5-Lightning) bleiben im ``thinking``-Profil: inkonsistentes
 Terminieren wird mit kalibriertem Budget akzeptiert, greedy-Verhalten als
 nicht sauber messbar dokumentiert (Konzept-Doc Abschn. 11).
 
+**Fast-Fail-Guard (Incident 2026-09-02):** Systematische Provider-Fehler
+(API-Key, Connector, Modell-ID) dürfen nicht als "nicht konvergiert"
+klassifiziert werden — ohne Guard wäre jeder Fehler ein "verdächtiger Block"
+und das Ergebnis landete als ``greedy_uncapped`` (Budget None) in der Card.
+Mehr als ``PC_PROBE_MAX_ERROR_RATE`` (50 %) Query-Fehler → ``PcProbeError``
+(Abbruch ohne Card-Write).
+
 Kein LLM-Judge, keine Live-Endpoints außer dem getesteten Modell selbst.
 """
 
@@ -69,6 +76,15 @@ PC_PROBE_MAX_ESCALATED_BLOCKS = 4
 
 # Fragen pro Block im PC-Fragenkatalog (7.1–7.9)
 PC_PROBE_SCREENING_BUDGET = PC_PROBE_STAGES[0]
+
+# Fast-Fail-Guard (Incident 2026-09-02): Systematische Provider-Fehler dürfen
+# nicht als "nicht konvergiert" klassifiziert werden (→ greedy_uncapped,
+# Budget None in der Card). >50 % Query-Fehler → Abbruch ohne Card-Write.
+PC_PROBE_MAX_ERROR_RATE = 0.5
+
+
+class PcProbeError(RuntimeError):
+    """Probe-Abbruch: Provider-Fehlerrate übersteigt den Fast-Fail-Schwellwert."""
 
 
 class PcProbeClassification(str, Enum):
@@ -219,9 +235,29 @@ def _run_stage(
         "stage": stage,
         "outcomes": outcomes,
         "converged_count": converged_count,
+        "error_count": sum(1 for o in outcomes if o["error"]),
         "all_converged": converged_count == len(outcomes),
         "any_converged": converged_count > 0,
     }
+
+
+def _check_probe_error_rate(stage_results: list[dict[str, Any]]) -> None:
+    """Fast-Fail-Guard: >50 % Query-Fehler → Abbruch ohne Card-Write.
+
+    Systematische Provider-Fehler (API-Key, Connector, Modell-ID) müssen die
+    Probe abbrechen, bevor eine Profil-Entscheidung persistiert wird —
+    sonst landet jedes Totalausfall-Szenario als ``greedy_uncapped``
+    (Budget None) in der Card.
+    """
+    total = sum(len(r["outcomes"]) for r in stage_results)
+    errors = sum(r["error_count"] for r in stage_results)
+    if total and errors > PC_PROBE_MAX_ERROR_RATE * total:
+        raise PcProbeError(
+            f"PC-Probe Fast-Fail: {errors}/{total} Queries fehlgeschlagen "
+            f"(> {PC_PROBE_MAX_ERROR_RATE:.0%}). Ergebnis unbrauchbar, "
+            "kein Card-Write. Provider/Modell-Verfügbarkeit prüfen "
+            "(API-Key, Connector, Modell-ID)."
+        )
 
 
 def _select_block_questions(test: Any, block_id: str, count: int) -> list[dict[str, Any]]:
@@ -333,6 +369,11 @@ def probe_pc_profile(
     Returns:
         :class:`PcTokenCalibration` mit ``profile`` (thinking | hybrid_dual |
         instruct) und kalibriertem Budget (nur für thinking/hybrid relevant).
+
+    Raises:
+        PcProbeError: Fast-Fail-Guard — mehr als 50 % der Queries (kumulativ
+            über Screening + Eskalation) sind fehlgeschlagen. Das Ergebnis
+            wäre unbrauchbar; der Aufrufer muss keinen Card-Write ausführen.
     """
     stages = tuple(stages) if stages else PC_PROBE_STAGES
     evaluator = evaluator or PoliticalCompassEvaluator()
@@ -345,6 +386,7 @@ def probe_pc_profile(
     screening = _run_stage(
         client, model, provider, screening_questions, stages[0], evaluator,
     )
+    _check_probe_error_rate([screening])
     for outcome, question in zip(screening["outcomes"], screening_questions, strict=True):
         block = question["block"]
         if outcome["converged"]:
@@ -369,6 +411,7 @@ def probe_pc_profile(
     greedy_blocks = 0
     inconsistent_blocks = 0
     escalated = 0
+    all_stage_results: list[dict[str, Any]] = [screening]
 
     for block_id in suspicious_blocks:
         if escalated >= PC_PROBE_MAX_ESCALATED_BLOCKS:
@@ -377,6 +420,8 @@ def probe_pc_profile(
             client, model, provider, test, block_id, stages, evaluator,
         )
         escalated += 1
+        all_stage_results.extend(outcome["stages"])
+        _check_probe_error_rate(all_stage_results)
         block_report = [b for b in block_report if b["block"] != block_id]
         block_report.append(outcome)
         if outcome["status"] == "converged":

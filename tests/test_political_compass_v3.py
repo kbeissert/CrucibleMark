@@ -867,8 +867,8 @@ def test_report_legacy_run_graceful():
 # ---------------------------------------------------------------------------
 
 from benchmark_modules.political_compass.core.token_probe import (  # noqa: E402
-    PC_PROBE_STAGES,
     PcProbeClassification,
+    PcProbeError,
     probe_pc_profile,
     select_screening_questions,
 )
@@ -901,6 +901,8 @@ class _MockProbeClient:
             match = re.search(r"^([A-Z])\)", kwargs.get("prompt", ""), re.MULTILINE)
             letter = match.group(1) if match else "A"
             response, finish = f"Answer: {letter}", "stop"
+        elif entry is ERR:
+            raise RuntimeError("simulierter Provider-Fehler")
         else:
             response, finish = entry
         self.last_response_metadata = {"finish_reason": finish}
@@ -909,6 +911,7 @@ class _MockProbeClient:
 
 OK = object()   # Sentinel: konvergierte Antwort mit Prompt-validem Buchstaben
 TRUNC = ("", "length")
+ERR = object()  # Sentinel: Query wirft Provider-Fehler (Fast-Fail-Guard)
 
 
 def _run_probe(script, num_blocks=None, supports_instruct_mode=True):
@@ -1027,6 +1030,56 @@ def test_probe_card_dict_shape():
     card = cal.to_card_dict()
     assert set(card.keys()) == {"budget", "classification", "profile", "tested", "converged_stage", "notes"}
     assert card["profile"] == "thinking"
+
+
+def test_probe_fast_fail_all_screening_errors():
+    """Fast-Fail: alle 9 Screening-Queries fehlerhaft → Abbruch ohne Stufe 2.
+
+    Reproduziert das Incident 2026-09-02 (Anthropic-Streaming-Regression):
+    ohne Guard wäre der Totalausfall als greedy_uncapped (Budget None) in
+    die Card geschrieben worden.
+    """
+    test = PoliticalCompassTest()
+    client = _MockProbeClient([ERR] * 9)
+    with pytest.raises(PcProbeError):
+        probe_pc_profile(
+            "m", "llamacpp", client, select_screening_questions(test), test,
+            supports_instruct_mode=True,
+        )
+    assert len(client.calls) == 9  # nur Screening — keine Eskalation, kein Card-Write
+
+
+def test_probe_fast_fail_majority_screening_errors():
+    """Fast-Fail: 5/9 Screening-Queries fehlerhaft (>50 %) → Abbruch."""
+    with pytest.raises(PcProbeError):
+        _run_probe([OK] * 4 + [ERR] * 5)
+
+
+def test_probe_no_fast_fail_below_threshold():
+    """Kein Fast-Fail: 4/9 Screening-Fehler (44 %) → Probe läuft komplett durch.
+
+    Die 4 fehlerhaften Blöcke eskalieren (Cost-Bound 4) und konvergieren
+    @ 1200 — kumulative Fehlerrate bleibt unter der Schwelle (4/45 ≈ 9 %).
+    """
+    script = [OK] * 5 + [ERR] * 4  # Screening: 5 clean, 4 verdächtig
+    for _ in range(4):             # 4 eskalierte Blöcke
+        script += [TRUNC] * 3      # 600 → 0/3
+        script += [OK] * 3         # 1200 → 3/3 (base)
+        script += [OK] * 3         # Kontrolle 2400 → stabil
+    cal, client = _run_probe(script)
+    assert cal.classification == PcProbeClassification.SELF_LIMITING.value
+    assert cal.budget == 1560  # ceil(1200 × 1.3)
+    assert len(client.calls) == 9 + 4 * 9
+
+
+def test_probe_fast_fail_cumulative_stage2():
+    """Fast-Fail kumulativ: 4/9 Screening-Fehler (44 %, unter der Schwelle)
+    + alle Stufe-2-Queries fehlerhaft → kumulative Fehlerrate 13/18 (>50 %)
+    → Abbruch vor der Profil-Entscheidung."""
+    script = [OK] * 5 + [ERR] * 4   # Screening
+    script += [ERR] * (3 * 3)       # Stufe 2 Block 1: 3 Fragen × 3 Stufen, alle Fehler
+    with pytest.raises(PcProbeError):
+        _run_probe(script)
 
 
 
