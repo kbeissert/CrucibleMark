@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v5.2.1] - 2026-09-02
+
+**Patch-Release: Anthropic-Streaming-Regression behoben, PC-Probe-Fast-Fail-Guard, Groq-Sektion neu besetzt.**
+
+- **Anthropic-Streaming-Fix (Regression `60aad34c`, 2026-08-27):** Seit dem Commercial-Streaming-Default schlug jeder Anthropic-Request fehl — `max_tokens` (Pflicht-Argument) ging im Streaming-Pfad verloren (Non-Streaming injiziert es via `_execute_with_token_fallback`), und der fehlende `text_delta`-Branch im Delta-Handler machte den sichtbaren Antworttext immer leer. Fixes in `utils/providers/anthropic.py`: `func_kwargs["max_tokens"] = max_tokens` in `_query_streaming`, `text_delta`-Branch in `_apply_anthropic_block_delta`, tote no-op-Zeile in `_get_used_max_tokens` entfernt. Smoke-Test + PC-Probe/-Lauf claude-sonnet-4-6 und claude-sonnet-5 end-to-end verifiziert (9/9 Requests HTTP 200, Antworttexte intakt).
+- **PC-Probe-Fast-Fail-Guard:** Systematische Provider-Fehler (API-Key, Connector, Modell-ID) wurden von der Token-Probe als „nicht konvergiert" klassifiziert — Incident 2026-09-02: 9/9 Query-Fehler → `greedy_uncapped` (Budget None) landete in der Card. Neu: `PcProbeError` + `_check_probe_error_rate` in `token_probe.py` — mehr als 50 % Query-Fehler (kumulativ über Screening + Eskalation, `PC_PROBE_MAX_ERROR_RATE`) → Abbruch ohne Card-Write; `pc_calibrate.py` meldet den Fehler sauber und beendet mit Exit-Code 1. 4 neue Tests.
+- **Groq-Sektion neu besetzt:** Nach clean-model-Löschung der 4 Groq-Modelle (gpt-oss-120b, llama-3.3-70b-versatile, llama-4-scout, qwen3-32b) mit den via Groq-API verifizierten `qwen/qwen3.6-27b` + `qwen/qwen3.8-27b` befüllt; Provider bleibt deaktiviert (Reaktivierung erst nach add-model-Workflow mit Cards). Blacklist-Hygiene: GPT-OSS-120B-Eintrag entfernt (Invariante: Blacklist-Einträge nur mit Leaderboard-Präsenz).
+
 ## [v5.2.0] - 2026-08-31
 
 **Minor-Release: Political Compass v3.0, Provider-Härtung (llama.cpp/vLLM/Spark) und Abbruch-Cleanliness.**

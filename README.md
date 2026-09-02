@@ -1,11 +1,11 @@
 # CrucibleMark
 
-[![Version](https://img.shields.io/badge/version-5.2.0-blue)](.)
+[![Version](https://img.shields.io/badge/version-5.2.1-blue)](.)
 [![Python](https://img.shields.io/badge/python-3.12%2B-blue)](.)
 [![License](https://img.shields.io/badge/license-MIT-green)](.)
 [![Status](https://img.shields.io/badge/status-production--ready-brightgreen)](.)
 
-**Stand: v5.2.0 · 2026-08-31**
+**Stand: v5.2.1 · 2026-09-02**
 
 ## Ein modulares LLM-Benchmark-Framework für Product Engineers
 
@@ -198,6 +198,10 @@ make clean-model MODEL="mistral-large-2411" DRY=1   # Vorschau ohne Löschen
 
 Die vollständige Versionshistorie steht in [CHANGELOG.md](CHANGELOG.md). Kurzfassung der letzten drei Releases:
 
+### v5.2.1 (2026-09-02) — Anthropic-Streaming-Fix + PC-Probe-Fast-Fail-Guard
+
+Anthropic-Streaming-Regression behoben (seit `60aad34c` fehlte im Streaming-Pfad `max_tokens` als Pflicht-Argument und der `text_delta`-Branch — jeder Request schlug fehl, Antworttext immer leer). PC-Token-Probe mit Fast-Fail-Guard: >50 % Query-Fehler (kumulativ) → `PcProbeError` → Abbruch ohne Card-Write statt falsch persistierter `greedy_uncapped`-Kalibrierung. Groq-Sektion nach clean-model-Löschung neu besetzt (`qwen/qwen3.6-27b`, `qwen/qwen3.8-27b` via Groq-API verifiziert), Blacklist-Hygiene (GPT-OSS-120B-Eintrag entfernt).
+
 ### v5.2.0 (2026-08-31) — Political Compass v3.0 + Provider-Härtung
 
 PC v3.0 re-aktiviert: Token-Budget-Regime (800, kein 25k-Fallback), Refusal-/Truncation-Klassifikator, begrenzte Eskalations-Treppe, PC-Token-Probe mit Profil-Entscheidung (thinking/hybrid_dual/instruct, Card-First) und Ergebnis-Attribution für Instruct-Ersatzläufe. Dazu llama.cpp Mac/Spark-Separation mit Metrics-Proxy-Anbindung (Timeout-Livelock-Fix: 2400 s auf beiden Wänden), Thinking-only-Ausnahme via `dual_profile`-Gate, Leaderboard-Trigger pro Modul in allen Pfaden, Web-Export-Provider-Auflösung run-autoritativ per Provider-Code, korrigierte Timeout-Metrik (nur echte Fehler) und HTTP-Client-Close-Kette (`atexit` → `close()` → TCP FIN) gegen hängende vLLM-Generierung nach Abbruch. 1704 Tests grün, Lint 9.99/10.
@@ -205,10 +209,6 @@ PC v3.0 re-aktiviert: Token-Budget-Regime (800, kein 25k-Fallback), Refusal-/Tru
 ### v5.1.5 (2026-08-17) — Echte-Token-Pipeline (TPS, Judge, Audit-Log)
 
 Behebt einen Architektur-Denkfehler: `tokens_per_second` wurde aus der Modul-Schätzung (Wörter × 1.3, ohne Thinking) berechnet, während `tokens_used` die echten Provider-Usage-Werte enthielt — zwei Spalten, zwei Token-Zahlen, bei Thinking-Modellen massiv unterbewertet. Jetzt: TPS = echte Output-Tokens (inkl. Thinking) / Wall-Time, neue CSV-Spalten `input_tokens`/`output_tokens`, Judge-Context und Audit-Log mit echter Breakdown, Visible-Output-Formel fixt (`output_tokens − reasoning_tokens`). Provider (vLLM, OpenRouter, llama.cpp, Ollama) lieferten bereits echte Usage — keine Provider-Änderung. 1572 Tests grün, Lint 0.
-
-### v5.1.4 (2026-08-15) — Code-Review-Umsetzung (Sicherheit, Konsistenz, Robustheit)
-
-Vollständige Umsetzung eines 23-Findings-Reviews: Ollama-Modul-Loop bricht bei echtem Fehler ab, lifecycle_hooks verschluckt ToolUseExporter-Fehler nicht mehr still, ToolUse-Exporter `combined_score == 0.0`-Fallback fixt, Shell-Injection-Flächen geschlossen (shlex.quote, List-Subprocess), exponentieller Rate-Limit-Backoff, Identitäts-Tags aus Judge-Prompt entfernt (Blind-Evaluierung), 8 CC>12-Verstöße verhaltenstreu aufgesplittet (audit_logger CC 67, Roundtrip-Diff byte-identisch), Ruff 409→0, DRY-Konsolidierung (`provider_config_text` SSoT), ConfigValidator-mtime-Cache, Maintenance-Skripte gehärtet. 1411 Tests grün, Naming-Gate 122 Cards OK.
 
 ---
 
@@ -222,4 +222,4 @@ Bug-Reports, Feature-Wünsche und Diskussionen laufen über [GitHub Issues](http
 
 - **Maintainer:** [kbeissert](https://github.com/kbeissert)
 - **Repository:** [github.com/kbeissert/cruciblemark](https://github.com/kbeissert/cruciblemark)
-- **Status:** Production-Ready (v5.2.0)
+- **Status:** Production-Ready (v5.2.1)

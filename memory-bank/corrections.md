@@ -109,3 +109,18 @@ werden — sonst 400-Fehler bei allen API-Calls (ThinkingProbe + Benchmark).
 **Pflege:** Proxy-Token steht bewusst direkt in provider_config.yaml (lokales Infrastruktur-Token `sk-local-mg2026`, kein Cloud-Secret). Bei Proxy-Port- oder Token-Änderung: `base_url`/`api_key` UND Proxy-Env (`LLAMA_PROXY_BEARER_TOKEN`) synchron halten. Der Token-Capture funktioniert nur, wenn der Benchmark-Traffic durch :2234 fließt — direkte Calls auf :1234 umgehen die Erfassung.
 
 **Verifikations-Datum:** 2026-08-28 (Live: /health 200, Adoption 0,4s, Query 'OK' via Proxy; 41 Separation-Tests grün, Ruff clean)
+
+---
+## Anthropic: Streaming-Regression — `max_tokens` + `text_delta` verloren (2026-09-02)
+
+**Befund:** Seit dem Commit `60aad34c` (2026-08-27, Commercial-Streaming-Default `streaming_output_commercial_providers: true`) schlug jeder Anthropic-Request fehl: SDK-Fehler „Missing required arguments; Expected either ('max_tokens', 'messages' and 'model') …". Letzter erfolgreicher Anthropic-Run: 2026-08-19. Zusätzlich war der sichtbare Antworttext bei Streaming immer leer (nur Thinking-Deltas wurden verarbeitet). Sichtbar wurde beides erst beim PC-Token-Probe für claude-sonnet-4-6 (2026-09-02): alle 9 Screening-Queries fehlgeschlagen.
+
+**Ursache (zweifach, beide in `utils/providers/anthropic.py`):** (1) `_query_streaming` rief `messages.create(**func_kwargs)` ohne `max_tokens` — der Non-Streaming-Pfad injiziert `max_tokens` via `_execute_with_token_fallback` (`func_kwargs[token_param_name] = current_tokens`), der Streaming-Pfad hat die Injektion mit `60aad34c` verloren; `max_tokens` ist aber Pflicht-Argument der Anthropic-API. (2) `_apply_anthropic_block_delta` kannte nur `thinking_delta`/`input_delta` — der `text_delta`-Branch fehlte, der sichtbare Antworttext landete nie in `state["full_content"]`.
+
+**Lösung:** (1) `func_kwargs["max_tokens"] = max_tokens` vor dem Streaming-Call (identisch zum Non-Streaming-Pfad). (2) `text_delta`-Branch ergänzt (Akkumulation in `full_content` + Stream-Handler). Dazu tote Fallback-Zeile in `_get_used_max_tokens` entfernt (no-op `getattr(usage, "output_tokens", 0) or 0`).
+
+**Folgefehler (Probe) + Guard:** Der erste Probe-Lauf klassifizierte die 9 totalen Query-Fehler als „nicht konvergiert" → `greedy_uncapped` (Budget None) wurde in die Card geschrieben. Fix: Fast-Fail-Guard in der PC-Token-Probe (`token_probe.py`: `PcProbeError` + `_check_probe_error_rate`, `PC_PROBE_MAX_ERROR_RATE = 0.5`) — >50 % Query-Fehler (kumulativ über Screening + Eskalation) → Abbruch ohne Card-Write, `pc_calibrate.py` meldet sauber und beendet mit Exit-Code 1. Die fehlerhafte Kalibrierung wurde durch den korrekten Re-Run überschrieben (claude-sonnet-4-6: self_limiting @390, thinking).
+
+**Pflege:** Bei jeder Änderung am Anthropic-Streaming-Pfad beide Invarianten prüfen: `max_tokens` gesetzt UND `text_delta` verarbeitet (Smoke-Test mit Streaming-Default, z. B. `claude-haiku-4-5`). Sonst wieder Totalausfall mit leerem Text.
+
+**Verifikations-Datum:** 2026-09-02 (Smoke-Test claude-haiku-4-5 „OK"; PC-Probe claude-sonnet-4-6 und claude-sonnet-5 end-to-end grün: 9/9 Requests HTTP 200, Antworttexte intakt; Lint-Gate exit 0)
