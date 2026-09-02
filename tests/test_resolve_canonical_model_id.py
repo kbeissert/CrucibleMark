@@ -47,8 +47,9 @@ pytestmark = pytest.mark.uses_real_cards
         # Edge cases
         ("", "", "Empty input"),
         ("unbekanntes-modell", "unbekanntes-modell", "No card → safe_name fallback"),
-        # Namespaced IDs bleiben unverändert (OpenRouter-Routing)
-        ("qwen/qwen3-32b", "qwen/qwen3-32b", "Namespaced bleibt namespaced"),
+        # Namespaced IDs bleiben unverändert (OpenRouter-Routing) —
+        # qwen/qwen3.8-flash hat eine Card (namespaced model_id) und bleibt so erhalten.
+        ("qwen/qwen3.8-flash", "qwen/qwen3.8-flash", "Namespaced bleibt namespaced"),
         # qwen/qwen3.6-plus:free hat keine Card mehr → safe_name-Fallback
         (
             "qwen/qwen3.6-plus:free",

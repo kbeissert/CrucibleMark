@@ -137,9 +137,6 @@ blacklist:
   # o-Serie (Reasoning-Linie, Legacy) — o4-mini / o3-mini bleiben erhalten
   - "o1"                                    # ersetzt durch o3-mini / o4-mini
 
-  # GPT-OSS (Cloud/Groq only; vLLM Benchmarks bleiben)
-  - "openai/gpt-oss-120b"                   # Cloud/Groq — Blacklist auf Anfrage
-
 
   # -----------------------------------------------------------------
   # Qwen

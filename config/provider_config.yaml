@@ -134,18 +134,18 @@ providers:
       api_type: groq
       token_param_name: max_completion_tokens
       model_type: open_weights_cloud
-      enabled: true
+      # 2026-09-02: Deaktiviert — Modelle per Groq-API verifiziert, Reaktivierung
+      # erst nach add-model-Workflow (Cards + Pricing + Thinking-Probe).
+      enabled: false
       max_tokens: 16384
       env_var: GROQ_API_KEY
+      # 2026-09-02: Sektion neu besetzt nach clean-model-Löschung
+      # (gpt-oss-120b, llama-3.3-70b-versatile, llama-4-scout, qwen3-32b).
       models:
-      - id: meta-llama/llama-4-scout-17b-16e-instruct
-        name: Llama 4 Scout (17B) Instruct
-      - id: llama-3.3-70b-versatile
-        name: Llama 3.3 (70B) Versatile
-      - id: qwen/qwen3-32b
-        name: Qwen 3 (32B) via Groq
-      - id: openai/gpt-oss-120b
-        name: GPT-OSS 120B
+      - id: qwen/qwen3.6-27b
+        name: Qwen 3.6 (27B) via Groq
+      - id: qwen/qwen3.8-27b
+        name: Qwen 3.8 (27B) via Groq
 
     cohere:
       name: Cohere
