@@ -193,6 +193,13 @@ class AnthropicClient(BaseProviderClient):
         }
 
         try:
+            # max_tokens ist Pflicht-Argument der Anthropic-API — der
+            # Non-Streaming-Pfad injiziert es via _execute_with_token_fallback
+            # (func_kwargs[token_param_name] = current_tokens); der
+            # Streaming-Pfad muss es identisch selbst setzen (Regression
+            # 60aad34c: Commercial-Streaming-Default, max_tokens ging verloren
+            # → "Missing required arguments" bei jedem Anthropic-Request).
+            func_kwargs["max_tokens"] = max_tokens
             response_stream = self.client.messages.create(**func_kwargs)
             for event in response_stream:
                 self._process_anthropic_stream_event(event, state, stream_handler)
@@ -242,9 +249,14 @@ class AnthropicClient(BaseProviderClient):
     def _apply_anthropic_block_delta(
         self, event: Any, state: dict[str, Any], stream_handler: Any,
     ) -> None:
-        """Verarbeitet ein content_block_delta Event (Thinking- oder Input-Delta)."""
+        """Verarbeitet ein content_block_delta Event (Text-, Thinking- oder Input-Delta)."""
         delta = event.delta
-        if hasattr(delta, "type") and delta.type == "thinking_delta":
+        if hasattr(delta, "type") and delta.type == "text_delta":
+            if hasattr(delta, "text") and delta.text:
+                state["full_content"] += delta.text
+                if stream_handler:
+                    stream_handler(delta.text)
+        elif hasattr(delta, "type") and delta.type == "thinking_delta":
             if hasattr(delta, "thinking") and delta.thinking:
                 state["think"].add(delta.thinking)
                 if stream_handler:
@@ -263,12 +275,15 @@ class AnthropicClient(BaseProviderClient):
             state["stream_usage"] = delta.usage
 
     def _get_used_max_tokens(self, initial: int, usage) -> tuple[int, bool]:
-        """Ermittle tatsächliche max_tokens und ob Fallback ausgelöst wurde."""
+        """Ermittle tatsächliche max_tokens und ob Fallback ausgelöst wurde.
+
+        Anthropic meldet kein explizites Fallback-Signal im Streaming-Usage —
+        im Zweifel gilt das angeforderte Limit (kein heuristisches Raten).
+        """
         if not usage:
             return initial, False
-        getattr(usage, "output_tokens", 0) or 0
-        # Fallback: wenn output_tokens < initial, aber kein explizites Fallback-Signal
         return initial, False
+
     def get_available_models(self) -> list[str]:
         """Listet verfügbare Claude-Modelle"""
         return [
