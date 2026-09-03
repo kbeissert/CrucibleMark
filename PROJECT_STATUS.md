@@ -2,15 +2,15 @@
 
 > **Interner Statusbericht.** Diese Datei dokumentiert den Projektfortschritt für Maintainer und Contributor. Sie ist nicht Teil der öffentlichen Dokumentation. Aktuelle, kuratierte Release-Informationen stehen in [README.md](README.md) (Recent Versions) und [CHANGELOG.md](CHANGELOG.md).
 
-**Last Updated:** 2026-09-02
-**Current Version:** 5.2.1 — Anthropic-Streaming-Fix + PC-Probe-Fast-Fail-Guard
+**Last Updated:** 2026-09-03
+**Current Version:** 5.2.2 — PC-Token-Probe Card-First-Hook
 **Status:** Production-Ready
 
 ---
 
 ## Executive Summary
 
-CrucibleMark v5.2.1 ist ein production-ready LLM-Benchmark-Framework mit 120+ getesteten Modellen über 11 Provider. Das Framework misst praxisnahe Leistung (Code-Reviews, UX-Texte, Reasoning, Tool-Use) mit blindem LLM-Judge und generiert Leaderboards mit License-/Sovereign-Filtern.
+CrucibleMark v5.2.2 ist ein production-ready LLM-Benchmark-Framework mit 120+ getesteten Modellen über 11 Provider. Das Framework misst praxisnahe Leistung (Code-Reviews, UX-Texte, Reasoning, Tool-Use) mit blindem LLM-Judge und generiert Leaderboards mit License-/Sovereign-Filtern.
 
 **Aktueller Stand (2026-08-31):**
 - **120+ Modelle** im Leaderboard (Naming-Gate: 123 Cards OK), Web-Export nach Blacklist-Reduktion (Quant-Vergleichstests, experimentelle Modelle, superseded vLLM-Versionen).
@@ -37,6 +37,10 @@ CrucibleMark v5.2.1 ist ein production-ready LLM-Benchmark-Framework mit 120+ ge
 ---
 
 ## Recent Releases
+
+### v5.2.2 (2026-09-03) — PC-Token-Probe Card-First-Hook
+
+Hat die Model Card keinen PC-Token-Probe-Eintrag (`pc_profile` fehlt/null), führt der PC-Benchmark-Runner die Probe jetzt automatisch vor dem PC-Run aus — analog zur Thinking-Probe vor dem Standard-Benchmark. Vorher war die Probe rein manuell (`make probe-pc-budget`); neue Modelle (z. B. `claude-opus-4-8`) liefen ungeprüft am Default-Modul-Budget. Neues SSoT-Modul `pc_probe_hook.py` (`read_pc_probe_state`/`run_pc_token_probe`/`write_pc_calibration_to_card`/`ensure_pc_token_probe`); Hook in `utils/base_runner.execute_batch_module()` nach den Skip-Checks, vor `_load_batch_test`, nur PC-Module. Trigger-Semantik wie Thinking-Probe (nur None/fehlt triggert); `PcProbeError` (Fast-Fail-Guard) → Benchmark läuft weiter ohne Card-Write. `pc_calibrate.py` DRY-Refactor (Probe-Orchestrierung + Card-Write ausgelagert). 13 neue Tests, Suite 1722 grün, Lint exit 0. Live-Verifikation: `claude-opus-4-8` → Probe `self_limiting` @390 (thinking), PC-Hauptlauf Shift 1.61 („Wolf im Schafspelz", `is_retest: true`).
 
 ### v5.2.1 (2026-09-02) — Anthropic-Streaming-Fix + PC-Probe-Fast-Fail-Guard
 

@@ -10,11 +10,16 @@ Zwei Modi:
    P95(reasoning) + 200 ≤ Budget, Truncation-Rate < 5 %.
 
 2. **Gestufter Token-Probe** (``--probe``): Kalibriert das Budget pro Modell
-   nach dem Thinking-Probe-Pattern — Stufen [300, 600, 1200, 2400], 4 Fragen
-   aus 4 Dimensionen, dreiwertige Klassifikation (self_limiting /
-   inconsistent / greedy_uncapped). Ergebnis via ``--write-card`` in die
-   Model Card persistieren (``pc_token_calibration``) — resolve_token_budget
-   honoriert es automatisch (Card-First). NICHT pro PC-Run neu proben.
+   nach dem Thinking-Probe-Pattern — Stufen [300, 600, 1200, 2400],
+   dreiwertige Klassifikation (self_limiting / inconsistent /
+   greedy_uncapped). Ergebnis via ``--write-card`` in die Model Card
+   persistieren (``pc_token_calibration`` + ``pc_profile``) —
+   resolve_token_budget honoriert es automatisch (Card-First).
+
+   Hinweis: Der PC-Benchmark-Runner führt die Probe automatisch aus, wenn
+   die Card keinen Eintrag hat (Card-First-Hook,
+   ``benchmark_modules/political_compass/core/pc_probe_hook.py``). Dieses
+   Tool dient der manuellen Kalibrierung / Wiederholung.
 
 Direkter Client-Query — kein save_results, keine CSV-Berührung, kein Checkpoint.
 
@@ -29,7 +34,6 @@ Verwendung:
 """
 
 import argparse
-import json
 import logging
 import statistics
 import sys
@@ -44,10 +48,12 @@ if str(ROOT_DIR) not in sys.path:
 from benchmark_modules.political_compass.core.constants import (  # noqa: E402
     PC_SLEEP_BETWEEN_REQUESTS,
 )
+from benchmark_modules.political_compass.core.pc_probe_hook import (  # noqa: E402
+    run_pc_token_probe,
+    write_pc_calibration_to_card,
+)
 from benchmark_modules.political_compass.core.token_probe import (  # noqa: E402
     PcProbeError,
-    probe_pc_profile,
-    select_screening_questions,
 )
 from benchmark_modules.political_compass.test import (  # noqa: E402
     STANDARD_PROMPT,
@@ -55,9 +61,7 @@ from benchmark_modules.political_compass.test import (  # noqa: E402
 )
 from utils.benchmark_utils import token_distribution  # noqa: E402
 from utils.config_validator import ConfigValidator  # noqa: E402
-from utils.io_helpers import atomic_write_json  # noqa: E402
 from utils.llm_client import LLMClient  # noqa: E402
-from utils.model_card_io import _find_card, read_dual_profile  # noqa: E402
 from utils.model_id_base import resolve_provider  # noqa: E402
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
@@ -164,27 +168,6 @@ def _print_report(
     return recommended
 
 
-def _write_calibration_to_card(model_id: str, calibration: Any, provider: str | None = None) -> Path:
-    """Persistiert das Probe-Ergebnis in die Card (Pattern: probe_thinking.py).
-
-    Schreibt ``pc_token_calibration`` (Budget + Klassifikation) UND das
-    Top-Level-Feld ``pc_profile`` (thinking | hybrid_dual | instruct).
-    """
-    from utils.card_utils import ensure_card
-
-    existing_path = _find_card(model_id)
-    if existing_path.exists():
-        card_path = ensure_card(model_id, card_path=existing_path)
-    else:
-        card_path = ensure_card(model_id, provider=provider)
-
-    card: dict[str, Any] = json.loads(card_path.read_text(encoding="utf-8"))
-    card["pc_token_calibration"] = calibration.to_card_dict()
-    card["pc_profile"] = calibration.profile
-    atomic_write_json(card_path, card, indent=2, ensure_ascii=False)
-    return card_path
-
-
 def _print_probe_report(calibration: Any, model: str) -> None:
     """Printed das Probe-Ergebnis mit Block-Report und Handlungsempfehlung."""
     print(f"\n{'=' * 62}")
@@ -217,32 +200,16 @@ def _print_probe_report(calibration: Any, model: str) -> None:
 
 
 def run_probe_mode(args: argparse.Namespace, config: dict[str, Any]) -> int:
-    """Stratifizierter zweistufiger Token-Probe (Card-First-Pattern)."""
-    provider = args.provider or resolve_provider(args.model)[0]
-    test = PoliticalCompassTest()
-    screening = select_screening_questions(test)
-    print(
-        f"[PC-Probe] {args.model} · Screening: 1 Frage/Block ({len(screening)} Blöcke) "
-        f"@ 300 Tokens, Stufe 2 nur für verdächtige Blöcke …",
-        flush=True,
-    )
+    """Stratifizierter zweistufiger Token-Probe (Card-First-Pattern).
 
+    SSoT für Probe-Orchestrierung + Card-Write:
+    ``benchmark_modules/political_compass/core/pc_probe_hook.py`` (geteilt
+    mit dem Runner-Hook — kein Duplikat).
+    """
+    provider = args.provider or resolve_provider(args.model)[0]
     client = LLMClient(config=config)
-    # Thinking-only-Ausnahme (Regel 2026-08-29): dual_profile aus der Card ist
-    # die SSoT für die Modi-Fähigkeit — nur Modelle mit beiden Betriebsmodi
-    # dürfen hybrid_dual/instruct-Profile bekommen (Konzept-Doc Abschn. 11).
-    supports_instruct = read_dual_profile(args.model)
-    if not supports_instruct:
-        print(
-            f"[PC-Probe] {args.model}: Thinking-only (dual_profile != true) — "
-            f"kein Instruct-Gegenlauf möglich.",
-            flush=True,
-        )
     try:
-        calibration = probe_pc_profile(
-            args.model, provider, client, screening, test,
-            supports_instruct_mode=supports_instruct,
-        )
+        calibration = run_pc_token_probe(args.model, provider, client)
     except PcProbeError as exc:
         # Fast-Fail-Guard: systematische Provider-Fehler — bewusst kein
         # Card-Write (sonst würde z. B. greedy_uncapped/Budget-None persistiert).
@@ -253,7 +220,7 @@ def run_probe_mode(args: argparse.Namespace, config: dict[str, Any]) -> int:
     _print_probe_report(calibration, args.model)
 
     if args.write_card:
-        card_path = _write_calibration_to_card(args.model, calibration, provider=provider)
+        card_path = write_pc_calibration_to_card(args.model, calibration, provider=provider)
         print(f"\n✅ Card aktualisiert: {card_path}")
         print("   resolve_token_budget honoriert das kalibrierte Budget automatisch.")
     else:

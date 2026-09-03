@@ -7,7 +7,7 @@
 
 CrucibleMark ist ein modulares LLM-Benchmark-Framework für Python 3.12. Es testet AI-Modelle gegen praxisnahe Aufgaben, bewertet Antworten blind über einen unabhängigen LLM-Judge und generiert Leaderboards.
 
-**Stand:** v5.2.1 · 2026-09-02 · Production-Ready
+**Stand:** v5.2.2 · 2026-09-03 · Production-Ready
 
 ## Session-Start
 
@@ -73,6 +73,7 @@ make docs-version-sync YES=1   # Doku-Stempel angleichen
 - **HTTP-Clients schließen statt fallen lassen (2026-08-31):** vLLM 0.27 nightly erkennt einen client-seitig abgebrochenen Request ohne TCP FIN nicht und generiert bis zum OS-Keepalive (~2 h) weiter — Connectoren schließen via `close()`-Kette (`LLMClient.close` + `atexit`, Override in vllm/llamacpp); `self._client = None` ohne `close()` ist ein Bug. Bei SIGKILL hilft nur der Server-Stop.
 - **Anthropic-Streaming-Pfad: `max_tokens` + `text_delta` selbst setzen (2026-09-02):** `_execute_with_token_fallback` injiziert `max_tokens` nur im Non-Streaming-Pfad — der Streaming-Pfad muss das Pflicht-Argument selbst setzen und der Delta-Handler muss `text_delta` verarbeiten, sonst Totalausfall mit leerem Antworttext (Regression `60aad34c`, 5 Tage unentdeckt).
 - **`make clean-model` bricht Card-abhängige Tests (2026-09-02):** `tests/test_resolve_canonical_model_id.py` (Marker `uses_real_cards`) löst Model-IDs via Card-Lookup auf — nach einer clean-model-Löschung brechen die Testfälle des gelöschten Modells (Fallback `_safe_name` statt namespaced/Card-ID). Gelöschte Modelle, die in Tests referenziert sind, dort durch ein aktives Modell ersetzen (Session 97: `qwen/qwen3-32b` → `qwen/qwen3.8-flash`).
+- **PC-Token-Probe ist Card-First-automatisch (2026-09-03):** Hat die Model Card keinen Eintrag (`pc_profile` fehlt/null), führt der PC-Benchmark-Runner die Probe automatisch vor dem PC-Run aus (Hook in `utils/base_runner.execute_batch_module`, SSoT `benchmark_modules/political_compass/core/pc_probe_hook.py`) — analog Thinking-Probe vor dem Standard-Benchmark. `make probe-pc-budget` dient nur der manuellen Kalibrierung/Wiederholung. `PcProbeError` (Fast-Fail-Guard) → Benchmark läuft weiter ohne Card-Write (nächster Lauf wiederholt die Probe).
 
 ## Security
 

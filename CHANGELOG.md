@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v5.2.2] - 2026-09-03
+
+**Patch-Release: PC-Token-Probe läuft jetzt automatisch vor dem PC-Benchmark (Card-First-Hook).**
+
+- **PC-Token-Probe Card-First-Hook:** Hat die Model Card keinen PC-Token-Probe-Eintrag (`pc_profile` fehlt/null), führt der PC-Benchmark-Runner die Probe jetzt automatisch vor dem PC-Run aus — analog zur Thinking-Probe vor dem Standard-Benchmark. Vorher war die Probe ein rein manueller Schritt (`make probe-pc-budget`); neue Modelle (z. B. `claude-opus-4-8`) liefen ungeprüft am Default-Modul-Budget. Neues SSoT-Modul `benchmark_modules/political_compass/core/pc_probe_hook.py` (`read_pc_probe_state` / `run_pc_token_probe` / `write_pc_calibration_to_card` / `ensure_pc_token_probe`); Hook in `utils/base_runner.py` `execute_batch_module()` nach den Skip-Checks (3-CSV-Cache + PC-Leaderboard), vor `_load_batch_test`, nur PC-Module. Trigger-Semantik identisch zur Thinking-Probe (nur None/fehlt triggert; gesetzter Wert nicht — Endlos-Probe-Schutz). `PcProbeError` (Fast-Fail-Guard) → Runner lässt den Benchmark weiterlaufen ohne Card-Write (nächster Lauf wiederholt die Probe).
+- **`pc_calibrate.py` DRY-Refactor:** Probe-Orchestrierung + Card-Write in das Hook-Modul ausgelagert (kein Duplikat); das Tool dient weiterhin der manuellen Kalibrierung/Wiederholung. Tote Imports entfernt.
+- **Tests:** 13 neue Tests in `tests/test_pc_probe_hook.py` (Trigger-Semantik, Skip, Fast-Fail ohne Card-Write, Verdrahtung, Runner-Toleranz, Source-Level-Hook-Check). Suite 1722 grün, Lint exit 0.
+
 ## [v5.2.1] - 2026-09-02
 
 **Patch-Release: Anthropic-Streaming-Regression behoben, PC-Probe-Fast-Fail-Guard, Groq-Sektion neu besetzt.**

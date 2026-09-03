@@ -1,11 +1,11 @@
 # CrucibleMark
 
-[![Version](https://img.shields.io/badge/version-5.2.1-blue)](.)
+[![Version](https://img.shields.io/badge/version-5.2.2-blue)](.)
 [![Python](https://img.shields.io/badge/python-3.12%2B-blue)](.)
 [![License](https://img.shields.io/badge/license-MIT-green)](.)
 [![Status](https://img.shields.io/badge/status-production--ready-brightgreen)](.)
 
-**Stand: v5.2.1 · 2026-09-02**
+**Stand: v5.2.2 · 2026-09-03**
 
 ## Ein modulares LLM-Benchmark-Framework für Product Engineers
 
@@ -198,6 +198,10 @@ make clean-model MODEL="mistral-large-2411" DRY=1   # Vorschau ohne Löschen
 
 Die vollständige Versionshistorie steht in [CHANGELOG.md](CHANGELOG.md). Kurzfassung der letzten drei Releases:
 
+### v5.2.2 (2026-09-03) — PC-Token-Probe Card-First-Hook
+
+Hat die Model Card keinen PC-Token-Probe-Eintrag (`pc_profile` fehlt/null), führt der PC-Benchmark-Runner die Probe jetzt automatisch vor dem PC-Run aus — analog zur Thinking-Probe vor dem Standard-Benchmark (vorher rein manuell via `make probe-pc-budget`). Neues SSoT-Modul `pc_probe_hook.py`; Hook in `utils/base_runner.execute_batch_module()` nach den Skip-Checks, nur PC-Module. Trigger-Semantik wie Thinking-Probe (nur None/fehlt triggert); `PcProbeError` (Fast-Fail-Guard) → Benchmark läuft weiter ohne Card-Write. `pc_calibrate.py` DRY-Refactor (Probe-Orchestrierung + Card-Write ausgelagert, tote Imports entfernt). 13 neue Tests, Suite 1722 grün, Lint exit 0.
+
 ### v5.2.1 (2026-09-02) — Anthropic-Streaming-Fix + PC-Probe-Fast-Fail-Guard
 
 Anthropic-Streaming-Regression behoben (seit `60aad34c` fehlte im Streaming-Pfad `max_tokens` als Pflicht-Argument und der `text_delta`-Branch — jeder Request schlug fehl, Antworttext immer leer). PC-Token-Probe mit Fast-Fail-Guard: >50 % Query-Fehler (kumulativ) → `PcProbeError` → Abbruch ohne Card-Write statt falsch persistierter `greedy_uncapped`-Kalibrierung. Groq-Sektion nach clean-model-Löschung neu besetzt (`qwen/qwen3.6-27b`, `qwen/qwen3.8-27b` via Groq-API verifiziert), Blacklist-Hygiene (GPT-OSS-120B-Eintrag entfernt).
@@ -205,10 +209,6 @@ Anthropic-Streaming-Regression behoben (seit `60aad34c` fehlte im Streaming-Pfad
 ### v5.2.0 (2026-08-31) — Political Compass v3.0 + Provider-Härtung
 
 PC v3.0 re-aktiviert: Token-Budget-Regime (800, kein 25k-Fallback), Refusal-/Truncation-Klassifikator, begrenzte Eskalations-Treppe, PC-Token-Probe mit Profil-Entscheidung (thinking/hybrid_dual/instruct, Card-First) und Ergebnis-Attribution für Instruct-Ersatzläufe. Dazu llama.cpp Mac/Spark-Separation mit Metrics-Proxy-Anbindung (Timeout-Livelock-Fix: 2400 s auf beiden Wänden), Thinking-only-Ausnahme via `dual_profile`-Gate, Leaderboard-Trigger pro Modul in allen Pfaden, Web-Export-Provider-Auflösung run-autoritativ per Provider-Code, korrigierte Timeout-Metrik (nur echte Fehler) und HTTP-Client-Close-Kette (`atexit` → `close()` → TCP FIN) gegen hängende vLLM-Generierung nach Abbruch. 1704 Tests grün, Lint 9.99/10.
-
-### v5.1.5 (2026-08-17) — Echte-Token-Pipeline (TPS, Judge, Audit-Log)
-
-Behebt einen Architektur-Denkfehler: `tokens_per_second` wurde aus der Modul-Schätzung (Wörter × 1.3, ohne Thinking) berechnet, während `tokens_used` die echten Provider-Usage-Werte enthielt — zwei Spalten, zwei Token-Zahlen, bei Thinking-Modellen massiv unterbewertet. Jetzt: TPS = echte Output-Tokens (inkl. Thinking) / Wall-Time, neue CSV-Spalten `input_tokens`/`output_tokens`, Judge-Context und Audit-Log mit echter Breakdown, Visible-Output-Formel fixt (`output_tokens − reasoning_tokens`). Provider (vLLM, OpenRouter, llama.cpp, Ollama) lieferten bereits echte Usage — keine Provider-Änderung. 1572 Tests grün, Lint 0.
 
 ---
 
@@ -222,4 +222,4 @@ Bug-Reports, Feature-Wünsche und Diskussionen laufen über [GitHub Issues](http
 
 - **Maintainer:** [kbeissert](https://github.com/kbeissert)
 - **Repository:** [github.com/kbeissert/cruciblemark](https://github.com/kbeissert/cruciblemark)
-- **Status:** Production-Ready (v5.2.1)
+- **Status:** Production-Ready (v5.2.2)

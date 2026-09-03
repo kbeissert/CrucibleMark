@@ -399,6 +399,8 @@ class BaseBenchmarkRunner:
         existing_benchmarks: dict | None = None
     ) -> list:
         """Führt Batch-Module (z.B. Political Compass) zentral aus."""
+        from utils.scoring.political_compass_handler import PoliticalCompassHandler
+
         # SSoT für Batch-Module: Skip-Logik ausschließlich über das modul-spezifische
         # Leaderboard (z.B. political_compass_leaderboard.csv), NICHT über die 3-CSVs.
         #
@@ -423,11 +425,36 @@ class BaseBenchmarkRunner:
         if self._check_pc_leaderboard_skip(model, benchmark_info, force):
             return []
 
+        if PoliticalCompassHandler.is_political_compass(benchmark_info):
+            self._ensure_pc_token_probe(model, provider)
+
         test = self._load_batch_test(benchmark_info, model, provider)
         if test is None:
             return []
 
         return self._run_batch_test(test, model, benchmark_info, provider, num_runs, batch_asset_id)
+
+    def _ensure_pc_token_probe(self, model: str, provider: str) -> None:
+        """Card-First-Hook: PC-Token-Probe vor dem PC-Run, wenn die Card keinen Eintrag hat.
+
+        Pattern: Thinking-Probe (``unified_runner._ensure_model_card``). Die
+        Probe läuft einmalig; das Ergebnis wird in die Model Card persistiert
+        (``pc_token_calibration`` + ``pc_profile``), nachfolgende Läufe
+        überspringen sie. Bei Probe-Fehlern (Fast-Fail-Guard) läuft der
+        Benchmark weiter ohne Card-Write (nächster Lauf wiederholt die Probe).
+        """
+        from benchmark_modules.political_compass.core.pc_probe_hook import (
+            ensure_pc_token_probe,
+        )
+
+        try:
+            ensure_pc_token_probe(model, provider, self.client)
+        except Exception as exc:  # pylint: disable=broad-exception-caught
+            logger.warning(
+                "[Card-First] PC-Token-Probe für '%s' übersprungen: %s — "
+                "Benchmark läuft weiter.",
+                model, exc,
+            )
 
     def _check_batch_cache_skip(
         self,
