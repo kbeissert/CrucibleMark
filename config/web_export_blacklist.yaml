@@ -54,26 +54,26 @@ blacklist:
   # Opus 5 / Opus 4.8 und Sonnet 5 / Sonnet 4.6 bleiben im Web-Export.
 
   # Opus-Linie (behalten: Opus 5, Opus 4.8)
-  - "claude-opus-4-7"                  # ersetzt durch Opus 4.8 / Opus 5
-  - "claude-opus-4-6"                  # ersetzt durch Opus 4.8 / Opus 5
+  - "claude-opus-4-7"                  # ersetzt durch Opus 4.8 / Opus 5 (Rank 6, 79.27)
+  - "claude-opus-4-6"                  # ersetzt durch Opus 4.8 / Opus 5 (Rank 12, 78.03)
 
   # Sonnet-Linie (behalten: Sonnet 5, Sonnet 4.6)
-  - "claude-sonnet-4-5-20250929"       # ersetzt durch Sonnet 4.6 / Sonnet 5
+  - "claude-sonnet-4-5-20250929"       # ersetzt durch Sonnet 4.6 / Sonnet 5 (Rank 30, 74.9)
 
 
   # -----------------------------------------------------------------
   # DeepSeek
   # -----------------------------------------------------------------
   # V3-Linie — V4 (Pro/Flash) ist die aktuelle Generation.
-  - "deepseek_deepseek-chat-v3_1"      # ersetzt durch V4 Pro / V4 Flash
-  - "deepseek_deepseek-v3_2"           # ersetzt durch V4 Pro / V4 Flash
+  - "deepseek_deepseek-chat-v3_1"      # ersetzt durch V4 Pro / V4 Flash (Rank 42, 74.26)
+  - "deepseek_deepseek-v3_2"           # ersetzt durch V4 Pro / V4 Flash (Rank 73, 71.93)
 
 
   # -----------------------------------------------------------------
   # Google — Gemini
   # -----------------------------------------------------------------
   # Flash 3.5 / 3.7 und Pro 2.5 GA bleiben; 3.1 Pro Preview ohne GA-Nachfolger.
-  - "gemini-3.1-pro-preview"
+  - "gemini-3.1-pro-preview"           # (Rank 86, 70.87)
 
 
   # -----------------------------------------------------------------
@@ -81,8 +81,8 @@ blacklist:
   # -----------------------------------------------------------------
   # Mac-Q8 und Spark-Q8 im Leaderboard; Spark-Q4-K_M (gemma-3-12b-it-spark)
   # bleibt als Referenz via kept_overrides exportiert.
-  - "gemma-3-12b-it-q8"                     # Rank 83
-  - "gemma-3-12b-it-q8-spark"               # [Spark] Q8 — Q4-Spark (89.64) behalten
+  - "gemma-3-12b-it-q8"                     # Rank 98, 69.65
+  - "gemma-3-12b-it-q8-spark"               # [Spark] Q8 — Q4-Spark (89.64) behalten; selbst (Rank 106, 68.74)
 
 
   # -----------------------------------------------------------------
@@ -90,24 +90,24 @@ blacklist:
   # -----------------------------------------------------------------
 
   # 12B Desktop (stärkster: q8)
-  - "gemma-4-12b-it-ud-q4_k_xl"             # schwächer als q8 (Rank 67, 72.03)
-  - "gemma-4-12b-it-ud-q6_k_xl"             # schwächer als q8
+  - "gemma-4-12b-it-ud-q4_k_xl"             # schwächer als q8 (Rank 67, 72.03); selbst (Rank 97, 69.76)
+  - "gemma-4-12b-it-ud-q6_k_xl"             # schwächer als q8; selbst (Rank 101, 69.38)
 
   # 26B-A4B Workstation (stärkster: Gemma-4-26B NVFP4, Rank 37, 74.21)
-  - "gemma-4-26b-a4b-q8"                    # Standard-q8 (74)
-  - "gemma-4-26B-A4B-it-UD-Q8_K_XL"         # UD-Q8_K_XL [Spark]
-  - "gemma-4-26B-A4B-it-UD-Q5_K_XL-mtp"     # UD-Q5, MTP [Spark]
-  - "gemma-4-26B-A4B-it-qat-ud-q4"          # QAT, UD-Q4 [Spark]
+  - "gemma-4-26b-a4b-q8"                    # Standard-q8 (Rank 84, 71.08)
+  - "gemma-4-26B-A4B-it-UD-Q8_K_XL"         # UD-Q8_K_XL [Spark] (Rank 74, 71.91)
+  - "gemma-4-26B-A4B-it-UD-Q5_K_XL-mtp"     # UD-Q5, MTP [Spark] (Rank 89, 70.58)
+  - "gemma-4-26B-A4B-it-qat-ud-q4"          # QAT, UD-Q4 [Spark] (Rank 77, 71.83)
 
   # 31B Workstation (stärkster: Gemma-4-31B NVFP4, Rank 18, 76.03)
-  - "gemma-4-31B-it-qat-ud-q4"              # QAT, UD-Q4 [Spark]
-  - "gemma-4-31B-it-UD-Q8_K_XL-mtp"         # UD-Q8, MTP [Spark]
+  - "gemma-4-31B-it-qat-ud-q4"              # QAT, UD-Q4 [Spark] (Rank 56, 73.1)
+  - "gemma-4-31B-it-UD-Q8_K_XL-mtp"         # UD-Q8, MTP [Spark] (Rank 78, 71.8)
 
 
   # -----------------------------------------------------------------
   # Hermes (NousResearch)
   # -----------------------------------------------------------------
-  - "hermes-4_3-36b-q6"                     # ~3 tok/s auf Spark → bremst Auto-Benchmark
+  - "hermes-4_3-36b-q6"                     # ~3 tok/s auf Spark → bremst Auto-Benchmark (Rank 108, 68.57)
 
 
   # -----------------------------------------------------------------
@@ -116,8 +116,8 @@ blacklist:
   # Kimi-K-Linie: 3 Modelle behalten (K3, K2.6, K2.5) wegen
   # 264K → 1M Context-Window-Übergang.
   # Kimi-Code (kimi-k2.7-code) ist Sonderlinie und bleibt unberührt.
-  - "moonshotai_kimi-k2-thinking-20251106"  # ersetzt durch K2.5 / K2.6 / K3
-  - "moonshotai_kimi-k2"                    # K2 0711 — Legacy
+  - "moonshotai_kimi-k2-thinking-20251106"  # ersetzt durch K2.5 / K2.6 / K3 (Rank 28, 75.04)
+  - "moonshotai_kimi-k2"                    # K2 0711 — Legacy (Rank 83, 71.32)
 
 
   # -----------------------------------------------------------------
@@ -125,17 +125,17 @@ blacklist:
   # -----------------------------------------------------------------
 
   # GPT-Hauptlinie (behalten: GPT-5.5, GPT-5.4)
-  - "gpt-5-2025-08-07"                      # GPT-5 — ersetzt durch 5.4 / 5.5
+  - "gpt-5-2025-08-07"                      # GPT-5 — ersetzt durch 5.4 / 5.5 (Rank 38, 74.55)
 
   # GPT-Mini-Linie (behalten: GPT-5.4 Mini)
-  - "gpt-5-mini-2025-08-07"                 # GPT-5 Mini — ersetzt durch 5.4 Mini
+  - "gpt-5-mini-2025-08-07"                 # GPT-5 Mini — ersetzt durch 5.4 Mini (Rank 71, 72.26)
 
   # GPT-4-Linie (Legacy, komplett — GPT-5 mit thinking_effort ersetzt die Reihe)
-  - "gpt-4o"                                # Legacy
-  - "gpt-4o-mini"                           # Legacy
+  - "gpt-4o"                                # Legacy (Rank 115, 67.99)
+  - "gpt-4o-mini"                           # Legacy (Rank 125, 65.03)
 
   # o-Serie (Reasoning-Linie, Legacy) — o4-mini / o3-mini bleiben erhalten
-  - "o1"                                    # ersetzt durch o3-mini / o4-mini
+  - "o1"                                    # ersetzt durch o3-mini / o4-mini (Rank 119, 67.53)
 
 
   # -----------------------------------------------------------------
@@ -143,23 +143,23 @@ blacklist:
   # -----------------------------------------------------------------
 
   # Qwen 3.8 (27B Uncensored) — komplettes FP8-Profil (Standard + Thinking)
-  - "qwen3_8-27b-uncensored-fp8"            # Standard-Variante FP8 (2026-09-01 auf Anfrage)
-  - "qwen3_8-27b-uncensored-fp8-thinking"   # Thinking-Variante FP8 (2026-09-01 auf Anfrage)
+  - "qwen3_8-27b-uncensored-fp8"            # Standard-Variante FP8 (2026-09-01 auf Anfrage) (Rank 46, 73.86)
+  - "qwen3_8-27b-uncensored-fp8-thinking"   # Thinking-Variante FP8 (2026-09-01 auf Anfrage) (Rank 4, 79.75)
 
   # Qwen 3.5 (35B-q4 stärkster, 4B-q6 stärkster)
   # 35B-A3B (MoE)
-  - "qwen3_5-35b-a3b-q8"                    # schwächer + langsamer als q4 (74.66 vs 74.72)
+  - "qwen3_5-35b-a3b-q8"                    # schwächer + langsamer als q4 (74.66 vs 74.72); selbst (Rank 31, 74.82)
   # 4B
-  - "qwen3_5-4b-q4"                         # schwächer als q6 (68.09)
-  - "qwen3_5-4b-q8"                         # schwächster 4B (67.69)
+  - "qwen3_5-4b-q4"                         # schwächer als q6 (68.09); selbst (Rank 102, 69.21)
+  - "qwen3_5-4b-q8"                         # schwächster 4B (Rank 82, 71.43)
 
   # Qwen 3.6 (35B-A3B: Uncensored als Ausnahme im Whitelist)
-  - "qwen3_6-35b-a3b-mtp-ud-q4"             # schwächster 35B (72.58)
-  - "qwen3_6-35b-a3b-q8"                    # schwächer als mtp-ud-q8 (73.17)
-  - "qwen3_6-35b-a3b-mtp-ud-q8"            # MTP/UD-Q8 (73.52) — Duplikat zur Unsloth-Gruppe, Whitelist-Austrag
+  - "qwen3_6-35b-a3b-mtp-ud-q4"             # schwächster 35B (Rank 75, 71.9)
+  - "qwen3_6-35b-a3b-q8"                    # schwächer als mtp-ud-q8 (73.17); selbst (Rank 57, 73.06)
+  - "qwen3_6-35b-a3b-mtp-ud-q8"            # MTP/UD-Q8 — Duplikat zur Unsloth-Gruppe, Whitelist-Austrag (Rank 70, 72.48)
 
   # Qwen 3 Coder (q8 schwächer + langsamer als q4)
-  - "qwen3-coder-next-q8"                   # q4 (Rank 34) schneller UND stärker
+  - "qwen3-coder-next-q8"                   # q4 (Rank 34) schneller UND stärker; selbst (Rank 39, 74.37)
 
 
   # -----------------------------------------------------------------
@@ -167,11 +167,11 @@ blacklist:
   # -----------------------------------------------------------------
 
   # Grok-4.x-Linie (behalten: 4.6, 4.5)
-  - "grok-4_3"                              # ersetzt durch Grok 4.5 / 4.6
+  - "grok-4_3"                              # ersetzt durch Grok 4.5 / 4.6 (Rank 121, 67.27)
 
   # Grok-4.20-Linie (älter als 4.3, komplett entfernt)
-  - "grok-4_20-0309-reasoning"              # Legacy
-  - "grok-4_20-0309-non-reasoning"          # Legacy
+  - "grok-4_20-0309-reasoning"              # Legacy (Rank 95, 70.11)
+  - "grok-4_20-0309-non-reasoning"          # Legacy (Rank 94, 70.14)
 
 
   # -----------------------------------------------------------------
@@ -179,8 +179,8 @@ blacklist:
   # -----------------------------------------------------------------
   # GLM-5-Linie (behalten: 5.2, 5.1-20260406).
   # GLM-4-Linie (4.7, 4.6) ist nur 2 Modelle stark → komplett erhalten.
-  - "z-ai_glm-5-turbo-20260315"             # ersetzt durch 5.1 / 5.2
-  - "z-ai_glm-5-20260211"                   # ersetzt durch 5.1 / 5.2
+  - "z-ai_glm-5-turbo-20260315"             # ersetzt durch 5.1 / 5.2 (Rank 66, 72.73)
+  - "z-ai_glm-5-20260211"                   # ersetzt durch 5.1 / 5.2 (Rank 34, 74.78)
 
 
 # ============================================================================
