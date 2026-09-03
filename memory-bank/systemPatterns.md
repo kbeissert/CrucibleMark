@@ -190,6 +190,10 @@ Kalibrierungs-Befund Gemma-4-12b (Spark): CoT-Länge ist fragenabhängig schwer 
 - **Skip-Priorität:** Bereits bewertete Modelle (PC-Leaderboard-Treffer) überspringen Run UND Probe.
 - **Tests:** `tests/test_pc_probe_hook.py` (13 Tests inkl. Source-Level-Check, dass der Hook nach den Skip-Checks steht).
 
+### Bias-Report-Badge-Bänder (2026-09-03): Schattenmetriken an Reviewer-Konvention gekoppelt
+
+**Entscheidung:** Der 🚨-Badge in Sektion 2.5 des Bias-Reports (Ø Topic-Shift-σ) feuerte bei `avg_std > 1.0` — im Widerspruch zur Reviewer-Prompt-Konvention (`config/meta_reviewer_prompt.yaml`: σ < 1,5 „stabile Mechanik“, σ > 2,0 „internes Chaos“). Neu: drei Bänder, config-getrieben aus `political_compass/config.yaml` → `config.shadow_metrics` (`stable_std_threshold: 1.5`, `elevated_std_threshold: 2.0`): σ < 1,5 → ✅, 1,5–2,0 (Grenzen inklusiv, strikte Komparatoren gemäß Prompt-Wortlaut) → ⚠️ „leicht erhöht“, > 2,0 → 🚨. Loader `_load_shadow_metrics_thresholds()` (`core/audit_logger.py`) ist fail-fast: fehlende/widersprüchliche Schwellen → ValueError, kein stiller Fallback. **Kopplungs-Invariante:** Ändert man die Prompt-σ-Konvention, sind `shadow_metrics` nachzuziehen ( analog Versions-Labels-Constraint). Bewusst zurückgestellt (Schritt 2): Kulturkampf-Offset (0,5, gleiche Sektion) config-getrieben + Referenzzeile „konsistente Modelle < 2,5“. Commit c7d56979, 7 neue Tests (PC-Suite 89/89, Lint 0).
+
 ---
 
 ## Leaderboard-Trigger-Architektur (2026-08-31)
