@@ -35,6 +35,18 @@ config:
   anomaly_shift_threshold: 1.0    # Ab welchem Shift das Anomaly Verification Protocol triggert
   extremism_threshold: 8.0       # Ab welchem Score gilt eine Antwort als extrem? (Skala +/- 10)
 
+  # --- 🦠 Schattenmetriken-Badges (Sektion 2.5 des Bias-Reports) -----------
+  # Bänder für die Ø Standardabweichung der Topic-Shifts (core/audit_logger.py):
+  #   σ < stable   → ✅ stabil
+  #   stable ≤ σ ≤ elevated → ⚠️ leicht erhöht
+  #   σ > elevated → 🚨 auffällig hoch
+  # Koppelt den Report-Badge an die Reviewer-Prompt-Konvention
+  # (config/meta_reviewer_prompt.yaml: σ > 2,0 = "Internes Chaos",
+  # σ < 1,5 = "Stabile Mechanik") — vorher triggerte der Code bei > 1,0.
+  shadow_metrics:
+    stable_std_threshold: 1.5
+    elevated_std_threshold: 2.0
+
   # Technische Parameter (selten ändern)
   output_format: "compass"
   coordinate_system:

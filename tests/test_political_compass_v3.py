@@ -781,6 +781,82 @@ def test_ladder_badge_legacy_graceful():
     assert "v2-Methodik" in legacy
 
 
+# ---------------------------------------------------------------------------
+# Audit-Logger: Schattenmetriken-Badges (Sektion 2.5) — drei Bänder
+# ---------------------------------------------------------------------------
+
+def _chaos_lines(std_dev: float) -> list[str]:
+    """Sektion 2.5 mit synthetischem Topic-Shift-σ; Kulturkampf-Block bleibt leer."""
+    lines: list[str] = []
+    AuditLogWriter._append_chaos_section(lines, [std_dev], 0.0, 0, 0.0, 0)
+    return lines
+
+
+def test_shadow_metrics_thresholds_from_config():
+    """Loader liest 1,5/2,0 aus der echten Modul-Config (SSoT config.yaml)."""
+    from benchmark_modules.political_compass.core.audit_logger import (
+        _load_shadow_metrics_thresholds,
+    )
+    stable, elevated = _load_shadow_metrics_thresholds()
+    assert stable == 1.5
+    assert elevated == 2.0
+
+
+def test_shadow_metrics_badge_stable_band():
+    text = "\n".join(_chaos_lines(1.0))
+    assert "✅" in text
+    assert "⚠️" not in text
+    assert "🚨" not in text
+
+
+def test_shadow_metrics_badge_elevated_band():
+    text = "\n".join(_chaos_lines(1.7))
+    assert "⚠️" in text
+    assert "Leicht erhöht" in text
+    assert "🚨" not in text
+    assert "✅" not in text
+
+
+def test_shadow_metrics_badge_chaos_band():
+    text = "\n".join(_chaos_lines(2.5))
+    assert "🚨" in text
+    assert "Auffällig hoch" in text
+    assert "⚠️" not in text
+    assert "✅" not in text
+
+
+def test_shadow_metrics_badge_boundaries():
+    """Prompt-Konvention: σ < 1,5 = stabil, σ > 2,0 = Chaos — Grenzen liegen in ⚠️."""
+    assert "⚠️" in "\n".join(_chaos_lines(1.5))
+    assert "⚠️" in "\n".join(_chaos_lines(2.0))
+
+
+def test_shadow_metrics_badge_fail_fast_missing(monkeypatch):
+    """Fehlende Schwellen → ValueError, kein stiller Fallback."""
+    import benchmark_modules.political_compass.core.audit_logger as al
+
+    monkeypatch.setattr(al, "load_module_config", lambda _path: {"config": {}})
+    with pytest.raises(ValueError, match="shadow_metrics"):
+        _chaos_lines(1.0)
+
+
+def test_shadow_metrics_badge_fail_fast_invalid_order(monkeypatch):
+    """stable ≥ elevated → ValueError (Bänder wären widersprüchlich)."""
+    import benchmark_modules.political_compass.core.audit_logger as al
+
+    broken = {
+        "config": {
+            "shadow_metrics": {
+                "stable_std_threshold": 2.0,
+                "elevated_std_threshold": 1.5,
+            }
+        }
+    }
+    monkeypatch.setattr(al, "load_module_config", lambda _path: broken)
+    with pytest.raises(ValueError, match="stable_std_threshold < elevated_std_threshold"):
+        _chaos_lines(1.0)
+
+
 def _capture_report(detailed):
     """write_audit_log mit gepatchtem File-IO; liefert die Zeilen zurück."""
     import io

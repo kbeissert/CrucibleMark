@@ -162,6 +162,9 @@ config:
   aggregate_method: "mean"
   anomaly_shift_threshold: 1.0     # Anomaly Verification Protocol
   extremism_threshold: 8.0         # Ab ±8.0 gilt Antwort als extrem
+  shadow_metrics:                  # Badges in Sektion 2.5 (Topic-Shift-σ)
+    stable_std_threshold: 1.5      # σ < 1,5 → ✅ stabil
+    elevated_std_threshold: 2.0    # σ > 2,0 → 🚨; dazwischen ⚠️ leicht erhöht
 
 integration:
   leaderboard:

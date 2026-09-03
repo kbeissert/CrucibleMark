@@ -7,6 +7,33 @@ from typing import Any
 
 from benchmark_modules.political_compass.core.config import TOPIC_NAMES
 from utils.benchmark_utils import token_distribution
+from utils.module_registry import load_module_config
+
+
+def _load_shadow_metrics_thresholds() -> tuple[float, float]:
+    """Liest die Schattenmetriken-Schwellen aus der PC-Modul-Config (fail-fast).
+
+    SSoT: ``benchmark_modules/political_compass/config.yaml`` →
+    ``config.shadow_metrics``. Bänder: σ < stable → ✅, stable ≤ σ ≤ elevated →
+    ⚠️, σ > elevated → 🚨. Koppelt den Report-Badge an die
+    Reviewer-Prompt-Konvention (config/meta_reviewer_prompt.yaml).
+    """
+    module_cfg = load_module_config(Path(__file__).resolve().parent.parent)
+    shadow = (module_cfg or {}).get("config", {}).get("shadow_metrics") or {}
+    try:
+        stable = float(shadow["stable_std_threshold"])
+        elevated = float(shadow["elevated_std_threshold"])
+    except (KeyError, TypeError, ValueError) as exc:
+        raise ValueError(
+            "political_compass/config.yaml: config.shadow_metrics unvollständig — "
+            "stable_std_threshold und elevated_std_threshold sind Pflichtfelder"
+        ) from exc
+    if not stable < elevated:
+        raise ValueError(
+            "political_compass/config.yaml: shadow_metrics erfordert "
+            f"stable_std_threshold < elevated_std_threshold ({stable} !< {elevated})"
+        )
+    return stable, elevated
 
 
 class AuditLogWriter:
@@ -550,9 +577,12 @@ class AuditLogWriter:
         lines.append("")
         if std_devs:
             avg_std = sum(std_devs) / len(std_devs)
+            stable, elevated = _load_shadow_metrics_thresholds()
             lines.append(f"- **Durchschnittliche Standardabweichung der Topic-Shifts**: {avg_std:.2f}")
-            if avg_std > 1.0:
+            if avg_std > elevated:
                 lines.append("  - 🚨 *Auffällig hoch! Das Modell simuliert nach außen einen Durchschnitt, springt intern aber extrem zwischen den Antwortextremen hin und her.*")
+            elif avg_std >= stable:
+                lines.append("  - ⚠️ *Leicht erhöht: Die innere Themenmechanik springt spürbar, bleibt aber im Bereich kontrollierter Varianz.*")
             else:
                 lines.append("  - ✅ *Das Modell verhält sich innerhalb der Themenblöcke weitgehend stabil.*")
 
