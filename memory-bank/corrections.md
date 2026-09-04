@@ -124,3 +124,36 @@ werden — sonst 400-Fehler bei allen API-Calls (ThinkingProbe + Benchmark).
 **Pflege:** Bei jeder Änderung am Anthropic-Streaming-Pfad beide Invarianten prüfen: `max_tokens` gesetzt UND `text_delta` verarbeitet (Smoke-Test mit Streaming-Default, z. B. `claude-haiku-4-5`). Sonst wieder Totalausfall mit leerem Text.
 
 **Verifikations-Datum:** 2026-09-02 (Smoke-Test claude-haiku-4-5 „OK"; PC-Probe claude-sonnet-4-6 und claude-sonnet-5 end-to-end grün: 9/9 Requests HTTP 200, Antworttexte intakt; Lint-Gate exit 0)
+
+---
+## Cohere: Trial-Key — 1000 Calls/Monat erschöpft (2026-09-03)
+
+**Befund:** Der FORCE-Re-Run des PC-Benchmarks für `command-a-plus-05-2026` (Cohere) scheiterte an allen Requests: HTTP 429 (zunächst mit `Retry-After: 60s`, später ohne). Der Systematische-Fehler-Guard (9/9 in Block 7.2) brach den Run nach ~82 Minuten 429-Retries ab. Die Console-Labels „Refusal"/„Hard refusal" waren irreführend — der PC-Shared-Retry-/Hard-Fail-Pfad (`test.py:245,388-398`) beschriftet API-Fehler als Refusals (Checkpoint-Daten tragen korrekt `trigger: api_error`).
+
+**Ursache:** `COHERE_API_KEY` ist ein **Trial-Key mit 1000 API-Calls/Monat** (429-Body: „You are using a Trial key, which is limited to 1000 API calls / month"). Das Kontingent wurde am 2026-09-03 erschöpft (PC-Token-Probe ~13 Calls + Voll-PC-Run 17:55 UTC ~158+ Calls + Partial-Run + FORCE-Run 81+ Calls). Abwarten hilft nicht — harte Monatsgrenze, kein Minuten-Rate-Limit.
+
+**Folge:** Alle Cohere-Runs (alle Modelle, alle Module) 429, bis das Monatskontingent zurückgesetzt ist (nächster Zyklus ~2026-10-01) oder der Key auf Production aufgewertet wird (dashboard.cohere.com/api-keys). Gültige PC-Daten von `command-a-plus-05-2026` vom 17:55 UTC (2026-09-03, vollständiger Vanilla+Forced-Lauf) bleiben in `political_compass_results.csv`. Der Partial-Checkpoint (`outputs/temp/session_command_a_plus_05_2026.json`, 8 gültige Antworten Block 7.1) bleibt für Resume erhalten.
+
+**Pflege:** Vor jedem Cohere-Run Quota per 1-Token-Probe prüfen (429 + „Trial key" im Body = erschöpft — sonst verbrannt ein Run ~80 Min. an 429-Retries bis zum Guard-Abbruch). Der `retry_after`-Header wird von der Retry-Logik ignoriert (`cohere.py:353` steckt ihn nur in die Exception-Message; `retry_handler.py:96` nutzt eigenes 60·2ⁿ-Backoff).
+
+**Entscheidung 2026-09-04:** Kein Cohere-Upgrade/Abonnement. `command-a-plus-05-2026` wurde in `config/web_export_blacklist.yaml` eingetragen (Sektion „Cohere", temporär) — Web-Export blockiert bis die PC-Neumessung steht. Geplanter PC-Re-Run nach Quota-Reset (~2026-10, 1-Token-Probe vorab); danach Blacklist-Eintrag entfernen. Der Partial-Checkpoint verfällt per `max_age_hours=48` von selbst — kein manuelles Aufräumen nötig. OpenRouter-Workaround geprüft und verworfen: Command A+ 05-2026 ist dort nicht gelistet (nur das ältere 111B-Modell `cohere/command-a`).
+
+**Verifikations-Datum:** 2026-09-03 (Live-Probe: 429 mit Trial-Key-Message; Checkpoint + CSV inspiziert) / 2026-09-04 (Probe erneut 429; OpenRouter-Modellliste geprüft; Blacklist-Eintrag via `_load_export_blacklist()`/`_is_blacklisted()` verifiziert)
+
+---
+## OpenRouter/Google: Streaming-/Blocking-Metadaten maskierten Truncation (2026-09-04)
+
+**Befund:** PC-Token-Probe-Verifikation der ersten kommerziellen Modell-Modelle (2026-09-03) offenbarte zwei Connector-Lücken in den `last_response_metadata`:
+
+1. **OpenRouter-Streaming** (`openrouter.py:_process_openrouter_stream`): `finish_reason` wurde NIE gesetzt. Da `llm_client.query` für `openrouter` (und anthropic/openai/mistral) Streaming-Default aktiviert (`streaming_output_commercial_providers: true`) und die Probe ohne stream_handler läuft, ging jede Probe-Query über den Streaming-Pfad → `truncated` in `_probe_single_query` war immer False. Nachweis: PC-Runs 2026-09-03 von nemotron-3-nano/ultra, mimo-v2.5/-pro hatten `finish_reason: null` auf 100 % der Responses (316–388 je Run); nano traf die Cap-Grenze (Budget 390) in 74/158 Responses, mimo-pro (Budget 780) in 65/158 — die Probe-Kalibrierungen `self_limiting @390` (nano) und `inconsistent @780` (mimo-pro) sind damit zu optimistisch (Truncation-mit-Buchstabe zählte als konvergiert). Zusätzlich warf `chunk.choices[0]` ohne Empty-Choices-Guard einen IndexError, sobald OpenRouter einen Usage-Only-Chunk sendet.
+2. **Google-Blocking** (`google.py:_process_google_blocking`): `response.text` raiset ValueError, wenn der Candidate keine Text-Parts hat (Thinking-only-Truncation: alles im Thinking-Budget verbraucht). Der except-Zweig überschrieb den bereits gelesenen echten `finish_reason` (MAX_TOKENS) mit "SAFETY" → Truncation auch hier maskiert. Für die Probe-Klassifikation folgenlos (letter=None → nicht konvergiert), aber Metadaten/Run-Metriken falsch gelabelt.
+
+**Ursache:** Beim Streaming-Default für Commercial-Provider (Regression 60aad34c-Umfeld) wurden die Streaming-Handler der einzelnen Provider uneinheitlich nachgerüstet — xai/openai erfassen finish_reason, openrouter/groq nicht. Die Probe-Konvergenz (`letter AND NOT truncated`) las damit nur bei einem Teil der Provider ein gültiges Truncation-Signal.
+
+**Lösung:** (1) `_process_openrouter_stream`: `finish_reason` pro Choice in meta capturieren, Empty-Choices-Guard (`continue`) für Usage-Only-Chunks; Token-Summary-Keys unverändert. (2) `_process_google_blocking`: `setdefault("finish_reason", "SAFETY")` statt Überschreiben — MAX_TOKENS bleibt erhalten, echter Safety-Block ohne Candidate liefert weiterhin SAFETY. Tests: `tests/test_commercial_provider_metadata.py` (5 Fälle: length-Capture, Usage-Only-Chunk, stop, MAX_TOKENS-nicht-SAFETY, SAFETY-Fallback). Lint-Gate exit 0, PC-Suite grün.
+
+**Betroffene Daten (Stand 2026-09-04, uncommitted):** Card-Kalibrierungen `nvidia_nemotron-3-nano-30b-a3b` (budget 390, self_limiting) und `xiaomi_mimo-v2_5-pro` (budget 780) vor Commit re-proben (pc_profile/pc_token_calibration löschen → Card-First-Hook re-probt beim nächsten PC-Run, jetzt mit Truncation-Signal). `nvidia_nemotron-3-ultra` (1560) und `xiaomi_mimo-v2_5` (1560) zeigten 0/158 bzw. 2/158 Cap-Hits — plausibel korrekt, Re-Probe optional. Die vier OpenRouter-PC-Runs haben finish_reason/token_limit_cutoff=null in den Run-Metadaten (Truncation-Statistik der PC-v3-Auswertung unterbelichtet) — Re-Run nach Fix empfohlen, wenn die Daten für den Web-Export bestimmt sind.
+
+**Pflege:** Bei neuen Commercial-Streaming-Pfaden immer finish_reason capturieren (Muster: xai `_capture_xai_chunk_metadata`). Latent, ungefixt (Befund only): `groq.py:_process_groq_stream` (gleiche Lücke, Provider deaktiviert, nicht im Streaming-Default der Probe) und `openai.py` Responses-API + stream_handler (Stream fällt in `_process_blocking_responses` → Bruch; kein responses_only-Modell konfiguriert; `_process_blocking_responses` setzt zudem kein finish_reason aus status/incomplete_details).
+
+**Verifikations-Datum:** 2026-09-04 (Run-JSONs der 4 OpenRouter-PC-Runs ausgewertet; 5 neue Tests grün; `make lint` exit 0)
