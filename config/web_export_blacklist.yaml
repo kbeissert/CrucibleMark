@@ -20,8 +20,8 @@
 #
 # Sortierung (Audit-Stand 2026-08-19)
 # ------------------------------------
-#   1) Anbieter (alphabetisch): Anthropic → DeepSeek → Google → Hermes → Mistral
-#      → Moonshot → OpenAI → Ornith → Qwable → Qwen → xAI.
+#   1) Anbieter (alphabetisch): Anthropic → Cohere → DeepSeek → Google → Hermes
+#      → Mistral → Moonshot → OpenAI → Ornith → Qwable → Qwen → xAI.
 #   2) Pro Anbieter: Produktlinie (neueste Generation zuerst).
 #   3) Pro Linie: Modell-Version (neueste zuerst).
 #
@@ -59,6 +59,16 @@ blacklist:
 
   # Sonnet-Linie (behalten: Sonnet 5, Sonnet 4.6)
   - "claude-sonnet-4-5-20250929"       # ersetzt durch Sonnet 4.6 / Sonnet 5 (Rank 30, 74.9)
+
+
+  # -----------------------------------------------------------------
+  # Cohere
+  # -----------------------------------------------------------------
+  # Temporär (2026-09-04): Cohere-Trial-Key-Quota (1000 Calls/Monat) erschöpft
+  # (2026-09-03) — PC-Neumessung (FORCE-Re-Run) konnte nicht abgeschlossen
+  # werden. Vollständige PC-Daten von 2026-09-03 (17:55 UTC) stehen in der CSV.
+  # Re-Run nach Quota-Reset (~2026-10); danach diesen Eintrag entfernen.
+  - "command-a-plus-05-2026"           # Trial-Key-Quota erschöpft; PC-Re-Run ~2026-10 (Rank 126, 61.9)
 
 
   # -----------------------------------------------------------------

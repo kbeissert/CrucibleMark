@@ -1,0 +1,28 @@
+{
+  "vendor_id": "google_deepmind_unsloth",
+  "display_name": "Google DeepMind / Unsloth",
+  "company": "Google LLC / Unsloth AI, Inc.",
+  "headquarters": "Mountain View, CA, USA / San Francisco, CA, USA",
+  "founding_year": 2023,
+  "pricing_model": "free-tier+pay-per-token",
+  "api_base_url": "https://generativelanguage.googleapis.com",
+  "api_documentation_url": "https://ai.google.dev/gemini-api/docs",
+  "deployment": {
+    "cloud_act_exposure": true,
+    "applicable_law": "US (CLOUD Act)",
+    "data_residency": "USA",
+    "gdpr_dpa_available": "unknown",
+    "eu_adequacy_decision": "unknown",
+    "data_retention_days": -1,
+    "chinese_nsl_risk": "none"
+  },
+  "privacy_note": "Bei API-Nutzung über Google Gemini besteht ein US-Transfer- und CLOUD-Act-Risiko, da Google ein US-Unternehmen ist und Verarbeitung typischerweise in von Google kontrollierter Infrastruktur erfolgt. Für europäische Nutzer sind Datenresidenz, DPA-Verfügbarkeit und konkrete Aufbewahrungsfristen vor produktivem Einsatz separat zu prüfen.",
+  "notable_models": [
+    "Gemini 1.5 Pro",
+    "Gemini 1.5 Flash"
+  ],
+  "unknown": false,
+  "generated_at": "2026-09-03T18:03:30.282700+00:00",
+  "last_verified_at": null,
+  "verification_source": "https://ai.google.dev/gemini-api/docs"
+}

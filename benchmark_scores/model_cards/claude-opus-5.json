@@ -96,5 +96,14 @@
   "profile_verified_by": null,
   "last_modified_at": "2026-08-19",
   "heritage_ids": [],
-  "community": null
+  "community": null,
+  "pc_token_calibration": {
+    "budget": 390,
+    "classification": "self_limiting",
+    "profile": "thinking",
+    "tested": "2026-09-03T10:37:15.672695+00:00",
+    "converged_stage": 300,
+    "notes": "Stratifizierte Probe: 9 Blöcke sauber @ 300, 0/0 verdächtige Blöcke eskaliert (0 greedy, 0 inkonsistent). Profil: thinking."
+  },
+  "pc_profile": "thinking"
 }

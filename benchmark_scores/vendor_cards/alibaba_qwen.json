@@ -1,0 +1,28 @@
+{
+  "vendor_id": "alibaba_qwen",
+  "display_name": "Alibaba Cloud / Qwen",
+  "company": "Alibaba Cloud Computing Ltd.",
+  "headquarters": "Hangzhou, China",
+  "founding_year": 2009,
+  "pricing_model": "free-tier+pay-per-token",
+  "api_base_url": "https://dashscope.aliyuncs.com",
+  "api_documentation_url": "https://www.alibabacloud.com/help/en/model-studio/",
+  "deployment": {
+    "cloud_act_exposure": false,
+    "applicable_law": "China (PIPL/CSL/DSL)",
+    "data_residency": "China",
+    "gdpr_dpa_available": "unknown",
+    "eu_adequacy_decision": false,
+    "data_retention_days": -1,
+    "chinese_nsl_risk": "high"
+  },
+  "privacy_note": "API calls to Qwen via Alibaba Cloud are generally subject to Chinese law, and data may be processed in China. For EU users, this creates elevated transfer and government-access risk, especially if personal data is included in prompts or outputs.",
+  "notable_models": [
+    "Qwen2.5",
+    "Qwen-VL"
+  ],
+  "unknown": false,
+  "generated_at": "2026-09-03T18:15:15.551213+00:00",
+  "last_verified_at": null,
+  "verification_source": "https://www.alibabacloud.com/help/en/model-studio/"
+}
