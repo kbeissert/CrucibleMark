@@ -213,7 +213,14 @@ class GoogleClient(BaseProviderClient):
             return response.text
         except ValueError:
             logger.warning(f"Gemini check blocked: {response.prompt_feedback}")
-            self.last_response_metadata["finish_reason"] = "SAFETY"
+            # setdefault statt Überschreiben: response.text raises ValueError,
+            # wenn der Candidate KEINE Text-Parts hat — z.B. Thinking-only-
+            # Truncation (MAX_TOKENS, alles im Thinking-Budget verbraucht).
+            # Der echte finish_reason wurde bereits aus dem Candidate gelesen
+            # und darf nicht durch "SAFETY" maskiert werden (PC-Probe/Run-
+            # Truncation-Klassifikation). Kein Candidate → kein bisheriger
+            # Eintrag → SAFETY greift wie bisher.
+            self.last_response_metadata.setdefault("finish_reason", "SAFETY")
             return "Error: Content blocked by safety filters."
 
     def _populate_google_blocking_candidate_metadata(self, response: Any) -> None:

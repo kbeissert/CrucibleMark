@@ -198,13 +198,34 @@ class OpenRouterClient(BaseProviderClient):
         fallback_triggered: bool,
         stream_handler=None,
     ) -> str:
-        """Verarbeitet den OpenRouter-Streaming-Response."""
+        """Verarbeitet den OpenRouter-Streaming-Response.
+
+        Setzt ``finish_reason`` im Metadata-Dict (Incident 2026-09-04): Der
+        Handler lieferte bisher KEIN finish_reason — Truncation
+        (``length``) war damit im PC-Token-Probe UND in den Run-Metriken
+        unsichtbar (PC-Runs 2026-09-03: finish_reason=null auf 100 % der
+        Responses). Der finale Usage-Only-Chunk hat eine LEERE choices-Liste
+        und wird übersprungen (kein IndexError mehr, Muster: xai/openai).
+        """
         full_content = ""
         from utils.providers.base import ThinkAccumulator
         think = ThinkAccumulator()
         stream_usage = None
+        meta: dict[str, Any] = {
+            "token_limit_used": used_max_tokens,
+            "token_limit_fallback": fallback_triggered,
+        }
         for chunk in response:
-            delta = chunk.choices[0].delta
+            # Usage kommt im letzten Streaming-Chunk (auch bei leerer choices-Liste)
+            if hasattr(chunk, "usage") and chunk.usage:
+                stream_usage = chunk.usage
+            if not getattr(chunk, "choices", None):
+                continue  # Usage-Only-Chunk: kein Delta zu verarbeiten
+            choice = chunk.choices[0]
+            finish_reason = getattr(choice, "finish_reason", None)
+            if finish_reason:
+                meta["finish_reason"] = finish_reason
+            delta = choice.delta
             if hasattr(delta, "content") and delta.content:
                 content_piece = delta.content
                 full_content += content_piece
@@ -216,17 +237,10 @@ class OpenRouterClient(BaseProviderClient):
             )
             if reasoning_piece:
                 think.add(reasoning_piece)
-            # Usage kommt im letzten Streaming-Chunk
-            if hasattr(chunk, "usage") and chunk.usage:
-                stream_usage = chunk.usage
 
-        meta = {
-            "total_tokens": stream_usage.total_tokens if stream_usage else 0,
-            "prompt_tokens": stream_usage.prompt_tokens if stream_usage else 0,
-            "completion_tokens": stream_usage.completion_tokens if stream_usage else 0,
-            "token_limit_used": used_max_tokens,
-            "token_limit_fallback": fallback_triggered,
-        }
+        meta["total_tokens"] = stream_usage.total_tokens if stream_usage else 0
+        meta["prompt_tokens"] = stream_usage.prompt_tokens if stream_usage else 0
+        meta["completion_tokens"] = stream_usage.completion_tokens if stream_usage else 0
         if think.has_content:
             meta["think_content"] = think.content
         if stream_usage:
