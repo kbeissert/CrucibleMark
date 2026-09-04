@@ -103,12 +103,12 @@
   "heritage_ids": [],
   "community": null,
   "pc_token_calibration": {
-    "budget": 780,
-    "classification": "inconsistent",
+    "budget": 1560,
+    "classification": "self_limiting",
     "profile": "thinking",
-    "tested": "2026-09-03T19:10:21.619924+00:00",
-    "converged_stage": 600,
-    "notes": "Stratifizierte Probe: 5 Blöcke sauber @ 300, 4/4 verdächtige Blöcke eskaliert (0 greedy, 1 inkonsistent). Profil: thinking. Thinking-only-Ausnahme (dual_profile: false): Instruct-Modus nicht verfügbar — einzelner Thinking-Lauf statt Modus-Wechsel (Konzept-Doc Abschn. 11)."
+    "tested": "2026-09-04T13:53:57.673406+00:00",
+    "converged_stage": 1200,
+    "notes": "Stratifizierte Probe: 5 Blöcke sauber @ 300, 4/4 verdächtige Blöcke eskaliert (0 greedy, 0 inkonsistent). Profil: thinking."
   },
   "pc_profile": "thinking"
 }
