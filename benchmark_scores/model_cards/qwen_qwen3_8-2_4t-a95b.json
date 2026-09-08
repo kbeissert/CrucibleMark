@@ -101,5 +101,14 @@
   "profile_verified_by": "llm:google/gemini-2.5-pro",
   "last_modified_at": "2026-08-14",
   "heritage_ids": [],
-  "community": null
+  "community": null,
+  "pc_token_calibration": {
+    "budget": 3120,
+    "classification": "inconsistent",
+    "profile": "thinking",
+    "tested": "2026-09-05T13:35:06.042744+00:00",
+    "converged_stage": 2400,
+    "notes": "Stratifizierte Probe: 4 Blöcke sauber @ 300, 4/5 verdächtige Blöcke eskaliert (0 greedy, 0 inkonsistent). Profil: thinking. Thinking-only-Ausnahme (dual_profile: false): Instruct-Modus nicht verfügbar — einzelner Thinking-Lauf statt Modus-Wechsel (Konzept-Doc Abschn. 11)."
+  },
+  "pc_profile": "thinking"
 }

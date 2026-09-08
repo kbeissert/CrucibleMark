@@ -94,5 +94,14 @@
   "profile_verified_by": null,
   "last_modified_at": "2026-08-14",
   "heritage_ids": [],
-  "community": null
+  "community": null,
+  "pc_token_calibration": {
+    "budget": 390,
+    "classification": "inconsistent",
+    "profile": "thinking",
+    "tested": "2026-09-04T21:07:16.292037+00:00",
+    "converged_stage": 300,
+    "notes": "Stratifizierte Probe: 2 Blöcke sauber @ 300, 1/7 verdächtige Blöcke eskaliert (1 greedy, 0 inkonsistent). Profil: thinking. Thinking-only-Ausnahme (dual_profile: false): Instruct-Modus nicht verfügbar — einzelner Thinking-Lauf statt Modus-Wechsel (Konzept-Doc Abschn. 11)."
+  },
+  "pc_profile": "thinking"
 }

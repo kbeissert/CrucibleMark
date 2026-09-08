@@ -102,5 +102,14 @@
   "heritage_ids": [
     "meta/muse-spark-1.1"
   ],
-  "community": null
+  "community": null,
+  "pc_token_calibration": {
+    "budget": 1560,
+    "classification": "inconsistent",
+    "profile": "thinking",
+    "tested": "2026-09-05T11:48:45.076765+00:00",
+    "converged_stage": 1200,
+    "notes": "Stratifizierte Probe: 0 Blöcke sauber @ 300, 4/9 verdächtige Blöcke eskaliert (0 greedy, 0 inkonsistent). Profil: thinking. Thinking-only-Ausnahme (dual_profile: false): Instruct-Modus nicht verfügbar — einzelner Thinking-Lauf statt Modus-Wechsel (Konzept-Doc Abschn. 11)."
+  },
+  "pc_profile": "thinking"
 }
