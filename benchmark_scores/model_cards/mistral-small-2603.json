@@ -45,9 +45,9 @@
     "text"
   ],
   "supports_tool_use": true,
-  "tooluse_tested_at": null,
-  "tooluse_score_p1": null,
-  "tooluse_score_p2": null,
+  "tooluse_tested_at": "2026-07-10T08:45:09Z",
+  "tooluse_score_p1": 66.67,
+  "tooluse_score_p2": 39.17,
   "tooluse_runs": {
     "mistral-small-2603": {
       "tested_at": "2026-07-10T08:45:09Z",
