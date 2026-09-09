@@ -59,7 +59,7 @@
   "quantization_format": null,
   "repetition_penalty": null,
   "seed": null,
-  "size_class": "Desktop",
+  "size_class": "Workstation",
   "stop_sequences": null,
   "strengths": [
     "Multi-Token-Prediction für spekulatives Decoding mit Beschleunigung ohne Qualitätsverlust",

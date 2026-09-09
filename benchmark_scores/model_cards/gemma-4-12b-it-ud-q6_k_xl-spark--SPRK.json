@@ -88,7 +88,7 @@
   "model_variant": "Q6_K_XL GGUF",
   "unknown": false,
   "card_status": "complete",
-  "size_class": "Workstation",
+  "size_class": "Desktop",
   "generated_at": "2026-08-27T21:23:51.686585+00:00",
   "thinking_probe_detected": true,
   "thinking_probe_evidence": "Multi-Probe (3 prompts, 3 detected, best confidence=medium):\n  - math: [math] reasoning_tokens=521 in provider metadata. First 200 chars: To find the average speed of the train, follow these steps:\n\n### 1. Identify the given information:\n*   **Total Distance ($d$):** 120 km\n*   **Total Time ($t$):** 1.5 hours\n\n### 2. Identify the formul\n  - code: [code] reasoning_tokens=3530 in provider metadata. First 200 chars: To sort this list, I will use the **Bubble Sort** algorithm.\n\n### The Algorithm: Bubble Sort\nBubble Sort works by repeatedly stepping through the list, comparing adjacent elements, and swapping them i\n  - decision: [decision] reasoning_tokens=626 in provider metadata. First 200 chars: The question of whether an autonomous vehicle (AV) should prioritize a pedestrian over its own passenger is a modern iteration of the \"Trolley Problem.\" It forces a confrontation between different sch",

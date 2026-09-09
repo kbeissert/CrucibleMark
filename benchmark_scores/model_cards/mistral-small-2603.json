@@ -81,7 +81,7 @@
   "model_variant": null,
   "unknown": false,
   "card_status": "complete",
-  "size_class": "Workstation",
+  "size_class": "Frontier",
   "generated_at": "2026-05-21T00:00:00.000000+00:00",
   "thinking_probe_detected": false,
   "thinking_probe_evidence": "No CoT signals found (A: no think-tags, B: reasoning_tokens=0). Response length: 556 chars",

@@ -19,6 +19,11 @@ Checks:
      - proprietary + origin_country=(USA|China) → Risk ≥ "medium"
      - open-weights + origin_country=(USA|China) + deployment_type=cloud-only → Risk ≥ "medium"
      (Hintergrund: CLOUD Act/Cyber Security Law ermöglichen Datenzugriff)
+   9. size_class-Konsistenz gegen params_total_b (SSoT:
+      config/classification_taxonomy.json#size_class.classification_rules)
+      - params_total_b gesetzt → size_class MUSS dem Taxonomie-Tier entsprechen
+        (Hard-Fail; MoE-Regel: Gesamtgröße, nicht aktive Parameter)
+      - size_class-Wert gegen Taxonomie-Vocabulary geprüft
 
 Tag-Whitelist kommt aus config/card_vocabulary.yaml via utils.card_utils.
 Damit können Auto-Generatoren dieselbe SSoT nutzen wie die Validierung.
@@ -175,6 +180,44 @@ def _check_param_arch(data: dict, issues: list[str], valid_param_arch: frozenset
     return param_arch
 
 
+def _check_size_class_consistency(data: dict, issues: list[str], valid_size_classes: frozenset) -> None:
+    """size_class muss zur Tier-Einordnung aus params_total_b passen.
+
+    SSoT: config/classification_taxonomy.json#size_class.classification_rules
+    (param_basis: params_total_b; MoE-Regel: Gesamtgröße, nicht aktive
+    Parameter; API-Only-Fallback: Frontier bei unbekannter Größe).
+
+    - params_total_b gesetzt → size_class MUSS dem Taxonomie-Tier entsprechen
+      (Hard-Fail bei Abweichung — der Prozess richtet sich nach der Config).
+    - params_total_b unbekannt → nur Vocabulary-Check; die Laufzeit-Kaskade
+      (get_model_size_class) entscheidet dann über Name-Tag/Frontier-Fallback.
+    """
+    size_class = data.get("size_class")
+    if size_class and valid_size_classes and size_class not in valid_size_classes:
+        issues.append(
+            f"[INVALID SIZE_CLASS] size_class='{size_class}' ist kein gültiger Wert "
+            f"({sorted(valid_size_classes)})"
+        )
+    params = data.get("params_total_b")
+    if params is None or not size_class:
+        return
+    try:
+        from utils.model_utils import _param_b_to_size_class  # noqa: PLC0415  (Lazy: Import-Zyklus)
+        expected = _param_b_to_size_class(float(params))
+    except (TypeError, ValueError):
+        issues.append(
+            f"[WARN] params_total_b='{params}' ist nicht numerisch — "
+            f"Size-Class-Konsistenzprüfung übersprungen"
+        )
+        return
+    if size_class != expected:
+        issues.append(
+            f"[SIZE_CLASS MISMATCH] size_class='{size_class}' widerspricht "
+            f"params_total_b={params} (Taxonomie-Soll: '{expected}'). "
+            f"SSoT: config/classification_taxonomy.json#size_class."
+        )
+
+
 def _check_complete_card_warnings(data: dict, issues: list[str]) -> str:
     card_status = data.get("card_status", "")
     if card_status != "complete":
@@ -262,11 +305,13 @@ def check_card(path: Path, data: dict) -> list[str]:
     valid_tiers = _get_valid_values("weights_license_tier")
     valid_use_cases = _get_valid_values("use_case")
     valid_param_arch = _get_valid_values("parameter_architecture")
+    valid_size_classes = _get_valid_values("size_class")
 
     _check_missing_required_fields(data, issues)
     tier = _check_tier_consistency(data, issues, valid_tiers)
     _use_case, tags = _check_use_case_and_vision(data, issues, valid_use_cases)
     _param_arch = _check_param_arch(data, issues, valid_param_arch)
+    _check_size_class_consistency(data, issues, valid_size_classes)
     card_status = _check_complete_card_warnings(data, issues)
     _check_tag_whitelist(tags, issues)
     _check_provenance_risk(data, tier, issues)

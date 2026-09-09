@@ -1,6 +1,6 @@
 # Modellklassifizierung & Badge-System
 
-**Stand: v5.1.0 · 2026-07-14**
+**Stand: v5.2.2 · 2026-09-09**
 
 **Zielgruppe:** Alle, die verstehen wollen, wie CrucibleMark Modelle klassifiziert und bewertet.
 
@@ -43,18 +43,20 @@ Badges reflektieren die **Gesamt-Performance** über alle Module hinweg. Die kan
 
 CrucibleMark klassifiziert Modelle nach ihrer **Hardware-Deployment-Realität** — nicht nach abstrakten Capability-Scores. Die `Size Class`-Spalte im Leaderboard gibt an, auf welcher Hardware ein Modell praktisch einsetzbar ist.
 
-**Erkennung:** Regex auf Ollama-Style-Tags (z. B. `qwen3:4b`, `cogito:14b`). Modelle ohne Size-Tag (kommerzielle APIs, Cloud-Proxies) landen automatisch in `Frontier`.
+**Erkennung:** Kaskade gemäß `config/classification_taxonomy.json#size_class.classification_rules` — (1) Card-Override `size_class` (vom Card-Validator gegen `params_total_b` geprüft), (2) Card-`params_total_b` → Tier (MoE: Gesamtgröße — das vollständige Modell muss in den RAM/VRAM geladen werden, aktive Parameter beschleunigen nur), (3) Regex auf Ollama-Style-Tags (z. B. `qwen3:4b`, `cogito:14b`), (4) Fallback `Frontier` (API-only oder Größe unbekannt).
 
 | Tier | Parameter | RAM (Q4) | Deployment-Realität |
 |---|---|---|---|
 | **Nano** | ≤ 4B | < 4 GB | Smartphone, Raspberry Pi, Autocomplete-only |
 | **Edge** | 5–9B | 4–8 GB | Jeder aktuelle Laptop, MacBook Air M-Series |
-| **Desktop** | 10B–19B | 8–14 GB | MacBook Pro, 14 GB Unified Memory |
-| **Workstation** | 20B–35B | 14–24 GB | M4 Pro/Max, RTX 4090, High-End Consumer |
+| **Desktop** | 10B–22B | 8–14 GB | MacBook Pro, 14 GB Unified Memory |
+| **Workstation** | 23B–35B | 14–24 GB | M4 Pro/Max, RTX 4090, High-End Consumer |
 | **Server** | 36–75B | 24–48 GB | Mac Studio, Dedicated GPU-Node |
 | **Frontier** | API-only / > 75B | — | Cloud-only, keine lokale Deployment-Option |
 
 **Scope:** Alle Tiers durchlaufen exakt dieselben 44 Tasks mit derselben Bewertungsmethodik. Die Badge-Schwellen (Bronze, Silver, …) gelten unverändert — `Size Class` signalisiert ausschließlich die Hardwareanforderung, nicht eine separate Wertungsskala.
+
+**Klassifikationsregeln (SSoT):** Die Einordnung folgt `params_total_b` — auch bei MoE (das vollständige Modell muss in den RAM/VRAM; `params_active_b` beschleunigt die Inferenz, reduziert aber nicht den Speicherbedarf). `Frontier` gilt bei unbekannter Parameterzahl (API-only) oder > 75B; offene Gewichte mit bekannten Params bekommen den params-basierten Tier unabhängig von der Cloud-Verfügbarkeit. Card-Overrides werden vom Card-Validator gegen `params_total_b` geprüft (Hard-Fail bei Abweichung).
 
 ### Methodologie: Warum diese Tier-Grenzen?
 
@@ -66,11 +68,11 @@ Das ist die Grenze für Geräteklassen ohne dedizierten ML-Arbeitsspeicher. Auf 
 **Edge (5–9B / 4–8 GB)**
 Jeder aktuelle Consumer-Laptop mit mindestens 8 GB RAM kann ein 7B-Modell in Q4 flüssig betreiben (~4–5 GB). Das MacBook Air M-Series ist der Referenzpunkt: günstigste, am weitesten verbreitete Geräteklasse mit Unified Memory.
 
-**Desktop (10–19B / 8–14 GB)**
+**Desktop (10–22B / 8–14 GB)**
 Die obere RAM-Grenze liegt bewusst bei 14 GB statt 12 GB. Hintergrund: Q4-Quantisierung für 14B-Modelle benötigt realistisch 9–10 GB — auf einer 12-GB-GPU ist das machbar, aber auf einem Laptop (Unified Memory) fehlt danach Headroom für Betriebssystem und Anwendungen. 12 GB VRAM (diskret) ist eine andere Rechnung als 12 GB Unified Memory. Der Referenzpunkt „MacBook Pro mit 14 GB" ist deshalb treffender als eine GPU-Aussage.
 
-**Workstation (20–35B / 14–24 GB)**
-Der Tier beginnt bei 20B. Ein M4 Pro/Max mit 18 GB RAM ist eine **Betriebsgrenze**, keine Tier-Grenze — ein 20B-Modell gehört konzeptuell in Workstation, auch wenn es auf einem 18-GB-Gerät eng werden kann. Die Parametergrenze bei 35B reflektiert, dass 32B-Modelle (z. B. Qwen3:32b) auf einem RTX 4090 (24 GB) oder M4 Max (36–48 GB) noch lokal laufen.
+**Workstation (23–35B / 14–24 GB)**
+Der Tier beginnt bei 23B. Ein M4 Pro/Max mit 18 GB RAM ist eine **Betriebsgrenze**, keine Tier-Grenze — ein 23B-Modell gehört konzeptuell in Workstation, auch wenn es auf einem 18-GB-Gerät eng werden kann. Die Parametergrenze bei 35B reflektiert, dass 32B-Modelle (z. B. Qwen3:32b) auf einem RTX 4090 (24 GB) oder M4 Max (36–48 GB) noch lokal laufen.
 
 **Server (36–75B / 24–48 GB)**
 Hier beginnt die Klasse, die dedizierte Hardware voraussetzt: Mac Studio (64–192 GB Unified Memory) oder einen dedizierten GPU-Node mit ≥ 24 GB VRAM. Consumer-Hardware fällt aus. Die Grenze bei 75B ist hart, weil ein 70B-Modell in Q4 ~40–42 GB benötigt und damit auf einem Mac Studio mit 64 GB noch komfortabel läuft.

@@ -51,7 +51,7 @@
   "output_price_per_1m": 0.0,
   "unknown": false,
   "card_status": "complete",
-  "size_class": "Desktop",
+  "size_class": "Workstation",
   "generated_at": "2026-06-04T21:55:00+00:00",
   "thinking_probe_detected": true,
   "thinking_probe_evidence": "Qwen3.6 Community Fine-Tune auf Qwen3-Architektur. Thinking-Modus via /think Tags verfügbar.",

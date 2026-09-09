@@ -68,19 +68,34 @@ def _param_b_to_size_class(param_b: float) -> str:
     )
 
 
-def _size_class_from_card_override(model_name: str) -> str | None:
-    """Card-Override hat Priorität (SSoT für Modelle ohne klare Size-Tags)."""
+def _size_class_from_card(model_name: str) -> tuple[str | None, float | None]:
+    """Liest (size_class-Override, params_total_b) aus der Model Card.
+
+    Ein Lesevorgang liefert beide Kaskaden-Quellen:
+    - Override: Card-Feld ``size_class`` (nur wenn gültiger Tier-String).
+      Wird vom Card-Validator gegen params_total_b geprüft (Hard-Fail bei
+      Abweichung) — hier bewusst vorrangig, um bewusste Overrides zu ehren.
+    - Params: Card-Feld ``params_total_b`` als Basis der params-getriebenen
+      Klassifikation (Taxonomie-SSoT: size_class.classification_rules;
+      MoE-Regel: Gesamtgröße, nicht aktive Parameter).
+    """
     card_path = _find_card(model_name)
     if not card_path.exists():
-        return None
+        return None, None
     try:
         card = json.loads(card_path.read_text(encoding="utf-8"))
-        sc = card.get("size_class")
-        if isinstance(sc, str) and sc in _SIZE_CLASS_VALID:
-            return sc
     except (json.JSONDecodeError, OSError):
-        return None
-    return None
+        return None, None
+    sc = card.get("size_class")
+    override = sc if isinstance(sc, str) and sc in _SIZE_CLASS_VALID else None
+    params = card.get("params_total_b")
+    try:
+        params_f = float(params) if params is not None else None
+    except (TypeError, ValueError):
+        params_f = None
+    if params_f is not None and params_f <= 0:
+        params_f = None  # 0/negativ ist keine gültige Größenangabe
+    return override, params_f
 
 
 def _size_class_from_name_tag(model_name: str) -> str | None:
@@ -111,19 +126,25 @@ def get_model_size_class(model_name: str) -> str:
     ``config/classification_taxonomy.json`` geladen (SSoT). Tier-Namen und
     Spannen sind dort pflegbar; diese Funktion nimmt keine Hardcodes mehr an.
 
-    Priority:
-        1. Model-Card field ``size_class`` (single source of truth for overrides)
-        2. Ollama-style tag regex (e.g. 'qwen3:4b', 'phi3.5:3.8b', 'gemma4:E4B')
-        3. Dash/dot-separated size suffix (e.g. 'llama-3.3-70b', 'qwen3-32b')
-        4. Fallback: 'Frontier' (API-only or size unknown)
+    Priority (SSoT: classification_taxonomy.json#size_class.classification_rules):
+        1. Model-Card Override ``size_class`` (vom Card-Validator gegen
+           params_total_b geprüft — Abweichungen sind Hard-Fails)
+        2. Card ``params_total_b`` → _param_b_to_size_class() (MoE-Regel:
+           Gesamtgröße steuert, da das vollständige Modell in den RAM/VRAM muss)
+        3. Ollama-style tag regex (e.g. 'qwen3:4b', 'phi3.5:3.8b', 'gemma4:E4B')
+        4. Dash/dot-separated size suffix (e.g. 'llama-3.3-70b', 'qwen3-32b')
+        5. Fallback: 'Frontier' (API-only oder Größe unbekannt)
 
     Returns:
         Ein Tier aus tier_order in classification_taxonomy.json (z.B.
         'Nano', 'Edge', 'Desktop', 'Workstation', 'Server', 'Frontier').
     """
-    card_class = _size_class_from_card_override(model_name)
+    card_class, card_params = _size_class_from_card(model_name)
     if card_class is not None:
         return card_class
+
+    if card_params is not None:
+        return _param_b_to_size_class(card_params)
 
     name_class = _size_class_from_name_tag(model_name)
     if name_class is not None:

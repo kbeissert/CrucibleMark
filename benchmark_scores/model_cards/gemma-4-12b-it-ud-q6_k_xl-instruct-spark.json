@@ -87,7 +87,7 @@
   "model_variant": "Q6_K_XL GGUF (Instruct-Profil)",
   "unknown": false,
   "card_status": "complete",
-  "size_class": "Workstation",
+  "size_class": "Desktop",
   "generated_at": "2026-08-29T21:29:19.394492+00:00",
   "thinking_probe_detected": true,
   "thinking_probe_evidence": "Multi-Probe (3 prompts, 3 detected, best confidence=medium):\n  - math: [math] Inline CoT im content-Feld: Antwort 803 chars (>200) mit 12 Berechnungs-Operatoren. First 200 chars: To find the average speed of the train, follow these steps:\n\n### 1. Identify the given information:\n*   **Total Distance ($d$):** 120 km\n*   **Total Time ($t$):** 1.5 hours\n\n### 2. Identify the formul\n  - code: [code] Inline CoT im content-Feld: Antwort 2337 chars (>200) mit 68 Berechnungs-Operatoren. First 200 chars: To sort this list, I will use the **QuickSort** algorithm. QuickSort is a \"divide and conquer\" algorithm that picks a \"pivot\" element and partitions the other elements into two sub-arrays: those less \n  - decision: [decision] Inline CoT im content-Feld: Antwort 4164 chars (>200) mit 32 Berechnungs-Operatoren. First 200 chars: The question of how an autonomous vehicle (AV) should prioritize lives in a \"no-win\" scenario is one of the central dilemmas in machine ethics, often referred to as a modern variation of the **Trolley",

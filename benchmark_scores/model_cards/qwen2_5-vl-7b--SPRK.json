@@ -57,7 +57,7 @@
   "quantization_format": "Q4_K_M GGUF",
   "model_variant": "Q4_K_M GGUF",
   "card_status": "complete",
-  "size_class": "Workstation",
+  "size_class": "Edge",
   "top_p": null,
   "top_k": null,
   "repetition_penalty": null,

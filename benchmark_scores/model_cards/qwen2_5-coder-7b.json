@@ -54,7 +54,7 @@
   "quantization_format": "Q6_K GGUF",
   "repetition_penalty": null,
   "seed": null,
-  "size_class": "Nano",
+  "size_class": "Edge",
   "stop_sequences": null,
   "strengths": [
     "Spezialisierte Leistung in Code-Generierung, Debugging und Reparatur",

@@ -93,7 +93,7 @@
   "model_variant": "MXFP4",
   "unknown": false,
   "card_status": "draft",
-  "size_class": "Server",
+  "size_class": "Frontier",
   "generated_at": "2026-07-31T18:33:00+00:00",
   "thinking_probe_detected": true,
   "thinking_probe_evidence": "Multi-Probe (3 prompts, 3 detected, best confidence=medium):\n  - math: [math] reasoning_tokens=144 in provider metadata.\n  - code: [code] reasoning_tokens=707 in provider metadata.\n  - decision: [decision] reasoning_tokens=27 in provider metadata.\nReasoning wird als separates provider-seitiges Metadatenfeld (reasoning_tokens) sowie im analysis-Channel des Harmony-Formats erfasst, nicht als sichtbare DeepSeek-Style Think-Tags.",

@@ -58,7 +58,7 @@
   "quantization_format": null,
   "repetition_penalty": null,
   "seed": null,
-  "size_class": "Desktop",
+  "size_class": "Server",
   "stop_sequences": null,
   "strengths": [
     "Starkes Instruction-Following mit optionalem Thinking-Modus",

@@ -187,3 +187,60 @@ def test_taxonomy_json_is_valid_and_consistent():
     assert set(sc["values"].keys()) == set(sc["tier_order"]), (
         "Keys in size_class.values und tier_order sind nicht identisch"
     )
+
+
+# ---------------------------------------------------------------------------
+# 6. Params-getriebene Kaskade (params_total_b zwischen Override und Name-Tag)
+# ---------------------------------------------------------------------------
+
+def _patch_card(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, card: dict | None) -> None:
+    """Ersetzt _find_card im Klassifikationsmodul durch eine Stub-Card."""
+    from utils import model_size_class as msc
+    if card is None:
+        monkeypatch.setattr(msc, "_find_card", lambda mid: tmp_path / "does-not-exist.json")
+        return
+    card_file = tmp_path / "card.json"
+    card_file.write_text(json.dumps(card), encoding="utf-8")
+    monkeypatch.setattr(msc, "_find_card", lambda mid: card_file)
+
+
+def test_params_total_b_drives_classification(monkeypatch, tmp_path):
+    """Card mit params_total_b und ohne Override → Tier aus Gesamtgröße."""
+    _patch_card(monkeypatch, tmp_path, {"model_id": "x", "params_total_b": 29.6})
+    assert get_model_size_class("x") == "Workstation"
+
+
+def test_moe_uses_total_not_active_params(monkeypatch, tmp_path):
+    """MoE-Regel: params_active_b wird NICHT für die Einordnung verwendet."""
+    _patch_card(monkeypatch, tmp_path, {"params_total_b": 116.8, "params_active_b": 5.1})
+    assert get_model_size_class("x") == "Frontier"
+
+
+def test_card_override_still_wins_over_params(monkeypatch, tmp_path):
+    """Priorität 1: expliziter Override schlägt params_total_b (validator-geprüft)."""
+    _patch_card(monkeypatch, tmp_path, {"params_total_b": 29.6, "size_class": "Desktop"})
+    assert get_model_size_class("x") == "Desktop"
+
+
+def test_invalid_override_falls_back_to_params(monkeypatch, tmp_path):
+    """Override-String außerhalb tier_order wird ignoriert → params-getrieben."""
+    _patch_card(monkeypatch, tmp_path, {"params_total_b": 7.0, "size_class": "Ultra"})
+    assert get_model_size_class("x") == "Edge"
+
+
+def test_params_beat_name_tag(monkeypatch, tmp_path):
+    """params_total_b gewinnt über irreführenden Größen-Suffix im Namen."""
+    _patch_card(monkeypatch, tmp_path, {"params_total_b": 36.0, "size_class": None})
+    assert get_model_size_class("x-30b") == "Server"
+
+
+def test_no_card_and_no_tag_frontier(monkeypatch, tmp_path):
+    """Keine Card, kein Tag → Frontier-Fallback unverändert."""
+    _patch_card(monkeypatch, tmp_path, None)
+    assert get_model_size_class("mystery-model") == "Frontier"
+
+
+def test_zero_params_treated_as_unknown(monkeypatch, tmp_path):
+    """params_total_b=0 ist keine gültige Größenangabe → Name-Tag greift."""
+    _patch_card(monkeypatch, tmp_path, {"params_total_b": 0})
+    assert get_model_size_class("x-14b") == "Desktop"

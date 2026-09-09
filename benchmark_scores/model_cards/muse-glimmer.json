@@ -88,7 +88,7 @@
   "model_variant": "30B-NVFP4-W4A4",
   "unknown": false,
   "card_status": "draft",
-  "size_class": "Desktop",
+  "size_class": "Workstation",
   "generated_at": "2026-08-21T08:34:36.624392+00:00",
   "thinking_probe_detected": true,
   "thinking_probe_evidence": "Multi-Probe (3 prompts, 3 detected, best confidence=medium):\n  - math: [math] Inline CoT im content-Feld: Antwort 263 chars (>200) mit 13 Berechnungs-Operatoren. First 200 chars: Average speed is distance covered divided by the time taken\n\nAverage speed = Total distance / Total time\n\n* Distance = 120 km\n* Time = 1.5 h\n\nv_avg = d / t = 120 km / 1.5 h\n\nv_avg = 120 / 1.5 km/h\nv_a\n  - code: [code] Inline CoT im content-Feld: Antwort 1716 chars (>200) mit 28 Berechnungs-Operatoren. First 200 chars: Insertion sort is a good teaching sort to show step-by-step because it builds the final\nsorted list from the left.\n\n**Algorithm**\n1. Start with an empty sorted sub-list.\n2. Take the next element from \n  - decision: [decision] Inline CoT im content-Feld: Antwort 4107 chars (>200) mit 10 Berechnungs-Operatoren. First 200 chars: This is the classic trolley problem in a real-world form, and there is no clean, universal answer because different ethical frameworks weigh the trade-offs differently.\n\n**1. Consequentialist / Utilit",

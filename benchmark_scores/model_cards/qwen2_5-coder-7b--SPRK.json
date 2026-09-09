@@ -83,7 +83,7 @@
   "model_variant": "Q6_K GGUF",
   "unknown": false,
   "card_status": "complete",
-  "size_class": "Desktop",
+  "size_class": "Edge",
   "generated_at": "2026-08-30T03:32:12.545233+00:00",
   "thinking_probe_detected": true,
   "thinking_probe_evidence": "Multi-Probe (3 prompts, 2 detected, best confidence=medium):\n  - math: [math] Inline CoT im content-Feld: Antwort 502 chars (>200) mit 6 Berechnungs-Operatoren. First 200 chars: To find the average speed of the train, we can use the formula for average speed, which is:\n\n\\[\n\\text{Average speed} = \\frac{\\text{Total distance}}{\\text{Total time}}\n\\]\n\nGiven:\n- Total distance = 120\n  - decision: [decision] Inline CoT im content-Feld: Antwort 2433 chars (>200) mit 10 Berechnungs-Operatoren. First 200 chars: The ethical considerations surrounding whether an autonomous car should swerve to avoid a pedestrian, even if it risks the passenger's life, are complex and multifaceted. Here are some key points to c",

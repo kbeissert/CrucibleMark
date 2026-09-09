@@ -56,7 +56,7 @@
   "quantization_format": null,
   "repetition_penalty": null,
   "seed": null,
-  "size_class": "Nano",
+  "size_class": "Frontier",
   "stop_sequences": null,
   "strengths": [
     "Gute Balance aus Geschwindigkeit und Antwortqualität für hohe Volumen",
