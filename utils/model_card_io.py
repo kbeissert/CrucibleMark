@@ -666,7 +666,9 @@ def update_model_card_tooluse_fields(
 
         _persist_tooluse_data(data, effective_profile_id, tested_at, p1_score, p2_score)
 
-        card_path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+        # SSoT-Write-Konvention: identisch zu card_utils._write_to_card (Trailing-Newline),
+        # sonst flappen Card-Dateien im Git-Status zwischen beiden Writer-Pfaden.
+        card_path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         logger.debug(
             "Model Card aktualisiert: model=%s profile=%s → supports_tool_use=%s, "
             "tooluse_runs[%s]=%s",

@@ -246,7 +246,7 @@ required_fields:
     type: str
     required: true
     default: null
-    description: "Auto-berechnete Größenklasse: Nano | Micro | Small | Medium | Desktop | Server | Frontier"
+    description: "Auto-berechnete Größenklasse (SSoT: classification_taxonomy.json#size_class.tier_order): Nano | Edge | Desktop | Workstation | Server | Frontier"
     consumers: [leaderboard, web_export]
     since: "v1.0"
     example: "Desktop"
