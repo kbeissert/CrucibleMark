@@ -45,9 +45,9 @@
     "text"
   ],
   "supports_tool_use": true,
-  "tooluse_tested_at": null,
-  "tooluse_score_p1": null,
-  "tooluse_score_p2": null,
+  "tooluse_tested_at": "2026-07-20T16:09:02Z",
+  "tooluse_score_p1": 86.67,
+  "tooluse_score_p2": 63.33,
   "tooluse_runs": {
     "moonshotai/kimi-k2.6": {
       "tested_at": "2026-07-20T16:09:02Z",
