@@ -99,6 +99,9 @@ blacklist:
   # Google — Gemma 4 (12B Q8 stärkster; E4B/26B/31B Base NVFP4 stärkste)
   # -----------------------------------------------------------------
 
+  # E4B Edge (stärkster: gemma-4-e4b Mac, 71.89)
+  - "gemma-4-e4b-spark"                     # [Spark] E4B — schwächer als Mac-Variante (gemma-4-e4b, 71.89); selbst (Rank 86, 70.86)
+
   # 12B Desktop (stärkster: q8)
   - "gemma-4-12b-it-ud-q4_k_xl"             # schwächer als q8 (Rank 67, 72.03); selbst (Rank 97, 69.76)
   - "gemma-4-12b-it-ud-q6_k_xl"             # schwächer als q8; selbst (Rank 101, 69.38)
@@ -118,6 +121,7 @@ blacklist:
   # Hermes (NousResearch)
   # -----------------------------------------------------------------
   - "hermes-4_3-36b-q6"                     # ~3 tok/s auf Spark → bremst Auto-Benchmark (Rank 108, 68.57)
+  - "hermes-4-14b-abliterated-spark"        # [Spark] Abliterated — Hardware-Duplikat, schwächer als Mac-Variante (hermes-4-14b-abliterated, 68.19); selbst (Rank 114, 67.75)
 
 
   # -----------------------------------------------------------------
@@ -256,10 +260,10 @@ kept_overrides:
     rationale: "Stärkster pro Param-Größe + Ausnahmen (Thinking, Wordsmith, Abliterated)."
     models:
       - id: gemma-4-e4b
-        rank: 68
-        score: 71.69
+        rank: 75
+        score: 71.89
         size: Edge
-        reason: "einzige E4B-Variante"
+        reason: "E4B Mac-Variante (stärker als Spark; gemma-4-e4b-spark blacklisted)"
 
       # 12B Desktop
       - id: gemma-4-12b-it-ud-q8_k_xl

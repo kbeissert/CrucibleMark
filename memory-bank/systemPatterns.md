@@ -86,6 +86,16 @@ Diese Eigenschaften sind **bewusste Design-Entscheidungen** für faire, reproduz
 
 ---
 
+## Hardware-Duplikate Mac/Spark im Leaderboard: Konsolidierung via Blacklist (2026-09-09)
+
+Dasselbe Modell auf zwei Hardware-Plattformen erzeugt **zwei Leaderboard-Zeilen mit identischem Display-Namen** — NICHT automatisch eine Thinking/Standard- oder Quant-Variante. Ursache: die beiden unabhängigen llama.cpp-Connectoren (Mac `M4APL`=`llamacpp`, Spark `SPRK`=`llamacpp_spark`) bekommen getrennte model_ids (`foo` + `foo-spark`) und teilen sich den Card-Display-Namen.
+
+**Diagnose:** gleicher Display-Name + gleiche Quant + gleicher Thinking-Modus, nur Provider `M4APL` vs. `SPRK` → echtes Hardware-Duplikat. Weicht Thinking-Modus oder Quant ab → legitime Variante, NICHT konsolidieren.
+
+**Konsolidierungsregel:** echtes Hardware-Duplikat → das **schlechtere** (Score) Hardware-Profil in `config/web_export_blacklist.yaml` sperren, das bessere behalten; Kommentar mit Begründung („Hardware-Duplikat, schwächer als …-Variante"). 2026-09-09: `gemma-4-e4b-spark` (70.86; Mac 71.89 bleibt), `hermes-4-14b-abliterated-spark` (67.75; Mac 68.19 bleibt); `gemma-3-12b-it-q8`/`-spark` war bereits doppelt geblacklistet (behalten: Q4-Spark). Blacklist-Invariante (jeder Eintrag braucht Leaderboard-Präsenz) bleibt erfüllt.
+
+---
+
 ## Thinking-Override-Schema
 
 ```yaml
