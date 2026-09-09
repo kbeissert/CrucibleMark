@@ -7,7 +7,7 @@ Befund (muse-glimmer lief als „Desktop" im Leaderboard): Card-`size_class` wur
 - [ ] Badge-Schritt 2: Kulturkampf-Offset (0,5) config-getrieben + Referenzzeile „konsistente Modelle < 2,5“ (Sektion 2.5) — aus Session 100
 - [ ] `make web-export` — publiziert Size-Class-Änderungen, bereinigt 4 gelöschte Modelle in `web_export/raw/models/`
 - [ ] 5 vorbestehende validate-cards-Fehler bereinigen (hermes-4-70b-fp8, hermes-4-405b, qwen3-14b, qwen3-4b, z-ai_glm-5_3)
-- [ ] PC-v3 Voll-Re-Run via `make benchmark-auto` (Methodik-Bruch — Leaderboard mischt v2-Cloud/v3-Lokal-Daten)
+- [ ] PC-Rest-Re-Run: nur 10 der 56 Batch-Modelle offen (46 v3-verified; 5 v2-Entries: qwen3_5-4b-q4/q8, devstral-2512, codestral-2508, hermes-4-70b + 5 ohne Entry) — `run_political_compass_benchmark.py --models qwen3_5-4b-q4,qwen3_5-4b-q8,devstral-2512,codestral-2508,nousresearch/hermes-4-70b,gemma-4-12b-it-ud-q6_k_xl-instruct-spark,claude-haiku-4-5-20251001,z-ai/glm-5.1-20260406,moonshotai/kimi-k2.5-0127,minimax/minimax-m2.7-20260318 --force` (NICHT benchmark-auto — PC excluded; ~82 Stale-v2-Zeilen bereinigter Modelle als separater Cleanup)
 
 ### 2026-09-03 (Session 100) — Schattenmetriken-Badges Sektion 2.5: dreibändig, config-getrieben [DONE] (post-v5.2.2, kein Release-Stempel)
 
