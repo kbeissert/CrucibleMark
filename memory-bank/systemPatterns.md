@@ -343,6 +343,14 @@ Whenever a task involves refactoring, unexpected behavior, or
 architecture changes: automatically load reference/pitfall-diagnosis.md before proposing any solution.
 
 
+## Size-Class-Kaskade + Validator-Gate (2026-09-09, Session 101)
+
+**Entscheidung:** Size-Class-Einordnung folgt `params_total_b` — auch bei MoE (das vollständige Modell muss in den RAM/VRAM geladen werden; aktive Parameter beschleunigen die Inferenz, reduzieren aber nicht den Speicherbedarf). SSoT: `config/classification_taxonomy.json#size_class.classification_rules`.
+
+**Kaskade (`utils/model_size_class.py`):** (1) Card-Override `size_class` → (2) Card `params_total_b` → (3) Name-Regex → (4) Frontier-Fallback. Der Card-Validator (Check 9 in `scripts/dev/validate_model_cards.py`) erzwingt Overrides gegen params_total_b (Hard-Fail) — ohne Gate driftete der Prozess von der Config (21 Fehlklassifikationen, u. a. muse-glimmer „Desktop" auf Basis einer faktisch unmöglichen 24GB-GPU-Prämisse, ~26 GB NVFP4 auf GX10; der Wert war 2026-09-02 manuell eingefroren worden und wurde nie nachgerechnet).
+
+**Funktionale Kopplung:** Tiers {Nano, Edge, Desktop, Workstation} erhalten den Small-Model-Budget-Boost (`model_token_budget.py:107`) + Judge-Kontext (`judge_evaluator.py:134`) — eine falsche Klassifizierung ändert also Messbedingungen, nicht nur Anzeige. **Pflicht:** Bei neuen MoE-Modellen nie `params_active_b` zur Tier-Einordnung nutzen; `docs/MODEL_CLASSIFICATION.md` ist mit der Taxonomie synchro gehalten (Desktop 10–22B, Workstation 23–35B).
+
 ## Context Loading Rules
 Before starting any task, check the task type and load accordingly:
 - Refactoring / debugging / architecture review

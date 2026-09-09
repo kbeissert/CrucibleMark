@@ -1,11 +1,19 @@
 # Progress
 Letzte Releases + aktueller Stand.
 
+### 2026-09-09 (Session 101) — Size-Class-SSoT: params_total_b steuert, Validator-Gate, 20 Cards korrigiert [DONE] (post-v5.2.2, kein Release-Stempel)
+
+Befund (muse-glimmer lief als „Desktop" im Leaderboard): Card-`size_class` wurde bei Card-Erstellung eingefroren (`card_utils.py`) und nie gegen die Taxonomie validiert; `params_total_b` floss nie in die Klassifikation. Voll-Audit: 21 Fehlklassifikationen — muse-glimmer Desktop statt Workstation (24GB-GPU-Prämisse faktisch unmöglich, ~26 GB NVFP4 auf GX10), regellose MoE-Einordnung (qwen3_6-Familie Desktop vs. Schwester-Modelle Workstation), params-lose Cloud-Cards im Boost-Set (gpt-5-mini „Nano"). Fix (Config = SSoT, Prozess richtet sich danach): `classification_rules` in `classification_taxonomy.json` (param_basis=params_total_b; MoE-Regel = Gesamtgröße; API-Only-Fallback; Override-Policy); Kaskade `model_size_class.py` mit Card-params als Stufe 2 (self-healing); Validator-Gate Check 9 (Hard-Fail) an `make validate-cards`; 20 Cards korrigiert; `docs/MODEL_CLASSIFICATION.md` synchro (Desktop 10–22B, Workstation 23–35B). 15 neue Tests (Kaskade + Gate), Black-Box-Regressionen unverändert, Final-Audit 0, Suite 1606 grün, Lint 9.99/10, Naming 129 OK, `make leaderboard` regeneriert. Commits: 86f63791 (Size-Class-SSoT), f6de494a (PC-Degenerate-Guard — vom gestoppten Parallel-Prozess übernommen: API-Ausfall schrieb (0,0)-„Mittelpunkte", 4 Module + 5 Tests), 8028585a (PC-Batch-Rest-Writebacks: pc_token_calibration gemma-4-12b-spark, ToolUse-Felder mistral-small-2603, Bias-Review); 7 Newline-Noise-Cards per `git checkout` restauriert (Newline-Regression-Muster, jetzt AGENTS-Constraint).
+- [ ] Badge-Schritt 2: Kulturkampf-Offset (0,5) config-getrieben + Referenzzeile „konsistente Modelle < 2,5“ (Sektion 2.5) — aus Session 100
+- [ ] `make web-export` — publiziert Size-Class-Änderungen, bereinigt 4 gelöschte Modelle in `web_export/raw/models/`
+- [ ] 5 vorbestehende validate-cards-Fehler bereinigen (hermes-4-70b-fp8, hermes-4-405b, qwen3-14b, qwen3-4b, z-ai_glm-5_3)
+- [ ] PC-v3 Voll-Re-Run via `make benchmark-auto` (Methodik-Bruch — Leaderboard mischt v2-Cloud/v3-Lokal-Daten)
+
 ### 2026-09-03 (Session 100) — Schattenmetriken-Badges Sektion 2.5: dreibändig, config-getrieben [DONE] (post-v5.2.2, kein Release-Stempel)
 
 Bugfix: 🚨 feuerte bei σ > 1,0 — Widerspruch zur Reviewer-Prompt-Konvention (σ < 1,5 stabil / σ > 2,0 Chaos). Neu: `config.shadow_metrics` (1,5/2,0) + Fail-Fast-Loader + ⚠️-Mittelband, Grenzen → ⚠️; Kopplungs-Invariante dokumentiert. 7 neue Tests, PC-Suite 89/89, Lint 0, Commit c7d56979. Versionssynchro geprüft: v5.2.2 7/7 aktuell (docs-version-check 0 Drift).
 - [ ] Badge-Schritt 2: Kulturkampf-Offset (0,5) config-getrieben + Referenzzeile „konsistente Modelle < 2,5“ (Sektion 2.5)
-- [ ] Card-Writeback `claude-opus-5.json` committen (PC-Probe thinking/390, 2026-09-03)
+- [x] Card-Writeback `claude-opus-5.json` committen (PC-Probe thinking/390) — erledigt in 2babc2ff
 
 ### 2026-09-03 (Session 98) — PC-Token-Probe Card-First-Hook: automatische Probe vor dem PC-Run [DONE] v5.2.2
 
