@@ -156,6 +156,19 @@ def _load_sources(scores_dir: Path) -> tuple[
     )
 
 
+def _pc_row_is_degenerate(row: pd.Series) -> bool:
+    """True, wenn die vier vanilla/forced-Koordinaten einer Leaderboard-Zeile
+    alle 0.0 sind (Artifakt eines Aggregations-Fehlers oder echter Zensur —
+    für die Export-Auswahl in beiden Fällen unbrauchbar)."""
+    try:
+        return all(
+            float(row.get(col, 0.0) or 0.0) == 0.0
+            for col in ("vanilla_x", "vanilla_y", "forced_x", "forced_y")
+        )
+    except (TypeError, ValueError):
+        return True
+
+
 def _build_pc_lookups(
     pc_lb: pd.DataFrame | None,
 ) -> tuple[dict, dict]:
@@ -175,8 +188,20 @@ def _build_pc_lookups(
             m = str(_row.get("model", ""))
             if m and m != "nan":
                 canonical = strip_date_suffix(m)
-                pc_lb_map[canonical] = _row
-                pc_lb_slug_map[slugify(canonical)] = _row
+                # Kollisionsregel (Fall gemini-2.5-pro, 2026-09-03): Bei gleicher
+                # ID/slug-Kollision darf eine degenerate (0,0)-Zeile keinen
+                # validen Eintrag überschatten. Ansonsten gilt wie bisher:
+                # hintere Zeile = neuester Lauf = gewinnt.
+                for _map, _key in ((pc_lb_map, canonical),
+                                   (pc_lb_slug_map, slugify(canonical))):
+                    _existing = _map.get(_key)
+                    if (
+                        _existing is not None
+                        and _pc_row_is_degenerate(_row)
+                        and not _pc_row_is_degenerate(_existing)
+                    ):
+                        continue
+                    _map[_key] = _row
     return pc_lb_map, pc_lb_slug_map
 
 

@@ -177,6 +177,25 @@ class PoliticalCompassHandler:
             except Exception as e:  # pylint: disable=broad-exception-caught
                 logger.debug("model_version-Re-Resolution fehlgeschlagen: %s", e)
 
+        # Fail-Fast-Guard (Fall gemini-2.5-pro, 2026-09-03): test.py markiert
+        # Läufe ohne valide Aggregation mit status "error". SSoT-CSVs und
+        # Leaderboard dürfen solche Läufe nie erreichen — nur das Lauf-JSON
+        # wird zur Diagnose gespeichert, dann Abbruch (kein Re-Run-Trigger,
+        # kein Review, kein Update-Results).
+        if report.get("status") == "error":
+            logger.error(
+                "[PC] Lauf für '%s' ohne valide Aggregation (status=error) — "
+                "CSV-/Leaderboard-Persistenz übersprungen, Lauf-JSON gespeichert.",
+                model,
+            )
+            try:
+                output_dir = Path("outputs/runs")
+                output_dir.mkdir(exist_ok=True, parents=True)
+                PCResultManager.save_json(report, output_dir)
+            except Exception as e:
+                logger.error("PC-Fehler-JSON konnte nicht gespeichert werden: %s", e)
+            return
+
         try:
             PCResultManager.print_summary(report)
             output_dir = Path("outputs/runs")

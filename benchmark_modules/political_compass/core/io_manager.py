@@ -280,13 +280,28 @@ class PoliticalCompassResultManager:
         f_archetype = runs.get("forced", {}).get("archetype", {})
         shift = report.get("shift", {})
 
-        # Degenerate-Guard: Modell hat alle politischen Fragen verweigert (Zensur).
-        # Eintrag wird trotzdem geschrieben, damit die Skip-Logik keinen Re-Run auslöst.
+        # Degenerate-Guard: alle Koordinaten 0.0. Zu unterscheiden:
+        #  a) Zensur — Modell hat geantwortet, aber jede politische Frage
+        #     verweigert (Tokens > 0). Eintrag wird geschrieben, damit die
+        #     Skip-Logik keinen Re-Run auslöst.
+        #  b) API-Ausfall — 0 Tokens, keine auswertbare Antwort
+        #     (Fall gemini-2.5-pro, 2026-09-03: Retest mit lauter Timeout-/
+        #     Garbage-Antworten wrote (0,0) as "Mittelpunkt"). Der Nullwert
+        #     ist kein Messergebnis — Upsert wird übersprungen, ein späterer
+        #     Lauf wiederholt den Test.
         if all(
             val == 0.0
             for val in (v_coords.get("x", 0.0), v_coords.get("y", 0.0),
                         f_coords.get("x", 0.0), f_coords.get("y", 0.0))
         ):
+            total_tokens = int(report.get("statistics", {}).get("total_tokens", 0) or 0)
+            if total_tokens == 0:
+                logger.error(
+                    "⛔ PC-Leaderboard-Upsert übersprungen für '%s': alle Koordinaten "
+                    "0.0 UND 0 Tokens — API-Ausfall statt Zensur, kein Messergebnis.",
+                    model,
+                )
+                return
             logger.warning(
                 "⚠️  Degeneriertes PC-Ergebnis für '%s': Alle Koordinaten 0.0 — "
                 "Modell hat wahrscheinlich alle politischen Fragen verweigert.",

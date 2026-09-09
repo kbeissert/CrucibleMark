@@ -1098,6 +1098,24 @@ class PoliticalCompassTest(BaseTest):
         total_qids = {q.get("metadata", {}).get("id") for q in self.questions}
         invalid_qids = total_qids - valid_qids
 
+        # Fail-Fast (Fall gemini-2.5-pro, 2026-09-03): Keine einzige Frage in beiden
+        # Runs parsebar → Lauf unbrauchbar (API-Ausfall/Garbage-Antworten). Früher
+        # defaultete die Aggregation still auf (0.0, 0.0) und schrieb einen
+        # "Mittelpunkt" mit status "success" ins Leaderboard. Wie systematischen
+        # API-Fehler behandeln: Runner skippt Persistenz, Checkpoint bleibt für
+        # Wiederholung erhalten.
+        if not valid_qids:
+            self._systematic_failure = True
+            logger.error(
+                "[PC] Keine valide Antwort in beiden Runs (%d/%d Fragen gefiltert, "
+                "%d Tokens) — Aggregation verworfen.",
+                len(invalid_qids), len(self.questions), total_tokens,
+            )
+            print(
+                f"\n   ⛔ PC-Fehler: {model} lieferte keine auswertbare Antwort — "
+                "kein Leaderboard-Eintrag, kein Ergebnis-CSV-Write."
+            )
+
         # Apply filter
         self.evaluator_vanilla.response_buffer = [
             r for r in self.evaluator_vanilla.response_buffer if r.get("question_id") in valid_qids
@@ -1193,7 +1211,9 @@ class PoliticalCompassTest(BaseTest):
             "model": model,
             "provider": provider,
             "model_version": model_version,
-            "status": "success",
+            # "error" bei leerer Aggregation → handle_results-Guard verhindert
+            # CSV/Leaderboard-Writes auch abseits des Runner-Pfads.
+            "status": "success" if valid_qids else "error",
             "total_score": status_code,
             "coordinates": final_results.get("coordinates"),
             "archetype": final_results.get("archetype"),
