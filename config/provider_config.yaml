@@ -1035,6 +1035,26 @@ providers:
         reasoning_effort: medium  # Begrenzt Endlos-Reasoning
         enable_thinking: true
 
+      # Swift Qwen3.8 27B NVFP4 — UkisAI reasoning-effizienter Fine-Tune des
+      # Qwen3.8-27B-Daily (hf_repo ukisai/Swift-Qwen3.8-27B-NVFP4, SHA-Pin
+      # c282aa26, pulled 2026-09-14). NVFP4-W4A4 compressed-tensors (28.6 GB
+      # Disk), GDN-Linear-Attention/Vision-Tower/MTP-Head bleiben BF16,
+      # 262K Context, multimodal. Swift Open License v1.0 (gated, frei bis
+      # 1M USD ARR). TOML: Swift-Qwen3.8-27B-NVFP4.toml (Port 3300 via Proxy;
+      # Sweep-Optimum 2026-09-14: MTP=5, seqs=8, batch=16384).
+      # Sampling synchron mit TOML (--override-generation-config):
+      # temperature=0.6, top_p=0.95, top_k=20.
+      - id: swift-qwen3_8-27b-nvfp4
+        name: Swift Qwen 3.8 27B NVFP4 (vLLM, Dense, MTP)
+        config: Swift-Qwen3.8-27B-NVFP4
+        max_tokens: 16384
+        temperature: 0.6
+        top_p: 0.95
+        top_k: 20
+        reasoning_effort: medium  # TOML-Default (Template-Kwarg, Sweep-Optimum)
+        # repetition_penalty:  # TOML-Default 1.0 (kein Override)
+        enable_thinking: true
+
       # GPT-OSS 120B — lokales vLLM auf gx10 (MoE 117B total / 5.1B active, MXFP4).
       # MoE: 128 Experten, 4 aktiv pro Token; 36 Layer (18 sliding + 18 full attention).
       # Native MXFP4-Quantisierung (quant_method: mxfp4 in config.json).
