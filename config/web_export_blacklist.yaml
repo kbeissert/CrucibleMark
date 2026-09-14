@@ -96,15 +96,16 @@ blacklist:
 
 
   # -----------------------------------------------------------------
-  # Google — Gemma 4 (12B Q8 stärkster; E4B/26B/31B Base NVFP4 stärkste)
+  # Google — Gemma 4 (12B Spark-Q6 stärkstes Profil-Paar; E4B/26B/31B Base NVFP4 stärkste)
   # -----------------------------------------------------------------
 
   # E4B Edge (stärkster: gemma-4-e4b Mac, 71.89)
   - "gemma-4-e4b-spark"                     # [Spark] E4B — schwächer als Mac-Variante (gemma-4-e4b, 71.89); selbst (Rank 86, 70.86)
 
-  # 12B Desktop (stärkster: q8)
-  - "gemma-4-12b-it-ud-q4_k_xl"             # schwächer als q8 (Rank 67, 72.03); selbst (Rank 97, 69.76)
-  - "gemma-4-12b-it-ud-q6_k_xl"             # schwächer als q8; selbst (Rank 101, 69.38)
+  # 12B Desktop (stärkstes Profil-Paar: Spark-Q6, Dual Thinking 72.66 / Instruct 72.90)
+  - "gemma-4-12b-it-ud-q4_k_xl"             # schwächer als q6-spark (Rank 68, 72.66); selbst (Rank 98, 69.76)
+  - "gemma-4-12b-it-ud-q6_k_xl"             # schwächer als q6-spark; selbst (Rank 102, 69.38)
+  - "gemma-4-12b-it-ud-q8_k_xl"             # [Mac] Hardware-Duplikat, schwächer als Spark-Q6-Paar (72.66/72.90); selbst (Rank 90, 70.74)
 
   # 26B-A4B Workstation (stärkster: Gemma-4-26B NVFP4, Rank 37, 74.21)
   - "gemma-4-26b-a4b-q8"                    # Standard-q8 (Rank 84, 71.08)
@@ -265,12 +266,19 @@ kept_overrides:
         size: Edge
         reason: "E4B Mac-Variante (stärker als Spark; gemma-4-e4b-spark blacklisted)"
 
-      # 12B Desktop
-      - id: gemma-4-12b-it-ud-q8_k_xl
-        rank: 67
-        score: 72.03
+      # 12B Desktop — Spark-Q6-Profilpaar (Dual Thinking/Instruct, GX10)
+      - id: gemma-4-12b-it-ud-q6_k_xl-spark
+        rank: 68
+        score: 72.66
         size: Desktop
-        reason: "stärkster 12B"
+        mode: Thinking
+        reason: "Spark-Q6 Thinking-Profil (stärker als Mac-Q8; q8 blacklisted)"
+      - id: gemma-4-12b-it-ud-q6_k_xl-instruct-spark
+        rank: 64
+        score: 72.90
+        size: Desktop
+        mode: Standard
+        reason: "Spark-Q6 Instruct-Profil (stärkster 12B)"
 
       # 26B-A4B Workstation
       - id: Gemma-4-26B
