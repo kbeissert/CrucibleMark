@@ -378,6 +378,16 @@
         ],
         "jurisdiction": "CN"
       },
+      "UkisAI": {
+        "label": "UkisAI",
+        "vendor_card_id": "ukisai",
+        "description": "UkisAI — Europa-basiertes Applied-AI-Lab (Belgrad, Eindhoven; US-Entität in Wilmington, DE). Entwickler der Swift-Modellreihe (Reasoning-Effizienz-Finetunes auf Qwen-Basis, Swift Open License v1.0, frei bis 1 Mio. USD ARR). Eigene API (ukisai.com/api/swift/v1, kostenfrei für Forschung).",
+        "aliases": [
+          "ukisai",
+          "Ukis AI"
+        ],
+        "jurisdiction": "EU"
+      },
       "Upstage": {
         "label": "Upstage",
         "vendor_card_id": "upstage",
