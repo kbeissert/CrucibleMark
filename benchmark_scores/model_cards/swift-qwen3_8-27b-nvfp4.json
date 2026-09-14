@@ -1,0 +1,62 @@
+{
+  "model_id": "swift-qwen3_8-27b-nvfp4",
+  "display_name": "Swift Qwen 3.8 27B",
+  "developer": "Qwen/Qwen3.8-27B (Base) / UkisAI (Finetune + Quantization)",
+  "origin_country": "unknown",
+  "developer_jurisdiction": "unknown",
+  "deployment_type": "local-weights",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_rationale": "This checkpoint is a UkisAI fine-tune and NVFP4 quantization of Qwen/Qwen3.8-27B. The base lineage is documented, but the weights are distributed under the gated Swift Open License v1.0 with an ARR threshold and are optimized for Blackwell/vLLM deployment, so provenance is clear but not fully open in the OSS sense.[page:1]",
+  "model_family": "Qwen3.8",
+  "vendor": "UkisAI",
+  "primary_focus": "reasoning",
+  "use_case_primary": "generalist",
+  "parameter_architecture": "dense",
+  "params_total_b": 28.0,
+  "params_active_b": 28.0,
+  "context_window_k": 262,
+  "knowledge_cutoff": "2025-12",
+  "summary": "Swift Qwen 3.8 27B ist UkisAIs Reasoning-Effizienz-Finetune auf Qwen 3.8 27B: bis zu 58 Prozent weniger Thinking-Tokens bei unter einem Prozent Performance-Verlust und rund doppelt so hoher Durchsatz auf Reasoning-Aufgaben. NVFP4-Quantisierung mit 262.000 Tokens Kontext, MTP-Head für Speculative Decoding und dokumentiertem Tool-Use — Lizenz mit kommerzieller ARR-Schwelle.",
+  "strengths": [
+    "Bis zu 58 Prozent weniger Thinking-Tokens bei unter einem Prozent Accuracy-Verlust.",
+    "Rund doppelter Durchsatz auf Reasoning-Aufgaben laut Hersteller.",
+    "262.000 Tokens Kontext mit nativem MTP-Head für Speculative Decoding.",
+    "Dokumentiertes Tool-Use über offizielle Serving-Rezepte.",
+    "Multimodaler Qwen-3.8-Backbone (Text und Bild), 27-Mrd.-Klasse Dense."
+  ],
+  "known_limitations": [
+    "Lizenz mit ARR-Schwelle: ab einer Million US-Dollar Jahresumsatz Enterprise-Lizenz nötig.",
+    "NVFP4-W4A4 braucht aktuelle Tensor-Core-Hardware; ältere GPUs fallen ohne Beschleunigung zurück.",
+    "Community-Finetune ohne offiziellen Hersteller-Support — Tuning-Daten nicht unabhängig verifiziert.",
+    "Wissensstand Dezember 2025 — jüngste Fakten-Lage nicht abgedeckt.",
+    "Neuer Anbieter (UkisAI) mit schmalem HF-Footprint — Reputation muss sich erst aufbauen."
+  ],
+  "judge_context_hint": "Swift Qwen 3.8 27B (Workstation-Klasse, 27 Mrd. Dense-Parameter, 262.000 Tokens Kontext, NVFP4-Quantisierung) ist UkisAIs Reasoning-Effizienz-Finetune auf Qwen 3.8 27B. Bewerte Reasoning-Aufgaben mit dem Wissen, dass das Modell explizit kürzere Argumentationsketten produziert — End-Antwort-Qualität zählt, nicht Thinking-Länge. Lizenz mit kommerzieller ARR-Schwelle ist im Card-Metadata dokumentiert.",
+  "architecture_tags": [
+    "Reasoning",
+    "Dense",
+    "Local",
+    "Tool-Use",
+    "Gated-Weights"
+  ],
+  "input_modalities": [
+    "text",
+    "image"
+  ],
+  "output_modalities": [
+    "text"
+  ],
+  "supports_tool_use": true,
+  "license": "Swift Open License v1.0",
+  "license_url": "https://huggingface.co/ukisai/Swift-Qwen3.8-27B-NVFP4/blob/main/LICENSE",
+  "commercial_use_allowed": true,
+  "weights_license_tier": "gated-weights",
+  "model_version": "3.8",
+  "hardware_profile": "asus_gx10_blackwell",
+  "inference_engine": "vLLM",
+  "quantization_format": "NVFP4-W4A4",
+  "model_variant": "Swift",
+  "card_status": "draft",
+  "size_class": "Workstation"
+}
