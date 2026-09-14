@@ -1,0 +1,28 @@
+{
+  "vendor_id": "microsoft",
+  "display_name": "Microsoft",
+  "company": "Microsoft Corporation",
+  "headquarters": "Redmond, WA, USA",
+  "founding_year": 1975,
+  "pricing_model": "free-tier+pay-per-token",
+  "api_base_url": "https://{resource-name}.openai.azure.com",
+  "api_documentation_url": "https://learn.microsoft.com/azure/ai-services/openai/reference",
+  "deployment": {
+    "cloud_act_exposure": true,
+    "applicable_law": "US (CLOUD Act)",
+    "data_residency": "USA + EU",
+    "gdpr_dpa_available": true,
+    "eu_adequacy_decision": true,
+    "data_retention_days": -1,
+    "chinese_nsl_risk": "none"
+  },
+  "privacy_note": "Microsoft ist ein US-Unternehmen; auch bei Verarbeitung in EU-Regionen kann US-Recht, insbesondere der CLOUD Act, potenziell Zugriffsanordnungen ermöglichen. Für EU-Kunden bestehen zwar DPA- und Datenschutzmechanismen, grenzüberschreitende Rechtszugriffsrisiken bleiben jedoch relevant.",
+  "notable_models": [
+    "Azure OpenAI Service",
+    "Phi-3"
+  ],
+  "unknown": false,
+  "generated_at": "2026-09-12T18:27:05.785535+00:00",
+  "last_verified_at": null,
+  "verification_source": "https://learn.microsoft.com/azure/ai-services/openai/"
+}
