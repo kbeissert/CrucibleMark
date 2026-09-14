@@ -25,6 +25,7 @@ from .common import (
     _ensure_mcp_running,
     _extract_json_object,
     _extract_tool_content,
+    _is_local_llm_host,
     _parse_tool_call,
     _prefill_template_fields,
     _preserve_operator_fields,
@@ -269,6 +270,11 @@ class Researcher:
             logger.info("    🔢 Limitiert auf %d Cards pro Run.", max_cards)
 
         llm_root = _server_root_url(self.llm_spec.base_url)
+        # Der /health-Gate gilt nur fuer lokale llama.cpp-/Intranet-Server.
+        # Remote-APIs (openrouter.ai, api.openai.com, ...) haben keinen
+        # llama.cpp-Health-Endpoint — dort wuerde der Check jede Card
+        # false-negativ als "nicht erreichbar" skippen.
+        local_llm = _is_local_llm_host(self.llm_spec.base_url)
         try:
             for idx, (mid, path) in enumerate(targets, 1):
                 if idx > 1:
@@ -276,7 +282,7 @@ class Researcher:
                     time.sleep(pause)
                     logger.info("    ⏸ Pause %.1fs vor nächster Card.", pause)
 
-                if not _check_health(f"{llm_root}/health", "llama.cpp", timeout=5):
+                if local_llm and not _check_health(f"{llm_root}/health", "llama.cpp", timeout=5):
                     logger.error("    ❌ llama.cpp nicht erreichbar — überspringe %s.", mid)
                     self.summary.errors += 1
                     continue

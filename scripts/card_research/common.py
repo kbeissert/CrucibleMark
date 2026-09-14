@@ -9,6 +9,7 @@ import subprocess
 import sys
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path
 from typing import Any
@@ -854,6 +855,19 @@ def _build_research_user_prompt(card: dict, editor_prompt: str, pre_findings: li
 def _server_root_url(base_url: str) -> str:
     """Extract root URL from OpenAI-compatible base_url (strip /v1)."""
     return base_url.rstrip("/").removesuffix("/v1")
+
+
+def _is_local_llm_host(base_url: str) -> bool:
+    """True wenn der Host ein lokaler/Intranet-Server ist (llama.cpp/vLLM).
+
+    Remote-APIs (openrouter.ai, api.openai.com, ...) haben keinen llama.cpp
+    /health-Endpoint — der Health-Gate wäre dort ein False-Negative.
+    """
+    host = (urllib.parse.urlparse(base_url).hostname or "").lower()
+    return (
+        host in {"localhost", "127.0.0.1", "0.0.0.0", "::1"}
+        or host.startswith(("10.", "192.168.", "100."))  # privat + Tailscale
+    )
 
 
 def _check_health(url: str, name: str, timeout: float = 3.0) -> bool:
