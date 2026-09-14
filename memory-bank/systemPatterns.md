@@ -238,6 +238,14 @@ Kalibrierungs-Befund Gemma-4-12b (Spark): CoT-Länge ist fragenabhängig schwer 
 
 ---
 
+## Metrics-Proxy-Port-Architektur llamacpp_spark (2026-09-11)
+
+**Entscheidung:** Benchmarks adressieren die Metrics-Proxy-Ports der GX10 — primär `:2234`, sekundär `:2235` (Mapping vorhanden, für einen künftigen zweiten Benchmark-Provider vorbereitet). Der authentifizierende Proxy (`metrics-proxy.json`: `2234→backend 1234`, `2235→backend 1235`) sammelt Token-Metriken + Inferenz-Zustand und leitet an die llama-server weiter, die unverändert auf `1234`/`1235` binden. Request-Pfad: Benchmark → Proxy (Bearer via `${DGX_AUTH_TOKEN}`) → llama-server.
+
+**Rollen-Trennung der Config-Keys (Fehlkonfigurationsfall 2026-09-11):** `base_url` IST der Benchmark-Port (Proxy `:2234`). `server_port` ist der Bind-Port des llama-server (`:1234`) — `llamacpp_base._build_server_cmd` leitet `--port` daraus her (Fallback: base_url-Port). `server_port` auf die Proxy-Port zu setzen startet den Server per SSH direkt in den belegten Proxy-Port (Bind-Kollision; Cold-Start scheitert erst nach 180 s Readiness-Timeout, da der Remote-Hijack-Guard lsof-basiert nur localhost prüft → Fail-Open). `server_stop_cmd` killt musterbasiert `--port 1234` und muss zum Bind-Port konsistent bleiben.
+
+---
+
 ## Konventionen
 
 - **Naming:** BEM (CSS) / snake_case (Python) / kebab-case (YAML-Keys)
