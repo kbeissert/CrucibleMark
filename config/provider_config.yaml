@@ -475,11 +475,12 @@ providers:
         name: Hermes 4 14B Q4_K_M (GGUF)
         model_file: hermes-4-14b-q4_k_m.gguf
         n_gpu_layers: 99
-      - id: qwen2.5-coder-7b
-        name: Qwen 2.5 Coder 7B Instruct Q6_K (GGUF)
-        model_file: qwen2.5-coder-7b-instruct-q6_k.gguf
-        n_gpu_layers: 99
-        enable_thinking: false
+      # ── Auskommentiert 2026-09-11: GGUF entfernt (User-Entscheidung); Benchmark-Werte bleiben.
+      # - id: qwen2.5-coder-7b
+      #   name: Qwen 2.5 Coder 7B Instruct Q6_K (GGUF)
+      #   model_file: qwen2.5-coder-7b-instruct-q6_k.gguf
+      #   n_gpu_layers: 99
+      #   enable_thinking: false
       - id: qwen3-4b
         name: Qwen 3 4B Q6_K (GGUF)
         model_file: Qwen3-4B-Q6_K.gguf
@@ -548,6 +549,10 @@ providers:
       # des llama-server (:1234) von der base_url — ohne diesen Override würde
       # der Connector den Server per SSH mit --port 2234 starten und mit dem
       # Proxy kollidieren. Probes senden seit 2026-08-28 Bearer-Auth.
+      # Entscheidung 2026-09-11: Benchmarks adressieren KÜNFTIG die Proxy-Ports
+      # (:2234 primär, :2235 sekundär) — die llama-server-Bind-Ports bleiben
+      # 1234/1235, der Proxy mappt 2234→1234 und 2235→1235. „Benchmark läuft
+      # auf 2234" heißt daher: base_url :2234, NICHT server_port ändern.
       server_port: 1234
       # GGUF-Basispfad auf der GX10; `model_file` der Modelle ist relativ dazu.
       model_dir: /home/kay_beissert/ai/models/llm/gguf
@@ -716,16 +721,118 @@ providers:
         name: Hermes 4 14B BF16 Abliterated (GGUF)
         model_file: hermes-4-14b-abliterated-q6_k/hermes-4-14b-bf16-abliterated-q6_k.gguf
         n_gpu_layers: 99
-      - id: qwen2_5-coder-7b
-        name: Qwen 2.5 Coder 7B Instruct Q6_K (GGUF)
-        model_file: qwen2.5-coder-7b-instruct-q6_k/qwen2.5-coder-7b-instruct-q6_k.gguf
-        n_gpu_layers: 99
-        enable_thinking: false
+      # ── Auskommentiert 2026-09-11: GGUF von GX10 entfernt (User-Entscheidung).
+      # Historischer Leaderboard-Eintrag (SPRK, Bronze) bleibt; Re-Test via Re-Download möglich.
+      # - id: qwen2_5-coder-7b
+      #   name: Qwen 2.5 Coder 7B Instruct Q6_K (GGUF)
+      #   model_file: qwen2.5-coder-7b-instruct-q6_k/qwen2.5-coder-7b-instruct-q6_k.gguf
+      #   n_gpu_layers: 99
+      #   enable_thinking: false
       - id: gemma-4-ara-26b-a4b-q5
         name: Gemma 4 ARA 26B-A4B APEX Q5_K_M (GGUF, abliterated)
         model_file: Gemma4-26B-ara-abliterated/gemma4-ara-2pass-APEX-Q5_K_M.gguf
         n_gpu_layers: 99
         # mmproj-gemma4-f16.gguf liegt alongside (Vision-fähig); Benchmark rein textuell.
+
+      # Signal 3.8 27B (2026-09-10) — AgentionAI-Finetune von Qwen3.8-27B,
+      # AP-Q5_K_M-Tier (Agention Precision, imatrix). 27.3B Dense, 262K-Trainings-
+      # Kontext (Betrieb 65.5K), Vision-fähig (mmproj-BF16 im Ordner — Benchmark
+      # rein textuell). MTP-Draft-Head des Base für spekulatives Decoding.
+      # Thinking on/off per Qwen3.8-Chat-Template; Server läuft --reasoning off
+      # (Instruct-Modus) → enable_thinking: false. Sampling = Provider-Defaults
+      # (temp 0.70 / top-p 0.95 / top-k 20) = README-Empfehlung.
+      - id: signal-3_8-27b-ap-q5_k_m
+        name: Signal 3.8 27B AP-Q5_K_M (GGUF)
+        model_file: Signal-3.8-27B/AP-Q5_K_M/Signal-3.8-27B-AP-Q5_K_M.gguf
+        n_gpu_layers: 99
+        enable_thinking: false
+        extra_server_args:
+          - "--jinja"
+          - "--spec-type draft-mtp"
+          - "--spec-draft-n-max 2"
+
+      # ── Small-Model-Feld ≤16 GB (Inventar-Check 2026-09-10, alle Unsloth-UD-Q5_K_M) ──
+      # Ziel: Familienlücken im Nano/Edge/Desktop-Segment des Web-Exports schließen
+      # (Llama/Phi/Ministral/DeepSeek-R1 waren dort gar nicht vertreten).
+      # R1-Distill: CoT liegt inline im content-Feld (keine Think-Tags) →
+      # enable_thinking: false, kein --reasoning. Ornith 1.0 ist thinking-only
+      # (35B-Präzedenz; kein Hybrid-Run, Memory-Regel 2026-08).
+      # ⚠️ Llama-3.3-8B: inoffizielle Bezeichnung (Meta 3.3 offiziell nur 70B) —
+      # Herkunft der Weights vor Publikation prüfen.
+      - id: llama-3_2-1b
+        name: Llama 3.2 1B Instruct Q5_K_M (GGUF)
+        model_file: Llama-3.2-1B-Instruct-UD-Q5_K_M/Llama-3.2-1B-Instruct-Q5_K_M.gguf
+        n_gpu_layers: 99
+        enable_thinking: false
+      - id: llama-3_2-3b
+        name: Llama 3.2 3B Instruct Q5_K_M (GGUF)
+        model_file: Llama-3.2-3B-Instruct-UD-Q5_K_M/Llama-3.2-3B-Instruct-Q5_K_M.gguf
+        n_gpu_layers: 99
+        enable_thinking: false
+      - id: llama-3_3-8b
+        name: Llama 3.3 8B Instruct Q5_K_M (GGUF)
+        model_file: Llama-3.3-8B-Instruct-UD-Q5_K_M/Llama-3.3-8B-Instruct-q5_k_m.gguf
+        n_gpu_layers: 99
+        enable_thinking: false
+      - id: phi-4-mini
+        name: Phi-4 Mini Instruct Q5_K_M (GGUF)
+        model_file: Phi-4-mini-instruct-UD-Q5_K_M/microsoft_Phi-4-mini-instruct-Q5_K_M.gguf
+        n_gpu_layers: 99
+        enable_thinking: false
+      - id: ministral-3-3b
+        name: Ministral 3 3B Instruct Q5_K_M (GGUF)
+        model_file: Ministral-3-3B-Instruct-UD-Q5_K_M/Ministral-3-3B-Instruct-2512-Q5_K_M.gguf
+        n_gpu_layers: 99
+        enable_thinking: false
+      - id: ministral-3-8b
+        name: Ministral 3 8B Instruct Q5_K_M (GGUF)
+        model_file: Ministral-3-8B-Instruct-UD-Q5_K_M/Ministral-3-8B-Instruct-2512-Q5_K_M.gguf
+        n_gpu_layers: 99
+        enable_thinking: false
+      - id: ministral-3-14b
+        name: Ministral 3 14B Instruct Q5_K_M (GGUF)
+        model_file: Ministral-3-14B-Instruct-UD-Q5_K_M/mistralai_Ministral-3-14B-Instruct-2512-Q5_K_M.gguf
+        n_gpu_layers: 99
+        enable_thinking: false
+      - id: deepseek-r1-distill-1_5b
+        name: DeepSeek R1 Distill Qwen 1.5B Q5_K_M (GGUF)
+        model_file: DeepSeek-R1-Distill-Qwen-1.5B-UD-Q5_K_M/DeepSeek-R1-Distill-Qwen-1.5B-Q5_K_M.gguf
+        n_gpu_layers: 99
+        enable_thinking: false  # CoT inline im content-Feld, keine Think-Tags
+      - id: deepseek-r1-distill-7b
+        name: DeepSeek R1 Distill Qwen 7B Q5_K_M (GGUF)
+        model_file: DeepSeek-R1-Distill-Qwen-7B-UD-Q5_K_M/DeepSeek-R1-Distill-Qwen-7B-Q5_K_M.gguf
+        n_gpu_layers: 99
+        enable_thinking: false  # CoT inline im content-Feld, keine Think-Tags
+      - id: deepseek-r1-distill-14b
+        name: DeepSeek R1 Distill Qwen 14B Q5_K_M (GGUF)
+        model_file: DeepSeek-R1-Distill-Qwen-14B-UD-Q5_K_M/DeepSeek-R1-Distill-Qwen-14B-Q5_K_M.gguf
+        n_gpu_layers: 99
+        enable_thinking: false  # CoT inline im content-Feld, keine Think-Tags
+      - id: gemma-3-270m
+        name: Gemma 3 270M Instruct Q5_K_M (GGUF)
+        model_file: Gemma-3-270M-it-UD-Q5_K_M/gemma-3-270m-it-Q5_K_M.gguf
+        n_gpu_layers: 99
+        enable_thinking: false
+      - id: gemma-3-4b
+        name: Gemma 3 4B Instruct Q5_K_M (GGUF)
+        model_file: Gemma-3-4B-it-UD-Q5_K_M/gemma-3-4b-it-Q5_K_M.gguf
+        n_gpu_layers: 99
+        enable_thinking: false
+      # Gemma 4 E2B — kleine Schwester von E4B (gleiche Behandlung: kein
+      # enable_thinking-Key, --reasoning-Pfad läuft über reasoning_content wie bei E4B).
+      - id: gemma-4-e2b
+        name: Gemma 4 E2B Instruct Q5_K_M (GGUF)
+        model_file: Gemma-4-E2B-it-UD-Q5_K_M/gemma-4-E2B-it-Q5_K_M.gguf
+        n_gpu_layers: 99
+      # Ornith 1.0 9B (DeepReinforce) — Qwen3.5-9B-Architektur (GGUF-Meta qwen35),
+      # reines Thinking-Modell ohne Instruct-Modus → enable_thinking: true,
+      # kein Hybrid-Dual-Run (Thinking-only-Ausnahme).
+      - id: ornith-1_0-9b
+        name: Ornith 1.0 9B Q5_K_M (GGUF)
+        model_file: Ornith-1.0-9B-Instruct-UD-Q5_K_M/Ornith-1.0-9B-Q5_K_M.gguf
+        n_gpu_layers: 99
+        enable_thinking: true
 
       # ── Historische Einträge (Stand 2026-08-27: GGUFs nicht mehr auf der Disk) ──
 
