@@ -203,6 +203,13 @@
     "field_name": "vendor",
     "fallback": null,
     "values": {
+      "AgentionAI": {
+        "label": "AgentionAI",
+        "vendor_card_id": "agentionai",
+        "description": "AgentionAI — Entwickler der Signal-Modellreihe (Token-Effizienz-Finetunes auf Qwen-Basis, Apache 2.0). Betreiber, Jurisdiktion und Datenschutzpraxis sind öffentlich nicht verifizierbar (Vendor-Card unknown: true).",
+        "aliases": [],
+        "jurisdiction": "Unknown"
+      },
       "Alibaba": {
         "label": "Alibaba",
         "vendor_card_id": "alibaba",

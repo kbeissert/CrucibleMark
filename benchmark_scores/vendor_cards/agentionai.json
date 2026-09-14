@@ -1,0 +1,30 @@
+{
+  "vendor_id": "agentionai",
+  "display_name": "AgentionAI",
+  "company": "AgentionAI (Laurent Zuijdwijk)",
+  "headquarters": "unknown",
+  "founding_year": 0,
+  "pricing_model": "open-source-self-hosted",
+  "api_base_url": null,
+  "api_documentation_url": null,
+  "deployment": {
+    "cloud_act_exposure": false,
+    "applicable_law": "Unknown",
+    "data_residency": "Unknown",
+    "gdpr_dpa_available": "unknown",
+    "eu_adequacy_decision": "unknown",
+    "data_retention_days": -1,
+    "chinese_nsl_risk": "none"
+  },
+  "privacy_note": "AgentionAI ist der öffentlich identifizierbare Hugging-Face-Publisher (Laurent Zuijdwijk, agention.ai, GitHub: LaurentZuijdwijk) von Signal 3.8 27B, einem Qwen3.8-Fine-Tune. Vertrieb ausschließlich als offene Gewichte (GGUF) über Hugging Face — kein API-Betrieb, daher keine Datenverarbeitung durch den Publisher. Sitz/Jurisdiktion der Person sind öffentlich nicht ausgeprägt; für lokale Nutzung der Gewichte besteht kein Drittlandtransfer-Risiko.",
+  "notable_models": [
+    "Signal 3.8 27B (Qwen3.8-Fine-Tune)"
+  ],
+  "unknown": false,
+  "generated_at": "2026-09-12T18:27:54.861423+00:00",
+  "last_verified_at": "2026-09-14",
+  "verification_source": "https://huggingface.co/agentionai",
+  "profile_verified": true,
+  "profile_verified_at": "2026-09-14",
+  "profile_verified_by": "llm:websearch"
+}
