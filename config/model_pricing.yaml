@@ -160,6 +160,10 @@ model_pricing:
   "deepseek/deepseek-v4-flash":
     input: 0.0795
     output: 0.159
+  # OpenRouter Standardpreis (2026-09-14) — Off-Peak-/Wochenend-Rabatte ignoriert (Standardpreis-Regel)
+  "deepseek/deepseek-v4.1-flash":
+    input: 0.15
+    output: 0.60
   "deepseek/deepseek-v4-pro":
     input: 0.87
     output: 1.74

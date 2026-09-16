@@ -183,6 +183,7 @@ providers:
         moonshotai/kimi-k2.5-0127: 18000
         moonshotai/kimi-k2-thinking-20251106: 16000
         moonshotai/kimi-k2: 16000
+        deepseek/deepseek-v4.1-flash: 16000
         deepseek/deepseek-v4-pro: 16000
         deepseek/deepseek-v4-flash: 16000
 
@@ -279,6 +280,8 @@ providers:
       #   name: Kimi K2 0711
 
       # DeepSeek — neueste zuerst (getestet 22. Juni 2026)
+      - id: deepseek/deepseek-v4.1-flash
+        name: DeepSeek V4.1 Flash
       - id: deepseek/deepseek-v4-pro
         name: DeepSeek V4 Pro
       - id: deepseek/deepseek-v4-flash
