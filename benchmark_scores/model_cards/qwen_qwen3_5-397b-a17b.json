@@ -85,7 +85,7 @@
   "model_variant": null,
   "unknown": false,
   "card_status": "complete",
-  "size_class": "Frontier",
+  "size_class": "Server",
   "generated_at": "2026-06-03T20:49:00.000000+02:00",
   "thinking_probe_detected": true,
   "thinking_probe_evidence": "Qwen3.5 arbeitet standardmäßig im Thinking-Modus und generiert <think>...</think> Blöcke vor der finalen Antwort. Thinking kann via Parameter deaktiviert werden.",

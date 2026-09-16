@@ -86,7 +86,7 @@
   "model_variant": "Unsloth Dynamic Q5_K_M",
   "unknown": false,
   "card_status": "draft",
-  "size_class": "Edge",
+  "size_class": "Desktop",
   "generated_at": "2026-09-12T12:48:43.960542+00:00",
   "thinking_probe_detected": true,
   "thinking_probe_evidence": "Multi-Probe (3 prompts, 3 detected, best confidence=medium):\n  - math: [math] reasoning_tokens=704 in provider metadata. First 200 chars: Here is the step-by-step solution:\n\n**Step 1: Identify the formula for average speed.**\nThe formula for average speed is:\n$$\\text{Average Speed} = \\frac{\\text{Total Distance}}{\\text{Total Time}}$$\n\n**\n  - code: [code] reasoning_tokens=885 in provider metadata. First 200 chars: I'll sort the list **[3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5]** using **Selection Sort**, a simple and intuitive algorithm.\n\n---\n\n## 🧠 Algorithm: Selection Sort\n\n**How it works:**\n1. Divide the list into a *\n  - decision: [decision] reasoning_tokens=771 in provider metadata. First 200 chars: This is one of the most prominent real-world applications of the **Trolley Problem**, a philosophical thought experiment regarding moral decision-making in unavoidable accidents. There is no single, u",

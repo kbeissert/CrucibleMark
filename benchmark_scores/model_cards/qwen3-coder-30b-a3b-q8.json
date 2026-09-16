@@ -56,7 +56,7 @@
   "quantization_format": null,
   "repetition_penalty": null,
   "seed": null,
-  "size_class": "Frontier",
+  "size_class": "Server",
   "stop_sequences": null,
   "strengths": [
     "Ultra-sparse MoE-Architektur mit hohem Durchsatz-Vorteil gegenüber ähnlich grossen Dense-Modellen",

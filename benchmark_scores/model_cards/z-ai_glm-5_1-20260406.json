@@ -85,7 +85,7 @@
   "model_variant": null,
   "unknown": false,
   "card_status": "complete",
-  "size_class": "Frontier",
+  "size_class": "Server",
   "generated_at": "2026-04-23T22:03:19.200573+00:00",
   "thinking_probe_detected": true,
   "thinking_probe_evidence": "reasoning_tokens=530 in provider metadata",

@@ -43,7 +43,7 @@ Badges reflektieren die **Gesamt-Performance** über alle Module hinweg. Die kan
 
 CrucibleMark klassifiziert Modelle nach ihrer **Hardware-Deployment-Realität** — nicht nach abstrakten Capability-Scores. Die `Size Class`-Spalte im Leaderboard gibt an, auf welcher Hardware ein Modell praktisch einsetzbar ist.
 
-**Erkennung:** Kaskade gemäß `config/classification_taxonomy.json#size_class.classification_rules` — (1) Card-Override `size_class` (vom Card-Validator gegen `params_total_b` geprüft), (2) Card-`params_total_b` → Tier (MoE: Gesamtgröße — das vollständige Modell muss in den RAM/VRAM geladen werden, aktive Parameter beschleunigen nur), (3) Regex auf Ollama-Style-Tags (z. B. `qwen3:4b`, `cogito:14b`), (4) Fallback `Frontier` (API-only oder Größe unbekannt).
+**Erkennung:** Kaskade gemäß `config/classification_taxonomy.json#size_class.classification_rules` — (1) Card-Override `size_class` (vom Card-Validator gegen `params_total_b` geprüft), (2) Card-`params_total_b` → Tier (MoE: Gesamtgröße — das vollständige Modell muss in den RAM/VRAM geladen werden, aktive Parameter beschleunigen nur), (3) Regex auf Ollama-Style-Tags (z. B. `qwen3:4b`, `cogito:14b`), (4) Fallback `Frontier` (API-only bzw. Größe unbekannt bei proprietären Modellen; bei offenen Gewichten ohne Parameterzahl erzeugt der Validator eine WARN).
 
 | Tier | Parameter | RAM (Q4) | Deployment-Realität |
 |---|---|---|---|
@@ -51,12 +51,12 @@ CrucibleMark klassifiziert Modelle nach ihrer **Hardware-Deployment-Realität** 
 | **Edge** | 5–9B | 4–8 GB | Jeder aktuelle Laptop, MacBook Air M-Series |
 | **Desktop** | 10B–22B | 8–14 GB | MacBook Pro, 14 GB Unified Memory |
 | **Workstation** | 23B–35B | 14–24 GB | M4 Pro/Max, RTX 4090, High-End Consumer |
-| **Server** | 36–75B | 24–48 GB | Mac Studio, Dedicated GPU-Node |
-| **Frontier** | API-only / > 75B | — | Cloud-only, keine lokale Deployment-Option |
+| **Server** | 36–768B | 24–460 GB | Dedizierte KI-Server: Mac Studio Ultra (bis 512 GB), Multi-GPU-Node — lokal betreibbar |
+| **Frontier** | API-only / > 768B | > 460 GB | Datacenter-Niveau — jenseits des lokalen Single-Box-Betriebs, oder Cloud-only ohne Parameterzahl |
 
 **Scope:** Alle Tiers durchlaufen exakt dieselben 44 Tasks mit derselben Bewertungsmethodik. Die Badge-Schwellen (Bronze, Silver, …) gelten unverändert — `Size Class` signalisiert ausschließlich die Hardwareanforderung, nicht eine separate Wertungsskala.
 
-**Klassifikationsregeln (SSoT):** Die Einordnung folgt `params_total_b` — auch bei MoE (das vollständige Modell muss in den RAM/VRAM; `params_active_b` beschleunigt die Inferenz, reduziert aber nicht den Speicherbedarf). `Frontier` gilt bei unbekannter Parameterzahl (API-only) oder > 75B; offene Gewichte mit bekannten Params bekommen den params-basierten Tier unabhängig von der Cloud-Verfügbarkeit. Card-Overrides werden vom Card-Validator gegen `params_total_b` geprüft (Hard-Fail bei Abweichung).
+**Klassifikationsregeln (SSoT):** Die Einordnung folgt `params_total_b` — auch bei MoE (das vollständige Modell muss in den RAM/VRAM; `params_active_b` beschleunigt die Inferenz, reduziert aber nicht den Speicherbedarf). `Frontier` gilt bei unbekannter Parameterzahl (nur proprietäre/API-only-Modelle) oder > 768B; offene Gewichte mit bekannten Params bekommen den params-basierten Tier unabhängig von der Cloud-Verfügbarkeit; offene Gewichte OHNE Parameterzahl erzeugen eine Validator-WARN statt des Frontier-Fallbacks. Card-Overrides werden vom Card-Validator gegen `params_total_b` geprüft (Hard-Fail bei Abweichung).
 
 ### Methodologie: Warum diese Tier-Grenzen?
 
@@ -74,11 +74,11 @@ Die obere RAM-Grenze liegt bewusst bei 14 GB statt 12 GB. Hintergrund: Q4-Quanti
 **Workstation (23–35B / 14–24 GB)**
 Der Tier beginnt bei 23B. Ein M4 Pro/Max mit 18 GB RAM ist eine **Betriebsgrenze**, keine Tier-Grenze — ein 23B-Modell gehört konzeptuell in Workstation, auch wenn es auf einem 18-GB-Gerät eng werden kann. Die Parametergrenze bei 35B reflektiert, dass 32B-Modelle (z. B. Qwen3:32b) auf einem RTX 4090 (24 GB) oder M4 Max (36–48 GB) noch lokal laufen.
 
-**Server (36–75B / 24–48 GB)**
-Hier beginnt die Klasse, die dedizierte Hardware voraussetzt: Mac Studio (64–192 GB Unified Memory) oder einen dedizierten GPU-Node mit ≥ 24 GB VRAM. Consumer-Hardware fällt aus. Die Grenze bei 75B ist hart, weil ein 70B-Modell in Q4 ~40–42 GB benötigt und damit auf einem Mac Studio mit 64 GB noch komfortabel läuft.
+**Server (36–768B / 24–460 GB)**
+Hier beginnt die Klasse, die dedizierte Hardware voraussetzt: dedizierte KI-Server mit 256–768 GB Speicher (Mac Studio Ultra bis 512 GB Unified Memory, Multi-GPU-Nodes mit 8× 96 GB VRAM). Consumer-Hardware fällt aus. Die untere Grenze bei 35B reflektiert den RTX-4090/M4-Max-Bereich; die obere Grenze bei **768B** ist der 512GB-Single-Box-Anker: 768B × ~0,6 GB/B (Q4_K_M) ≈ 460 GB — gerade noch lokal betreibbar auf der größten Single-Box (z. B. GLM-5.3 mit 744B auf Mac Studio Ultra 512GB).
 
-**Frontier (API-only / > 75B)**
-Das primäre Kriterium ist **API-only**, nicht die Parameterzahl. Modelle wie Llama 3.1 405B laufen theoretisch lokal — auf Multi-GPU-Server-Rigs. Praktisch ist das keine Deployment-Option für Einzelpersonen oder kleine Teams. „API-only" kommuniziert die Realität direkter als eine Parameterschwelle. Frontier-Modelle (kommerzielle APIs, Cloud-Proxies) erhalten keinen Size-Tag und werden automatisch in diesen Tier eingestuft.
+**Frontier (API-only / > 768B) — Datacenter-Niveau**
+Zwei Fälle: (1) Modelle mit mehr als 768B Gesamtparametern (z. B. Kimi K2 mit 1T, Q4 ≈ 600 GB — jenseits der Single-Box-Klasse, Multi-GPU-Rack/Datacenter). (2) Proprietäre/API-only-Modelle ohne bekannte Parameterzahl (kommerzielle APIs, Cloud-Proxies) — sie erhalten keinen Size-Tag und werden automatisch eingestuft. Offene Gewichte ohne recherchierte Parameterzahl fallen **nicht** mehr in diesen Tier, sondern erzeugen eine Validator-WARN (Datenlücke).
 
 **Badge-Marker:** Nano-Modelle (≤ 4B) erhalten einen `🔬`-Suffix am Badge (z. B. `🥉 Bronze 🔬`) — als visuelles Signal für den Floor-Tier. Edge-Modelle und größer erscheinen ohne Suffix.
 

@@ -89,7 +89,7 @@
   "model_variant": "NVFP4, DFlash",
   "unknown": false,
   "card_status": "complete",
-  "size_class": "Frontier",
+  "size_class": "Server",
   "generated_at": "2026-07-30T22:23:00+00:00",
   "thinking_probe_detected": true,
   "thinking_probe_evidence": "Multi-Probe (3 prompts, 3 detected, best confidence=medium):\n  - math: [math] Inline CoT im content-Feld: Antwort 519 chars (>200) mit 16 Berechnungs-Operatoren. First 200 chars: The average speed is calculated by dividing the total distance traveled by the total time taken. \n\n**Given:**\n- Total distance = 120 km  \n- Total time = 1.5 hours  \n\n**Formula:**  \n\\[\n\\text{Average sp\n  - code: [code] Inline CoT im content-Feld: Antwort 2623 chars (>200) mit 37 Berechnungs-Operatoren. First 200 chars: I'll sort this list using the **Insertion Sort** algorithm, which builds the final sorted array one element at a time by repeatedly inserting each element into its correct position within the previous\n  - decision: [decision] Inline CoT im content-Feld: Antwort 1594 chars (>200) mit 27 Berechnungs-Operatoren. First 200 chars: This is a classic ethical dilemma in autonomous vehicle design. Here's how I'd approach it:\n\n**Core Tension**: The conflict between:\n- **Utilitarian perspective**: Minimize total harm (save the pedest",

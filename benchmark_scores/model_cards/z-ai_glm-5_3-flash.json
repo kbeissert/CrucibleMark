@@ -89,7 +89,7 @@
   "model_variant": null,
   "unknown": false,
   "card_status": "draft",
-  "size_class": "Frontier",
+  "size_class": "Server",
   "generated_at": "2026-08-26T20:20:37.508245+00:00",
   "thinking_probe_detected": true,
   "thinking_probe_evidence": "Multi-Probe (3 prompts, 3 detected, best confidence=medium): reasoning_tokens were observed in provider metadata across math, code, and decision prompts.",

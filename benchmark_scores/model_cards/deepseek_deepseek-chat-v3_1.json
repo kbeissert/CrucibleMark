@@ -54,7 +54,7 @@
   "quantization_format": null,
   "repetition_penalty": null,
   "seed": null,
-  "size_class": "Frontier",
+  "size_class": "Server",
   "stop_sequences": null,
   "strengths": [
     "MoE-Architektur mit 37 Milliarden aktiven Parametern bei 671 Milliarden Gesamtparametern",

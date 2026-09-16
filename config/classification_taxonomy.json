@@ -54,20 +54,21 @@
     }
   },
   "size_class": {
-    "description": "Deployment-Hardware-Tier des Modells – leitet sich aus der Gesamt-Parameterzahl (params_total_b) ab; bei unbekannter Parameterzahl greift der API-Only-Fallback (Frontier). SSoT für Tier-Reihenfolge, Schwellwerte, Klassifikationsregeln und Reviewer-Hinweise. Konsumiert von utils.model_utils.get_model_size_class(), Card-Vocabulary-Validierung, Card-Validator (validate_model_cards.py) und Reviewer-Prompt-Generator (format_classification_context).",
+    "description": "Deployment-Hardware-Tier des Modells – leitet sich aus der Gesamt-Parameterzahl (params_total_b) ab; Frontier (>768B, Datacenter-Niveau) greift bei unbekannter Parameterzahl nur für proprietäre/API-only Cloud-Modelle. SSoT für Tier-Reihenfolge, Schwellwerte, Klassifikationsregeln und Reviewer-Hinweise. Konsumiert von utils.model_utils.get_model_size_class(), Card-Vocabulary-Validierung, Card-Validator (validate_model_cards.py) und Reviewer-Prompt-Generator (format_classification_context).",
     "field_name": "size_class",
     "classification_rules": {
       "param_basis": "params_total_b",
       "moe_rule": "MoE-Modelle werden nach params_total_b eingeordnet, nicht nach params_active_b. Begründung: Das vollständige Modell muss in den RAM/VRAM geladen werden — aktive Parameter beschleunigen die Inferenz, reduzieren aber nicht den Speicherbedarf.",
-      "api_only_fallback": "Frontier gilt, wenn params_total_b unbekannt ist (proprietäre/API-only Cloud-Modelle) oder params_total_b > 75B. Offene Gewichte mit bekannten params_total_b bekommen den params-basierten Tier unabhängig von der Cloud-Verfügbarkeit (deployment_type).",
-      "override_policy": "Ein Card-Override (size_class-Feld) bleibt möglich, wird aber vom Card-Validator gegen params_total_b geprüft — Abweichungen sind Hard-Fails."
+      "api_only_fallback": "Frontier gilt, wenn params_total_b unbekannt ist (proprietäre/API-only Cloud-Modelle) oder params_total_b > 768B. Offene Gewichte mit bekannten params_total_b bekommen den params-basierten Tier unabhängig von der Cloud-Verfügbarkeit (deployment_type). Offene Gewichte OHNE bekannte params_total_b lösen eine Validator-Warnung aus statt still in den Frontier-Fallback zu rutschen.",
+      "override_policy": "Ein Card-Override (size_class-Feld) bleibt möglich, wird aber vom Card-Validator gegen params_total_b geprüft — Abweichungen sind Hard-Fails.",
+      "boundary_rationale": "Grenze 768B: 768B × ~0,6 GB/B (Q4_K_M) ≈ 460 GB → passt mit Headroom in die 512GB-Single-Box-Klasse (Mac Studio Ultra 512GB unified, 1,2 TB/s). Alles darüber erfordert Multi-GPU-Racks/Datacenter und gilt als Datacenter-Niveau. Entscheidung 2026-09-14 (Session 105), Belege: DeepSeek-V3 671B >20 tok/s auf 512GB M3 Ultra (Awni Hannun, 2025-03), GLM-5.3 744B lokal auf 512GB (antirez), Qwen3-235B Q4 ~30 tok/s Dauereinsatz (HN-Berichte 2026)."
     },
     "thresholds_b": [
       4,
       9,
       22,
       35,
-      75
+      768
     ],
     "tier_order": [
       "Nano",
@@ -107,19 +108,19 @@
         "reviewer_guidance": "Gehobene Leistung auf breiter Aufgabenbasis. Direkter Vergleich mit Cloud-Modellen mid-tier ist legitim."
       },
       "Server": {
-        "label": "Server (36–75B Parameter)",
+        "label": "Server (36–768B Parameter)",
         "min_params_b": 36,
-        "max_params_b": 75,
-        "description": "Multi-GPU-Server oder High-End-Cloud-Instanzen. Hoher Ressourcenbedarf.",
-        "reviewer_guidance": "Benchmark-Ergebnisse sollten mit Frontier-Modellen konkurrieren. Deutliche Schwächen sind kritisch zu benennen."
+        "max_params_b": 768,
+        "description": "Multi-GPU-Server, dedizierte KI-Server (256–768 GB Speicherklasse) oder High-End-Cloud-Instanzen. Umfasst große MoE-Modelle (36–768B total), die dedizierte Server-Hardware erfordern, aber lokal betreibbar bleiben.",
+        "reviewer_guidance": "Benchmark-Ergebnisse sollten mit Frontier-Modellen konkurrieren. Deutliche Schwächen sind kritisch zu benennen. Bei MoE (params_active_b << params_total_b) sind Leistungserwartungen am aktiven Teil kalibrieren — die Tier-Einordnung folgt der Gesamtgröße (RAM-Bedarf), nicht der Aktivität."
       },
       "Frontier": {
-        "label": "Frontier (>75B / API-Only)",
-        "min_params_b": 76,
+        "label": "Frontier (>768B / Datacenter-Niveau / API-Only)",
+        "min_params_b": 769,
         "max_params_b": null,
         "is_fallback": true,
-        "description": "Größte verfügbare Modelle oder proprietäre Cloud-Modelle ohne bekannte Parameterzahl.",
-        "reviewer_guidance": "Höchste Erwartungen. Dies ist die Referenzklasse des Benchmarks. Vergleiche mit anderen Frontier-Modellen sind der primäre Bewertungsrahmen."
+        "description": "Modelle jenseits des lokalen Single-Box-Betriebs (params_total_b > 768B — Q4-Footprint ≈ 460GB+ übersteigt die 512GB-Single-Box-Klasse) oder proprietäre Cloud-Modelle ohne bekannte Parameterzahl.",
+        "reviewer_guidance": "Höchste Erwartungen. Dies ist die Referenzklasse des Benchmarks. Vergleiche mit anderen Frontier-Modellen sind der primäre Bewertungsrahmen. Für Datacenter-MoE (>768B, offene Gewichte) gilt: nicht mehr lokal auf Single-Box-Hardware betreibbar."
       }
     }
   },

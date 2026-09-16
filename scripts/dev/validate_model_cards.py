@@ -185,12 +185,16 @@ def _check_size_class_consistency(data: dict, issues: list[str], valid_size_clas
 
     SSoT: config/classification_taxonomy.json#size_class.classification_rules
     (param_basis: params_total_b; MoE-Regel: Gesamtgröße, nicht aktive
-    Parameter; API-Only-Fallback: Frontier bei unbekannter Größe).
+    Parameter; API-Only-Fallback: Frontier >768B bzw. bei unbekannter Größe
+    nur für proprietäre/API-only-Modelle).
 
     - params_total_b gesetzt → size_class MUSS dem Taxonomie-Tier entsprechen
       (Hard-Fail bei Abweichung — der Prozess richtet sich nach der Config).
     - params_total_b unbekannt → nur Vocabulary-Check; die Laufzeit-Kaskade
       (get_model_size_class) entscheidet dann über Name-Tag/Frontier-Fallback.
+      Offene/restringierte Gewichte ohne params_total_b erzeugen eine WARN —
+      der Frontier-Fallback ist für proprietäre Modelle gedacht, nicht dafür,
+      dass eine Parameterzahl schlicht nicht recherchiert wurde.
     """
     size_class = data.get("size_class")
     if size_class and valid_size_classes and size_class not in valid_size_classes:
@@ -200,6 +204,15 @@ def _check_size_class_consistency(data: dict, issues: list[str], valid_size_clas
         )
     params = data.get("params_total_b")
     if params is None or not size_class:
+        weights_tier = data.get("weights_license_tier")
+        if params is None and weights_tier in ("open-weights", "restricted-weights"):
+            issues.append(
+                f"[WARN] params_total_b fehlt bei {weights_tier}-Gewichten — "
+                "Frontier-Fallback gilt nur für proprietäre/API-only-Modelle. "
+                "Parameterzahl recherchieren und eintragen. "
+                "SSoT: config/classification_taxonomy.json#size_class."
+                "classification_rules.api_only_fallback"
+            )
         return
     try:
         from utils.model_utils import _param_b_to_size_class  # noqa: PLC0415  (Lazy: Import-Zyklus)

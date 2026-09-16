@@ -85,7 +85,7 @@
   "model_variant": null,
   "unknown": false,
   "card_status": "complete",
-  "size_class": "Frontier",
+  "size_class": "Server",
   "generated_at": "2026-06-17T08:08:42+00:00",
   "thinking_probe_detected": true,
   "thinking_probe_evidence": "Multi-Probe (3 prompts, 3 detected, best confidence=medium):\n  - math: [math] reasoning_tokens=435 in provider metadata. First 200 chars: Here is the step-by-step solution to find the average speed of the train:\n\n**Step 1: Identify the given information**\n*   Distance traveled = 120 km\n*   Time taken = 1.5 hours\n\n**Step 2: Recall the fo\n  - code: [code] reasoning_tokens=1040 in provider metadata. First 200 chars: To sort this list, I will use the **Selection Sort** algorithm. \n\n### How Selection Sort Works\nSelection sort is an intuitive, in-place sorting algorithm. It works by dividing the list into two parts:\n  - decision: [decision] reasoning_tokens=1040 in provider metadata. First 200 chars: The question of whether an autonomous car should swerve to avoid a pedestrian at the risk of its passenger's life is a modern iteration of the classic philosophical \"Trolley Problem.\" Because there is",

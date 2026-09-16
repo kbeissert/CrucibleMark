@@ -35,10 +35,17 @@ def test_mismatch_is_hard_error() -> None:
 
 
 def test_moe_uses_total_params_not_active() -> None:
-    """MoE-Regel: Gesamtgröße steuert — 116.8B/5.1B aktiv ist Frontier, nicht Edge."""
-    assert _issues({"size_class": "Frontier", "params_total_b": 116.8, "params_active_b": 5.1}) == []
+    """MoE-Regel: Gesamtgröße steuert — 116.8B/5.1B aktiv ist Server (≤768B), nicht Edge."""
+    assert _issues({"size_class": "Server", "params_total_b": 116.8, "params_active_b": 5.1}) == []
     issues = _issues({"size_class": "Edge", "params_total_b": 116.8, "params_active_b": 5.1})
     assert any("SIZE_CLASS MISMATCH" in i for i in issues)
+
+
+def test_frontier_boundary_768b_is_server_769b_is_frontier() -> None:
+    """Frontier-Grenze 768B (512GB-Single-Box-Anker): 768 inklusive, 769 Frontier."""
+    assert _issues({"size_class": "Server", "params_total_b": 768.0, "params_active_b": 40.0}) == []
+    issues = _issues({"size_class": "Server", "params_total_b": 769.0, "params_active_b": 40.0})
+    assert any("SIZE_CLASS MISMATCH" in i and "Frontier" in i for i in issues)
 
 
 def test_boundary_22b_is_desktop_23b_is_workstation() -> None:

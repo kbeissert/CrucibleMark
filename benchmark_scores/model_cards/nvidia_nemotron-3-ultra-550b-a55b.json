@@ -81,7 +81,7 @@
   "model_variant": null,
   "unknown": false,
   "card_status": "draft",
-  "size_class": "Frontier",
+  "size_class": "Server",
   "generated_at": "2026-06-10T11:36:00+00:00",
   "thinking_probe_detected": true,
   "thinking_probe_evidence": "Multi-Probe (3 prompts, 3 detected, best confidence=medium):\n  - math: [math] reasoning_tokens=52 in provider metadata. First 200 chars: **Step 1: Identify the given values.**\n*   Distance traveled ($d$) = 120 km\n*   Time taken ($t$) = 1.5 hours\n\n**Step 2: Recall the formula for average speed.**\n$$ \\text{Average Speed} = \\frac{\\text{To\n  - code: [code] reasoning_tokens=141 in provider metadata. First 200 chars: I will use the **Merge Sort** algorithm.\n\n### Why Merge Sort?\n*   **Time Complexity:** $O(n \\log n)$ (efficient for large lists).\n*   **Stable:** Preserves the relative order of equal elements (import\n  - decision: [decision] reasoning_tokens=134 in provider metadata. First 200 chars: This is one of the most debated questions in AI ethics, often framed as a real-world version of the \"Trolley Problem.\" There is no global consensus, and different ethical frameworks yield different an",

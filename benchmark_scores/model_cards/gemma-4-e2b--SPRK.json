@@ -86,7 +86,7 @@
   "model_variant": "Unsloth Dynamic Q5_K_M",
   "unknown": false,
   "card_status": "draft",
-  "size_class": "Nano",
+  "size_class": "Edge",
   "generated_at": "2026-09-12T11:39:19.462186+00:00",
   "thinking_probe_detected": true,
   "thinking_probe_evidence": "Multi-Probe (3 prompts, 3 detected, best confidence=medium):\n  - math: [math] Inline CoT im content-Feld: Antwort 1008 chars (>200) mit 24 Berechnungs-Operatoren. First 200 chars: Here is the step-by-step solution to find the average speed of the train:\n\n**1. Identify the given information:**\n* **Distance traveled ($d$):** 120 km\n* **Time taken ($t$):** 1.5 hours\n\n**2. State th\n  - code: [code] Inline CoT im content-Feld: Antwort 5306 chars (>200) mit 119 Berechnungs-Operatoren. First 200 chars: Here is the step-by-step sorting of the list $[3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5]$ using the **Selection Sort** algorithm.\n\n## Algorithm: Selection Sort\n\n**Goal:** To sort a list by repeatedly finding t\n  - decision: [decision] Inline CoT im content-Feld: Antwort 4812 chars (>200) mit 52 Berechnungs-Operatoren. First 200 chars: This is a classic and profoundly difficult ethical problem in the field of autonomous vehicle (AV) programming, often framed as a variation of the \"Trolley Problem.\" There is no universally agreed-upo",

@@ -56,7 +56,7 @@
   "quantization_format": null,
   "repetition_penalty": null,
   "seed": null,
-  "size_class": "Frontier",
+  "size_class": "Server",
   "stop_sequences": null,
   "strengths": [
     "Stark für agentisches Software-Engineering wie Codebasis-Exploration, Multi-File-Änderungen und Bug-Fixing",

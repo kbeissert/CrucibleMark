@@ -1119,7 +1119,7 @@ Jede Model Card JSON muss folgende Felder enthalten. Cards mit `card_status: "dr
 | `params_active_b` | float | z. B. `3.5` | Aktive Parameter (MoE); bei MoE ist dies der relevante Vergleichswert (**optional**, null bei proprietären Modellen) |
 | `context_window_k` | integer | z. B. `128` | Maximales Kontextfenster in Kilotoken |
 | `knowledge_cutoff` | string | `YYYY-MM` | Trainingsdaten-Stichtag (**optional**, wird nachgetragen wenn bekannt) |
-| `size_class` | string | `Nano` / `Edge` / `Desktop` / `Workstation` / `Server` / `Frontier` | Hardware-Tier — abgeleitet aus Parameteranzahl oder API-Only-Status |
+| `size_class` | string | `Nano` / `Edge` / `Desktop` / `Workstation` / `Server` / `Frontier` | Hardware-Tier — Kaskade: Card-Override → `params_total_b` (Server bis 768B, Frontier = >768B/Datacenter-Niveau oder unbekannt+API-only) → Name-Tag → Frontier-Fallback |
 | `deployment_type` | string | `api_only` / `local_weights` | Ob das Modell lokal deploybar ist |
 | `supports_tool_use` | boolean | `true` / `false` | Function-Calling-Unterstützung |
 | `use_case_primary` | string | `generalist` / `coding` / `reasoning` / `vision-language` / `agentic` | Steuert den Reviewer-Bewertungsrahmen |

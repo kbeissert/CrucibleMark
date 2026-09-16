@@ -45,7 +45,7 @@
   "output_price_per_1m": 0.0,
   "unknown": false,
   "card_status": "complete",
-  "size_class": "Frontier",
+  "size_class": "Server",
   "generated_at": "2026-06-09T20:44:00+00:00",
   "thinking_probe_detected": false,
   "thinking_probe_evidence": "Das Modell unterstützt ausschließlich Non-Thinking-Mode und erzeugt keine <think> Blöcke.",

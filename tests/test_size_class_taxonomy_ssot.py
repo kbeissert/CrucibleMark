@@ -39,7 +39,7 @@ def test_taxonomy_loader_returns_complete_structure():
     assert sc["tier_order"] == [
         "Nano", "Edge", "Desktop", "Workstation", "Server", "Frontier",
     ]
-    assert sc["thresholds_b"] == [4, 9, 22, 35, 75]
+    assert sc["thresholds_b"] == [4, 9, 22, 35, 768]
     assert len(sc["values"]) == 6
     for tier in sc["tier_order"]:
         assert tier in sc["values"], f"Tier '{tier}' fehlt in size_class.values"
@@ -99,9 +99,11 @@ def test_taxonomy_is_cached():
     (35.5, "Server"),
     (70.0, "Server"),
     (75.0, "Server"),     # inklusive Grenze
-    (75.5, "Frontier"),
-    (120.0, "Frontier"),
-    (405.0, "Frontier"),  # Llama 3.1 405B
+    (768.0, "Server"),    # inklusive Grenze (512GB-Single-Box-Anker)
+    (768.5, "Frontier"),
+    (120.0, "Server"),    # gpt-oss-120b: lokal betreibbar (MoE, 5.1B aktiv)
+    (405.0, "Server"),    # Llama 3.1 405B
+    (1000.0, "Frontier"), # Kimi K2 1T: jenseits 512GB-Single-Box
 ])
 def test_param_b_to_size_class(param_b: float, expected: str):
     assert _param_b_to_size_class(param_b) == expected
@@ -213,7 +215,7 @@ def test_params_total_b_drives_classification(monkeypatch, tmp_path):
 def test_moe_uses_total_not_active_params(monkeypatch, tmp_path):
     """MoE-Regel: params_active_b wird NICHT für die Einordnung verwendet."""
     _patch_card(monkeypatch, tmp_path, {"params_total_b": 116.8, "params_active_b": 5.1})
-    assert get_model_size_class("x") == "Frontier"
+    assert get_model_size_class("x") == "Server"
 
 
 def test_card_override_still_wins_over_params(monkeypatch, tmp_path):

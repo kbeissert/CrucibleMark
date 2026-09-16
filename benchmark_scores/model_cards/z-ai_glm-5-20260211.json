@@ -59,7 +59,7 @@
   "quantization_format": null,
   "repetition_penalty": null,
   "seed": null,
-  "size_class": "Frontier",
+  "size_class": "Server",
   "stop_sequences": null,
   "strengths": [
     "Open Weights unter MIT-Lizenz für vollständig offenes Deployment",

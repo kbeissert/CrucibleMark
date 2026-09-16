@@ -84,7 +84,7 @@
   "model_variant": null,
   "unknown": false,
   "card_status": "draft",
-  "size_class": "Frontier",
+  "size_class": "Server",
   "generated_at": "2026-08-26T20:20:37.508668+00:00",
   "thinking_probe_detected": true,
   "thinking_probe_evidence": "Multi-Probe (3 prompts, 3 detected, best confidence=medium):\n  - math: [math] reasoning_tokens=165 in provider metadata.\n  - code: [code] reasoning_tokens=5592 in provider metadata.\n  - decision: [decision] reasoning_tokens=1232 in provider metadata.\nKonsistent mit offizieller Z.AI-Dokumentation: Reasoning ist verpflichtend aktiv (thinking.type='enabled', nicht deaktivierbar) und erscheint als reasoning_content/reasoning_tokens in separaten Provider-Metadaten, nicht als sichtbares <thought>-Inline-Tag im Content-Feld — der vorherige cot_tags_detected-Wert war widersprüchlich zur eigenen Probe-Evidenz.",
