@@ -369,6 +369,16 @@ architecture changes: automatically load reference/pitfall-diagnosis.md before p
 
 **Funktionale Kopplung:** Tiers {Nano, Edge, Desktop, Workstation} erhalten den Small-Model-Budget-Boost (`model_token_budget.py:107`) + Judge-Kontext (`judge_evaluator.py:134`) — eine falsche Klassifizierung ändert also Messbedingungen, nicht nur Anzeige. **Pflicht:** Bei neuen MoE-Modellen nie `params_active_b` zur Tier-Einordnung nutzen; `docs/MODEL_CLASSIFICATION.md` ist mit der Taxonomie synchro gehalten (Desktop 10–22B, Workstation 23–35B).
 
+## Frontier-Grenze 768B — Datacenter-Niveau (2026-09-14, Session 105)
+
+**Entscheidung:** Die Frontier-Schwelle wird von 75B auf **768B `params_total_b`** angehoben. Begründung (512GB-Single-Box-Anker): 768B × ~0,6 GB/B (Q4_K_M) ≈ 460 GB — passt mit Headroom in die größte lokale Single-Box-Klasse (Mac Studio Ultra 512GB unified, 1,2 TB/s). Alles darüber erfordert Multi-GPU-Racks/Datacenter → „Frontier (Datacenter-Niveau)"; proprietäre/API-only-Modelle ohne Parameterzahl bleiben ebenfalls Frontier. Server-Tier = 36–768B (lokal auf dedizierter Server-Hardware betreibbar). Kein neuer Tier — Bestands-Tiers bleiben, nur Schwelle + Semantik.
+
+**Fallback-Verschärfung:** Open-Weights ohne `params_total_b` rutschen nicht mehr still in den Frontier-Fallback — der Card-Validator erzeugt eine WARN (Datenlücke schließen). Frontier-Fallback bei unbekannter Größe ist proprietären/API-only-Modellen vorbehalten.
+
+**Beleglage (Auswahl):** DeepSeek-V3 671B >20 tok/s auf 512GB M3 Ultra (A. Hannun, 2025-03); GLM-5.3 744B lokal auf 512GB-Klasse (antirez); Qwen3-235B Q4 ~30 tok/s im Dauereinsatz; kommerzieller Markt für 768GB-Klassen (8× RTX PRO 6000, EPYC-Baremetal ab ~€479/Monat).
+
+**Migration:** `scripts/dev/migrate_size_class_768b.py` (Preflight gegen laufende Benchmarks — Race-Condition-Regel; schreibt Taxonomie + Cards via `atomic_write_json` + SSOT-Test-Grenzfälle). Die Taxonomie fließt zur Judge-Zeit in den Reviewer-Kontext ein (`judge_evaluator.py`) — Taxonomie-Änderungen daher nie während eines Benchmark-Batches.
+
 ## Context Loading Rules
 Before starting any task, check the task type and load accordingly:
 - Refactoring / debugging / architecture review

@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [Unreleased]
+
+**Size-Class: Frontier-Grenze 75B → 768B (Datacenter-Niveau).**
+
+- **Taxonomie:** `size_class.thresholds_b` `[4,9,22,35,75]` → `[4,9,22,35,768]`. Frontier = `params_total_b > 768B` (≈ 460 GB bei Q4_K_M — über der 512GB-Single-Box-Klasse, z. B. Mac Studio Ultra) oder unbekannte Parameterzahl bei proprietären/API-only-Modellen. Server-Tier = 36–768B (lokal auf dedizierter Server-Hardware betreibbar, inkl. großer MoE wie GLM-5.3 744B oder DeepSeek-V3.1 671B). Begründung + Beleglage in `classification_rules.boundary_rationale`.
+- **Fallback-Verschärfung:** Open-Weights ohne `params_total_b` erzeugen eine Card-Validator-WARN statt stillen Frontier-Fallbacks — Parameterzahl recherchieren und eintragen.
+- **Cards:** ~30 Cards von Frontier → Server reklassifiziert (params-getrieben, via Migrationsskript); 3 Datenlücken geschlossen: `qwen3.8-flash` 125B/A6B (offene Basis Qwen3.8-Flash-Next), `glm-4.6` 355B/A32B (MoE-Korrektur, zuvor fälschlich `dense`), `minimax-m2.7` 229B/10B. Frontier bleiben: Kimi K2 (1T), Kimi K3 (2.8T), Qwen3.8-2.4T, DeepSeek-V4-Pro (1.6T), MiMo-V2.5-Pro (1.02T) + alle proprietären API-only-Modelle.
+- **Migration:** `scripts/dev/migrate_size_class_768b.py` (Preflight gegen laufende Benchmarks, exakt verifizierte SSOT-Test-Patches).
+
 ## [v5.2.2] - 2026-09-03
 
 **Patch-Release: PC-Token-Probe läuft jetzt automatisch vor dem PC-Benchmark (Card-First-Hook).**
