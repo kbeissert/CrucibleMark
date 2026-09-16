@@ -7,12 +7,40 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
-**Size-Class: Frontier-Grenze 75B → 768B (Datacenter-Niveau).**
+## [v5.3.0] - 2026-09-16
+
+**Minor-Release: Political-Compass-Überarbeitung (v3.1) für Nano-/Mini-/Desktop-Modelle + SPRK-Small-Model-Feld.**
+Kern des Releases ist die PC-Härtung für kleine Modelle: Degenerate-Guard gegen (0,0)-Fehlpersistenzen bei API-Ausfall, config-getriebene Schattenmetriken-Badges nach Reviewer-σ-Konvention, Truncation-Signal-Re-Probes und PC-Kalibrierungen für das neue Small-Model-Feld. Dazu 14 Nano-/Mini-/Desktop-Modelle (≤ 16 GB, Unsloth-UD-Q5_K_M) auf llama.cpp Spark (GX10), die Size-Class-Frontier-Grenze 768B, Modell-Integrationen (Occamy, Swift-Qwen3.8, DeepSeek V4.1 Flash) und Card-/Export-Hygiene.
+
+### Political Compass v3.1 — Small-Model-Fit
+- **Degenerate-Guard:** API-Ausfälle werden nicht mehr als (0,0)-Mittelpunkt in die Ergebnis-CSV persistiert — degenerate Läufe werden erkannt und abgewiesen statt als Datenpunkt geschrieben.
+- **Schattenmetriken-Badges:** Die Schwellen der Report-Sektion 2.5 (Topic-Shift-σ) lesen jetzt aus `config.shadow_metrics` in `political_compass/config.yaml` und sind an die Meta-Reviewer-Konvention gekoppelt (σ < 1,5 stabil, σ > 2,0 Chaos) — kein False-Positive-🚨 mehr bei σ > 1,0.
+- **Truncation-Signal-Re-Probes:** `nemotron-nano` und `mimo-pro` nach Korrigierung des Connector-Truncation-Signals neu geprobt (OpenRouter-Streaming-`finish_reason` + Google-SAFETY-Masking-Flows).
+- **PC-Batch 04.–06.09.:** `pc_profile`/`pc_token_calibration` in 16 Cards + 23 Bias-Reviews; Gemma-4-12b-spark PC-Re-Run (v3).
+- **SPRK-PC-Kalibrierung:** `deepseek-r1-distill-1_5b` → 1560 `inconsistent`, `swift-qwen3_8-27b-nvfp4` → 390 `self_limiting`; 15 SPRK-Bias-Reviews.
+
+### SPRK-Small-Model-Feld (Nano/Mini/Desktop, ≤ 16 GB)
+- **14 Integrationen auf llama.cpp Spark (GX10), alle Unsloth-UD-Q5_K_M:** Llama 3.2 1B/3B, Llama 3.3 8B, Phi-4 Mini, Ministral 3 3B/8B/14B, DeepSeek-R1-Distill 1.5B/7B/14B, Gemma 3 270M/4B, Gemma 4 E2B, Ornith 1.0 9B — plus Signal 3.8 27B (AgentionAI-Finetune). `qwen2.5-coder-7b` deaktiviert (GGUF entfernt).
+- **Vendor-Cards:** AgentionAI, UkisAI (Swift) und Microsoft (Phi-4-mini) neu verdrahtet; Template-Feld `profile_verified_by` ergänzt (Web-Export/Audit, Validator-Drift geschlossen).
+
+### Size-Class: Frontier-Grenze 75B → 768B (Datacenter-Niveau)
 
 - **Taxonomie:** `size_class.thresholds_b` `[4,9,22,35,75]` → `[4,9,22,35,768]`. Frontier = `params_total_b > 768B` (≈ 460 GB bei Q4_K_M — über der 512GB-Single-Box-Klasse, z. B. Mac Studio Ultra) oder unbekannte Parameterzahl bei proprietären/API-only-Modellen. Server-Tier = 36–768B (lokal auf dedizierter Server-Hardware betreibbar, inkl. großer MoE wie GLM-5.3 744B oder DeepSeek-V3.1 671B). Begründung + Beleglage in `classification_rules.boundary_rationale`.
 - **Fallback-Verschärfung:** Open-Weights ohne `params_total_b` erzeugen eine Card-Validator-WARN statt stillen Frontier-Fallbacks — Parameterzahl recherchieren und eintragen.
 - **Cards:** ~30 Cards von Frontier → Server reklassifiziert (params-getrieben, via Migrationsskript); 3 Datenlücken geschlossen: `qwen3.8-flash` 125B/A6B (offene Basis Qwen3.8-Flash-Next), `glm-4.6` 355B/A32B (MoE-Korrektur, zuvor fälschlich `dense`), `minimax-m2.7` 229B/10B. Frontier bleiben: Kimi K2 (1T), Kimi K3 (2.8T), Qwen3.8-2.4T, DeepSeek-V4-Pro (1.6T), MiMo-V2.5-Pro (1.02T) + alle proprietären API-only-Modelle.
 - **Migration:** `scripts/dev/migrate_size_class_768b.py` (Preflight gegen laufende Benchmarks, exakt verifizierte SSOT-Test-Patches).
+
+### Neue Modelle (API + lokal)
+- **Occamy 1.0 35B-A3B NVFP4** (vLLM/GX10, Dual-Profil, TOML-synchrones Sampling; agentic Co-Work-Post-Train auf Qwen3.6-35B-A3B; Thinking-Probe detected/medium, PC-Budget 390 `self_limiting`).
+- **Swift Qwen 3.8 27B NVFP4** (vLLM/GX10, Dual-Profile; UkisAI).
+- **DeepSeek V4.1 Flash** (OpenRouter, 16000 max_tokens; Pricing 0.15/0.60 Standardpreis, Off-Peak ignoriert).
+
+### Provider- und Card-Hygiene
+- **OpenRouter-Streaming `finish_reason` + Google SAFETY-Masking** korrigiert (Truncation-/Refusal-Signale stimmen wieder über alle betroffenen Provider).
+- **Card-Writer-SSoT:** Trailing-Newline-Konvention in `model_card_io` vereinheitlicht (Root-Cause des „leerer Diff, aber Git M"-Musters) + 58 Cards normalisiert; ToolUse-Felder aus CSVs nachgezogen (7×).
+- **Size-Class-SSoT:** `params_total_b` steuert die Tier-Einordnung (auch bei MoE) — Card-Validator prüft gegen die Taxonomie-Kaskade, nie `params_active_b`.
+- **Card-Research Health-Gate** nur noch für lokale LLM-Hosts — Remote-APIs ohne llama.cpp-`/health`-Endpoint wurden fälschlich übersprungen.
+- **Web-Export-Dupletten konsolidiert:** Gemma-4-12B (Mac-Q8 geblacklistet, GX10-Spark-Q6-Dual-Profil behalten), muse-glimmer-Legacy-Eintrag entfernt; Blacklist-Einträge (38×) mit Leaderboard-Referenzen (Rank/Score) angereichert.
 
 ## [v5.2.2] - 2026-09-03
 

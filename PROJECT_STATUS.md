@@ -2,26 +2,28 @@
 
 > **Interner Statusbericht.** Diese Datei dokumentiert den Projektfortschritt für Maintainer und Contributor. Sie ist nicht Teil der öffentlichen Dokumentation. Aktuelle, kuratierte Release-Informationen stehen in [README.md](README.md) (Recent Versions) und [CHANGELOG.md](CHANGELOG.md).
 
-**Last Updated:** 2026-09-03
-**Current Version:** 5.2.2 — PC-Token-Probe Card-First-Hook
+**Last Updated:** 2026-09-16
+**Current Version:** 5.3.0 — PC v3.1 Nano-/Mini-/Desktop-Testing + SPRK-Small-Model-Feld
 **Status:** Production-Ready
 
 ---
 
 ## Executive Summary
 
-CrucibleMark v5.2.2 ist ein production-ready LLM-Benchmark-Framework mit 120+ getesteten Modellen über 11 Provider. Das Framework misst praxisnahe Leistung (Code-Reviews, UX-Texte, Reasoning, Tool-Use) mit blindem LLM-Judge und generiert Leaderboards mit License-/Sovereign-Filtern.
+CrucibleMark v5.3.0 ist ein production-ready LLM-Benchmark-Framework mit 135+ getesteten Modellen über 11 Provider. Das Framework misst praxisnahe Leistung (Code-Reviews, UX-Texte, Reasoning, Tool-Use) mit blindem LLM-Judge und generiert Leaderboards mit License-/Sovereign-Filtern.
 
-**Aktueller Stand (2026-08-31):**
-- **120+ Modelle** im Leaderboard (Naming-Gate: 123 Cards OK), Web-Export nach Blacklist-Reduktion (Quant-Vergleichstests, experimentelle Modelle, superseded vLLM-Versionen).
-- **11 Provider:** OpenAI, Anthropic, Google, Mistral, xAI, OpenRouter, Cohere, Ollama, Llama.cpp, Spark (llamacpp), vLLM (Spark).
-- **8 Scoring-Module + Political Compass (v3.0, released):** Code Quality, CLI Operations, Reasoning & Logik, UX Writing, Cultural Intelligence, Documentation Quality, Content Transformation, Tool Use. Political Compass seit Session 88 re-aktiviert: Token-Budget-Regime, Token-Probe-Profilentscheidung (thinking/hybrid_dual/instruct, mit Thinking-only-Ausnahme via `dual_profile`), Ergebnis-Attribution für Instruct-Ersatzläufe.
-- **1704 Tests** grün, Ruff 0-Violations, Pylint ≥ 9.99/10.
+**Aktueller Stand (2026-09-16):**
+- **135+ Modelle** im Leaderboard (Größenklassen nach Size-Class-SSoT: Frontier 47 / Workstation 34 / Server 26 / Desktop 18 / Nano 10 / Edge 9), Web-Export nach Dupletten-Konsolidierung (Mac/Spark, muse-glimmer).
+- **11 Provider:** OpenAI, Anthropic, Google, Mistral, xAI, OpenRouter, Cohere, Ollama, Llama.cpp (Mac), Llama.cpp Spark (GX10 via Metrics-Proxy), vLLM (Spark).
+- **8 Scoring-Module + Political Compass (v3.1):** Code Quality, CLI Operations, Reasoning & Logik, UX Writing, Cultural Intelligence, Documentation Quality, Content Transformation, Tool Use. PC seit v3.0 mit Token-Budget-Regime, Token-Probe-Profilentscheidung und Card-First-Hook (v5.2.2); v3.1 härtet für Nano-/Mini-/Desktop-Modelle (Degenerate-Guard, config-getriebene Schattenmetriken-Badges, Truncation-Signal-Korrekturen, SPRK-Kalibrierungen).
+- **SPRK-Small-Model-Feld:** 14 Nano-/Mini-/Desktop-Modelle ≤ 16 GB (Unsloth-UD-Q5_K_M) + Signal 3.8 27B neu auf llama.cpp Spark integriert.
+- **1753 Tests** grün, Lint exit 0 (4 vorbestehende SPRK-Card-Inhalts-Fehler offen, siehe activeContext).
 
-**Aktuelle Arbeit (Sessions 90–93):**
-- **PC-v3-Livetest (Session 90):** Thinking-only-Ausnahme end-to-end verifiziert; Probe-Follow-up-Kampagne (e4b/coder-7b/hermes/ara-26b → self_limiting, muse-glimmer → inconsistent); Timeout-Livelock gefixt (`request_timeout: 2400` + GX10-Metrics-Proxy).
-- **Abbruch-Cleanliness (Session 93):** HTTP-Client-Close-Kette (`LLMClient.close` + `atexit`, Overrides in vllm/llamacpp) — vLLM 0.27 nightly erkennt abgebrochene Requests ohne TCP FIN sonst erst nach OS-Keepalive (~2 h).
-- **Timeout-Metrik (Session 92):** Timeout-Rate zählt nur echte Fehler — lange, erfolgreiche Generierungen sind kein Ausfall.
+**Aktuelle Arbeit (Sessions 99–105):**
+- **PC v3.1 Small-Model-Fit (Sessions 99/101):** Schattenmetriken-Badges an Reviewer-σ-Konvention gekoppelt (c7d56979), Degenerate-Guard gegen (0,0)-Fehlpersistenzen (f6de494a), Truncation-Signal-Re-Probes für nemotron-nano/mimo-pro, PC-Kalibrierungen für das neue SPRK-Feld.
+- **SPRK-Small-Model-Feld (Session 104):** 15 Cards + 14 provider_config-Einträge ≤ 16 GB, Vendor-Cards AgentionAI/UkisAI/Microsoft, 15 Bias-Reviews.
+- **Size-Class-SSoT + Frontier 768B (Sessions 101/105):** `params_total_b` steuert die Tier-Einordnung (86f63791), Frontier-Grenze 75B→768B mit Migrationsskript und ~30 reklassifizierten Cards (a9d4fb12).
+- **Card-Hygiene (Session 102):** Writer-Newline-SSoT (c4c94a86), 58 Cards normalisiert, Health-Gate-Fix für Remote-APIs.
 
 **Aktuelle Modell-Integrationen (Sessions 82–84):**
 - **Qwen 3.8 27B NVFP4** (lokal, vLLM gx10) — Standard-Profil Rank 63, Score 72.25, Silver Badge. Thinking-Profil im Benchmark (Dual-Profile-Expansion).
@@ -37,6 +39,10 @@ CrucibleMark v5.2.2 ist ein production-ready LLM-Benchmark-Framework mit 120+ ge
 ---
 
 ## Recent Releases
+
+### v5.3.0 (2026-09-16) — PC v3.1 Nano-/Mini-/Desktop-Testing + SPRK-Small-Model-Feld
+
+Political-Compass-Überarbeitung für kleine Modelle: Degenerate-Guard (API-Ausfall wird nicht mehr als (0,0)-Mittelpunkt persistiert), Schattenmetriken-Badges config-getrieben an der Reviewer-σ-Konvention (`config.shadow_metrics`, σ < 1,5 stabil / σ > 2,0 Chaos), OpenRouter-`finish_reason`- und Google-SAFETY-Masking-Korrektur mit Truncation-Re-Probes (nemotron-nano, mimo-pro), PC-Batch 04.–06.09. (`pc_profile`/`pc_token_calibration` in 16 Cards, 23 Bias-Reviews), SPRK-PC-Kalibrierung (r1-distill-1.5B 1560 `inconsistent`, Swift 390 `self_limiting`). Neues SPRK-Small-Model-Feld: 14 Nano-/Mini-/Desktop-Modelle ≤ 16 GB (Unsloth-UD-Q5_K_M) + Signal 3.8 27B, Vendor-Cards AgentionAI/UkisAI/Microsoft. Dazu Size-Class-SSoT `params_total_b` + Frontier-Grenze 768B (~30 Cards reklassifiziert, Migrationsskript), Card-Writer-Newline-SSoT (58× normalisiert), Health-Gate-Fix für Remote-APIs, Web-Export-Dupletten-Konsolidierung, Integrationen Occamy 1.0 35B-A3B / Swift-Qwen3.8 27B / DeepSeek V4.1 Flash. 1753 Tests grün, Lint exit 0 (4 vorbestehende SPRK-Card-Inhaltsfehler offen).
 
 ### v5.2.2 (2026-09-03) — PC-Token-Probe Card-First-Hook
 

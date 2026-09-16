@@ -7,7 +7,7 @@
 
 CrucibleMark ist ein modulares LLM-Benchmark-Framework für Python 3.12. Es testet AI-Modelle gegen praxisnahe Aufgaben, bewertet Antworten blind über einen unabhängigen LLM-Judge und generiert Leaderboards.
 
-**Stand:** v5.2.2 · 2026-09-03 · Production-Ready
+**Stand:** v5.3.0 · 2026-09-16 · Production-Ready
 
 ## Session-Start
 
