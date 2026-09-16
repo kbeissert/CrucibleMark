@@ -25,7 +25,6 @@
     "Command R+",
     "Command R"
   ],
-  "stats": {},
   "unknown": false,
   "generated_at": "2026-06-22T14:07:00.000000+00:00",
   "last_verified_at": "2026-06-22",
@@ -33,6 +32,5 @@
   "profile_verified": false,
   "profile_verified_at": null,
   "profile_verified_by": null,
-  "description": "Cohere ist ein kanadisches KI-Unternehmen mit Hauptsitz in Toronto, gegründet 2019. Das Unternehmen entwickelt die Command-Modellfamilie, darunter das Open-Weight-Flaggschiff Command A+ (MoE, 218B total / 25B aktiv, Apache 2.0) sowie die proprietären Cloud-Modelle Command A (Dense 111B), Command A Reasoning und Command A Vision. Die API bietet Textgenerierung, Reasoning, Tool-Use, Vision und RAG. Für europäische Nutzer ist Kanada als Sitzland mit EU-Angemessenheitsbeschluss vorteilhaft; die API-Infrastruktur läuft jedoch über AWS in den USA, was ein indirektes CLOUD-Act-Exposure erzeugen kann. Ein DPA ist für Enterprise-Kunden verfügbar. Trial-Keys sind kostenlos mit Rate-Limits (20 req/min, 1000 Calls/Monat). Command A+ kann alternativ selbst gehostet werden (vLLM, Hugging Face Transformers).",
-  "last_modified_at": "2026-06-22"
+  "description": "Cohere ist ein kanadisches KI-Unternehmen mit Hauptsitz in Toronto, gegründet 2019. Das Unternehmen entwickelt die Command-Modellfamilie, darunter das Open-Weight-Flaggschiff Command A+ (MoE, 218B total / 25B aktiv, Apache 2.0) sowie die proprietären Cloud-Modelle Command A (Dense 111B), Command A Reasoning und Command A Vision. Die API bietet Textgenerierung, Reasoning, Tool-Use, Vision und RAG. Für europäische Nutzer ist Kanada als Sitzland mit EU-Angemessenheitsbeschluss vorteilhaft; die API-Infrastruktur läuft jedoch über AWS in den USA, was ein indirektes CLOUD-Act-Exposure erzeugen kann. Ein DPA ist für Enterprise-Kunden verfügbar. Trial-Keys sind kostenlos mit Rate-Limits (20 req/min, 1000 Calls/Monat). Command A+ kann alternativ selbst gehostet werden (vLLM, Hugging Face Transformers)."
 }

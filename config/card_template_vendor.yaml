@@ -295,6 +295,20 @@ optional_fields:
       reason: "Cost-Benchmark: CoT-Suppression fuer faire Speed-Vergleiche"
       active_until: "2026-12-31"
 
+  # --- Verifikations-Herkunft (web_export + audit) ---
+  # Wer hat die statischen Hersteller-Infos verifiziert? Geschrieben vom
+  # Card-Research (scripts/card_research/researcher.py, Format 'llm:<model>'),
+  # gelesen im Web-Export (scripts/web_export/entry_builders.py).
+  # Validator-Drift geschlossen wie in 3038af74 (dual_profile/tooluse_runs).
+  - name: profile_verified_by
+    type: str
+    required: false
+    default: null
+    description: "Quelle der Profilverifikation (Format 'llm:<model>' oder 'manual:<name>'); null = noch nicht verifiziert"
+    consumers: [web_export, audit]
+    since: "v4.9.0"
+    example: "llm:perplexity"
+
 # ----------------------------------------------------------------------------
 # Validator-Konfiguration
 # ----------------------------------------------------------------------------

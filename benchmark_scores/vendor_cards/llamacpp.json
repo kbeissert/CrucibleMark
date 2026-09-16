@@ -7,27 +7,6 @@
   "pricing_model": "free_open_source",
   "api_base_url": null,
   "api_documentation_url": "https://github.com/ggml-org/llama.cpp",
-  "type": "local_inference_engine",
-  "inference_interfaces": [
-    {
-      "name": "Metal (Apple Silicon)",
-      "vendor_id": "llamacpp",
-      "hardware_profile": "m4_macbook_pro_metal",
-      "description": "llama.cpp mit Apple Metal GPU-Offload. Geeignet für Apple Silicon; Modell-Ladung aus GGUF, CPU und GPU teilen sich den Speicher.",
-      "accelerator": "Metal (Apple Silicon GPU)",
-      "typical_throughput_tps": 25,
-      "memory_bandwidth_gb_s": 300
-    },
-    {
-      "name": "CUDA (NVIDIA)",
-      "vendor_id": "llamacpp",
-      "hardware_profile": "dgx_spark_cuda",
-      "description": "llama.cpp mit NVIDIA CUDA GPU-Offload. Geeignet für große GGUF-Modelle; Modell-Ladung aus GGUF, dedizierter VRAM/RAM.",
-      "accelerator": "CUDA (NVIDIA GPU)",
-      "typical_throughput_tps": 45,
-      "memory_bandwidth_gb_s": 400
-    }
-  ],
   "deployment": {
     "cloud_act_exposure": false,
     "applicable_law": "N/A (Local Only)",
@@ -44,7 +23,6 @@
     "Qwen 3.5 35B-A3B",
     "Gemma 4 26B"
   ],
-  "stats": {},
   "unknown": false,
   "generated_at": "2026-06-04T18:40:00.000000+00:00",
   "last_verified_at": "2026-06-22",
