@@ -1235,6 +1235,32 @@ providers:
         top_k: 20
         chat_template_kwargs: {enable_thinking: true}
 
+      # Occamy 1.0 35B-A3B NVFP4 — Accio-Lab Co-Work-Post-Train auf Qwen3.6-35B-A3B.
+      # Modell-Details (Architektur, Training, Evaluierung): Model-Card (SSoT) +
+      # HF-Card Accio-Lab/occamy-1.0-NVFP4 (SHA-Pin c1ce847).
+      # TOML: ~/ai/shared/configs/vllm/models/Occamy-1.0-NVFP4.toml
+      # MoE 35B total / 3B aktiv (256 routed + 1 shared Expert, 40 Layer, hybrid
+      # linear_attn + full_attn). NVFP4 W4A4 routed experts (ModelOpt 0.44,
+      # NVFP4_EXPERTS_ONLY_CFG), BF16 fuer Attention/Router/Shared-Experts/
+      # Embeddings/Vision. KEIN MTP-Head (HF-Card bestaetigt).
+      # Multimodal (Vision-Tower, Limit 1 Bild/Prompt, keine Videos im Benchmark).
+      # Reasoning-Parser qwen3, Tool-Parser qwen3_coder (--enable-auto-tool-choice).
+      # Kein reasoning_effort (Qwen3.5/3.6-Familie unterstuetzt den Soft-Switch
+      # nicht als Effort-Stufe); enable_thinking: true → Dual-Profile-Expansion
+      # (Standard erzwingt non-thinking, Thinking-Profil erzwingt thinking) —
+      # beides validierte Modi (HF-Card-Validierung mit enable_thinking: false).
+      # Sampling synchron mit TOML (--override-generation-config):
+      # temperature=0.6, top_p=0.95, top_k=20, min_p=0.0; Penalty-Workaround
+      # 2026-09-14 (sm_121a Triton-bincount) — keine Penalty-Overrides.
+      - id: occamy-1_0-nvfp4
+        name: Occamy 1.0 35B-A3B NVFP4 (vLLM, MoE, Co-Work)
+        config: Occamy-1.0-NVFP4
+        max_tokens: 16384
+        temperature: 0.6
+        top_p: 0.95
+        top_k: 20
+        enable_thinking: true
+
       # Weitere verfügbare TOMLs (per Auto-Discovery entdeckbar, nicht im Benchmark):
       # - Qwen3-Embedding-0.6B-NVFP4: Embedding-Modell (kein LLM-Target)
       # Beispiel-Eintrag zum Aktivieren einer neuen TOML^

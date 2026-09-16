@@ -1,0 +1,63 @@
+{
+  "model_id": "occamy-1_0-nvfp4",
+  "display_name": "Occamy 1.0 35B-A3B NVFP4 (Accio-Lab)",
+  "developer": "Accio-Lab",
+  "origin_country": "unknown",
+  "developer_jurisdiction": "unknown",
+  "deployment_type": "localweights",
+  "local_deployment_possible": true,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_rationale": "Occamy 1.0 NVFP4 is a community derivative of Qwen/Qwen3.6-35B-A3B, with a published provenance trail including the quantization recipe, data-provenance file, and validation artifacts. The upstream base is Apache 2.0, the checkpoint runs locally, and the NVFP4 export is limited to routed experts, but Accio-Lab’s organizational jurisdiction is not publicly documented, so the provenance risk remains medium.[file:1]",
+  "model_family": "Occamy",
+  "vendor": "Accio-Lab",
+  "primary_focus": "agentic",
+  "use_case_primary": "agentic",
+  "parameter_architecture": "moe",
+  "params_total_b": 35,
+  "params_active_b": 3,
+  "context_window_k": 262,
+  "knowledge_cutoff": "2025-12",
+  "summary": "Occamy 1.0 von Accio-Lab ist ein Agentic-Derivat des Qwen3.6-35B-A3B-Checkpoints, konzentriert auf langhorizontige Co-Work-Sessions mit Tools, strukturierten APIs und persistentem Zustandstracking. Die NVFP4-Quantisierung ist selektiv: nur die gerouteten Experten sind quantisiert, während Aufmerksamkeit, Router, Embeddings und Output-Head in BF16 bleiben. Das 35-Milliarden-Parameter-MoE aktiviert pro Token nur 3 Milliarden Parameter und unterstützt 262.000 Tokens Kontext. Apache-2.0-Lizenz und dokumentierte Provenienz mit Rezept-, Daten- und Validierungs-Artefakten.",
+  "strengths": [
+    "Klare Provenienz mit veröffentlichtem Quantisierungs-Rezept, Daten-Herkunft und Validierungs-Artefakten.",
+    "MoE-Effizienz mit 35 Mrd. Gesamt- und 3 Mrd. aktiven Parametern pro Token.",
+    "NVFP4-Quantisierung nur der gerouteten Experten; Aufmerksamkeit, Router und Embeddings bleiben in BF16.",
+    "Validierungs-Suite besteht Native Tool-Call- und strukturierte-JSON-Prüfungen.",
+    "Apache-2.0-Lizenz am Upstream-Modell mit offenen Gewichten.",
+    "Optimiert auf langhorizontige Co-Work-Sessions mit State-Tracking und Recovery."
+  ],
+  "known_limitations": [
+    "Kein MTP-Head, daher kein Donor-Speculative-Decoding nutzbar.",
+    "Validierung beschränkt sich auf kleine Regressions-Checks statt breiter Benchmark-Suites.",
+    "Kalibrierung verwendete nur 128 CNN/DailyMail-Datensätze; keine Garantie für Experten-Abdeckung.",
+    "Accio-Labs organisatorische Jurisdiktion ist nicht öffentlich dokumentiert."
+  ],
+  "judge_context_hint": "Occamy 1.0 ist ein Agentic-MoE-Derivat optimiert auf Tool-Use, strukturierte Outputs und langfristige Arbeitssitzungen. Als NVFP4-Build mit selektiver Quantisierung ist es ein validierungs-basiertes lokales Checkpoint, dessen kleine Regressions-Suite nicht zu breiten Benchmark-Annahmen verallgemeinert werden sollte. Apache-2.0-Lizenz, 262.000 Tokens Kontext, 35 Mrd. Gesamt- und 3 Mrd. aktive Parameter. Bewertung mit Fokus auf Tool-Use-Korrektheit und State-Tracking-Stabilität.",
+  "architecture_tags": [
+    "Agentic",
+    "Reasoning",
+    "Open-Weight",
+    "Multimodal",
+    "Tool-Use",
+    "MoE"
+  ],
+  "input_modalities": [
+    "text",
+    "image"
+  ],
+  "output_modalities": [
+    "text"
+  ],
+  "supports_tool_use": true,
+  "license": "Apache-2.0",
+  "license_url": "https://huggingface.co/Accio-Lab/occamy-1.0-NVFP4",
+  "commercial_use_allowed": true,
+  "weights_license_tier": "open-weights",
+  "model_version": "1.0",
+  "hardware_profile": "DGX Spark",
+  "inference_engine": "vLLM",
+  "quantization_format": "NVFP4",
+  "model_variant": "MoE, no MTP",
+  "card_status": "draft",
+  "size_class": "Workstation"
+}
