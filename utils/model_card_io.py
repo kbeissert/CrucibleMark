@@ -8,7 +8,7 @@ import re
 from pathlib import Path
 from typing import Any
 
-from utils.model_id_base import _safe_name, get_provider_shortcode
+from utils.model_id_base import _PROVIDER_SHORTCODES, _safe_name, get_provider_shortcode
 
 logger = logging.getLogger(__name__)
 
@@ -319,16 +319,37 @@ def _try_prefixed_shortcode_lookup(safe: str, card_dir: Path) -> Path | None:
 
     Backward-compat: ältere Karten nutzten PREFIX-Form ({shortcode}_{base}.json).
     Diese Form wird beim Lesen noch gefunden, aber nie mehr zum Schreiben verwendet.
+
+    Der Code-Satz kommt aus der Shortcode-SSoT ``model_id_base._PROVIDER_SHORTCODES``
+    (config-getrieben, AGENTS „No Magic Numbers") — die historischen vier Codes
+    bleiben in ihrer bisherigen Reihenheit vorn, damit bestehende Karten
+    identisch aufgelöst werden. Ein neuer Provider-Code wirkt dadurch ohne
+    Eingriff an dieser Stelle (Fall HERM: eine ``x--HERM.json`` wurde vor der
+    Ableitung nie gefunden, ``_find_card`` lieferte den nicht-existierenden
+    Plaint-Pfad und ``ensure_card`` erzeugte eine Draft-Karte, die dann die
+    echte Karte im Leaderboard schattierte).
     """
-    for shortcode in ("M4APL", "SPRK", "VSPK", "GR"):
+    codes = _prefixed_shortcode_candidates()
+    for shortcode in codes:
         candidate = card_dir / f"{safe}--{shortcode}.json"
         if candidate.exists():
             return candidate
-    for shortcode in ("M4APL", "SPRK", "VSPK", "GR"):
+    for shortcode in codes:
         candidate = card_dir / f"{shortcode}_{safe}.json"
         if candidate.exists():
             return candidate
     return None
+
+
+# Historische Reihenfolge zuerst (unveränderte Auflösung bestehender Karten),
+# danach alle weiteren Codes aus der SSoT, deterministisch sortiert.
+_LEGACY_SHORTCODE_ORDER: tuple[str, ...] = ("M4APL", "SPRK", "VSPK", "GR")
+
+
+def _prefixed_shortcode_candidates() -> tuple[str, ...]:
+    """Alle Card-Shortcodes: historische Reihenfolge + Rest aus der SSoT."""
+    rest = sorted({c for c in _PROVIDER_SHORTCODES.values()} - set(_LEGACY_SHORTCODE_ORDER))
+    return _LEGACY_SHORTCODE_ORDER + tuple(rest)
 
 
 def _try_glob_date_suffix(lookup_id: str, safe: str, card_dir: Path) -> Path | None:

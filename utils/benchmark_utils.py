@@ -92,6 +92,43 @@ def discover_assets(directory: str | Path, pattern: str = "*.yaml") -> list[Path
 _DEFAULT_REASONING_TAGS: list[str] = ["think", "thought", "reasoning"]
 
 
+# Tag, mit dem der ausgelagerte Reasoning-Kanal für die Bewertung rekonstruiert wird.
+REASONING_CHANNEL_TAG = "think"
+
+
+def has_reasoning_channel(text: str) -> bool:
+    """True, wenn der Text bereits einen Denkblock trägt (jede Tag-Familie)."""
+    low = str(text or "").lower()
+    return any(f"<{tag}" in low for tag in _DEFAULT_REASONING_TAGS)
+
+
+def with_reasoning_channel(response: str, think_content: str | None) -> str:
+    """Materialisiert den ausgelagerten Reasoning-Kanal als Denkblock vor der Antwort.
+
+    Provider liefern Denkinhalt teils in einem separaten Feld (`reasoning_content`)
+    statt im `content`-Feld; die Connectoren lagern das nach ``think_content`` aus.
+    Für die Bewertung muss dieser Text wieder Teil der Response sein — sonst sieht
+    ein Scorer, der Denkblöcke auswertet (Reasoning Tier 3: Self-Correction,
+    Linguistic Analysis, Thought Depth), bei diesen Modellen nichts, obwohl gedacht
+    wurde. Das ist der Kanal-Bias, den diese Funktion schließt.
+
+    Die Rekonstruktion ist identisch für Regel- und Judge-Stufe (SSoT hier).
+    Trägt die Antwort schon einen Denkblock (CoT inline im Content-Feld, z. B.
+    Qwen3.8), wird nichts vorangestellt — kein Doppelblock.
+
+    Args:
+        response: Sichtbarer Antworttext des Providers.
+        think_content: Ausgelagerter Reasoning-Text oder None/leer.
+
+    Returns:
+        Effektiver Bewertungs-Text.
+    """
+    think = str(think_content or "").strip()
+    if not think or has_reasoning_channel(response):
+        return response
+    return f"<{REASONING_CHANNEL_TAG}>\n{think}\n</{REASONING_CHANNEL_TAG}>\n\n{response}"
+
+
 def clean_reasoning_tags(
     text: str,
     tags: list[str] | None = None,

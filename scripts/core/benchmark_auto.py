@@ -48,6 +48,7 @@ load_dotenv()
 # pylint: disable=import-error, wrong-import-position
 from scripts.core.unified_runner import UnifiedBenchmarkRunner  # noqa: E402
 from utils.config_validator import ConfigValidator  # noqa: E402
+from utils.model_id_base import is_agentic_track_provider  # noqa: E402
 from utils.model_utils import (  # noqa: E402
     is_model_suitable_for_benchmark,
     get_ollama_models_info,
@@ -777,10 +778,16 @@ def run_commercial_batch(
 def _resolve_active_commercial_providers(
     validator: ConfigValidator,
 ) -> dict[str, dict[str, Any]]:
-    """Filtert Provider nach enabled-Flag und vorhandenem API-Key (env_var)."""
+    """Filtert Provider nach enabled-Flag und vorhandenem API-Key (env_var).
+
+    Agentic-Loop-Tracks (Hermes) sind ausgeschlossen (D6) — sie laufen nur über
+    den Wizard-Typ „agentic" oder gezielte Einzelmodell-Läufe.
+    """
     providers_config = validator.config.get("providers", {}).get("commercial", {})
     active_providers = {
-        k: v for k, v in providers_config.items() if v.get("enabled", False)
+        k: v
+        for k, v in providers_config.items()
+        if v.get("enabled", False) and not is_agentic_track_provider(v)
     }
     valid_providers: dict[str, dict[str, Any]] = {}
     for k, v in active_providers.items():

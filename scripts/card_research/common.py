@@ -374,6 +374,16 @@ _KNOWN_LICENSE_MAPPINGS: dict[str, dict] = {
         "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
         "weights_license_tier": "open-weights",
     },
+    # Qwen3.8-Flash-Next ist NICHT Apache-2.0: Basis (Qwen/Qwen3.8-Flash-Next)
+    # steht unter Qwen Community License 1.0, der NVIDIA-Quant-Checkpoint
+    # (nvidia/Qwen3.8-Flash-Next-NVFP4) zusätzlich unter NVIDIA Open Model
+    # License (verifiziert 2026-09-17, HF-Model-Cards). Längster-Key-Match
+    # in _match_family() sorgt dafür, dass dieses Mapping vor "qwen3" greift.
+    "qwen3_8-flash-next": {
+        "license": "NVIDIA Open Model License + Qwen Community License 1.0",
+        "license_url": "https://huggingface.co/nvidia/Qwen3.8-Flash-Next-NVFP4",
+        "weights_license_tier": "open-weights",
+    },
     "qwen2_5": {
         "license": "Apache 2.0",
         "license_url": "https://www.apache.org/licenses/LICENSE-2.0",

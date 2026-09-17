@@ -4,7 +4,7 @@ import time
 import traceback
 from typing import Any
 
-from utils.benchmark_utils import save_audit_log
+from utils.benchmark_utils import save_audit_log, with_reasoning_channel
 from utils.constants import MS_PER_SECOND
 from utils.scoring.exceptions import JudgeUnavailableError
 from utils.scoring.llm_judge.judge_config import LLMJudgeConfig
@@ -168,13 +168,10 @@ def _build_judge_kwargs(
     # kann. Der Judge-Prompt bleibt unverändert — nur die model_response wird
     # angereichert. Viele Evaluatoren strippen <think>-Tags bereits beim
     # rule-based Scoring.
-    _effective_response = response
-    _has_think = False
     _think = result.get("think_content")
-    if _think and _think.strip():
-        _effective_response = f"<think>\n{_think.strip()}\n</think>\n\n{response}"
-        # Kontextblock für den Judge: <think> ist internes Reasoning, kein Output-ONLY-Verstoß
-        _has_think = True
+    _effective_response = with_reasoning_channel(response, _think)
+    # Kontextblock für den Judge: <think> ist internes Reasoning, kein Output-ONLY-Verstoß
+    _has_think = _effective_response != response
 
     kwargs: dict[str, Any] = {
         "task_prompt": raw_prompt,

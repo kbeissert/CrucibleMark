@@ -358,10 +358,16 @@ class BenchmarkRunner:
         audit_mode: bool = True,
     ):
         """Führt Benchmark aus (Lokal oder Kommerziell)."""
-        is_local = provider in ("ollama", "llamacpp", "llamacpp_spark", "llama_cpp", "llamacpp_local", "vllm_spark")
+        # hermes = Agentic-Track auf eigener Hardware (gx10) — Local-Bucket wie
+        # in result_manager._detect_result_type (D3), Header stimmt damit überein.
+        is_local = provider in (
+            "ollama", "llamacpp", "llamacpp_spark", "llama_cpp", "llamacpp_local",
+            "vllm_spark", "hermes",
+        )
 
         _local_label = {
             "ollama": "Ollama (Local)",
+            "hermes": "Hermes Agent (Agentic-Loop)",
             "llamacpp": "llama.cpp (Local)",
             "llamacpp_spark": "llama.cpp Spark (Local)",
             "llama_cpp": "llama.cpp (Local)",
@@ -551,8 +557,9 @@ Beispiele:
 
     parser.add_argument(
         "--provider",
-        choices=["local", "commercial"],
-        help="Provider-Typ (local=Ollama, commercial=Mistral/Claude/GPT)",
+        choices=["local", "commercial", "agentic"],
+        help="Provider-Typ (local=Ollama/llama.cpp/vLLM, commercial=Mistral/Claude/GPT, "
+             "agentic=Hermes-Agent-Loop)",
     )
 
     parser.add_argument(

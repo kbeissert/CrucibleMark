@@ -18,6 +18,7 @@ from benchmark_modules.reasoning_logic.core.evaluators import (
     RUBRICS,
 )
 from schemas.result import BenchmarkResult
+from utils.benchmark_utils import has_reasoning_channel, with_reasoning_channel
 from utils.model_utils import get_model_version
 
 
@@ -91,9 +92,19 @@ class ReasoningLogicTest(BaseTest):
     def score_response(self, result: BenchmarkResult) -> BenchmarkResult:
         """
         Delegates scoring to ReasoningEvaluator.
+
+        Bewertet wird der effektive Text inklusive ausgelagertem Reasoning-Kanal
+        (`with_reasoning_channel`): Provider, die ihr Denken in `reasoning_content`
+        statt in `content` liefern (R1-Familie, Reasoning-Feld-APIs), wurden
+        sonst in den Denkblock-Dimensionen von Tier 3 wie Nicht-Denker behandelt —
+        der Kanal-Bias. Tier 1/2 strippen den Block wieder (`_strip_thinking_tags`),
+        für sie ändert sich nichts.
         """
         evaluator = ReasoningEvaluator(self.asset)
-        eval_result = evaluator.score_response(result.raw_response)
+        scoring_text = with_reasoning_channel(
+            result.raw_response, getattr(result, "think_content", None)
+        )
+        eval_result = evaluator.score_response(scoring_text)
 
         # Flatten breakdown for CSV (Granular Scoring Support)
         if "category_scores" in eval_result:
@@ -112,7 +123,7 @@ class ReasoningLogicTest(BaseTest):
         result.tier = eval_result.get("tier", "Tier 1 (Undefined)")
         result.data = eval_result
 
-        if "<thought>" in result.raw_response.lower() or "</thought>" in result.raw_response.lower():
+        if has_reasoning_channel(scoring_text):
             result.thought_tag_compliance = 1.0
         else:
             result.thought_tag_compliance = 0.0

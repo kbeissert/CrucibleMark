@@ -89,3 +89,46 @@ if __name__ == "__main__":
     test_classification()
     test_metacog_001_scoring()
     print("\n🎉 All functional tests passed!")
+
+
+def test_kanal_bias_fix_tier3_bekommt_denktext() -> None:
+    """R1-Fall: Reasoning im separaten Kanal darf in Tier 3 nicht wie Nicht-Denker wirken.
+
+    Vor dem Fix sah der Regel-Scorer nur den kurzen sichtbaren Text → alle
+    Denkblock-Dimensionen (Self-Correction 40, Linguistic Analysis 30) = 0.
+    """
+    from utils.benchmark_utils import with_reasoning_channel
+
+    think = ("Zuerst dachte ich, 17 minus 9 sind 8. Aber warte, ich lag falsch: "
+             "'all but 9 die' heißt, alle außer 9 sterben — also bleiben 9 übrig. "
+             "Ich prüfe nochmal: die 8 toten Schafe sind nicht die Antwort.")
+    answer = "Answer: Es sind 9 Schafe übrig."
+    asset = {
+        "metadata": {"id": "reasoning_metacog_001", "scoring_version": 2.0},
+        "expected_output": {"correct_answer": "9"},
+    }
+    plain = ReasoningEvaluator(asset).score_response(answer)["total_score"]
+    channeled = ReasoningEvaluator(asset).score_response(
+        with_reasoning_channel(answer, think)
+    )["total_score"]
+    assert channeled > plain, "separierter Reasoning-Kanal muss in Tier 3 zählen"
+    print(f"✅ Kanal-Bias-Fix: plain={plain} → mit Kanal={channeled}")
+
+
+def test_kanal_bias_fix_tier1_2_bleibt_unveraendert() -> None:
+    """Tier 1/2 strippen Denkblöcke bewusst — der Fix darf dort keine Keywords liefern."""
+    from utils.benchmark_utils import with_reasoning_channel
+
+    think = "Der Cache wird reduziert und die Performance verbessert sich, faster lookups."
+    answer = "Der Fehler liegt in der Indentation innerhalb des if-Blocks."
+    for asset_id in ("reasoning_5b_001", "reasoning_5c_001"):
+        asset = {
+            "metadata": {"id": asset_id, "scoring_version": 2.0},
+            "expected_output": {},
+        }
+        plain = ReasoningEvaluator(asset).score_response(answer)["total_score"]
+        channeled = ReasoningEvaluator(asset).score_response(
+            with_reasoning_channel(answer, think)
+        )["total_score"]
+        assert plain == channeled, f"{asset_id}: Tier-1/2-Durchgang muss identisch bleiben"
+    print("✅ Tier 1/2 unverändert (Strip-Verhalten bleibt dominant)")

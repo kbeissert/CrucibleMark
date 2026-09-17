@@ -509,6 +509,104 @@ Regressionstests: `tests/test_card_model_id_lookup.py` (+1 Test: `test_resolve_c
 
 ---
 
+## Agentic-Track betreiben (Hermes-Connector)
+
+Der Provider `hermes` misst ein Modell **im Hermes-Agent-Loop** (Gateway, Profil „CrucibleMark") statt direkt am Model-Endpoint. Architektur und Begründungen: `docs/ARCHITECTURE.md → Agentic-Connector`. Hier nur der Betriebsablauf.
+
+**Status (2026-09-16):** Track nach dem Erstlauf **geschlossen** (`enabled: false`, Blacklist, Ergebnis in CHANGELOG/Card). Die Infrastruktur bleibt bewusst erhalten — dieses Kapitel beschreibt die Bedienung für künftige Harness-Messungen (Bedingungen: eigenes Modul mit ausführungsverifizierten Deliverables).
+
+### Voraussetzungen (Prüfreihenfolge)
+
+```bash
+curl -s http://localhost:8642/health                 # {"status":"ok","platform":"hermes-agent",…}
+curl -s -o /dev/null -w "%{http_code}\n" http://100.89.110.0:4300/v1/models   # 401 = Backend alive (Auth-Wand)
+grep -c "^API_SERVER_KEY=" .env                       # 1 — Gateway-Auth; der hermes-Block referenziert ${API_SERVER_KEY}
+grep -n "extra_body" -A 5 ~/.hermes/profiles/cruciblemark/config.yaml   # Paritäts-Pinning vorhanden
+```
+
+Der letzte Punkt ist die häufigste stille Falle: **Sampling- und Reasoning-Parität liegen im Hermes-Profil**, nicht in `provider_config.yaml` — der Gateway ignoriert Body-Sampling, und der per-Request-Reasoning-Override hängt für Custom-Provider am `supports_reasoning`-Gate. Fehlt das Pinning, misst der Loop mit den gx10-TOML-Defaults (z. B. `temperature 0.6` statt 1.0) und das Harness-Lift-Delta zum Raw-Run ist wertlos. Profil-Edits wirken **ohne Gateway-Neustart** (`load_config` cacht auf Dateisignatur).
+
+### Starten
+
+| Weg | Kommando | `enabled`-Flag |
+|---|---|---|
+| Interaktiv | `make benchmark` → Typ **„Agentic-Loop (Hermes-Agent)"** | `enabled: true` erforderlich (nur Wizard-Freigabe) |
+| Gezielt, ohne Config-Änderung | `make benchmark MODEL=qwen3_8-27b-nvfp4-hermes` | wird vom Einzelmodell-Pfad nicht geprüft |
+
+`--all` und `make benchmark-auto` nehmen den Track **nie** auf — `model_id_base.is_agentic_track_provider` schließt Agentic-Provider strukturell aus, unabhängig vom Flag. Das Bewusstsein ersetzt die frühere Regel „Flag nach dem Erstlauf wieder zurücksetzen".
+
+### Was dieser Track bewusst nicht mitmacht
+
+- **Political Compass und ToolUse sind ausgeschlossen** (D8/D9) — die Card trägt `supports_tool_use: not_applicable`, Thinking- und PC-Proben werden für die Entität übersprungen.
+- **Kein Denk-Content in den Antworten:** der Loop entfernt Think-Blöcke aus dem `final_response` (`conversation_loop.py:288`, `turn_tool_round.py:264`) und der Gateway exportiert `session_reasoning_tokens` nicht ins `usage`-Block. `display.show_reasoning` ist reine UI-Anzeige (`gateway/display_config.py`) und erreicht den Response-Pfad nicht. Nachprüfbar an den Daten: Zeichen pro generiertem Output-Token im Reasoning-Modul **1,20 (Hermes) vs. 3,67 (Raw-Partner)** bei identischen Gewichten — das Modell denkt, nur unsichtbar. `thinking_mode` wird darüber informiert (aus `reasoning_effort` abgeleitet, Metadaten-only).
+- **Sichtbares-CoT-Aufgaben kosten Punkte, ohne dass das Modell schlechter ist:** Reasoning Tier 3 (RCI-Gewicht 0,4) bewertet den Denkprozess im Antworttext — Reasoning-Deltas gegen Raw-Runs immer unter diesem Vorzeichen lesen. Eine echte Behebung wäre nur upstream möglich (reasoning-Feld im Response oder Strip-Disable für die `api_server`-Plattform) und würde dann einen Harness messen, den kein Nutzer hat.
+- **Thinking-Probe wird nicht gesendet** (D9, seit 2026-09-16 erzwungen): `unified_runner._run_thinking_probe_or_skip` überspringt Agentic-Provider. Grund: im Loop ist der Reasoning-Kanal nicht observierbar, die Heuristik kann also in beide Richtungen irren — und sie wäre teuer (drei Loop-Runs à Harness-Footprint). Im Erstlauf 2026-09-16 lief die Probe trotzdem durch (4,5 min, ~50k Tokens), weil der Card-Lookup `--HERM` nicht kannte und die Card als „fehlend" galt → Probe + Draft-Anlage. Capability kommt per Vererbung aus der Raw-Partner-Card (`thinking_probe_manual_override: true`).
+- **Profil-Härtung gegen Kontamination:** `memory_enabled: false`, `moa.enabled: false`, `auxiliary.vision: auto` (kein Cloud-Fallback). Die Isolierung ist gemessen, nicht nur behauptet — siehe Probe unten.
+
+### Fehlerbilder (alle laut, kein Silent-Skip)
+
+| Symptom | Ursache | Ort |
+|---|---|---|
+| `RuntimeError: Gateway lieferte Fehler-Response ohne Token-Verbrauch` | Provider-/Auth-Fehler wird als HTTP 200 mit `usage = 0` gerendert | `_raise_on_hermes_failure` |
+| HTTP 400 vom Backend | `hermes_model` nennt nicht die echt servierte Modell-ID (`direct_model_requests: true` validiert am Backend) | `_model_payload` |
+| `ValueError: Gateway-Echo '…' != gemapptes Zielmodell` | Loop hat unter anderem Modell geantwortet als der Record behauptet (Miss-Labeling) | `_assert_hermes_echo` |
+| Batch skippt Modell still mit „no model_file configured" | Card-`model_id` weicht von der provider_config-ID ab (gilt für alle Provider, AGENTS 2026-08-30) | Card-Namenskonvention |
+
+### Token- und Zeitbudget
+
+`usage` ist die **Summe über den Agent-Loop** (Gateway liest `session_*_tokens`, akkumuliert pro innerem Call) — der Harness-Footprint von ~12,4k Prompt-Tokens pro Task ist nur der Unterwert; Tasks mit Tool-Runden liegen beim Vielfachen (gemessen bis 137k). `request_timeout: 2400` im hermes-Block ist die lange Wand für Loop + gx10-Durchsatz (10-15 t/s); die Health-Probe nutzt das kürzere `PROBE_TIMEOUT_SEC`.
+
+### Diagnose gegen das Gateway außerhalb des Connectors
+
+**Immer mit eigener Session-ID** (AGENTS-Constraint, 2026-09-16): ohne `X-Hermes-Session-Id` mappt der Gateway per Request-Fingerprint auf die bestehende Session und misst den Agenten mit dem Gedächtnis des letzten Calls (Carryover gemessen: identischer Prompt 12.371 → 12.412, mit Tool-Loop 74.429 → 137.789).
+
+```bash
+curl -s http://localhost:8642/v1/chat/completions \
+  -H "Authorization: Bearer $(grep '^API_SERVER_KEY=' .env | cut -d= -f2)" \
+  -H "Content-Type: application/json" \
+  -H "X-Hermes-Session-Id: $(uuidgen | tr 'A-Z' 'a-z')" \
+  -d '{"model": "Qwen3.8-27B-NVFP4", "provider": "gx10-vllm",
+       "messages": [{"role": "user", "content": "Was ist 2+2?"}]}'
+```
+
+Erwarteter Basiswert eines Text-Tasks ohne Tool-Nutzung: `prompt_tokens ≈ 12.371`, Echo `Qwen3.8-27B-NVFP4`.
+
+### Reasoning doch sichtbar machen (State-DB)
+
+Der Response-Kanal liefert kein Denkprotokoll — die **State-DB des Gateways** tut es: `messages.reasoning_content` (der volle Denktext) und `session_model_usage.reasoning_tokens` pro Session, dazu `api_call_count` (Loop-Runden), `cache_read_tokens` und Auxiliary- Calls (`task='title_generation'`).
+
+```bash
+make hermes-reasoning MODEL=qwen3_8-27b-nvfp4-hermes
+make hermes-reasoning MODEL=… FORMAT=json OUT=outputs/hermes_reasoning.json
+```
+
+Der DB-Pfad kommt aus `providers.commercial.hermes.state_db` (kein Hardcoding im Skript, `--db` überschreibt). Join-Reihenfolge: Audit-Log-Antwort exakt → Antwort-Ende (der Audit-Writer demmt Markdown-Headings, deshalb nie wörtlich enthalten) → Output-Token-Gleichheit; die Spalte `Join` im Report sagt, welcher Schlüssel traf. Der Connector protokolliert die erzeugte Session-ID in `last_response_metadata["hermes_session_id"]`.
+
+**Regel:** Das ist ein Seitenkanal für Analyse und Reviewer-Kontext. Die Werte werden **nicht** in die Ergebnis-CSV geschrieben und lösen **kein** Re-Scoring aus — `reasoning_tokens` in der CSV bleibt das, was die gemessene Schnittstelle geliefert hat (bei Hermes: nichts). Sonst landeten zwei Messarten in einer Spalte.
+
+### Abbrechen und Neustart
+
+Der Hermes-Gateway ist **kein Kindprozess** des Benchmarks (eigener Long-Running-Prozess im Terminal). `make benchmark` abbrechen lässt ihn laufen, und der nächste Request geht in denselben Prozess — ein Hermes-Neustart zwischen Läufen ist nicht nötig (anderes Muster als llama.cpp/vLLM mit Server-Restart zwischen Modellen).
+
+Was beim Abbruch passiert:
+
+1. Strg-C → `atexit`-Kette (`llm_client.py: atexit.register(self.close)`) → `HermesClient.close()` → **TCP FIN** geht raus. Ohne FIN sieht der Gateway den Abbruch nicht (HTTP-Client-Regel von 2026-08-31).
+2. Gateway reagiert auf Disconnect: `_abandon_agent_task` → `request_hard_interrupt` (stoppt LLM-Calls) + `_reap_disconnected_agent_processes` (killt Kindprozesse des Loops, z. B. Terminal-Tool-Executions) + Task-Cancel.
+3. Messwert aus der Verifikation (2026-09-16): Request nach 12 s abgebrochen, unmittelbar danach ein frischer Request → HTTP 200 in **8,65 s**, `prompt_tokens` wieder exakt 12.371. Kein Rest-Loop, keine Queue.
+
+**NIEMALS mit `kill -9` abbrechen** — dann läuft der atexit-Pfad nicht, kein FIN, und der Agent-Loop rechnet serverseitig weiter. Er konkurriert dann mit dem nächsten Lauf um die 10-15 t/s auf gx10 und verfälscht damit `execution_time` (und kann Timeouts häufen). Im Zweifel hilft nur der Gateway-Neustart.
+
+**Neustart ist nicht gleich Fortsetzung** — der Cache-Modus unterscheidet:
+
+| Start | `force` | Verhalten nach einem Abbruch |
+|---|---|---|
+| Interaktiv (`make benchmark`, Auswahl im Wizard) | erzwungen (`_ensure_interactive_force`) | Modul läuft **komplett neu** — „Force-Mode aktiviert für SSOT Konformität" |
+| `make benchmark MODEL=… MODULE=…` ohne `--force` | nein | vorhandene `(Model, AssetID)`-Paare werden übersprungen → wirkt wie Resume; abgebrochener Task läuft nach |
+
+Für lange Hermes-Läufe also der nicht-interaktive Weg, wenn Abbrüche zu erwarten sind. Kosmetik am Rande: pro Task entsteht eine Session-Zeile in `state.db` (bei einem vollen Modul ~50); `sessions.auto_prune` (90 Tage) räumt, aber das Profil-Verzeichnis wächst mit der Zahl der Läufe.
+
+---
+
 ## Reasoning-Modelle: Reasoning-Erkennung & Card-First Workflow
 
 CrucibleMark erkennt ab v3.5.8 Reasoning-Modelle empirisch statt rein heuristisch. Diese Erkennung bestimmt das Token-Budget, die LLM-Judge-Bewertung und die Audit-Log-Ausgabe.

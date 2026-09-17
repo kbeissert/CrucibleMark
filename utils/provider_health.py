@@ -40,6 +40,11 @@ _PROVIDER_ENV_VARS: dict[str, str] = {
     "xai": "XAI_API_KEY",
     "groq": "GROQ_API_KEY",
     "openrouter": "OPENROUTER_API_KEY",
+    # Hermes-Agent-Gateway: Key liegt ebenfalls in .env (provider_config
+    # referenziert ihn als ${API_SERVER_KEY}). Ohne diesen Eintrag würden
+    # Pre-Flight-Checks (validate_untested_card) Hermes-Cards still als
+    # unknown_provider filtern.
+    "hermes": "API_SERVER_KEY",
 }
 
 

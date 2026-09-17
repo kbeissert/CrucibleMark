@@ -3,7 +3,7 @@ import logging
 import importlib.util
 
 from utils.benchmark_utils import select_from_list
-from utils.constants import MODEL_TYPE_OPEN_WEIGHTS_CLOUD
+from utils.constants import API_TYPE_HERMES_AGENT, MODEL_TYPE_OPEN_WEIGHTS_CLOUD
 from utils.model_utils import is_cloud_model, get_ollama_models_info
 
 logger = logging.getLogger(__name__)
@@ -16,8 +16,8 @@ class ProviderSelector:
         self.config = config
 
     def select_provider(self, provider_type: str | None = None) -> tuple[str, str]:
-        """Interaktive Provider-Auswahl (commercial/local/cloud)."""
-        if provider_type and provider_type in ["commercial", "local", "cloud"]:
+        """Interaktive Provider-Auswahl (commercial/local/cloud/agentic)."""
+        if provider_type and provider_type in ["commercial", "local", "cloud", "agentic"]:
             return self._select_provider_models(provider_type)
 
         options = [
@@ -27,6 +27,10 @@ class ProviderSelector:
             ),
             ("cloud", "Cloud Modelle (Inference Proxy) - OpenRouter, Groq, Ollama Cloud"),
             ("local", "Lokale Modelle (llama.cpp / Ollama) - Offline"),
+            (
+                "agentic",
+                "Agentic-Loop (Hermes-Agent) - Modell + Werkzeuge, eigenes Mess-Profil",
+            ),
         ]
 
         selected = select_from_list(
@@ -50,7 +54,83 @@ class ProviderSelector:
             return self._select_commercial_model()
         if provider_type == "cloud":
             return self._select_cloud_model()
+        if provider_type == "agentic":
+            return self._select_agentic_model()
         return self._select_local_model()
+
+    @staticmethod
+    def _collect_agentic_providers(config: dict) -> tuple[list, list]:
+        """Findet Agentic-Loop-Provider (api_type hermes) über beide Config-Sektionen.
+
+        Der hermes-Block liegt bewusst unter ``providers.commercial`` (D6: nur so
+        zieht ihn die Local-Batch-Discovery nicht) — die Sektions-Grenze darf
+        daher nicht der Auswahl-Filter sein. Erkennt wird über ``api_type``.
+
+        Returns:
+            (enabled, disabled) als Listen von ``(provider_key, provider_cfg)``.
+        """
+        enabled: list = []
+        disabled: list = []
+        for section in ("commercial", "local"):
+            for key, cfg in config.get("providers", {}).get(section, {}).items():
+                if not isinstance(cfg, dict) or cfg.get("api_type") != API_TYPE_HERMES_AGENT:
+                    continue
+                (enabled if cfg.get("enabled", False) else disabled).append((key, cfg))
+        return enabled, disabled
+
+    def _select_agentic_model(self) -> tuple[str, str]:
+        """Wählt ein Modell eines Agentic-Loop-Providers (Hermes-Agent-Gateway).
+
+        Messobjekt dieses Tracks ist Modell + Agent-Loop + Werkzeuge; die IDs
+        sind Harness-Entitäten mit eigenem Mapping-Feld ``hermes_model``.
+        """
+        enabled, disabled = self._collect_agentic_providers(self.config)
+
+        if not enabled:
+            logger.warning("\n⚠️  Kein aktivierter Agentic-Provider gefunden.")
+            if disabled:
+                logger.info(f"Deaktiviert: {', '.join(k for k, _ in disabled)}")
+            logger.info("Setze 'enabled: true' im hermes-Block von provider_config.yaml (D6).")
+            sys.exit(1)
+
+        models_flat = [
+            {
+                "provider": provider_key,
+                "provider_name": cfg.get("name", provider_key),
+                "id": model.get("id", ""),
+                "name": model.get("name", model.get("id", "")),
+                "loop_model": model.get("hermes_model", ""),
+                "description": model.get("description", ""),
+            }
+            for provider_key, cfg in enabled
+            for model in cfg.get("models", [])
+            if model.get("id")
+        ]
+
+        if not models_flat:
+            logger.warning("\n⚠️  Agentic-Provider aktiv, aber ohne Modell-Einträge.")
+            logger.info("Ergänze Modelle unter providers.commercial.hermes.models")
+            sys.exit(1)
+
+        def display_model(m):
+            loop = f" | Loop: {m['loop_model']}" if m["loop_model"] else ""
+            return (
+                f"[{m['provider_name']}] {m['name']}",
+                f"ID: {m['id']}{loop}",
+            )
+
+        selected = select_from_list(
+            models_flat,
+            display_func=display_model,
+            prompt="Wähle ein Agentic-Modell",
+            title="AGENTIC LOOP (HERMES)",
+        )
+
+        if selected:
+            logger.info(f"✓ Ausgewählt: {selected['name']}")
+            return str(selected["provider"]), str(selected["id"])
+
+        sys.exit(0)
 
     def _select_cloud_model(self) -> tuple[str, str]:
         """Wählt ein Cloud-Modell (OpenRouter, Groq oder Ollama Cloud Proxy)."""

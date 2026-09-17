@@ -238,6 +238,8 @@ class BaseBenchmarkRunner:
             "Thinking" — vLLM dual-profile thinking oder llama.cpp enable_thinking=true
             "Standard" — vLLM dual-profile standard oder llama.cpp enable_thinking=false
             "n/a" — keine Thinking-Konfiguration (Cloud/Commercial ohne Toggle)
+            "Thinking" — zusätzlich für `reasoning_effort`-Konfiguration (Agentic-
+            Track Hermes): Reasoning läuft, ist aber im Antworttext nicht sichtbar
         """
         try:
             model_cfg = resolve_model_cfg_for(model, self.validator.config)
@@ -253,6 +255,14 @@ class BaseBenchmarkRunner:
             # llama.cpp: enable_thinking Flag
             if "enable_thinking" in model_cfg:
                 return "Thinking" if model_cfg["enable_thinking"] else "Standard"
+            # Agentic-Track (Hermes): Reasoning-Steuerung über `reasoning_effort`
+            # statt über einen enable_thinking-Toggle. Thinking ist aktiv, aber im
+            # Response-Kanal NICHT sichtbar — der Loop stripped Think-Blöcke aus dem
+            # final_response und der Gateway exportiert keine reasoning-Felder.
+            # Rein protokollierend: thinking_mode geht nur in Audit-Log,
+            # Leaderboard-Spalte und Web-Export (kein Judge-/Scoring-Konsument).
+            if model_cfg.get("reasoning_effort"):
+                return "Thinking"
         except Exception:  # pylint: disable=broad-except
             pass
         return "n/a"
