@@ -4,7 +4,7 @@ import time
 import traceback
 from typing import Any
 
-from utils.benchmark_utils import save_audit_log, with_reasoning_channel
+from utils.benchmark_utils import has_reasoning_channel, save_audit_log, with_reasoning_channel
 from utils.constants import MS_PER_SECOND
 from utils.scoring.exceptions import JudgeUnavailableError
 from utils.scoring.llm_judge.judge_config import LLMJudgeConfig
@@ -170,8 +170,10 @@ def _build_judge_kwargs(
     # rule-based Scoring.
     _think = result.get("think_content")
     _effective_response = with_reasoning_channel(response, _think)
-    # Kontextblock für den Judge: <think> ist internes Reasoning, kein Output-ONLY-Verstoß
-    _has_think = _effective_response != response
+    # Kontextblock für den Judge: <think> ist internes Reasoning, kein Output-ONLY-Verstoß.
+    # Prädikat ist der EFFEKTIVE Text (SSoT has_reasoning_channel, wie in der Regelstufe) —
+    # sonst fehlt der Schutz bei Inline-CoT-Antworten, die den Denkblock schon tragen.
+    _has_think = has_reasoning_channel(_effective_response)
 
     kwargs: dict[str, Any] = {
         "task_prompt": raw_prompt,

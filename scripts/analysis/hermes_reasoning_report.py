@@ -32,6 +32,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+from urllib.parse import quote
 
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 if str(ROOT_DIR) not in sys.path:
@@ -68,6 +69,7 @@ class SessionInfo:
     reasoning_chars: int = 0
     reasoning_msgs: int = 0
     final_content: str = ""
+    final_content_norm: str = ""
     aux_calls: int = 0
     aux_tokens: int = 0
     models: set[str] = field(default_factory=set)
@@ -131,20 +133,34 @@ def read_result_rows(model: str, csv_path: Path) -> list[dict[str, Any]]:
     return rows
 
 
-def _to_epoch(ts: str) -> float:
+def _to_epoch(ts: str) -> float | None:
+    """CSV-Zeitstempel → Epoch. Der Writer (base_runner/unified_runner) nutzt
+    ``datetime.now()`` — lokales Naiv-Zeit; die Rückumwandlung passiert bewusst
+    mit derselben Maschinen-Zeitzone (Report läuft auf der Benchmark-Maschine).
+    None bei unparsebar, statt 0.0 — das einen willkürlichen Match erzeugt hätte.
+    """
     try:
         return datetime.strptime(ts, _TS_FMT).timestamp()
     except ValueError:
-        return 0.0
+        return None
 
 
 def read_sessions(db_path: Path, hermes_model: str) -> list[SessionInfo]:
     """Liest Sessions + Reasoning-Spuren read-only aus der Hermes-State-DB."""
-    con = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
+    # Pfad percent-codiert einsetzen, sonst verschiebt ein '?'/'#' im Pfad das
+    # mode=ro in Query/Fragment und die DB öffnet stillschweigend read-write.
+    con = sqlite3.connect(f"file:{quote(str(db_path), safe='/')}?mode=ro", uri=True)
     try:
         return _collect_sessions(con, hermes_model)
     finally:
         con.close()
+
+
+def _id_chunks(ids, size: int = 500):
+    """Session-IDs in IN-Klausel-taugliche Häppchen (Platzhalter-Limits)."""
+    keys = list(ids)
+    for i in range(0, len(keys), size):
+        yield tuple(keys[i:i + size])
 
 
 def _collect_sessions(con: sqlite3.Connection, hermes_model: str) -> list[SessionInfo]:
@@ -152,48 +168,67 @@ def _collect_sessions(con: sqlite3.Connection, hermes_model: str) -> list[Sessio
     if hermes_model:
         where = "WHERE s.model = ?"
         params = (hermes_model,)
-    out: list[SessionInfo] = []
-    for sid, started in con.execute(
-        f"SELECT s.id, s.started_at FROM sessions s {where} ORDER BY s.started_at", params
-    ):
-        info = SessionInfo(session_id=sid, started_at=float(started or 0.0))
-        _apply_usage(con, info)
-        _apply_messages(con, info)
-        out.append(info)
-    return out
+    infos = [
+        SessionInfo(session_id=sid, started_at=float(started or 0.0))
+        for sid, started in con.execute(
+            f"SELECT s.id, s.started_at FROM sessions s {where} ORDER BY s.started_at", params
+        )
+    ]
+    if infos:
+        _apply_usage_batch(con, infos)
+        _apply_messages_batch(con, infos)
+    return infos
 
 
-def _apply_usage(con: sqlite3.Connection, info: SessionInfo) -> None:
-    """Haupt-Loop (task='') und Auxiliary-Calls (task!='') getrennt aufsummieren."""
-    for task, calls, tin, tout, cache, reason, model in con.execute(
-        "SELECT task, api_call_count, input_tokens, output_tokens, cache_read_tokens,"
-        " reasoning_tokens, model FROM session_model_usage WHERE session_id = ?",
-        (info.session_id,),
-    ):
-        info.models.add(str(model))
-        if task:
-            info.aux_calls += int(calls or 0)
-            info.aux_tokens += int(tout or 0)
-            continue
-        info.api_calls = int(calls or 0)
-        info.input_tokens = int(tin or 0)
-        info.output_tokens = int(tout or 0)
-        info.cache_read_tokens = int(cache or 0)
-        info.reasoning_tokens = int(reason or 0)
+def _apply_usage_batch(con: sqlite3.Connection, infos: list[SessionInfo]) -> None:
+    """Usage-Zeilen gebündelt laden (ein Query pro Chunk statt zwei pro Session).
+
+    Haupt-Loop (task='') und Auxiliary-Calls (task!='') getrennt aufsummieren.
+    """
+    by_id = {info.session_id: info for info in infos}
+    for chunk in _id_chunks(by_id):
+        marks = ",".join("?" * len(chunk))
+        for sid, task, calls, tin, tout, cache, reason, model in con.execute(
+            f"SELECT session_id, task, api_call_count, input_tokens, output_tokens,"
+            f" cache_read_tokens, reasoning_tokens, model FROM session_model_usage"
+            f" WHERE session_id IN ({marks})", chunk,
+        ):
+            info = by_id.get(sid)
+            if info is None:
+                continue
+            info.models.add(str(model))
+            if task:
+                info.aux_calls += int(calls or 0)
+                info.aux_tokens += int(tout or 0)
+                continue
+            info.api_calls = int(calls or 0)
+            info.input_tokens = int(tin or 0)
+            info.output_tokens = int(tout or 0)
+            info.cache_read_tokens = int(cache or 0)
+            info.reasoning_tokens = int(reason or 0)
 
 
-def _apply_messages(con: sqlite3.Connection, info: SessionInfo) -> None:
-    for content, reasoning in con.execute(
-        "SELECT content, reasoning_content FROM messages"
-        " WHERE session_id = ? AND role = 'assistant' ORDER BY rowid",
-        (info.session_id,),
-    ):
-        text = str(reasoning or "")
-        if text.strip():
-            info.reasoning_chars += len(text)
-            info.reasoning_msgs += 1
-        if str(content or "").strip():
-            info.final_content = str(content)
+def _apply_messages_batch(con: sqlite3.Connection, infos: list[SessionInfo]) -> None:
+    """Assistant-Nachrichten gebündelt laden; normierter Finale-Text einmalig."""
+    by_id = {info.session_id: info for info in infos}
+    for chunk in _id_chunks(by_id):
+        marks = ",".join("?" * len(chunk))
+        for sid, content, reasoning in con.execute(
+            f"SELECT session_id, content, reasoning_content FROM messages"
+            f" WHERE session_id IN ({marks}) AND role = 'assistant'"
+            f" ORDER BY session_id, rowid", chunk,
+        ):
+            info = by_id.get(sid)
+            if info is None:
+                continue
+            text = str(reasoning or "")
+            if text.strip():
+                info.reasoning_chars += len(text)
+                info.reasoning_msgs += 1
+            if str(content or "").strip():
+                info.final_content = str(content)
+    for info in infos:
+        info.final_content_norm = info.final_content.strip()
 
 
 def audit_response_text(model: str, asset_id: str) -> str:
@@ -219,16 +254,22 @@ def match_session(
     """
     want_text = audit_response_text(model, row["asset_id"])
     if want_text:
-        exact = [s for s in sessions if s.final_content.strip() == want_text]
+        exact = [s for s in sessions if s.final_content_norm == want_text]
         if exact:
-            return _nearest(exact, row["ts"]), "antwort-text"
+            return _labeled(_nearest(exact, row["ts"]), "antwort-text")
         suffix = [s for s in sessions if _suffix_matches(s.final_content, want_text)]
         if suffix:
-            return _nearest(suffix, row["ts"]), "antwort-ende"
+            return _labeled(_nearest(suffix, row["ts"]), "antwort-ende")
     by_tokens = [s for s in sessions if s.output_tokens and s.output_tokens == row["output_tokens"]]
     if by_tokens:
-        return _nearest(by_tokens, row["ts"]), "output-tokens"
+        return _labeled(_nearest(by_tokens, row["ts"]), "output-tokens")
     return None, "—"
+
+
+def _labeled(pick: tuple[SessionInfo, str | None], method: str) -> tuple[SessionInfo, str]:
+    """Join-Methode mit optionalem Mehrdeutigkeits-Hinweis fürs Report-Feld."""
+    sess, note = pick
+    return sess, f"{method}:{note}" if note else method
 
 
 def _suffix_matches(db_content: str, audit_text: str) -> bool:
@@ -240,8 +281,17 @@ def _suffix_matches(db_content: str, audit_text: str) -> bool:
     return tail in audit_text
 
 
-def _nearest(cands: list[SessionInfo], ts: float) -> SessionInfo:
-    return min(cands, key=lambda s: abs(s.started_at - ts)) if ts else cands[-1]
+def _nearest(cands: list[SessionInfo], ts: float | None) -> tuple[SessionInfo, str | None]:
+    """Zeitnächster Kandidat + Hinweis, wenn die Zeitnähe nicht entscheiden konnte.
+
+    ts=None (unparsebarer CSV-Zeitstempel) wählt bewusst den letzten Kandidaten,
+    markiert das aber statt still zu raten; Gleichstand im Minimalabstand likewise.
+    """
+    if ts is None:
+        return cands[-1], "zeit-unbekannt"
+    dist = [abs(s.started_at - ts) for s in cands]
+    best = dist.index(min(dist))
+    return cands[best], ("mehrdeutig" if dist.count(min(dist)) > 1 else None)
 
 
 def module_of(asset_id: str) -> str:

@@ -316,9 +316,9 @@ class HermesClient(BaseProviderClient):
             if reasoning_piece:
                 think.add(reasoning_piece)
         self._assert_hermes_echo(model, self.last_response_metadata.get("model"))
+        self._raise_on_hermes_failure(full_content, stream_usage)
         if stream_usage is not None:
             self.last_response_metadata["usage"] = stream_usage
-            self._raise_on_hermes_failure(full_content, stream_usage)
             rt = self._extract_reasoning_tokens(stream_usage)
             if rt is not None:
                 self.last_response_metadata["reasoning_tokens"] = rt
@@ -374,12 +374,15 @@ class HermesClient(BaseProviderClient):
         Der Gateway rendert Provider-/Auth-Fehler als normalen 200-Response
         (Fehler-Text als ``content``, ``usage`` komplett 0). Ohne diese Prüfung
         würde der Fehlertext als Benchmark-Antwort in die Results landen.
+        Fehlender ``usage`` bei nicht-leerem Content (z. B. Fehler-Stream ohne
+        finalen usage-Chunk) ist dieselbe Fail-Open-Klasse: nicht verifizierbarer
+        Verbrauch mit gelieferter Antwort → ebenfalls laut.
         """
         total_tokens = getattr(usage, "total_tokens", None) if usage else None
-        if total_tokens == 0:
+        if total_tokens == 0 or (usage is None and str(content or "").strip()):
             raise RuntimeError(
                 f"hermes: Gateway lieferte Fehler-Response ohne Token-Verbrauch "
-                f"(Provider-/Auth-Fehler): {content[:300]}"
+                f"(Provider-/Auth-Fehler oder usage-Chunk fehlend): {content[:300]}"
             )
 
     def _record_hermes_extras(self, response: Any) -> None:

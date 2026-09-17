@@ -3,7 +3,8 @@ import logging
 import importlib.util
 
 from utils.benchmark_utils import select_from_list
-from utils.constants import API_TYPE_HERMES_AGENT, MODEL_TYPE_OPEN_WEIGHTS_CLOUD
+from utils.constants import MODEL_TYPE_OPEN_WEIGHTS_CLOUD
+from utils.model_id_base import is_agentic_track_provider
 from utils.model_utils import is_cloud_model, get_ollama_models_info
 
 logger = logging.getLogger(__name__)
@@ -64,7 +65,9 @@ class ProviderSelector:
 
         Der hermes-Block liegt bewusst unter ``providers.commercial`` (D6: nur so
         zieht ihn die Local-Batch-Discovery nicht) — die Sektions-Grenze darf
-        daher nicht der Auswahl-Filter sein. Erkennt wird über ``api_type``.
+        daher nicht der Auswahl-Filter sein. Erkennt wird über die SSoT
+        ``is_agentic_track_provider`` (api_type), damit Wizard-Pickup und
+        Batch-Ausschluss nie driften.
 
         Returns:
             (enabled, disabled) als Listen von ``(provider_key, provider_cfg)``.
@@ -73,7 +76,7 @@ class ProviderSelector:
         disabled: list = []
         for section in ("commercial", "local"):
             for key, cfg in config.get("providers", {}).get(section, {}).items():
-                if not isinstance(cfg, dict) or cfg.get("api_type") != API_TYPE_HERMES_AGENT:
+                if not is_agentic_track_provider(cfg):
                     continue
                 (enabled if cfg.get("enabled", False) else disabled).append((key, cfg))
         return enabled, disabled

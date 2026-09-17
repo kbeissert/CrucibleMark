@@ -193,6 +193,15 @@ class TestHermesFailureSignature:
         with pytest.raises(RuntimeError, match="ohne Token-Verbrauch"):
             client.query(HERMES_MODEL_ID, "ping", temperature=0.1, stream_handler=lambda s: None)
 
+    def test_stream_missing_usage_chunk_raises(self, client):
+        """Fehler-Stream ohne finalen usage-Chunk:CONTENT geliefert, Verbrauch
+        unprüfbar → Fail-Fast statt Fail-Open (Review 2026-09-17)."""
+        chunks = [_fake_chunk(delta=SimpleNamespace(content="⚠️ Provider error"))]
+        client._client = MagicMock()
+        client._client.chat.completions.create.return_value = iter(chunks)
+        with pytest.raises(RuntimeError, match="ohne Token-Verbrauch"):
+            client.query(HERMES_MODEL_ID, "ping", temperature=0.1, stream_handler=lambda s: None)
+
 
 # ---------------------------------------------------------------------------
 # Usage-/Think-Extraktion

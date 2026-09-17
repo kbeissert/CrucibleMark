@@ -2,9 +2,10 @@
 Tests für scripts/analysis/hermes_reasoning_report.py — Hermes-Reasoning-Report.
 
 Deckt ab:
-    - read_sessions/_apply_usage  (Haupt-Loop vs. Auxiliary-task, Reasoning-Text)
+    - read_sessions/_apply_usage_batch (Haupt-Loop vs. Auxiliary-task, Reasoning-Text)
     - _suffix_matches             (Audit-Writer demmt Markdown-Headings)
-    - match_session               (Priorität text → ende → tokens, Zeit-Tiebreak)
+    - match_session               (Priorität text → ende → tokens, Zeit-Tiebreak,
+                                   Markierung bei unklarer Zeit/Gleichstand)
     - module_of / _aggregate      (Modulzuordnung, Mittelwerte)
     - build_report                (End-to-End gegen Temp-DB + Temp-Audit-Logs)
 
@@ -111,6 +112,20 @@ class TestJoin:
 
     def test_kuerzer_als_min_suffix_matchet_nicht(self):
         assert hr._suffix_matches("kurz", "text kurz ende") is False
+
+    def test_unbekannte_zeit_wird_markiert_statt_still_gewaehlt(self, db, audit):
+        row = {"asset_id": "unbekannt", "output_tokens": 400, "ts": None}
+        sess, method = hr.match_session(row, hr.read_sessions(db, ""), "m")
+        assert sess is not None and method == "output-tokens:zeit-unbekannt"
+
+    def test_gleichstand_wird_markiert(self, db, audit):
+        sessions = hr.read_sessions(db, "")
+        pick, note = hr._nearest(sessions, (TS + TS + 60) / 2)
+        assert note == "mehrdeutig" and pick.session_id == "s1"
+
+    def test_to_epoch_liefert_none_bei_unparsebar(self):
+        assert hr._to_epoch("kein-timestamp") is None
+        assert hr._to_epoch("2026-09-16 16:36:24") == TS
 
 
 class TestAggregation:

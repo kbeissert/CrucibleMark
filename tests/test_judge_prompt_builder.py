@@ -79,6 +79,43 @@ class TestConnectorThinkWrapping:
         assert kwargs["model_response"] == "Hello!"
         assert "<think>" not in kwargs["model_response"]
 
+    def test_dual_channel_no_double_block_but_trace_context(self):
+        """Response trägt Inline-CoT UND think_content ist gefüllt → kein Doppelblock,
+        aber reasoning_trace_context muss gesetzt bleiben (Output-ONLY-Schutz,
+        Review-Fix 2026-09-17: Kontext folgt dem effektiven Text, nicht der Injektion)."""
+        from utils.scoring.judge_evaluator import _build_judge_kwargs
+
+        result = self._make_result(think_content="Denktext")
+        kwargs = _build_judge_kwargs(
+            result=result,
+            response="<think>inline\n</think>\nHello!",
+            asset_data=self._make_asset_data(),
+            eval_module_id="cultural_intelligence",
+            model="test-model",
+            asset_cfg=None,
+            provider=None,
+        )
+        assert kwargs["model_response"].count("<think>") == 1
+        assert kwargs.get("reasoning_trace_context") is True
+
+    def test_inline_only_response_gets_trace_context(self):
+        """Pure Inline-CoT-Antwort (ohne think_content) → nichts injiziert,
+        aber Kontextschutz aktiv (gleiches Prädikat-SSoT wie die Regelstufe)."""
+        from utils.scoring.judge_evaluator import _build_judge_kwargs
+
+        result = self._make_result()
+        kwargs = _build_judge_kwargs(
+            result=result,
+            response="<thinking>Denkprozeß</thinking>\nHello!",
+            asset_data=self._make_asset_data(),
+            eval_module_id="cultural_intelligence",
+            model="test-model",
+            asset_cfg=None,
+            provider=None,
+        )
+        assert kwargs["model_response"] == "<thinking>Denkprozeß</thinking>\nHello!"
+        assert kwargs.get("reasoning_trace_context") is True
+
     def test_empty_think_content_no_wrapping(self):
         """Empty think_content → no wrapping."""
         from utils.scoring.judge_evaluator import _build_judge_kwargs
