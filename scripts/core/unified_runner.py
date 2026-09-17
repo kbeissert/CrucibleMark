@@ -37,7 +37,7 @@ from utils.constants import (
 )
 from utils.language_validator import LanguageValidator
 from utils.logging_config import setup_logging
-from utils.model_id_base import is_agentic_track_provider
+from utils.model_id_base import find_provider_cfg, is_agentic_track_provider
 from utils.model_utils import (
     _find_card,
     _safe_name,
@@ -266,12 +266,8 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
 
     def _is_agentic_provider(self, provider: str) -> bool:
         """True für Agentic-Loop-Provider (Hermes) — Sektion egal (commercial|local)."""
-        providers = self.validator.config.get("providers", {})
-        for section in ("commercial", "local"):
-            cfg = (providers.get(section) or {}).get(provider)
-            if is_agentic_track_provider(cfg):
-                return True
-        return False
+        cfg = find_provider_cfg(self.validator.config, provider)
+        return is_agentic_track_provider(cfg)
 
     def _run_thinking_probe_or_skip(
         self, model: str, provider: str

@@ -40,7 +40,11 @@ if str(ROOT_DIR) not in sys.path:
 
 # pylint: disable=wrong-import-position
 from utils.config_validator import ConfigValidator  # noqa: E402
-from utils.model_id_base import is_agentic_track_provider  # noqa: E402
+from utils.model_id_base import (  # noqa: E402
+    find_provider_cfg,
+    is_agentic_track_provider,
+    iter_provider_cfgs,
+)
 
 CSV_PATH = ROOT_DIR / "benchmark_scores" / "local_models_benchmark.csv"
 # Untergrenze für den Suffix-Join: kürzere Finale wären in anderen Antworten
@@ -91,17 +95,9 @@ def _resolve_db_path(db_arg: str | None, provider_cfg: dict[str, Any]) -> Path:
     return path
 
 
-def _provider_cfg(config: dict[str, Any], provider: str) -> dict[str, Any]:
-    for section in ("commercial", "local"):
-        cfg = (config.get("providers", {}).get(section) or {}).get(provider)
-        if isinstance(cfg, dict):
-            return cfg
-    return {}
-
-
 def _hermes_model_for(config: dict[str, Any], model: str) -> str:
     """Gemappter Backend-Modellname der Entität (Sessions-Filter in der DB)."""
-    for cfg in (config.get("providers", {}).get("commercial") or {}).values():
+    for _key, cfg in iter_provider_cfgs(config):
         if not is_agentic_track_provider(cfg):
             continue
         for entry in cfg.get("models") or []:
@@ -397,7 +393,7 @@ def main() -> int:
     args = parser.parse_args()
 
     config = ConfigValidator().config
-    provider_cfg = _provider_cfg(config, args.provider)
+    provider_cfg = find_provider_cfg(config, args.provider)
     if not is_agentic_track_provider(provider_cfg):
         _die(f"Provider '{args.provider}' ist kein Agentic-Track — Report macht nur für Hermes-Sessions Sinn.")
 

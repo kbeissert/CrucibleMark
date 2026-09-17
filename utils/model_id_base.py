@@ -10,6 +10,7 @@ Submodule: model_id_base → model_card_io → {model_version, model_size_class,
 
 import logging
 import re
+from collections.abc import Iterator
 from pathlib import Path
 from typing import Any, TypeVar
 
@@ -369,6 +370,27 @@ def is_agentic_track_provider(provider_cfg: Any) -> bool:
     ``--all``/``benchmark-auto``-Renner gekoppelt.
     """
     return isinstance(provider_cfg, dict) and provider_cfg.get("api_type") == API_TYPE_HERMES_AGENT
+
+
+# Sektions-Walk-SSoT: hermes liegt wegen D6 bewusst unter ``providers.commercial`` —
+# die Sektions-Grenze darf daher nirgends der Agentic-Filter sein. Wer Provider
+# sectionsübergreifend sucht, nutzt diese beiden Helfer statt eigener Tuple.
+PROVIDER_SECTIONS: tuple[str, ...] = ("commercial", "local")
+
+
+def iter_provider_cfgs(config: dict[str, Any]) -> Iterator[tuple[str, Any]]:
+    """Yields (provider_key, provider_cfg) über alle Provider-Sektionen."""
+    providers = config.get("providers") or {}
+    for section in PROVIDER_SECTIONS:
+        yield from (providers.get(section) or {}).items()
+
+
+def find_provider_cfg(config: dict[str, Any], provider_key: str) -> dict[str, Any]:
+    """Provider-Config über alle Sektionen ({} wenn nicht vorhanden/nicht-dict)."""
+    for key, cfg in iter_provider_cfgs(config):
+        if key == provider_key and isinstance(cfg, dict):
+            return cfg
+    return {}
 
 
 def get_commercial_models_from_config(
