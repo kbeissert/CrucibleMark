@@ -7,7 +7,7 @@
   "deployment_type": "local-weights",
   "local_deployment_possible": true,
   "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "TODO",
+  "weights_provenance_risk_rationale": "This checkpoint is a UkisAI fine-tune and NVFP4 quantization of Qwen/Qwen3.8-27B. The base lineage is documented, but the weights are distributed under the gated Swift Open License v1.0 with an ARR threshold and are optimized for Blackwell/vLLM deployment, so provenance is clear but not fully open in the OSS sense.[page:1]",
   "model_family": "Qwen3.8",
   "vendor": "UkisAI",
   "primary_focus": "reasoning",
@@ -60,7 +60,7 @@
     }
   },
   "tooluse_recommendation": null,
-  "dual_profile": null,
+  "dual_profile": true,
   "temperature": null,
   "system_prompt_override": null,
   "cot_marker_family": null,
@@ -98,7 +98,6 @@
   "last_modified_at": null,
   "heritage_ids": [],
   "community": null,
-  "weights_provenance_rationale": "This checkpoint is a UkisAI fine-tune and NVFP4 quantization of Qwen/Qwen3.8-27B. The base lineage is documented, but the weights are distributed under the gated Swift Open License v1.0 with an ARR threshold and are optimized for Blackwell/vLLM deployment, so provenance is clear but not fully open in the OSS sense.[page:1]",
   "pc_token_calibration": {
     "budget": 390,
     "classification": "self_limiting",

@@ -1161,6 +1161,29 @@ providers:
         # repetition_penalty:  # TOML-Default (kein Override)
         enable_thinking: true
 
+      # Qwen3.8 Flash-Next NVFP4 — NVIDIA-Release (nvidia/Qwen3.8-Flash-Next-NVFP4,
+      # SHA fc694b54, pulled 2026-09-16). 125B total / 6B active MoE (512 routed
+      # experts) + 51B N-gram PLE + 4B MTP. NVFP4 (modelopt) + FP8-PLE.
+      # Architektur Qwen4ExpForConditionalGeneration — native nicht in vLLM 0.29
+      # (PR #53896 offen), Docker-Cluster-Pfad (2x GX10, DP=2, mp-Executor) Pflicht.
+      # 262K nativer Kontext. Laut TOML seit 2026-09-16 Daily-Nachfolger von
+      # qwen3_8-27b-nvfp4.
+      # TOML: ~/ai/shared/configs/vllm/models/Qwen3.8-Flash-Next-NVFP4.toml
+      # Sampling synchron mit TOML (--override-generation-config, User-Profil
+      # 2026-08-15): temperature=0.6, top_p=0.95, top_k=20.
+      # Server-Default: enable_thinking=true (chat-template-kwarg), Reasoning-Parser
+      # qwen3, Tool-Parser qwen3_xml, MTP=3 speculative.
+      - id: qwen3_8-flash-next-nvfp4
+        name: Qwen 3.8 Flash-Next NVFP4 (vLLM, MoE 125B/6B, MTP)
+        config: Qwen3.8-Flash-Next-NVFP4
+        max_tokens: 16384
+        temperature: 0.6
+        top_p: 0.95
+        top_k: 20
+        reasoning_effort: medium  # Begrenzt Endlos-Reasoning (analog 27B-Daily)
+        # repetition_penalty:  # TOML-Default (kein Override)
+        enable_thinking: true
+
       # Qwen3.8 27B Uncensored FP8 — Switch-Backup-Profil (default.env VLLM_ACTIVE_CONFIG
       # wechselt zwischen NVFP4-Daily und diesem Uncensored-Eintrag).
       # TOML: ~/ai/shared/configs/vllm/models/Qwen3.8-27B-Uncensored-FP8.toml
@@ -1311,7 +1334,7 @@ providers:
       # temperature=0.6, top_p=0.95, top_k=20, min_p=0.0; Penalty-Workaround
       # 2026-09-14 (sm_121a Triton-bincount) — keine Penalty-Overrides.
       - id: occamy-1_0-nvfp4
-        name: Occamy 1.0 35B-A3B NVFP4 (vLLM, MoE, Co-Work)
+        name: Occamy 1.0 35B-A3B (Accio-Lab)
         config: Occamy-1.0-NVFP4
         max_tokens: 16384
         temperature: 0.6
