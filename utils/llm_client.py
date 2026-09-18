@@ -217,7 +217,7 @@ class LLMClient:
         if (
             not streaming_disabled
             and stream_handler is None
-            and provider in ["anthropic", "openai", "mistral", "openrouter", "hermes"]
+            and provider in ["anthropic", "openai", "mistral", "openrouter"]
         ):
 
             def _default_stream_printer(chunk: str) -> None:

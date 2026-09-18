@@ -4,7 +4,7 @@
 	review reviews-auto reviews-auto-legacy reviews-bias-auto reviews-tooluse-auto reviews-all reviews-check review-new model-cards model-card vendor-cards leaderboard \
 	validate validate-single validate-assets validate-structure validate-cards validate-cards-template cards-sync card-create card-validate card-research vendor-cards-update model-cards-update test lint diff-results analyze-costs update-prices sync-cost-limits \
 	list-models judge-health list-modules \
-	probe-thinking probe-all-thinking hermes-reasoning \
+	probe-thinking probe-all-thinking \
 	ensure-card ensure-cards \
 	web-export web-export-dev \
 	mcp-start mcp-stop mcp-health mcp-mock \
@@ -88,7 +88,6 @@ help:
 	@printf "  %-25s %s\n" "card-research"   "LLM-Recherche (MAX_CARDS=N, TOOLUSE=1, FORCE=1)"
 	@printf "  %-25s %s\n" "probe-thinking"  "Thinking-Probe (MODEL=, PROVIDER=)"
 	@printf "  %-25s %s\n" "probe-all-thinking" "Thinking-Probe für alle ohne Probe"
-	@printf "  %-25s %s\n" "hermes-reasoning" "Reasoning-Spuren aus Hermes-State-DB (MODEL=, FORMAT=, OUT=)"
 	@printf "\n"
 	@printf "\033[1;32mCleanup & Maintenance\033[0m\n"
 	@printf "  %-25s %s\n" "backup"          "Snapshot-Pipeline (Tar + Clean)"
@@ -244,12 +243,6 @@ model-cards-update:
 probe-thinking:
 	@if [ -z "$(MODEL)" ]; then echo "Fehler: MODEL=<model-id> ist erforderlich."; exit 1; fi
 	$(PYTHON) scripts/tools/probe_thinking.py --model "$(MODEL)" $(if $(PROVIDER),--provider $(PROVIDER))
-
-# Reasoning-Spuren des Hermes-Agent-Loops aus der State-DB (read-only) pro Task:
-# Reasoning-Tokens/-Zeichen, Loop-Runden, Prompt-Cache, Auxiliary-Calls.
-hermes-reasoning:
-	@if [ -z "$(MODEL)" ]; then echo "Fehler: MODEL=<agentic-modell-id> ist erforderlich."; exit 1; fi
-	$(PYTHON) scripts/analysis/hermes_reasoning_report.py --model "$(MODEL)" $(if $(FORMAT),--format $(FORMAT)) $(if $(OUT),--out "$(OUT)")
 
 probe-pc-budget:
 	@if [ -z "$(MODEL)" ]; then echo "Fehler: MODEL=<model-id> ist erforderlich."; exit 1; fi

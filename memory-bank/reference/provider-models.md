@@ -333,17 +333,3 @@ Limitiert Targets pro Run. Bei `FORCE=1` werden immer die ersten N alphabetische
 mtime-basiert — nach jedem Benchmark-Run nur betroffene Modelle neu reviewt; `--force` deaktiviert Skip.
 
 
-## Hermes-Agent-Connector (Agentic-Track, 2026-09-16)
-
-Architektur und Messtheorie: `docs/ARCHITECTURE.md → Agentic-Connector`. Betrieb: `docs/DEVELOPER_GUIDE.md → Agentic-Track betreiben`. Hier nur die Key-Referenz.
-
-- **Registry/Block:** `PROVIDER_NAMES = ["hermes"]`, `PROVIDER_CONFIG_KEY = "hermes"`, Config-Block `providers.commercial.hermes` (Platzierung bewusst in *commercial*: hält die Local-Batch-Discovery fern; die Batch-Ausnahme ist seither strukturell — `model_id_base.is_agentic_track_provider`).
-- **Modelleintrag:** `id` **muss** exakt der Card-`model_id` entsprechen (AGENTS 2026-08-30), `hermes_model` ist Pflicht-Mapping zum servierten Backend-Namen (fehlend → `ValueError`, kein Silent-Fallback), `reasoning_effort` wirkt nur auf der Agent-Ebene (Server-Parität = Profil-`extra_body`, Gate siehe ARCHITECTURE).
-- **Provider-Feld:** `hermes_provider` (Gateway-Provider-ID, Default `gx10-vllm`) geht als `provider`-Body-Field mit; `token_param_name: max_tokens`; `request_timeout: 2400` (Loop + 10-15 t/s), Health-Probe nutzt `PROBE_TIMEOUT_SEC`.
-- **Auth:** `api_key: "${API_SERVER_KEY}"` (`.env`, Auflösung `BaseProviderClient._resolve_env_ref`); `utils/provider_health.py` kennt `hermes → API_SERVER_KEY`.
-- **Thinking-Probe: deaktiviert (D9).** `unified_runner._is_agentic_provider` → `_run_thinking_probe_or_skip` überspringt Agentic-Provider; Capability kommt per Vererbung aus der Raw-Card (`thinking_probe_manual_override`).
-- **`is_accessible()`:** Gateway-Health **plus** Probe-Completion gegen das erste Modell aus `get_available_models()` (läuft über `_build_chat_params` — die Probe braucht zwingend die frische Session-ID, sonst Fingerabdruck-Carryover) (liest die provider_config-Liste, nicht `/v1/models` — das Endpunkt-Listing nennt nur den Profil-Alias).
-- **Lifecycle pro Task:** eigener Agent im Executor-Thread + frische Session + `session_*_tokens` bei 0; TCP-Verbindung **ungepoolt** (`max_keepalive_connections=0`, lange Read-Wand). Persistent: Gateway-Prozess, Backend-Modell, `state.db`, Profil-Config-Cache. Abbruch: atexit-`close()` → FIN → Gateway reaper unterbricht den Loop (`_abandon_agent_task`); `kill -9` umgeht diesen Pfad und hinterlässt einen serverseitig weiterrechnenden Loop.
-- **`state_db`-Key** (hermes-Block): Pfad zur Gateway-State-DB, Konsument `scripts/analysis/hermes_reasoning_report.py` (`make hermes-reasoning MODEL=…`) — liefert pro Task Reasoning-Tokens/-Zeichen, Loop-Runden, Prompt-Cache und Auxiliary-Calls.
-- **Reasoning-Kanal:** Loop stripped Think-Blöcke aus dem `final_response`, Gateway exportiert keine `reasoning_tokens` → sichtbares CoT strukturell unmöglich (RCI Tier 3 verliert dadurch messbar). `thinking_mode="Thinking"` kommt aus `reasoning_effort` (`base_runner._resolve_thinking_mode`) und ist Metadaten-only — Audit-Log/Leaderboard/Web-Export, nie Judge-Prompt. `display.show_reasoning` ist UI-only. Der Kanal-Bias-Fix `with_reasoning_channel()` (Regel- = Judge-Stufe) hilft Hermes erst, wenn der Gateway ein Reasoning-Feld exportiert — vorher ist `think_content` leer und es gibt nichts zu materialisieren.
-- **Card:** Shortcode `--HERM`, `supports_tool_use: not_applicable`, Thinking-/PC-Proben übersprungen (D9), `hardware_profile`/`params_*`/`model_version` vom Raw-Partner (SSoT-Konsistenz schlägt Cosmetic-WARNs).

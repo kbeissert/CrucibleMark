@@ -341,60 +341,6 @@ providers:
         name: Qwen 3.5 (397B)
 
 
-    hermes:
-      # Hermes-Agent-Gateway (Profil "CrucibleMark") als Agentic-Track.
-      # Messobjekt: Modell + Hermes-Loop + Werkzeuge (Harness-Lift zum Raw-Run).
-      # Modellwechsel pro Request via `model` + `provider`-Body-Fields (H1,
-      # Phase-0-Spike 2026-09-16); Session-Isolation via frischer
-      # X-Hermes-Session-Id pro Request (D7).
-      # Sampling-Parität (temp 1.0 / top_p 0.95 / top_k 20, reasoning medium)
-      # ist Hermes-seitig GESTELLT (2026-09-16) via extra_body-Pinning am
-      # gx10-vllm-Eintrag im Hermes-Profil (~/.hermes/profiles/cruciblemark/
-      # config.yaml) — der Gateway ignoriert Sampling-Parameter im Request-Body
-      # (Phase-0-Frage 4), und der per-Request-Reasoning-Override hängt für
-      # Custom-Provider am supports_reasoning-Gate (reasoning_params.py:68),
-      # erreicht den Server also nur über das statische Pinning.
-      name: Hermes Agent (CrucibleMark-Profil)
-      short_code: HERM
-      api_type: hermes
-      model_type: open_weights_local
-      # D6: Opt-in-Forschungstrack. enabled ist nur die Wizard-/Einzellauf-Freigabe —
-      # --all/benchmark-auto schließen den Track strukturell aus
-      # (model_id_base.is_agentic_track_provider).
-      # Track 2026-09-16 nach dem Erstlauf geschlossen (3 Module / 22 Assets):
-      # Der Einzel-Turn-Benchmark misst einen Agent-Loop nur in Ausführungs-
-      # modulen korrekt (cli +7,0 vs. thinking, code_quality +2,8), in Text-
-      # deliverable-Modulen dagegen als Verlust (metacog −25,5). Netto −7,82
-      # = Profilverschiebung, kein Harness-Lift. Fazit + Randbedingungen:
-      # Card `qwen3_8-27b-nvfp4-hermes--HERM.json` und memory-bank/progress.md.
-      enabled: false
-      base_url: "http://localhost:8642/v1"
-      api_key: "${API_SERVER_KEY}"
-      request_timeout: 2400  # Agent-Loop + gx10 (10-15 t/s) brauchen die lange Wand
-      token_param_name: max_tokens
-      # Gateway-Provider-ID (config.yaml `providers.gx10-vllm`) für das
-      # provider-Body-Field — schaltet das Loop-Modell pro Request um.
-      hermes_provider: gx10-vllm
-      # Hermes-State-DB (read-only) für die Reasoning-Analyse: der Gateway
-      # persistiert reasoning_content/reasoning_tokens pro Session, exportiert
-      # sie aber nicht über den Response-Kanal. Konsument:
-      # scripts/analysis/hermes_reasoning_report.py
-      state_db: "~/.hermes/profiles/cruciblemark/state.db"
-      models:
-        - id: qwen3_8-27b-nvfp4-hermes
-          name: Qwen 3.8 27B NVFP4 (Hermes-Loop, vLLM gx10)
-          # Exakter Hermes-Modellname (Profil-Config `model.default`,
-          # gx10-vllm-Katalog) — Mapping-Ziel der CrucibleMark-ID.
-          hermes_model: Qwen3.8-27B-NVFP4
-          # Thinking-Parität zum Raw-Partner (reasoning_effort: medium,
-          # provider_config `qwen3_8-27b-nvfp4`). Der Gateway mappt
-          # model_options.reasoning.effort auf den Agent-Run (Vorrang vor
-          # Profil-Default xhigh) — für Custom-Provider hängt der Server-Override
-          # aber am supports_reasoning-Gate; effektiv wirkt das statische
-          # Profil-Pinning (medium) im Hermes-Profil-extra_body. Dieser Eintrag
-          # steuert zusätzlich Agent-Level-Verhalten, falls Hermes das Gate öffnet.
-          reasoning_effort: medium
-
 
     ollama_cloud:
       name: Ollama (Cloud Proxies)

@@ -1,6 +1,22 @@
 # Progress
 Letzte Releases + aktueller Stand.
 
+### 2026-09-18 (Session 108) — Hermes Agentic-Track vollständig entfernt (Rückbau) [DONE — committet 2026-09-18]
+
+**Entscheidung (User):** CrucibleMark ist konzeptionell auf die Messung roher LLM-Endpoints ausgelegt; der Agent-Loop als Messgegenstand wurde nach dem Erstlauf (Lift −7,82 = Profilverschiebung, kein Harness-Lift) verworfen. Die in Session 106/107 bewusst behaltene Infrastruktur wurde auf User-Wunsch komplett zurückgebaut. Historie (Erstlauf-Begründung, Plan-SSoT `.kilo/plans/1789541331283-hermes-connector-plan.md`) bleibt erhalten.
+
+**Entfernt — isoliert:** `utils/providers/hermes.py`, `tests/test_hermes_client.py` (32 Tests), `tests/test_hermes_reasoning_report.py` (12), `scripts/analysis/hermes_reasoning_report.py` + `make hermes-reasoning`, `tests/test_provider_selector_agentic.py` (13), `tests/test_unified_runner_agentic_probe_skip.py` (4), Card `qwen3_8-27b-nvfp4-hermes--HERM.json`, provider_config-Block `providers.commercial.hermes`, Blacklist-Eintrag `qwen3_8-27b-nvfp4-hermes` (D10 obsolet), Shortcode `hermes: HERM` aus `_PROVIDER_SHORTCODES`.
+
+**Entfernt — Framework-Hooks:** Wizard-Typ „agentic" (`ProviderSelector._select_agentic_model`, `--provider agentic`), D6-Exclusion (`model_id_base.is_agentic_track_provider` + Call-Sites in `get_commercial_models_from_config`/`benchmark_auto._resolve_active_commercial_providers`), D9-Guard (`unified_runner._is_agentic_provider` + Probe-Skip), `API_TYPE_HERMES_AGENT`, `provider_health`-Key `hermes → API_SERVER_KEY`, `"hermes"` in Local-Bucket-Tupeln (`result_manager`, `run_benchmark`) und `llm_client`-Streaming-Liste.
+
+**Bewusst behalten (generisch):** Sektions-Walk-SSoT `PROVIDER_SECTIONS`/`iter_provider_cfgs`/`find_provider_cfg`, `token_param_name`-Passthrough, `reasoning_effort`-Erkennung in `base_runner._resolve_thinking_mode`, Kanal-Bias-Fix `with_reasoning_channel()`/`has_reasoning_channel()`. NousResearch-Hermes-Modelle (hermes-4-70b/405b/14b/3-8b, hermes-4_3-36b) sind unverändert Bestandteil des Benchmarks — nur der Agent-Track ist weg.
+
+**Daten:** 22 Erstlauf-Zeilen aus `local_models_benchmark.csv` entfernt; `make leaderboard` regeneriert, `nvfp4-hermes` in keinem Leaderboard-CSV mehr.
+
+**Doku:** ARCHITECTURE-Sektion „Agentic-Connector" und DEVELOPER_GUIDE-Sektion „Agentic-Track betreiben" entfernt; AGENTS-Constraint (Session-Header) raus; systemPatterns (Hermes-Connector-Zeile, Carryover-Pitfall, Sektions-Walk-Begründung neutralisiert) + provider-models-Key-Referenz bereinigt; CHANGELOG [Unreleased] um Rückbau-Eintrag ergänzt (Historie unverändert).
+
+**Verifikation:** `make lint` 9.99/10 exit 0 · Suite **1763 passed / 22 skipped / 3 failed** — die 3 Fehler sind die vorbestehenden SPRK-Card-Altlasten; Differenz zur Session-107-Baseline (1831/23/3) = exakt die 69 entfernten Hermes/Agentic-Tests · validate-naming 148 Cards OK · validate-cards-Fehler = nur die dokumentierten Altlasten (hermes-4-70b-fp8 `restricted`, qwen3-14b/qwen3-4b `general`, swift `gated-weights`, glm-5.3 `pending`) — kein neuer Fehler durch den Rückbau.
+
 ### 2026-09-17 (Session 107) — Hermes-Block committet + Qwen3.8-Flash-Next-Feinschliff + Doku-Bereinigung [DONE]
 
 **Doku-Prüfung (Auftrag):** README/PROJECT_STATUS/REF_TODO sind frei von Agentic-Hermes-Inhalten (einzige Treffer: historische v5.1.3-Notiz zum NousResearch-Modell `hermes-4-36b` — bleibt). Agentic-Doku gehört korrekt zu AGENTS-Constraint, CHANGELOG [Unreleased], ARCHITECTURE, DEVELOPER_GUIDE (Infrastruktur bleibt erhalten). Veraltete Formulierungen bereinigt: CHANGELOG-Heading „(Phase 0-4-Vorbereitung, uncommittet)" → „(Phase 0-4)"; DEVELOPER_GUIDE „Agentic-Track betreiben" um Status-Satz „nach Erstlauf geschlossen" ergänzt, „geplant für Erstläufe" entfernt; provider_config-Kommentar „结论" → „Fazit".

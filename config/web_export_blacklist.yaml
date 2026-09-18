@@ -161,8 +161,6 @@ blacklist:
   - "qwen3_8-27b-uncensored-fp8"            # Standard-Variante FP8 (2026-09-01 auf Anfrage) (Rank 46, 73.86)
   - "qwen3_8-27b-uncensored-fp8-thinking"   # Thinking-Variante FP8 (2026-09-01 auf Anfrage) (Rank 4, 79.75)
 
-  # Qwen 3.8 Hermes-Loop (Agentic-Harness-Entität auf identischen Gewichten)
-  - "qwen3_8-27b-nvfp4-hermes"              # Harness-Track 2026-09-16 geschlossen; Partial-Run 22/43 Assets, Coverage-Total 28,75 wäre irreführend (Leaderboard Rank 149)
 
   # Qwen 3.5 (35B-q4 stärkster, 4B-q6 stärkster)
   # 35B-A3B (MoE)

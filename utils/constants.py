@@ -22,8 +22,6 @@ DEFAULT_MISTRAL_MODEL = "mistral-large-latest"
 
 # Provider / Result Type Strings (SSOT – niemals hardcoden)
 MODEL_TYPE_OPEN_WEIGHTS_CLOUD = "open_weights_cloud"
-# Agentic-Loop-Provider (Hermes-Agent-Gateway) — provider_config `api_type`
-API_TYPE_HERMES_AGENT = "hermes"
 RESULT_TYPE_LOCAL = "local"
 RESULT_TYPE_CLOUD = "cloud"
 RESULT_TYPE_COMMERCIAL = "commercial"

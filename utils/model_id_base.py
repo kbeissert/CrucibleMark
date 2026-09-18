@@ -16,7 +16,6 @@ from typing import Any, TypeVar
 
 import yaml
 
-from utils.constants import API_TYPE_HERMES_AGENT
 
 logger = logging.getLogger(__name__)
 
@@ -62,8 +61,6 @@ _PROVIDER_SHORTCODES: dict[str, str] = {
     "llamacpp_local": "M4APL",  # Alias
     # vLLM local inference server (OpenAI-compatible) — V-Prefix für Engine
     "vllm_spark": "VSPK",       # asusGX10/DGX Spark + vLLM
-    # Agentic-Loop-Track (Hermes-Agent-Gateway) — Hardware wie VSPK, Engine = Loop
-    "hermes": "HERM",
     # Ollama as cloud proxy — HISTORISCH (Provider aus Config entfernt,
     # keine aktiven Runs; Mapping bleibt für alte CSV-Zeilen dokumentiert)
     "ollama_cloud": "CLD",
@@ -361,20 +358,8 @@ def strip_date_suffix(model_id: str) -> str:
     return cleaned
 
 
-def is_agentic_track_provider(provider_cfg: Any) -> bool:
-    """SSoT: Agentic-Loop-Provider (Hermes-Agent) — Opt-In-Track, kein Batch-Bestandteil.
-
-    D6: Diese Tracks werden über den Wizard-Typ „agentic" oder gezielte
-    Einzelmodell-Läufe gefahren. Sie bleiben auch bei ``enabled: true`` aus der
-    Standard-Batch-Discovery draußen — sonst wäre der Forschungs-Track an jedes
-    ``--all``/``benchmark-auto``-Renner gekoppelt.
-    """
-    return isinstance(provider_cfg, dict) and provider_cfg.get("api_type") == API_TYPE_HERMES_AGENT
-
-
-# Sektions-Walk-SSoT: hermes liegt wegen D6 bewusst unter ``providers.commercial`` —
-# die Sektions-Grenze darf daher nirgends der Agentic-Filter sein. Wer Provider
-# sectionsübergreifend sucht, nutzt diese beiden Helfer statt eigener Tuple.
+# Sektions-Walk-SSoT: Wer Provider sectionsübergreifend sucht, nutzt diese
+# beiden Helfer statt eigener Tuple (Review-Fix Session 107).
 PROVIDER_SECTIONS: tuple[str, ...] = ("commercial", "local")
 
 
@@ -409,8 +394,6 @@ def get_commercial_models_from_config(
     providers = config.get("providers", {}).get("commercial", {})
 
     for p_key, p_config in providers.items():
-        if is_agentic_track_provider(p_config):
-            continue  # D6: Agentic-Track nie im Standard-Batch
         if p_config.get("enabled", False):
             for m in p_config.get("models", []):
                 # model_id, name, provider

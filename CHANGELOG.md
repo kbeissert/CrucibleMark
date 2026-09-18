@@ -7,6 +7,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Hermes Agentic-Track vollständig entfernt (Rückbau)
+
+- **Entscheidung:** CrucibleMark ist konzeptionell auf die Messung **roher LLM-Endpoints** ausgelegt; der Agent-Loop als Messgegenstand wurde nach dem Erstlauf (Lift −7,82 = Profilverschiebung, kein Harness-Lift) verworfen. Die 2026-09-16 bewusst behaltene Infrastruktur ist jetzt komplett zurückgebaut — historische Begründung und Erstlauf-Daten bleiben in CHANGELOG/progress.md und den Run-Dateien erhalten.
+- **Entfernt (isoliert):** `utils/providers/hermes.py` (HermesClient), `tests/test_hermes_client.py` (32 Tests), `scripts/analysis/hermes_reasoning_report.py` + `tests/test_hermes_reasoning_report.py` (12 Tests) + `make hermes-reasoning`, Card `qwen3_8-27b-nvfp4-hermes--HERM.json`, provider_config-Block `providers.commercial.hermes`, Blacklist-Eintrag `qwen3_8-27b-nvfp4-hermes` (D10 obsolet — Entität existiert nicht mehr), Shortcode `hermes: HERM` aus `_PROVIDER_SHORTCODES`.
+- **Entfernt (Framework-Hooks):** Wizard-Typ „agentic" (`ProviderSelector._select_agentic_model` + `--provider agentic`), D6-Exclusion (`model_id_base.is_agentic_track_provider` + Call-Sites in `get_commercial_models_from_config`, `benchmark_auto._resolve_active_commercial_providers`), D9-Guard (`unified_runner._is_agentic_provider` + Probe-Skip), `API_TYPE_HERMES_AGENT`-Konstante, `provider_health`-Key `hermes → API_SERVER_KEY`, `"hermes"` in Local-Bucket-Tupeln (`result_manager`, `run_benchmark`) und der `llm_client`-Streaming-Liste. 2 agentic-Testfiles (17 Tests) entfernt.
+- **Bewusst behalten (generisch, provider-unabhängig):** Sektions-Walk-SSoT `PROVIDER_SECTIONS`/`iter_provider_cfgs`/`find_provider_cfg` (Review-Fix gegen echten Drift), `token_param_name`-Passthrough, `reasoning_effort`-Erkennung in `base_runner._resolve_thinking_mode` (Metadaten-only), Kanal-Bias-Fix `with_reasoning_channel()`/`has_reasoning_channel()`.
+- **Suite:** 1763 passed / 22 skipped / 3 failed — die 3 Fehler sind die vorbestehenden SPRK-Card-Altlasten (unverändert); Differenz zur Baseline = exakt die 69 entfernten Hermes/Agentic-Tests. Lint 9.99/10, Naming 148 Cards OK.
+
 ### Hermes Agentic-Track: Erstlauf ausgewertet und Track geschlossen
 
 - **Ergebnis (22 Assets, 3 Module, gepaart gegen den identischen Raw-Run):** Netto **−7,82** — aber typabhängig: cli **+7,0** gegen das Thinking-Profil (der Loop führte `docker`/`curl` real aus, cli005 +38), code_quality +2,8, reasoning −9,7, metacog **−25,5**. Grund für den Verlust ist die Schnittstelle selbst: der Agent-Loop entfernt Think-Blöcke aus dem `final_response` (0/11 Antworten mit `<thought>` bei 706 vs. 3815 Zeichen) und denkt bei Rätselaufgaben messbar weniger (475 vs. 6947 Reasoning-Tokens, erhoben über die Gateway-State-DB). Kosten: Input 55,5×, Zeit 3,6×, 719k Tokens.

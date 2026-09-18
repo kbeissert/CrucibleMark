@@ -324,10 +324,10 @@ def _try_prefixed_shortcode_lookup(safe: str, card_dir: Path) -> Path | None:
     (config-getrieben, AGENTS „No Magic Numbers") — die historischen vier Codes
     bleiben in ihrer bisherigen Reihenheit vorn, damit bestehende Karten
     identisch aufgelöst werden. Ein neuer Provider-Code wirkt dadurch ohne
-    Eingriff an dieser Stelle (Fall HERM: eine ``x--HERM.json`` wurde vor der
-    Ableitung nie gefunden, ``_find_card`` lieferte den nicht-existierenden
-    Plaint-Pfad und ``ensure_card`` erzeugte eine Draft-Karte, die dann die
-    echte Karte im Leaderboard schattierte).
+    Eingriff an dieser Stelle (historischer Fall: eine ``x--CODE.json`` wurde
+    vor der Ableitung nie gefunden, ``_find_card`` lieferte den
+    nicht-existierenden Plaint-Pfad und ``ensure_card`` erzeugte eine
+    Draft-Karte, die dann die echte Karte im Leaderboard schattiert).
     """
     codes = _prefixed_shortcode_candidates()
     for shortcode in codes:

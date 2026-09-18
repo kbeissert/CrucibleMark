@@ -195,36 +195,6 @@ Das Test-Modell für den Health-Check ist pro Provider konfiguriert. Anthropic: 
 
 **Provider-Spezifische Eigenheiten:**
 
-### Agentic-Connector (Hermes-Agent, 2026-09-16)
-
-Der Provider `hermes` ist der erste Connector, dessen Gegenstelle selbst ein Agent ist: statt eines Model-Endpoints spricht er das Hermes-Agent-Gateway an (`http://localhost:8642/v1`, Profil „CrucibleMark"). **Messobjekt ist Modell + Agent-Loop + Werkzeuge** — das Score-Delta zum Raw-Run desselben Modells auf derselben Hardware ist der Harness-Lift. Daraus folgen vier Architekturabweichungen gegenüber den API-Connectoren:
-
-| Aspekt | Regel | Ort |
-|---|---|---|
-| Modellwechsel | Body-Fields `model` (Mapping-Feld `hermes_model`) + `provider` (`hermes_provider`) schalten das Loop-Modell pro Request; `direct_model_requests: true` validiert am Backend → falsches Mapping ist ein **lauter 400**, kein stilles Miss-Labeling | `_model_payload` |
-| Echo-Guard | weicht `response.model` vom gemappten Zielmodell ab → `ValueError` (blocking + streaming); fehlendes Echo ist nicht prüfbar und wird toleriert | `_assert_hermes_echo` |
-| Session-Isolation | frische `X-Hermes-Session-Id` (UUID4) **pro Request** — ohne Header mappt der Gateway per Request-Fingerprint auf die alte Session (Carryover gemessen: 74.429 → 137.789 Prompt-Tokens mit Tool-Loop) | `_build_chat_params` |
-| Token-Attribution | `usage` ist die **Summe über den Agent-Loop** (Gateway liest `session_*_tokens`, akkumuliert pro innerem Call) — Task-Metriken enthalten alle Tool-Runden, ~12,4k Prompt-Tokens sind nur der Unterwert | Gateway `api_server.py:3662` |
-| Reasoning-Kanal | Denkvorgang ist **nicht sichtbar**: der Loop entfernt Think-Blöcke aktiv aus dem `final_response`, und der Gateway hebt `session_reasoning_tokens` nicht ins `usage`-Block. Reasoning-Tokens stecken damit in `output_tokens`; `display.show_reasoning` ist reine UI-Anzeige und erreicht den Response-Pfad nicht | `conversation_loop.py:288`, `turn_tool_round.py:264`, `api_server.py:3662` |
-
-Für die Bewertung heißt das: Aufgaben, die ein **sichtbares** CoT verlangen (Reasoning-Modul, Tier 3 „reasoning process assessment", RCI-Gewicht 0,4), kann diese Entität strukturell nicht erfüllen — der dort gemessene Rückgang ist Harness-Merkmal, kein Capability-Verlust. Der Denkvorgang ist aber nicht verloren, sondern nur nicht exportiert: die Gateway-State-DB führt `messages.reasoning_content` und `session_model_usage.reasoning_tokens` pro Session — auswertbar über `scripts/analysis/hermes_reasoning_report.py` (Seitenkanal für Analyse, kein Rückfluss in die Ergebnis-CSV). Protokolliert wird der Zustand über `thinking_mode = "Thinking"` (abgeleitet aus `reasoning_effort`, `base_runner._resolve_thinking_mode`): Metadaten-only, erreicht weder Judge-Prompt noch Scoring.
-
-**Run-Modell pro Task (Lebenszyklus):**
-
-| Ebene | pro Task | Beleg |
-|---|---|---|
-| Agent-Run | eigener Agent in einem **Executor-Thread** (nicht Prozess) | `api_server._run_agent`: „Create an agent and run one turn in a thread executor" |
-| Run-Registrierung | neue `run_id` in `_active_run_agents` | Griffpunkt des Disconnect-Interrupts (`agent_ref[0]`) |
-| Session | frische UUID4 → leere History | `_conversation_history_for_session` |
-| Loop-Zähler | `session_*_tokens` bei 0 | `_init_session_state` → darum ist `usage` die Summe *dieses* Tasks |
-| TCP-Verbindung | **neu, kein Pooling** | Connector: `max_keepalive_connections=0` (gepoolte Connections wären bei der langen Read-Wand stale) |
-
-Persistent über Task-Grenzen hinweg bleiben dagegen: Gateway-Prozess, das auf gx10 geladene Backend-Modell, `state.db` und die Profil-Config (Signatur-Cache). **Konsequenz für die Messung:** der Harness-Footprint von ~12,4k Prompt-Tokens fällt pro Task an — es gibt kein Vorwärmen über Taskgrenzen, Kosten und Zeit skalieren linear mit der Taskzahl (Tool-Runden multiplizieren, nicht addieren). Isolation ist damit strukturell, nicht das Ergebnis eines Cleanups zwischen Modulen; ein Abbruch reist nur den einen Loop ab (`_abandon_agent_task` → `request_hard_interrupt` + `_reap_disconnected_agent_processes`), der nächste Task startet unbelastet.
-
-Zwei Grenzen des Kanals sind Hermes-seitig begründet und dürfen nicht als Framework-Bug gelesen werden: der Gateway **ignoriert Standard-Sampling im Request-Body**, und der per-Request-Reasoning-Override (`model_options.reasoning`) hängt für Custom-Provider am `supports_reasoning`-Gate. Sampling- und Reasoning-Parität zum Raw-Run liegen deshalb im **Hermes-Profil** (`providers.gx10-vllm.extra_body`: `temperature 1.0 / top_p 0.95 / top_k 20 / reasoning_effort medium`) — nicht in `provider_config.yaml`. Der Config-Cache des Profils ist dateisignatur-basiert, ein Edit wirkt ohne Gateway-Restart.
-
-Einordnung im Framework: CSV-Routing in den **Local-Bucket** (D3, `result_manager._detect_result_type`), Konfig-Block unter `providers.commercial` (nur um die Local-Batch-Discovery fernzuhalten), Interaktiv-Auswahl über den Wizard-Typ `agentic` (`ProviderSelector._select_agentic_model`, Erkenntnis via `api_type`). `enabled: true` ist die Track-Freigabe für Wizard und Einzeläufe; `--all`/`benchmark-auto` schließen Agentic-Tracks über `model_id_base.is_agentic_track_provider` strukturell aus. Fail-Fast-Signatur: der Gateway rendert Provider-/Auth-Fehler als HTTP 200 mit Fehler-Text und `usage = 0` → `_raise_on_hermes_failure` wirft, sonst landete der Fehlertext als Benchmark-Antwort in den Results.
-
 ### Lokale Connector-Topologie (llama.cpp)
 
 CrucibleMark unterscheidet zwei lokale Betriebsformen für llama.cpp:

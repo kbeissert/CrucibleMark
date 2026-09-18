@@ -37,7 +37,6 @@ from utils.constants import (
 )
 from utils.language_validator import LanguageValidator
 from utils.logging_config import setup_logging
-from utils.model_id_base import find_provider_cfg, is_agentic_track_provider
 from utils.model_utils import (
     _find_card,
     _safe_name,
@@ -264,33 +263,10 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
             )
         return needs_probe, card_loaded, canonical_model
 
-    def _is_agentic_provider(self, provider: str) -> bool:
-        """True für Agentic-Loop-Provider (Hermes) — Sektion egal (commercial|local)."""
-        cfg = find_provider_cfg(self.validator.config, provider)
-        return is_agentic_track_provider(cfg)
-
     def _run_thinking_probe_or_skip(
         self, model: str, provider: str
     ) -> Any | None:
         """Führt die Thinking-Probe aus. Returns Probe-Objekt oder None (skip)."""
-        if self._is_agentic_provider(provider):
-            # D9: Im Agent-Loop ist der Reasoning-Kanal nicht observierbar — der Loop
-            # entfernt Think-Blöcke aus dem final_response und der Gateway exportiert
-            # keine reasoning-Felder. Eine Probe wäre dort weder verlässlich (sie kann
-            # nur über Inline-CoT-Heuristik urteilen und damit in beide Richtungen
-            # irren) noch billig (3 Loop-Runs à Harness-Footprint). Capability kommt
-            # per Vererbung aus der Raw-Partner-Card (thinking_probe_manual_override).
-            print(
-                f"ℹ️  Agentic-Track '{model}': Thinking-Probe übersprungen (D9) — "
-                "Reasoning-Kanal im Loop nicht observierbar. "
-                "Card mit Capability vom Raw-Partner anlegen (manual_override=true)."
-            )
-            logger.info(
-                "[Card-First] Agentic-Provider '%s': Thinking-Probe deaktiviert (D9).", provider,
-            )
-            self._probed_models.add(model)
-            return None
-
         print(f"🔍 Reasoning-Erkennung für '{model}' — sende Probe-Request...", flush=True)
         try:
             probe = probe_thinking_model(model, provider, self.validator.config)
