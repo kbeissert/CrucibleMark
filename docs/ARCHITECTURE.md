@@ -920,7 +920,7 @@ Warnings von Drittanbieter-Bibliotheken werden unterdrückt.
 
 ## Roadmap
 
-Die v1.x-Roadmap ist abgeschlossen. Die aktuelle Roadmap (Agentic Benchmarks, Multimodal, Web-UI, CI/CD) steht in [README.md](../README.md).
+Die v1.x-Roadmap ist abgeschlossen. Die aktuelle Roadmap (Tool-Use-Benchmarks, Multimodal, Web-UI, CI/CD) steht in [README.md](../README.md).
 
 ---
 
