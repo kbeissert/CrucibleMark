@@ -58,6 +58,11 @@
       "tested_at": "2026-09-16T09:18:31Z",
       "score_p1": 87.5,
       "score_p2": 59.17
+    },
+    "occamy-1_0-nvfp4-thinking": {
+      "tested_at": "2026-09-18T05:52:29Z",
+      "score_p1": 86.67,
+      "score_p2": 42.5
     }
   },
   "tooluse_recommendation": null,
