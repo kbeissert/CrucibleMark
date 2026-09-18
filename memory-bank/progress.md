@@ -17,6 +17,9 @@ Letzte Releases + aktueller Stand.
 
 **Verifikation:** `make lint` 9.99/10 exit 0 · Suite **1763 passed / 22 skipped / 3 failed** — die 3 Fehler sind die vorbestehenden SPRK-Card-Altlasten; Differenz zur Session-107-Baseline (1831/23/3) = exakt die 69 entfernten Hermes/Agentic-Tests · validate-naming 148 Cards OK · validate-cards-Fehler = nur die dokumentierten Altlasten (hermes-4-70b-fp8 `restricted`, qwen3-14b/qwen3-4b `general`, swift `gated-weights`, glm-5.3 `pending`) — kein neuer Fehler durch den Rückbau.
 
+- [ ] Occamy/swift-Daten-Commit (Run-Writeback `occamy-1_0-nvfp4.json` + Vendor-Card `accio_lab.json` + 9 Review-Docs vom 2026-09-18) — vor `make web-export`
+
+
 ### 2026-09-17 (Session 107) — Hermes-Block committet + Qwen3.8-Flash-Next-Feinschliff + Doku-Bereinigung [DONE]
 
 **Doku-Prüfung (Auftrag):** README/PROJECT_STATUS/REF_TODO sind frei von Agentic-Hermes-Inhalten (einzige Treffer: historische v5.1.3-Notiz zum NousResearch-Modell `hermes-4-36b` — bleibt). Agentic-Doku gehört korrekt zu AGENTS-Constraint, CHANGELOG [Unreleased], ARCHITECTURE, DEVELOPER_GUIDE (Infrastruktur bleibt erhalten). Veraltete Formulierungen bereinigt: CHANGELOG-Heading „(Phase 0-4-Vorbereitung, uncommittet)" → „(Phase 0-4)"; DEVELOPER_GUIDE „Agentic-Track betreiben" um Status-Satz „nach Erstlauf geschlossen" ergänzt, „geplant für Erstläufe" entfernt; provider_config-Kommentar „结论" → „Fazit".
