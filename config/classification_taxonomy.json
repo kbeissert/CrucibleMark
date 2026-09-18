@@ -204,6 +204,13 @@
     "field_name": "vendor",
     "fallback": null,
     "values": {
+      "Accio-Lab": {
+        "label": "Accio-Lab",
+        "vendor_card_id": "accio_lab",
+        "description": "Accio Team — Entwickler von Occamy-1.0 35B-A3B (Post-Training auf Qwen3.6-35B-A3B, Apache 2.0; arXiv 2609.11977, Korrespondenz-Autoren Junbo Li/Hongwei Xue). Vertrieb ausschließlich als offene Gewichte über Hugging Face (BF16/FP8/NVFP4/GGUF/MLX), kein API-Betrieb. Sitz/Jurisdiktion öffentlich nicht dokumentiert.",
+        "aliases": ["Accio", "Accio Team"],
+        "jurisdiction": "Unknown"
+      },
       "AgentionAI": {
         "label": "AgentionAI",
         "vendor_card_id": "agentionai",
