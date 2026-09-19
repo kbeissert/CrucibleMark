@@ -124,11 +124,10 @@ class OpenRouterClient(BaseProviderClient):
             # z-ai/glm-5.3: 001 WCAG brannte 20000 Tokens bei finish_reason=length
             # mit 0 sichtbarem Output → 0 %, weil OpenRouter als einziger
             # Thinking-Provider nicht an den Shared-Re-Ask angebunden war).
-            # Card-Cap als Eskalations-Limit (analog openai.py — resolve_token_budget
-            # cappt intern darauf; der Re-Ask soll keinen sinnlosen Zweit-Request
-            # starten, wenn das Stufen-Ziel den Cap nicht überschreitet).
-            from utils.model_thinking import _read_max_output_tokens_from_card  # noqa: PLC0415
-
+            # budget_cap = WIRKSAMER Cap (min(Override ?? Provider-Default,
+            # Card-Cap), SSoT: _resolve_effective_budget_cap) — die Leiter muss
+            # den Cap sehen, unter dem sie faktisch requestet, sonst sind still
+            # gecappte Re-Asks sinnlose Zweit-Requests.
             return self._maybe_reask_reasoning_truncation(
                 content=content,
                 model=model,
@@ -137,7 +136,7 @@ class OpenRouterClient(BaseProviderClient):
                 stream_handler=stream_handler,
                 kwargs=kwargs,
                 query=self.query,
-                budget_cap=_read_max_output_tokens_from_card(model),
+                budget_cap=self._resolve_effective_budget_cap(model),
             )
 
         except Exception as e:

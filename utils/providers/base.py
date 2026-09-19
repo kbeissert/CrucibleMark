@@ -178,7 +178,7 @@ class BaseProviderClient:
         Returns:
             (token_param_name, effective_tokens)
         """
-        from utils.model_utils import resolve_token_budget, internal_id_to_config_form
+        from utils.model_utils import resolve_token_budget
 
         provider_cfg = self._get_provider_cfg()
         token_param_name = provider_cfg.get("token_param_name", self.DEFAULT_TOKEN_PARAM)
@@ -189,21 +189,46 @@ class BaseProviderClient:
             exact=bool(kwargs.get("_budget_exact")),
         )
 
-        # 2. Zweistufige Token-Kaskade:
-        #    Provider-Default → Per-Model Override (überschreibt Default)
-        #    Config-Form normalisieren (Underscore→Dot in Version-Segmenten)
-        provider_cap = provider_cfg.get("max_tokens")
-        model_limits = provider_cfg.get("model_max_tokens", {})
-        config_form = internal_id_to_config_form(model)
-        model_cap = model_limits.get(model)
-        if model_cap is None:
-            model_cap = model_limits.get(config_form)
-        effective_cap = model_cap if model_cap is not None else provider_cap
-
+        # 2. Wirksamer Cap (Kaskaden-SSoT: _resolve_effective_budget_cap)
+        effective_cap = self._resolve_effective_budget_cap(model)
         if effective_cap is not None:
             req_tokens = min(req_tokens, effective_cap)
 
         return token_param_name, req_tokens
+
+    def _resolve_effective_budget_cap(self, model: str) -> int | None:
+        """Wirksamer Request-Cap für ein Modell (Kaskaden-SSoT, Session 110).
+
+        Kaskade:
+          1. Per-Model Override ``model_max_tokens[model_id]`` (Config- oder
+             Internal-Form) — überschreibt den Provider-Default
+          2. Provider-Default ``max_tokens``
+          3. Card-Cap ``max_output_tokens`` (modellspezifische API-Grenze)
+
+        Rückgabe = ``min(Override ?? Provider-Default, Card-Cap)``. Die
+        Eskalationsleiter MUSS diesen wirksamen Cap sehen (``budget_cap``) —
+        sonst sind still gecappte Re-Asks sinnlose Zweit-Requests mit
+        identischem Budget (Befund Session 110: Override 24000 cappte den
+        „Re-Ask mit 32000" unsichtbar; Erfolg nur durch Modell-Varianz).
+        """
+        from utils.model_thinking import _read_max_output_tokens_from_card
+        from utils.model_utils import internal_id_to_config_form
+
+        provider_cfg = self._get_provider_cfg()
+        model_limits = provider_cfg.get("model_max_tokens", {})
+        config_form = internal_id_to_config_form(model)
+        cap = model_limits.get(model)
+        if cap is None:
+            cap = model_limits.get(config_form)
+        if cap is None:
+            cap = provider_cfg.get("max_tokens")
+
+        card_cap = _read_max_output_tokens_from_card(model)
+        if card_cap is None:
+            return cap
+        if cap is None:
+            return card_cap
+        return min(cap, card_cap)
 
     # ── Reasoning/Thinking Extraction Utilities (SSoT) ──────────────────
 

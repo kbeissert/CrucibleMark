@@ -213,17 +213,15 @@ providers:
         xiaomi/mimo-v2.5-pro: 20000
         xiaomi/mimo-v2.5: 24000
 
-        # GLM-5.3 — Always-Thinking (Reasoning nicht deaktivierbar, Effort-Default max).
-        # Bei 16384 frisst der CoT das komplette Budget (Session-Befund: 16328 Reasoning-
-        # Tokens, 56 sichtbare Tokens, 16% Score durch Truncation). Cap über Modul-Budget
-        # (code_quality reasoning: 20000) legen, damit min()-Kaskade nicht auf Provider-
-        # Default 16384 drosselt.
-        z-ai/glm-5.3: 24000
-
-        # GLM-5.3-Flash — Always-Thinking (Reasoning mandatory, nicht deaktivierbar:
-        # HTTP 400 "Reasoning is mandatory for this endpoint"). Gleiche Cap-Logik wie
-        # z-ai/glm-5.3 (verifiziert 2026-08-26).
-        z-ai/glm-5.3-flash: 24000
+        # 2026-09-20 entfernt (Session 110): Die senkenden GLM-Overrides
+        # (z-ai/glm-5.3 / z-ai/glm-5.3-flash: 24000) blockierten die
+        # Eskalationsleiter still — Card-Kalibrierung (32000) und Stufe-3-Re-Asks
+        # wurden unsichtbar auf 24000 gecappt („Re-Ask mit 32000" war faktisch ein
+        # identischer 24000-Request). Die alte Logik (Cap über Modul-Budget legen,
+        # damit min() nicht auf Provider-Default 16384 drosselt) ist obsolet:
+        # Provider-Default ist jetzt 32768, harte Modell-Grenzen gehören in die
+        # Model Card (max_output_tokens), Kosten sind Auswertungsgegenstand
+        # (Preispunkt) — keine stille Messgrenze.
 
         # Qwen3.8-Flash — Thinking-Optional, aber nicht-terminierender CoT.
         # Session-Befund 2026-08-27 (code_quality_001): 16384 → 20000 Output-Tokens,

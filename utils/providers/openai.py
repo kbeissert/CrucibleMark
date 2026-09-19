@@ -327,11 +327,9 @@ class OpenAIClient(BaseProviderClient):
             else:
                 content = self._process_blocking_chat(response_or_stream, fallback_triggered, used_max_tokens)
 
-            # Card-Cap als Eskalations-Limit (resolve_token_budget cappt intern
-            # darauf — der Re-Ask soll keinen sinnlosen Zweit-Request starten,
-            # wenn das ×2-Budget den Cap nicht überschreitet).
-            from utils.model_thinking import _read_max_output_tokens_from_card  # noqa: PLC0415
-
+            # Eskalationsleiter: budget_cap = WIRKSAMER Cap (min(Override ??
+            # Provider-Default, Card-Cap), SSoT: _resolve_effective_budget_cap) —
+            # die Leiter muss den Cap sehen, unter dem sie faktisch requestet.
             return self._maybe_reask_reasoning_truncation(
                 content=content,
                 model=model,
@@ -340,7 +338,7 @@ class OpenAIClient(BaseProviderClient):
                 stream_handler=stream_handler if not use_responses else None,
                 kwargs=kwargs,
                 query=self.query,
-                budget_cap=_read_max_output_tokens_from_card(model),
+                budget_cap=self._resolve_effective_budget_cap(model),
             )
         except Exception as e:
             logger.error("OpenAI query failed: %s", e)
