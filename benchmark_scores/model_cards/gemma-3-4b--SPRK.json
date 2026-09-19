@@ -38,7 +38,6 @@
     "Instruct",
     "Dense",
     "Local",
-    "Restricted-Weights",
     "Multimodal"
   ],
   "input_modalities": [
@@ -101,5 +100,6 @@
     "converged_stage": 300,
     "notes": "Stratifizierte Probe: 9 Blöcke sauber @ 300, 0/0 verdächtige Blöcke eskaliert (0 greedy, 0 inkonsistent). Profil: thinking."
   },
-  "pc_profile": "thinking"
+  "pc_profile": "thinking",
+  "supports_tool_use_evidence": "Laeuft ueber llama.cpp-GGUF ohne Tool-Chat-Template (--jinja nicht aktiviert) und die Modellfamilie/Groesse unterstuetzt kein natives Tool-Calling — incapable-Klassifikation per Architektur-Evidenz; ToolUse-Messung steht aus (Backlog Session 110)."
 }

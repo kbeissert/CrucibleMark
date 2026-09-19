@@ -99,5 +99,6 @@
     "converged_stage": 1200,
     "notes": "Stratifizierte Probe: 0 Blöcke sauber @ 300, 4/9 verdächtige Blöcke eskaliert (0 greedy, 0 inkonsistent). Profil: thinking. Thinking-only-Ausnahme (dual_profile: false): Instruct-Modus nicht verfügbar — einzelner Thinking-Lauf statt Modus-Wechsel (Konzept-Doc Abschn. 11)."
   },
-  "pc_profile": "thinking"
+  "pc_profile": "thinking",
+  "supports_tool_use_evidence": "DeepSeek-R1-Distill ist ein Reasoning-Distill ohne natives Tool-Calling (kein Tool-Chat-Template im Basis-Modell) — incapable-Klassifikation per Architektur-Evidenz; ToolUse-Messung steht aus (Backlog Session 110)."
 }

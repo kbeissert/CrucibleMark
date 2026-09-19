@@ -130,7 +130,22 @@ class TestRealCardsCompliance:
                 and data["supports_tool_use"].lower() == "false"
             )
         ]
-        known_false = {"deepseek-r1-distill-qwen-32b"}
+        # Architektur-Evidenz-basierte incapable-Klassifikationen (Session 110):
+        # DeepSeek-R1-Distills ohne natives Tool-Calling (kein Tool-Chat-Template
+        # im Basis-Modell); Gemma-3-/Llama-Small-Modelle über llama.cpp-GGUF ohne
+        # Tool-Chat-Template. Die Cards tragen supports_tool_use_evidence mit
+        # explizitem Mess-Backlog-Verweis — der Eintrag fällt, sobald die
+        # ToolUse-Messung echte Evidence liefert.
+        known_false = {
+            "deepseek-r1-distill-qwen-32b",
+            "deepseek-r1-distill-14b--SPRK",
+            "deepseek-r1-distill-1_5b--SPRK",
+            "deepseek-r1-distill-7b--SPRK",
+            "gemma-3-270m--SPRK",
+            "gemma-3-4b--SPRK",
+            "llama-3_2-1b--SPRK",
+            "llama-3_3-8b--SPRK",
+        }
         unexpected = set(false_cards) - known_false
         assert not unexpected, (
             f"Unerwartete supports_tool_use=false Cards: {sorted(unexpected)}. "

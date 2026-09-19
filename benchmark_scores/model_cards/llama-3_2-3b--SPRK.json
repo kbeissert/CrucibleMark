@@ -37,8 +37,7 @@
     "Thinking",
     "Instruct",
     "Dense",
-    "Local",
-    "Restricted-Weights"
+    "Local"
   ],
   "input_modalities": [
     "text"

@@ -38,8 +38,7 @@
     "Reasoning",
     "Dense",
     "Local",
-    "Tool-Use",
-    "Gated-Weights"
+    "Tool-Use"
   ],
   "input_modalities": [
     "text",
