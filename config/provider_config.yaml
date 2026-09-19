@@ -13,7 +13,10 @@ providers:
       token_param_name: max_tokens
       model_type: proprietary_api
       enabled: true
-      max_tokens: 16384
+      # Feasibility-Boundary für die Eskalationsleiter (Reasoning-only Truncation
+      # bis 32768; SSoT: benchmark_config.yaml#reasoning_reask) — KEIN Stufe-1-
+      # Fenster: Modul-Budgets (12k/20k) bleiben maßgeblich.
+      max_tokens: 32768
       env_var: MISTRAL_API_KEY
       models:
       - id: mistral-medium-3-5
@@ -67,7 +70,10 @@ providers:
       token_param_name: max_completion_tokens
       model_type: proprietary_api
       enabled: true
-      max_tokens: 16384
+      # Feasibility-Boundary für die Eskalationsleiter (Reasoning-only Truncation
+      # bis 32768; SSoT: benchmark_config.yaml#reasoning_reask) — KEIN Stufe-1-
+      # Fenster: Modul-Budgets (12k/20k) bleiben maßgeblich.
+      max_tokens: 32768
       env_var: OPENAI_API_KEY
       request_timeout: 600
       models:
@@ -93,7 +99,10 @@ providers:
       api_type: google
       model_type: proprietary_api
       enabled: true
-      max_tokens: 16384
+      # Feasibility-Boundary für die Eskalationsleiter (Reasoning-only Truncation
+      # bis 32768; SSoT: benchmark_config.yaml#reasoning_reask) — KEIN Stufe-1-
+      # Fenster: Modul-Budgets (12k/20k) bleiben maßgeblich.
+      max_tokens: 32768
       env_var: GOOGLE_API_KEY
       models:
       - id: gemini-3.5-flash
@@ -111,7 +120,10 @@ providers:
       token_param_name: max_completion_tokens
       model_type: proprietary_api
       enabled: true
-      max_tokens: 16384
+      # Feasibility-Boundary für die Eskalationsleiter (Reasoning-only Truncation
+      # bis 32768; SSoT: benchmark_config.yaml#reasoning_reask) — KEIN Stufe-1-
+      # Fenster: Modul-Budgets (12k/20k) bleiben maßgeblich.
+      max_tokens: 32768
       env_var: XAI_API_KEY
       models:
       - id: grok-4.6
@@ -137,7 +149,10 @@ providers:
       # 2026-09-02: Deaktiviert — Modelle per Groq-API verifiziert, Reaktivierung
       # erst nach add-model-Workflow (Cards + Pricing + Thinking-Probe).
       enabled: false
-      max_tokens: 16384
+      # Feasibility-Boundary für die Eskalationsleiter (Reasoning-only Truncation
+      # bis 32768; SSoT: benchmark_config.yaml#reasoning_reask) — KEIN Stufe-1-
+      # Fenster: Modul-Budgets (12k/20k) bleiben maßgeblich.
+      max_tokens: 32768
       env_var: GROQ_API_KEY
       # 2026-09-02: Sektion neu besetzt nach clean-model-Löschung
       # (gpt-oss-120b, llama-3.3-70b-versatile, llama-4-scout, qwen3-32b).
@@ -154,14 +169,16 @@ providers:
       token_param_name: max_tokens
       model_type: proprietary_api
       enabled: true
-      max_tokens: 16384
+      # Feasibility-Boundary für die Eskalationsleiter (Reasoning-only Truncation
+      # bis 32768; SSoT: benchmark_config.yaml#reasoning_reask) — KEIN Stufe-1-
+      # Fenster: Modul-Budgets (12k/20k) bleiben maßgeblich.
+      max_tokens: 32768
       env_var: COHERE_API_KEY
-      # Per-Modell Token-Caps (überschreibt Provider-Default 16384).
-      # Command A+ ist ein Thinking-Modell mit 64K Output-Tokens.
-      # Ohne Override frisst das Reasoning das gesamte Budget (16384) → 0 sichtbarer Output.
-      # 32768 deckt alle Reasoning-Budgets ab (max. 20000 bei code_quality) plus sichtbaren Output.
-      model_max_tokens:
-        command-a-plus-05-2026: 32768
+      # Historie (2026-09-19 entfernt): Der Per-Modell-Override
+      # `command-a-plus-05-2026: 32768` war gegen den alten Provider-Default
+      # 16384 nötig (Command A+ ist ein Thinking-Modell — ohne Override frisst
+      # das Reasoning das gesamte Budget). Mit dem neuen Default 32768 ist er
+      # redundant; die Eskalationsleiter deckt den Fall ab.
       models:
       - id: command-a-plus-05-2026
         name: Command A+ (MoE 218B)
@@ -173,10 +190,15 @@ providers:
       token_param_name: max_tokens
       model_type: open_weights_cloud
       enabled: true
-      max_tokens: 16384
+      # Feasibility-Boundary für die Eskalationsleiter (Reasoning-only Truncation
+      # bis 32768; SSoT: benchmark_config.yaml#reasoning_reask) — KEIN Stufe-1-
+      # Fenster auf 12k-Modulen. Nebeneffekt (Comparability-Hinweis, CHANGELOG):
+      # No-Budget-Module laufen für bisher Cap-geclippte Modelle am 25k-Floor
+      # statt am alten 16384-Cap.
+      max_tokens: 32768
       env_var: OPENROUTER_API_KEY
-      # Per-Modell Token-Caps (überschreibt Provider-Default 16384).
-      # Kimi K2.x Thinking-Modelle brauchen mehr wegen hoher Reasoning-Anteile.
+      # Per-Modell Token-Caps (überschreiben den Provider-Default 32768).
+      # Senkende Overrides = Kosten-Steuerung, bewusst erhalten.
       model_max_tokens:
         moonshotai/kimi-k2.7-code: 25000
         moonshotai/kimi-k2.6: 20000
@@ -1287,6 +1309,32 @@ providers:
         top_p: 0.95
         top_k: 20
         enable_thinking: true
+
+      # GLM 5.3 Flash EXL3 — lokale EXL3-Quantisierung des Z.AI GLM-5.3-Flash
+      # (gleiche Basis wie Cloud-Modell z-ai/glm-5.3-flash: MoE 320B total / 18B aktiv,
+      # MIT-Lizenz, nativ multimodal, 1M Kontext). Modell-Details: Model-Card (SSoT).
+      # TOML: ~/ai/shared/configs/vllm/models/GLM-5.3-Flash-EXL3.toml
+      # Stand 2026-09-18: TOML + Weights noch NICHT auf der GX10 vorhanden — TOMLs
+      # sind User-owned; vor dem ersten Start anlegen (``config`` MUSS exakt dem
+      # TOML-Namen ohne .toml entsprechen, sonst scheitert vllm-start).
+      # Always-Thinking: Reasoning ist Pflicht (Cloud-Befund 2026-08-26: HTTP 400
+      # "Reasoning is mandatory for this endpoint") — KEIN enable_thinking, das
+      # würde eine Dual-Profile-Expansion mit invalidem Non-Thinking-Profil
+      # auslösen (config_validator expandiert nur auf enable_thinking: true).
+      # Einzelnes Always-Thinking-Profil; max_tokens = Thinking-Budget.
+      # max_tokens 32768 (2026-09-19, vorher 24000): Feasibility-Boundary für
+      # die Eskalationsleiter (Reasoning-only Truncation bis Stufe 3; SSoT:
+      # benchmark_config.yaml#reasoning_reask) — passt zur thinking_max_tokens-
+      # Konvention (32768). CoT frisst das komplette 16k-Budget (Session-Befund
+      # Cloud-Lauf: 16328 Reasoning-Tokens, 56 sichtbare Tokens).
+      # Sampling synchron mit Cloud-Card: temperature=1.0, top_p=0.95, top_k=null.
+      - id: glm-5_3-flash-exl3
+        name: GLM 5.3 Flash EXL3 (vLLM, MoE, Always-Thinking)
+        config: GLM-5.3-Flash-EXL3
+        max_tokens: 32768
+        temperature: 1.0
+        top_p: 0.95
+        # top_k:  # Card: null — vLLM-Server-Default greift
 
       # Weitere verfügbare TOMLs (per Auto-Discovery entdeckbar, nicht im Benchmark):
       # - Qwen3-Embedding-0.6B-NVFP4: Embedding-Modell (kein LLM-Target)

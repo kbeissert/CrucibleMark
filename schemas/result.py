@@ -69,6 +69,12 @@ class BenchmarkResult(BaseModel):
     token_limit_cutoff: bool = Field(default=False, description="Flag indicating if the response was cut off due to max_token limits")
     token_limit_fallback: bool = Field(default=False, description="Flag indicating if the system dynamically lowered the requested max_tokens to accommodate model constraints (e.g. 8192 -> 4096)")
     token_limit_used: int | None = Field(default=None, description="The actual max_tokens value used for the successful generation (metadata/Kopfnote)")
+    reasoning_reask: bool = Field(default=False, description="Flag: Reasoning-only Truncation Re-Ask — Erstversuch verbrannte das Budget ohne sichtbaren Output, Eskalationsleiter lief (SSoT: BaseProviderClient._maybe_reask_reasoning_truncation)")
+    reasoning_reask_initial_budget: int | None = Field(default=None, description="Token-Budget des Erstversuchs (Stufe 1) vor der Leiter-Eskalation")
+    reasoning_reask_stage: int = Field(default=0, description="Höchster erreichter Leiter-Versuch (1 = Erstversuch, 2/3 = Eskalationsstufen; 0 = keine Eskalation)")
+    reasoning_reask_exhausted: bool = Field(default=False, description="Flag: höchste Eskalationsstufe lieferte weiterhin 0 sichtbaren Output — Messgrenze (nicht-terminierendes CoT), kein Modellversagen")
+    reasoning_reask_final_budget: int | None = Field(default=None, description="Token-Budget der letzten Eskalationsstufe (Basis für den Card-Write cot_budget_calibration)")
+    cot_calibrated_start: bool = Field(default=False, description="Flag: Stufe 1 startete aus Card-Kalibrierung (cot_budget_calibration) statt beim Modul-Budget")
     raw_response: str = Field(default="", description="The raw string output from the model")
     evaluated_prompt: str = Field(
         default="",

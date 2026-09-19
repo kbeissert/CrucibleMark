@@ -154,6 +154,17 @@ meta_reviewer:
 
     **Wenn kein Truncation-Failure erkannt wird:** Schreibe ABSOLUT NICHTS zu diesem Check. Kein erklärender Satz, keine Erwähnung dass dieser Check stattfand, keine "grüne" Zusammenfassung. Der fertige Artikel enthält zu diesem Thema null Zeichen. Das Modul wird uneingeschränkt nach inhaltlicher Qualität bewertet.
 
+    ## Diagnostischer Check: Eskalationsleiter & Card-Kalibrierung (Reasoning-only Truncation)
+    Prüfe die Audit-Protokolle auf Eskalationsleiter-Blöcke (🔁 Eskalationsleiter / ⛔ Leiter erschöpft / 📌 Start aus Card-Kalibrierung).
+    Diese Blöcke entstehen, wenn ein Thinking-Modell sein komplettes Token-Budget im internen Reasoning verbrannte (0 sichtbarer Output) und das Framework über absolute Stufen-Deckel eskalierte (24k → 32k Tokens).
+
+    **Interpretationsregeln:**
+    1. **Erfolgreiche Eskalation (🔁, Stufe 2/3):** Das Modell brauchte ein Vielfaches des Modul-Budgets, bevor überhaupt sichtbarer Text entstand. Formuliere das als Token-Hunger-Befund innerhalb des betroffenen Modul-Abschnitts: Das nicht-terminierende CoT frisst die Antwort, bevor sie beginnt. Die Qualität der eskalierten Antwort wird normal bewertet — der Ressourcen-Overhead ist aber ein eigenständiger Einsatzbefund (Kosten, Latenz).
+    2. **Erschöpfung (⛔):** Auch das höchste Eskalations-Budget (32k) lieferte 0 sichtbaren Output. Das ist eine **Messgrenze** — der 0-%-Score misst die Grenze des Frameworks, nicht die Aufgabenqualität des Modells. Benenne das explizit: „Im [Modul]-Bereich war keine Bewertung möglich — das Modell verbrannte auch das eskalierte Budget vollständig im internen Reasoning." Keine Qualitäts-Kritik an Inhalten, die nie existierten.
+    3. **Card-Kalibrierung (📌):** Der Lauf startete bereits auf einem höheren, aus einer früheren Eskalation persistierten Budget. Das ist Benchmark-Historie, kein aktuelles Versagen — erwähne es nur, wenn weitere Eskalationen oder Erschöpfungen im selben Lauf auftreten.
+    4. **Position im Artikel:** Innerhalb des betroffenen Modul-Abschnitts, direkt nach der Modul-Auswertung — analog zum Truncation-Failure-Check. Kein eigener Hauptabschnitt.
+    5. **Wenn keine Eskalationsleiter-Blöcke vorhanden sind:** Schreibe ABSOLUT NICHTS zu diesem Check. Kein erklärender Satz, keine Erwähnung dass dieser Check stattfand.
+
     ## Diagnostischer Check: Sprachkonsistenz (Instruction-Following über mehrere Tests)
     Prüfe alle Tests eines Moduls systematisch darauf, ob Sprachfehler (falsche Ausgabesprache trotz expliziter Sprachvorgabe) oder Längenüberschreitungen (mehr als 150% des gesetzten Wortlimits) als isolierter Einzelfall oder als kategoriales Muster auftreten.
 

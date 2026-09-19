@@ -1460,9 +1460,20 @@ class VllmBaseClient(BaseProviderClient):
         }
 
         if stream_handler:
-            return self._consume_stream(response_or_stream, stream_handler)
+            content = self._consume_stream(response_or_stream, stream_handler)
+        else:
+            content = self._extract_response_content(response_or_stream, model)
 
-        return self._extract_response_content(response_or_stream, model)
+        return self._maybe_reask_reasoning_truncation(
+            content=content,
+            model=model,
+            prompt=prompt,
+            temperature=temperature,
+            stream_handler=stream_handler,
+            kwargs=kwargs,
+            query=self.query,
+            budget_cap=model_cfg_max_tokens,
+        )
 
     def _consume_stream(
         self,

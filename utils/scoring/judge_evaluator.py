@@ -91,6 +91,9 @@ def _inject_token_usage_context(
         _token_usage["token_budget"] = int(_token_limit_used)
     if result.get("token_limit_cutoff"):
         _token_usage["truncated"] = True
+    # Reasoning-only Truncation Eskalationsleiter: Stufe/Erschöpfung/Kalibrierung
+    # in den Judge-Kontext (Details: _inject_reask_ladder_context).
+    _inject_reask_ladder_context(_token_usage, result)
     try:
         _cfg = _get_cached_config()
         _module_budget = _cfg.get("token_budgets", {}).get(eval_module_id)
@@ -100,6 +103,33 @@ def _inject_token_usage_context(
         pass
     if _token_usage:
         kwargs["token_usage_context"] = _token_usage
+
+
+def _inject_reask_ladder_context(_token_usage: dict[str, Any], result: dict[str, Any]) -> None:
+    """Eskalationsleiter-Info in den Judge-Kontext (Reasoning-only Truncation).
+
+    Der Run wurde nach einem leeren Erstversuch (Reasoning verbrannte das
+    Budget) über absolute Stufen-Deckel eskaliert. Der Judge soll die
+    eskalierte Antwort im Kontext bewerten, Stufe und Erschöpfung als
+    Messgrenze einordnen und einen kalibrierten Start (Card-Historie) nicht
+    als Standard-Budget fehlinterpretieren.
+    """
+    if not result.get("reasoning_reask"):
+        return
+    _token_usage["reasoning_reask"] = True
+    _reask_initial = result.get("reasoning_reask_initial_budget")
+    if _reask_initial is not None:
+        _token_usage["reasoning_reask_initial_budget"] = int(_reask_initial)
+    _reask_stage = result.get("reasoning_reask_stage")
+    if _reask_stage is not None:
+        _token_usage["reasoning_reask_stage"] = int(_reask_stage)
+    if result.get("reasoning_reask_exhausted"):
+        _token_usage["reasoning_reask_exhausted"] = True
+    _reask_final = result.get("reasoning_reask_final_budget")
+    if _reask_final is not None:
+        _token_usage["reasoning_reask_final_budget"] = int(_reask_final)
+    if result.get("cot_calibrated_start"):
+        _token_usage["cot_calibrated_start"] = True
 
 
 def _inject_reasoning_budget_context(
@@ -398,4 +428,8 @@ def generate_audit_log(
         output_tokens=result.get("output_tokens"),
         think_content=result.get("think_content"),
         thinking_mode=result.get("thinking_mode"),
+        reasoning_reask_stage=result.get("reasoning_reask_stage"),
+        reasoning_reask_exhausted=result.get("reasoning_reask_exhausted", False),
+        reasoning_reask_final_budget=result.get("reasoning_reask_final_budget"),
+        cot_calibrated_start=result.get("cot_calibrated_start", False),
     )

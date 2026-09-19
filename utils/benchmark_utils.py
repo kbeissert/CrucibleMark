@@ -318,6 +318,10 @@ def save_audit_log(
     output_tokens: int | None = None,
     think_content: str | None = None,
     thinking_mode: str | None = None,
+    reasoning_reask_stage: int | None = None,
+    reasoning_reask_exhausted: bool = False,
+    reasoning_reask_final_budget: int | None = None,
+    cot_calibrated_start: bool = False,
     **kwargs
 ) -> None:
     """
@@ -325,6 +329,10 @@ def save_audit_log(
 
     ``input_tokens``/``output_tokens`` sind die echten Provider-Usage-Werte
     (Output inkl. Thinking) und werden als Breakdown in den Header geschrieben.
+
+    Die Eskalationsleiter-Parameter (``reasoning_reask_*``/``cot_calibrated_start``)
+    erzeugen den Reviewer-Info-Block (``_write_escalation_ladder_block``) —
+    Traceability für den Meta-Reviewer (analog PC v3 Sektion 2.9).
     """
     try:
         # Create subdirectories for the model
@@ -361,6 +369,14 @@ def save_audit_log(
                 reasoning_tokens=reasoning_tokens,
                 output_tokens=output_tokens,
                 token_limit_cutoff=token_limit_cutoff,
+            )
+
+            _write_escalation_ladder_block(
+                f,
+                reasoning_reask_stage=reasoning_reask_stage,
+                reasoning_reask_exhausted=reasoning_reask_exhausted,
+                reasoning_reask_final_budget=reasoning_reask_final_budget,
+                cot_calibrated_start=cot_calibrated_start,
             )
 
             f.write("## 1. Prompt / Fragestellung\n\n")
@@ -489,6 +505,53 @@ def _write_token_limit_warnings(
                     f"> make run-model MODEL={model} --force\n"
                     f"> ```\n\n"
                 )
+
+
+def _write_escalation_ladder_block(
+    f,
+    reasoning_reask_stage: int | None,
+    reasoning_reask_exhausted: bool,
+    reasoning_reask_final_budget: int | None,
+    cot_calibrated_start: bool,
+) -> None:
+    """Schreibt den Eskalationsleiter-Info-Block (Reviewer-Traceability).
+
+    Analog zu den PC-v3-Eskalations-Badges (Sektion 2.9): Der Meta-Reviewer
+    liest diese Blöcke aus den Audit-Logs und interpretiert sie aktiv —
+    Stufen-Klettern = Token-Hunger des nicht-terminierenden CoT, Erschöpfung =
+    Messgrenze (kein Modellversagen), kalibrierter Start = Benchmark-Historie.
+    Ohne Eskalation bleibt der Block komplett weg (keine grünen Fussnoten).
+    """
+    if not reasoning_reask_stage or reasoning_reask_stage < 2:
+        return
+    _budget = (
+        f"{reasoning_reask_final_budget:,} Tokens"
+        if reasoning_reask_final_budget
+        else "Eskalationsbudget"
+    )
+    if reasoning_reask_exhausted:
+        f.write(
+            f"> [!CAUTION]\n"
+            f"> **⛔ Leiter erschöpft: Stufe {reasoning_reask_stage} ({_budget}) ohne "
+            f"sichtbaren Output — Messgrenze, kein Modellversagen.** Das Modell verbrannte "
+            f"auch das eskalierte Budget vollständig im internen Reasoning (nicht-terminierende "
+            f"Thinking-Kette). Die 0-%-Bewertung misst die Messgrenze des Frameworks, "
+            f"nicht die Aufgabenqualität.\n\n"
+        )
+    else:
+        f.write(
+            f"> [!NOTE]\n"
+            f"> **🔁 Eskalationsleiter: Stufe {reasoning_reask_stage} ({_budget}) erfolgreich.** "
+            f"Der Erstversuch verbrannte sein komplettes Budget im internen Reasoning "
+            f"(0 sichtbarer Output); erst die eskalierte Stufe lieferte die bewertete Antwort.\n\n"
+        )
+    if cot_calibrated_start:
+        f.write(
+            "> [!NOTE]\n"
+            "> **📌 Start aus Card-Kalibrierung:** Der Erstversuch lief bereits auf einem "
+            "persistierten Start-Budget (`cot_budget_calibration` in der Model Card) — "
+            "Ergebnis früherer Eskalationen, kein Standard-Modul-Budget.\n\n"
+        )
 
 
 def _is_unknown_reasoning_model(model: str, reasoning_tokens: int | None) -> bool:

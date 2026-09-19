@@ -1,6 +1,18 @@
 # Progress
 Letzte Releases + aktueller Stand.
 
+### 2026-09-19 (Session 110) — Eskalationsleiter implementiert (absolute Stufen-Deckel + Card-Persistierung) [DONE — live verifiziert]
+
+- [x] Leiter-Kletterlogik in `utils/providers/base.py` — absolute Deckel statt ×2 (`benchmark_config.yaml#reasoning_reask`: ceilings [24000, 32000], max_escalations 2, config-driven mit Defaults + Konsistenz-Clamp); Trigger-Prüfung nach JEDER Stufe; Cap-Block-Guard; PC-Modul + `_budget_exact` ausgenommen; Terminal-Zeilen (Stufe n/max, ✅/⛔); Metadaten `reasoning_reask_stage`/`_exhausted`/`_final_budget` (SSoT `last_response_metadata`, Annotation erst nach letzter Stufe — Nested-Queries überschreiben sie).
+- [x] Erschöpfungs-Semantik: höchste Stufe weiterhin leer → `reasoning_reask_exhausted=True`, leere Rückgabe; `unified_runner._apply_judge_pipeline` überspringt die `reasoning_only_response`-Bridge für erschöpfte Läufe (residualer CoT ist keine Antwort) → MIN_REFUSAL_CHARS-Pfad → 0 % Score.
+- [x] Card-Persistierung (Card-First, Muster `pc_token_calibration`): `base_runner._persist_cot_calibration_if_earned` → `model_card_io.update_model_card_cot_calibration` (nur nach oben); Lese-Pfad `model_token_budget.get_calibrated_cot_budget` → `resolve_token_budget` hebt Stufe 1 an auf `max(Modul-Budget, Kalibrierung)` (PC ausgenommen, `exact` unberührt, Dual-Profile teilen die Card). Template-Feld `cot_budget_calibration` (seit v5.3.2) + Template-Fix (doppelte `since`/`example` auf `cot_termination` entfernt). Sichtbarkeit: 📌 Run-Header-Zeile, `cot_calibrated_start`-CSV-Spalte, Audit-Log-Block.
+- [x] Caps einheitlich 32768 (Feasibility-Boundary, KEIN Stufe-1-Fenster): openrouter/mistral/xai/groq/google/cohere/openai 16384→32768, GLM-5.3-Flash-EXL3 lokal 24000→32768; Cohere-Override `command-a-plus-05-2026` entfernt (redundant), senkende OpenRouter-Overrides bleiben. Comparability-Hinweis: No-Budget-Module laufen für bisher Cap-geclippte Modelle am 25k-Floor statt 16384-Cap.
+- [x] Reviewer-Pfad: `save_audit_log` + `_write_escalation_ladder_block` (🔁/⛔/📌); `meta_reviewer_prompt.yaml` um diagnostischen Check „Eskalationsleiter & Card-Kalibrierung" erweitert (analog PC v3 Sektion 2.9).
+- [x] Judge-Kontext: Stufe/Erschöpfung/Kalibrierung in `token_usage_context`; Prompt-Builder rendert stage-aware Zeilen (EXHAUSTED → „do not penalize content that never existed").
+- [x] Verifikation: `tests/test_reasoning_reask.py` 46/46 · `make lint` 9.99/10 exit 0 (4 C901-Verletzungen durch Methoden-Splits behoben — `_inject_reask_ladder_metadata`, `_apply_cot_calibration_floor`, `_inject_reask_ladder_context`, `_reask_ladder_lines`) · Full Suite 1659/22/3 (die 3 = vorbestehende SPRK-Card-Altlasten, unverändert) · validate-naming 149 OK · docs-version-check 0 drift. validate-cards exit 1 = nur der vorbestehende 116-WARN-Backlog (0 ERRORs, kein neuer durch diese Änderung).
+- [x] Live-Verifizierung (GX10, GLM-5.3-Flash-EXL3): content_transformation_005 brannte 12k → 🔁 Stufe 2/3 (24k) → ✅ 4934 Zeichen (81.0 %) → 📌 Card-Write `cot_budget_calibration` (24000, Stufe 2) verifiziert; documentation_quality-Zweitlauf mit 📌-Header-Zeile + kalibriertem Start 24000: 5/5 ✅, 82.32 %, drei Tasks >12k (14864/12895/12191) liefen durch statt zu burnen; CSV-Spalten korrekt (`reasoning_reask_stage=2`/`cot_calibrated_start=True`); ux_writing-Lauf zuvor: kein Burn → Null-Verhalten bestätigt (5/5, 79.61 %).
+- [x] Observability-Fix (Altlast Session 109): `_process_single_test` reicht das echte Error-Result (str(e)) durch statt „Test execution failed" zu überschreiben — `tests/test_unified_runner_error_passthrough.py` (3 Tests).
+
 ### 2026-09-18 (Session 108) — Hermes Agentic-Track vollständig entfernt (Rückbau) [DONE — committet 2026-09-18]
 
 **Entscheidung (User):** CrucibleMark ist konzeptionell auf die Messung roher LLM-Endpoints ausgelegt; der Agent-Loop als Messgegenstand wurde nach dem Erstlauf (Lift −7,82 = Profilverschiebung, kein Harness-Lift) verworfen. Die in Session 106/107 bewusst behaltene Infrastruktur wurde auf User-Wunsch komplett zurückgebaut. Historie (Erstlauf-Begründung, Plan-SSoT `.kilo/plans/1789541331283-hermes-connector-plan.md`) bleibt erhalten.
@@ -17,7 +29,16 @@ Letzte Releases + aktueller Stand.
 
 **Verifikation:** `make lint` 9.99/10 exit 0 · Suite **1763 passed / 22 skipped / 3 failed** — die 3 Fehler sind die vorbestehenden SPRK-Card-Altlasten; Differenz zur Session-107-Baseline (1831/23/3) = exakt die 69 entfernten Hermes/Agentic-Tests · validate-naming 148 Cards OK · validate-cards-Fehler = nur die dokumentierten Altlasten (hermes-4-70b-fp8 `restricted`, qwen3-14b/qwen3-4b `general`, swift `gated-weights`, glm-5.3 `pending`) — kein neuer Fehler durch den Rückbau.
 
-- [ ] Occamy/swift-Daten-Commit (Run-Writeback `occamy-1_0-nvfp4.json` + Vendor-Card `accio_lab.json` + 9 Review-Docs vom 2026-09-18) — vor `make web-export`
+- [x] Occamy/swift-Daten-Commit (Run-Writeback `occamy-1_0-nvfp4.json` + Vendor-Card `accio_lab.json` + 9 Review-Docs vom 2026-09-18) — erledigt in `2c0905f1` (vor `make web-export`)
+
+
+### 2026-09-19 (Session 109) — Reasoning Re-Ask implementiert + Eskalationsleiter geplant [DONE — Re-Ask live verifiziert; Leiter geplant, NICHT implementiert]
+
+- [x] Reasoning-only Truncation Re-Ask (×2) implementiert — SSoT `utils/providers/base.py::_maybe_reask_reasoning_truncation`, Connectoren vllm/llamacpp/openai, Judge-Kontext + Prompt-Builder, CSV-Spalten (dynamisch), Terminal-Zeilen; 18 Tests, lint exit 0. Live verifiziert: ux_writing_002 1.05 % → 78.95 % (Judge 4.0), ux_writing_003 82.0 %.
+- [x] Pydantic-Regression gefixt: `reasoning_reask`/`reasoning_reask_initial_budget` als deklarierte Felder in `schemas/result.py` (undeklariertes Setzen warf ValueError NACH erfolgreichem Re-Ask → ❌-Error-Rows „Test execution failed"; AGENTS-Constraint ergänzt).
+- [x] `cot_termination`-Card-Feld (Template `card_template_model.yaml` + GLM EXL3/z-ai_glm-5_3/z-ai_glm-5_3-flash) — GLM-5.3-Familienbefund: Cloud-Flaggschiff 9 Reasoning-Burns (ux_writing_002 1.05 % identisch zum lokalen EXL3, cli005 0 % @24000 rtok), Flash 0 Burns — nicht-terminierendes CoT ist Architektur-Eigenschaft.
+- [x] Eskalationsleiter implementieren — Plan-SSoT `.kilo/plans/1789802399641-reasoning-escalation-ladder.md` (absolute Deckel [24k/32k], Card-Persistierung `cot_budget_calibration` Card-First, Caps einheitlich 32768, PC ausgenommen, Erschöpfung → 0 % + Reviewer-Info via Audit-Log/Meta-Reviewer) — **erledigt in Session 110** (nur bei ruhendem Benchmark; live-Verifizierung offen).
+- [ ] Observability-Fix: `unified_runner.py:532-535` überschreibt echte Exception-Meldung mit „Test execution failed" (kostete Debugging-Zeit bei der Pydantic-Regression).
 
 
 ### 2026-09-17 (Session 107) — Hermes-Block committet + Qwen3.8-Flash-Next-Feinschliff + Doku-Bereinigung [DONE]

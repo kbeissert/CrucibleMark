@@ -530,6 +530,13 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
             # Re-raised endpoint conflict; pass through
             return self._create_error_result(asset_path.stem, "endpoint conflict", model=model, provider=provider)
         if test_instance is None:
+            # Observability-Fix (Session 110): _execute_test_with_timing liefert bei
+            # einer Exception bereits ein fertiges Error-Result mit der echten
+            # Meldung (str(e)) — dieses durchreichen statt es mit dem generischen
+            # „Test execution failed" zu überschreiben (Altlast Session 109: die
+            # Pydantic-Regression war nur über die echte Meldung diagnostizierbar).
+            if isinstance(exec_result, dict) and exec_result.get("status") == "error":
+                return exec_result
             return self._create_error_result(
                 asset_path.stem, "Test execution failed", model=model, provider=provider,
             )
@@ -771,12 +778,32 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         substantiell ist, wird ``think_content`` als effektive Antwort für den
         Judge verwendet — sonst würde ein valides Reasoning-Modell fälschlich
         als Safety-Refusal markiert.
+
+        Abgrenzung zum Connector-Re-Ask (``BaseProviderClient.
+        _maybe_reask_reasoning_truncation``): Diese Bridge behandelt den
+        Kanal-Fall (Antwort liegt im Reasoning-Feld, ``finish_reason=stop`` —
+        keine Retry nötig, die Antwort existiert). Der Connector-Re-Ask
+        behandelt den Truncation-Fall (``finish_reason=length``, leerer
+        sichtbarer Output — die abgebrochene Thinking-Kette ist KEINE Antwort
+        und wird über die Eskalationsleiter neu angefragt). Beide Mechanismen
+        komponieren: Nach einer erfolgreichen Eskalation ist ``content``
+        gefüllt und diese Bridge greift nicht.
+
+        Erschöpfungs-Ausnahme: Ist die Leiter erschöpft
+        (``reasoning_reask_exhausted`` — höchste Stufe lieferte weiterhin 0
+        sichtbaren Output), wird die Bridge ÜBERSPRUNGEN. Der residuale CoT
+        einer abgeschnittenen, nicht terminierenden Thinking-Kette ist keine
+        Antwort — er würde den Judge zu einem Schein-Urteil über
+        Bruchstück-Text verleiten. Stattdessen greift der bestehende
+        MIN_REFUSAL_CHARS-Pfad → ``refusal_flag`` → Judge-Skip → 0 % Score
+        mit voller Eskalations-Traceability für den Reviewer.
         """
         think_content = result.get("think_content") or ""
         effective_response = response
         resp_too_short = len(response.strip()) < MIN_REFUSAL_CHARS
         think_substantial = len(think_content.strip()) >= MIN_REFUSAL_CHARS
-        if resp_too_short and think_substantial:
+        ladder_exhausted = bool(result.get("reasoning_reask_exhausted"))
+        if resp_too_short and think_substantial and not ladder_exhausted:
             result["reasoning_only_response"] = True
             effective_response = think_content
 
@@ -1039,6 +1066,25 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         identity = get_model_identity(model)
         tags_str = ", ".join(identity["tags"])
         print(f"Provider: {provider}\nModell:   {model} (Tags: [{tags_str}])")
+        self._print_cot_calibration_notice(model)
+
+    @staticmethod
+    def _print_cot_calibration_notice(model: str) -> None:
+        """Sichtbarkeits-Zeile für eine Card-Kalibrierung (Eskalationsleiter).
+
+        Läuft das Modell auf einem persistierten Start-Budget
+        (``cot_budget_calibration``), sieht der Run-Beobachter das sofort —
+        analog zur Metadata ``cot_calibrated_start`` in CSV und Audit-Log.
+        """
+        from utils.model_token_budget import read_cot_calibration  # noqa: PLC0415
+
+        cal = read_cot_calibration(model)
+        if cal is None:
+            return
+        print(
+            f"   📌 Card-Kalibrierung: Start-Budget {cal.get('calibrated_budget')} "
+            f"(cot_budget_calibration, getestet {cal.get('tested', 'unbekannt')})"
+        )
 
     def _resolve_assets(
         self, benchmark_info: dict[str, Any], assets: list[Path] | None
@@ -1397,9 +1443,11 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         # Optional: Retry-Counter anzeigen, wenn Retries stattgefunden haben
         retry_count = result.get("refusal_retry_count", 0)
         retry_str = f" (×{retry_count})" if retry_count and retry_count > 0 else ""
+        # Token-Eskalation markieren (Reasoning-only Truncation Re-Ask)
+        reask_str = " | 🔁 Re-Ask" if result.get("reasoning_reask") else ""
         print(" " * 80, end="\r")
         print(
-            f"   {status_icon} [{i}/{total}] {asset_name}: {result.get('percentage', 0):.1f}% | {token_str} | {result.get('execution_time', 0):.1f}s{retry_str}{judge_str}"
+            f"   {status_icon} [{i}/{total}] {asset_name}: {result.get('percentage', 0):.1f}% | {token_str} | {result.get('execution_time', 0):.1f}s{retry_str}{reask_str}{judge_str}"
         )
 
     def _handle_asset_exception(

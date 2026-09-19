@@ -508,8 +508,36 @@ optional_fields:
     required: false
     description: "PC-Betriebsmodus laut Token-Probe: thinking | hybrid_dual | instruct"
     consumers: [probe, political_compass, runner]
-    since: "v5.2"
-    example: "thinking"
+
+  # CoT-Terminierungsverhalten (Benchmark-Beobachtung, kein Probe):
+  # non_terminating = nicht-terminierendes CoT verursacht wiederholt
+  # Reasoning-only Truncations (finish_reason=length, 0 sichtbarer Output) —
+  # Erklärung für Ausreißer-Scores nach unten; terminating = CoT terminiert
+  # zuverlässig innerhalb der Modul-Budgets. Evidence: Benchmark-CSV-Burns.
+  - name: cot_termination
+    type: str
+    required: false
+    description: "CoT-Terminierung laut Benchmark-Historie: terminating | non_terminating (null = nicht bewertet)"
+    consumers: [review, leaderboard, runner]
+    since: "v5.3.1"
+    example: "non_terminating"
+
+  # Eskalationsleiter-Kalibrierung (Benchmark-Write, Card-First-Lese-Pfad):
+  # Eine erfolgreich genutzte Eskalationsstufe wird als Start-Budget
+  # persistiert — Stufe 1 = max(Modul-Budget, kalibriertes Budget), kein
+  # erneutes Durchklettern bei Folgeläufen. Muster: pc_token_calibration;
+  # Schwester-Feld cot_termination dokumentiert das Terminierungsverhalten.
+  # Load-bearing: utils/model_token_budget.get_calibrated_cot_budget() liest
+  # calibrated_budget für alle module_key != "political_compass"; geschrieben
+  # von utils/base_runner._persist_cot_calibration_if_earned. Dual-Profile
+  # teilen die Card (card_model_id) → Kalibrierung gilt für beide Profile.
+  - name: cot_budget_calibration
+    type: object
+    required: false
+    description: "Eskalationsleiter-Kalibrierung: {calibrated_budget (int), stage (int), tested (ISO-Datum), model_version (str|null), notes (str)}"
+    consumers: [token_budget, runner, review]
+    since: "v5.3.2"
+    example: {"calibrated_budget": 24000, "stage": 2, "tested": "2026-09-19", "model_version": "5.3", "notes": "Automatisch kalibriert: Eskalationsleiter Stufe 2 (24000 Tokens) lieferte erstmals sichtbaren Output."}
 
   - name: temperature
     type: float

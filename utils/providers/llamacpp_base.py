@@ -1060,9 +1060,20 @@ class LlamaCppBaseClient(BaseProviderClient):
         }
 
         if stream_handler:
-            return self._process_llamacpp_stream(response_or_stream, stream_handler)
+            content = self._process_llamacpp_stream(response_or_stream, stream_handler)
+        else:
+            content = self._extract_response_content(response_or_stream, model)
 
-        return self._extract_response_content(response_or_stream, model)
+        return self._maybe_reask_reasoning_truncation(
+            content=content,
+            model=model,
+            prompt=prompt,
+            temperature=temperature,
+            stream_handler=stream_handler,
+            kwargs=kwargs,
+            query=self.query,
+            budget_cap=self._model_cfg(model).get("max_tokens"),
+        )
 
     def _prepare_llamacpp_params(
         self,

@@ -112,6 +112,25 @@ def _small_model_budget_boost(
     return tokens
 
 
+def _apply_cot_calibration_floor(tokens: int, model: str, module_key: str | None) -> int:
+    """Eskalationsleiter Card-First (2026-09-19): persistierte Kalibrierung hebt Stufe 1 an.
+
+    Eine persistierte ``cot_budget_calibration`` (geschrieben von
+    ``base_runner._persist_cot_calibration_if_earned`` nach einer erfolgreichen
+    Eskalationsstufe) wird via ``max()`` zum Start-Budget — kein erneutes
+    Durchklettern der Stufen bei Folgeläufen (Muster: pc_token_calibration
+    Card-First). Gilt für alle Module außer PC (die eigene v3-Leiter mit
+    Thinking-Off ist dort autoritativ); Dual-Profile teilen die Card
+    (``card_model_id``), die Kalibrierung gilt also für beide Profile.
+    """
+    if module_key == "political_compass":
+        return tokens
+    cot_calibrated = get_calibrated_cot_budget(model)
+    if cot_calibrated is not None and cot_calibrated > tokens:
+        return cot_calibrated
+    return tokens
+
+
 def resolve_token_budget(
     model: str,
     requested_max_tokens: int | None,
@@ -216,6 +235,10 @@ def resolve_token_budget(
     elif not reasoning and explicit_budget and module_key:
         tokens = _small_model_budget_boost(tokens, model, config, module_key)
 
+    # Eskalationsleiter Card-First (2026-09-19): Eine persistierte
+    # cot_budget_calibration hebt Stufe 1 an — max(Modul-Budget, Kalibrierung).
+    tokens = _apply_cot_calibration_floor(tokens, model, module_key)
+
     # Model-Card-Cap: Wenn die Card ein explizites max_output_tokens definiert,
     # wird das Budget darauf begrenzt. So können modellspezifische API-Limits
     # (z.B. gpt-4o-2024-05-13 akzeptiert max. 4096) ohne Fallback-Retry gesetzt werden.
@@ -287,3 +310,45 @@ def read_pc_profile_flag(model_id: str) -> bool:
     except (json.JSONDecodeError, OSError) as exc:
         logger.debug("Card-Lesefehler (pc_profile_forced_instruct) für %s: %s", card_path, exc)
         return False
+
+
+def read_cot_calibration(model_id: str) -> dict | None:
+    """Liest ``cot_budget_calibration`` aus der Model Card (Eskalationsleiter).
+
+    Erwartetes Card-Feld (geschrieben von
+    ``base_runner._persist_cot_calibration_if_earned`` nach einer erfolgreichen
+    Eskalationsstufe):
+        {"calibrated_budget": int, "stage": int, "tested": ISO-Datum,
+         "model_version": str | None, "notes": str}
+
+    Returns:
+        Kalibrierungs-Dict oder None (keine Card / kein Feld / Lesefehler).
+    """
+    card_path = _find_card(model_id)
+    if not card_path.exists():
+        return None
+    try:
+        data = json.loads(card_path.read_text(encoding="utf-8"))
+        cal = data.get("cot_budget_calibration")
+        if isinstance(cal, dict) and cal.get("calibrated_budget"):
+            return cal
+    except (json.JSONDecodeError, OSError) as exc:
+        logger.debug("Card-Lesefehler (cot_budget_calibration) für %s: %s", card_path, exc)
+    return None
+
+
+def get_calibrated_cot_budget(model_id: str) -> int | None:
+    """Kalibriertes CoT-Start-Budget aus der Card (Eskalationsleiter, Card-First).
+
+    Muster: ``get_calibrated_pc_budget``. Die Kalibrierung gilt global für alle
+    Module außer ``political_compass`` (dort ist die PC-v3-Leiter mit
+    Thinking-Off autoritativ). Dual-Profile teilen die Card (``card_model_id``)
+    → die Kalibrierung gilt für beide Profile.
+    """
+    cal = read_cot_calibration(model_id)
+    if cal is None:
+        return None
+    budget = cal.get("calibrated_budget")
+    if isinstance(budget, int) and budget > 0:
+        return budget
+    return None

@@ -700,3 +700,74 @@ def update_model_card_tooluse_fields(
     except Exception:
         logger.warning("Konnte Model Card nicht aktualisieren für '%s'", model_id, exc_info=True)
         return False
+
+
+def update_model_card_cot_calibration(
+    model_id: str,
+    calibrated_budget: int,
+    stage: int,
+    notes: str | None = None,
+) -> bool:
+    """Schreibt ``cot_budget_calibration`` in die Model Card (Eskalationsleiter).
+
+    Wird von ``base_runner._persist_cot_calibration_if_earned`` NACH einem
+    erfolgreichen eskalierten Test aufgerufen (Stufe >= 2, sichtbarer Output).
+    Die Kalibrierung gilt global für alle Module des Modells — Dual-Profile
+    teilen die Card (``card_model_id``), die Kalibrierung gilt also für beide
+    Profile. Re-Kalibrierung nur nach oben: Ein bestehender Eintrag wird nur
+    überschrieben, wenn das neue Budget HÖHER ist (neue Evidenz); gleiche oder
+    niedrigere Stufen lassen den Eintrag unverändert (kein Write-Churn pro
+    Asset).
+
+    Args:
+        model_id: Kanonische Modell-ID (SSoT für Card-Lookup).
+        calibrated_budget: Budget der erfolgreich genutzten Eskalationsstufe
+            (``reasoning_reask_final_budget``).
+        stage: Leiter-Stufe, die den Output lieferte (2 = erste Eskalation).
+        notes: Optionale Freitext-Notiz; Default beschreibt den Automatismus.
+
+    Returns:
+        True wenn geschrieben (oder Re-Kalibrierung entbehrlich war), False
+        bei fehlender Card / IO-Fehler.
+    """
+    card_path = _find_card(model_id)
+    if not card_path.exists():
+        logger.debug(
+            "update_model_card_cot_calibration: Keine Card gefunden für '%s'", model_id,
+        )
+        return False
+    try:
+        from datetime import datetime  # noqa: PLC0415  (lokal: vermeidet Module-Init-Kosten)
+
+        data = json.loads(card_path.read_text(encoding="utf-8"))
+        existing = data.get("cot_budget_calibration") or {}
+        existing_budget = existing.get("calibrated_budget")
+        if isinstance(existing_budget, int) and calibrated_budget <= existing_budget:
+            logger.debug(
+                "cot_budget_calibration für '%s' unverändert (%d <= %d) — kein Write.",
+                model_id, calibrated_budget, existing_budget,
+            )
+            return False
+        data["cot_budget_calibration"] = {
+            "calibrated_budget": int(calibrated_budget),
+            "stage": int(stage),
+            "tested": datetime.now().strftime("%Y-%m-%d"),
+            "model_version": data.get("model_version"),
+            "notes": notes or (
+                f"Automatisch kalibriert: Eskalationsleiter Stufe {stage} "
+                f"({calibrated_budget} Tokens) lieferte erstmals sichtbaren Output."
+            ),
+        }
+        # SSoT-Write-Konvention: identisch zu card_utils._write_to_card (Trailing-Newline),
+        # sonst flappen Card-Dateien im Git-Status zwischen beiden Writer-Pfaden.
+        card_path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        logger.debug(
+            "Model Card aktualisiert: model=%s → cot_budget_calibration=%s",
+            model_id, data["cot_budget_calibration"],
+        )
+        return True
+    except Exception:
+        logger.warning(
+            "Konnte cot_budget_calibration nicht schreiben für '%s'", model_id, exc_info=True,
+        )
+        return False

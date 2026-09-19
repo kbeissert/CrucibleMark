@@ -108,6 +108,7 @@ def _query_question(
         temperature=0.1,
         max_tokens=budget,
         _module_key="political_compass",
+        _budget_exact=True,  # Stufen exakt halten (SSoT: token_probe.py) — Re-Ask-Eskalation würde die Truncation-Messung verfälschen
     )
     duration = time.time() - start
     metadata = getattr(client, "last_response_metadata", {}) or {}

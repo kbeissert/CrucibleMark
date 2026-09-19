@@ -272,3 +272,14 @@ token_budgets_reasoning_models:
   # PC v3: Kein 5×-Multiplikator — die Antwort ist ein Buchstabe. Gleicher Wert
   # wie das Standard-Budget, damit Reasoning-Modelle nicht auf 4000 hochskaliert werden.
   political_compass: 800
+
+# Eskalationsleiter für Thinking-Modelle (Reasoning-only Truncation, SSoT:
+# utils/providers/base.py::_maybe_reask_reasoning_truncation).
+# Ein Erstversuch mit finish_reason=length, 0 sichtbarem Output und Reasoning-
+# Signal klettert über ABSOLUTE Stufen-Deckel (keine Multiplikatoren —
+# kalibrierte Starts würden explodieren). Klettern = nächster Deckel über dem
+# aktuellen Budget; kein Deckel darüber oder Cap-Block → Leiter erschöpft.
+# PC ist ausgenommen (eigene v3-Leiter mit Thinking-Off ist dort autoritativ).
+reasoning_reask:
+  ceilings: [24000, 32000]   # absolute Eskalations-Ziele, aufsteigend
+  max_escalations: 2         # hart gedeckelt auf len(ceilings) (Konsistenz wird geprüft)

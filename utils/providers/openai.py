@@ -316,17 +316,32 @@ class OpenAIClient(BaseProviderClient):
             )
 
             if stream_handler and not use_responses:
-                return self._process_stream(
+                content = self._process_stream(
                     response_or_stream, use_completions, stream_handler,
                     fallback_triggered, used_max_tokens,
                 )
+            elif use_responses:
+                content = self._process_blocking_responses(response_or_stream, fallback_triggered, used_max_tokens)
+            elif use_completions:
+                content = self._process_blocking_completions(response_or_stream, fallback_triggered, used_max_tokens)
+            else:
+                content = self._process_blocking_chat(response_or_stream, fallback_triggered, used_max_tokens)
 
-            response = response_or_stream
-            if use_responses:
-                return self._process_blocking_responses(response, fallback_triggered, used_max_tokens)
-            if use_completions:
-                return self._process_blocking_completions(response, fallback_triggered, used_max_tokens)
-            return self._process_blocking_chat(response, fallback_triggered, used_max_tokens)
+            # Card-Cap als Eskalations-Limit (resolve_token_budget cappt intern
+            # darauf — der Re-Ask soll keinen sinnlosen Zweit-Request starten,
+            # wenn das ×2-Budget den Cap nicht überschreitet).
+            from utils.model_thinking import _read_max_output_tokens_from_card  # noqa: PLC0415
+
+            return self._maybe_reask_reasoning_truncation(
+                content=content,
+                model=model,
+                prompt=prompt,
+                temperature=temperature,
+                stream_handler=stream_handler if not use_responses else None,
+                kwargs=kwargs,
+                query=self.query,
+                budget_cap=_read_max_output_tokens_from_card(model),
+            )
         except Exception as e:
             logger.error("OpenAI query failed: %s", e)
             raise

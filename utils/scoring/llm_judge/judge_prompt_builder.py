@@ -400,7 +400,71 @@ def _format_token_usage_lines(token_usage_context: dict[str, Any]) -> list[str]:
             _lines.append(f"- **Visible output tokens**: {_visible:,} tokens")
     if _tu_truncated:
         _lines.append("- **Truncated**: YES (response was cut off at budget limit)")
+    _lines.extend(_reask_ladder_lines(token_usage_context))
     return _lines
+
+
+def _reask_ladder_lines(token_usage_context: dict[str, Any]) -> list[str]:
+    """Baut die Eskalationsleiter-Zeilen des TOKEN-USAGE-Blocks (Re-Ask/Kalibrierung).
+
+    Erschöpfung → Messgrenzen-Zeile (Judge darf Inhalte bewerten, die nie
+    existierten, nicht bestrafen). Erfolg → Stufe + Budget der Antwort.
+    Kalibrierter Start → Card-Historie-Hinweis (kein Resource-Waste-Vorwurf),
+    unabhängig vom Re-Ask-Flag (die Kalibrierung betrifft den Start-Budget-
+    Kontext, nicht den Eskalationsverlauf).
+    """
+    lines: list[str] = []
+    if token_usage_context.get("reasoning_reask", False):
+        lines.append(_reask_outcome_line(token_usage_context))
+    if token_usage_context.get("cot_calibrated_start", False):
+        lines.append(
+            "- **Calibrated start budget**: the first attempt already ran on a "
+            "persisted calibration budget (cot_budget_calibration in the model "
+            "card) — historical escalation evidence, not the module's default "
+            "budget. Do not treat the higher budget as resource waste."
+        )
+    return lines
+
+
+def _reask_outcome_line(token_usage_context: dict[str, Any]) -> str:
+    """Re-Ask-Ergebnis-Zeile: Erschöpfung (Messgrenze) oder erfolgreiche Stufe."""
+    _reask_initial = token_usage_context.get("reasoning_reask_initial_budget")
+    _reask_stage = token_usage_context.get("reasoning_reask_stage")
+    _reask_final = token_usage_context.get("reasoning_reask_final_budget")
+    _initial_detail = (
+        f" (initial attempt burned the entire {_reask_initial:,}-token budget "
+        "on internal reasoning with zero visible output)"
+        if _reask_initial
+        else ""
+    )
+    if token_usage_context.get("reasoning_reask_exhausted", False):
+        _stage_detail = ""
+        if _reask_stage and _reask_final:
+            _stage_detail = (
+                f" The escalation ladder was exhausted at stage {_reask_stage} "
+                f"({_reask_final:,}-token budget) with still zero visible output."
+            )
+        return (
+            "- **Reasoning-only truncation — escalation ladder EXHAUSTED**: "
+            "this response is empty after escalating through absolute "
+            f"budget ceilings{_stage_detail}{_initial_detail}. Treat this "
+            "strictly as a measurement limitation (non-terminating "
+            "reasoning chain), not as model failure — do not penalize "
+            "content that never existed."
+        )
+    _stage_detail = ""
+    if _reask_stage and _reask_final:
+        _stage_detail = (
+            f" Stage {_reask_stage} ({_reask_final:,}-token budget) "
+            "produced this response."
+        )
+    return (
+        "- **Reasoning-only truncation re-ask**: YES — this response "
+        "comes from an escalated retry on the budget ladder"
+        f"{_stage_detail}{_initial_detail}. If the response is still "
+        "empty, treat this as a measurement limitation "
+        "(non-terminating reasoning chain), not as model failure."
+    )
 
 
 def _append_token_usage_block(system_prompt: str, token_usage_context: dict[str, Any] | None) -> str:

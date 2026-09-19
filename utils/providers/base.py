@@ -378,3 +378,268 @@ class BaseProviderClient:
                         raise e
         logger.error("❌ All token limits in the cascade were rejected by the provider API.")
         raise last_exception or Exception("Token fallback cascade failed unexpectedly.")
+
+    # ── Reasoning Truncation Re-Ask: Eskalationsleiter ─────────────────
+
+    # Config-Defaults, wenn benchmark_config.yaml keine reasoning_reask-Sektion hat
+    _REASK_DEFAULT_CEILINGS: tuple[int, ...] = (24000, 32000)
+    _REASK_DEFAULT_MAX_ESCALATIONS = 2
+
+    def _maybe_reask_reasoning_truncation(
+        self,
+        content: str,
+        model: str,
+        prompt: str,
+        temperature: float,
+        stream_handler: Callable[[str], None] | None,
+        kwargs: dict[str, Any],
+        query: Callable[..., str],
+        budget_cap: int | None = None,
+    ) -> str:
+        """Reasoning-only Truncation erkennen und über die Eskalationsleiter klettern.
+
+        Trigger (alle Bedingungen müssen erfüllt sein):
+        1. Noch nicht eskaliert (``kwargs['_reasoning_reask']``-Guard — die
+           Leiter klettert selbst in dieser Methode; Nested-Query-Aufrufe
+           dürfen nicht erneut eskalieren).
+        2. Kein PC-Modul (``kwargs['_module_key']`` — PC v3 hat seine eigene
+           Leiter mit Thinking-Off, die dort autoritativ ist).
+        3. ``finish_reason == "length"`` — der Request wurde am Token-Limit
+           abgeschnitten.
+        4. Sichtbarer Content leer — nur dann wird eskaliert. Teilweiser
+           sichtbarer Output wird akzeptiert (Comparability: kein "best of 2
+           Versuche" gegen Modelle mit nur einem Versuch).
+        5. Reasoning-Signal vorhanden (``think_content`` oder
+           ``reasoning_tokens > 0``) — die Truncation muss in der Thinking-Kette
+           passiert sein, nicht an einem leeren/gestörten Request.
+        6. Kein Exact-Modus (``kwargs['_budget_exact']`` — PC-Token-Probe,
+           pc_calibrate): Diese Queries messen Truncation-Verhalten — eine
+           Eskalation würde die Stufen-Semantik der Probe verfälschen.
+
+        Mechanismus (absolute Stufen-Deckel, config-driven): Pro Stufe wird
+        der nächste Ceiling ÜBER dem aktuellen Budget als Ziel-Budget verwendet
+        (keine Multiplikatoren — kalibrierte Starts würden explodieren). Nach
+        jeder Stufe wird der Trigger erneut geprüft (leer → nächste Stufe;
+        Teil-Output → fertig). Kein Ceiling darüber oder Cap-Block → Leiter
+        erschöpft. Stufe 1 kann aus der Card-Kalibrierung starten
+        (``cot_budget_calibration``, SSoT: ``utils/model_token_budget.py``).
+
+        Metadaten (SSoT ``last_response_metadata``): ``reasoning_reask`` (bool),
+        ``reasoning_reask_initial_budget`` (Stufe-1-Budget),
+        ``reasoning_reask_stage`` (höchster erreichter Versuch: 2/3),
+        ``reasoning_reask_exhausted`` (finale Stufe trotzdem leer) und
+        ``reasoning_reask_final_budget`` (Budget der letzten Stufe — Basis für
+        den Card-Write). Basis für Judge-Kontext
+        (``judge_evaluator._inject_token_usage_context``), Report und CSV.
+
+        Args:
+            content: Extrahierter sichtbarer Antwort-Text des Erstversuchs
+            model: Modell-ID
+            prompt: Original-Prompt (für den Re-Request)
+            temperature: Original-Sampling-Temperatur
+            stream_handler: Optionaler Stream-Handler (wird unverändert durchgereicht)
+            kwargs: Original-Query-Kwargs (wird kopiert, nicht mutiert)
+            query: Die Query-Methode des Connectors (für den Re-Request)
+            budget_cap: Optionales hartes Budget-Limit des Connectors (z.B.
+                ``model_cfg.max_tokens`` der Provider-Config). Ein Stufen-Ziel
+                über dem Cap wird verweigert (Cap-Block-Guard, sichtbare
+                Log-Zeile).
+
+        Returns:
+            Die (ggf. eskalierte) Antwort. Bei Triggern ohne erfolgreiche
+            Eskalation wird die (leere) Antwort der höchsten Stufe
+            zurückgegeben — der Erstversuch ist dann verfallen, was gewollt
+            ist: Ein leerer Erstversuch ist kein messbarer Output.
+        """
+        if content and content.strip():
+            return content
+        if kwargs.get("_reasoning_reask"):
+            return content
+        if kwargs.get("_budget_exact"):
+            return content
+        if kwargs.get("_module_key") == "political_compass":
+            return content
+        meta = getattr(self, "last_response_metadata", {}) or {}
+        if not self._reask_metadata_indicates_truncation(meta):
+            return content
+
+        ceilings, max_escalations = self._load_reask_ladder_config()
+        ladder = self._run_reask_ladder(
+            model=model,
+            prompt=prompt,
+            temperature=temperature,
+            stream_handler=stream_handler,
+            kwargs=kwargs,
+            query=query,
+            initial_budget=int(meta["token_limit_used"]),
+            ceilings=ceilings,
+            max_escalations=max_escalations,
+            budget_cap=budget_cap,
+        )
+        self._finalize_reask_metadata(ladder)
+        return ladder["content"]
+
+    def _reask_metadata_indicates_truncation(self, meta: dict[str, Any]) -> bool:
+        """Prüft die Response-Metadata auf eine Reasoning-only Truncation.
+
+        Gemeinsame Trigger-Logik für den Erstversuch und die Re-Prüfung nach
+        jeder Leiter-Stufe (Plan: Trigger-Prüfung nach JEDER Stufe erneut).
+        """
+        if meta.get("finish_reason") != "length":
+            return False
+        used = meta.get("token_limit_used")
+        if not isinstance(used, int) or used <= 0:
+            return False
+        return bool(meta.get("think_content")) or (
+            (meta.get("reasoning_tokens") or 0) > 0
+        )
+
+    def _load_reask_ladder_config(self) -> tuple[list[int], int]:
+        """Liest ceilings/max_escalations aus benchmark_config.yaml (config-driven).
+
+        Defaults ohne Sektion; ``max_escalations`` wird hart auf
+        ``len(ceilings)`` gedeckelt (Konsistenz-Regel — mehr Eskalationen als
+        Deckel wären tote Schleifen-Iterationen).
+        """
+        section = (getattr(self, "config", None) or {}).get("reasoning_reask") or {}
+        raw_ceilings = section.get("ceilings")
+        ceilings = sorted({
+            int(c) for c in (raw_ceilings or self._REASK_DEFAULT_CEILINGS) if int(c) > 0
+        }) or list(self._REASK_DEFAULT_CEILINGS)
+        max_escalations = section.get(
+            "max_escalations", self._REASK_DEFAULT_MAX_ESCALATIONS
+        )
+        if not isinstance(max_escalations, int) or max_escalations < 1:
+            max_escalations = self._REASK_DEFAULT_MAX_ESCALATIONS
+        if max_escalations > len(ceilings):
+            logger.warning(
+                "reasoning_reask.max_escalations (%d) > len(ceilings) (%d) — "
+                "hart auf %d gedeckelt.",
+                max_escalations, len(ceilings), len(ceilings),
+            )
+            max_escalations = len(ceilings)
+        return ceilings, max_escalations
+
+    @staticmethod
+    def _next_reask_ceiling(current_budget: int, ceilings: list[int]) -> int | None:
+        """Nächster absoluter Stufen-Deckel ÜBER dem aktuellen Budget (None = erschöpft)."""
+        for ceiling in ceilings:
+            if ceiling > current_budget:
+                return ceiling
+        return None
+
+    # pylint: disable=too-many-arguments, too-many-positional-arguments, too-many-locals
+    def _run_reask_ladder(
+        self,
+        *,
+        model: str,
+        prompt: str,
+        temperature: float,
+        stream_handler: Callable[[str], None] | None,
+        kwargs: dict[str, Any],
+        query: Callable[..., str],
+        initial_budget: int,
+        ceilings: list[int],
+        max_escalations: int,
+        budget_cap: int | None,
+    ) -> dict[str, Any]:
+        """Klettert die Deckel-Leiter hoch (Stufen-Loop statt Rekursion).
+
+        Returns:
+            Dict mit ``content`` (letzte Antwort), ``stage`` (höchster
+            Versuch: 1 = Erstversuch, 2/3 = Eskalationsstufen),
+            ``initial_budget``, ``final_budget`` (Budget der letzten
+            Eskalationsstufe oder None) und ``exhausted`` (True wenn mind.
+            eine Eskalation lief und der finale Output trotzdem leer blieb).
+        """
+        reask_kwargs = dict(kwargs)
+        # Nested-Query-Aufrufe dürfen nicht selbst eskalieren — die Leiter
+        # hier draußen kontrolliert alle Stufen zentral.
+        reask_kwargs["_reasoning_reask"] = True
+
+        content = ""
+        stage = 1
+        final_budget: int | None = None
+        current_budget = initial_budget
+        for _ in range(max_escalations):
+            target = self._next_reask_ceiling(current_budget, ceilings)
+            if target is None:
+                logger.debug(
+                    "Eskalationsleiter: kein Ceiling über %d — Leiter endet.",
+                    current_budget,
+                )
+                break
+            if budget_cap is not None and target > budget_cap:
+                logger.warning(
+                    "   ⛔ Eskalationsdeckel %d über Budget-Cap %s blockiert — "
+                    "Leiter stoppt (Cap-Block-Guard).",
+                    target, budget_cap,
+                )
+                break
+            attempt = stage + 1
+            logger.warning(
+                "   🔁 Tokenbudget erhöht (Stufe %d/%d, %s): %d Tokens verbrannt, "
+                "0 sichtbarer Output → Re-Ask mit %d Tokens.",
+                attempt, max_escalations + 1, model, current_budget, target,
+            )
+            reask_kwargs["max_tokens"] = target
+            content = query(
+                model=model,
+                prompt=prompt,
+                temperature=temperature,
+                stream_handler=stream_handler,
+                **reask_kwargs,
+            )
+            stage = attempt
+            final_budget = target
+            if content and content.strip():
+                logger.info(
+                    "   ✅ Re-Ask erfolgreich (Stufe %d): %d Zeichen sichtbarer "
+                    "Output (Budget %d).",
+                    attempt, len(content), target,
+                )
+                break
+            logger.warning(
+                "   ⛔ Stufe %d erneut leer (%d Tokens).", attempt, target,
+            )
+            # Trigger nach jeder Stufe erneut prüfen: Die neue Metadata muss
+            # weiterhin eine Reasoning-only Truncation zeigen, sonst (z.B.
+            # finish_reason=stop bei leerem Output = stiller Refusal) klettert
+            # die Leiter nicht weiter.
+            re_meta = getattr(self, "last_response_metadata", {}) or {}
+            if not self._reask_metadata_indicates_truncation(re_meta):
+                break
+            current_budget = target
+
+        exhausted = stage >= 2 and not (content and content.strip())
+        if exhausted:
+            logger.warning(
+                "   ⛔ Leiter erschöpft: Stufe %d (%s Tokens) ohne sichtbaren "
+                "Output — Messgrenze dokumentiert (reasoning_reask_exhausted).",
+                stage, final_budget,
+            )
+        return {
+            "content": content,
+            "stage": stage,
+            "initial_budget": initial_budget,
+            "final_budget": final_budget,
+            "exhausted": exhausted,
+        }
+
+    def _finalize_reask_metadata(self, ladder: dict[str, Any]) -> None:
+        """Schreibt die Leiter-Metadata in ``last_response_metadata`` (SSoT).
+
+        Erst nach der letzten Stufe — jede Nested-Query überschreibt die
+        Metadata, die Annotation muss auf dem finalen Stand passieren. Ohne
+        Eskalationsversuch (stage < 2) bleibt alles beim Alt-Verhalten.
+        """
+        if ladder["stage"] < 2:
+            return
+        meta = getattr(self, "last_response_metadata", {}) or {}
+        meta["reasoning_reask"] = True
+        meta["reasoning_reask_initial_budget"] = ladder["initial_budget"]
+        meta["reasoning_reask_stage"] = ladder["stage"]
+        if ladder["final_budget"] is not None:
+            meta["reasoning_reask_final_budget"] = ladder["final_budget"]
+        if ladder["exhausted"]:
+            meta["reasoning_reask_exhausted"] = True

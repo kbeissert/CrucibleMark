@@ -14,6 +14,7 @@ from utils.result_manager import ResultManager
 from utils.module_loader import load_test_class
 from utils.constants import QUALITY_EXCELLENT, QUALITY_GOOD, QUALITY_OK
 from utils.model_utils import resolve_token_budget, get_hardware_profile, resolve_model_cfg_for
+from utils.model_token_budget import get_calibrated_cot_budget
 
 from schemas.result import BenchmarkResult
 
@@ -87,6 +88,19 @@ class BaseBenchmarkRunner:
             model, _raw_budget, self.validator.config, _module_key, provider=provider
         )
 
+        # Card-First-Sichtbarkeit: Startete Stufe 1 aus der Card-Kalibrierung
+        # (cot_budget_calibration) statt beim Modul-Budget? resolve_token_budget
+        # wendet die Kalibrierung via max() an — greift sie, ist das aufgelöste
+        # Budget exakt das kalibrierte (PC ausgenommen: eigene v3-Leiter).
+        _calibrated = (
+            get_calibrated_cot_budget(model) if _module_key != "political_compass" else None
+        )
+        _cot_calibrated_start = (
+            _calibrated is not None
+            and _calibrated > (_raw_budget or 0)
+            and _token_budget == _calibrated
+        )
+
         # exec_result is now a BenchmarkResult object
         # _module_key wird mitübergeben damit openai.py das Reasoning-Budget per Modul nachschlagen kann
         if _token_budget is not None:
@@ -94,12 +108,21 @@ class BaseBenchmarkRunner:
         else:
             exec_result = test_instance.execute(model, self.client, provider=provider)
 
+        if _cot_calibrated_start:
+            exec_result.cot_calibrated_start = True
+
         # Inject finish_reason + Token-Limit-Metadaten (SSoT: _inject_client_metadata).
         # Review 2026-08-15: vorher war die Logik hier INLINE dupliziert UND wurde
         # zusätzlich via _inject_client_metadata nochmal ausgeführt (Doppel-Write
         # derselben Felder). Die Methode deckt alle Felder ab — inklusive
         # token_limit_fallback-Priorität vor token_limit_cutoff.
         self._inject_client_metadata(exec_result)
+
+        # Card-Persistierung NACH Test-Abschluss (kein Card-IO mitten in der
+        # Query — der Connector liefert nur Metadata, der Runner schreibt):
+        # Erfolgreiche Eskalation (Stufe >= 2, sichtbarer Output) →
+        # cot_budget_calibration. Erschöpfung → kein Budget-Write.
+        self._persist_cot_calibration_if_earned(exec_result, model)
 
         return test_instance, exec_result
 
@@ -143,6 +166,8 @@ class BaseBenchmarkRunner:
         if tc is not None:
             exec_result.think_content = tc
 
+        self._inject_reask_ladder_metadata(exec_result, meta)
+
         # Echte Token-Breakdown aus dem Client (SSoT: LLMClient.query()).
         # Nur überschreiben, wenn das Modul keinen höheren Aggregat-Wert
         # gesetzt hat (Multi-Call-Module wie ToolUse summieren mehrere Calls).
@@ -153,6 +178,60 @@ class BaseBenchmarkRunner:
         ot = getattr(self.client, "last_output_tokens", 0)
         if ot and (not exec_result.output_tokens or ot > exec_result.output_tokens):
             exec_result.output_tokens = ot
+
+    @staticmethod
+    def _inject_reask_ladder_metadata(exec_result: BenchmarkResult, meta: dict) -> None:
+        """Reasoning-only Truncation Eskalationsleiter (Transparenz-Metadata).
+
+        Der Erstversuch wurde am Token-Limit ohne sichtbaren Output
+        abgeschnitten und über die Deckel-Leiter (24k → 32k) eskaliert.
+        Ohne Eskalation (reasoning_reask fehlt) bleibt alles unverändert.
+        """
+        if not meta.get("reasoning_reask"):
+            return
+        exec_result.reasoning_reask = True
+        exec_result.reasoning_reask_initial_budget = meta.get(
+            "reasoning_reask_initial_budget"
+        )
+        stage = meta.get("reasoning_reask_stage")
+        if stage is not None:
+            exec_result.reasoning_reask_stage = int(stage)
+        if meta.get("reasoning_reask_exhausted"):
+            exec_result.reasoning_reask_exhausted = True
+        final_budget = meta.get("reasoning_reask_final_budget")
+        if final_budget is not None:
+            exec_result.reasoning_reask_final_budget = int(final_budget)
+
+    def _persist_cot_calibration_if_earned(self, exec_result: BenchmarkResult, model: str) -> None:
+        """Card-Write der Eskalationsleiter-Kalibrierung (NACH Test-Abschluss).
+
+        Erfolgreiche Eskalation (``reasoning_reask`` + Stufe >= 2 + sichtbarer
+        Output, nicht erschöpft) → ``cot_budget_calibration`` in die Model Card
+        (kalibriertes Budget = ``reasoning_reask_final_budget``). Gilt global
+        für alle Module des Modells; Re-Kalibrierung nur nach oben (SSoT-Filter
+        in ``model_card_io.update_model_card_cot_calibration``). Erschöpfung →
+        kein Budget-Write (residualer CoT ist keine Kalibrierungs-Evidenz).
+        """
+        if not getattr(exec_result, "reasoning_reask", False):
+            return
+        if getattr(exec_result, "reasoning_reask_exhausted", False):
+            return
+        stage = getattr(exec_result, "reasoning_reask_stage", 0) or 0
+        final_budget = getattr(exec_result, "reasoning_reask_final_budget", None)
+        if stage < 2 or not final_budget:
+            return
+        if not (exec_result.raw_response or "").strip():
+            return
+        from utils.model_card_io import update_model_card_cot_calibration  # noqa: PLC0415
+
+        if update_model_card_cot_calibration(
+            model, calibrated_budget=int(final_budget), stage=int(stage),
+        ):
+            logger.info(
+                "   📌 Card-Kalibrierung geschrieben: Start-Budget %d "
+                "(cot_budget_calibration, Stufe %d) für %s.",
+                final_budget, stage, model,
+            )
 
     # pylint: disable=too-many-arguments, too-many-positional-arguments
     def build_base_result(
@@ -220,6 +299,18 @@ class BaseBenchmarkRunner:
             "token_limit_cutoff": getattr(exec_result, "token_limit_cutoff", False),
             "token_limit_fallback": getattr(exec_result, "token_limit_fallback", False),
             "token_limit_used": getattr(exec_result, "token_limit_used", None),
+            "reasoning_reask": getattr(exec_result, "reasoning_reask", False),
+            "reasoning_reask_initial_budget": getattr(
+                exec_result, "reasoning_reask_initial_budget", None
+            ),
+            "reasoning_reask_stage": getattr(exec_result, "reasoning_reask_stage", 0),
+            "reasoning_reask_exhausted": getattr(
+                exec_result, "reasoning_reask_exhausted", False
+            ),
+            "reasoning_reask_final_budget": getattr(
+                exec_result, "reasoning_reask_final_budget", None
+            ),
+            "cot_calibrated_start": getattr(exec_result, "cot_calibrated_start", False),
             "thought_tag_compliance": getattr(exec_result, "thought_tag_compliance", None),
             "think_content": getattr(exec_result, "think_content", None),
             "thinking_mode": thinking_mode,
