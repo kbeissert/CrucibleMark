@@ -109,5 +109,12 @@
     "notes": "Stratifizierte Probe: 4 Blöcke sauber @ 300, 4/5 verdächtige Blöcke eskaliert (0 greedy, 1 inkonsistent). Profil: thinking. Thinking-only-Ausnahme (dual_profile: false): Instruct-Modus nicht verfügbar — einzelner Thinking-Lauf statt Modus-Wechsel (Konzept-Doc Abschn. 11)."
   },
   "pc_profile": "thinking",
-  "cot_termination": "non_terminating"
+  "cot_termination": "non_terminating",
+  "cot_budget_calibration": {
+    "calibrated_budget": 32000,
+    "stage": 2,
+    "tested": "2026-09-20",
+    "model_version": "5.3",
+    "notes": "Automatisch kalibriert: Eskalationsleiter Stufe 2 (32000 Tokens) lieferte erstmals sichtbaren Output."
+  }
 }
