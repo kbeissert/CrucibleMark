@@ -99,7 +99,7 @@
   "profile_verified": false,
   "profile_verified_at": null,
   "profile_verified_by": null,
-  "last_modified_at": "2026-08-27",
+  "last_modified_at": "2026-09-19T12:45:43.420061+00:00",
   "heritage_ids": [
     "z-ai/glm-5.2"
   ],
@@ -112,5 +112,6 @@
     "converged_stage": 2400,
     "notes": "Stratifizierte Probe: 0 Blöcke sauber @ 300, 4/9 verdächtige Blöcke eskaliert (0 greedy, 2 inkonsistent). Profil: thinking. Thinking-only-Ausnahme (dual_profile: false): Instruct-Modus nicht verfügbar — einzelner Thinking-Lauf statt Modus-Wechsel (Konzept-Doc Abschn. 11)."
   },
-  "pc_profile": "thinking"
+  "pc_profile": "thinking",
+  "cot_termination": "terminating"
 }

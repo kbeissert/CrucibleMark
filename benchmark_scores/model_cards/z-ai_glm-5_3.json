@@ -32,7 +32,8 @@
     "Nur über GLM Coding Plan (18 bis 168 USD monatlich) und ZCode nutzbar.",
     "Reines Text-Modell ohne Bild- oder Audio-Verarbeitung.",
     "Chinesische Jurisdiktion schränkt Anwendungen mit strengen Datensouveränitäts-Vorgaben ein.",
-    "Wissensstand bis April 2026, auf Basis von GLM-5.2 ohne neues Pretraining."
+    "Wissensstand bis April 2026, auf Basis von GLM-5.2 ohne neues Pretraining.",
+    "Nicht-terminierendes CoT: 9 Reasoning-only Truncations im Benchmark-Run (2026-08-26) — ux_writing_002 1.05% @12000 rtok, cli005 0% @24000 rtok (erhöhtes Budget vollständig verbrannt), content_transformation_002/005, documentation_quality_002/003/004, ux_writing_004, code_quality_001. Budget-Erhöhung ist wirkungslos; Ø 70.2% vs. Flash-Variante 81.4% (0 Burns) erklärt sich über die Burns."
   ],
   "judge_context_hint": "GLM-5.3 ist ein 744-Milliarden-Parameter-MoE-Modell mit 40 Milliarden aktiven Parametern pro Token, optimiert für agentische Coding- und Security-Aufgaben. Reasoning ist verpflichtend aktiv und nicht deaktivierbar; CoT erscheint als reasoning_content oder reasoning_tokens in Provider-Metadaten, nicht als Inline-Tag im Antworttext. Bewerte Programmier- und Schlussfolgerungs-Leistung mit drei Effort-Stufen (low, high, max, Standard max); offene Gewichte und bestätigte Lizenz lagen zum Bewertungszeitpunkt noch nicht vor.",
   "architecture_tags": [
@@ -94,7 +95,7 @@
   "profile_verified": false,
   "profile_verified_at": null,
   "profile_verified_by": null,
-  "last_modified_at": "2026-08-23",
+  "last_modified_at": "2026-09-19T12:45:43.419664+00:00",
   "heritage_ids": [
     "z-ai/glm-5.2"
   ],
@@ -107,5 +108,6 @@
     "converged_stage": 2400,
     "notes": "Stratifizierte Probe: 4 Blöcke sauber @ 300, 4/5 verdächtige Blöcke eskaliert (0 greedy, 1 inkonsistent). Profil: thinking. Thinking-only-Ausnahme (dual_profile: false): Instruct-Modus nicht verfügbar — einzelner Thinking-Lauf statt Modus-Wechsel (Konzept-Doc Abschn. 11)."
   },
-  "pc_profile": "thinking"
+  "pc_profile": "thinking",
+  "cot_termination": "non_terminating"
 }

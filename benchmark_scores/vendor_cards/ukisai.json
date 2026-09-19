@@ -2,29 +2,29 @@
   "vendor_id": "ukisai",
   "display_name": "UkisAI",
   "company": "UkisAI (Applied AI Lab)",
-  "headquarters": "Belgrade, Serbia / Eindhoven, Netherlands",
-  "founding_year": 0,
-  "pricing_model": "open-weights+free-tier",
+  "headquarters": "Belgrade, Serbia (HQ); zusätzliche Standorte in Eindhoven (Niederlande) und Wilmington, Delaware (USA)",
+  "founding_year": 2023,
+  "pricing_model": "open-weights+free-tier (research API rate-limited auf 5 RPM)",
   "api_base_url": "https://ukisai.com/api/swift/v1",
   "api_documentation_url": "https://ukisai.com/products/swift",
   "deployment": {
     "cloud_act_exposure": true,
-    "applicable_law": "EU (DSGVO); US-Entität in Wilmington, DE (CLOUD Act)",
-    "data_residency": "EU (Belgrad/Eindhoven); optionales Self-Hosting",
+    "applicable_law": "DSGVO gilt extraterritorial bei Verarbeitung von EU-Nutzerdaten (Art. 3 DSGVO); direkte DSGVO-Anwendung über den Eindhoven-Standort (NL, EU-Mitgliedstaat); Belgrad-Standort ist drittstaatlich (Serbien, kein EU-Mitglied, kein Angemessenheitsbeschluss); US-Entität in Wilmington, DE unterliegt dem CLOUD Act.",
+    "data_residency": "Eindhoven (NL) = EU-Gebiet mit direkter DSGVO-Anwendung; Belgrad (Serbien) = Drittstaat ohne EU-Angemessenheitsbeschluss; optionales Self-Hosting verlagert Datenhaltung vollständig zum Nutzer.",
     "gdpr_dpa_available": true,
-    "eu_adequacy_decision": true,
+    "eu_adequacy_decision": false,
     "data_retention_days": -1,
     "chinese_nsl_risk": "none"
   },
-  "privacy_note": "UkisAI ist ein Europa-basiertes Applied-AI-Lab mit Standorten in Belgrad, Eindhoven und einer US-Entität in Wilmington (Delaware). Die Swift-Gewichte sind gated, aber frei abrufbar (Swift Open License v1.0, kommerzielle Nutzung bis 1 Mio. USD Jahresumsatz kostenfrei); lokale Nutzung überträgt keine Daten an den Hersteller. Die eigene API (ukisai.com/api/swift/v1) ist für Forschungszwecke kostenfrei und wird in EU-Regionen betrieben; aufgrund der US-Entität besteht ein theoretisches CLOUD-Act-Exposure.",
+  "privacy_note": "UkisAI ist ein 2023 gegründetes Applied-AI-Lab mit Hauptsitz in Belgrad, Serbien, sowie Standorten in Eindhoven (NL) und einer US-Entität in Wilmington, Delaware. Wichtig: Serbien ist kein EU-Mitgliedstaat und besitzt keinen EU-Angemessenheitsbeschluss — Datenübermittlungen an den Belgrad-Standort benötigen bei EU-Personenbezug zusätzliche Garantien (z.B. Standardvertragsklauseln), auch wenn UkisAI DSGVO-konforme DPAs anbietet. Die US-Entität in Wilmington begründet ein theoretisches CLOUD-Act-Exposure. Öffentliche Selbstdarstellungen sind teilweise inkonsistent (LinkedIn nennt abweichend 'France/Serbia based' und San Francisco statt Eindhoven/Wilmington), was auf ungefestigte Unternehmenskommunikation hindeutet. Die Swift-Gewichte sind gated, aber frei abrufbar (Swift Open License v1.0, kommerzielle Nutzung bis 1 Mio. USD Jahresumsatz kostenfrei); lokale Nutzung überträgt keine Daten an den Hersteller. Die eigene Forschungs-API ist kostenfrei, aber auf 5 Requests/Minute limitiert und läuft auf von NVIDIA bereitgestelltem Compute.",
   "notable_models": [
     "Swift-Qwen3.8-27B (Reasoning-Effizienz-Finetune auf Qwen3.8-27B)"
   ],
   "unknown": false,
-  "generated_at": "2026-09-14T15:35:00.000000+00:00",
-  "last_verified_at": "2026-09-14",
+  "generated_at": "2026-09-18T22:15:00.000000+00:00",
+  "last_verified_at": "2026-09-18",
   "verification_source": "https://ukisai.com",
   "profile_verified": true,
-  "profile_verified_at": "2026-09-14",
-  "profile_verified_by": "llm:webfetch"
+  "profile_verified_at": "2026-09-18",
+  "profile_verified_by": "llm:websearch"
 }

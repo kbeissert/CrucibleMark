@@ -1,29 +1,29 @@
 {
   "vendor_id": "accio_lab",
   "display_name": "Accio-Lab",
-  "company": "Accio Team (GitHub: Accio-Lab)",
-  "headquarters": "unknown",
-  "founding_year": 0,
+  "company": "Accio Team (Forschungsgruppe innerhalb der Alibaba Group)",
+  "headquarters": "Hangzhou, VR China (über Alibaba Group; kein separater Rechtssitz des Accio-Teams dokumentiert)",
+  "founding_year": "unknown",
   "pricing_model": "open-source-self-hosted",
   "api_base_url": null,
   "api_documentation_url": null,
   "deployment": {
     "cloud_act_exposure": false,
-    "applicable_law": "Unknown",
-    "data_residency": "Unknown",
+    "applicable_law": "VR China: Alibaba als Entwicklerkonzern unterliegt dem National Intelligence Law (2017), Data Security Law (2021) und Cybersecurity Law (2017), unabhängig vom Hosting-Ort der Gewichte. Bei vollständigem Self-Hosting durch den Nutzer entsteht keine direkte Datenverarbeitung durch den Entwickler.",
+    "data_residency": "Kein API-Betrieb durch den Entwickler; bei Self-Hosting verbleiben Daten vollständig in der Infrastruktur des Nutzers ohne Telemetrie an Alibaba.",
     "gdpr_dpa_available": "unknown",
     "eu_adequacy_decision": "unknown",
     "data_retention_days": -1,
-    "chinese_nsl_risk": "none"
+    "chinese_nsl_risk": "medium"
   },
-  "privacy_note": "Accio-Lab ist der öffentlich identifizierbare Publisher von Occamy-1.0 (HF-Org Accio-Lab, GitHub: Accio-Lab/occamy, Projektseite accio-lab.github.io/occamy, arXiv 2609.11977; Korrespondenz-Autoren Junbo Li und Hongwei Xue, 43 Co-Autoren ohne ausgewiesene institutionelle Affiliations). Vertrieb ausschließlich als offene Gewichte (BF16, FP8, NVFP4, GGUF, MLX) über Hugging Face — kein API-Betrieb, daher keine Datenverarbeitung durch den Publisher. Sitz/Jurisdiktion des Teams sind öffentlich nicht dokumentiert; für lokale Nutzung der Gewichte besteht kein Drittlandtransfer-Risiko.",
+  "privacy_note": "Accio-Lab ist die öffentlich sichtbare Publisher-Identität (HF-Org Accio-Lab, GitHub Accio-Lab/occamy, Projektseite accio-lab.github.io/occamy, arXiv 2609.11977) einer Forschungsgruppe, die laut unabhängiger Berichterstattung Teil der Alibaba Group ist — bestätigt über mehrere offizielle Repositories. Das Paper selbst weist 43 Co-Autoren ohne individuelle institutionelle Affiliations aus, die Alibaba-Zugehörigkeit ist also nicht im Paper, sondern extern dokumentiert. Rechtlich bindet Chinas National Intelligence Law, Data Security Law und Cybersecurity Law Alibaba als Entwickler unabhängig vom Ausführungsort der Gewichte. Vertrieb erfolgt ausschließlich als offene Gewichte (BF16, FP8, NVFP4, GGUF, MLX) über Hugging Face — kein API-Betrieb, daher keine Telemetrie an den Entwickler bei lokalem Self-Hosting. Forensische Analysen vergleichbarer PRC-Open-Weight-Modelle fanden laut HiddenLayer keine technischen Backdoors; das rechtliche Entwickler-Risiko bleibt davon unberührt. Zusätzlich offen: ungeklärte Anthropic-Vorwürfe (Juni 2026) gegen mit Alibabas Qwen-Lab verlinkte Akteure bezüglich unautorisierter Claude-Datenextraktion — nicht unabhängig bestätigt, aber relevant für Trainingsdaten-Provenienz-Bewertungen dieses Modells.",
   "notable_models": [
     "Occamy 1.0 35B-A3B (Qwen3.6-35B-A3B Post-Training)"
   ],
   "unknown": false,
-  "generated_at": "2026-09-18T07:28:00.077338+00:00",
+  "generated_at": "2026-09-18T22:20:00.000000+00:00",
   "last_verified_at": "2026-09-18",
-  "verification_source": "https://huggingface.co/Accio-Lab",
+  "verification_source": "https://www.techtimes.com/articles/327532/20260915/alibaba-releases-open-weights-ai-agent-claiming-frontier-co-work-scores-3b-active-parameters.htm",
   "profile_verified": true,
   "profile_verified_at": "2026-09-18",
   "profile_verified_by": "llm:websearch"
