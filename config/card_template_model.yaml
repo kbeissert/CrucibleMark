@@ -497,6 +497,20 @@ optional_fields:
     description: "PC-Token-Probe-Ergebnis: {budget (int|null), classification (self_limiting|inconsistent|greedy_uncapped), profile (thinking|hybrid_dual|instruct), tested (ISO-Datum), converged_stage (int|null), notes (str)}"
     consumers: [probe, political_compass, token_budget]
     since: "v5.2"
+
+  # Coverage-Regel-Flag (Konzept-Doc Abschn. 11): Das Modell läuft aus
+  # Verlustgründen im Instruct-Modus (hybrid_dual mit Thinking-Profil, aber
+  # verlorener PC-Coverage) — Transparenz-Pfad, unabhängig vom Token-Probe.
+  # Load-bearing: utils/model_token_budget.read_pc_profile_flag() liest den
+  # Flag für den PC-Report (statistics.pc_calibration) und die Bias-Report-
+  # Annotation. true = Ersatzlauf dokumentiert, kein greedy_uncapped-Befund.
+  - name: pc_profile_forced_instruct
+    type: bool
+    required: false
+    default: null
+    description: "Flag: PC-Lauf erzwungen im Instruct-Modus (Coverage-Verlust-Ersatz, nicht greedy_uncapped-Klassifikation)"
+    consumers: [pc, token_budget, review]
+    since: "v5.2.2"
     example: {"budget": 780, "classification": "self_limiting", "profile": "thinking", "tested": "2026-08-29", "converged_stage": 600, "notes": "Konvergiert bei 600, Kontrollstufe 1200 stabil."}
 
   # PC-Profil-Entscheidung (v2-Probe, stratifiziertes Sampling über alle Blöcke):
@@ -629,6 +643,18 @@ optional_fields:
     default: null
     description: "Reproduzierbarkeits-Seed (int). null = Pipeline-Default (kein Seed)."
     consumers: [asset, probe]
+
+  # Sampling-Parameter-Gruppe (neben seed/stop_sequences/temperature): Cloud-Cards
+  # dokumentieren hier den im Benchmark verwendeten presence/repetition-Penalty
+  # (null = Provider-Default). Konsolidiert 2026-09-20 — Feld existierte in
+  # Cloud-Cards, war aber nie im Template registriert (Validator-WARN).
+  - name: presence_repeat
+    type: float
+    required: false
+    default: null
+    description: "Presence-/Repetition-Penalty des Test-Laufs (float). null = Provider-Default."
+    consumers: [asset, probe, review]
+    since: "v5.3.2"
     since: "v4.7.2"
     example: 42
 

@@ -39,6 +39,10 @@ providers:
       enabled: true
       max_tokens: 32768
       env_var: ANTHROPIC_API_KEY
+      # 2026-09-20: model_max_tokens-Override (claude-haiku-4-5: 8192) entfernt —
+      # konzeptionell überholt (SSoT: Model Card max_output_tokens; Kosten sind
+      # Auswertungsgegenstand, keine stille Messgrenze). Siehe Deprecation-Hinweis
+      # bei openrouter.model_max_tokens.
       model_max_tokens:
         claude-haiku-4-5-20251001: 8192
       models:
@@ -197,38 +201,20 @@ providers:
       # statt am alten 16384-Cap.
       max_tokens: 32768
       env_var: OPENROUTER_API_KEY
-      # Per-Modell Token-Caps (überschreiben den Provider-Default 32768).
-      # Senkende Overrides = Kosten-Steuerung, bewusst erhalten.
+      # ⚠️ DEPRECATED (Session 110, 2026-09-20): model_max_tokens ist konzeptionell
+      # überholt — die Model Card ist SSoT für harte Modell-Grenzen
+      # (max_output_tokens, gelesen via _resolve_effective_budget_cap), und die
+      # Eskalationsleiter deckt Reasoning-Burns ab. Alle Overrides wurden entfernt:
+      # Die früheren Erhöhungen (16000–25000 auf den alten 16384-Default) sind durch
+      # den Provider-Default 32768 überholt; senkende Kosten-Overrides sind als
+      # stille Messgrenze unzulässig (Kosten = Preispunkt der Auswertung).
+      # Neue Einträge nur noch mit dokumentierter Evidenz — bevorzugt Card-Feld.
       model_max_tokens:
-        moonshotai/kimi-k2.7-code: 25000
-        moonshotai/kimi-k2.6: 20000
-        moonshotai/kimi-k2.5-0127: 18000
-        moonshotai/kimi-k2-thinking-20251106: 16000
-        moonshotai/kimi-k2: 16000
-        deepseek/deepseek-v4.1-flash: 16000
-        deepseek/deepseek-v4-pro: 16000
-        deepseek/deepseek-v4-flash: 16000
+      # (leer — siehe Deprecation-Hinweis oben; historische Einträge 2026-09-20
+      # entfernt: kimi-k2.x 16000–25000, deepseek-v4.x 16000, mimo-v2.5 20000/24000,
+      # qwen3.8-flash 24000, GLM-5.3/Flash 24000 — Erhöhungen auf den alten
+      # 16384-Default sind durch 32768 überholt, senkende Kosten-Caps unzulässig.)
 
-        # Xiaomi MiMo Thinking-Modelle — Reasoning-Anteile benötigen höheres Budget
-        xiaomi/mimo-v2.5-pro: 20000
-        xiaomi/mimo-v2.5: 24000
-
-        # 2026-09-20 entfernt (Session 110): Die senkenden GLM-Overrides
-        # (z-ai/glm-5.3 / z-ai/glm-5.3-flash: 24000) blockierten die
-        # Eskalationsleiter still — Card-Kalibrierung (32000) und Stufe-3-Re-Asks
-        # wurden unsichtbar auf 24000 gecappt („Re-Ask mit 32000" war faktisch ein
-        # identischer 24000-Request). Die alte Logik (Cap über Modul-Budget legen,
-        # damit min() nicht auf Provider-Default 16384 drosselt) ist obsolet:
-        # Provider-Default ist jetzt 32768, harte Modell-Grenzen gehören in die
-        # Model Card (max_output_tokens), Kosten sind Auswertungsgegenstand
-        # (Preispunkt) — keine stille Messgrenze.
-
-        # Qwen3.8-Flash — Thinking-Optional, aber nicht-terminierender CoT.
-        # Session-Befund 2026-08-27 (code_quality_001): 16384 → 20000 Output-Tokens,
-        # jeweils 100% Reasoning, 0 sichtbarer Output, Score 0%. Höheres max_tokens
-        # löst das nicht — das Thinking-Budget wird separat gedeckelt (siehe
-        # model_reasoning_config).
-        qwen/qwen3.8-flash: 24000
       # Per-Modell Reasoning-Config (OpenRouter Unified-Parameter `reasoning`).
       # Begrenzt das Thinking-Budget separat vom Output-Budget für Modelle mit
       # nicht-terminierendem CoT. Wird in _build_openrouter_params() in extra_body

@@ -215,7 +215,9 @@ class BaseProviderClient:
         from utils.model_utils import internal_id_to_config_form
 
         provider_cfg = self._get_provider_cfg()
-        model_limits = provider_cfg.get("model_max_tokens", {})
+        # `or {}` — eine leere YAML-Struktur (`model_max_tokens:`) liefert None,
+        # und der .get()-Default greift nur bei fehlendem, nicht bei None-Wert.
+        model_limits = provider_cfg.get("model_max_tokens") or {}
         config_form = internal_id_to_config_form(model)
         cap = model_limits.get(model)
         if cap is None:
