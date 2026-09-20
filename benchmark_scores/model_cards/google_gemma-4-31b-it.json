@@ -14,7 +14,6 @@
   "use_case_primary": "generalist",
   "parameter_architecture": "dense",
   "params_total_b": 31.0,
-  "params_active_b": 31.0,
   "context_window_k": 256,
   "knowledge_cutoff": "2025-06",
   "summary": "Gemma 4 31B als Cloud-API-Variante von Google DeepMind, mit nativem Zugang zu Text-, Bild-, Audio- und Video-Eingaben ohne lokale Hardware-Anforderungen. Unter Apache-2.0-Lizenz stehen die Gewichte auch für lokales Deployment zur Verfügung, diese Variante beschreibt jedoch die Cloud-Nutzung mit einem Kontextfenster von 128.000 Tokens.",

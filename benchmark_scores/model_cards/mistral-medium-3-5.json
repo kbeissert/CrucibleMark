@@ -14,7 +14,6 @@
   "use_case_primary": "generalist",
   "parameter_architecture": "dense",
   "params_total_b": 128.0,
-  "params_active_b": 128.0,
   "context_window_k": 256,
   "knowledge_cutoff": "2025-12",
   "summary": "Mistral Medium 3.5 ist Mistral AIs Frontier-Modell mit Fokus auf agentische Workflows und Coding. Mit 128 Milliarden Parametern arbeitet das Modell bei einem Kontextfenster von 256.000 Tokens und unterstützt multimodale Eingaben für Text und Bild. Als Open-Weights-Modell unter Modified-MIT-Lizenz lokal oder über die Cloud-API nutzbar, aus einem europäischen Anbieter-Umfeld mit DSGVO-Konformität.",

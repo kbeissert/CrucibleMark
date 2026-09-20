@@ -14,7 +14,6 @@
   "use_case_primary": "generalist",
   "parameter_architecture": "dense",
   "params_total_b": 14.0,
-  "params_active_b": 14.0,
   "context_window_k": 128,
   "knowledge_cutoff": "2024-09",
   "summary": "Hermes 4 14B Abliterated ist die offene, ungebremste Variante von NousResearch auf Qwen3-14B-Basis: 14 Milliarden dichte Parameter, Apache-2.0-Lizenz, 128.000 Tokens Kontext, hybrides Reasoning mit Think-Tags und Tool-Use. Die Sicherheitsfilter wurden gezielt entfernt, wodurch sich das Modell für Forschung, kreative Schreibarbeit und Agenten-Workflows eignet — nicht als produktionskonservativer Assistant.",

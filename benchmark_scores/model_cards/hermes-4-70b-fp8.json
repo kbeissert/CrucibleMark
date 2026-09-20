@@ -51,7 +51,6 @@
   ],
   "output_price_per_1m": null,
   "parameter_architecture": "dense",
-  "params_active_b": 70,
   "params_total_b": 70,
   "presence_penalty": null,
   "primary_focus": "hybrid-reasoning",

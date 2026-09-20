@@ -14,7 +14,6 @@
   "use_case_primary": "generalist",
   "parameter_architecture": "dense",
   "params_total_b": 28.0,
-  "params_active_b": 28.0,
   "context_window_k": 262,
   "knowledge_cutoff": "2025-12",
   "summary": "Swift Qwen 3.8 27B ist UkisAIs Reasoning-Effizienz-Finetune auf Qwen 3.8 27B: bis zu 58 Prozent weniger Thinking-Tokens bei unter einem Prozent Performance-Verlust und rund doppelt so hoher Durchsatz auf Reasoning-Aufgaben. NVFP4-Quantisierung mit 262.000 Tokens Kontext, MTP-Head für Speculative Decoding und dokumentiertem Tool-Use — Lizenz mit kommerzieller ARR-Schwelle.",

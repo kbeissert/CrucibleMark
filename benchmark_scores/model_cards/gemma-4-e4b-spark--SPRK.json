@@ -14,7 +14,6 @@
   "use_case_primary": "generalist",
   "parameter_architecture": "dense",
   "params_total_b": 4.5,
-  "params_active_b": 4.5,
   "context_window_k": 128,
   "knowledge_cutoff": "2025-01",
   "summary": "4,5 Milliarden effektive Parameter, Apache-2.0-Lizenz und Edge-Klasse: Gemma 4 E4B ist Googles Per-Layer-Embedding-Hybrid mit nativem Text-, Bild- und Audio-Verständnis. Läuft lokal mit sehr geringem Speicherbedarf, bietet 128.000 Tokens Kontext und konfigurierbares Thinking. Eine leistungs-fähige Wahl für multimodale Edge-Setups, die nicht in die Frontier-Klasse zielt — Reserven für sehr komplexe Aufgaben fehlen.",

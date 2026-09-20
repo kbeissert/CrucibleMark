@@ -14,7 +14,6 @@
   "use_case_primary": "agentic",
   "parameter_architecture": "dense",
   "params_total_b": 29.6,
-  "params_active_b": 29.6,
   "context_window_k": 131,
   "knowledge_cutoff": "2026-01",
   "summary": "Muse Glimmer 30B (10. August 2026) ist Meta Superintelligence Labs' erstes offenes Modell unter Apache-2.0-Lizenz und läuft ohne EU-Ausschlussklausel für lokalen Betrieb. Das dichte 29,6-Milliarden-Paramter-Modell mit zusätzlichem 1,8-Milliarden-Paramter-Vision-Encoder verarbeitet Text und Bild in 131.072 Tokens Kontext und liefert mit DFlash-Speculative-Decoder bis zu 233 Tokens/Sekunde auf einer Consumer-GPU — Workstation-Klasse mit echter Desktop-Tauglichkeit.",

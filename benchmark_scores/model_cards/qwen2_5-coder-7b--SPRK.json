@@ -14,7 +14,6 @@
   "use_case_primary": "coding",
   "parameter_architecture": "dense",
   "params_total_b": 7.61,
-  "params_active_b": 7.61,
   "context_window_k": 128,
   "knowledge_cutoff": "2024-09",
   "summary": "Eine Q6_K-GGUF-Distribution von Qwen 2.5 Coder 7B für lokales Coding: 7,6 Milliarden dichte Parameter, Apache-2.0-Lizenz, spezialisiert auf Code-Generierung, Debugging und Reparatur. Die Familie unterstützt 128.000 Tokens Kontext, im GGUF-Setup sind nativ oft nur 32.000 ohne Long-Context-Konfiguration verfügbar. Voll kommerziell nutzbar, kompakt und effizient auf Workstation-Hardware.",

@@ -14,7 +14,6 @@
   "use_case_primary": "agentic",
   "parameter_architecture": "dense",
   "params_total_b": 27.8,
-  "params_active_b": 27.8,
   "context_window_k": 262,
   "knowledge_cutoff": null,
   "summary": "Qwen3.8-27B Uncensored FP8 ist die abliterierte Community-Variante von Alibabas 27-Milliarden-Parameter-Modell: ein dichter, nativ multimodaler Build mit 262.000 Tokens Kontext, erweiterbar auf rund eine Million via YaRN. Die Refusal-Direction wurde entfernt, Architektur, Vision-Tower und MTP-Speculative-Decoding bleiben unangetastet. Apache-2.0-Lizenz, lokales Deployment — gedacht für Red-Teaming, Sicherheitsforschung und Souveränität, nicht als Endkonsumenten-Assistant.",

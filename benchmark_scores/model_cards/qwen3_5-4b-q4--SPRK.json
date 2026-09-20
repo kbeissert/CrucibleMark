@@ -13,7 +13,6 @@
   "use_case_primary": "generalist",
   "parameter_architecture": "dense",
   "params_total_b": 4.0,
-  "params_active_b": 4.0,
   "context_window_k": 262,
   "knowledge_cutoff": "2025-06",
   "summary": "Vier Milliarden dichte Parameter, Apache-2.0-Lizenz und 262.000 Tokens Kontext: Qwen 3.5 4B ist Alibabas Nano-Klasse-Modell als Unsloth-Dynamic-GGUF mit gemischter Bittiefenverteilung pro Schicht. Thinking lässt sich optional zuschalten, läuft komplett lokal und eignet sich für allgemeine Aufgaben auf ressourcenbeschränkter Hardware.",

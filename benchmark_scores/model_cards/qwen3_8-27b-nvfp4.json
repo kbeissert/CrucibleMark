@@ -14,7 +14,6 @@
   "use_case_primary": "generalist",
   "parameter_architecture": "dense",
   "params_total_b": 27.8,
-  "params_active_b": 27.8,
   "context_window_k": 262,
   "knowledge_cutoff": "2025-12",
   "summary": "Qwen3.8-27B ist Alibabas dichte 27,8-Milliarden-Parameter-Variante der Qwen3.8-Familie (14. August 2026), nativ multimodal mit Vision-Encoder für Text, Bild und Video unter Apache-2.0-Lizenz. Die 64-Layer-Hybrid-Architektur aus Gated-DeltaNet- plus Gated-Attention-Blöcken plus Multi-Token-Prediction liefert 262.144 Tokens Kontext (erweiterbar auf rund eine Million via YaRN), konfigurierbares Reasoning (xhigh/medium/low) und optionalen No-Thinking-Modus.",

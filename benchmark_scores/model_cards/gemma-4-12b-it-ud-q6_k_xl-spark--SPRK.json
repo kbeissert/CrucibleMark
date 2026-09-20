@@ -14,7 +14,6 @@
   "use_case_primary": "vision-language",
   "parameter_architecture": "dense",
   "params_total_b": 12.0,
-  "params_active_b": 12.0,
   "context_window_k": 256,
   "knowledge_cutoff": "2025-01",
   "summary": "Eine Q6_K_XL-GGUF-Distribution von Gemma 4 12B Instruct für lokales Deployment: 12 Milliarden dichte Parameter, encoder-freie Unified-Multimodal-Architektur mit Text-, Bild-, Audio- und Video-Input. Apache-2.0-Lizenz, 256.000 Tokens Kontext, kompakter als Q4-Varianten bei moderatem Mehrspeicher. Audio- und Video-Unterstützung hängen lokal vom passenden Multimodal-Projektor ab.",

@@ -14,7 +14,6 @@
   "use_case_primary": "vision-language",
   "parameter_architecture": "dense",
   "params_total_b": 12.0,
-  "params_active_b": 12.0,
   "context_window_k": 256,
   "knowledge_cutoff": "2025-01",
   "summary": "Instruct-Profil der Q6_K_XL-GGUF-Distribution von Gemma 4 12B Instruct (Unsloth) für lokales Deployment auf der DGX Spark: identische Gewichte wie das Basis-Profil, aber mit serverseitig deaktiviertem Reasoning (--reasoning off). 12 Milliarden dichte Parameter, 256.000 Tokens Kontext, Apache-2.0-Lizenz. Das Profil existiert nach der Coverage-Regel des Political-Compass-Moduls als Ersatzlauf, weil der Thinking-Lauf des Basis-Profils unter Truncations litt; es läuft als eigenständiger Benchmark-Eintrag.",

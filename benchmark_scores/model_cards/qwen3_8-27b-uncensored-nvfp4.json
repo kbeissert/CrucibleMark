@@ -7,7 +7,7 @@
   "deployment_type": "local",
   "local_deployment_possible": true,
   "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "TODO",
+  "weights_provenance_risk_rationale": "Die Basisgewichte stammen von Alibaba in China, was für regulierte Umgebungen ein Herkunfts- und Supply-Chain-Risiko darstellt. Diese Karte beschreibt jedoch eine lokal betriebene, Apache-2.0-basierte OrcaRouter-Derivatvariante mit abliterierten Gewichten und NVFP4/FP8-Quantisierung. Ohne Cloud-Egress ist das praktische Risiko geringer als bei einer API-Nutzung, bleibt aber wegen der chinesischen Herkunft und der Community-Modifikation moderat.[web:907][web:910][web:917][web:918]",
   "model_family": "Qwen3.8",
   "vendor": "Alibaba / Qwen",
   "primary_focus": "generalist",
@@ -104,7 +104,6 @@
   "last_modified_at": null,
   "heritage_ids": [],
   "community": null,
-  "weights_provenance_rationale": "Die Basisgewichte stammen von Alibaba in China, was für regulierte Umgebungen ein Herkunfts- und Supply-Chain-Risiko darstellt. Diese Karte beschreibt jedoch eine lokal betriebene, Apache-2.0-basierte OrcaRouter-Derivatvariante mit abliterierten Gewichten und NVFP4/FP8-Quantisierung. Ohne Cloud-Egress ist das praktische Risiko geringer als bei einer API-Nutzung, bleibt aber wegen der chinesischen Herkunft und der Community-Modifikation moderat.[web:907][web:910][web:917][web:918]",
   "pc_token_calibration": {
     "budget": 390,
     "classification": "self_limiting",

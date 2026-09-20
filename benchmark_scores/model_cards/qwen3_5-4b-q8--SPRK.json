@@ -13,7 +13,6 @@
   "use_case_primary": "generalist",
   "parameter_architecture": "dense",
   "params_total_b": 4.0,
-  "params_active_b": 4.0,
   "context_window_k": 262,
   "knowledge_cutoff": "2025-06",
   "summary": "Die Q8-Referenzvariante von Qwen 3.5 4B: Unsloth-Dynamic-GGUF in UD-Q8_K_XL mit nahezu Vollpräzision als hochwertigste Stufe der 4B-Reihe. Vier Milliarden dichte Parameter, 262.000 Tokens Kontext, Apache-2.0-Lizenz, komplett lokal betreibbar. Thinking lässt sich optional zuschalten; eignet sich als Quantisierungs-Referenz für Vergleiche gegenüber Q4- und Q6-Varianten derselben Familie.",

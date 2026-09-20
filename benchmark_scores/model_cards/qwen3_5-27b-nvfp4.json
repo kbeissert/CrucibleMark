@@ -14,7 +14,6 @@
   "use_case_primary": "generalist",
   "parameter_architecture": "dense",
   "params_total_b": 27.0,
-  "params_active_b": 27.0,
   "context_window_k": 262,
   "knowledge_cutoff": "2026-04",
   "summary": "Qwen 3.5 27B ist Alibabas dichte 27-Milliarden-Parameter-Variante der Qwen3.5-Familie (Februar 2026), eine offene Apache-2.0-Veröffentlichung mit nativer Multimodalität für Text, Bild und Video. Die Hybrid-Architektur aus Gated-DeltaNet- und Gated-Attention-Blöcken bietet 262.144 Tokens Kontext (erweiterbar auf rund eine Million via YaRN), bis zu 65.536 Tokens Output und starke Coding-Leistung (SWE-bench Verified 72,4) — die einzige dichte Variante der Qwen3.5-Familie.",

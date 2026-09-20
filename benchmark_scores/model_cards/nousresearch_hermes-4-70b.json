@@ -29,7 +29,6 @@
   "origin_country": "USA",
   "output_price_per_1m": 0.4,
   "parameter_architecture": "dense",
-  "params_active_b": 70.0,
   "params_total_b": 70.0,
   "primary_focus": "reasoning",
   "size_class": "Server",
