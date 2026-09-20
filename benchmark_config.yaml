@@ -181,7 +181,12 @@ modules:
     enabled: true
   political_compass:
     path: benchmark_modules/political_compass
-    enabled: true
+    # 2026-09-20 deaktiviert (Nutzer-Entscheidung): Nach der Tokenfenster-Anpassung
+    # (Provider-Caps 32768, Eskalationsleiter, Card-Kalibrierung) werden zuerst
+    # verschiedene LLMs in den Standard-/Scoring-Modulen nachgetestet, um ihre
+    # Leistungsfähigkeit unter den neuen Messbedingungen zu ermitteln. PC-Ergebnisse
+    # bleiben bestehen (kein Datenverlust); Re-Aktivierung nach der Nachtest-Serie.
+    enabled: false
   tooluse:
     path: benchmark_modules/tooluse
     enabled: true
