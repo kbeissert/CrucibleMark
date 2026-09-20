@@ -24,6 +24,9 @@ def _connector_with_truncation(monkeypatch: pytest.MonkeyPatch, card_cap: int | 
     from types import SimpleNamespace
 
     conn = object.__new__(OpenRouterClient)
+    # Alt-Semantik für die kurzen Test-Strings: min_visible_chars=15 (die
+    # Krümel-Schwelle 500 hat eigene Tests in test_last_resort_mode.py).
+    conn.config = {"reasoning_reask": {"min_visible_chars": 15}}
     # Lazy-Property `client` muss ohne API-Key auflösbar sein — der create-Aufruf
     # wird als Argument in query() evaluiert, bevor die Stubs greifen.
     conn._client = SimpleNamespace(
@@ -112,7 +115,7 @@ def test_openrouter_reask_kwargs_reach_request_params(monkeypatch):
 
     monkeypatch.setattr(conn, "_build_openrouter_params", _recording_params)
 
-    responses = iter(["", "SUCCESS AT 24K"])
+    responses = iter(["", "SUCCESS AT 24K WITH FULL OUTPUT"])
 
     def _stateful_process(*a, **k):
         call_state["n"] += 1
@@ -122,6 +125,6 @@ def test_openrouter_reask_kwargs_reach_request_params(monkeypatch):
 
     result = conn.query(model="z-ai/glm-5.3", prompt="P", temperature=1.0, stream_handler=None)
 
-    assert result == "SUCCESS AT 24K"
+    assert result == "SUCCESS AT 24K WITH FULL OUTPUT"
     assert call_state["n"] == 2
     assert seen_kwargs[1]["max_tokens"] == 24000

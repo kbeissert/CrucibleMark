@@ -426,6 +426,14 @@ class BaseProviderClient:
     # vereinzelten erschöpften Fragen — dokumentiert im Report, bewusst KEINE
     # Card-Kalibrierung. 0 deaktiviert den Modus.
     _REASK_DEFAULT_LAST_RESORT = 48000
+    # Krümel-Schwelle (Session 110): Sichtbarer Output unter diesem Zeichenwert
+    # gilt bei finish_reason=length + Reasoning-Signal als Reasoning-only
+    # Truncation (GLM-5.3 lieferte bei 32000 verbrannten Tokens 1.05 % —
+    # ~200-300 Zeichen Krümel, die als "Teil-Output" die Leiter umgingen).
+    # Substanzieller Output ab der Schwelle wird weiterhin akzeptiert
+    # (Comparability: kein best-of-2). 500 Zeichen ≈ 100-125 Tokens — eine
+    # legitime Antwort der Text-Module ist deutlich länger.
+    _REASK_DEFAULT_MIN_VISIBLE_CHARS = 500
 
     def _maybe_reask_reasoning_truncation(
         self,
@@ -493,7 +501,7 @@ class BaseProviderClient:
             zurückgegeben — der Erstversuch ist dann verfallen, was gewollt
             ist: Ein leerer Erstversuch ist kein messbarer Output.
         """
-        if content and content.strip():
+        if self._has_substantive_content(content):
             return content
         if kwargs.get("_reasoning_reask"):
             return content
@@ -634,7 +642,7 @@ class BaseProviderClient:
             )
             stage = attempt
             final_budget = target
-            if content and content.strip():
+            if self._has_substantive_content(content):
                 logger.info(
                     "   ✅ Re-Ask erfolgreich (Stufe %d): %d Zeichen sichtbarer "
                     "Output (Budget %d).",
@@ -653,7 +661,7 @@ class BaseProviderClient:
                 break
             current_budget = target
 
-        exhausted = stage >= 2 and not (content and content.strip())
+        exhausted = stage >= 2 and not self._has_substantive_content(content)
 
         # Last-Resort (letzte Stufe der Leiter, Session 110): Nach Erschöpfung,
         # Cap-Block oder fehlendem Ceiling — immer wenn die Leiter ohne
@@ -668,7 +676,7 @@ class BaseProviderClient:
         last_resort = False
         last_resort_budget: int | None = None
         re_meta = getattr(self, "last_response_metadata", {}) or {}
-        if not (content and content.strip()) and self._reask_metadata_indicates_truncation(re_meta):
+        if not self._has_substantive_content(content) and self._reask_metadata_indicates_truncation(re_meta):
             lrb = self._load_reask_last_resort_budget()
             if lrb:
                 content, stage, final_budget, last_resort, last_resort_budget, exhausted = (
@@ -701,6 +709,32 @@ class BaseProviderClient:
             "last_resort": last_resort,
             "last_resort_budget": last_resort_budget,
         }
+
+    def _load_reask_min_visible_chars(self) -> int:
+        """Krümel-Schwelle aus benchmark_config.yaml (config-driven).
+
+        Sichtbarer Output unter diesem Zeichenwert gilt bei length + Reasoning-
+        Signal als Reasoning-only Truncation (Krümel statt Teil-Output) — die
+        Leiter/das Last-Resort greift. Default 500 (siehe _REASK_DEFAULT_-
+        MIN_VISIBLE_CHARS); 0 deaktiviert die Schärfung (nur komplett leerer
+        Output triggert).
+        """
+        section = (getattr(self, "config", None) or {}).get("reasoning_reask") or {}
+        raw = section.get("min_visible_chars", self._REASK_DEFAULT_MIN_VISIBLE_CHARS)
+        try:
+            value = int(raw)
+        except (TypeError, ValueError):
+            return int(self._REASK_DEFAULT_MIN_VISIBLE_CHARS)
+        return max(0, value)
+
+    def _has_substantive_content(self, content: str) -> bool:
+        """Prüft, ob der sichtbare Output substanziell ist (Krümel-Schwelle).
+
+        ``True`` = Teil-Output wird akzeptiert (Comparability: kein best-of-2);
+        ``False`` = Krümel/leer — die Antwort gilt als Reasoning-only Truncation
+        und die Leiter/das Last-Resort greift.
+        """
+        return len((content or "").strip()) >= self._load_reask_min_visible_chars()
 
     def _load_reask_last_resort_budget(self) -> int | None:
         """Last-Resort-Budget aus benchmark_config.yaml (letzte Leiter-Stufe).
@@ -760,7 +794,7 @@ class BaseProviderClient:
         )
         stage = attempt
         final_budget = last_resort_budget
-        if content and content.strip():
+        if self._has_substantive_content(content):
             logger.warning(
                 "   ✅ Last-Resort erfolgreich (Stufe %d): %d Zeichen sichtbarer "
                 "Output (Budget %d) — Antwort bewertbar, Token-Hunger wird im "

@@ -60,7 +60,16 @@ class _ReaskClient(BaseProviderClient):
     """Minimaler Client-Stub: nur last_response_metadata und config sind relevant."""
 
     def __init__(self, metadata: dict | None = None, config: dict | None = None):
-        super().__init__(config=config or {})
+        # Alt-Semantik für die kurzen Test-Strings: min_visible_chars=15
+        # (MIN_REFUSAL_CHARS) — die Krümel-Schwelle (Default 500) hat eigene Tests.
+        merged = {"reasoning_reask": {"min_visible_chars": 15}}
+        if config:
+            for key, value in config.items():
+                if key == "reasoning_reask":
+                    merged["reasoning_reask"].update(value)
+                else:
+                    merged[key] = value
+        super().__init__(config=merged)
         self.last_response_metadata = metadata or {}
 
 
@@ -153,12 +162,12 @@ def test_reask_preserves_original_kwargs(stub_query):
 def test_ladder_full_climb_to_success(stub_query):
     """12k leer → 24k leer → 32k Erfolg: stage=3, final_budget=32000."""
     client = _ReaskClient(_truncation_metadata())
-    stub_query.container["responses"] = ["", "SUCCESS AT 32K"]
+    stub_query.container["responses"] = ["", "SUCCESS AT 32K WITH FULL OUTPUT"]
     result = client._maybe_reask_reasoning_truncation(
         content="", model="m", prompt="P", temperature=1.0,
         stream_handler=None, kwargs=_reask_kwargs(), query=stub_query,
     )
-    assert result == "SUCCESS AT 32K"
+    assert result == "SUCCESS AT 32K WITH FULL OUTPUT"
     assert [c["max_tokens"] for c in stub_query.calls] == [24000, 32000]
     meta = client.last_response_metadata
     assert meta["reasoning_reask"] is True

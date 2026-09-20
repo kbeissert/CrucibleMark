@@ -29,7 +29,16 @@ from utils.scoring.llm_judge.judge_prompt_builder import (  # noqa: E402
 
 class _ReaskClient(BaseProviderClient):
     def __init__(self, metadata: dict | None = None, config: dict | None = None):
-        super().__init__(config=config or {})
+        # Alt-Semantik für die kurzen Test-Strings: min_visible_chars=15
+        # (MIN_REFUSAL_CHARS) — die Krümel-Schwelle (Default 500) hat eigene Tests.
+        merged = {"reasoning_reask": {"min_visible_chars": 15}}
+        if config:
+            for key, value in config.items():
+                if key == "reasoning_reask":
+                    merged["reasoning_reask"].update(value)
+                else:
+                    merged[key] = value
+        super().__init__(config=merged)
         self.last_response_metadata = metadata or {}
 
 
@@ -373,6 +382,80 @@ def test_audit_block_last_resort_exhausted():
     out = buf.getvalue()
     assert "⛔ Last-Resort erschöpft: Stufe 4 (48,000 Tokens)" in out
     assert "endgültige" in out
+
+
+# ---------------------------------------------------------------------------
+# Krümel-Schwelle (min_visible_chars) — das GLM-5.3-ux_writing_002-Szenario
+# ---------------------------------------------------------------------------
+
+
+def _crumb_output() -> str:
+    """~300 Zeichen Krümel (GLM-5.3 lieferte bei 32000 verbrannten Tokens 1.05 %)."""
+    return "... " * 75
+
+
+def test_crumb_output_triggers_last_resort(stub_query):
+    """GLM-5.3-Fall: 32000 verbrannt, nur ~300 Zeichen Krümel (1.05 %) — der
+    Krümel gilt als Reasoning-only Truncation (kein Ceiling über 32000) →
+    Last-Resort greift und liefert die bewertbare Antwort."""
+    client = _ReaskClient(
+        _truncation_metadata(used=32000),
+        config={"reasoning_reask": {"min_visible_chars": 500}},  # Default-Krümel-Schwelle
+    )
+    stub_query.container["responses"] = ["SUCCESS WITH SUBSTANTIAL OUTPUT " * 20]
+    result = client._maybe_reask_reasoning_truncation(
+        content=_crumb_output(), model="m", prompt="P", temperature=1.0,
+        stream_handler=None, kwargs=_reask_kwargs(), query=stub_query,
+    )
+    assert result.startswith("SUCCESS WITH SUBSTANTIAL OUTPUT")
+    assert [c["max_tokens"] for c in stub_query.calls] == [48000]
+    meta = client.last_response_metadata
+    assert meta["reasoning_last_resort"] is True
+    assert meta["reasoning_last_resort_budget"] == 48000
+
+
+def test_substantial_output_still_accepted(stub_query):
+    """Comparability bleibt: Substanzieller Teil-Output (≥ 500 Zeichen) wird
+    akzeptiert — kein best-of-2, kein Last-Resort."""
+    client = _ReaskClient(_truncation_metadata(used=32000))
+    result = client._maybe_reask_reasoning_truncation(
+        content="Substanzielle Antwort. " * 40,  # ~920 Zeichen
+        model="m", prompt="P", temperature=1.0,
+        stream_handler=None, kwargs=_reask_kwargs(), query=stub_query,
+    )
+    assert result.startswith("Substanzielle Antwort.")
+    assert stub_query.calls == []
+
+
+def test_crumb_threshold_configurable(stub_query):
+    """min_visible_chars: 0 deaktiviert die Schärfung — nur komplett leerer
+    Output triggert (Alt-Semantik)."""
+    client = _ReaskClient(
+        _truncation_metadata(used=32000),
+        config={"reasoning_reask": {"min_visible_chars": 0}},
+    )
+    result = client._maybe_reask_reasoning_truncation(
+        content=_crumb_output(), model="m", prompt="P", temperature=1.0,
+        stream_handler=None, kwargs=_reask_kwargs(), query=stub_query,
+    )
+    assert result == _crumb_output()  # Krümel wird akzeptiert (Alt-Verhalten)
+    assert stub_query.calls == []
+
+
+def test_ladder_climbs_past_crumb_response(stub_query):
+    """Eine Stufe mit Krümel-Output (< 500 Zeichen) gilt als erfolglos — die
+    Leiter klettert weiter statt den Krümel zu akzeptieren."""
+    client = _ReaskClient(
+        _truncation_metadata(),
+        config={"reasoning_reask": {"min_visible_chars": 500}},  # Default-Krümel-Schwelle
+    )
+    stub_query.container["responses"] = [_crumb_output(), "SUCCESS WITH SUBSTANTIAL OUTPUT " * 20]
+    result = client._maybe_reask_reasoning_truncation(
+        content="", model="m", prompt="P", temperature=1.0,
+        stream_handler=None, kwargs=_reask_kwargs(), query=stub_query,
+    )
+    assert result.startswith("SUCCESS WITH SUBSTANTIAL OUTPUT")
+    assert [c["max_tokens"] for c in stub_query.calls] == [24000, 32000]
 
 
 from types import SimpleNamespace  # noqa: E402  (für die Injektions-Tests)
