@@ -322,6 +322,8 @@ def save_audit_log(
     reasoning_reask_exhausted: bool = False,
     reasoning_reask_final_budget: int | None = None,
     cot_calibrated_start: bool = False,
+    reasoning_last_resort: bool = False,
+    reasoning_last_resort_budget: int | None = None,
     **kwargs
 ) -> None:
     """
@@ -377,6 +379,8 @@ def save_audit_log(
                 reasoning_reask_exhausted=reasoning_reask_exhausted,
                 reasoning_reask_final_budget=reasoning_reask_final_budget,
                 cot_calibrated_start=cot_calibrated_start,
+                reasoning_last_resort=reasoning_last_resort,
+                reasoning_last_resort_budget=reasoning_last_resort_budget,
             )
 
             f.write("## 1. Prompt / Fragestellung\n\n")
@@ -513,6 +517,8 @@ def _write_escalation_ladder_block(
     reasoning_reask_exhausted: bool,
     reasoning_reask_final_budget: int | None,
     cot_calibrated_start: bool,
+    reasoning_last_resort: bool = False,
+    reasoning_last_resort_budget: int | None = None,
 ) -> None:
     """Schreibt den Eskalationsleiter-Info-Block (Reviewer-Traceability).
 
@@ -529,6 +535,46 @@ def _write_escalation_ladder_block(
         if reasoning_reask_final_budget
         else "Eskalationsbudget"
     )
+    # Last-Resort (letzte Leiter-Stufe): eigener, prominenter Block — die
+    # bewertete Antwort entstand unter geöffnetem Budget; der Token-Hunger und
+    # die Einsatzkosten sind der Kernbefund. KEINE Card-Kalibrierung (bewusst).
+    if reasoning_last_resort:
+        _lrb = (
+            f"{reasoning_last_resort_budget:,} Tokens"
+            if reasoning_last_resort_budget
+            else "geöffnetes Budget"
+        )
+        if reasoning_reask_exhausted:
+            f.write(
+                f"> [!CAUTION]\n"
+                f"> **⛔ Last-Resort erschöpft: Stufe {reasoning_reask_stage} ({_lrb}) "
+                f"ohne sichtbaren Output.** Auch das deutlich geöffnete Budget "
+                f"verbrannte vollständig im internen Reasoning — endgültige "
+                f"Messgrenze des Frameworks, kein Modellversagen. Die 0-%-Bewertung "
+                f"misst die Messgrenze.\n\n"
+            )
+        else:
+            f.write(
+                f"> [!CAUTION]\n"
+                f"> **🚨 Last-Resort-Modus: Stufe {reasoning_reask_stage} ({_lrb}) "
+                f"über der Erschöpfungsgrenze ({_budget}).** Die regulären "
+                f"Eskalationsstufen endeten ohne sichtbaren Output — für DIESE "
+                f"Frage wurde das Budget geöffnet, die bewertete Antwort entstand "
+                f"unter diesem geöffneten Budget.\n"
+                f"> **Einsatzkosten:** Erstversuch + Leiter + Last-Resort = "
+                f"außergewöhnlicher Ressourcen-Aufwand (API-Kosten bzw. "
+                f"Stromkosten im lokalen Betrieb) — siehe Token-Verbrauch im "
+                f"Header. Bewusste Ausnahme: KEINE Card-Kalibrierung, das "
+                f"Standard-Budget bleibt unverändert.\n\n"
+            )
+        if cot_calibrated_start:
+            f.write(
+                "> [!NOTE]\n"
+                "> **📌 Start aus Card-Kalibrierung:** Der Erstversuch lief bereits "
+                "auf einem persistierten Start-Budget (`cot_budget_calibration` in "
+                "der Model Card).\n\n"
+            )
+        return
     if reasoning_reask_exhausted:
         f.write(
             f"> [!CAUTION]\n"

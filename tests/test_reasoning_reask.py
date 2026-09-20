@@ -183,7 +183,10 @@ def test_ladder_climbs_from_floor_above_first_ceiling(stub_query):
 
 def test_ladder_exhaustion_marks_metadata(stub_query):
     """Höchste Stufe weiterhin leer → exhausted=True, leere Rückgabe."""
-    client = _ReaskClient(_truncation_metadata())
+    client = _ReaskClient(
+        _truncation_metadata(),
+        config={"reasoning_reask": {"last_resort_budget": 0}},  # Alt-Verhalten ohne Last-Resort
+    )
     stub_query.container["responses"] = ["", ""]
     result = client._maybe_reask_reasoning_truncation(
         content="", model="m", prompt="P", temperature=1.0,
@@ -199,7 +202,8 @@ def test_ladder_exhaustion_marks_metadata(stub_query):
 
 
 def test_ladder_stops_when_trigger_vanishes(stub_query):
-    """Stiller Refusal nach Eskalation (finish_reason=stop, leer) → Leiter stoppt.
+    """Stiller Refusal nach Eskalation (finish_reason=stop, leer) → Leiter stoppt
+    UND Last-Resort greift nicht (mehr Budget löst keinen Refusal).
 
     Die finale Stufe lieferte weiterhin 0 sichtbaren Output → exhausted=True
     (Messgrenze), obwohl noch ein Ceiling übrig wäre."""
@@ -329,7 +333,10 @@ def test_cap_block_refuses_escalation_beyond_cap(stub_query):
 
     Anders als die alte ×2-Logik wird nicht auf den Cap gedeckelt — es gibt
     nur absolute Stufen-Deckel, und Ziele darüber sind unzulässig."""
-    client = _ReaskClient(_truncation_metadata(used=12000))
+    client = _ReaskClient(
+        _truncation_metadata(used=12000),
+        config={"reasoning_reask": {"last_resort_budget": 0}},  # Guard-Isolation
+    )
     result = client._maybe_reask_reasoning_truncation(
         content="", model="m", prompt="P", temperature=1.0,
         stream_handler=None, kwargs=_reask_kwargs(), query=stub_query,
@@ -341,7 +348,10 @@ def test_cap_block_refuses_escalation_beyond_cap(stub_query):
 
 def test_no_reask_when_cap_blocks_escalation(stub_query):
     """Cap ≤ nächstem Ceiling → eskaliertes Budget wäre unzulässig."""
-    client = _ReaskClient(_truncation_metadata(used=24000))
+    client = _ReaskClient(
+        _truncation_metadata(used=24000),
+        config={"reasoning_reask": {"last_resort_budget": 0}},  # Guard-Isolation
+    )
     result = client._maybe_reask_reasoning_truncation(
         content="", model="m", prompt="P", temperature=1.0,
         stream_handler=None, kwargs=_reask_kwargs(), query=stub_query,
@@ -380,7 +390,7 @@ def test_ladder_config_clamps_max_escalations(stub_query):
     """max_escalations > len(ceilings) → hart auf len(ceilings) gedeckelt."""
     client = _ReaskClient(
         _truncation_metadata(),
-        config={"reasoning_reask": {"ceilings": [16000, 20000], "max_escalations": 5}},
+        config={"reasoning_reask": {"ceilings": [16000, 20000], "max_escalations": 5, "last_resort_budget": 0}},
     )
     ceilings, max_escalations = client._load_reask_ladder_config()
     assert max_escalations == 2
@@ -419,7 +429,10 @@ def test_terminal_line_on_exhausted_ladder(stub_query, caplog):
     """Erschöpfung → Messgrenzen-Zeile mit Stufe und Budget."""
     import logging
 
-    client = _ReaskClient(_truncation_metadata())
+    client = _ReaskClient(
+        _truncation_metadata(),
+        config={"reasoning_reask": {"last_resort_budget": 0}},  # Alt-Verhalten
+    )
     stub_query.container["responses"] = ["", ""]
     with caplog.at_level(logging.WARNING, logger="utils.providers.base"):
         client._maybe_reask_reasoning_truncation(

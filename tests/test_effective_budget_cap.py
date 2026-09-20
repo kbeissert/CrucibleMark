@@ -97,9 +97,16 @@ def test_ladder_cap_block_guard_sees_override(monkeypatch, caplog):
         {
             "max_tokens": 32768,
             "model_max_tokens": {"some/model": 24000},
-            "reasoning_reask": {"ceilings": [24000, 32000], "max_escalations": 2},
         },
     )
+    # reasoning_reask gehört in die benchmark_config (self.config), nicht in die
+    # Provider-Config — LR deaktiviert, damit der Cap-Block-Guard isoliert getestet
+    # wird (das LR-Verhalten bei Cap-Block hat eigene Tests in test_last_resort_mode).
+    client.config = {
+        "reasoning_reask": {
+            "ceilings": [24000, 32000], "max_escalations": 2, "last_resort_budget": 0,
+        },
+    }
     client.last_response_metadata = {
         "finish_reason": "length",
         "token_limit_used": 24000,

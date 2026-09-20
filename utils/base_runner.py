@@ -201,6 +201,11 @@ class BaseBenchmarkRunner:
         final_budget = meta.get("reasoning_reask_final_budget")
         if final_budget is not None:
             exec_result.reasoning_reask_final_budget = int(final_budget)
+        if meta.get("reasoning_last_resort"):
+            exec_result.reasoning_last_resort = True
+            lrb = meta.get("reasoning_last_resort_budget")
+            if lrb is not None:
+                exec_result.reasoning_last_resort_budget = int(lrb)
 
     def _persist_cot_calibration_if_earned(self, exec_result: BenchmarkResult, model: str) -> None:
         """Card-Write der Eskalationsleiter-Kalibrierung (NACH Test-Abschluss).
@@ -215,6 +220,12 @@ class BaseBenchmarkRunner:
         if not getattr(exec_result, "reasoning_reask", False):
             return
         if getattr(exec_result, "reasoning_reask_exhausted", False):
+            return
+        # Last-Resort-Erfolg schreibt bewusst KEINE Kalibrierung: Der geöffnete
+        # Budget-Modus ist ein dokumentierter Ausnahmelauf (nur Report-
+        # Hervorhebung) — eine Card-Kalibrierung würde Stufe 1 künftiger Läufe
+        # auf das geöffnete Budget heben und das Budget für ALLE Fragen öffnen.
+        if getattr(exec_result, "reasoning_last_resort", False):
             return
         stage = getattr(exec_result, "reasoning_reask_stage", 0) or 0
         final_budget = getattr(exec_result, "reasoning_reask_final_budget", None)
@@ -311,6 +322,10 @@ class BaseBenchmarkRunner:
                 exec_result, "reasoning_reask_final_budget", None
             ),
             "cot_calibrated_start": getattr(exec_result, "cot_calibrated_start", False),
+            "reasoning_last_resort": getattr(exec_result, "reasoning_last_resort", False),
+            "reasoning_last_resort_budget": getattr(
+                exec_result, "reasoning_last_resort_budget", None
+            ),
             "thought_tag_compliance": getattr(exec_result, "thought_tag_compliance", None),
             "think_content": getattr(exec_result, "think_content", None),
             "thinking_mode": thinking_mode,

@@ -130,6 +130,13 @@ def _inject_reask_ladder_context(_token_usage: dict[str, Any], result: dict[str,
         _token_usage["reasoning_reask_final_budget"] = int(_reask_final)
     if result.get("cot_calibrated_start"):
         _token_usage["cot_calibrated_start"] = True
+    # Last-Resort (letzte Leiter-Stufe): Die Antwort entstand unter einem
+    # deutlich geöffneten Budget — der Judge soll die Bedingungen kennen.
+    if result.get("reasoning_last_resort"):
+        _token_usage["reasoning_last_resort"] = True
+        _lrb = result.get("reasoning_last_resort_budget")
+        if _lrb is not None:
+            _token_usage["reasoning_last_resort_budget"] = int(_lrb)
 
 
 def _inject_reasoning_budget_context(
@@ -432,4 +439,6 @@ def generate_audit_log(
         reasoning_reask_exhausted=result.get("reasoning_reask_exhausted", False),
         reasoning_reask_final_budget=result.get("reasoning_reask_final_budget"),
         cot_calibrated_start=result.get("cot_calibrated_start", False),
+        reasoning_last_resort=result.get("reasoning_last_resort", False),
+        reasoning_last_resort_budget=result.get("reasoning_last_resort_budget"),
     )

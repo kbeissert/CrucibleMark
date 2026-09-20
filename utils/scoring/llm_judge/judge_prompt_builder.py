@@ -416,6 +416,8 @@ def _reask_ladder_lines(token_usage_context: dict[str, Any]) -> list[str]:
     lines: list[str] = []
     if token_usage_context.get("reasoning_reask", False):
         lines.append(_reask_outcome_line(token_usage_context))
+    if token_usage_context.get("reasoning_last_resort", False):
+        lines.append(_last_resort_line(token_usage_context))
     if token_usage_context.get("cot_calibrated_start", False):
         lines.append(
             "- **Calibrated start budget**: the first attempt already ran on a "
@@ -424,6 +426,24 @@ def _reask_ladder_lines(token_usage_context: dict[str, Any]) -> list[str]:
             "budget. Do not treat the higher budget as resource waste."
         )
     return lines
+
+
+def _last_resort_line(token_usage_context: dict[str, Any]) -> str:
+    """Last-Resort-Zeile: Antwort entstand unter geöffnetem Budget (letzte
+    Leiter-Stufe) — der Judge bewertet die Qualität, kennt aber die
+    außergewöhnlichen Bedingungen und den Ressourcen-Aufwand."""
+    _lrb = token_usage_context.get("reasoning_last_resort_budget")
+    _budget_detail = (
+        f" {_lrb:,}-token budget" if _lrb else " a significantly opened budget"
+    )
+    return (
+        "- **Last-resort mode**: YES — this response was produced under"
+        f"{_budget_detail}, opened AFTER the standard escalation ladder was "
+        "exhausted without visible output. Evaluate the response quality "
+        "normally, but note that this model required an exceptional resource "
+        "investment for this single task (high operational cost — API spend "
+        "or local power consumption)."
+    )
 
 
 def _reask_outcome_line(token_usage_context: dict[str, Any]) -> str:

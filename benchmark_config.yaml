@@ -288,3 +288,10 @@ token_budgets_reasoning_models:
 reasoning_reask:
   ceilings: [24000, 32000]   # absolute Eskalations-Ziele, aufsteigend
   max_escalations: 2         # hart gedeckelt auf len(ceilings) (Konsistenz wird geprüft)
+  # Last-Resort (letzte Leiter-Stufe): Nach erschöpfter Leiter / Cap-Block /
+  # fehlendem Ceiling EIN finaler Versuch mit deutlich geöffnetem Budget —
+  # nur für die betroffenen Einzelfragen, vollständig dokumentiert im Report
+  # (Audit-Log-Block 🚨, CSV-Spalten reasoning_last_resort/_budget, Judge-Kontext,
+  # Meta-Reviewer: Token-Hunger + Einsatzkosten als Kernbefund). Bewusst KEINE
+  # Card-Kalibrierung — das Standard-Budget bleibt unverändert. 0 = deaktiviert.
+  last_resort_budget: 48000

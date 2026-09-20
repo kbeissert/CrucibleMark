@@ -75,6 +75,8 @@ class BenchmarkResult(BaseModel):
     reasoning_reask_exhausted: bool = Field(default=False, description="Flag: höchste Eskalationsstufe lieferte weiterhin 0 sichtbaren Output — Messgrenze (nicht-terminierendes CoT), kein Modellversagen")
     reasoning_reask_final_budget: int | None = Field(default=None, description="Token-Budget der letzten Eskalationsstufe (Basis für den Card-Write cot_budget_calibration)")
     cot_calibrated_start: bool = Field(default=False, description="Flag: Stufe 1 startete aus Card-Kalibrierung (cot_budget_calibration) statt beim Modul-Budget")
+    reasoning_last_resort: bool = Field(default=False, description="Flag: Last-Resort-Stufe der Eskalationsleiter aktiv — Budget nach Erschöpfung deutlich geöffnet (bewusst KEINE Card-Kalibrierung, nur Report-Hervorhebung; Einsatzkosten = Preispunkt)")
+    reasoning_last_resort_budget: int | None = Field(default=None, description="Token-Budget des Last-Resort-Requests (über der höchsten regulären Leiter-Stufe)")
     raw_response: str = Field(default="", description="The raw string output from the model")
     evaluated_prompt: str = Field(
         default="",

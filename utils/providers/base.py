@@ -190,9 +190,20 @@ class BaseProviderClient:
         )
 
         # 2. Wirksamer Cap (Kaskaden-SSoT: _resolve_effective_budget_cap)
-        effective_cap = self._resolve_effective_budget_cap(model)
-        if effective_cap is not None:
-            req_tokens = min(req_tokens, effective_cap)
+        #    AUSNAHME Last-Resort (``_cap_bypass=True``): Der letzte Leiter-
+        #    Versuch überspringt die Kaskade bewusst — das geöffnete Budget
+        #    (reasoning_reask.last_resort_budget) muss ankommen. Der Bypass ist
+        #    auf den einzelnen Request beschränkt und wird geloggt.
+        if kwargs.get("_cap_bypass"):
+            logger.warning(
+                "   🚨 Cap-Bypass aktiv (Last-Resort): Budget %s wird OHNE "
+                "Provider-/Card-Cap gesendet (dokumentierter Ausnahmelauf).",
+                kwargs.get("max_tokens"),
+            )
+        else:
+            effective_cap = self._resolve_effective_budget_cap(model)
+            if effective_cap is not None:
+                req_tokens = min(req_tokens, effective_cap)
 
         return token_param_name, req_tokens
 
@@ -411,6 +422,10 @@ class BaseProviderClient:
     # Config-Defaults, wenn benchmark_config.yaml keine reasoning_reask-Sektion hat
     _REASK_DEFAULT_CEILINGS: tuple[int, ...] = (24000, 32000)
     _REASK_DEFAULT_MAX_ESCALATIONS = 2
+    # Last-Resort (letzte Leiter-Stufe): Deutlich geöffnetes Budget für die
+    # vereinzelten erschöpften Fragen — dokumentiert im Report, bewusst KEINE
+    # Card-Kalibrierung. 0 deaktiviert den Modus.
+    _REASK_DEFAULT_LAST_RESORT = 48000
 
     def _maybe_reask_reasoning_truncation(
         self,
@@ -639,6 +654,38 @@ class BaseProviderClient:
             current_budget = target
 
         exhausted = stage >= 2 and not (content and content.strip())
+
+        # Last-Resort (letzte Stufe der Leiter, Session 110): Nach Erschöpfung,
+        # Cap-Block oder fehlendem Ceiling — immer wenn die Leiter ohne
+        # sichtbaren Output endete UND der Truncation-Trigger weiterhin aktiv
+        # ist (bei stillem Refusal/finish_reason=stop hilft mehr Budget nicht —
+        # konsistent mit der Leiter-Trigger-Logik) — EIN finaler Versuch mit
+        # deutlich geöffnetem Budget. Bewusst KEINE Card-Kalibrierung (nur
+        # Report-Hervorhebung): Der Last-Resort ist ein bewertender
+        # Ausnahmelauf, keine Kalibrierungs-Evidenz — sonst würde Stufe 1
+        # künftiger Läufe auf das geöffnete Budget springen und das Budget für
+        # ALLE Fragen öffnen.
+        last_resort = False
+        last_resort_budget: int | None = None
+        re_meta = getattr(self, "last_response_metadata", {}) or {}
+        if not (content and content.strip()) and self._reask_metadata_indicates_truncation(re_meta):
+            lrb = self._load_reask_last_resort_budget()
+            if lrb:
+                content, stage, final_budget, last_resort, last_resort_budget, exhausted = (
+                    self._run_last_resort_attempt(
+                        model=model,
+                        prompt=prompt,
+                        temperature=temperature,
+                        stream_handler=stream_handler,
+                        reask_kwargs=reask_kwargs,
+                        query=query,
+                        stage=stage,
+                        final_budget=final_budget,
+                        exhausted=exhausted,
+                        last_resort_budget=lrb,
+                    )
+                )
+
         if exhausted:
             logger.warning(
                 "   ⛔ Leiter erschöpft: Stufe %d (%s Tokens) ohne sichtbaren "
@@ -651,16 +698,93 @@ class BaseProviderClient:
             "initial_budget": initial_budget,
             "final_budget": final_budget,
             "exhausted": exhausted,
+            "last_resort": last_resort,
+            "last_resort_budget": last_resort_budget,
         }
+
+    def _load_reask_last_resort_budget(self) -> int | None:
+        """Last-Resort-Budget aus benchmark_config.yaml (letzte Leiter-Stufe).
+
+        ``last_resort_budget: 48000`` (Default) öffnet nach erschöpfter Leiter
+        das Budget DEUTLICH für genau diese eine Frage — dokumentiert im Report
+        (Audit-Log, CSV, Judge-Kontext, Meta-Reviewer), bewusst OHNE Card-
+        Kalibrierung. ``0``/``null`` deaktiviert den Modus.
+        """
+        section = (getattr(self, "config", None) or {}).get("reasoning_reask") or {}
+        raw = section.get("last_resort_budget", self._REASK_DEFAULT_LAST_RESORT)
+        try:
+            budget = int(raw)
+        except (TypeError, ValueError):
+            return int(self._REASK_DEFAULT_LAST_RESORT)
+        return budget if budget > 0 else None
+
+    # pylint: disable=too-many-arguments, too-many-positional-arguments
+    def _run_last_resort_attempt(
+        self,
+        *,
+        model: str,
+        prompt: str,
+        temperature: float,
+        stream_handler: Callable[[str], None] | None,
+        reask_kwargs: dict[str, Any],
+        query: Callable[..., str],
+        stage: int,
+        final_budget: int | None,
+        exhausted: bool,
+        last_resort_budget: int,
+    ) -> tuple[str, int, int | None, bool, int | None, bool]:
+        """Führt den Last-Resort-Request aus (letzte Leiter-Stufe, Cap-Bypass).
+
+        Der Request läuft mit ``_cap_bypass=True`` — der wirksame Budget-Cap
+        (Provider-Default/Override/Card-Cap) wird für GENAU diesen Request
+        übersprungen, damit das geöffnete Budget tatsächlich ankommt. Der
+        Bypass ist bewusst und wird geloggt; die Stufen-Nummerierung zählt
+        weiter (Last-Resort = Versuch nach der höchsten regulären Stufe).
+        """
+        attempt = stage + 1
+        logger.warning(
+            "   🚨 Last-Resort (letzte Stufe, %s): Leiter endete ohne sichtbaren "
+            "Output (Stufe %d, %s Tokens) — Budget für DIESE Frage geöffnet "
+            "(dokumentiert im Report; KEINE Card-Kalibrierung).",
+            f"{last_resort_budget} Tokens", stage, final_budget,
+        )
+        reask_kwargs = dict(reask_kwargs)
+        reask_kwargs["max_tokens"] = last_resort_budget
+        reask_kwargs["_cap_bypass"] = True
+        content = query(
+            model=model,
+            prompt=prompt,
+            temperature=temperature,
+            stream_handler=stream_handler,
+            **reask_kwargs,
+        )
+        stage = attempt
+        final_budget = last_resort_budget
+        if content and content.strip():
+            logger.warning(
+                "   ✅ Last-Resort erfolgreich (Stufe %d): %d Zeichen sichtbarer "
+                "Output (Budget %d) — Antwort bewertbar, Token-Hunger wird im "
+                "Report ausgewiesen (Einsatzkosten: Erstversuch + Leiter + "
+                "Last-Resort).",
+                attempt, len(content), last_resort_budget,
+            )
+            return content, stage, final_budget, True, last_resort_budget, False
+        logger.warning(
+            "   ⛔ Auch Last-Resort (Stufe %d, %d Tokens) ohne sichtbaren Output "
+            "— Messgrenze endgültig dokumentiert.",
+            attempt, last_resort_budget,
+        )
+        return content, stage, final_budget, True, last_resort_budget, True
 
     def _finalize_reask_metadata(self, ladder: dict[str, Any]) -> None:
         """Schreibt die Leiter-Metadata in ``last_response_metadata`` (SSoT).
 
         Erst nach der letzten Stufe — jede Nested-Query überschreibt die
         Metadata, die Annotation muss auf dem finalen Stand passieren. Ohne
-        Eskalationsversuch (stage < 2) bleibt alles beim Alt-Verhalten.
+        Eskalationsversuch (stage < 2, kein Last-Resort) bleibt alles beim
+        Alt-Verhalten.
         """
-        if ladder["stage"] < 2:
+        if ladder["stage"] < 2 and not ladder.get("last_resort"):
             return
         meta = getattr(self, "last_response_metadata", {}) or {}
         meta["reasoning_reask"] = True
@@ -670,3 +794,7 @@ class BaseProviderClient:
             meta["reasoning_reask_final_budget"] = ladder["final_budget"]
         if ladder["exhausted"]:
             meta["reasoning_reask_exhausted"] = True
+        if ladder.get("last_resort"):
+            meta["reasoning_last_resort"] = True
+            if ladder.get("last_resort_budget") is not None:
+                meta["reasoning_last_resort_budget"] = int(ladder["last_resort_budget"])
