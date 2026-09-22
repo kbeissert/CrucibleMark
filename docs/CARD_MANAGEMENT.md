@@ -515,7 +515,7 @@ python scripts/manage_model_cards.py --mode research --model gpt-5.4 \
 
 ```bash
 # Model Card
-python scripts/analysis/generate_model_cards.py --model-id claude-opus-4-7
+python scripts/analysis/generate_model_cards.py --model-id claude-opus-5
 
 # Vendor Card
 python scripts/analysis/generate_vendor_cards.py --provider "Anthropic"
@@ -537,7 +537,7 @@ Default-Werten — automatisch beim nächsten Schreibvorgang.
 **Pro Karte erzwingen:**
 
 ```bash
-make ensure-card MODEL=claude-opus-4-7
+make ensure-card MODEL=claude-opus-5
 ```
 
 **Alle Karten:**
@@ -897,11 +897,11 @@ python scripts/analysis/generate_vendor_cards.py --update [--yes] [--dry-run]
 Seit v4.7.5 unterstützt das Skript ein optionales `--card-type {model,provider,all}`-Flag für Pipeline-Integration.
 
 ```bash
-python scripts/analysis/generate_model_cards.py --model-id claude-opus-4-7
+python scripts/analysis/generate_model_cards.py --model-id claude-opus-5
 python scripts/analysis/generate_model_cards.py --model-id qwen3:14b --provider ollama_local
 python scripts/analysis/generate_model_cards.py --interactive
-python scripts/analysis/generate_model_cards.py --force --model-id claude-opus-4-7
-python scripts/analysis/generate_model_cards.py --json --model-id claude-opus-4-7
+python scripts/analysis/generate_model_cards.py --force --model-id claude-opus-5
+python scripts/analysis/generate_model_cards.py --json --model-id claude-opus-5
 python scripts/analysis/generate_model_cards.py --card-type model --json    # alle Modelle als JSON-Report
 ```
 
@@ -951,7 +951,7 @@ python scripts/analysis/vendor_card_status.py --fail-on-stale
 
 ```bash
 make model-cards MODEL=neuer-name
-make model-cards MODEL=claude-opus-4-7 FORCE=1
+make model-cards MODEL=claude-opus-5 FORCE=1
 ```
 
 ### „Feld fehlt" im Validator

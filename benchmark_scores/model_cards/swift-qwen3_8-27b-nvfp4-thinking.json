@@ -1,5 +1,5 @@
 {
-  "model_id": "swift-qwen3_8-27b-nvfp4",
+  "model_id": "swift-qwen3_8-27b-nvfp4-thinking",
   "display_name": "Swift Qwen 3.8 27B",
   "developer": "Qwen/Qwen3.8-27B (Base) / UkisAI (Finetune + Quantization)",
   "origin_country": "unknown",
@@ -47,23 +47,12 @@
     "text"
   ],
   "supports_tool_use": true,
-  "tooluse_tested_at": "2026-09-14T19:45:54Z",
-  "tooluse_score_p1": 86.67,
-  "tooluse_score_p2": 63.33,
-  "tooluse_runs": {
-    "swift-qwen3_8-27b-nvfp4": {
-      "tested_at": "2026-09-14T19:45:54Z",
-      "score_p1": 86.67,
-      "score_p2": 63.33
-    },
-    "swift-qwen3_8-27b-nvfp4-thinking": {
-      "tested_at": "2026-09-22T02:52:56Z",
-      "score_p1": 90.0,
-      "score_p2": 59.17
-    }
-  },
+  "tooluse_tested_at": null,
+  "tooluse_score_p1": null,
+  "tooluse_score_p2": null,
+  "tooluse_runs": {},
   "tooluse_recommendation": null,
-  "dual_profile": true,
+  "dual_profile": false,
   "temperature": null,
   "system_prompt_override": null,
   "cot_marker_family": null,
@@ -89,7 +78,7 @@
   "unknown": false,
   "card_status": "draft",
   "size_class": "Workstation",
-  "generated_at": "2026-09-14T15:44:59.369023+00:00",
+  "generated_at": "2026-09-20T16:38:54.272674+00:00",
   "thinking_probe_detected": true,
   "thinking_probe_evidence": "Multi-Probe (3 prompts, 3 detected, best confidence=medium):\n  - math: [math] Inline CoT im content-Feld: Antwort 1180 chars (>200) mit 15 Berechnungs-Operatoren. First 200 chars: To find the average speed of the train, we will use the standard formula for speed and apply the given values step by step.\n\n### Step 1: Identify the Formula\nThe formula for average speed is:\n$$ \\text\n  - code: [code] Inline CoT im content-Feld: Antwort 4906 chars (>200) mit 37 Berechnungs-Operatoren. First 200 chars: To sort the list `[3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5]`, I will use the **Bubble Sort** algorithm.\n\n### The Algorithm: Bubble Sort\n\n**How it works:**\n1.  **Pass 1:** Compare each pair of adjacent element\n  - decision: [decision] Inline CoT im content-Feld: Antwort 5190 chars (>200) mit 75 Berechnungs-Operatoren. First 200 chars: This is a classic variation of the **Trolley Problem**, adapted for the context of autonomous vehicle (AV) ethics. It touches on philosophy, engineering, law, and social contract theory.\n\nHere is a br",
   "thinking_probe_confidence": "medium",

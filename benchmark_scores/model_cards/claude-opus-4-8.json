@@ -7,37 +7,34 @@
   "deployment_type": "cloud-only",
   "local_deployment_possible": false,
   "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "Anthropic ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act. Closed-Source-Modell mit First-Party-Sicherheitsfiltern (Anthropic Safety); keine Gewichte verfügbar.",
+  "weights_provenance_risk_rationale": "Das Modell wird von einem US-amerikanischen Unternehmen entwickelt und gehostet. Aufgrund der US-Gesetzgebung (z.B. CLOUD Act) besteht ein potenzielles Risiko des Zugriffs durch US-Behörden auf die verarbeiteten Daten, weshalb das Risiko als mittel eingestuft wird.",
   "model_family": "Claude",
   "vendor": "Anthropic",
-  "primary_focus": "coding",
+  "primary_focus": "general",
   "use_case_primary": "agentic",
   "parameter_architecture": "dense",
   "params_total_b": null,
   "params_active_b": null,
   "context_window_k": 1000,
   "knowledge_cutoff": "2026-01",
-  "summary": "Claude Opus 4.8 ist seit Ende Mai 2026 Anthropics Flaggschiff für Agentic-Coding und Enterprise-Workflows. Adaptive Thinking mit fünfstufiger Effort-Steuerung von Low bis Ultra Code ersetzt das frühere manuelle Token-Budget, Multimodalität, 1.000.000-Token-Kontextfenster. Dynamic Workflows erlauben in Claude Code bis zu 1.000 parallele Sub-Tasks, gesteuert aus JavaScript-Skripten, verfügbar auf Max-, Team- und Enterprise-Plänen.",
+  "summary": "Claude Opus 4.8 ist ein proprietäres, multimodales Foundation Model von Anthropic. Es ist als Cloud-API verfügbar und zeichnet sich durch seine agentischen Fähigkeiten und ein extrem großes Kontextfenster von einer Million Token aus. Das Modell kann sowohl Text als auch Bilder verarbeiten und zeigt eine hohe Leistung bei der Verwendung von externen Tools. Es ist für komplexe, mehrstufige Aufgaben und die Orchestrierung von Agenten konzipiert.",
   "strengths": [
-    "Adaptive Thinking mit fünfstufiger Effort-Steuerung — manuell konfigurierbar von Low bis Ultra Code.",
-    "Dynamic Workflows: bis zu 1.000 Sub-Tasks, Orchestrierung über JavaScript-Skripte.",
-    "Multimodale Eingabe für Text und Bild, 1.000.000-Token-Kontextfenster zum Standardpreis.",
-    "Fast Mode: rund 2,5-fache Geschwindigkeit, niedrigerer Preis (Research-Preview, Warteliste).",
-    "Ehrlichkeits-Upgrade: vierfach geringere Tendenz, eigene Fehler zu akzeptieren als Opus 4.7.",
-    "System-Messages können mid-conversation geändert werden, ohne Prompt-Cache zu verlieren."
+    "Extrem großes Kontextfenster von 1 Million Token, ideal für die Analyse und Synthese sehr langer Dokumente oder komplexer Codebasen.",
+    "Hervorragende agentische Fähigkeiten und zuverlässige Nutzung externer Tools, was es für komplexe, mehrstufige Aufgaben und als Orchestrator für andere Systeme qualifiziert.",
+    "Multimodale Verarbeitung von Text und Bildern, was die Analyse von visuellen Informationen in Kombination mit textuellen Anweisungen ermöglicht.",
+    "Starke Fähigkeiten im schrittweisen Denken (Chain-of-Thought), was zu transparenteren und nachvollziehbareren Antworten bei komplexen Problemlösungen führt."
   ],
   "known_limitations": [
-    "Verarbeitung läuft über Anthropics Cloud unter US-Recht mit CLOUD-Act-Risiko.",
-    "Proprietäre Gewichte, keine offene Veröffentlichung.",
-    "Fünfmal höhere Input-Kosten als Sonnet 5 (5 Dollar statt 2 pro 1M Tokens).",
-    "Maximaler Output auf 128.000 Tokens begrenzt, kein Extended Output über 128K verfügbar.",
-    "Fast Mode aktuell nur über Warteliste verfügbar (Research-Preview).",
-    "Microsoft Foundry bietet nur 200K statt 1M Kontextfenster."
+    "Als proprietäres Modell sind die Gewichte nicht öffentlich verfügbar. Eine lokale Bereitstellung oder eine Anpassung auf der Ebene der Modellarchitektur ist nicht möglich.",
+    "Die Kosten für die Inferenz, insbesondere für die Ausgabe, sind im Vergleich zu anderen Modellen hoch, was bei großvolumigen Anwendungen zu erheblichen Betriebskosten führen kann.",
+    "Das Wissen des Modells ist auf Informationen bis Januar 2026 beschränkt. Es hat keinen Zugriff auf Ereignisse oder Daten, die nach diesem Zeitpunkt entstanden sind.",
+    "Wie alle großen Sprachmodelle kann das Modell halluzinieren und sachlich falsche oder irreführende Informationen generieren."
   ],
-  "judge_context_hint": "Anthropic-Opus-4.8-Frontier-Modell mit proprietärer Cloud-Bereitstellung unter US-Recht und CLOUD-Act-Risiko, Adaptive Thinking ist Standard mit Effort-Steuerung in fünf Stufen (Low bis Ultra Code), non-default Sampling-Parameter werden mit 400-Error zurückgewiesen. Multimodale Eingabe für Text und Bild, 1.000.000-Token-Kontext, 128.000-Token-Output. Dynamic Workflows sind ein Claude-Code-Feature, kein Modellverhalten; Bewertung gleichermaßen für Coding, Tool-Use und Multimodalität.",
+  "judge_context_hint": "Dieses Modell ist als agentischer Orchestrator mit einem sehr großen Kontextfenster konzipiert. Beurteilen Sie seine Fähigkeit, komplexe, mehrstufige Anweisungen zu befolgen, Werkzeuge zu nutzen und Informationen aus langen Dokumenten zu synthetisieren.",
   "architecture_tags": [
+    "General",
     "Thinking",
-    "Vision-Capable",
+    "Thinking-Optional",
     "Agentic-Orchestrator",
     "Long-Context"
   ],
@@ -49,21 +46,21 @@
     "text"
   ],
   "supports_tool_use": true,
-  "tooluse_tested_at": "2026-07-10T08:45:09Z",
-  "tooluse_score_p1": 83.33,
-  "tooluse_score_p2": 60.0,
+  "tooluse_tested_at": "2026-09-20T17:11:27Z",
+  "tooluse_score_p1": 90.0,
+  "tooluse_score_p2": 66.67,
   "tooluse_runs": {
     "claude-opus-4-8": {
-      "tested_at": "2026-07-10T08:45:09Z",
-      "score_p1": 83.33,
-      "score_p2": 60.0
+      "tested_at": "2026-09-20T17:11:27Z",
+      "score_p1": 90.0,
+      "score_p2": 66.67
     }
   },
   "tooluse_recommendation": null,
   "dual_profile": null,
   "temperature": null,
   "system_prompt_override": null,
-  "cot_marker_family": "native-thinking",
+  "cot_marker_family": null,
   "cot_tags_detected": null,
   "top_p": null,
   "top_k": null,
@@ -86,27 +83,22 @@
   "unknown": false,
   "card_status": "complete",
   "size_class": "Frontier",
-  "generated_at": "2026-07-02T10:05:00+00:00",
+  "generated_at": "2026-09-20T18:40:15.261026+00:00",
   "thinking_probe_detected": true,
-  "thinking_probe_evidence": "Adaptive Thinking ist standardmäßig aktiv, Effort-Parameter defaultet auf 'high' auf API und Claude Code laut offizieller Anthropic-Ankündigung.",
-  "thinking_probe_confidence": "high",
-  "thinking_probe_at": "2026-07-02T10:05:00+00:00",
+  "thinking_probe_evidence": "Multi-Probe (3 prompts, 3 detected, best confidence=medium):\n  - math: [math] Inline CoT im content-Feld: Antwort 567 chars (>200) mit 14 Berechnungs-Operatoren. First 200 chars: # Solving for Average Speed\n\n## Step 1: Identify the Formula\n\nAverage speed is calculated using:\n\n$$\\text{Average Speed} = \\frac{\\text{Total Distance}}{\\text{Total Time}}$$\n\n## Step 2: Identify the Kn\n  - code: [code] Inline CoT im content-Feld: Antwort 2028 chars (>200) mit 40 Berechnungs-Operatoren. First 200 chars: # Sorting with Insertion Sort\n\nI'll use **Insertion Sort**, which works like sorting playing cards in your hand: take one element at a time and insert it into its correct position among the already-so\n  - decision: [decision] Inline CoT im content-Feld: Antwort 2787 chars (>200) mit 8 Berechnungs-Operatoren. First 200 chars: This is a genuinely hard problem, and I'll be honest that I don't think there's a clean answer. Here are the considerations that matter:\n\n**The case for prioritizing the pedestrian**\n- The pedestrian ",
+  "thinking_probe_confidence": "medium",
+  "thinking_probe_at": "2026-09-20T15:02:00.756562+00:00",
   "thinking_probe_manual_override": null,
   "profile_verified": true,
-  "profile_verified_at": "2026-07-02",
-  "profile_verified_by": "Perplexity",
-  "last_modified_at": "2026-07-02",
-  "heritage_ids": [
-    "claude-opus-4-7"
-  ],
+  "profile_verified_at": "2026-09-20",
+  "profile_verified_by": "llm:google/gemini-2.5-pro",
+  "last_modified_at": "2026-09-20",
+  "heritage_ids": [],
   "community": null,
-  "pc_token_calibration": {
-    "budget": 390,
-    "classification": "self_limiting",
-    "profile": "thinking",
-    "tested": "2026-09-03T06:06:07.152244+00:00",
-    "converged_stage": 300,
-    "notes": "Stratifizierte Probe: 9 Blöcke sauber @ 300, 0/0 verdächtige Blöcke eskaliert (0 greedy, 0 inkonsistent). Profil: thinking."
-  },
-  "pc_profile": "thinking"
+  "pc_token_calibration": null,
+  "pc_profile_forced_instruct": null,
+  "pc_profile": null,
+  "cot_termination": null,
+  "cot_budget_calibration": null,
+  "presence_repeat": null
 }

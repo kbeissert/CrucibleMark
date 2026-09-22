@@ -11,7 +11,7 @@ Konsumenten der Card-Struktur:
   - :mod:`scripts.analysis.validate_cards` (Validierung gegen Template)
 
 Verwendung:
-    python scripts/analysis/generate_model_cards.py --model-id claude-opus-4-7
+    python scripts/analysis/generate_model_cards.py --model-id claude-opus-5
     python scripts/analysis/generate_model_cards.py --model-id qwen3:14b --provider ollama_local
     python scripts/analysis/generate_model_cards.py --interactive
     python scripts/analysis/generate_model_cards.py --card-type model --json
@@ -164,7 +164,7 @@ def _execute_creation(
     logger.info("Template angelegt: %s", target_path.name)
 
 
-def _prompt_for_model_id(prompt: str = "Model-ID eingeben (z.B. claude-opus-4-7): ") -> str:
+def _prompt_for_model_id(prompt: str = "Model-ID eingeben (z.B. claude-opus-5): ") -> str:
     """Fragt interaktiv nach einer Model-ID. Robust gegen EOF/KeyboardInterrupt."""
     try:
         return input(prompt).strip()
@@ -371,7 +371,7 @@ def main() -> int:
         "--model-id",
         type=str,
         default=None,
-        help="Model-ID (z.B. claude-opus-4-7). Erforderlich ohne --interactive.",
+        help="Model-ID (z.B. claude-opus-5). Erforderlich ohne --interactive.",
     )
     parser.add_argument(
         "--provider",
