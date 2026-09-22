@@ -162,6 +162,13 @@ class BaseBenchmarkRunner:
         if rt is not None:
             exec_result.reasoning_tokens = rt
 
+        # Upstream-Host (Gateway-Routing-Evidenz, Session 113): Cloud-Gateways
+        # wie OpenRouter routen pro Request auf wechselnde Hosts — der
+        # tatsächlich bedienende Host ist Reproduzierbarkeits-Metadatum.
+        up = meta.get("upstream_provider")
+        if up:
+            exec_result.upstream_provider = str(up)
+
         tc = meta.get("think_content")
         if tc is not None:
             exec_result.think_content = tc
@@ -306,6 +313,7 @@ class BaseBenchmarkRunner:
             "load_time": round(getattr(exec_result, "load_time", 0.0), 4),
             "response_length": len(exec_result.raw_response),
             "finish_reason": getattr(exec_result, "finish_reason", None),
+            "upstream_provider": getattr(exec_result, "upstream_provider", None),
             "reasoning_tokens": getattr(exec_result, "reasoning_tokens", None),
             "token_limit_cutoff": getattr(exec_result, "token_limit_cutoff", False),
             "token_limit_fallback": getattr(exec_result, "token_limit_fallback", False),

@@ -48,13 +48,11 @@ providers:
       models:
       - id: claude-opus-5
         name: Claude Opus 5
-      - id: claude-opus-4-8
-        name: Claude Opus 4.8
+      # Auskommentiert 2026-09-20 via make clean-model.
+      # - id: claude-opus-4-8
+      # name: Claude Opus 4.8
       - id: claude-sonnet-5
         name: Claude Sonnet 5
-      # (2026-09-02) nicht mehr im Web-Export:
-      #   - id: claude-opus-4-7
-      #   name: Claude Opus 4.7
       # (2026-09-02) nicht mehr im Web-Export:
       #   - id: claude-opus-4-6
       #   name: Claude Opus 4.6
@@ -226,6 +224,85 @@ providers:
         qwen/qwen3.8-flash:
           max_tokens: 12000
 
+      # Host-Pinning (Session 113, 2026-09-22): OpenRouter routet pro Request
+      # auf wechselnde Upstream-Hosts. Hosts desselben Modells antworten in
+      # messbar verschiedenem Stil (Live-Test 2026-09-22, mimo-v2.5 doc_005:
+      # de_ratio 0.10-0.62, Reasoning 0-2799 Tokens je Host) — Pool-Messungen
+      # sind damit nur bedingt reproduzierbar.
+      #
+      # REGEL (Nutzer-Entscheidung 2026-09-22): Jedes OpenRouter-Modell wird
+      # IDEALERWEISE auf den Hersteller-Provider (First-Party-Host) gepinnt.
+      # Nur Modelle OHNE First-Party-Host laufen bewusst im Pool:
+      #   nvidia/nemotron-3-* (kein NVIDIA-Host), moonshotai/kimi-k2.5 (kein
+      #   Moonshot-Host), deepseek/deepseek-v4-pro/-flash (kein DeepSeek-Host),
+      #   google/gemma-4-31b-it (kein Google-Host), nousresearch/hermes-4-*.
+      # Single-Host-Modelle (meta/muse-spark-1.2, upstage/solar-pro4,
+      #   qwen3.8-flash, qwen3.7-max, qwen3.6-plus) brauchen kein Pinning.
+      #
+      # Comparability: Gepinnte Läufe sind NICHT 1:1 mit Pool-Läufen (vor dem
+      # 2026-09-22) vergleichbar. allow_fallbacks: false = Fail-Fast bei
+      # Host-Ausfall (bewusst, keine Stillen Ersatzhosts).
+      # Der bedienende Host wird pro Request geloggt (CSV-Spalte
+      # upstream_provider) — Pinning-Erfolg ist damit nachprüfbar.
+      provider_routing:
+        xiaomi/mimo-v2.6-pro:
+          order: [Xiaomi]
+          allow_fallbacks: false
+        xiaomi/mimo-v2.6-flash:
+          order: [Xiaomi]
+          allow_fallbacks: false
+        xiaomi/mimo-v2.5:
+          order: [Xiaomi]
+          allow_fallbacks: false
+        xiaomi/mimo-v2.5-pro:
+          order: [Xiaomi]
+          allow_fallbacks: false
+        minimax/minimax-m3:
+          order: [Minimax]
+          allow_fallbacks: false
+        minimax/minimax-m2.7-20260318:
+          order: [Minimax]
+          allow_fallbacks: false
+        z-ai/glm-5.3:
+          order: [Z.AI]
+          allow_fallbacks: false
+        z-ai/glm-5.3-flash:
+          order: [Z.AI]
+          allow_fallbacks: false
+        z-ai/glm-5.2:
+          order: [Z.AI]
+          allow_fallbacks: false
+        z-ai/glm-5.1-20260406:
+          order: [Z.AI]
+          allow_fallbacks: false
+        z-ai/glm-4.7:
+          order: [Z.AI]
+          allow_fallbacks: false
+        z-ai/glm-4.6:
+          order: [Z.AI]
+          allow_fallbacks: false
+        moonshotai/kimi-k3:
+          order: [Moonshot AI]
+          allow_fallbacks: false
+        moonshotai/kimi-k2.7-code:
+          order: [Moonshot AI]
+          allow_fallbacks: false
+        moonshotai/kimi-k2.6:
+          order: [Moonshot AI]
+          allow_fallbacks: false
+        deepseek/deepseek-v4.1-flash:
+          order: [DeepSeek]
+          allow_fallbacks: false
+        google/gemini-3.7-flash:
+          order: [Google]
+          allow_fallbacks: false
+        qwen/qwen3.8-2.4t-a95b:
+          order: [Alibaba]
+          allow_fallbacks: false
+        qwen/qwen3.5-397b-a17b:
+          order: [Alibaba]
+          allow_fallbacks: false
+
       models:
 
       # NVIDIA Nemotron 3 — neueste zuerst (getestet 22. Juni 2026)
@@ -235,7 +312,14 @@ providers:
       - id: nvidia/nemotron-3-nano-30b-a3b
         name: NVIDIA Nemotron 3 Nano 30B A3B
 
-      # Xiaomi MiMo — neueste zuerst (getestet 22. Juni 2026)
+      # Xiaomi MiMo — neueste zuerst (2.6 hinzugefügt 22. Sep 2026, noch ungetestet;
+      # 2.5 getestet 22. Juni 2026)
+      - id: xiaomi/mimo-v2.6-pro
+        name: Xiaomi MiMo V2.6 Pro (Flagship)
+
+      - id: xiaomi/mimo-v2.6-flash
+        name: Xiaomi MiMo V2.6 Flash
+
       - id: xiaomi/mimo-v2.5-pro
         name: Xiaomi MiMo V2.5 Pro (Flagship)
 

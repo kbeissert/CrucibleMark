@@ -65,6 +65,7 @@ class BenchmarkResult(BaseModel):
     tps_eval: float | None = Field(default=None, description="Native generation speed: eval_count / eval_duration from Ollama (excludes prefill). None if not available (e.g. cloud proxy).")
     cost_usd: float = Field(default=0.0, description="Estimated cost in USD")
     finish_reason: str | None = Field(default=None, description="The reason the model stopped generating (e.g. length/max_tokens)")
+    upstream_provider: str | None = Field(default=None, description="Tatsächlich bedienender Upstream-Host (Gateway-Routing, z.B. OpenRouter provider-Feld: 'DeepInfra', 'Xiaomi', 'Minimax'). None wenn der Provider keines liefert — Reproduzierbarkeits-Evidenz für Cloud-Messungen (Session 113, Host-Routing-Varianz).")
     reasoning_tokens: int | None = Field(default=None, description="Reasoning/thinking tokens used internally by the model (not returned in content). Counted against max_tokens budget on OpenRouter.")
     token_limit_cutoff: bool = Field(default=False, description="Flag indicating if the response was cut off due to max_token limits")
     token_limit_fallback: bool = Field(default=False, description="Flag indicating if the system dynamically lowered the requested max_tokens to accommodate model constraints (e.g. 8192 -> 4096)")

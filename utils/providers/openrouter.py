@@ -177,6 +177,16 @@ class OpenRouterClient(BaseProviderClient):
         if reasoning_cfg:
             reasoning_cfg = self._clamp_reasoning_budget(reasoning_cfg, req_tokens)
             params["extra_body"]["reasoning"] = reasoning_cfg
+        # Per-Modell Host-Pinning (Reproduzierbarkeit, Session 113): OpenRouter
+        # wählt sonst pro Request den Upstream — Hosts mit unterschiedlichem
+        # Antwortstil machen Cloud-Messungen nicht vergleichbar.
+        routing_cfg = self._resolve_provider_routing(model, api_model)
+        if routing_cfg:
+            params["extra_body"]["provider"] = routing_cfg
+            logger.info(
+                "OpenRouter Host-Pinning aktiv für %s: order=%s, allow_fallbacks=%s",
+                api_model, routing_cfg.get("order"), routing_cfg.get("allow_fallbacks"),
+            )
         return params, token_param_name, req_tokens
 
     def _clamp_reasoning_budget(
@@ -211,6 +221,66 @@ class OpenRouterClient(BaseProviderClient):
         cfg_map = self._get_provider_cfg().get("model_reasoning_config", {})
         return cfg_map.get(model) or cfg_map.get(api_model)
 
+    def _resolve_provider_routing(self, model: str, api_model: str) -> dict[str, Any] | None:
+        """Löst die Per-Modell Provider-Routing-Config (Host-Pinning) auf.
+
+        ``provider_routing`` in provider_config.yaml pinnt Requests auf
+        definierte Upstream-Hosts (OpenRouter unified parameter ``provider``,
+        z.B. ``order: [Xiaomi]`` + ``allow_fallbacks: false``). Zweck:
+        Reproduzierbarkeit — OpenRouter routet pro Request auf wechselnde
+        Hosts, deren Antwortstil variiert (Session 113: de_ratio-Spreizung
+        0.10-0.62, Reasoning 0-2799 Tokens je Host bei identischem Prompt).
+
+        Lookup-Key ist die Modell-ID (Config- oder Internal-Form), analog zu
+        ``model_reasoning_config``.
+        """
+        routing_map = self._get_provider_cfg().get("provider_routing", {})
+        cfg = routing_map.get(model) or routing_map.get(api_model)
+        if not cfg:
+            return None
+        order = cfg.get("order") or []
+        if not order:
+            return None
+        routing: dict[str, Any] = {"order": list(order)}
+        allow_fallbacks = cfg.get("allow_fallbacks")
+        if allow_fallbacks is not None:
+            routing["allow_fallbacks"] = bool(allow_fallbacks)
+        return routing
+
+    @staticmethod
+    def _extract_upstream_provider(response_obj: Any) -> str | None:
+        """Extrahiert den bedienenden Upstream-Host aus einem OpenRouter-Response.
+
+        OpenRouter liefert ein Top-Level-Feld ``provider`` (String, z.B.
+        ``"DeepInfra"``). Das OpenAI-SDK hält unbekannte Felder je nach Version
+        als Attribut oder in ``model_extra`` — beide Wege defensiv prüfen.
+        """
+        provider = getattr(response_obj, "provider", None)
+        if isinstance(provider, str) and provider:
+            return provider
+        extra = getattr(response_obj, "model_extra", None)
+        if isinstance(extra, dict):
+            provider = extra.get("provider")
+            if isinstance(provider, str) and provider:
+                return provider
+        return None
+
+    @classmethod
+    def _capture_stream_provider(
+        cls, meta: dict[str, Any], chunk: Any, already: str | None
+    ) -> str | None:
+        """Zieht den Upstream-Host einmalig aus einem Stream-Chunk ins Meta.
+
+        OpenRouter liefert ``provider`` nur auf manchen Chunks (z.B. dem
+        Usage-Only-Finalchunk) — daher pro Chunk prüfen, bis ein Wert da ist.
+        """
+        if already:
+            return already
+        provider = cls._extract_upstream_provider(chunk)
+        if provider:
+            meta["upstream_provider"] = provider
+        return provider
+
     def _process_openrouter_stream(
         self,
         response: Any,
@@ -235,10 +305,16 @@ class OpenRouterClient(BaseProviderClient):
             "token_limit_used": used_max_tokens,
             "token_limit_fallback": fallback_triggered,
         }
+        upstream_provider = self._extract_upstream_provider(response)
+        if upstream_provider:
+            meta["upstream_provider"] = upstream_provider
         for chunk in response:
             # Usage kommt im letzten Streaming-Chunk (auch bei leerer choices-Liste)
             if hasattr(chunk, "usage") and chunk.usage:
                 stream_usage = chunk.usage
+            upstream_provider = self._capture_stream_provider(
+                meta, chunk, upstream_provider
+            )
             if not getattr(chunk, "choices", None):
                 continue  # Usage-Only-Chunk: kein Delta zu verarbeiten
             choice = chunk.choices[0]
@@ -284,6 +360,7 @@ class OpenRouterClient(BaseProviderClient):
         # Reasoning/Thinking-Content extrahieren
         reasoning = self._extract_think_from_message(msg)
         usage = response.usage
+        upstream_provider = self._extract_upstream_provider(response)
         if usage:
             reasoning_tokens = self._extract_reasoning_tokens(usage)
             meta = {
@@ -296,9 +373,18 @@ class OpenRouterClient(BaseProviderClient):
                 "reasoning_tokens": reasoning_tokens,
                 "usage": usage,
             }
+            if upstream_provider:
+                meta["upstream_provider"] = upstream_provider
             if reasoning:
                 meta["think_content"] = reasoning
             self.last_response_metadata = meta
+        elif upstream_provider:
+            # Auch ohne usage (Edge-Fall) den Upstream-Host nicht verlieren.
+            self.last_response_metadata = {
+                "token_limit_used": used_max_tokens,
+                "token_limit_fallback": fallback_triggered,
+                "upstream_provider": upstream_provider,
+            }
         return result
 
     def get_available_models(self) -> list:
