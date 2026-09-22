@@ -802,7 +802,12 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
         effective_response = response
         resp_too_short = len(response.strip()) < MIN_REFUSAL_CHARS
         think_substantial = len(think_content.strip()) >= MIN_REFUSAL_CHARS
-        ladder_exhausted = bool(result.get("reasoning_reask_exhausted"))
+        # Loop-Guard-Abbruch zählt wie eine erschöpfte Leiter: Der residuale
+        # CoT eines zeitlich abgebrochenen, nicht terminierenden Requests ist
+        # keine Antwort (denkloop) — Bridge überspringen, Judge-Skip-Pfad.
+        ladder_exhausted = bool(result.get("reasoning_reask_exhausted")) or bool(
+            result.get("reasoning_loop_suspected")
+        )
         if resp_too_short and think_substantial and not ladder_exhausted:
             result["reasoning_only_response"] = True
             effective_response = think_content

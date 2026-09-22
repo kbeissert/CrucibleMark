@@ -414,7 +414,12 @@ def _reask_ladder_lines(token_usage_context: dict[str, Any]) -> list[str]:
     Kontext, nicht den Eskalationsverlauf).
     """
     lines: list[str] = []
-    if token_usage_context.get("reasoning_reask", False):
+    if token_usage_context.get("reasoning_loop_suspected", False):
+        # Denkzeit-Wächter hat die Eskalationsphase abgebrochen — die Loop-
+        # Zeile ersetzt die normale Re-Ask-Zeile (die würde hier fälschlich
+        # eine "escalated retry"-Antwort suggerieren, die nie existierte).
+        lines.append(_loop_suspected_line(token_usage_context))
+    elif token_usage_context.get("reasoning_reask", False):
         lines.append(_reask_outcome_line(token_usage_context))
     if token_usage_context.get("reasoning_last_resort", False):
         lines.append(_last_resort_line(token_usage_context))
@@ -443,6 +448,34 @@ def _last_resort_line(token_usage_context: dict[str, Any]) -> str:
         "normally, but note that this model required an exceptional resource "
         "investment for this single task (high operational cost — API spend "
         "or local power consumption)."
+    )
+
+
+def _loop_suspected_line(token_usage_context: dict[str, Any]) -> str:
+    """Denkzeit-Wächter-Zeile: Die Eskalationsphase überschritt das Zeitbudget
+    (``escalation_time_limit_s``), BEVOR die Token-Grenzen erreicht waren —
+    starker Loop-Verdacht. Abgegrenzt zur Budget-Erschöpfung (Zeit vs. Tokens):
+    Der Judge soll den Abbruch als Messgrenze des Frameworks einordnen und
+    nie existierende Inhalte nicht bestrafen."""
+    _elapsed = token_usage_context.get("reasoning_loop_elapsed_s")
+    _stage = token_usage_context.get("reasoning_loop_stage")
+    _detail = ""
+    if _stage:
+        _detail = f" The guard aborted the request in ladder stage {_stage}"
+        if _elapsed:
+            _detail += f" after {_elapsed:,.0f}s of escalation thinking"
+        _detail += "."
+    elif _elapsed:
+        _detail = (
+            f" The guard aborted after {_elapsed:,.0f}s of escalation thinking."
+        )
+    return (
+        "- **Reasoning time-limit guard TRIGGERED**: the escalation phase "
+        "exceeded the configured thinking-time budget while the model kept "
+        "reasoning with zero visible output — the token budgets were NOT "
+        "exhausted first. Strong indication of a non-terminating reasoning "
+        "loop. Treat this strictly as a measurement guard, not as model "
+        "failure — do not penalize content that never existed." + _detail
     )
 
 

@@ -304,3 +304,15 @@ reasoning_reask:
   # Meta-Reviewer: Token-Hunger + Einsatzkosten als Kernbefund). Bewusst KEINE
   # Card-Kalibrierung — das Standard-Budget bleibt unverändert. 0 = deaktiviert.
   last_resort_budget: 48000
+  # Denkzeit-Wächter (Loop-Guard): Sekunden-Budget für die GESAMTE Eskalations-
+  # phase (Stufe 2 + Last-Resort, kumulativ inkl. Retries). Der Erstversuch ist
+  # AUSGENOMMEN — dort ist die Laufzeit der Messwert; legitime Budget-Vollaus-
+  # nutzer (z. B. 30 min bei 25k Tokens auf langsamer lokaler Hardware) laufen
+  # immer durch. Der Timer startet mit dem ersten Eskalations-Request; bei
+  # Ablauf wird der laufende Request hart abgerissen und als Loop-Verdacht
+  # klassifiziert (reasoning_loop_suspected) — abgegrenzt zur Budget-Erschöpfung
+  # (reasoning_reask_exhausted). Begründung (Session 2026-09-21, Ornith): kein
+  # terminierendes Modell überschritt jemals ~31 min/Request; > 30 min
+  # Eskalationszeit ohne Output ist empirisch fast sicher ein Denkloop.
+  # 0 = deaktiviert.
+  escalation_time_limit_s: 1800

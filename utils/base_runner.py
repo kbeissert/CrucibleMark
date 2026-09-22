@@ -213,6 +213,16 @@ class BaseBenchmarkRunner:
             lrb = meta.get("reasoning_last_resort_budget")
             if lrb is not None:
                 exec_result.reasoning_last_resort_budget = int(lrb)
+        # Denkzeit-Wächter: Loop-Verdacht (Zeitbudget erschöpft) abgrenzen zur
+        # Budget-Erschöpfung — beide 0 sichtbarer Output, andere Ursache.
+        if meta.get("reasoning_loop_suspected"):
+            exec_result.reasoning_loop_suspected = True
+            loop_stage = meta.get("reasoning_loop_stage")
+            if loop_stage:
+                exec_result.reasoning_loop_stage = int(loop_stage)
+            loop_elapsed = meta.get("reasoning_loop_elapsed_s")
+            if loop_elapsed is not None:
+                exec_result.reasoning_loop_elapsed_s = float(loop_elapsed)
 
     def _persist_cot_calibration_if_earned(self, exec_result: BenchmarkResult, model: str) -> None:
         """Card-Write der Eskalationsleiter-Kalibrierung (NACH Test-Abschluss).
@@ -227,6 +237,10 @@ class BaseBenchmarkRunner:
         if not getattr(exec_result, "reasoning_reask", False):
             return
         if getattr(exec_result, "reasoning_reask_exhausted", False):
+            return
+        # Denkzeit-Abbruch: Kein Kalibrierungs-Write — der Loop-Verdacht ist
+        # kein Eskalations-Erfolg, das geöffnete Budget war nie fertig generiert.
+        if getattr(exec_result, "reasoning_loop_suspected", False):
             return
         # Last-Resort-Erfolg schreibt bewusst KEINE Kalibrierung: Der geöffnete
         # Budget-Modus ist ein dokumentierter Ausnahmelauf (nur Report-
@@ -333,6 +347,13 @@ class BaseBenchmarkRunner:
             "reasoning_last_resort": getattr(exec_result, "reasoning_last_resort", False),
             "reasoning_last_resort_budget": getattr(
                 exec_result, "reasoning_last_resort_budget", None
+            ),
+            "reasoning_loop_suspected": getattr(
+                exec_result, "reasoning_loop_suspected", False
+            ),
+            "reasoning_loop_stage": getattr(exec_result, "reasoning_loop_stage", 0),
+            "reasoning_loop_elapsed_s": getattr(
+                exec_result, "reasoning_loop_elapsed_s", None
             ),
             "thought_tag_compliance": getattr(exec_result, "thought_tag_compliance", None),
             "think_content": getattr(exec_result, "think_content", None),

@@ -5,6 +5,8 @@ Getrennte Implementierungen für Ollama, Anthropic, Mistral
 import logging
 import os
 import re
+import threading
+import time
 from typing import Any
 from collections.abc import Callable
 logger = logging.getLogger(__name__)
@@ -434,6 +436,13 @@ class BaseProviderClient:
     # (Comparability: kein best-of-2). 500 Zeichen ≈ 100-125 Tokens — eine
     # legitime Antwort der Text-Module ist deutlich länger.
     _REASK_DEFAULT_MIN_VISIBLE_CHARS = 500
+    # Denkzeit-Wächter (Loop-Guard, Session 2026-09-21): Sekunden-Budget für
+    # die GESAMTE Eskalationsphase (Stufe 2+ inkl. Retries). Der Erstversuch
+    # ist ausgenommen — dort ist die Laufzeit der Messwert. Empirische Basis:
+    # Kein terminierendes Modell überschritt jemals ~31 min/Request (Max
+    # 1842 s, r1-distill-14b, Budget-Vollausnutzung); alles darüber ist
+    # fast sicher ein Denkloop. 0 deaktiviert den Guard.
+    _REASK_DEFAULT_ESCALATION_TIME_LIMIT_S = 1800.0
 
     def _maybe_reask_reasoning_truncation(
         self,
@@ -607,10 +616,139 @@ class BaseProviderClient:
         # hier draußen kontrolliert alle Stufen zentral.
         reask_kwargs["_reasoning_reask"] = True
 
+        # Denkzeit-Wächter (Loop-Guard): Zeitbudget der GESAMTEN Eskalations-
+        # phase. Der Anker läuft mit dem ersten Eskalations-Request an — der
+        # Erstversuch bleibt uhrfrei (dort ist die Laufzeit der Messwert, und
+        # legitime Budget-Vollausnutzer bis ~31 min/Request laufen immer durch).
+        time_limit_s = self._load_reask_escalation_time_limit()
+        abort_event = threading.Event()
+
+        (
+            content,
+            stage,
+            final_budget,
+            loop_suspected,
+            loop_stage,
+            escalation_started,
+        ) = self._run_escalation_stages(
+            model=model,
+            prompt=prompt,
+            temperature=temperature,
+            stream_handler=stream_handler,
+            query=query,
+            reask_kwargs=reask_kwargs,
+            initial_budget=initial_budget,
+            ceilings=ceilings,
+            max_escalations=max_escalations,
+            budget_cap=budget_cap,
+            time_limit_s=time_limit_s,
+            abort_event=abort_event,
+        )
+
+        # Bei Denkzeit-Abbruch gilt die Leiter NICHT als erschöpft: Die
+        # Budgetkette wurde nicht durchlaufen — die Abgrenzung Budgethunger
+        # (exhausted) vs. Loop-Verdacht (loop_suspected) bleibt sauber.
+        exhausted = (
+            stage >= 2
+            and not loop_suspected
+            and not self._has_substantive_content(content)
+        )
+
+        # Last-Resort (letzte Stufe der Leiter, Session 110): Nach Erschöpfung,
+        # Cap-Block oder fehlendem Ceiling — immer wenn die Leiter ohne
+        # sichtbaren Output endete UND der Truncation-Trigger weiterhin aktiv
+        # ist (bei stillem Refusal/finish_reason=stop hilft mehr Budget nicht —
+        # konsistent mit der Leiter-Trigger-Logik) — EIN finaler Versuch mit
+        # deutlich geöffnetem Budget. Bewusst KEINE Card-Kalibrierung (nur
+        # Report-Hervorhebung): Der Last-Resort ist ein bewertender
+        # Ausnahmelauf, keine Kalibrierungs-Evidenz — sonst würde Stufe 1
+        # künftiger Läufe auf das geöffnete Budget springen und das Budget für
+        # ALLE Fragen öffnen. Bei Denkzeit-Abbruch kein Last-Resort: Die
+        # Eskalationsphase hat ihr Zeitbudget verbraucht (Loop-Verdacht).
+        last_resort = False
+        last_resort_budget: int | None = None
+        lresort = self._maybe_run_last_resort_guarded(
+            model=model,
+            prompt=prompt,
+            temperature=temperature,
+            stream_handler=stream_handler,
+            query=query,
+            reask_kwargs=reask_kwargs,
+            content=content,
+            stage=stage,
+            final_budget=final_budget,
+            exhausted=exhausted,
+            loop_suspected=loop_suspected,
+            time_limit_s=time_limit_s,
+            escalation_started=escalation_started,
+            abort_event=abort_event,
+        )
+        if lresort["loop_aborted"]:
+            loop_suspected = True
+            loop_stage = lresort["loop_stage"]
+            content = ""
+        elif lresort["ran"]:
+            content = lresort["content"]
+            stage = lresort["stage"]
+            final_budget = lresort["final_budget"]
+            last_resort = lresort["last_resort"]
+            last_resort_budget = lresort["last_resort_budget"]
+            exhausted = lresort["exhausted"]
+
+        if exhausted:
+            logger.warning(
+                "   ⛔ Leiter erschöpft: Stufe %d (%s Tokens) ohne sichtbaren "
+                "Output — Messgrenze dokumentiert (reasoning_reask_exhausted).",
+                stage, final_budget,
+            )
+        loop_elapsed_s: float | None = None
+        if loop_suspected and escalation_started is not None:
+            loop_elapsed_s = round(time.monotonic() - escalation_started, 1)
+        return {
+            "content": content,
+            "stage": stage,
+            "initial_budget": initial_budget,
+            "final_budget": final_budget,
+            "exhausted": exhausted,
+            "last_resort": last_resort,
+            "last_resort_budget": last_resort_budget,
+            "loop_suspected": loop_suspected,
+            "loop_stage": loop_stage,
+            "loop_elapsed_s": loop_elapsed_s,
+        }
+
+    # pylint: disable=too-many-arguments, too-many-positional-arguments, too-many-locals
+    def _run_escalation_stages(
+        self,
+        *,
+        model: str,
+        prompt: str,
+        temperature: float,
+        stream_handler: Callable[[str], None] | None,
+        query: Callable[..., str],
+        reask_kwargs: dict[str, Any],
+        initial_budget: int,
+        ceilings: list[int],
+        max_escalations: int,
+        budget_cap: int | None,
+        time_limit_s: float,
+        abort_event: threading.Event,
+    ) -> tuple[str, int, int | None, bool, int, float | None]:
+        """Klettert die Deckel-Leiter hoch (Stufen-Loop, Denkzeit-Wächter).
+
+        Returns:
+            Tuple ``(content, stage, final_budget, loop_suspected,
+            loop_stage, escalation_started)``. ``stage`` zählt Versuche
+            (1 = Erstversuch, 2/3 = Eskalationsstufen); ``escalation_started``
+            ist der Wächter-Anker (None, wenn keine Stufe lief).
+        """
         content = ""
         stage = 1
         final_budget: int | None = None
         current_budget = initial_budget
+        loop_suspected = False
+        loop_stage = 0
+        escalation_started: float | None = None
         for _ in range(max_escalations):
             target = self._next_reask_ceiling(current_budget, ceilings)
             if target is None:
@@ -632,14 +770,36 @@ class BaseProviderClient:
                 "0 sichtbarer Output → Re-Ask mit %d Tokens.",
                 attempt, max_escalations + 1, model, current_budget, target,
             )
-            reask_kwargs["max_tokens"] = target
-            content = query(
+            if escalation_started is None:
+                escalation_started = time.monotonic()
+            remaining = (
+                time_limit_s - (time.monotonic() - escalation_started)
+                if time_limit_s > 0
+                else float("inf")
+            )
+            outcome = self._execute_reask_stage(
+                query=query,
+                stream_handler=stream_handler,
                 model=model,
                 prompt=prompt,
                 temperature=temperature,
-                stream_handler=stream_handler,
-                **reask_kwargs,
+                reask_kwargs=reask_kwargs,
+                target=target,
+                attempt=attempt,
+                max_escalations=max_escalations,
+                remaining=remaining,
+                time_limit_s=time_limit_s,
+                abort_event=abort_event,
             )
+            content = outcome["content"]
+            if outcome["loop_suspected"]:
+                loop_suspected = True
+                loop_stage = outcome["loop_stage"]
+                if outcome["executed"]:
+                    # Der Request lief (teilweise) — Stufe gilt als erreicht.
+                    stage = attempt
+                    final_budget = target
+                break
             stage = attempt
             final_budget = target
             if self._has_substantive_content(content):
@@ -660,54 +820,181 @@ class BaseProviderClient:
             if not self._reask_metadata_indicates_truncation(re_meta):
                 break
             current_budget = target
+        return (
+            content, stage, final_budget, loop_suspected, loop_stage,
+            escalation_started,
+        )
 
-        exhausted = stage >= 2 and not self._has_substantive_content(content)
+    # pylint: disable=too-many-arguments, too-many-positional-arguments
+    def _execute_reask_stage(
+        self,
+        *,
+        query: Callable[..., str],
+        stream_handler: Callable[[str], None] | None,
+        model: str,
+        prompt: str,
+        temperature: float,
+        reask_kwargs: dict[str, Any],
+        target: int,
+        attempt: int,
+        max_escalations: int,
+        remaining: float,
+        time_limit_s: float,
+        abort_event: threading.Event,
+    ) -> dict[str, Any]:
+        """Führt EINE Eskalationsstufe unter dem Denkzeit-Wächter aus.
 
-        # Last-Resort (letzte Stufe der Leiter, Session 110): Nach Erschöpfung,
-        # Cap-Block oder fehlendem Ceiling — immer wenn die Leiter ohne
-        # sichtbaren Output endete UND der Truncation-Trigger weiterhin aktiv
-        # ist (bei stillem Refusal/finish_reason=stop hilft mehr Budget nicht —
-        # konsistent mit der Leiter-Trigger-Logik) — EIN finaler Versuch mit
-        # deutlich geöffnetem Budget. Bewusst KEINE Card-Kalibrierung (nur
-        # Report-Hervorhebung): Der Last-Resort ist ein bewertender
-        # Ausnahmelauf, keine Kalibrierungs-Evidenz — sonst würde Stufe 1
-        # künftiger Läufe auf das geöffnete Budget springen und das Budget für
-        # ALLE Fragen öffnen.
-        last_resort = False
-        last_resort_budget: int | None = None
-        re_meta = getattr(self, "last_response_metadata", {}) or {}
-        if not self._has_substantive_content(content) and self._reask_metadata_indicates_truncation(re_meta):
-            lrb = self._load_reask_last_resort_budget()
-            if lrb:
-                content, stage, final_budget, last_resort, last_resort_budget, exhausted = (
-                    self._run_last_resort_attempt(
-                        model=model,
-                        prompt=prompt,
-                        temperature=temperature,
-                        stream_handler=stream_handler,
-                        reask_kwargs=reask_kwargs,
-                        query=query,
-                        stage=stage,
-                        final_budget=final_budget,
-                        exhausted=exhausted,
-                        last_resort_budget=lrb,
-                    )
-                )
+        Der Wächter verweigert den Start bei erschöpftem Zeitbudget und
+        reißt den laufenden Request sonst via Watchdog-``close()`` ab —
+        ein reiner Read-Timeout würde bei streamendem Server nicht feuern.
 
-        if exhausted:
+        Returns:
+            Dict mit ``content``, ``loop_suspected`` (Zeitbudget verletzt),
+            ``executed`` (Request lief an) und ``loop_stage`` (Stufe des
+            Abbruchs, sonst 0).
+        """
+        if remaining <= 0:
             logger.warning(
-                "   ⛔ Leiter erschöpft: Stufe %d (%s Tokens) ohne sichtbaren "
-                "Output — Messgrenze dokumentiert (reasoning_reask_exhausted).",
-                stage, final_budget,
+                "   ⏱ Denkzeit-Wächter: Eskalationsbudget von %.0fs ist "
+                "erschöpft (Stufe %d/%d, %s) — kein weiterer Re-Ask. "
+                "Loop-Verdacht dokumentiert (reasoning_loop_suspected).",
+                time_limit_s, attempt, max_escalations + 1, model,
             )
+            return {"content": "", "loop_suspected": True, "executed": False,
+                    "loop_stage": attempt}
+        watchdog = threading.Timer(
+            remaining, self._abort_on_escalation_timeout, args=(abort_event,)
+        )
+        watchdog.daemon = True
+        abort_event.clear()
+        watchdog.start()
+        try:
+            reask_kwargs["max_tokens"] = target
+            content = query(
+                model=model,
+                prompt=prompt,
+                temperature=temperature,
+                stream_handler=stream_handler,
+                **reask_kwargs,
+            )
+        except Exception:
+            if not abort_event.is_set():
+                raise
+            # Der Watchdog hat die Connection abgerissen — der Request wird
+            # als Denkzeit-Abbruch klassifiziert, nicht als Fehler.
+            logger.warning(
+                "   ⏱ Denkzeit-Wächter: Eskalations-Request nach %.0fs "
+                "abgerissen (Stufe %d/%d, %s) — Modell terminierte nicht. "
+                "Loop-Verdacht dokumentiert (reasoning_loop_suspected).",
+                time_limit_s - max(remaining, 0.0),
+                attempt, max_escalations + 1, model,
+            )
+            return {"content": "", "loop_suspected": True, "executed": True,
+                    "loop_stage": attempt}
+        finally:
+            watchdog.cancel()
+        return {"content": content, "loop_suspected": False, "executed": True,
+                "loop_stage": 0}
+
+    # pylint: disable=too-many-arguments, too-many-positional-arguments
+    def _maybe_run_last_resort_guarded(
+        self,
+        *,
+        model: str,
+        prompt: str,
+        temperature: float,
+        stream_handler: Callable[[str], None] | None,
+        query: Callable[..., str],
+        reask_kwargs: dict[str, Any],
+        content: str,
+        stage: int,
+        final_budget: int | None,
+        exhausted: bool,
+        loop_suspected: bool,
+        time_limit_s: float,
+        escalation_started: float | None,
+        abort_event: threading.Event,
+    ) -> dict[str, Any]:
+        """Last-Resort unter dem Denkzeit-Wächter (Hülle um den Ausnahme-Lauf).
+
+        Returns:
+            Dict: ``{"ran": False}`` wenn die Guards keinen Last-Resort
+            zulassen; ``{"ran": False, "loop_aborted": True, "loop_stage": n}``
+            bei Denkzeit-Abbruch; sonst ``{"ran": True, ...}`` mit den
+            ``(content, stage, final_budget, last_resort, last_resort_budget,
+            exhausted)``-Werten von ``_run_last_resort_attempt``.
+        """
+        if loop_suspected:
+            return {"ran": False, "loop_aborted": False, "loop_stage": 0}
+        if self._has_substantive_content(content):
+            return {"ran": False, "loop_aborted": False, "loop_stage": 0}
+        re_meta = getattr(self, "last_response_metadata", {}) or {}
+        if not self._reask_metadata_indicates_truncation(re_meta):
+            return {"ran": False, "loop_aborted": False, "loop_stage": 0}
+        lrb = self._load_reask_last_resort_budget()
+        if not lrb:
+            return {"ran": False, "loop_aborted": False, "loop_stage": 0}
+        if time_limit_s > 0:
+            remaining = time_limit_s - (
+                time.monotonic() - (escalation_started or time.monotonic())
+            )
+            if remaining <= 0:
+                logger.warning(
+                    "   ⏱ Denkzeit-Wächter: Eskalationsbudget von %.0fs ist "
+                    "vor dem Last-Resort erschöpft (%s) — Loop-Verdacht "
+                    "dokumentiert (reasoning_loop_suspected).",
+                    time_limit_s, model,
+                )
+                return {"ran": False, "loop_aborted": True,
+                        "loop_stage": stage + 1}
+            watchdog = threading.Timer(
+                remaining, self._abort_on_escalation_timeout, args=(abort_event,)
+            )
+            watchdog.daemon = True
+            abort_event.clear()
+            watchdog.start()
+        else:
+            watchdog: threading.Timer | None = None
+        try:
+            attempt_content, attempt_stage, attempt_final, lresort_flag, lrb_used, lresort_exhausted = (
+                self._run_last_resort_attempt(
+                    model=model,
+                    prompt=prompt,
+                    temperature=temperature,
+                    stream_handler=stream_handler,
+                    reask_kwargs=reask_kwargs,
+                    query=query,
+                    stage=stage,
+                    final_budget=final_budget,
+                    exhausted=exhausted,
+                    last_resort_budget=lrb,
+                )
+            )
+        except Exception:
+            if not abort_event.is_set():
+                raise
+            logger.warning(
+                "   ⏱ Denkzeit-Wächter: Last-Resort-Request nach %.0fs "
+                "abgerissen (%s) — Modell terminierte nicht. Loop-Verdacht "
+                "dokumentiert (reasoning_loop_suspected).",
+                time.monotonic() - (escalation_started or time.monotonic()),
+                model,
+            )
+            return {"ran": False, "loop_aborted": True,
+                    "loop_stage": stage + 1}
+        finally:
+            if watchdog is not None:
+                watchdog.cancel()
         return {
-            "content": content,
-            "stage": stage,
-            "initial_budget": initial_budget,
-            "final_budget": final_budget,
-            "exhausted": exhausted,
-            "last_resort": last_resort,
-            "last_resort_budget": last_resort_budget,
+            "ran": True,
+            "loop_aborted": False,
+            "loop_stage": 0,
+            "content": attempt_content,
+            "stage": attempt_stage,
+            "final_budget": attempt_final,
+            "last_resort": lresort_flag,
+            "last_resort_budget": lrb_used,
+            "exhausted": lresort_exhausted,
         }
 
     def _load_reask_min_visible_chars(self) -> int:
@@ -751,6 +1038,40 @@ class BaseProviderClient:
         except (TypeError, ValueError):
             return int(self._REASK_DEFAULT_LAST_RESORT)
         return budget if budget > 0 else None
+
+    def _load_reask_escalation_time_limit(self) -> float:
+        """Denkzeit-Budget der Eskalationsphase aus benchmark_config.yaml.
+
+        ``escalation_time_limit_s: 1800`` (Default) deckelt die GESAMTE
+        Eskalationsphase (Stufe 2+ kumulativ inkl. Retries) — der Erstversuch
+        ist ausgenommen (dort ist die Laufzeit der Messwert). ``0``/``null``
+        deaktiviert den Wächter. Bruchteile (float) sind für Tests erlaubt.
+        """
+        section = (getattr(self, "config", None) or {}).get("reasoning_reask") or {}
+        raw = section.get(
+            "escalation_time_limit_s", self._REASK_DEFAULT_ESCALATION_TIME_LIMIT_S
+        )
+        try:
+            value = float(raw)
+        except (TypeError, ValueError):
+            return self._REASK_DEFAULT_ESCALATION_TIME_LIMIT_S
+        return value if value > 0 else 0.0
+
+    def _abort_on_escalation_timeout(self, abort_event: threading.Event) -> None:
+        """Watchdog-Callback: laufenden Eskalations-Request hart abreißen.
+
+        Setzt zuerst das Abort-Flag (die Leiter klassifiziert die erwartete
+        Verbindungs-Exception als Denkzeit-Abbruch, nicht als Fehler) und
+        schließt dann die HTTP-Clients — das TCP FIN reißt den blockierenden
+        (ggf. streamenden) Request ab, wo ein reiner Read-Timeout nicht
+        greift (Server liefert continuierlich Chunks). Provider mit
+        Lazy-Client (llama.cpp/vLLM) bauen beim nächsten Zugriff automatisch
+        einen frischen Client — Folge-Tests sind nicht betroffen. Provider
+        ohne ``close()``-Override (Base-Default: no-op) bleiben vom Wächter
+        unbetroffen; deren Loops terminieren am Provider-seitigen Timeout.
+        """
+        abort_event.set()
+        self.close()
 
     # pylint: disable=too-many-arguments, too-many-positional-arguments
     def _run_last_resort_attempt(
@@ -832,3 +1153,12 @@ class BaseProviderClient:
             meta["reasoning_last_resort"] = True
             if ladder.get("last_resort_budget") is not None:
                 meta["reasoning_last_resort_budget"] = int(ladder["last_resort_budget"])
+        # Denkzeit-Wächter: Loop-Verdacht abgrenzen zur Budget-Erschöpfung —
+        # beides 0 sichtbarer Output, aber unterschiedliche Ursache und Reviewer-
+        # Konsequenz (Loop ≠ Messgrenze des Frameworks, sondern Modellverhalten).
+        if ladder.get("loop_suspected"):
+            meta["reasoning_loop_suspected"] = True
+            if ladder.get("loop_stage"):
+                meta["reasoning_loop_stage"] = int(ladder["loop_stage"])
+            if ladder.get("loop_elapsed_s") is not None:
+                meta["reasoning_loop_elapsed_s"] = float(ladder["loop_elapsed_s"])

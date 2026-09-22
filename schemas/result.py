@@ -78,6 +78,9 @@ class BenchmarkResult(BaseModel):
     cot_calibrated_start: bool = Field(default=False, description="Flag: Stufe 1 startete aus Card-Kalibrierung (cot_budget_calibration) statt beim Modul-Budget")
     reasoning_last_resort: bool = Field(default=False, description="Flag: Last-Resort-Stufe der Eskalationsleiter aktiv — Budget nach Erschöpfung deutlich geöffnet (bewusst KEINE Card-Kalibrierung, nur Report-Hervorhebung; Einsatzkosten = Preispunkt)")
     reasoning_last_resort_budget: int | None = Field(default=None, description="Token-Budget des Last-Resort-Requests (über der höchsten regulären Leiter-Stufe)")
+    reasoning_loop_suspected: bool = Field(default=False, description="Flag: Eskalations-Request wurde vom Denkzeit-Wächter abgebrochen — das Zeitbudget der Eskalationsphase (reasoning_reask.escalation_time_limit_s) war erschöpft, ohne dass das Modell terminierte. Loop-Verdacht (nicht-terminierende Thinking-Kette), abgegrenzt zur Budget-Erschöpfung (reasoning_reask_exhausted)")
+    reasoning_loop_stage: int = Field(default=0, description="Leiter-Stufe, in der der Denkzeit-Abbruch erfolgte (0 = kein Abbruch)")
+    reasoning_loop_elapsed_s: float | None = Field(default=None, description="Verbrauchte Eskalationszeit in Sekunden bis zum Denkzeit-Abbruch")
     raw_response: str = Field(default="", description="The raw string output from the model")
     evaluated_prompt: str = Field(
         default="",
