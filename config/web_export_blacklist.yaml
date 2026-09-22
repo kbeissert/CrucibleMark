@@ -54,7 +54,6 @@ blacklist:
   # Opus 5 / Opus 4.8 und Sonnet 5 / Sonnet 4.6 bleiben im Web-Export.
 
   # Opus-Linie (behalten: Opus 5, Opus 4.8)
-  - "claude-opus-4-7"                  # ersetzt durch Opus 4.8 / Opus 5 (Rank 6, 79.27)
   - "claude-opus-4-6"                  # ersetzt durch Opus 4.8 / Opus 5 (Rank 12, 78.03)
 
   # Sonnet-Linie (behalten: Sonnet 5, Sonnet 4.6)
