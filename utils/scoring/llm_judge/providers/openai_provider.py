@@ -29,12 +29,21 @@ class OpenAIProvider(LLMJudgeProvider):
         temperature     – default: 0.1
         max_tokens      – default: 1024
         timeout_seconds – default: 30
+        base_url        – optional OpenAI-compatible gateway endpoint
+        api_key_env     – optional API-key env var override
     """
 
     PROVIDER_NAME = "openai"
+    DEFAULT_API_KEY_ENV = "OPENAI_API_KEY"
 
     def __init__(
-        self, model: str, temperature: float, max_tokens: int, timeout_seconds: int
+        self,
+        model: str,
+        temperature: float,
+        max_tokens: int,
+        timeout_seconds: int,
+        base_url: str | None = None,
+        api_key_env: str | None = None,
     ) -> None:
         if openai_module is None:
             raise ImportError(
@@ -43,10 +52,14 @@ class OpenAIProvider(LLMJudgeProvider):
             )
         from utils.env_utils import get_required_env
 
-        api_key = get_required_env("OPENAI_API_KEY")
-        self._client = openai_module.OpenAI(
-            api_key=api_key, timeout=float(timeout_seconds)
-        )
+        api_key = get_required_env(api_key_env or self.DEFAULT_API_KEY_ENV)
+        client_kwargs: dict[str, Any] = {
+            "api_key": api_key,
+            "timeout": float(timeout_seconds),
+        }
+        if base_url:
+            client_kwargs["base_url"] = base_url
+        self._client = openai_module.OpenAI(**client_kwargs)
         self._model = model
         self._temperature = temperature
         self._max_tokens = max_tokens

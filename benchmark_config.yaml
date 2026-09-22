@@ -40,6 +40,15 @@ llm_judge:
   enabled: true
   mode: complement
   provider:
+    # 2026-09-20: Weiterhin Haiku 4.5 (Nutzer-Entscheidung: laufende Tests
+    # zuerst abschließen). Die GLM-5.3-Flash-Umstellung ist VORBEREITET
+    # (OpenRouter-Gateway im OpenAI-Provider, Parity-Tool vorhanden) und
+    # wird erst nach Abschluss der Nachtest-Serie umgestellt:
+    #   name: openai
+    #   model: z-ai/glm-5.3-flash
+    #   base_url: https://openrouter.ai/api/v1
+    #   api_key_env: OPENROUTER_API_KEY
+    # Hintergrund: Haiku-Retirement laut Deprecation-Tabelle zum 15.10.2026.
     name: anthropic
     model: claude-haiku-4-5-20251001
     max_tokens: 8192

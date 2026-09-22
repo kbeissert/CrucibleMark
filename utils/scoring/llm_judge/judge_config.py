@@ -38,7 +38,19 @@ class ProviderConfig(BaseModel):
     timeout_seconds: int = Field(DEFAULT_TIMEOUT_SECONDS, gt=0)
     base_url: str | None = Field(
         None,
-        description="Only required for Ollama (e.g. http://localhost:11434).",
+        description=(
+            "Override for the provider endpoint. Required for "
+            "OpenAI-compatible gateways (e.g. OpenRouter); "
+            "otherwise only used for Ollama."
+        ),
+    )
+    api_key_env: str | None = Field(
+        None,
+        description=(
+            "Override for the provider default API-key environment "
+            "variable (e.g. OPENROUTER_API_KEY for OpenAI-compatible "
+            "gateways). None uses the provider default."
+        ),
     )
     unload_delay_ms: int = Field(
         DEFAULT_UNLOAD_DELAY_MS,

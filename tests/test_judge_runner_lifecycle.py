@@ -340,3 +340,71 @@ class TestJudgeRunnerExceptions:
 
         with pytest.raises(JudgeUnavailableError):
             runner.score("task", "resp", "golden", "ux_writing")
+
+
+# ---------------------------------------------------------------------------
+# Tests: OpenAI-compatible gateway (base_url + api_key_env override)
+# ---------------------------------------------------------------------------
+
+
+class TestOpenAIGatewayWiring:
+    """OpenAIProvider als OpenRouter-Gateway: base_url + api_key_env."""
+
+    def test_build_provider_passes_gateway_kwargs(self):
+        from utils.scoring.llm_judge.judge_runner import _build_provider
+
+        config = LLMJudgeConfig(
+            enabled=True,
+            provider=ProviderConfig(
+                name="openai",
+                model="z-ai/glm-5.3-flash",
+                base_url="https://openrouter.ai/api/v1",
+                api_key_env="OPENROUTER_API_KEY",
+            ),
+        )
+        with patch(
+            "utils.scoring.llm_judge.providers.openai_provider.OpenAIProvider"
+        ) as mock_cls:
+            _build_provider(config)
+        kwargs = mock_cls.call_args.kwargs
+        assert kwargs["base_url"] == "https://openrouter.ai/api/v1"
+        assert kwargs["api_key_env"] == "OPENROUTER_API_KEY"
+
+    def test_build_provider_openai_without_gateway_kwargs(self):
+        from utils.scoring.llm_judge.judge_runner import _build_provider
+
+        config = LLMJudgeConfig(
+            enabled=True,
+            provider=ProviderConfig(name="openai", model="gpt-4o-mini"),
+        )
+        with patch(
+            "utils.scoring.llm_judge.providers.openai_provider.OpenAIProvider"
+        ) as mock_cls:
+            _build_provider(config)
+        kwargs = mock_cls.call_args.kwargs
+        assert "base_url" not in kwargs
+        assert "api_key_env" not in kwargs
+
+    def test_env_check_uses_api_key_env_override(self, monkeypatch):
+        monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+        config = LLMJudgeConfig(
+            enabled=True,
+            provider=ProviderConfig(
+                name="openai",
+                model="z-ai/glm-5.3-flash",
+                api_key_env="OPENROUTER_API_KEY",
+            ),
+        )
+        runner = JudgeRunner(config)
+        with pytest.raises(JudgeUnavailableError, match="OPENROUTER_API_KEY"):
+            runner._call_provider("sys", "user")
+
+    def test_env_check_openai_default_key(self, monkeypatch):
+        monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+        config = LLMJudgeConfig(
+            enabled=True,
+            provider=ProviderConfig(name="openai", model="gpt-4o-mini"),
+        )
+        runner = JudgeRunner(config)
+        with pytest.raises(JudgeUnavailableError, match="OPENAI_API_KEY"):
+            runner._call_provider("sys", "user")

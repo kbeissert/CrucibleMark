@@ -324,6 +324,9 @@ def save_audit_log(
     cot_calibrated_start: bool = False,
     reasoning_last_resort: bool = False,
     reasoning_last_resort_budget: int | None = None,
+    reasoning_loop_suspected: bool = False,
+    reasoning_loop_stage: int = 0,
+    reasoning_loop_elapsed_s: float | None = None,
     **kwargs
 ) -> None:
     """
@@ -381,6 +384,9 @@ def save_audit_log(
                 cot_calibrated_start=cot_calibrated_start,
                 reasoning_last_resort=reasoning_last_resort,
                 reasoning_last_resort_budget=reasoning_last_resort_budget,
+                reasoning_loop_suspected=reasoning_loop_suspected,
+                reasoning_loop_stage=reasoning_loop_stage,
+                reasoning_loop_elapsed_s=reasoning_loop_elapsed_s,
             )
 
             f.write("## 1. Prompt / Fragestellung\n\n")
@@ -519,6 +525,9 @@ def _write_escalation_ladder_block(
     cot_calibrated_start: bool,
     reasoning_last_resort: bool = False,
     reasoning_last_resort_budget: int | None = None,
+    reasoning_loop_suspected: bool = False,
+    reasoning_loop_stage: int = 0,
+    reasoning_loop_elapsed_s: float | None = None,
 ) -> None:
     """Schreibt den Eskalationsleiter-Info-Block (Reviewer-Traceability).
 
@@ -526,6 +535,9 @@ def _write_escalation_ladder_block(
     liest diese Blöcke aus den Audit-Logs und interpretiert sie aktiv —
     Stufen-Klettern = Token-Hunger des nicht-terminierenden CoT, Erschöpfung =
     Messgrenze (kein Modellversagen), kalibrierter Start = Benchmark-Historie.
+    Denkzeit-Abbruch (``reasoning_loop_suspected``) = Loop-Verdacht: Das
+    Modell terminierte nicht binnen ``escalation_time_limit_s`` und wurde vom
+    Wächter abgebrochen — abgegrenzt zur Budget-Erschöpfung (Zeit vs. Tokens).
     Ohne Eskalation bleibt der Block komplett weg (keine grünen Fussnoten).
     """
     if not reasoning_reask_stage or reasoning_reask_stage < 2:
@@ -535,6 +547,32 @@ def _write_escalation_ladder_block(
         if reasoning_reask_final_budget
         else "Eskalationsbudget"
     )
+    # Denkzeit-Wächter (höchste Priorität): Der Abbruch erfolgte am Zeitbudget
+    # der Eskalationsphase, nicht an einer Token-Grenze — starker Loop-Verdacht.
+    if reasoning_loop_suspected:
+        _elapsed = (
+            f"{reasoning_loop_elapsed_s:,.0f} s"
+            if reasoning_loop_elapsed_s
+            else "das Eskalations-Zeitbudget"
+        )
+        _stage_detail = (
+            f" in Stufe {reasoning_loop_stage}"
+            if reasoning_loop_stage
+            else ""
+        )
+        f.write(
+            f"> [!CAUTION]\n"
+            f"> **⏱ Denkzeit-Wächter ausgelöst: Abbruch{_stage_detail} nach "
+            f"{_elapsed}.** Das Modell lief in der Eskalationsphase in eine "
+            f"nicht terminierende Thinking-Kette und wurde vom Loop-Guard "
+            f"(``reasoning_reask.escalation_time_limit_s``) abgebrochen — die "
+            f"Token-Budgets (bis {_budget}) waren zu diesem Zeitpunkt NICHT "
+            f"ausgeschöpft. **Interpretation: hoher Loop-Verdacht "
+            f"(reasoning_loop_suspected)**, abgegrenzt zur Budget-Erschöpfung "
+            f"(reasoning_reask_exhausted = Token-Grenze erreicht, Zeit ok). "
+            f"Die 0-%-Bewertung misst den Denkloop, nicht die Aufgabenqualität.\n\n"
+        )
+        return
     # Last-Resort (letzte Leiter-Stufe): eigener, prominenter Block — die
     # bewertete Antwort entstand unter geöffnetem Budget; der Token-Hunger und
     # die Einsatzkosten sind der Kernbefund. KEINE Card-Kalibrierung (bewusst).

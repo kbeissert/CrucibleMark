@@ -79,6 +79,11 @@ def _build_provider(config: LLMJudgeConfig) -> LLMJudgeProvider:
     }
     if prov_cfg.name == "ollama":
         kwargs["base_url"] = prov_cfg.base_url or OLLAMA_DEFAULT_BASE_URL
+    elif prov_cfg.name == "openai":
+        if prov_cfg.base_url:
+            kwargs["base_url"] = prov_cfg.base_url
+        if prov_cfg.api_key_env:
+            kwargs["api_key_env"] = prov_cfg.api_key_env
 
     entry = _PROVIDER_MODULES.get(prov_cfg.name)
     if not entry:
@@ -274,7 +279,8 @@ class JudgeRunner:
             else self._config.provider.model
         )
 
-        if (env_key := _ENV_KEY_MAP.get(primary_name)) and not os.getenv(env_key):
+        env_key = self._config.provider.api_key_env or _ENV_KEY_MAP.get(primary_name)
+        if env_key and not os.getenv(env_key):
             raise JudgeUnavailableError(f"{env_key} not found. Skipping primary provider '{primary_name}'.")
         try:
             if not self.provider.health_check():

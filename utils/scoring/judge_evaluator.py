@@ -137,6 +137,16 @@ def _inject_reask_ladder_context(_token_usage: dict[str, Any], result: dict[str,
         _lrb = result.get("reasoning_last_resort_budget")
         if _lrb is not None:
             _token_usage["reasoning_last_resort_budget"] = int(_lrb)
+    # Denkzeit-Wächter: Loop-Verdacht — die Eskalationsphase überschritt das
+    # Zeitbudget und wurde abgebrochen, BEVOR die Token-Grenzen erreicht waren.
+    if result.get("reasoning_loop_suspected"):
+        _token_usage["reasoning_loop_suspected"] = True
+        _loop_stage = result.get("reasoning_loop_stage")
+        if _loop_stage:
+            _token_usage["reasoning_loop_stage"] = int(_loop_stage)
+        _loop_elapsed = result.get("reasoning_loop_elapsed_s")
+        if _loop_elapsed is not None:
+            _token_usage["reasoning_loop_elapsed_s"] = float(_loop_elapsed)
 
 
 def _inject_reasoning_budget_context(
@@ -441,4 +451,7 @@ def generate_audit_log(
         cot_calibrated_start=result.get("cot_calibrated_start", False),
         reasoning_last_resort=result.get("reasoning_last_resort", False),
         reasoning_last_resort_budget=result.get("reasoning_last_resort_budget"),
+        reasoning_loop_suspected=result.get("reasoning_loop_suspected", False),
+        reasoning_loop_stage=result.get("reasoning_loop_stage", 0),
+        reasoning_loop_elapsed_s=result.get("reasoning_loop_elapsed_s"),
     )
