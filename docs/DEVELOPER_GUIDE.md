@@ -1006,7 +1006,7 @@ benchmark_scores/model_cards/moonshotai_kimi-k2-0711.json
 `scripts/analysis/generate_model_cards.py` erstellt ein leeres Template für eine neue Model Card — ohne LLM-Call, ohne API-Zugriff. Es ist der Einstiegspunkt für jede neue Modellaufnahme.
 
 ```bash
-make model-cards MODEL=claude-opus-4-7              # Card-Template anlegen
+make model-cards MODEL=claude-opus-5              # Card-Template anlegen
 make model-card  MODEL=qwen3:14b PROVIDER=ollama_local  # mit Provider-Präfix (LCL_*)
 make model-cards                                    # interaktive Eingabe
 ```

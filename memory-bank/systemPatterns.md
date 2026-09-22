@@ -410,6 +410,22 @@ architecture changes: automatically load reference/pitfall-diagnosis.md before p
 
 **Migration:** `scripts/dev/migrate_size_class_768b.py` (Preflight gegen laufende Benchmarks — Race-Condition-Regel; schreibt Taxonomie + Cards via `atomic_write_json` + SSOT-Test-Grenzfälle). Die Taxonomie fließt zur Judge-Zeit in den Reviewer-Kontext ein (`judge_evaluator.py`) — Taxonomie-Änderungen daher nie während eines Benchmark-Batches.
 
+## Denkzeit-Wächter (Loop-Guard) der Eskalationsleiter (2026-09-21, Session Ornith-Livelock)
+
+**Problem:** Ornith-1.0-9b (Logical Reasoning 5B) verbrannte Erstversuch (25000 T) + Eskalationsstufe 2 (32000 T) in nicht terminierenden Thinking-Ketten. Der Client-Timeout-Retry-Zirkus (2400 s `request_timeout`, `max_retries=1` in `llamacpp_base`) hielt den Test > 80 min fest — der Timeout feuert bei streamendem Server nur bei Chunk-Funkstille, also praktisch nie. Die Eskalationsleiter ist ein **Token**-Instrument: Sie unterscheidet nicht Budgethunger (terminiert am Ceiling, leer) von Loop (würde ewig weiterdenken).
+
+**Lösung (SSoT: `utils/providers/base.py`):** `reasoning_reask.escalation_time_limit_s` (Default 1800 s, `0` = aus) deckelt die GESAMTE Eskalationsphase kumulativ — Stufe 2, Last-Resort, Retry-Zyklen. Der **Erstversuch bleibt uhrfrei** (Laufzeit = Messwert; legitime Budget-Vollausnutzer laufen immer durch — empirischer Anker: Max 1842 s über alle CSVs, kein terminierendes Modell je darüber). Watchdog = `threading.Timer` + `close()`-Kette (TCP FIN reißt den streamenden Request ab; Lazy-Clients bauen sich danach neu, Folge-Tests unberührt).
+
+**Klassifizierung (Kern):** Budget erreicht + leer → `reasoning_reask_exhausted` (Budgethunger/Messgrenze). Zeit erschöpft + abgebrochen → `reasoning_loop_suspected` (Loop-Verdacht — Token-Budgets NICHT ausgeschöpft). Bei Loop-Abbruch wird `exhausted` bewusst NICHT gesetzt, kein Last-Resort mehr, keine Card-Kalibrierung, Bridge-Skip wie bei Erschöpfung. Spalten: `reasoning_loop_suspected`/`_stage`/`_elapsed_s`.
+
+**Pitfalls:**
+- Pydantic-Falle (AGENTS.md 2026-09-19): Die drei Felder zuerst in `schemas/result.py` deklarieren — sonst stille ❌-Rows.
+- Watchdog-Klassifizierung nur über `abort_event.is_set()`: Eine Verbindungs-Exception nach Watchdog-Feuer ist Loop-Abbruch, JEDE andere Exception fliegt unverändert weiter (`raise`).
+- Bei Refactor von `_run_reask_ladder`: C901 ≤ 12 erzwang Aufteilung in `_run_escalation_stages` / `_execute_reask_stage` / `_maybe_run_last_resort_guarded` — die Wächter-Hülle existiert zweimal (Stufe + Last-Resort) und muss synchron bleiben.
+- Wächter wirkt nur bei Providern mit `close()`-Override (llama.cpp, vLLM); reine API-Provider (Base-`close` ist no-op) terminieren am Provider-Timeout — dokumentiert, kein Bug.
+
+**Datenbegründung (Schwellen-Wahl 30 min):** p95 aller Modelle ≤ 700 s; Max legitimer Fall 1842 s (Budget-Vollausnutzung @ 25,8 t/s); Kimi/GLM (höchste Token-Nutzung, 22–33k) max 778–1328 s — Tokenhunger ist Zeit-schnell (Cloud-TPS), die Zeitgrenze trifft nur Nicht-Terminierer.
+
 ## Context Loading Rules
 Before starting any task, check the task type and load accordingly:
 - Refactoring / debugging / architecture review

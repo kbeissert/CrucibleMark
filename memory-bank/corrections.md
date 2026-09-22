@@ -157,3 +157,15 @@ werden — sonst 400-Fehler bei allen API-Calls (ThinkingProbe + Benchmark).
 **Pflege:** Bei neuen Commercial-Streaming-Pfaden immer finish_reason capturieren (Muster: xai `_capture_xai_chunk_metadata`). Latent, ungefixt (Befund only): `groq.py:_process_groq_stream` (gleiche Lücke, Provider deaktiviert, nicht im Streaming-Default der Probe) und `openai.py` Responses-API + stream_handler (Stream fällt in `_process_blocking_responses` → Bruch; kein responses_only-Modell konfiguriert; `_process_blocking_responses` setzt zudem kein finish_reason aus status/incomplete_details).
 
 **Verifikations-Datum:** 2026-09-04 (Run-JSONs der 4 OpenRouter-PC-Runs ausgewertet; 5 neue Tests grün; `make lint` exit 0)
+
+## Anthropic Opus 5: `stop_reason=refusal` gegen die `<thought>`-Tag-Erzwingung des reasoning-Moduls (2026-09-20)
+
+**Symptom:** reasoning-Modul-Tests (5a, 5d, 5e + alle 5 Metacog-Tests) lieferten 0 % mit Judge-Skip „zu kurz/abgelehnt" — 216–341 Tokens, 0.7–2.6 s, Response-Sektion im Audit-Log komplett leer. Kein anderer Test des Modells betroffen: reasoning_001_river (97.8 %), 5b (96.8 %), 5c (96.2 %) liefen normal.
+
+**Root Cause (2 einzelne API-Calls gegen `claude-opus-5`, 2026-09-20):** Die Tag-Erzwingung im Modul-Prompt („IMPORTANT: Show your reasoning process using `<thought>` tags …") triggert Anthropics Safety-Refusal. Mit Tag-Erzwungung → `stop_reason=refusal`, Content vollständig leer (Anthropic schreibt keinen Refusal-Text in den Content). Ohne Tag-Erzwingung (sonst identischer Prompt) → normale, starke Antwort (1675 Zeichen, False-Premise sauber erkannt). Der Refusal gilt dem erzwungenen Fake-Format, nicht der Aufgabe.
+
+**Framework-Verhalten korrekt:** Leere Response → `MIN_REFUSAL_CHARS`-Pfad → Judge-Skip → 0 %. Aber: Der Refusal ist so nicht von Infrastruktur-Fehlern unterscheidbar — `stop_reason=refusal` wird nicht erkannt/protokolliert (Befund only).
+
+**Nachweis-Blöcke:** 8 Audit-Logs in `outputs/audit_logs/claude-opus-5/` tragen einen manuellen Reviewer-Hinweis (Klassifizierung, Diagnose, Interpretationsregel: 0 % = Refusal gegen Modulformat, nicht Fähigkeitsverlust).
+
+**Offen (Befund only, nach dem Batch entscheiden):** (1) Anthropic-Connector sollte `stop_reason=refusal` erkennen und als `refusal_flag`/Audit-Hinweis propagieren (Muster: refusal-Ketten). (2) Strategisch: Die `<thought>`-Erzwingung ist historische Modul-Spec (Regex-Scorer bewertet die thought-Sektion) — Format-Änderung bricht Comparability zu allen historischen reasoning-Läufen. Entscheidungsbedarf, kein Fix nebenbei.
