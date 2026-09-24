@@ -233,6 +233,7 @@ class AnthropicClient(BaseProviderClient):
             state["model_name"] = event.message.model
             state["response_id"] = event.message.id
             state["stream_usage"] = event.message.usage
+            state["stream_input_tokens"] = self._stream_input_tokens(event.message.usage)
         elif event.type == "content_block_start":
             self._apply_anthropic_block_start(event, state)
         elif event.type == "content_block_delta":
@@ -266,13 +267,43 @@ class AnthropicClient(BaseProviderClient):
             if stream_handler:
                 stream_handler(delta.partial_json)
 
+    @staticmethod
+    def _stream_input_tokens(start_usage: Any) -> int:
+        """input_tokens (inkl. Cache-Read) aus dem message_start-Usage.
+
+        MessageDeltaUsage trägt im Streaming kein verlässliches input_tokens
+        (SDK 0.77.0: Feld existiert, ist None) — der Input-Anteil wird daher
+        aus message_start übernommen (Cache-Read analog zum Objekt-Zweig
+        von LLMParser.extract_usage_tokens addiert).
+        """
+        if not start_usage:
+            return 0
+        input_tokens = int(getattr(start_usage, "input_tokens", 0) or 0)
+        cache_read = int(getattr(start_usage, "cache_read_input_tokens", 0) or 0)
+        return input_tokens + cache_read
+
     def _apply_anthropic_message_delta(self, event: Any, state: dict[str, Any]) -> None:
-        """Übernimmt stop_reason/usage aus einem message_delta Event."""
+        """Übernimmt stop_reason/usage aus einem message_delta Event.
+
+        Die kumulative output_tokens liegt in ``event.usage`` (Sibling von
+        ``event.delta``), NICHT in ``event.delta.usage``: Der frühere Lookup
+        ``hasattr(delta, "usage")`` lief immer ins Leere, sodass
+        stream_usage auf dem message_start-Stand stehen blieb — output_tokens
+        systematisch zu klein (Initialwert 2–9 statt der finalen Summe),
+        reasoning_tokens 0, Output-Kosten unter-reportet (Befund 2026-09-24,
+        PC-Lauf claude-opus-5-5: Essays mit hunderten Tokens als 8 Output-
+        Tokens verbucht). Der Fix merged input_tokens aus message_start mit
+        den finalen output_tokens aus message_delta.
+        """
         delta = event.delta
         if hasattr(delta, "stop_reason"):
             state["stop_reason"] = delta.stop_reason
-        if hasattr(delta, "usage"):
-            state["stream_usage"] = delta.usage
+        usage = getattr(event, "usage", None)
+        if usage is not None:
+            state["stream_usage"] = {
+                "input_tokens": state.get("stream_input_tokens", 0),
+                "output_tokens": int(getattr(usage, "output_tokens", 0) or 0),
+            }
 
     def _get_used_max_tokens(self, initial: int, usage) -> tuple[int, bool]:
         """Ermittle tatsächliche max_tokens und ob Fallback ausgelöst wurde.

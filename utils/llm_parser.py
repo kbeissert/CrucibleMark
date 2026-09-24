@@ -59,7 +59,11 @@ class LLMParser:
 
         # Handle Anthropic Format (has input_tokens, output_tokens)
         if hasattr(usage, "input_tokens"):
-            input_tokens = usage.input_tokens
+            # input_tokens kann None sein (z.B. MessageDeltaUsage im Streaming,
+            # SDK 0.77.0) — None würde im llm_client auf None==0-Vergleich und
+            # TypeError in der Token-Summe laufen; 0 triggert den Estimate-
+            # Fallback (Befund 2026-09-24, Anthropic-Streaming-Usage-Fix).
+            input_tokens = usage.input_tokens or 0
             # output_tokens might be None
             output_tokens = getattr(usage, "output_tokens", 0) or 0
 
