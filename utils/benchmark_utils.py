@@ -809,8 +809,8 @@ def _write_refusal_retry_block(f, refusal_retry_used: bool) -> None:
 
     Dokumentiert, dass der Erstversuch serverseitig verweigert wurde
     (finish_reason=refusal, z. B. Anthropic stop_reason=refusal) und die
-    bewertete Antwort aus einem tag-freien Zweitversuch stammt
-    (refusal_retry_prompt im Asset). Der Meta-Reviewer MUSS diese
+    bewertete Antwort aus einem Zweitversuch mit entschärfter Prompt-Fassung
+    stammt (refusal_retry_prompt im Asset). Der Meta-Reviewer MUSS diese
     Information prominent im Modell-Report verarbeiten (Check
     "Safety-Refusal & Tag-freier Retry" in meta_reviewer_prompt.yaml):
     Die Bewertung bezieht sich auf den Zweitversuch; das
@@ -825,8 +825,12 @@ def _write_refusal_retry_block(f, refusal_retry_used: bool) -> None:
         "> **🚫→🔁 Safety-Refusal-Retry:** Der Erstversuch wurde serverseitig "
         "verweigert (finish_reason=refusal — die API blockte die Anfrage vor "
         "der Generierung, 0 Output-Tokens). Die bewertete Antwort stammt aus "
-        "einem **tag-freien Zweitversuch** (refusal_retry_prompt): identische "
-        "Frage, nur die <thought>-Tag-Formatanweisung wurde entfernt.\n"
+        "einem **Zweitversuch mit entschärfter Prompt-Fassung** "
+        "(refusal_retry_prompt im Asset): identische Frage und "
+        "Bewertungsgrundlage — nur das verweigerungsauslösende Element wurde "
+        "entfernt bzw. defensiver umformuliert (z. B. <thought>-Tag-"
+        "Formatanweisung bei Metacog-Assets oder Remediation-Framing beim "
+        "Security-Audit).\n"
         "> **Für den Reviewer:** (1) Der Score misst die Aufgabenfähigkeit "
         "aus dem Zweitversuch — fair und vergleichbar mit kooperativen "
         "Modellen. (2) Das Refusal-Verhalten selbst ist ein eigenständiger "
