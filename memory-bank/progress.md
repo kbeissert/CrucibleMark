@@ -1,6 +1,13 @@
 # Progress
 Letzte Releases + aktueller Stand.
 
+### 2026-09-24 (Session 116) — Refusal-Retry auf code_quality_002 ausgeweitet + Opus-5.5-Verifikations-Run [DONE]
+
+- [x] Ursachenanalyse 0 %-Zeile claude-opus-5-5/code_quality_002: serverseitiger API-Refusal (`finish_reason=refusal`, 7 Output-Tokens, leerer Content → Judge-Skip); Refusal-Retry griff nicht, da das Asset kein `refusal_retry_prompt`-Feld hatte (Asset-Gate in `_maybe_refusal_retry`).
+- [x] `refusal_retry_prompt` für `asset_002_security_audit.yaml` ergänzt (v2.1.0 → v2.2.0): identischer PHP-Code + identische Tabellen-Anforderung (Bewertungsgrundlage konstant), nur Framing → autorisiertes Remediation-Review. Audit-Block-Text in `benchmark_utils.py` generalisiert (war metacog-spezifisch auf `<thought>`-Tag-Entfernung formuliert).
+- [x] Verifikation: tests/test_refusal_retry.py 12/12, validate-assets 5/5, make lint 9.99/10 unverändert. Re-Run claude-opus-5-5 code_quality (--force): 002 = 81,6 % statt 0 %, Modul-Schnitt 88,92 % — Refusal reproduzierte sich NICHT (probabilistisch, `refusal_retry_used=False`, Erstversuch kooperativ), Retry-Pfad live ungefeuert.
+- [ ] Gemini-Test (gemini-3.1-pro-preview, code_quality) blockiert: Google-API 429 „prepayment credits depleted" — temporäre Config-Reaktivierung reverted, nach Aufladung wiederholbar (Hinweis: Gemini-0 %-Row hatte `finish=STOP`, hätte den Retry nicht getriggert).
+
 ### 2026-09-22 (Session 114) — Filesystem-Bereinigung: ~660 MB Temp-/Backup-Reste entfernt [DONE]
 
 - [x] **Gelöscht:** Root — 5 Einmal-Logs vom 26.07. + `commit_msg.txt` (z. T. versehentlich git-trackt → 7 `D`-Einträge im Working-Tree, beim nächsten Commit mitversionieren), `.temp_prompt.yaml`, `last_failed_raw.txt` (beide laut .gitignore „Debug-Artefakte"), Root-`__pycache__`, leeres `.work/`; `backups/` — 6 ältere tar.gz-Vollbackups, alle losen `.bak`-CSV-Snapshots (inkl. `ornith_cleanup_20260818`), `_pre_clean_*` mit Audit-Log-Backups (469→82 MB); `logs/` — `crucible.back.log` (169 MB, manuelles Log-Backup, Stand Mai) + Juni-Snapshots (207→31 MB); `benchmark_scores/` — 5 `.bak` + 8 verwaiste `tmp*.csv.tmp` (58 MB, abgebrochene Atomic-Writes); `outputs/` — `tooluse_metrics.jsonl.bak`, verstecktes `.backup_model_cards_verification_20260612/`, `rescore_summary.csv`.
