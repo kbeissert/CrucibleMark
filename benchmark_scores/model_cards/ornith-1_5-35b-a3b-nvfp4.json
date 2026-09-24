@@ -35,7 +35,7 @@
     "Volle Präzision braucht rund 70 GB; lokaler Betrieb nur mit aktuellen Engines oder Quantisierung.",
     "Benchmark-Werte sind herstellereigen, gemessen über fünf Läufe mit Trainings-nahem Sampling."
   ],
-  "judge_context_hint": "Ornith 1.5 35B-A3B ist DeepReinforces mittleres MoE (35 Mrd. Gesamt-, 3 Mrd. aktive Parameter, 262.144 Tokens, Backbone Qwen 3.5 35B-A3B), MIT-lizenziert, veröffentlicht am 19. August 2026; technisch vision-fähig (mmproj-Datei, image-text-to-text-Tag), jedoch vom Hersteller nicht benchmarkt oder beschrieben. Bewerte Coding- und Agentic-Aufgaben mit Tool-Use besonders scharf; laut Hersteller deutliche Vorsprünge gegenüber Qwen 3.6-35B und dichten Modellen wie Gemma 4-31B, alle Werte herstellereigen. Sehr frisches Release mit ausstehender unabhängiger Verifikation.",
+  "judge_context_hint": "Ornith 1.5 35B-A3B ist DeepReinforces mittleres MoE (35 Mrd. Gesamt-, 3 Mrd. aktive Parameter, 262.144 Tokens, Backbone Qwen 3.5 35B-A3B), MIT-lizenziert, veröffentlicht am 19. August 2026; technisch vision-fähig (mmproj-Datei, image-text-to-text-Tag), vom Hersteller aber nicht benchmarkt oder beschrieben. Bewerte Coding- und Agentic-Aufgaben mit Tool-Use besonders scharf; laut Hersteller deutliche Vorsprünge gegenüber Qwen 3.6-35B und Gemma 4-31B — alle Werte herstellereigen. Frisches Release, unabhängige Verifikation steht aus.",
   "architecture_tags": [
     "Reasoning",
     "Thinking",

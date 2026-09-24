@@ -1,20 +1,42 @@
 {
   "model_id": "claude-opus-5-5",
   "display_name": "Claude Opus 5.5",
-  "model_family": "Claude 5",
-  "model_variant": "opus",
-  "model_version": "5.5",
-  "vendor": "Anthropic",
   "developer": "Anthropic",
-  "developer_jurisdiction": "US",
   "origin_country": "USA",
+  "developer_jurisdiction": "US",
   "deployment_type": "cloud-only",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "TODO",
+  "weights_provenance_risk_rationale": "TODO",
+  "model_family": "Claude 5",
+  "vendor": "Anthropic",
+  "primary_focus": "coding",
+  "use_case_primary": "agentic",
   "parameter_architecture": "dense",
   "params_total_b": null,
   "params_active_b": null,
-  "size_class": "Frontier",
   "context_window_k": 1000,
-  "knowledge_cutoff": "2026-07",
+  "knowledge_cutoff": "2026-06",
+  "summary": "Claude Opus 5.5 ist Anthropics neues Frontier-Modell: Seit dem 22. September 2026 ersetzt es Opus 5 und soll laut Hersteller Fable-5.1-Leistung bei 40 Prozent geringeren typischen Workload-Kosten erreichen. Adaptives Thinking ist standardmäßig aktiv und per Effort-Stufe steuerbar, das Kontextfenster fasst eine Million Tokens mit 128.000 Output-Tokens. Die Reasoning-Klassifikator-Fehler aus Opus 5 sind behoben, nur die Metacognition-Verweigerung bleibt.",
+  "strengths": [
+    "Klassifikator-Fix gegenüber Opus 5: die Reasoning-Fehlerfälle 5A, 5D und 5E werden beantwortet.",
+    "Basispreise 20 Prozent unter Opus 5 (4/20 statt 5/25 USD pro 1M), Cache-Reads 60 Prozent günstiger.",
+    "Laut Anthropic 40 Prozent geringere typische Workload-Kosten und über 30 Prozent schnellere Ausgabe.",
+    "Performance auf Fable-5.1-Niveau bei agentischem Coding, Computer-Use und Chart-Erkennung."
+  ],
+  "known_limitations": [
+    "Proprietäres Cloud-Modell mit US-Jurisdiktion und CLOUD-Act-Relevanz.",
+    "Metacognition-<thought>-Tag-Verweigerung persistiert; im Benchmark per Refusal-Retry abgedeckt.",
+    "Der temperature-Parameter ist deprecated; die API weist ihn mit HTTP 400 ab.",
+    "Mythos-5.1-Vergleiche lösten zusätzliche Sicherheitsbarrieren in Biologie und Cybersecurity aus."
+  ],
+  "judge_context_hint": "Claude Opus 5.5 ist Anthropics Frontier-Modell für Coding, Wissensarbeit und agentische Aufgaben, cloud-only mit US-Jurisdiktion und proprietärer Lizenz. Reasoning läuft adaptiv mit einstellbarem Default-Effort (medium) und erscheint als Think-Block in der API, nicht als Metacognition-<thought>-Tag im Antworttext; Metacognition-Anfragen verweigert das Modell beharrlich. Temperature ist deprecated und führt zu HTTP 400. Die Opus-5-Klassifikator-Fehler 5A/5D/5E sind behoben; Biologie- und Cybersecurity-Fragen bleiben verstärkt guardrailed.",
+  "architecture_tags": [
+    "Thinking",
+    "Agentic-Orchestrator",
+    "Long-Context",
+    "Vision-Capable"
+  ],
   "input_modalities": [
     "text",
     "image"
@@ -22,38 +44,65 @@
   "output_modalities": [
     "text"
   ],
-  "use_case_primary": "agentic",
-  "primary_focus": "coding",
+  "supports_tool_use": null,
+  "tooluse_tested_at": "2026-09-24T19:56:56Z",
+  "tooluse_score_p1": 90.0,
+  "tooluse_score_p2": 62.5,
+  "tooluse_runs": {
+    "claude-opus-5-5": {
+      "tested_at": "2026-09-24T19:56:56Z",
+      "score_p1": 90.0,
+      "score_p2": 62.5
+    }
+  },
+  "tooluse_recommendation": null,
+  "dual_profile": false,
+  "temperature": null,
+  "system_prompt_override": null,
+  "cot_marker_family": null,
+  "cot_tags_detected": null,
+  "top_p": null,
+  "top_k": null,
+  "repetition_penalty": null,
+  "frequency_penalty": null,
+  "presence_penalty": null,
+  "seed": null,
+  "stop_sequences": null,
   "license": "Proprietary (Anthropic Commercial Terms)",
-  "weights_license_tier": "proprietary",
+  "license_url": null,
   "commercial_use_allowed": true,
-  "local_deployment_possible": false,
+  "weights_license_tier": "proprietary",
+  "model_version": "5.5",
+  "input_price_per_1m": 4.0,
+  "output_price_per_1m": 20.0,
+  "hardware_profile": null,
+  "inference_engine": "anthropic-api",
+  "quantization_format": null,
+  "model_variant": "opus",
+  "unknown": false,
+  "card_status": "draft",
+  "size_class": "Frontier",
+  "generated_at": "2026-09-24T18:25:00.000000+00:00",
+  "thinking_probe_detected": true,
+  "thinking_probe_evidence": "Multi-Probe (3 prompts, 3 detected, best confidence=medium):\n  - math: [math] Inline CoT im content-Feld: Antwort 629 chars (>200) mit 19 Berechnungs-Operatoren. First 200 chars: # Finding the Average Speed\n\n**Step 1: Recall the formula**\n\n$$\\text{Average speed} = \\frac{\\text{Total distance}}{\\text{Total time}}$$\n\n**Step 2: Identify the given values**\n- Distance = 120 km\n- Tim\n  - code: [code] Inline CoT im content-Feld: Antwort 2336 chars (>200) mit 38 Berechnungs-Operatoren. First 200 chars: # Sorting with Insertion Sort\n\n## How the Algorithm Works\n\nInsertion sort works the way many people sort playing cards in their hand:\n\n1. Split the list into a **sorted part** (left) and an **unsorted\n  - decision: [decision] Inline CoT im content-Feld: Antwort 4709 chars (>200) mit 28 Berechnungs-Operatoren. First 200 chars: # Should an Autonomous Car Risk Its Passenger to Save a Pedestrian?\n\nThis is a version of the trolley problem, but it has features the classic thought experiment lacks. Here are the main consideration",
+  "thinking_probe_confidence": "medium",
+  "thinking_probe_at": "2026-09-24T16:35:59.729912+00:00",
+  "thinking_probe_manual_override": null,
+  "profile_verified": false,
+  "profile_verified_at": null,
+  "profile_verified_by": null,
+  "last_modified_at": "2026-09-24T18:25:00Z",
   "heritage_ids": [
     "claude-opus-5"
   ],
-  "dual_profile": false,
-  "inference_engine": "anthropic-api",
-  "quantization_format": null,
-  "architecture_tags": [
-    "Thinking",
-    "Agentic-Orchestrator",
-    "Long-Context",
-    "Vision-Capable"
-  ],
-  "card_status": "draft",
-  "unknown": false,
-  "summary": "Claude Opus 5.5 ist der Nachfolger von Opus 5 (Release September 2026). Laut Refusal-Probe (2026-09-24) behoben: die Opus-5-spezifischen Reasoning-Klassifikator-Fehler (5A/5D/5E werden beantwortet). Persistierend: die Metacognition-<thought>-Tag-Verweigerung (generationübergreifender Sicherheitsschicht-Trigger, im Benchmark durch Refusal-Retry abgedeckt). temperature-Parameter deprecated (HTTP 400).",
-  "strengths": [
-    "Reasoning-Klassifikator-Fix gegenüber Opus 5 (5A/5D/5E beantwortet).",
-    "Gleiche Opus-Line-Preisstruktur ($5/$25 pro 1M Tokens)."
-  ],
-  "known_limitations": [
-    "Proprietäres Modell mit US-Jurisdiktion (CLOUD Act).",
-    "Metacognition-<thought>-Tag-Verweigerung persistiert (Refusal-Retry erforderlich).",
-    "temperature-Parameter deprecated — API weist ihn mit HTTP 400 ab."
-  ],
-  "generated_at": "2026-09-24T10:31:53.073967+00:00",
-  "last_modified_at": "2026-09-24T08:31:49Z",
-  "input_price_per_1m": 5.0,
-  "output_price_per_1m": 25.0
+  "community": null,
+  "pc_token_calibration": {
+    "budget": 390,
+    "classification": "inconsistent",
+    "profile": "thinking",
+    "tested": "2026-09-24T17:19:45.812656+00:00",
+    "converged_stage": 300,
+    "notes": "Stratifizierte Probe: 2 Blöcke sauber @ 300, 4/7 verdächtige Blöcke eskaliert (1 greedy, 3 inkonsistent). Profil: thinking. Thinking-only-Ausnahme (dual_profile: false): Instruct-Modus nicht verfügbar — einzelner Thinking-Lauf statt Modus-Wechsel (Konzept-Doc Abschn. 11)."
+  },
+  "pc_profile": "thinking"
 }

@@ -35,7 +35,7 @@
     "Knowledge Cutoff ist nicht offiziell bestätigt; Pre-Training startete laut Poolside am 22. Mai 2026.",
     "CoT-Marker und Thinking-Probing noch nicht durchgeführt; sollten vor Release verifiziert werden."
   ],
-  "judge_context_hint": "Laguna S 2.1 ist Poolsides offenes Agentic-Coding-MoE mit 117,6 Mrd. Gesamt- / 8,5 Mrd. aktiven Parametern, 1.024.000 Tokens Kontext und OpenMDW-1.1-Lizenz. Selektives Reasoning: Das Modell entscheidet selbst, wann Extended Reasoning Chains eingesetzt werden — kein Always-Thinking wie Qwen3.6. Interleaved Thinking erlaubt Tool-Aufrufe innerhalb der Denkkette sowie natives Tool-Calling für langhorizontige Agentic-Workflows. Bei komplexen Coding- und Agentic-Aufgaben (Terminal-Bench-Stil, SWE-Bench-Stil) stark gewichten. NVFP4-Quantisierung mit DFlash-Speculative-Decoding für Single-Node-Deployment optimiert.",
+  "judge_context_hint": "Laguna S 2.1 ist Poolsides offenes Agentic-Coding-MoE mit 117,6 Mrd. Gesamt- / 8,5 Mrd. aktiven Parametern, 1 Million Tokens Kontext und OpenMDW-1.1-Lizenz. Selektives Reasoning: Das Modell entscheidet die Tiefe seiner Denkketten selbst, kein Always-Thinking wie Qwen3.6. Interleaved Thinking erlaubt Tool-Aufrufe mitten in der Denkkette, natives Tool-Calling für langhorizontige Agentic-Workflows. Coding- und Agentic-Aufgaben (Terminal-/SWE-Bench-Stil) scharf gewichten. NVFP4-Quantisierung mit DFlash-Speculative-Decoding für Single-Node-Betrieb.",
   "architecture_tags": [
     "Reasoning",
     "Thinking",

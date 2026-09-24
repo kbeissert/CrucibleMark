@@ -36,7 +36,7 @@
     "Wissensstand nicht offiziell dokumentiert; Cutoff 2025-01 vermutlich von Seed-OSS-Basis abgeleitet.",
     "Thinking-Mode ist opt-in (Default off) und muss explizit aktiviert werden."
   ],
-  "judge_context_hint": "Hermes 4.3 36B (NVFP4) ist NousResearchs Open-Weights-Modell auf ByteDance Seed-OSS-36B-Basis, vollständig dezentral über das Psyche-Netzwerk nachtrainiert. NVFP4-Quantisierung von Firworks reduziert den Gewichts-Speicherbedarf deutlich gegenüber BF16 bei vergleichbarer Qualität. 36 Mrd. Dense-Parameter, 512.000 Tokens nativer Kontext, Apache-2.0-Lizenz. Optionaler Thinking-Modus (opt-in via chat_template_kwargs), natives Tool-Calling im Hermes-XML-Format. Bei der Bewertung Tool-Use, logische Struktur und Reasoning-Stabilität getrennt betrachten. Lokal ohne externen Datentransfer betreibbar.",
+  "judge_context_hint": "Hermes 4.3 36B (NVFP4) ist NousResearchs Open-Weights-Modell auf ByteDance Seed-OSS-36B-Basis, dezentral über das Psyche-Netzwerk nachtrainiert. Firworks NVFP4-Quantisierung senkt den Gewichts-Speicher gegenüber BF16 bei vergleichbarer Qualität. 36 Mrd. Dense-Parameter, 512.000 Tokens Kontext nativ, Apache-2.0-Lizenz. Thinking optional (opt-in via chat_template_kwargs), natives Tool-Calling im Hermes-XML-Format. Bei der Bewertung Tool-Use, Struktur und Reasoning-Stabilität getrennt betrachten; lokal ohne Datentransfer.",
   "architecture_tags": [
     "Thinking",
     "Dense",

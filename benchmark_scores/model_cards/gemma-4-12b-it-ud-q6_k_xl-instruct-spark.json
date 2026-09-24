@@ -31,7 +31,7 @@
     "Geringere Reasoning-Tiefe gegenüber den größeren Gemma-4-Varianten.",
     "Community-Distribution statt offizieller Google-Verpackung."
   ],
-  "judge_context_hint": "Gemma 4 12B Instruct (Unsloth, Q6_K_XL) als Instruct-Profil mit serverseitig deaktiviertem Reasoning (--reasoning off) auf der DGX Spark — identische Gewichte wie das Basis-Profil, gleiche 12-Milliarden-Klasse und Q6-Quantisierung. Bei der Bewertung berücksichtigen, dass dieses Profil bewusst ohne Thinking-Modus läuft: Antworten sind kürzer und direkter, tiefe Reasoning-Ketten fehlen by design (Coverage-Regel-Ersatzlauf des Political-Compass-Moduls). Der Benchmark läuft textuell; Multimodal-Merkmale der Basis bleiben sekundär. Lokaler Betrieb ohne Cloud-Verbindung.",
+  "judge_context_hint": "Gemma 4 12B Instruct (Unsloth, Q6_K_XL) als Instruct-Profil mit serverseitig deaktiviertem Reasoning (--reasoning off) — identische Gewichte wie das Basis-Profil, gleiche 12-Milliarden-Klasse und Q6-Quantisierung. Bei der Bewertung berücksichtigen, dass dieses Profil bewusst ohne Thinking läuft: Antworten sind kürzer und direkter, tiefe Reasoning-Ketten fehlen by design (Coverage-Regel-Ersatzlauf des Political-Compass-Moduls). Der Benchmark läuft textuell; Multimodal-Merkmale der Basis bleiben sekundär. Betrieb ohne Cloud-Verbindung.",
   "architecture_tags": [
     "Instruct",
     "Multimodal",
