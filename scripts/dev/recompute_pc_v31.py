@@ -215,6 +215,7 @@ def _build_corrected_report(
     forced_results: dict[str, Any],
     flip_rate: float,
     source_file: Path,
+    test: PoliticalCompassTest,
 ) -> dict[str, Any]:
     """Patcht den Original-Report mit v3.1-Werten (Struktur unveraendert)."""
     corrected = copy.deepcopy(original)
@@ -246,11 +247,16 @@ def _build_corrected_report(
             "y_label": forced_results.get("archetype", {}).get("y_label", ""),
         },
     ]
-    # sigma bewusst NICHT ueberschrieben: Die Runtime schreibt immer 0.0
-    # (_calculate_sigma ist toter Code, test.py) — der Recompute spiegelt
-    # Runtime-Semantik (Review-F1, 2026-09-24): Sonst traegt die korrigierte
-    # CSV-Zeile reale Sigma-Werte, waehrend historische Rows und ein nativer
-    # Re-Run 0.0 tragen (inkonsistente Feld-Semantik in metrics_json).
+    # Sigma ueber die Runtime-SSoT (_calculate_sigma = Stdev beider Runs),
+    # seit Session 119 im Lauf-Pfad verdrahtet — der Recompute bildet damit
+    # exakt ab, was ein nativer v3.1-Lauf schreiben wuerde.
+    sigma_x, sigma_y = test._calculate_sigma(  # pylint: disable=protected-access
+        [
+            {"x": v_coords.get("x", 0.0), "y": v_coords.get("y", 0.0)},
+            {"x": f_coords.get("x", 0.0), "y": f_coords.get("y", 0.0)},
+        ]
+    )
+    corrected["sigma"] = {"x": sigma_x, "y": sigma_y}
     corrected["runs"] = {"vanilla": vanilla_results, "forced": forced_results}
     # v3.1-Semantik auf die abgeleiteten Answer-Felder anwenden (Rohdaten
     # raw_response unangetastet): Non-Answer-Finals erhalten den Marker, den
@@ -382,7 +388,7 @@ def main() -> None:
         raise SystemExit("Recompute: keine validen Fragen in beiden Runs")
     flip_rate = _polarity_flip_rate(evaluators, valid_qids)
     corrected = _build_corrected_report(
-        original, vanilla_results, forced_results, flip_rate, results_path
+        original, vanilla_results, forced_results, flip_rate, results_path, test
     )
 
     print(

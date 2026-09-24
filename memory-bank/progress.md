@@ -1,6 +1,15 @@
 # Progress
 Letzte Releases + aktueller Stand.
 
+### 2026-09-24 (Session 119) — Pre-Commit-Review + Repo-Wartung + PC-v3.1-Recompute + Sigma-Verdrahtung [DONE]
+
+- [x] Umfassendes Pre-Commit-Review des PC-v3.1-Folgechangesets (Anthropic-Streaming-Usage, Recompute-Script, Doku): Fix-C-Consumer-Kette verifiziert, Recompute-Äquivalenz zur Runtime bewiesen (`strict_mismatch=0` über 129 Answer-Entries); Befunde F1–F4 behoben (Sigma-Semantik, Testzähler, non_answer-Label, Asset-Integritäts-Check im Recompute).
+- [x] Anthropic-Streaming-Usage-Fix (fb07c806): kumulative output_tokens liegen in `event.usage`, nicht `event.delta.usage` (SDK 0.77.0) — Output-Kosten/Token-Statistiken aller Anthropic-Streaming-Requests waren systematisch unter-reportet; Merge-Dict (input aus message_start inkl. Cache-Read) + None-Absicherung im Parser + 8 Tests (SDK-Struktur-Guard).
+- [x] Repo-Wartung (cf79275c): `make validate-cards` erstmals komplett grün (152 Cards/0 Findings) — Vision-Taxonomie-Swap 54× `Vision-Capable` (Vokabular-Semantik), Hermes-Orphan-Stub entfernt, Qwen `general`→`generalist` (2), Hermes-Tier-Vokabular, 405B-Summary-Mismatch, GLM-5.3-Lizenz-Update (bespoke „GLM-5.3 License" seit 28.08.2026, $10B-MaaS-Gate → `restricted-weights`, Swift-ARR-Präzedenz), Laguna `knowledge_cutoff: 2025-11` (Poolside-Blog); judge_parity auf `ConfigValidator().config` migriert (test_config_ssot rot→grün).
+- [x] PC-v3.1-Recompute + Bias-Review (609dcd23): Opus-5.5 (−1.87, 1.09) → (−3.25, 1.73), Shift 0.97, Flip 17.31 %, Intersection 53/79 — Interpretationsumkehr: kein „Wolf mit Neutralitätsmaske", Vanilla bereits klar sozial-autoritär; Topic-Shift-σ 3.70.
+- [x] Sigma-Verdrahtung: `_calculate_sigma` (seit PC v3.0 tot, Reports trugen immer 0.0-Platzhalter) im Lauf-Pfad verdrahtet; Recompute nutzt dieselbe SSoT-Funktion; Comparability-Note im CHANGELOG; Test ergänzt (PC-Suite 100).
+- [ ] Backlog: PC-Modul-Reaktivierung + Opus-5.5-Nativ-Re-Run (validiert Streaming-Fix live, ersetzt Recompute durch Native-Daten; Reproduktion von (−3.25, 1.73) bestätigt den Recompute als Verfahren); gemini/kimi-Recomputes nach Google-API-Aufladung (Checkpoints flüchtig — Re-Runs nötig); Flaky-Beobachtung (1 Failure in 8 Suite-Läufen, nicht reproduzierbar) nur bei Re-Auftreten diagnostizieren.
+
 ### 2026-09-24 (Session 118) — Code-Review PC v3.1-Changeset + Review-Fixes [DONE]
 
 - [x] Umfassendes Review der uncommitteten PC-v3.1-Änderungen (Scoring-Integrität: Non-Answer-Ausschluss, Display-Keys-Appends, STRICT-Resume-Gate, config-getriebener Methodology-Tag) gegen Architektur-/Benchmarkdesign-/Best-Practice-Regeln: 99/99 Tests, CC clean, module_version-Gate und ANSWER-impliziert-parsebar konstruktiv verifiziert.

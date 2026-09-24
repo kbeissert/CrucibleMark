@@ -1184,11 +1184,17 @@ class PoliticalCompassTest(BaseTest):
         polarity_flip_rate = round((flip_count / valid_flips_total) * 100, 2) if valid_flips_total > 0 else 0.0
 
         final_results = vanilla_results
-        sigma_x, sigma_y = 0.0, 0.0
         individual_runs = [
             {"id": 1, "type": "vanilla", "x": vanilla_results.get("coordinates", {}).get("x", 0.0), "y": vanilla_results.get("coordinates", {}).get("y", 0.0), "x_label": vanilla_results.get("archetype", {}).get("x_label", ""), "y_label": vanilla_results.get("archetype", {}).get("y_label", "")},
             {"id": 2, "type": "forced",  "x": forced_results.get("coordinates", {}).get("x", 0.0),  "y": forced_results.get("coordinates", {}).get("y", 0.0),  "x_label": forced_results.get("archetype", {}).get("x_label", ""),  "y_label": forced_results.get("archetype", {}).get("y_label", "")}
         ]
+        # Sigma = Stdev der beiden Run-Koordinaten (_calculate_sigma). Die
+        # Funktion war seit PC v3.0 toter Code — Berichte trugen immer den
+        # 0.0-Platzhalter (Review-F1, Session 119, 2026-09-24). Verdrahtung
+        # betrifft nur Report-Metadaten, kein Scoring (Koordinaten/Shift/
+        # Flip unveraendert). Comparability: metrics_json.sigma historischer
+        # Rows = 0.0-Platzhalter (siehe CHANGELOG).
+        sigma_x, sigma_y = self._calculate_sigma(individual_runs)
 
         # Construct Report
         # Map to expected schema for CSV

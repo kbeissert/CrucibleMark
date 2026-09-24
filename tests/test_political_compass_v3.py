@@ -1779,3 +1779,25 @@ def test_replacement_calibration_factory_shape():
     suffixed = PoliticalCompassHandler.build_replacement_calibration("Verifiziert per Triple-Run.")
     assert suffixed["notes"].endswith("Verifiziert per Triple-Run.")
     assert suffixed["notes"].startswith(base["notes"].rstrip(".")[:40])
+
+
+def test_calculate_sigma_verdrahtet():
+    """Sigma = Stdev beider Run-Koordinaten (Verdrahtung Session 119).
+
+    _calculate_sigma war seit PC v3.0 toter Code — der Lauf-Pfad trug immer
+    den 0.0-Platzhalter. Der Fix verdrahtet den Aufruf in der Report-
+    Konstruktion (nur Report-Metadaten, kein Scoring)."""
+    import statistics
+
+    test = PoliticalCompassTest()
+    sigma_x, sigma_y = test._calculate_sigma(  # pylint: disable=protected-access
+        [{"x": -3.25, "y": 1.73}, {"x": -2.57, "y": 1.04}]
+    )
+    assert sigma_x == round(statistics.stdev([-3.25, -2.57]), 2)
+    assert sigma_y == round(statistics.stdev([1.73, 1.04]), 2)
+
+    # Gleichheit beider Runs -> Stdev 0.0 (echtes 0, kein Platzhalter)
+    same_x, same_y = test._calculate_sigma(  # pylint: disable=protected-access
+        [{"x": 1.5, "y": -0.5}, {"x": 1.5, "y": -0.5}]
+    )
+    assert same_x == 0.0 and same_y == 0.0
