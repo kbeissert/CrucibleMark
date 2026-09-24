@@ -26,7 +26,11 @@ from utils.constants import (
     RESULT_TYPE_CLOUD,
     RESULT_TYPE_COMMERCIAL,
 )
-from utils.model_utils import enforce_card_first, resolve_model_cfg_for
+from utils.model_utils import (
+    enforce_card_first,
+    internal_id_to_config_form,
+    resolve_model_cfg_for,
+)
 from scripts.maintenance.sanitize_benchmark_csvs import (
     _is_header_repeat,
     _is_narrative_asset_id,
@@ -255,6 +259,20 @@ class ResultManager:
         # Prüfe in Config, ob es Cloud/Open-Weights ist
         provider_config = self.config.get("providers", {}).get("commercial", {}).get(provider, {})
         model_type = provider_config.get("model_type", "")
+        # Per-Modell-Override (analog model_id.py-Display-Logik): ein Modell-
+        # Eintrag mit eigenem model_type gewinnt. Fall Gemini-Migration (Session
+        # 119): proprietäre Modelle im OpenRouter-Block (open_weights_cloud)
+        # müssen in der Commercial-CSV landen — die Leaderboard-Kategorie folgt
+        # der CSV-Zugehörigkeit (data_loader._process_csv).
+        target = internal_id_to_config_form(model_name)
+        for model_entry in provider_config.get("models") or []:
+            if isinstance(model_entry, dict) and internal_id_to_config_form(
+                model_entry.get("id", "")
+            ) == target:
+                override = model_entry.get("model_type")
+                if override:
+                    model_type = override
+                break
         if model_type == MODEL_TYPE_OPEN_WEIGHTS_CLOUD:
             return RESULT_TYPE_CLOUD
         return RESULT_TYPE_COMMERCIAL

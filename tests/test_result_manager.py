@@ -9,7 +9,11 @@ import os
 # Add root explicitly to allow importing utils and scripts
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from utils.result_manager import ResultManager
+from utils.result_manager import (
+    RESULT_TYPE_CLOUD,
+    RESULT_TYPE_COMMERCIAL,
+    ResultManager,
+)
 from scripts.leaderboard.score_calculator import _aggregate_basic_stats
 
 
@@ -199,3 +203,69 @@ def test_leaderboard_aggregation_with_partial_judge_data():
     m3_stats = agg_df[agg_df["model"] == "M3"].iloc[0]
     assert pd.isna(m3_stats["llm_judge_avg"])
     assert m3_stats["judge_coverage"] == 0.0
+
+
+def test_detect_result_type_per_model_override():
+    """Per-Modell model_type-Override (Gemini-Migration, Session 119).
+
+    Proprietäre Modelle im OpenRouter-Block (model_type: open_weights_cloud)
+    müssen über den Eintrags-Override in der Commercial-CSV landen — die
+    Leaderboard-Kategorie folgt der CSV-Zugehörigkeit (data_loader)."""
+    config = {
+        "providers": {
+            "commercial": {
+                "openrouter": {
+                    "model_type": "open_weights_cloud",
+                    "models": [
+                        {
+                            "id": "gemini-3.5-flash",
+                            "name": "Gemini 3.5 Flash",
+                            "model_type": "proprietary_api",
+                        },
+                        {"id": "qwen/qwen3.8-flash", "name": "Qwen3.8 Flash"},
+                    ],
+                }
+            }
+        }
+    }
+    rm = ResultManager(config_validator=MockConfigValidator(config))  # type: ignore[arg-type]
+
+    # Override greift: proprietary_api -> Commercial (trotz OR-Block = cloud)
+    assert (
+        rm._detect_result_type(  # pylint: disable=protected-access
+            [{"provider": "openrouter", "model": "gemini-3.5-flash"}]
+        )
+        == RESULT_TYPE_COMMERCIAL
+    )
+    # Ohne Override: OR-Block -> Cloud
+    assert (
+        rm._detect_result_type(  # pylint: disable=protected-access
+            [{"provider": "openrouter", "model": "qwen/qwen3.8-flash"}]
+        )
+        == RESULT_TYPE_CLOUD
+    )
+
+    # Underscore-Form wird normalisiert (historische gemini-2_5-pro-Rows)
+    config2 = {
+        "providers": {
+            "commercial": {
+                "openrouter": {
+                    "model_type": "open_weights_cloud",
+                    "models": [
+                        {
+                            "id": "gemini-2.5-pro",
+                            "name": "Gemini 2.5 Pro",
+                            "model_type": "proprietary_api",
+                        }
+                    ],
+                }
+            }
+        }
+    }
+    rm2 = ResultManager(config_validator=MockConfigValidator(config2))  # type: ignore[arg-type]
+    assert (
+        rm2._detect_result_type(  # pylint: disable=protected-access
+            [{"provider": "openrouter", "model": "gemini-2_5-pro"}]
+        )
+        == RESULT_TYPE_COMMERCIAL
+    )

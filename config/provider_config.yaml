@@ -107,7 +107,11 @@ providers:
       short_code: API
       api_type: google
       model_type: proprietary_api
-      enabled: true
+      # (Session 119, 2026-09-24) deaktiviert: Google-API-Guthaben depleted und
+      # nicht aufladbar — Gemini-Modelle laufen via OpenRouter (gepinnt auf den
+      # Google First-Party-Host; Alias-Mapping im OpenRouter-Client erhält die
+      # internen IDs ohne Vendor-Präfix → Ergebnis-Identität bleibt erhalten).
+      enabled: false
       # Feasibility-Boundary für die Eskalationsleiter (Reasoning-only Truncation
       # bis 32768; SSoT: benchmark_config.yaml#reasoning_reask) — KEIN Stufe-1-
       # Fenster: Modul-Budgets (12k/20k) bleiben maßgeblich.
@@ -303,6 +307,15 @@ providers:
         google/gemini-3.7-flash:
           order: [Google]
           allow_fallbacks: false
+        google/gemini-3.5-flash:
+          order: [Google]
+          allow_fallbacks: false
+        google/gemini-2.5-pro:
+          order: [Google]
+          allow_fallbacks: false
+        google/gemini-3.1-pro-preview:
+          order: [Google]
+          allow_fallbacks: false
         qwen/qwen3.8-2.4t-a95b:
           order: [Alibaba]
           allow_fallbacks: false
@@ -393,6 +406,23 @@ providers:
       # Google — neueste zuerst (Providervergleich)
       - id: google/gemini-3.7-flash
         name: Gemini 3.7 Flash
+
+      # Google Gemini — Migration vom google-Provider (Session 119, 2026-09-24):
+      # Guthaben depleted, nicht aufladbar. Interne IDs OHNE Vendor-Präfix
+      # (Alias-Mapping im OpenRouter-Client) — historische Ergebnis-Identität
+      # bleibt erhalten (commercial_models_benchmark.csv). Per-Modell-Override
+      # model_type: proprietary_api — result_type/Leaderboard-Kategorie bleiben
+      # "Proprietär" (der OR-Block ist open_weights_cloud). 3.1-pro-preview:
+      # Web-Export-Blacklist bleibt aktiv (Batch-only Re-Run, Session 116/117).
+      - id: gemini-3.5-flash
+        name: Gemini 3.5 Flash
+        model_type: proprietary_api
+      - id: gemini-2.5-pro
+        name: Gemini 2.5 Pro
+        model_type: proprietary_api
+      - id: gemini-3.1-pro-preview
+        name: Gemini 3.1 Pro (Preview)
+        model_type: proprietary_api
 
       - id: google/gemma-4-31b-it
         name: Gemma 4 31B Instruct

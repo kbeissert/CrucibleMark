@@ -25,6 +25,15 @@ _OPENROUTER_ID_ALIASES: dict[str, str] = {
     "z-ai/glm_5_1-20260406": "z-ai/glm-5.1-20260406",
     "z-ai/glm_4_7": "z-ai/glm-4.7",
     "z-ai/glm_4_6": "z-ai/glm-4.6",
+    # Google-Gemini-Migration (Session 119, 2026-09-24): Google-API-Guthaben
+    # depleted — Gemini läuft via OpenRouter (gepinnt auf Google First-Party-
+    # Host). Interne IDs bleiben ohne Vendor-Präfix, damit die historische
+    # Ergebnis-Identität (commercial_models_benchmark.csv) erhalten bleibt.
+    # 2.5-Pro existiert historisch in beiden Formen (Underscore-Rows).
+    "gemini-3.5-flash": "google/gemini-3.5-flash",
+    "gemini-2.5-pro": "google/gemini-2.5-pro",
+    "gemini-2_5-pro": "google/gemini-2.5-pro",
+    "gemini-3.1-pro-preview": "google/gemini-3.1-pro-preview",
 }
 
 
