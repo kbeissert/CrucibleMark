@@ -264,6 +264,35 @@ class TestRefusalRetryAuditBlock:
         _write_refusal_retry_block(buf, refusal_retry_used=False)
         assert buf.getvalue() == ""
 
+    def test_original_prompt_written_when_passed(self):
+        """Bei mitgegebenem Original-Prompt landet die verweigerte Fassung im Block."""
+        import io
+        from utils.benchmark_utils import _write_refusal_retry_block
+
+        buf = io.StringIO()
+        _write_refusal_retry_block(
+            buf,
+            refusal_retry_used=True,
+            refusal_retry_original_prompt="Original mit <thought>-Tags",
+        )
+        content = buf.getvalue()
+        assert "Verweigerte Original-Fassung" in content
+        assert "Original mit <thought>-Tags" in content
+
+    def test_original_prompt_section_omitted_without_prompt(self):
+        """Ohne Original-Prompt bleibt der Block textlich identisch (keine Leer-Sektion)."""
+        import io
+        from utils.benchmark_utils import _write_refusal_retry_block
+
+        buf_with = io.StringIO()
+        _write_refusal_retry_block(buf_with, refusal_retry_used=True)
+        buf_without = io.StringIO()
+        _write_refusal_retry_block(
+            buf_without, refusal_retry_used=True, refusal_retry_original_prompt=None,
+        )
+        assert buf_with.getvalue() == buf_without.getvalue()
+        assert "Verweigerte Original-Fassung" not in buf_with.getvalue()
+
 
 # ---------------------------------------------------------------------------
 # 9: Schema (Pydantic-first)
@@ -297,3 +326,12 @@ class TestRefusalRetryAuditSignature:
         sig = inspect.signature(save_audit_log)
         assert "refusal_retry_used" in sig.parameters
         assert sig.parameters["refusal_retry_used"].default is False
+
+    def test_save_audit_log_accepts_original_prompt_parameter(self):
+        """refusal_retry_original_prompt ist deklariert, default None."""
+        import inspect
+        from utils.benchmark_utils import save_audit_log
+
+        sig = inspect.signature(save_audit_log)
+        assert "refusal_retry_original_prompt" in sig.parameters
+        assert sig.parameters["refusal_retry_original_prompt"].default is None

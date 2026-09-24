@@ -328,6 +328,7 @@ def save_audit_log(
     reasoning_loop_stage: int = 0,
     reasoning_loop_elapsed_s: float | None = None,
     refusal_retry_used: bool = False,
+    refusal_retry_original_prompt: str | None = None,
     **kwargs
 ) -> None:
     """
@@ -390,7 +391,11 @@ def save_audit_log(
                 reasoning_loop_elapsed_s=reasoning_loop_elapsed_s,
             )
 
-            _write_refusal_retry_block(f, refusal_retry_used=refusal_retry_used)
+            _write_refusal_retry_block(
+                f,
+                refusal_retry_used=refusal_retry_used,
+                refusal_retry_original_prompt=refusal_retry_original_prompt,
+            )
 
             f.write("## 1. Prompt / Fragestellung\n\n")
             safe_prompt = _demote_headers_safe(str(prompt))
@@ -804,7 +809,11 @@ def append_global_run_metrics(model: str, asset_ids: list[str],
                 f.truncate()
 
 
-def _write_refusal_retry_block(f, refusal_retry_used: bool) -> None:
+def _write_refusal_retry_block(
+    f: Any,
+    refusal_retry_used: bool,
+    refusal_retry_original_prompt: str | None = None,
+) -> None:
     """Schreibt den Refusal-Retry-Info-Block (Reviewer-Traceability).
 
     Dokumentiert, dass der Erstversuch serverseitig verweigert wurde
@@ -817,6 +826,12 @@ def _write_refusal_retry_block(f, refusal_retry_used: bool) -> None:
     Verweigerungsverhalten des Original-Prompts ist ein eigenständiger
     Befund (Modell-Sicherheitsschicht, nicht Aufgabenqualität).
     Ohne Retry bleibt der Block komplett weg.
+
+    ``refusal_retry_original_prompt`` schreibt die verweigerte Erstversuch-
+    Fassung in den Block (Schattenmetrik-Parität zur Eskalationsleiter):
+    Sektion 1 zeigt die tatsächlich gestellte Retry-Fassung (via
+    ``evaluated_prompt``), der Reviewer braucht aber auch das Original,
+    um das Refusal-Verhalten als Befund bewerten zu können.
     """
     if not refusal_retry_used:
         return
@@ -839,3 +854,13 @@ def _write_refusal_retry_block(f, refusal_retry_used: bool) -> None:
         "A/B-Test 2026-09-24). (3) Erwähne beides im Report: Fähigkeit UND "
         "Verweigerungsverhalten.\n\n"
     )
+    if refusal_retry_original_prompt:
+        f.write(
+            "<details>\n"
+            "<summary>🚫 Verweigerte Original-Fassung (Erstversuch, "
+            "finish_reason=refusal)</summary>\n\n"
+            "```\n"
+            f"{refusal_retry_original_prompt.strip()}\n"
+            "```\n\n"
+            "</details>\n\n"
+        )
