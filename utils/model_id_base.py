@@ -483,7 +483,10 @@ def _lookup_model_in_section(
     for _prov_key, _prov_cfg in section_cfg.items():
         if not isinstance(_prov_cfg, dict):
             continue
-        for _m in _prov_cfg.get("models", []):
+        # `or []`: Ein Provider mit komplett auskommentierten Modellen hat
+        # `models:` als None (bare YAML-Key) — .get()-Default greift nicht
+        # (gleiches Muster wie find_model_in_provider_cfg in model_utils).
+        for _m in _prov_cfg.get("models") or []:
             if isinstance(_m, dict):
                 _m_id = _m.get("id", "")
                 if _m_id == model_name:

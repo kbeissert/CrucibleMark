@@ -117,11 +117,17 @@ providers:
       # Fenster: Modul-Budgets (12k/20k) bleiben maßgeblich.
       max_tokens: 32768
       env_var: GOOGLE_API_KEY
-      models:
-      - id: gemini-3.5-flash
-        name: Gemini 3.5 Flash
-      - id: gemini-2.5-pro
-        name: Gemini 2.5 Pro
+      # Modelle auskommentiert (Session 119, 2026-09-24): laufen via OpenRouter
+      # (siehe openrouter-Block). Auskommentierung ist Pflicht — die Duplikat-
+      # Registrierung ignoriert den Zweit-Eintrag unabhängig von enabled:false,
+      # der Runner würde sonst den toten google-Provider auflösen.
+      # Explizit [] statt bare key: bare `models:` parsed als None und crashet
+      # _lookup_model_in_section (bis zum Guard in model_id_base.py).
+      models: []
+      # - id: gemini-3.5-flash
+      #   name: Gemini 3.5 Flash
+      # - id: gemini-2.5-pro
+      #   name: Gemini 2.5 Pro
       # (2026-09-02) nicht mehr im Web-Export:
       #   - id: gemini-3.1-pro-preview
       #   name: Gemini 3.1 Pro (Preview)
