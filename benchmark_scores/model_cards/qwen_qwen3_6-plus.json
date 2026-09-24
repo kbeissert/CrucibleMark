@@ -37,7 +37,7 @@
     "General",
     "Instruct",
     "Thinking-Optional",
-    "Multimodal",
+    "Vision-Capable",
     "Agentic-Orchestrator"
   ],
   "input_modalities": [

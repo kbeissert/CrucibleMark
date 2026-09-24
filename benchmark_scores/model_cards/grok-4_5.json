@@ -36,7 +36,7 @@
   "judge_context_hint": "Grok 4.5 ist xAIs Frontier-Flaggschiff (Stand 07/2026) für Coding-, Agentic- und Wissensarbeit. Es bietet 500.000 Tokens Kontext, Text- und Bildinput, Function-Calling, Web-/X-Suche und konfigurierbare Reasoning-Effort-Level. Reasoning läuft immer serverseitig mit, wird aber als separates Metadatenfeld (reasoning_tokens, reasoning_effort) ausgegeben und nicht als sichtbare CoT-Tags im Content-Feld. Bei der Bewertung sowohl Direktheit der Antworten als auch die Effizienz des nicht sichtbaren, kostenrelevanten Reasoning-Anteils berücksichtigen.",
   "architecture_tags": [
     "General",
-    "Multimodal"
+    "Vision-Capable"
   ],
   "input_modalities": [
     "text",

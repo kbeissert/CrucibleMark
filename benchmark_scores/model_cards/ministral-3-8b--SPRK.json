@@ -39,7 +39,7 @@
     "Open-Weight",
     "Local",
     "Tool-Use",
-    "Multimodal"
+    "Vision-Capable"
   ],
   "input_modalities": [
     "text",

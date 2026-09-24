@@ -37,7 +37,7 @@
     "Instruct",
     "Dense",
     "Local",
-    "Multimodal"
+    "Vision-Capable"
   ],
   "input_modalities": [
     "text",

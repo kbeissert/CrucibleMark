@@ -16,7 +16,7 @@
   "params_total_b": 117.6,
   "params_active_b": 8.5,
   "context_window_k": 1024,
-  "knowledge_cutoff": null,
+  "knowledge_cutoff": "2025-11",
   "summary": "Laguna S 2.1 ist seit Juli 2026 Poolsides drittes offenes Coding-Modell in Folge, ein MoE mit 117,6 Milliarden Gesamt- und nur 8,5 Milliarden aktiven Parametern pro Token. Die OpenMDW-1.1-Lizenz der Linux Foundation erlaubt freie kommerzielle Nutzung und Modifikation. Das Modell unterstützt 1.024.000 Tokens Kontext, interleaved Thinking mit Tool-Aufrufen innerhalb der Denkkette sowie natives Tool-Calling für langhorizontige Agentic-Workflows.",
   "strengths": [
     "Coding-Effizienz: laut Poolside die Leistung von Modellen mit dem 4-bis-25-fachen Volumen.",

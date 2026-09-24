@@ -31,8 +31,7 @@ ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-import yaml  # noqa: E402
-
+from utils.config_validator import ConfigValidator  # noqa: E402
 from utils.io_helpers import atomic_write_text  # noqa: E402
 from utils.scoring.llm_judge.judge_config import LLMJudgeConfig  # noqa: E402
 from utils.scoring.llm_judge.judge_runner import JudgeRunner  # noqa: E402
@@ -169,8 +168,7 @@ def collect_rows(
 
 
 def build_judge_configs(args: argparse.Namespace) -> tuple[LLMJudgeConfig, LLMJudgeConfig]:
-    with open(ROOT_DIR / "benchmark_config.yaml", encoding="utf-8") as f:
-        raw = yaml.safe_load(f)
+    raw = ConfigValidator().config  # SSoT: gemergte Config (Test: test_config_ssot)
     new_cfg = LLMJudgeConfig.from_dict(raw)
     legacy_cfg = new_cfg.model_copy(deep=True)
     legacy_cfg.provider.name = args.legacy_provider  # type: ignore[assignment]
@@ -252,8 +250,7 @@ def main() -> None:
     args = parse_args()
     start = time.monotonic()
 
-    with open(ROOT_DIR / "benchmark_config.yaml", encoding="utf-8") as f:
-        raw_cfg = yaml.safe_load(f)
+    raw_cfg = ConfigValidator().config  # SSoT: gemergte Config (Test: test_config_ssot)
     judge_cfg = LLMJudgeConfig.from_dict(raw_cfg)
     modules = load_applicable_modules(judge_cfg, args.modules)
     asset_index = load_asset_index(raw_cfg, modules)

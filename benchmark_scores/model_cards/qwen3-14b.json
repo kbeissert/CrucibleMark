@@ -85,7 +85,7 @@
   "top_k": null,
   "top_p": null,
   "unknown": false,
-  "use_case_primary": "general",
+  "use_case_primary": "generalist",
   "vendor": "Alibaba Cloud",
   "weights_license_tier": "open-weights",
   "weights_provenance_risk": "low",

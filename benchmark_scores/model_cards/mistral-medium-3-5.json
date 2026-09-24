@@ -34,7 +34,7 @@
     "General",
     "Instruct",
     "Agentic",
-    "Multimodal"
+    "Vision-Capable"
   ],
   "input_modalities": [
     "text",

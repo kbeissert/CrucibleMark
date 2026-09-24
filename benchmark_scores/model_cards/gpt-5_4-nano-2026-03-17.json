@@ -34,7 +34,7 @@
   "architecture_tags": [
     "General",
     "Instruct",
-    "Multimodal"
+    "Vision-Capable"
   ],
   "input_modalities": [
     "text",

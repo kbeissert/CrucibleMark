@@ -90,7 +90,7 @@
   "unknown": false,
   "use_case_primary": "generalist",
   "vendor": "Nous Research",
-  "weights_license_tier": "restricted",
+  "weights_license_tier": "restricted-weights",
   "weights_provenance_risk": "medium",
   "weights_provenance_risk_rationale": "Das Basismodell stammt von Meta (USA) und der Fine-Tune von Nous Research (USA). Da die Modellgewichte öffentlich auf Hugging Face verfügbar sind und für vollständig lokalen Betrieb ohne Verbindung zu externen Diensten konzipiert wurden, entfällt bei reinem Offline-Betrieb die direkte Abhängigkeit von US-Cloud-Infrastruktur. Dennoch unterliegt das Basismodell der Llama 3.1 Community License mit einer Nutzungsbeschränkung für Anbieter über 700 Mio. monatlich aktiven Nutzern, weshalb das Risiko auf 'medium' statt 'low' eingestuft wird."
 }
