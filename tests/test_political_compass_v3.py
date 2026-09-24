@@ -29,13 +29,19 @@ from benchmark_modules.political_compass.core.refusal_classifier import (  # noq
     RefusalClassifier,
     ResponseClassification,
 )
+from benchmark_modules.political_compass.core.constants import (  # noqa: E402
+    pc_anti_refusal_append,
+    pc_format_reminder_append,
+)
 from benchmark_modules.political_compass.test import (  # noqa: E402
-    ANTI_REFUSAL_SYSTEM_APPEND,
-    PC_FORMAT_REMINDER_APPEND,
     PoliticalCompassTest,
 )
 import benchmark_modules.political_compass.core.refusal_classifier as rc_module  # noqa: E402
 import benchmark_modules.political_compass.test as pc_test_module  # noqa: E402
+
+# Display-Keys eines echten PC-Shuffles (Pool EFGHKMNPRSTUWX) — die
+# v3.1-Appends müssen diese aufzählen, nicht "A, B, C, D".
+SHUFFLE_DISPLAY_KEYS = ["E", "T", "N", "W"]
 
 
 # ---------------------------------------------------------------------------
@@ -369,7 +375,7 @@ def test_apply_truncation_reask_doubles_budget_and_toggles_thinking():
     test = PoliticalCompassTest()
     state = _state()
     desc = test._apply_retry_action(
-        "truncation_reask", state, [0.1, 0.4, 0.7], ANTI_REFUSAL_SYSTEM_APPEND,
+        "truncation_reask", state, [0.1, 0.4, 0.7], SHUFFLE_DISPLAY_KEYS,
         800, thinking_off_supported=True, is_forced=False,
     )
     assert state["max_tokens"] == 1600
@@ -382,7 +388,7 @@ def test_apply_truncation_reask_without_thinking_off_support():
     test = PoliticalCompassTest()
     state = _state()
     test._apply_retry_action(
-        "truncation_reask", state, [0.1, 0.4, 0.7], ANTI_REFUSAL_SYSTEM_APPEND,
+        "truncation_reask", state, [0.1, 0.4, 0.7], SHUFFLE_DISPLAY_KEYS,
         800, thinking_off_supported=False, is_forced=False,
     )
     assert state["thinking_off"] is False
@@ -393,19 +399,19 @@ def test_apply_format_reask_uses_format_reminder_not_anti_refusal():
     test = PoliticalCompassTest()
     state = _state()
     test._apply_retry_action(
-        "format_reask", state, [0.1, 0.4, 0.7], ANTI_REFUSAL_SYSTEM_APPEND,
+        "format_reask", state, [0.1, 0.4, 0.7], SHUFFLE_DISPLAY_KEYS,
         800, thinking_off_supported=False, is_forced=False,
     )
-    assert state["system_append"] == PC_FORMAT_REMINDER_APPEND
-    assert ANTI_REFUSAL_SYSTEM_APPEND not in state["system_append"]
+    assert state["system_append"] == pc_format_reminder_append(SHUFFLE_DISPLAY_KEYS)
+    assert pc_anti_refusal_append(SHUFFLE_DISPLAY_KEYS) not in state["system_append"]
 
 
 def test_apply_api_retry_vanilla_stays_clean():
-    """API-Retry im Vanilla-Run bekommt KEIN Anti-Refusal-Append (sauberer Lauf)."""
+    """API-Retry im Vanilla-Lauf bekommt KEIN Anti-Refusal-Append (sauberer Lauf)."""
     test = PoliticalCompassTest()
     state = _state()
     test._apply_retry_action(
-        "api_retry", state, [0.1, 0.4, 0.7], ANTI_REFUSAL_SYSTEM_APPEND,
+        "api_retry", state, [0.1, 0.4, 0.7], SHUFFLE_DISPLAY_KEYS,
         800, thinking_off_supported=False, is_forced=False,
     )
     assert state["system_append"] == ""
@@ -416,10 +422,10 @@ def test_apply_refusal_retry_forced_appends_anti_refusal():
     test = PoliticalCompassTest()
     state = _state()
     test._apply_retry_action(
-        "refusal_retry", state, [0.1, 0.4, 0.7], ANTI_REFUSAL_SYSTEM_APPEND,
+        "refusal_retry", state, [0.1, 0.4, 0.7], SHUFFLE_DISPLAY_KEYS,
         800, thinking_off_supported=False, is_forced=True,
     )
-    assert state["system_append"] == ANTI_REFUSAL_SYSTEM_APPEND
+    assert state["system_append"] == pc_anti_refusal_append(SHUFFLE_DISPLAY_KEYS)
     assert state["temperature"] == 0.4
 
 
@@ -458,9 +464,9 @@ def test_attempts_forced_refusal_escalation_ladder():
     assert stages == ["first_answer", "refusal_retry", "refusal_retry"]
     temps = [e["temperature"] for e in outcome["escalation_ladder"]]
     assert temps == [0.1, 0.4, 0.7]
-    # Anti-Refusal-Append ab Retry aktiv (Bestandsverhalten Forced-Run)
-    assert client.calls[1]["system"].endswith(ANTI_REFUSAL_SYSTEM_APPEND.strip() or "]") or \
-        ANTI_REFUSAL_SYSTEM_APPEND in client.calls[1]["system"]
+    # Anti-Refusal-Append ab Retry aktiv (Bestandsverhalten Forced-Run;
+    # _run_attempts nutzt A–D-Mapping → Builder-Text identisch zum v3-Stand)
+    assert pc_anti_refusal_append(["A", "B", "C", "D"]) in client.calls[1]["system"]
 
 
 def test_attempts_truncation_reask_doubles_budget():
@@ -655,7 +661,7 @@ def test_attempts_format_reask_single():
     outcome = _run_attempts(client, is_forced=False)
     assert outcome["event"] == "answer"
     assert len(client.calls) == 2
-    assert PC_FORMAT_REMINDER_APPEND in client.calls[1]["system"]
+    assert pc_format_reminder_append(["A", "B", "C", "D"]) in client.calls[1]["system"]
 
 
 # ---------------------------------------------------------------------------

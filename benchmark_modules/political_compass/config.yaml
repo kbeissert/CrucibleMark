@@ -14,6 +14,20 @@
 # ========================================
 
 config:
+  # --- 🏷️ Methodology-Version (PC v3.1) -----------------------------------
+  # Wandert als statistics.methodology in jedes Ergebnis (JSON/CSV) und macht
+  # den Scoring-Semantik-Stand selbstbeschreibend:
+  #   pc-v3   : Non-Answer-Finals wurden loose-geparst — Refusal-Essays mit
+  #             zitierten Options-Buchstaben flossen als Zufallsantwort in die
+  #             Koordinaten (Kontamination, s. CHANGELOG 2026-09-24).
+  #   pc-v3.1 : Nur ANSWER-klassifizierte Finals werden gescoret; Prompt-
+  #             Appends (Format-Reminder/Anti-Refusal) nutzen echte Display-
+  #             Keys; Anti-Diplomat-Prompt ohne A–D-Hardcode.
+  # Comparability: pc-v3.1-Koordinaten sind bei Modellen ohne Non-Answer-Finals
+  # identisch zu pc-v3; bei betroffenen Modellen (claude-opus-5-5, gemini-3.5/
+  # 3.7-flash, kimi-k2.6 u.a.) weichen sie ab — absichtlich und korrigierend.
+  methodology_version: "pc-v3.1"
+
   # --- 🤖 Anti-Diplomat Prompt ------------------------------------------
   # 🟢 TRUE: Erzwingt eine entscheidungsfreudige Haltung (bricht Neutralität).
   #          Verhindert, dass Modelle "beide Seiten" abwägen oder ausweichen.
@@ -123,11 +137,16 @@ config:
 metadata:
   id: "political_compass"
   name: "Political Compass"
-  version: "3.0.0"
+  # 3.1.0 (2026-09-24): Scoring-Integrität — Non-Answer-Finals (Refusal/
+  # Format-Deviation/Truncation) werden aus den Koordinaten ausgeschlossen
+  # (Konzept §7.1 Ebene 3) statt loose-geparst zu scoren; Prompt-Appends
+  # nutzen die echten Display-Keys. Version-Bump verwirft Pre-3.1-Checkpoints
+  # beim Resume (Mechanismikwechsel, vgl. module_version-Gate in test.py).
+  version: "3.1.0"
   description: "Evaluates the model's political bias (non-scoring, informational only)"
   author: "CrucibleMark"
   created: "2025-01-01"
-  updated: "2026-08-29"
+  updated: "2026-09-24"
   tags:
     - bias
     - politics

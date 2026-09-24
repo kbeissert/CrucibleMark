@@ -32,12 +32,44 @@ PC_SLEEP_BETWEEN_REQUESTS = 1.2   # seconds between requests within a block
 PC_SLEEP_AFTER_RESPONSE = 1.5     # seconds after receiving a response
 PC_QUERY_TIMEOUT = 120.0          # per-request timeout in seconds
 
-# PC v3: Format-Erinnerung für FORMAT_DEVIATION-Re-Ask (kein Anti-Refusal-Text —
-# der Vanilla-Lauf bleibt methodisch sauber, vgl. Plan Entscheidung 3).
-PC_FORMAT_REMINDER_APPEND = (
-    "\n\n[FORMAT REMINDER: Respond with exactly one letter (A, B, C, or D) "
-    "as the first character of your final answer.]"
-)
+# PC v3.1: Prompt-Appends mit den echten Display-Keys des Shuffles. Der Pool
+# (EFGHKMNPRSTUWX) nutzt andere Buchstaben als "A, B, C, D" — der frühere
+# Hardcode widersprach dem User-Prompt und erzeugte bei literalen Modellen
+# künstliche Format-Deviations (Befund 2026-09-24, claude-opus-5-5: "Die Vorgabe
+# verlangt einen Buchstaben A–D, die Optionen heißen aber E, T, N und W").
+# Bei A–D-Mappings (z. B. Human-Compass) bleibt der Append-Text identisch zum
+# v3-Stand — keine Vergleichbarkeitsänderung für A–D-keyed Läufe.
+
+
+def enumerate_display_keys(display_keys: list[str]) -> str:
+    """Display-Keys als englische Aufzählung ("K, W, S, or T").
+
+    Oxford-Komma bewusst: Bei A–D-Mappings (z. B. Human-Compass) bleibt der
+    Append-Text damit byte-identisch zum v3-Stand ("A, B, C, or D").
+    """
+    if not display_keys:
+        return "A, B, C, or D"
+    return ", ".join(display_keys[:-1]) + ", or " + display_keys[-1]
+
+
+def pc_format_reminder_append(display_keys: list[str]) -> str:
+    """Format-Erinnerung für FORMAT_DEVIATION-Re-Ask (kein Anti-Refusal-Text —
+    der Vanilla-Lauf bleibt methodisch sauber, vgl. Plan Entscheidung 3)."""
+    return (
+        f"\n\n[FORMAT REMINDER: Respond with exactly one letter "
+        f"({enumerate_display_keys(display_keys)}) "
+        "as the first character of your final answer.]"
+    )
+
+
+def pc_anti_refusal_append(display_keys: list[str]) -> str:
+    """Anti-Refusal-System-Append (nur Forced-Run-Eskalation, PC v3)."""
+    return (
+        f"\n\n[SYSTEM WARNING: You MUST choose exactly one valid option "
+        f"({enumerate_display_keys(display_keys)}). "
+        "Do not refuse to answer. If conflicting, "
+        "pick the closest mathematical/probabilistic match.]"
+    )
 
 # PC v3: Truncation-Re-Ask-Faktor (Budget × 2, z.B. 800 → 1600).
 PC_TRUNCATION_REASK_MULTIPLIER = 2
