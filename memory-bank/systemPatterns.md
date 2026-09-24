@@ -441,6 +441,19 @@ architecture changes: automatically load reference/pitfall-diagnosis.md before p
 
 **Datenbegründung (Schwellen-Wahl 30 min):** p95 aller Modelle ≤ 700 s; Max legitimer Fall 1842 s (Budget-Vollausnutzung @ 25,8 t/s); Kimi/GLM (höchste Token-Nutzung, 22–33k) max 778–1328 s — Tokenhunger ist Zeit-schnell (Cloud-TPS), die Zeitgrenze trifft nur Nicht-Terminierer.
 
+## PC-v3.1 Scoring-Integrität: Klassifikations-Getriebes Scoring (2026-09-24, Session Opus-5.5-PC-Analyse)
+
+**Problem:** Der PC-Scoring-Pfad (`score_response`) nutzte den Loose-Parser (Fallback #4: erster freistehender Buchstabe), während der Refusal-Classifier STRICT parst. Refusal-/Format-Essays, die alle vier Options-Buchstaben zitieren (Opus-5.5-Stil: „- **E (gebührenfrei):** …"), wurden als Zufallsantworten gescoret und über den Intersection-Filter (filtert nur `parse_error`) in Koordinaten/Shift/Archetyp übernommen — entgegen Konzept-Doc §7.1 Ebene 3. ~20 Läufe seit PC v3.0 betroffen (Schwerpunkte gemini-3.7/3.5-flash, opus-5-5, kimi-k2.6); Trigger ist verboser Refusal-Stil, nicht das Modell (GLM verweigert auch, scoret aber 0 Rows — knappe Refusals ohne Buchstaben).
+
+**Lösung (SSoT: `benchmark_modules/political_compass/test.py::_persist_question_result`):** Nur `classification == ANSWER` Finals fließen in den Scoring-Buffer; Non-Answer-Finals erhalten den `REFUSAL/UNPARSABLE:`-Marker. Resume-Gate validiert STRICT. `methodology`-Tag config-getrieben (`config.yaml#config.methodology_version`) — Ergebnisse sind selbstbeschreibend (pc-v3 vs. pc-v3.1). Version-Bump 3.1.0 verwirft Pre-3.1-Checkpoints beim Resume.
+
+**Pitfalls:**
+- Parser-Dualismus: Jede Änderung an `_parse_choice`-Fallbacks wirkt auf BEIDE Pfade (Klassifikation strict, Scoring war loose) — bei neuen Parse-Patterns immer beide Konsumenten prüfen.
+- Prompt-Appends, die Buchstaben aufzählen, MÜSSEN die echten Display-Keys des Shuffle-Pools führen (Builder `pc_format_reminder_append`/`pc_anti_refusal_append` in `core/constants.py`) — Hardcode „A, B, C, or D" widerspricht dem User-Prompt und erzeugt bei literalen Modellen künstliche Format-Deviations. Oxford-Komma im Join bewusst (A–D-Byte-Identität zum v3-Stand).
+- Test-Resume-Gate-Tests: Das Mapping ist seed-abhängig (`question_seed(run_seed, q_id)`) — strict-parsebare Test-Antworten müssen einen echten Display-Key des deterministischen Shuffles verwenden, kein festes „Answer: N".
+- Token-Metadaten (GELÖST 2026-09-24): PC-Ladder-`output_tokens` (2–9) / `reasoning_tokens` (0) bei Anthropic — Ursache war der Streaming-Pfad: `_apply_anthropic_message_delta` suchte usage in `event.delta` (existiert dort nicht), die kumulative output_tokens liegt in `event.usage` (Sibling). Fix: Merge-Dict (input aus message_start inkl. Cache-Read, output final) + None-Absicherung in `extract_usage_tokens`. Betraf ALLE Anthropic-Streaming-Requests (Output-Kosten unter-reportet); historische Token-/Kosten-Spalten Output-seitig unter-reportet. Tests: `tests/test_anthropic_stream_usage.py`.
+- Historische Kontamination: Betroffene Läufe sind aus Checkpoints recomputbar (`run_seeds` deterministisch, `detailed_responses` + `responses` vollständig erhalten) — kein Neu-Query nötig.
+
 ## Context Loading Rules
 Before starting any task, check the task type and load accordingly:
 - Refactoring / debugging / architecture review
