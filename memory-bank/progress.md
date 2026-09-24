@@ -1,6 +1,11 @@
 # Progress
 Letzte Releases + aktueller Stand.
 
+### 2026-09-24 (Session 118) — Code-Review PC v3.1-Changeset + Review-Fixes [DONE]
+
+- [x] Umfassendes Review der uncommitteten PC-v3.1-Änderungen (Scoring-Integrität: Non-Answer-Ausschluss, Display-Keys-Appends, STRICT-Resume-Gate, config-getriebener Methodology-Tag) gegen Architektur-/Benchmarkdesign-/Best-Practice-Regeln: 99/99 Tests, CC clean, module_version-Gate und ANSWER-impliziert-parsebar konstruktiv verifiziert.
+- [x] Review-Fixes vor Commit: Oxford-Komma-Join in `enumerate_display_keys` (A–D-Append-Texte wieder byte-identisch zum v3-Stand — die ursprüngliche Identitätsbehauptung war falsch), CHANGELOG-[Unreleased]-Eintrag nachgezogen (dangling references), F401-Import entfernt, Test-Erwartungen aktualisiert.
+
 ### 2026-09-24 (Session 117) — Refusal-Retry: Reasoning 5A/5D/5E + Trigger-Isolation + Audit-Schattenmetrik [DONE]
 
 - [x] Ursachenanalyse opus-5-Reasoning-Refusals: 5A deterministisch, 5D/5E probabilistisch (Modul-Läufe 2026-09-20 + 2026-09-24); Retry griff nicht — Assets ohne `refusal_retry_prompt`-Feld.
