@@ -190,12 +190,7 @@ modules:
     enabled: true
   political_compass:
     path: benchmark_modules/political_compass
-    # 2026-09-20 deaktiviert (Nutzer-Entscheidung): Nach der Tokenfenster-Anpassung
-    # (Provider-Caps 32768, Eskalationsleiter, Card-Kalibrierung) werden zuerst
-    # verschiedene LLMs in den Standard-/Scoring-Modulen nachgetestet, um ihre
-    # Leistungsfähigkeit unter den neuen Messbedingungen zu ermitteln. PC-Ergebnisse
-    # bleiben bestehen (kein Datenverlust); Re-Aktivierung nach der Nachtest-Serie.
-    enabled: false
+    enabled: true
   tooluse:
     path: benchmark_modules/tooluse
     enabled: true
@@ -316,3 +311,19 @@ reasoning_reask:
   # Eskalationszeit ohne Output ist empirisch fast sicher ein Denkloop.
   # 0 = deaktiviert.
   escalation_time_limit_s: 1800
+
+# Refusal-Retry (Safety-Refusal-Deeskalation, SSoT:
+# utils/base_runner.py::_maybe_refusal_retry).
+# Ein Erstversuch mit finish_reason=refusal (serverseitige Verweigerung,
+# z. B. Anthropic stop_reason=refusal) wird EINMAL mit einer tag-freien
+# Prompt-Fassung wiederholt, wenn das Asset ein refusal_retry_prompt-Feld
+# hat (SSoT im Asset, Git-diff-bar). Nur der Original-Refusal triggert —
+# NICHT die Short-Response-Heuristik (MIN_REFUSAL_CHARS).
+# Comparability: Der Erstversuch bleibt byte-identisch zur Historie; nur
+# bisher 0.0-%-Refusal-Rows erhalten einen zweiten, markierten Versuch
+# (CSV-Spalte refusal_retry_used, Audit-Block 🚫→🔁).
+# Anlass: claude-opus-5/5-5 verweigern Metacog-Assets deterministisch
+# (A/B-Test 2026-09-24: <thought>-Tag-Formatanweisung ist der Trigger).
+refusal_retry:
+  enabled: true
+  max_retries: 1

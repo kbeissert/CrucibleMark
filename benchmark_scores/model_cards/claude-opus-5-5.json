@@ -1,0 +1,59 @@
+{
+  "model_id": "claude-opus-5-5",
+  "display_name": "Claude Opus 5.5",
+  "model_family": "Claude 5",
+  "model_variant": "opus",
+  "model_version": "5.5",
+  "vendor": "Anthropic",
+  "developer": "Anthropic",
+  "developer_jurisdiction": "US",
+  "origin_country": "USA",
+  "deployment_type": "cloud-only",
+  "parameter_architecture": "dense",
+  "params_total_b": null,
+  "params_active_b": null,
+  "size_class": "Frontier",
+  "context_window_k": 1000,
+  "knowledge_cutoff": "2026-07",
+  "input_modalities": [
+    "text",
+    "image"
+  ],
+  "output_modalities": [
+    "text"
+  ],
+  "use_case_primary": "agentic",
+  "primary_focus": "coding",
+  "license": "Proprietary (Anthropic Commercial Terms)",
+  "weights_license_tier": "proprietary",
+  "commercial_use_allowed": true,
+  "local_deployment_possible": false,
+  "heritage_ids": [
+    "claude-opus-5"
+  ],
+  "dual_profile": false,
+  "inference_engine": "anthropic-api",
+  "quantization_format": null,
+  "architecture_tags": [
+    "Thinking",
+    "Agentic-Orchestrator",
+    "Long-Context",
+    "Vision-Capable"
+  ],
+  "card_status": "draft",
+  "unknown": false,
+  "summary": "Claude Opus 5.5 ist der Nachfolger von Opus 5 (Release September 2026). Laut Refusal-Probe (2026-09-24) behoben: die Opus-5-spezifischen Reasoning-Klassifikator-Fehler (5A/5D/5E werden beantwortet). Persistierend: die Metacognition-<thought>-Tag-Verweigerung (generationübergreifender Sicherheitsschicht-Trigger, im Benchmark durch Refusal-Retry abgedeckt). temperature-Parameter deprecated (HTTP 400).",
+  "strengths": [
+    "Reasoning-Klassifikator-Fix gegenüber Opus 5 (5A/5D/5E beantwortet).",
+    "Gleiche Opus-Line-Preisstruktur ($5/$25 pro 1M Tokens)."
+  ],
+  "known_limitations": [
+    "Proprietäres Modell mit US-Jurisdiktion (CLOUD Act).",
+    "Metacognition-<thought>-Tag-Verweigerung persistiert (Refusal-Retry erforderlich).",
+    "temperature-Parameter deprecated — API weist ihn mit HTTP 400 ab."
+  ],
+  "generated_at": "2026-09-24T10:31:53.073967+00:00",
+  "last_modified_at": "2026-09-24T08:31:49Z",
+  "input_price_per_1m": 5.0,
+  "output_price_per_1m": 25.0
+}

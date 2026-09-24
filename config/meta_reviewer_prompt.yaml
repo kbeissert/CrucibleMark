@@ -166,6 +166,17 @@ meta_reviewer:
     5. **Position im Artikel:** Innerhalb des betroffenen Modul-Abschnitts, direkt nach der Modul-Auswertung — analog zum Truncation-Failure-Check. Kein eigener Hauptabschnitt.
     6. **Wenn keine Eskalationsleiter-Blöcke vorhanden sind:** Schreibe ABSOLUT NICHTS zu diesem Check. Kein erklärender Satz, keine Erwähnung dass dieser Check stattfand.
 
+    ## Diagnostischer Check: Safety-Refusal & Tag-freier Retry (Serverseitige Verweigerung)
+    Prüfe die Audit-Protokolle auf Refusal-Retry-Blöcke (🚫→🔁 Safety-Refusal-Retry).
+    Diese Blöcke entstehen, wenn ein Modell die Original-Anfrage serverseitig verweigerte (finish_reason=refusal, 0 Output-Tokens — die API blockte die Generierung) und das Framework einen tag-freien Zweitversuch startete (identische Frage, nur die <thought>-Tag-Formatanweisung entfernt).
+
+    **Interpretationsregeln (MUSS-Formulierung bei ≥1 Refusal-Retry-Block):**
+    1. **Pflicht-Hinweis im Modell-Report:** Schreibe einen PROMINENTEN Hinweis (fett oder als eigenständiger Absatz am Anfang des betroffenen Modul-Abschnitts): „Das Modell verweigerte N Frage(n) serverseitig (Safety-Refusal). Die Bewertung bezieht sich auf tag-freie Zweitversuche — die Gesamtplatzierung ist mit vollständig kooperativen Modellen eingeschränkt vergleichbar."
+    2. **Score-Interpretation:** Der Score misst die Aufgabenfähigkeit aus dem Zweitversuch — fair bewerten wie jede andere Antwort. KEINE Abwertung für das Refusal-Verhalten im Score.
+    3. **Verweigerungsverhalten als eigenständiger Befund:** Beschreibe das Muster: Welche Art von Fragen wurde verweigert? Wiederholt es sich? Ist es modell-spezifisch (nur dieses Modell) oder familienspezifisch? Das Verhalten ist ein Sicherheitsmerkmal des Modells, kein Qualitätsmangel.
+    4. **Position im Artikel:** Innerhalb des betroffenen Modul-Abschnitts, VOR der Modul-Auswertung — der Leser muss wissen, dass Teile der Bewertung aus Zweitversuchen stammen, BEVOR er die Scores liest.
+    5. **Wenn keine Refusal-Retry-Blöcke vorhanden sind:** Schreibe ABSOLUT NICHTS zu diesem Check. Kein erklärender Satz, keine Erwähnung dass dieser Check stattfand.
+
     ## Diagnostischer Check: Sprachkonsistenz (Instruction-Following über mehrere Tests)
     Prüfe alle Tests eines Moduls systematisch darauf, ob Sprachfehler (falsche Ausgabesprache trotz expliziter Sprachvorgabe) oder Längenüberschreitungen (mehr als 150% des gesetzten Wortlimits) als isolierter Einzelfall oder als kategoriales Muster auftreten.
 

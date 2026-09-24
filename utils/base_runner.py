@@ -108,6 +108,13 @@ class BaseBenchmarkRunner:
         else:
             exec_result = test_instance.execute(model, self.client, provider=provider)
 
+        # Refusal-Retry (Safety-Refusal-Deeskalation): serverseitig verweigerte
+        # Erstversuche erhalten EINEN tag-freien Zweitversuch, wenn das Asset
+        # eine Retry-Fassung hat (SSoT: benchmark_config.yaml#refusal_retry).
+        exec_result = self._maybe_refusal_retry(
+            test_instance, exec_result, model, provider, _token_budget, _module_key
+        )
+
         if _cot_calibrated_start:
             exec_result.cot_calibrated_start = True
 
@@ -185,6 +192,76 @@ class BaseBenchmarkRunner:
         ot = getattr(self.client, "last_output_tokens", 0)
         if ot and (not exec_result.output_tokens or ot > exec_result.output_tokens):
             exec_result.output_tokens = ot
+
+    def _maybe_refusal_retry(
+        self,
+        test_instance: Any,
+        exec_result: BenchmarkResult,
+        model: str,
+        provider: str,
+        token_budget: int | None,
+        module_key: str,
+    ) -> BenchmarkResult:
+        """Refusal-Retry: tag-freier Zweitversuch nach serverseitiger Verweigerung.
+
+        Trigger ist ausschließlich ein echter API-Refusal (finish_reason=refusal
+        im Client-Metadata, z. B. Anthropic stop_reason=refusal) — NICHT die
+        Short-Response-Heuristik (MIN_REFUSAL_CHARS). Der Retry läuft nur, wenn:
+        (1) benchmark_config.yaml#refusal_retry.enabled, (2) das Asset ein
+        refusal_retry_prompt-Feld hat (SSoT im Asset, Git-diff-bar).
+
+        Comparability: Der Erstversuch bleibt byte-identisch zur Historie —
+        nur bisher 0.0-%-Refusal-Rows erhalten einen zweiten, markierten
+        Versuch (refusal_retry_used=True). Der Retry-Score ersetzt die 0.0;
+        das Refusal-Verhalten bleibt über das Flag dokumentiert (Report,
+        Audit-Block, Meta-Reviewer-Check).
+
+        Args:
+            test_instance: Modul-Test-Instanz (asset-mutierbar für den Retry).
+            exec_result: Erstversuch-Ergebnis (wird bei Retry ersetzt).
+            model: Modell-ID.
+            provider: Provider-Name.
+            token_budget: Modul-Token-Budget (None = kein Cap).
+            module_key: Modul-Key für Budget-Auflösung.
+
+        Returns:
+            BenchmarkResult — Erstversuch (unverändert) oder Retry-Ergebnis.
+        """
+        meta = getattr(self.client, "last_response_metadata", {})
+        if meta.get("finish_reason") != "refusal":
+            return exec_result
+
+        retry_cfg = self.validator.config.get("refusal_retry", {})
+        if not retry_cfg.get("enabled", False):
+            return exec_result
+
+        retry_prompt = test_instance.asset.get("refusal_retry_prompt")
+        if not retry_prompt:
+            return exec_result
+
+        asset_id = test_instance.asset.get("metadata", {}).get("id", "unknown")
+        logger.info(
+            "🔁 Refusal-Retry: %s — tag-freie Fassung (Original: finish_reason=refusal)",
+            asset_id,
+        )
+
+        original_prompt = test_instance.asset["prompt"]
+        test_instance.asset["prompt"] = retry_prompt
+        try:
+            if token_budget is not None:
+                retry_result = test_instance.execute(
+                    model, self.client, provider=provider,
+                    max_tokens=token_budget, _module_key=module_key,
+                )
+            else:
+                retry_result = test_instance.execute(
+                    model, self.client, provider=provider,
+                )
+        finally:
+            test_instance.asset["prompt"] = original_prompt
+
+        retry_result.refusal_retry_used = True
+        return retry_result
 
     @staticmethod
     def _inject_reask_ladder_metadata(exec_result: BenchmarkResult, meta: dict) -> None:
@@ -355,6 +432,7 @@ class BaseBenchmarkRunner:
             "reasoning_loop_elapsed_s": getattr(
                 exec_result, "reasoning_loop_elapsed_s", None
             ),
+            "refusal_retry_used": getattr(exec_result, "refusal_retry_used", False),
             "thought_tag_compliance": getattr(exec_result, "thought_tag_compliance", None),
             "think_content": getattr(exec_result, "think_content", None),
             "thinking_mode": thinking_mode,

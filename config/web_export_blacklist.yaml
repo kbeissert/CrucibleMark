@@ -44,6 +44,12 @@
 #       * Abliterated-Finetune (Abliterated / Aramia-Abliterated)
 #       * Uncensored-Community-Finetune
 #       * Pro Param-Klasse der/die stärkste(n) Variante(n).
+#   - Dual-Profile-Konsolidierung vLLM (2026-09-23): Lokale vLLM-Dualmodelle
+#     (Standard + -thinking via Dual-Profile-Expansion) behalten nur das
+#     score-stärkste Profil im Web-Export. Das schwächere Profil wird
+#     gefiltert, bleibt aber im Scoreboard (benchmark_scores/*.csv) für eine
+#     mögliche Gegenüberstellung. Ausnahme gpt-oss-20b: Standard scoret
+#     höher als Thinking — hier bleibt Standard exportiert.
 
 blacklist:
 
@@ -198,6 +204,36 @@ blacklist:
   - "z-ai_glm-5-20260211"                   # ersetzt durch 5.1 / 5.2 (Rank 34, 74.78)
 
 
+  # -----------------------------------------------------------------
+  # Lokale vLLM Dual-Profile (GX10/VSPK) — Konsolidierung 2026-09-23
+  # -----------------------------------------------------------------
+  # Von jedem vLLM-Dualmodell bleibt nur das score-stärkste Profil im
+  # Web-Export (Regel: Dual-Profile-Konsolidierung, siehe Header). Das
+  # schwächere Profil bleibt im Scoreboard (benchmark_scores/*.csv) für
+  # eine mögliche Gegenüberstellung. Benchmark-Batch unverändert — die
+  # Dual-Profile-Expansion läuft weiter und hält die Vergleichsdaten frisch.
+
+  # Gemma 4 26B (vLLM NVFP4) — Thinking bleibt exportiert
+  - "Gemma-4-26B"                           # Thinking stärker (74.94, R36); selbst (Rank 82, 71.95)
+
+  # Qwen 3.6 (vLLM NVFP4) — Thinking bleibt exportiert
+  - "qwen3_6-27b-nvfp4"                     # Thinking stärker (75.61, R28); selbst (Rank 60, 73.53)
+  - "qwen3_6-35b-a3b-nvfp4"                 # Thinking stärker (74.07, R55); selbst (Rank 100, 70.53)
+
+  # Qwen 3.8 (vLLM NVFP4/FP8) — Thinking bleibt exportiert
+  - "qwen3_8-27b-nvfp4"                     # Thinking stärker (78.16, R12); selbst (Rank 33, 75.15)
+  - "qwen3_8-flash-next-nvfp4"              # Thinking stärker (81.02, R2); selbst (Rank 19, 77.08)
+  - "qwen3_8-27b-uncensored-nvfp4"          # Thinking stärker (79.65, R6); selbst (Rank 61, 73.38)
+  # Uncensored-FP8-Paar: komplett gefiltert (2026-09-01, siehe oben) — keine Änderung.
+
+  # Swift Qwen 3.8 27B (UkisAI, vLLM NVFP4) — Thinking bleibt exportiert
+  - "swift-qwen3_8-27b-nvfp4"               # Thinking stärker (80.48, R3); selbst (Rank 59, 73.76)
+
+  # GPT-OSS (vLLM MXFP4)
+  - "gpt-oss-120b"                          # Thinking stärker (74.36, R49); selbst (Rank 74, 72.79)
+  - "gpt-oss-20b-thinking"                  # AUSNAHME: Standard stärker (64.31, R138) — Thinking gefiltert (Rank 141, 61.59)
+
+
 # ============================================================================
 # KEPT OVERRIDES (informational, Loader ignoriert diesen Block)
 # ============================================================================
@@ -208,6 +244,8 @@ blacklist:
 #
 # Stand: 2026-08-19 — kommerzielle Konsolidierung (Claude / GPT / Grok / GLM /
 # Kimi / DeepSeek) + bestehende Gemma-4 / Qwen 3.5 / 3.6 Einträge.
+# 2026-09-23: vLLM-Dual-Konsolidierung (nur das stärkste Profil pro Dualmodell
+# im Export; Details siehe Filter-Regeln und Sektion vllm_dual).
 # Quelle: benchmark_scores/benchmark_leaderboard.csv
 
 kept_overrides:
@@ -449,3 +487,46 @@ kept_overrides:
         reason: "aktuelle GLM-4-Generation"
       - id: z-ai/glm-4.6
         reason: "zweite GLM-4-Generation"
+
+  # -----------------------------------------------------------------
+  # Lokale vLLM Dual-Profile (2026-09-23) — behaltene Profil-Seite
+  # -----------------------------------------------------------------
+  vllm_dual:
+    rationale: "Pro vLLM-Dualmodell nur das score-stärkste Profil im Export (Gegenstück blacklisted, Daten bleiben im Scoreboard-CSV)."
+    models:
+      - id: Gemma-4-26B-thinking
+        rank: 36
+        score: 74.94
+        reason: "stärker als Standard (71.95) — Standard blacklisted"
+      - id: qwen3_6-27b-nvfp4-thinking
+        rank: 28
+        score: 75.61
+        reason: "stärker als Standard (73.53) — Standard blacklisted"
+      - id: qwen3_6-35b-a3b-nvfp4-thinking
+        rank: 55
+        score: 74.07
+        reason: "stärker als Standard (70.53) — Standard blacklisted"
+      - id: qwen3_8-27b-nvfp4-thinking
+        rank: 12
+        score: 78.16
+        reason: "stärker als Standard (75.15) — Standard blacklisted"
+      - id: qwen3_8-flash-next-nvfp4-thinking
+        rank: 2
+        score: 81.02
+        reason: "stärker als Standard (77.08) — Standard blacklisted"
+      - id: qwen3_8-27b-uncensored-nvfp4-thinking
+        rank: 6
+        score: 79.65
+        reason: "stärker als Standard (73.38) — Standard blacklisted"
+      - id: swift-qwen3_8-27b-nvfp4-thinking
+        rank: 3
+        score: 80.48
+        reason: "stärker als Standard (73.76) — Standard blacklisted"
+      - id: gpt-oss-120b-thinking
+        rank: 49
+        score: 74.36
+        reason: "stärker als Standard (72.79) — Standard blacklisted"
+      - id: gpt-oss-20b
+        rank: 138
+        score: 64.31
+        reason: "AUSNAHME: Standard stärker als Thinking (61.59) — gpt-oss-20b-thinking blacklisted"

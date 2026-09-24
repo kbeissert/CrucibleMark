@@ -41,6 +41,7 @@ TIMEOUT_ANTHROPIC_API = 600.0   # Anthropic SDK: 8000+-Token-Generierungen
 # Adaptive Thinking (Opus 4.7+, Sonnet 4.6+, alle 5er Modelle) deprecated den
 # `temperature`-Parameter — API liefert HTTP 400 'temperature is deprecated'.
 ANTHROPIC_NO_TEMPERATURE_MODELS: frozenset[str] = frozenset({
+    "claude-opus-5-5",
     "claude-opus-5",
     "claude-opus-4-8",
     "claude-sonnet-5",

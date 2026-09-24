@@ -4,7 +4,7 @@ OpenAI-compatible endpoint — https://openrouter.ai/api/v1
 """
 
 import logging
-from typing import Any
+from typing import Any, ClassVar
 from utils.providers.base import BaseProviderClient
 
 # Optional Provider Imports
@@ -34,6 +34,9 @@ class OpenRouterClient(BaseProviderClient):
     PROVIDER_NAMES = ["openrouter"]
     PROVIDER_CONFIG_KEY = "openrouter"
     DEFAULT_TOKEN_PARAM = "max_tokens"
+
+    # Host-Pinning-Log nur einmal pro Modell pro Prozess (nicht pro Request).
+    _pinning_logged: ClassVar[set[str]] = set()
 
     def __init__(self, config: dict):
         super().__init__(config)
@@ -183,10 +186,12 @@ class OpenRouterClient(BaseProviderClient):
         routing_cfg = self._resolve_provider_routing(model, api_model)
         if routing_cfg:
             params["extra_body"]["provider"] = routing_cfg
-            logger.info(
-                "OpenRouter Host-Pinning aktiv für %s: order=%s, allow_fallbacks=%s",
-                api_model, routing_cfg.get("order"), routing_cfg.get("allow_fallbacks"),
-            )
+            if api_model not in OpenRouterClient._pinning_logged:
+                OpenRouterClient._pinning_logged.add(api_model)
+                logger.info(
+                    "OpenRouter Host-Pinning aktiv für %s: order=%s, allow_fallbacks=%s",
+                    api_model, routing_cfg.get("order"), routing_cfg.get("allow_fallbacks"),
+                )
         return params, token_param_name, req_tokens
 
     def _clamp_reasoning_budget(

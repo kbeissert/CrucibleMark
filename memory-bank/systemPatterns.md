@@ -23,6 +23,20 @@ Diese Eigenschaften sind **bewusste Design-Entscheidungen** für faire, reproduz
 
 ---
 
+## Frontier-Preisgrenze: Alltagsmodell vs. Hyper-Premium (2026-09-24, Nutzer-Grundsatz)
+
+**Regel:** Modelle mit Output-Preis **über $50/€50 pro 1M Tokens** sind keine Frontier-Alltagsmodelle, sondern **Frontier-Hyper-Premium-Modelle** — eine philosophische Ausschlusskategorie für CrucibleMark.
+
+**Begründung (Nutzer-Entscheidung 2026-09-24):** Diese Modelle sind so teuer, dass sie in kommerziellen Anwendungen nicht ernsthaft benutzt werden können. Eine Thinking-Kette, die 300k Output-Tokens verbrennt, kostet beim Pro-Tier ($180/1M) bereits $54 — jenseits jeder wirtschaftlichen Vertretbarkeit. CrucibleMark misst Modelle für den praktischen Einsatz; Hyper-Premium-Modelle fallen aus dem Bewertungshorizont.
+
+**Abgrenzung zweier Schwellen:**
+- **$50/1M Output (Klassifikation):** Frontier-Alltagsmodell vs. Frontier-Hyper-Premium — philosophische Grenze, dokumentiert in Taxonomy/AGENTS/add-model-Skill
+- **30 €/1M Output (Test-Filter, Nutzer-Präferenz):** praktisches Budget-Limit für Benchmark-Tests — persönlicher Filter, kein Projekt-Grundsatz
+
+**Betroffene Modelle (Stand 2026-09-24):** gpt-5.5-pro ($180/1M), gpt-5.4-pro ($180/1M) — beide nicht aktiv im Benchmark. gpt-6-astra ($50/1M) liegt exakt an der Grenze.
+
+**Konsequenz für den Workflow:** add-model-Skill prüft den Output-Preis vor Integration; Modelle über der Grenze werden nicht aufgenommen (begründeter Ausschluss, kein stiller Skip).
+
 ## SSoT-Brücken (One-Liner + Datei)
 
 | Brücke | SSoT-Speicherort | Hot-Aufruf |

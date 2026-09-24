@@ -81,6 +81,7 @@ class BenchmarkResult(BaseModel):
     reasoning_loop_suspected: bool = Field(default=False, description="Flag: Eskalations-Request wurde vom Denkzeit-Wächter abgebrochen — das Zeitbudget der Eskalationsphase (reasoning_reask.escalation_time_limit_s) war erschöpft, ohne dass das Modell terminierte. Loop-Verdacht (nicht-terminierende Thinking-Kette), abgegrenzt zur Budget-Erschöpfung (reasoning_reask_exhausted)")
     reasoning_loop_stage: int = Field(default=0, description="Leiter-Stufe, in der der Denkzeit-Abbruch erfolgte (0 = kein Abbruch)")
     reasoning_loop_elapsed_s: float | None = Field(default=None, description="Verbrauchte Eskalationszeit in Sekunden bis zum Denkzeit-Abbruch")
+    refusal_retry_used: bool = Field(default=False, description="Flag: Safety-Refusal-Retry — Erstversuch wurde serverseitig verweigert (finish_reason=refusal), zweiter Versuch lief mit tag-freier Prompt-Fassung (refusal_retry_prompt im Asset; SSoT: BaseBenchmarkRunner._maybe_refusal_retry). Score bezieht sich auf den Retry; das Refusal-Verhalten bleibt über dieses Flag dokumentiert.")
     raw_response: str = Field(default="", description="The raw string output from the model")
     evaluated_prompt: str = Field(
         default="",

@@ -327,6 +327,7 @@ def save_audit_log(
     reasoning_loop_suspected: bool = False,
     reasoning_loop_stage: int = 0,
     reasoning_loop_elapsed_s: float | None = None,
+    refusal_retry_used: bool = False,
     **kwargs
 ) -> None:
     """
@@ -388,6 +389,8 @@ def save_audit_log(
                 reasoning_loop_stage=reasoning_loop_stage,
                 reasoning_loop_elapsed_s=reasoning_loop_elapsed_s,
             )
+
+            _write_refusal_retry_block(f, refusal_retry_used=refusal_retry_used)
 
             f.write("## 1. Prompt / Fragestellung\n\n")
             safe_prompt = _demote_headers_safe(str(prompt))
@@ -799,3 +802,36 @@ def append_global_run_metrics(model: str, asset_ids: list[str],
                 f.seek(0)
                 f.write(content)
                 f.truncate()
+
+
+def _write_refusal_retry_block(f, refusal_retry_used: bool) -> None:
+    """Schreibt den Refusal-Retry-Info-Block (Reviewer-Traceability).
+
+    Dokumentiert, dass der Erstversuch serverseitig verweigert wurde
+    (finish_reason=refusal, z. B. Anthropic stop_reason=refusal) und die
+    bewertete Antwort aus einem tag-freien Zweitversuch stammt
+    (refusal_retry_prompt im Asset). Der Meta-Reviewer MUSS diese
+    Information prominent im Modell-Report verarbeiten (Check
+    "Safety-Refusal & Tag-freier Retry" in meta_reviewer_prompt.yaml):
+    Die Bewertung bezieht sich auf den Zweitversuch; das
+    Verweigerungsverhalten des Original-Prompts ist ein eigenständiger
+    Befund (Modell-Sicherheitsschicht, nicht Aufgabenqualität).
+    Ohne Retry bleibt der Block komplett weg.
+    """
+    if not refusal_retry_used:
+        return
+    f.write(
+        "> [!IMPORTANT]\n"
+        "> **🚫→🔁 Safety-Refusal-Retry:** Der Erstversuch wurde serverseitig "
+        "verweigert (finish_reason=refusal — die API blockte die Anfrage vor "
+        "der Generierung, 0 Output-Tokens). Die bewertete Antwort stammt aus "
+        "einem **tag-freien Zweitversuch** (refusal_retry_prompt): identische "
+        "Frage, nur die <thought>-Tag-Formatanweisung wurde entfernt.\n"
+        "> **Für den Reviewer:** (1) Der Score misst die Aufgabenfähigkeit "
+        "aus dem Zweitversuch — fair und vergleichbar mit kooperativen "
+        "Modellen. (2) Das Refusal-Verhalten selbst ist ein eigenständiger "
+        "Befund: Das Modell lehnt die Formatanweisung ab (vermutlich "
+        "Sicherheitsschicht gegen erzwungene Pseudo-Denken-Tags; Evidenz: "
+        "A/B-Test 2026-09-24). (3) Erwähne beides im Report: Fähigkeit UND "
+        "Verweigerungsverhalten.\n\n"
+    )

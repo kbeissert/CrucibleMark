@@ -48,9 +48,16 @@ providers:
       models:
       - id: claude-opus-5
         name: Claude Opus 5
-      # Auskommentiert 2026-09-20 via make clean-model.
-      # - id: claude-opus-4-8
-      # name: Claude Opus 4.8
+      # 2026-09-24 integriert: Nachfolger von Opus 5. Refusal-Probe-Ergebnis:
+      # Reasoning 5A/5D/5E beantwortet (Klassifikator-Fix), Metacog-Tag-Refusal
+      # persistiert (Refusal-Retry greift). temperature deprecated (HTTP 400).
+      - id: claude-opus-5-5
+        name: Claude Opus 5.5
+      # 2026-09-23 reaktiviert: war am 2026-09-20 versehentlich via
+      # make clean-model MODEL=claude-opus-4-7 auskommentiert worden
+      # (heritage_ids-Cross-Discovery zog die Nachfolger-ID in die Varianten).
+      - id: claude-opus-4-8
+        name: Claude Opus 4.8
       - id: claude-sonnet-5
         name: Claude Sonnet 5
       # (2026-09-02) nicht mehr im Web-Export:
@@ -504,14 +511,18 @@ providers:
       # resolve_provider Exact-First, Endpoint-Ownership-Check in llamacpp_base)
       # erlaubt Gleichzeitigkeit mit llamacpp_spark trotz kanonisch identischer
       # Modell-IDs (Mac qwen3.5-4b-q8 ↔ Spark qwen3_5-4b-q8).
-      enabled: false
+      enabled: true
       context_window: 32000
       base_url: "http://127.0.0.1:1235/v1"
       api_key: "sk-local"
       model_dir: ~/ai/lms/gguf
       token_param_name: max_tokens
-      server_start_cmd: ~/ai/llama.cpp/build/bin/llama-server
-      server_stop_cmd: pkill -f llama-server
+      # 2026-09-23: Installation liegt nach ~/ai/services/llama.cpp umgezogen vor —
+      # alter Pfad ~/ai/llama.cpp/build/bin/llama-server existiert nicht mehr.
+      server_start_cmd: ~/ai/services/llama.cpp/build/bin/llama-server
+      # Port-gescoped (analog llamacpp_spark): pkill -f llama-server würde auch die
+      # unabhängigen Dienste killen (Dictation :1240, Embedding :1230).
+      server_stop_cmd: pkill -f 'llama-server.*--port 1235'
       server_log: ~/ai/llama-lab-server.log
       server_ready_timeout_sec: 180
       existing_server_ready_timeout_sec: 120
@@ -520,91 +531,101 @@ providers:
       threads: 10
       parallel: 4
       hardware_profile: m4_macbook_pro_metal
-      models:
-      - id: gemma-3-12b-it
-        name: Gemma 3 12B Instruct Q4_K_M (GGUF)
-        model_file: gemma-3-12b-it-Q4_K_M.gguf
-        n_gpu_layers: 99
-      - id: gemma-3-12b-it-q8
-        name: Gemma 3 12B Instruct Q8_0 (GGUF)
-        model_file: google_gemma-3-12b-it-Q8_0.gguf
-        n_gpu_layers: 99
-      - id: gemma-4-e4b
-        name: Gemma 4 E4B (GGUF)
-        model_file: gemma-4-E4B.gguf
-        n_gpu_layers: 99
-      - id: gemma-4-12b-it-ud-q4_k_xl
-        name: Gemma 4 12B Instruct UD-Q4_K_XL (GGUF)
-        model_file: gemma-4-12b-it-UD-Q4_K_XL.gguf
-        n_gpu_layers: 99
-        enable_thinking: true  # Gemma 4 Channel-Tokens (<|channel|>): --jinja + --reasoning-format deepseek separiert Thinking in reasoning_content. vormals false (v4.4.1 Hang — mit Separation + max_tokens-Cap begrenzt).
-        extra_server_args:
-          - "--jinja"
-          - "--reasoning-format deepseek"
-      - id: gemma-4-12b-it-ud-q6_k_xl
-        name: Gemma 4 12B Instruct UD-Q6_K_XL (GGUF)
-        model_file: gemma-4-12b-it-UD-Q6_K_XL.gguf
-        n_gpu_layers: 99
-        enable_thinking: true  # Gemma 4 Channel-Tokens — siehe q4_k_xl-Kommentar
-        extra_server_args:
-          - "--jinja"
-          - "--reasoning-format deepseek"
-      - id: gemma-4-12b-it-ud-q8_k_xl
-        name: Gemma 4 12B Instruct UD-Q8_K_XL (GGUF)
-        model_file: gemma-4-12b-it-UD-Q8_K_XL.gguf
-        n_gpu_layers: 99
-        enable_thinking: true  # Gemma 4 Channel-Tokens — siehe q4_k_xl-Kommentar
-        extra_server_args:
-          - "--jinja"
-          - "--reasoning-format deepseek"
-      - id: hermes-3-8b
-        name: Hermes 3 Llama 3.1 8B Q6_K_L (GGUF)
-        model_file: Hermes-3-Llama-3.1-8B-Q6_K_L.gguf
-        n_gpu_layers: 99
-      - id: hermes-4-14b-abliterated
-        name: Hermes 4 14B BF16 Abliterated (GGUF)
-        model_file: hermes-4-14b-bf16-abliterated-q6_k.gguf
-        n_gpu_layers: 99
-      - id: hermes-4-14b-q4
-        name: Hermes 4 14B Q4_K_M (GGUF)
-        model_file: hermes-4-14b-q4_k_m.gguf
-        n_gpu_layers: 99
+      # ── Auskommentiert 2026-09-23: GGUFs nicht mehr in ~/ai/lms/gguf (Inventar-Check) ──
+      # Keine der konfigurierten Dateien existiert noch; Benchmark-Werte und Cards bleiben.
+      # Vorhandene GGUFs matchen KEINE Config-ID — Integration nur über den
+      # add-model-Workflow (Card + Thinking-Probe):
+      #   gemma-4-26B-A4B-it-abliterated.Q4_K_S.gguf (14G) · gemma-4-26B-A4B-it-UD-Q4_K_XL.gguf (16G)
+      #   gemma-4-E4B-it-Q4_K_M.gguf (4,6G) · Huihui-Ornith-1.5-35B-A3B-abliterated.i1-Q3_K_S.gguf (14G)
+      #   Qwen3.5-4B-Q4_K_M.gguf (2,6G) · Qwen3.8-27B-Q4_0.gguf (15G)
+      #   (Qwen3-Embedding-0.6B-Q8_0.gguf = Embedding-Server :1230, kein Benchmark-Kandidat.)
+      # 24 GB RAM: nur die Kleinen (<5G) unkritisch; 14–16G-Modelle grenzwertig.
+      models: []
+      # - id: gemma-3-12b-it
+      #   name: Gemma 3 12B Instruct Q4_K_M (GGUF)
+      #   model_file: gemma-3-12b-it-Q4_K_M.gguf
+      #   n_gpu_layers: 99
+      # - id: gemma-3-12b-it-q8
+      #   name: Gemma 3 12B Instruct Q8_0 (GGUF)
+      #   model_file: google_gemma-3-12b-it-Q8_0.gguf
+      #   n_gpu_layers: 99
+      # - id: gemma-4-e4b
+      #   name: Gemma 4 E4B (GGUF)
+      #   model_file: gemma-4-E4B.gguf
+      #   n_gpu_layers: 99
+      # - id: gemma-4-12b-it-ud-q4_k_xl
+      #   name: Gemma 4 12B Instruct UD-Q4_K_XL (GGUF)
+      #   model_file: gemma-4-12b-it-UD-Q4_K_XL.gguf
+      #   n_gpu_layers: 99
+      #   enable_thinking: true  # Gemma 4 Channel-Tokens (<|channel|>): --jinja + --reasoning-format deepseek separiert Thinking in reasoning_content. vormals false (v4.4.1 Hang — mit Separation + max_tokens-Cap begrenzt).
+      #   extra_server_args:
+      #     - "--jinja"
+      #     - "--reasoning-format deepseek"
+      # - id: gemma-4-12b-it-ud-q6_k_xl
+      #   name: Gemma 4 12B Instruct UD-Q6_K_XL (GGUF)
+      #   model_file: gemma-4-12b-it-UD-Q6_K_XL.gguf
+      #   n_gpu_layers: 99
+      #   enable_thinking: true  # Gemma 4 Channel-Tokens — siehe q4_k_xl-Kommentar
+      #   extra_server_args:
+      #     - "--jinja"
+      #     - "--reasoning-format deepseek"
+      # - id: gemma-4-12b-it-ud-q8_k_xl
+      #   name: Gemma 4 12B Instruct UD-Q8_K_XL (GGUF)
+      #   model_file: gemma-4-12b-it-UD-Q8_K_XL.gguf
+      #   n_gpu_layers: 99
+      #   enable_thinking: true  # Gemma 4 Channel-Tokens — siehe q4_k_xl-Kommentar
+      #   extra_server_args:
+      #     - "--jinja"
+      #     - "--reasoning-format deepseek"
+      # - id: hermes-3-8b
+      #   name: Hermes 3 Llama 3.1 8B Q6_K_L (GGUF)
+      #   model_file: Hermes-3-Llama-3.1-8B-Q6_K_L.gguf
+      #   n_gpu_layers: 99
+      # - id: hermes-4-14b-abliterated
+      #   name: Hermes 4 14B BF16 Abliterated (GGUF)
+      #   model_file: hermes-4-14b-bf16-abliterated-q6_k.gguf
+      #   n_gpu_layers: 99
+      # - id: hermes-4-14b-q4
+      #   name: Hermes 4 14B Q4_K_M (GGUF)
+      #   model_file: hermes-4-14b-q4_k_m.gguf
+      #   n_gpu_layers: 99
       # ── Auskommentiert 2026-09-11: GGUF entfernt (User-Entscheidung); Benchmark-Werte bleiben.
       # - id: qwen2.5-coder-7b
       #   name: Qwen 2.5 Coder 7B Instruct Q6_K (GGUF)
       #   model_file: qwen2.5-coder-7b-instruct-q6_k.gguf
       #   n_gpu_layers: 99
       #   enable_thinking: false
-      - id: qwen3-4b
-        name: Qwen 3 4B Q6_K (GGUF)
-        model_file: Qwen3-4B-Q6_K.gguf
-        n_gpu_layers: 99
-        enable_thinking: false
-      - id: qwen3-14b
-        name: Qwen 3 14B Q6_K (GGUF)
-        model_file: Qwen3-14B-Q6_K.gguf
-        n_gpu_layers: 99
-        enable_thinking: false
-      - id: qwen3.5-4b-q4
-        name: Qwen 3.5 4B Q4_K_XL (GGUF)
-        model_file: Qwen3.5-4B-UD-Q4_K_XL.gguf
-        n_gpu_layers: 99
-        enable_thinking: false
-      - id: qwen3.5-4b-q6
-        name: Qwen 3.5 4B Q6_K_XL (GGUF)
-        model_file: Qwen3.5-4B-UD-Q6_K_XL.gguf
-        n_gpu_layers: 99
-        enable_thinking: false
-      - id: qwen3.5-4b-q8
-        name: Qwen 3.5 4B Q8_K_XL (GGUF)
-        model_file: Qwen3.5-4B-UD-Q8_K_XL.gguf
-        n_gpu_layers: 99
-        enable_thinking: false
-      - id: qwen3.5-9b
-        name: Qwen 3.5 9B Q6_K_XL (GGUF)
-        model_file: Qwen3.5-9B-UD-Q6_K_XL.gguf
-        n_gpu_layers: 99
-        enable_thinking: false
+      # ── Auskommentiert 2026-09-23: GGUF-Dateien fehlen (siehe Inventar-Hinweis oben) ──
+      # - id: qwen3-4b
+      #   name: Qwen 3 4B Q6_K (GGUF)
+      #   model_file: Qwen3-4B-Q6_K.gguf
+      #   n_gpu_layers: 99
+      #   enable_thinking: false
+      # - id: qwen3-14b
+      #   name: Qwen 3 14B Q6_K (GGUF)
+      #   model_file: Qwen3-14B-Q6_K.gguf
+      #   n_gpu_layers: 99
+      #   enable_thinking: false
+      # - id: qwen3.5-4b-q4
+      #   name: Qwen 3.5 4B Q4_K_XL (GGUF)
+      #   model_file: Qwen3.5-4B-UD-Q4_K_XL.gguf
+      #   n_gpu_layers: 99
+      #   enable_thinking: false
+      # - id: qwen3.5-4b-q6
+      #   name: Qwen 3.5 4B Q6_K_XL (GGUF)
+      #   model_file: Qwen3.5-4B-UD-Q6_K_XL.gguf
+      #   n_gpu_layers: 99
+      #   enable_thinking: false
+      # - id: qwen3.5-4b-q8
+      #   name: Qwen 3.5 4B Q8_K_XL (GGUF)
+      #   model_file: Qwen3.5-4B-UD-Q8_K_XL.gguf
+      #   n_gpu_layers: 99
+      #   enable_thinking: false
+      # - id: qwen3.5-9b
+      #   name: Qwen 3.5 9B Q6_K_XL (GGUF)
+      #   model_file: Qwen3.5-9B-UD-Q6_K_XL.gguf
+      #   n_gpu_layers: 99
+      #   enable_thinking: false
 
     # llama.cpp auf asusGX10 (DGX Spark, NVIDIA CUDA, lokaler Server im Intranet).
     # Steuerung per SSH vom Benchmark-Host. GGUF-Pfad: /home/kay_beissert/ai/models/llm/gguf/
@@ -615,7 +636,7 @@ providers:
       short_code: SPRK
       api_type: llamacpp
       model_type: open_weights_local
-      enabled: true  # asusGX10 erreichbar; Benchmark-llama-server läuft auf :1234.
+      enabled: false  # asusGX10 erreichbar; Benchmark-llama-server läuft auf :1234.
       read_timeout: 2400  # 40 Min httpx-Read-Timeout — Thinking-/Long-Output-Modelle brauchen lange.
       # Chat-Pfad läuft über den OpenAI-Connector (utils/providers/openai.py) —
       # der liest `request_timeout` (Default 600s), NICHT `read_timeout`.

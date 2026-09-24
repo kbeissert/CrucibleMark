@@ -454,4 +454,5 @@ def generate_audit_log(
         reasoning_loop_suspected=result.get("reasoning_loop_suspected", False),
         reasoning_loop_stage=result.get("reasoning_loop_stage", 0),
         reasoning_loop_elapsed_s=result.get("reasoning_loop_elapsed_s"),
+        refusal_retry_used=result.get("refusal_retry_used", False),
     )

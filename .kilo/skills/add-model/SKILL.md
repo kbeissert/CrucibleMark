@@ -85,6 +85,8 @@ Card-Preise (`input_price_per_1m` / `output_price_per_1m`) werden **nie manuell 
 
 Begründung: `config/model_pricing.yaml` ist die Preis-SSoT; ein späterer Skript-Lauf würde manuell gesetzte Card-Werte sonst zurücksetzen oder per Prefix-Match (`gpt-5-2025-08-07` → `gpt-5`) falsche Preise schreiben. Lokale Modelle bekommen keinen Eintrag (Preise bleiben `null`).
 
+**⚠️ Frontier-Preisgrenze vor Integration prüfen (2026-09-24):** Output-Preis **über $50/€50 pro 1M Tokens** = Frontier-Hyper-Premium-Modell → **NICHT integrieren** (philosophische Ausschlusskategorie: zu teuer für ernsthafte kommerzielle Anwendung). Nutzer-Test-Filter zusätzlich bei 30 €/1M Output. Beispiele: GPT-Pro-Tier ($180/1M). Details: `memory-bank/systemPatterns.md` → „Frontier-Preisgrenze".
+
 ### 4. LLM-Recherche laufen lassen
 
 ```bash

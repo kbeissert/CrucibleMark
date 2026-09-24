@@ -64,6 +64,10 @@ Cultural Intelligence lief bis April/Mai 2026 mit `token_limit_used=500`. 130 Ze
 
 Neue Preise gehören als `input_price_per_1m` / `output_price_per_1m` (USD/1M Tokens) ausschließlich in die Model Card JSON (`benchmark_scores/model_cards/*.json`).
 
+### Frontier-Preisgrenze: Alltagsmodell vs. Hyper-Premium (2026-09-24)
+
+**Vor jeder Modell-Integration den Output-Preis prüfen:** Modelle mit Output-Preis **über $50/€50 pro 1M Tokens** sind Frontier-Hyper-Premium-Modelle — philosophische Ausschlusskategorie für CrucibleMark (zu teuer für ernsthafte kommerzielle Anwendung, kein Benchmark-Testkandidat). Nutzer-Test-Filter zusätzlich bei 30 €/1M Output. Begründung und Details: `memory-bank/systemPatterns.md` → „Frontier-Preisgrenze".
+
 ## Modell-Kategorisierung SSoT
 
 NIEMALS `"Open Weights (Cloud)"`, `"Open Weights (Local)"` oder `"Commercial"` als neue Kategorie-Strings verwenden. Die drei gültigen Display-Strings sind `"Proprietär"` / `"Restricted Weights"` / `"Open Weights"` — ausschließlich abgeleitet aus `weights_license_tier` in der Model Card via `get_model_category()` in `utils/model_utils.py`.

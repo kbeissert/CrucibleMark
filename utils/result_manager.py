@@ -110,7 +110,8 @@ class ResultManager:
         if "scoring_method" not in combined_fields:
             combined_fields.append("scoring_method")
         # Refusal-Metadaten (audit-empfohlen: dokumentiert Ablehnungen als Qualitätsmerkmal)
-        for _rf in ("refusal_flag", "refusal_type", "refusal_note"):
+        # refusal_retry_used: Safety-Refusal-Retry-Flag (tag-freier Zweitversuch)
+        for _rf in ("refusal_flag", "refusal_type", "refusal_note", "refusal_retry_used"):
             if _rf not in combined_fields:
                 combined_fields.append(_rf)
 

@@ -284,6 +284,13 @@
         ],
         "jurisdiction": "US"
       },
+      "Microsoft": {
+        "label": "Microsoft",
+        "vendor_card_id": "microsoft",
+        "description": "Microsoft Corporation — Entwickler der Phi-Modellreihe (u. a. Phi-4-mini); Cloud-Vertrieb über Azure OpenAI Service.",
+        "aliases": [],
+        "jurisdiction": "US"
+      },
       "MiniMax": {
         "label": "MiniMax",
         "vendor_card_id": "minimax",

@@ -110,5 +110,14 @@
     "tested": "2026-09-22",
     "model_version": "V2.6-Flash",
     "notes": "Automatisch kalibriert: Eskalationsleiter Stufe 2 (32000 Tokens) lieferte erstmals sichtbaren Output."
-  }
+  },
+  "pc_token_calibration": {
+    "budget": 780,
+    "classification": "self_limiting",
+    "profile": "thinking",
+    "tested": "2026-09-23T00:45:07.089905+00:00",
+    "converged_stage": 600,
+    "notes": "Stratifizierte Probe: 8 Blöcke sauber @ 300, 1/1 verdächtige Blöcke eskaliert (0 greedy, 0 inkonsistent). Profil: thinking."
+  },
+  "pc_profile": "thinking"
 }
