@@ -1,6 +1,15 @@
 # Progress
 Letzte Releases + aktueller Stand.
 
+### 2026-09-24 (Session 117) — Refusal-Retry: Reasoning 5A/5D/5E + Trigger-Isolation + Audit-Schattenmetrik [DONE]
+
+- [x] Ursachenanalyse opus-5-Reasoning-Refusals: 5A deterministisch, 5D/5E probabilistisch (Modul-Läufe 2026-09-20 + 2026-09-24); Retry griff nicht — Assets ohne `refusal_retry_prompt`-Feld.
+- [x] Trigger-Isolation (17 A/B-Proben, exakte Modul-Komposition `System: …\n\nUser: …` als User-Message): ```python-Zaun + System/User-Wrapper = Jailbreak-Signatur für den Pre-Generation-Classifier; Symptom-Behauptungen und Verhaltens-Fragen triggern zusätzlich. Methodik-Befund: Probes müssen die Modul-Komposition exakt replizieren (sauberer `system`-Parameter liefert falsche Diagnosen).
+- [x] `refusal_retry_prompt` für 5A (Minimal-Frage + eingerückter Code ohne Zaun, Code wortidentisch), 5D (Ich-Erzählung raus), 5E (Rollen-Anrede raus) — Assets gitignored, nur lokal.
+- [x] Audit-Schattenmetrik-Parität: `refusal_retry_original_prompt` in `save_audit_log`/`_write_refusal_retry_block` — verweigerte Erstversuch-Fassung als `<details>`-Sektion im Audit-Block (Sektion 1 zeigt die Retry-Fassung via `evaluated_prompt`).
+- [x] Verifikation: tests/test_refusal_retry.py 15/15, Lint 9.99/10. End-to-End-Run opus-5 reasoning (--force): 5A 0→94,2 % (Judge 5/5), 5D 0→83,2 %, 5E 0→78,2 %, Metacog 64–80 % — alle 8 verweigerten Assets scoren; Audit-Block live verifiziert.
+- [ ] Gemini-Test (gemini-3.1-pro-preview, code_quality) blockiert: Google-API 429 „prepayment credits depleted" — nach Aufladung wiederholbar (Hinweis: Gemini-0 %-Row hatte `finish=STOP`, hätte den Retry nicht getriggert).
+
 ### 2026-09-24 (Session 116) — Refusal-Retry auf code_quality_002 ausgeweitet + Opus-5.5-Verifikations-Run [DONE]
 
 - [x] Ursachenanalyse 0 %-Zeile claude-opus-5-5/code_quality_002: serverseitiger API-Refusal (`finish_reason=refusal`, 7 Output-Tokens, leerer Content → Judge-Skip); Refusal-Retry griff nicht, da das Asset kein `refusal_retry_prompt`-Feld hatte (Asset-Gate in `_maybe_refusal_retry`).
