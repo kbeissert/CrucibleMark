@@ -1,6 +1,6 @@
 # Lokaler MCP-Webserver (Rig Setup)
 
-**Stand: v5.1.0 · 2026-07-14**
+**Stand: v5.4.0 · 2026-09-25**
 
 Dieser MCP-Server laeuft lokal auf deinem Rechner und stellt Web-Recherche-Tools fuer lokale Modelle bereit.
 

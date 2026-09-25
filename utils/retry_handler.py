@@ -14,6 +14,20 @@ logger = logging.getLogger(__name__)
 T = TypeVar("T")
 
 
+def _load_rate_limit_config() -> dict[str, Any]:
+    """Lädt config/rate_limits.yaml (lazy, Modul-Cache)."""
+    cfg: dict[str, Any] = getattr(_load_rate_limit_config, "_cache", None) or {}
+    if cfg:
+        return cfg
+    from pathlib import Path
+    import yaml
+    p = Path("config/rate_limits.yaml")
+    if p.exists():
+        cfg = yaml.safe_load(p.read_text()) or {}
+    _load_rate_limit_config._cache = cfg
+    return cfg
+
+
 class RetryHandler:
     """
     Handles retry logic with exponential backoff.
@@ -90,10 +104,14 @@ class RetryHandler:
 
                 # Calculate wait time
                 if is_rate_limit:
-                    # Rate-Limit-Backoff: exponentiell mit 60s-Basis und 600s-Cap
-                    # (Review 2026-08-15: vorher linear 60*(attempt+1) — Regel
-                    # verlangt Exponential-Backoff auch im Rate-Limit-Pfad).
-                    wait_time = min(60 * (2 ** attempt), 600)
+                    rl_cfg = (
+                        _load_rate_limit_config()
+                        .get("default", {})
+                        .get("rate_limit_backoff", {})
+                    )
+                    base = rl_cfg.get("base_seconds", 60)
+                    cap = rl_cfg.get("cap_seconds", 600)
+                    wait_time = min(base * (2 ** attempt), cap)
                     logger.debug(
                         "⚠️ Rate Limit detected (attempt %d/%d). Pausing for %ds to cool down...",
                         attempt + 1,

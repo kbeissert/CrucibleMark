@@ -58,6 +58,11 @@ class AnthropicClient(BaseProviderClient):
                 base_url="https://api.anthropic.com",
             )
         return self._client
+    def close(self) -> None:
+        """Schließt den gecachten Anthropic-Client (TCP FIN an die API)."""
+        client = getattr(self, "_client", None)
+        if client is not None:
+            client.close()
     def is_accessible(self) -> bool:
         """Prüft Zugang zu Anthropic API durch Test-Request."""
         if anthropic is None:
@@ -303,6 +308,7 @@ class AnthropicClient(BaseProviderClient):
             state["stream_usage"] = {
                 "input_tokens": state.get("stream_input_tokens", 0),
                 "output_tokens": int(getattr(usage, "output_tokens", 0) or 0),
+                "output_tokens_details": getattr(usage, "output_tokens_details", None),
             }
 
     def _get_used_max_tokens(self, initial: int, usage) -> tuple[int, bool]:

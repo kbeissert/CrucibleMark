@@ -103,7 +103,7 @@ class TestRefusalRetryTrigger:
         exec_result = _make_exec_result("", "refusal")
 
         result = BaseBenchmarkRunner._maybe_refusal_retry(
-            runner, test_instance, exec_result, "test-model", "anthropic", 12000, "reasoning_logic"
+            runner, test_instance, exec_result, "test-model", "anthropic", token_budget=12000, module_key="reasoning_logic"
         )
 
         assert result.refusal_retry_used is True
@@ -120,7 +120,7 @@ class TestRefusalRetryTrigger:
         exec_result = _make_exec_result("Normale Antwort", "end_turn")
 
         result = BaseBenchmarkRunner._maybe_refusal_retry(
-            runner, test_instance, exec_result, "test-model", "anthropic", 12000, "reasoning_logic"
+            runner, test_instance, exec_result, "test-model", "anthropic", token_budget=12000, module_key="reasoning_logic"
         )
 
         assert result is exec_result
@@ -137,7 +137,7 @@ class TestRefusalRetryTrigger:
         exec_result = _make_exec_result("", "refusal")
 
         result = BaseBenchmarkRunner._maybe_refusal_retry(
-            runner, test_instance, exec_result, "test-model", "anthropic", 12000, "reasoning_logic"
+            runner, test_instance, exec_result, "test-model", "anthropic", token_budget=12000, module_key="reasoning_logic"
         )
 
         assert result is exec_result
@@ -153,7 +153,7 @@ class TestRefusalRetryTrigger:
         exec_result = _make_exec_result("", "refusal")
 
         result = BaseBenchmarkRunner._maybe_refusal_retry(
-            runner, test_instance, exec_result, "test-model", "anthropic", 12000, "reasoning_logic"
+            runner, test_instance, exec_result, "test-model", "anthropic", token_budget=12000, module_key="reasoning_logic"
         )
 
         assert result is exec_result
@@ -178,7 +178,7 @@ class TestRefusalRetryBehavior:
         exec_result = _make_exec_result("", "refusal")
 
         BaseBenchmarkRunner._maybe_refusal_retry(
-            runner, test_instance, exec_result, "test-model", "anthropic", 12000, "reasoning_logic"
+            runner, test_instance, exec_result, "test-model", "anthropic", token_budget=12000, module_key="reasoning_logic"
         )
 
         assert asset["prompt"] == original_prompt
@@ -200,7 +200,7 @@ class TestRefusalRetryBehavior:
         exec_result = _make_exec_result("", "refusal")
 
         BaseBenchmarkRunner._maybe_refusal_retry(
-            runner, test_instance, exec_result, "test-model", "anthropic", 12000, "reasoning_logic"
+            runner, test_instance, exec_result, "test-model", "anthropic", token_budget=12000, module_key="reasoning_logic"
         )
 
         assert captured_prompts == [asset["refusal_retry_prompt"]]

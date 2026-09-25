@@ -37,6 +37,7 @@ from utils.constants import (
 )
 from utils.language_validator import LanguageValidator
 from utils.logging_config import setup_logging
+from utils.model_card_io import CARD_DIR
 from utils.model_utils import (
     _find_card,
     _safe_name,
@@ -168,7 +169,7 @@ class UnifiedBenchmarkRunner(BaseBenchmarkRunner):
                 (Dual-Thinking-Profile). Wird an ``_find_card`` weitergereicht,
                 damit Thinking-Profile die geteilte Card finden.
         """
-        cards_dir = Path("benchmark_scores/model_cards")
+        cards_dir = CARD_DIR
         found_path = _find_card(model, model_cfg=model_cfg)
         if found_path is not None and found_path.exists():
             card_path = found_path

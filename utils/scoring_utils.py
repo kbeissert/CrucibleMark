@@ -71,7 +71,8 @@ def calculate_hybrid_score(
     # not a "not configured" signal. The `or` chain would skip {} (falsy).
     _asset_w = ac.get("scoring_weights")
     _module_w = mc.get("scoring", {}).get("fallback_weights")
-    weights = _asset_w if _asset_w is not None else (_module_w if _module_w is not None else {"regex": 0.50, "judge": 0.50})
+    _fallback = {"regex": 0.50, "judge": 0.50}
+    weights = _asset_w if _asset_w is not None else (_module_w if _module_w is not None else _fallback)
 
     regex_w = weights.get("regex", 0.50)
     judge_w = weights.get("judge", 0.50)

@@ -348,7 +348,7 @@ _LEGACY_SHORTCODE_ORDER: tuple[str, ...] = ("M4APL", "SPRK", "VSPK", "GR")
 
 def _prefixed_shortcode_candidates() -> tuple[str, ...]:
     """Alle Card-Shortcodes: historische Reihenfolge + Rest aus der SSoT."""
-    rest = sorted({c for c in _PROVIDER_SHORTCODES.values()} - set(_LEGACY_SHORTCODE_ORDER))
+    rest = sorted(set(_PROVIDER_SHORTCODES.values()) - set(_LEGACY_SHORTCODE_ORDER))
     return _LEGACY_SHORTCODE_ORDER + tuple(rest)
 
 

@@ -51,10 +51,17 @@ class GroqClient(BaseProviderClient):
             self._client = OpenAI(
                 api_key=api_key,
                 base_url="https://api.groq.com/openai/v1",
-                timeout=timeout_config
+                timeout=timeout_config,
+                max_retries=0,
             )
 
         return self._client
+
+    def close(self) -> None:
+        """Schließt den gecachten Groq-Client (OpenAI-SDK, TCP FIN an die API)."""
+        client = getattr(self, "_client", None)
+        if client is not None:
+            client.close()
 
 
     def is_accessible(self) -> bool:
@@ -62,12 +69,15 @@ class GroqClient(BaseProviderClient):
         try:
             from openai import OpenAI, AuthenticationError, PermissionDeniedError, NotFoundError, RateLimitError
             check_client = OpenAI(api_key=self.client.api_key, base_url="https://api.groq.com/openai/v1", max_retries=0)
-            check_client.chat.completions.create(
-                model="llama-3.1-8b-instant",
-                messages=[{"role": "user", "content": "Hi"}],
-                max_tokens=1,
-            )
-            return True
+            try:
+                check_client.chat.completions.create(
+                    model="llama-3.1-8b-instant",
+                    messages=[{"role": "user", "content": "Hi"}],
+                    max_tokens=1,
+                )
+                return True
+            finally:
+                check_client.close()
         except AuthenticationError as e:
             logger.warning("Groq Access Check: Authentifizierung fehlgeschlagen: %s", e)
             return False
@@ -140,6 +150,7 @@ class GroqClient(BaseProviderClient):
         params[token_param_name] = req_tokens
         if stream_handler:
             params["stream"] = True
+            params.setdefault("stream_options", {})["include_usage"] = True
         return params, token_param_name, req_tokens
 
     def _process_groq_stream(
@@ -154,17 +165,22 @@ class GroqClient(BaseProviderClient):
         from utils.providers.base import ThinkAccumulator
         think = ThinkAccumulator()
         stream_usage = None
+        finish_reason = None
         for chunk in response:
-            if hasattr(chunk.choices[0].delta, "content") and chunk.choices[0].delta.content:
-                content_piece = chunk.choices[0].delta.content
-                full_content += content_piece
-                stream_handler(content_piece)
-            reasoning_piece = (
-                getattr(chunk.choices[0].delta, "reasoning", None)
-                or getattr(chunk.choices[0].delta, "reasoning_content", None)
-            )
-            if reasoning_piece:
-                think.add(reasoning_piece)
+            if chunk.choices:
+                delta = chunk.choices[0].delta
+                if hasattr(delta, "content") and delta.content:
+                    content_piece = delta.content
+                    full_content += content_piece
+                    stream_handler(content_piece)
+                reasoning_piece = (
+                    getattr(delta, "reasoning", None)
+                    or getattr(delta, "reasoning_content", None)
+                )
+                if reasoning_piece:
+                    think.add(reasoning_piece)
+                if hasattr(chunk.choices[0], "finish_reason") and chunk.choices[0].finish_reason:
+                    finish_reason = chunk.choices[0].finish_reason
             if hasattr(chunk, "usage") and chunk.usage:
                 stream_usage = chunk.usage
 
@@ -174,6 +190,7 @@ class GroqClient(BaseProviderClient):
             "completion_tokens": stream_usage.completion_tokens if stream_usage else 0,
             "token_limit_used": used_max_tokens,
             "token_limit_fallback": fallback_triggered,
+            "finish_reason": finish_reason,
         }
         if stream_usage:
             rt = self._extract_reasoning_tokens(stream_usage)

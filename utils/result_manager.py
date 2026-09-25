@@ -44,7 +44,7 @@ logger = logging.getLogger(__name__)
 class ResultManager:
     """Verwaltet das Speichern von Benchmark-Ergebnissen und Updates des Leaderboards."""
 
-    def __init__(self, config_validator: ConfigValidator | None = None):
+    def __init__(self, config_validator: ConfigValidator | None = None) -> None:
         self.validator = config_validator or ConfigValidator()
         self.config = self.validator.config
 
@@ -450,7 +450,7 @@ class ResultManager:
             writer.writerow(row)
         logger.debug("Appended single row to %s (asset=%s)", csv_path, row.get("asset_id"))
 
-    def update_leaderboard(self):
+    def update_leaderboard(self) -> None:
         """Triggert das Update des Leaderboards."""
         try:
             # Import hier, um Zirkelbezüge zu vermeiden und Skript-Charakter zu nutzen

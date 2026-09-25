@@ -1,11 +1,11 @@
 # CrucibleMark
 
-[![Version](https://img.shields.io/badge/version-5.3.0-blue)](.)
+[![Version](https://img.shields.io/badge/version-5.4.0-blue)](.)
 [![Python](https://img.shields.io/badge/python-3.12%2B-blue)](.)
 [![License](https://img.shields.io/badge/license-MIT-green)](.)
 [![Status](https://img.shields.io/badge/status-production--ready-brightgreen)](.)
 
-**Stand: v5.3.0 · 2026-09-16**
+**Stand: v5.4.0 · 2026-09-25**
 
 ## Ein modulares LLM-Benchmark-Framework für Product Engineers
 
@@ -167,7 +167,7 @@ make clean-model MODEL="mistral-large-2411" DRY=1   # Vorschau ohne Löschen
 
 ---
 
-## Roadmap (Stand: Q1/Q2 2026)
+## Roadmap
 
 - [x] **Agentic Workflow Benchmarks / Tool Use** — vollständig implementiert als `tooluse`-Modul (v3.10.0+).
 - [ ] **Visuelles Sub-System (Multimodal)** — Integration visueller Benchmarks (UML-Diagramme, UI-Design).
@@ -198,6 +198,10 @@ make clean-model MODEL="mistral-large-2411" DRY=1   # Vorschau ohne Löschen
 
 Die vollständige Versionshistorie steht in [CHANGELOG.md](CHANGELOG.md). Kurzfassung der letzten drei Releases:
 
+### v5.4.0 (2026-09-25) — Provider-Härtung, Eskalationsleiter, Refusal-Retry, OpenRouter-Pinning & Code-Review
+
+Framework-Härtung über 17 Sessions: Reasoning-Eskalationsleiter mit Cap-Persistierung (Card-First, Ceilings [24k/32k], Last-Resort 48k), Refusal-Retry für Anthropic-Safety-Refusals (Trigger-Isolation, tag-freie Zweitversuche), OpenRouter-Host-Pinning (17 Modelle, `upstream_provider`-Logging) nach Leaderboard-Shift-Analyse. Umfassender Code-Review (61 Befunde, 7 Sprints): Provider-Bugs (Anthropic reasoning_tokens, Groq Streaming), 10× SSoT-Bypasses, CC-Refactoring (PC execute 34→11), Skip-Logik in Resolver-Module, Exception-Handling, Type-Hints. Suite 1917 passed, Lint 9.99/10.
+
 ### v5.3.0 (2026-09-16) — Political Compass v3.1: Nano-/Mini-/Desktop-Testing + SPRK-Small-Model-Feld
 
 PC-Überarbeitung für kleine Modelle: Degenerate-Guard (API-Ausfall wird nicht mehr als (0,0)-Mittelpunkt persistiert), Schattenmetriken-Badges config-getrieben an der Reviewer-σ-Konvention (σ < 1,5 stabil, σ > 2,0 Chaos), Truncation-Signal-Re-Probes (nemotron-nano, mimo-pro) und PC-Kalibrierungen für das neue Small-Model-Feld. Dazu 14 Nano-/Mini-/Desktop-Modelle (≤ 16 GB, Unsloth-UD-Q5_K_M) auf llama.cpp Spark (GX10: Llama 3.2 1B/3B, Phi-4 Mini, Ministral 3, R1-Distill, Gemma 3/4, Ornith u. a.), Frontier-Grenze 768B (Size-Class folgt `params_total_b`), neue Modelle (Occamy 1.0 35B-A3B, Swift-Qwen3.8 27B, DeepSeek V4.1 Flash) und Card-/Export-Hygiene (Writer-SSoT, Dupletten-Konsolidierung, Vendor-Cards).
@@ -222,4 +226,4 @@ Bug-Reports, Feature-Wünsche und Diskussionen laufen über [GitHub Issues](http
 
 - **Maintainer:** [kbeissert](https://github.com/kbeissert)
 - **Repository:** [github.com/kbeissert/cruciblemark](https://github.com/kbeissert/cruciblemark)
-- **Status:** Production-Ready (v5.3.0)
+- **Status:** Production-Ready (v5.4.0)

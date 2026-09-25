@@ -7,6 +7,7 @@ from typing import Any
 
 from benchmark_modules.political_compass.core.config import TOPIC_NAMES
 from utils.benchmark_utils import token_distribution
+from utils.model_utils import _safe_name
 from utils.module_registry import load_module_config
 
 
@@ -743,7 +744,7 @@ class AuditLogWriter:
             detailed_responses = cls._hydrate_responses(
                 detailed_responses, questions_db)
 
-        safe_model = str(model).replace(":", "_").replace("/", "_").replace(".", "_")
+        safe_model = _safe_name(str(model))
         out_dir = Path(f"outputs/audit_logs/{safe_model}")
         out_dir.mkdir(parents=True, exist_ok=True)
 

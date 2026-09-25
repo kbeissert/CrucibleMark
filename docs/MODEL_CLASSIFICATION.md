@@ -1,6 +1,6 @@
 # Modellklassifizierung & Badge-System
 
-**Stand: v5.2.2 · 2026-09-09**
+**Stand: v5.4.0 · 2026-09-25**
 
 **Zielgruppe:** Alle, die verstehen wollen, wie CrucibleMark Modelle klassifiziert und bewertet.
 
@@ -474,5 +474,5 @@ make probe-all-thinking
 
 ---
 
-**Dokumenten-Version:** 5.3.0 (Ueberarbeitung 2026-09)\
+**Dokumenten-Version:** 5.4.0 (Ueberarbeitung 2026-09)\
 **Kompatibel mit:** CrucibleMark v3.8+

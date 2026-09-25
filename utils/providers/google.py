@@ -51,6 +51,11 @@ class GoogleClient(BaseProviderClient):
             logger.warning(
                 "Google Generative AI library (google-generativeai) not installed."
             )
+    def close(self) -> None:
+        """Schließt den Google-Client, falls vorhanden und schließbar."""
+        client = getattr(self, "_client", None)
+        if client is not None and hasattr(client, "close"):
+            client.close()
     def is_accessible(self) -> bool:
         """Prüft, ob der API Key gültig ist."""
         if not genai:

@@ -37,6 +37,21 @@ Wenn ja → alle sieben Stellen synchron auf die neue Versionsnummer bringen:
 
 Alle Stellen bereits aktuell? → Schritt überspringen, kurz bestätigen: *"Version bereits synchron."*
 
+### 0a. Doku-Prüfung (README · PROJECT_STATUS · REF_TODO)
+
+**Immer prüfen,** auch wenn die Version unverändert ist. Diese drei Dateien
+veralten unabhängig vom Release-Zyklus und müssen vor jedem Commit aktuell sein:
+
+| Datei | Was prüfen |
+|---|---|
+| `README.md` | Version-Badge + Footer (`Status: ... vX.Y.Z`) passen zum `CHANGELOG`? Letzter Release-Eintrag unter "Recent Versions" aktuell? |
+| `PROJECT_STATUS.md` | `Last Updated`-Datum = heute? Test-Zahl im `Aktueller Stand`-Block korrekt (`make test`)? `Aktuelle Arbeit` listet die seit der letzten Session abgeschlossenen Dinge? `Known Limitations` reflektiert den aktuellen Zustand (keine abgeschlossenen Baustellen mehr)? |
+| `REF_TODO.md` | Letzter Eintrag unter "Abgeschlossen" deckt das aktuelle Changeset? Falls nein — neuen Completed-Eintrag anlegen.|
+
+**Nur bei Release:** Version-Badge in `README.md` und `**Current Version:**` in
+`PROJECT_STATUS.md` auf neue Version stempeln. Bei Bugfix-/Wartungs-Sessions
+reicht die Datumsaktualisierung in `PROJECT_STATUS.md`.
+
 
 ## Schreibfilter (vor jedem Eintrag prüfen)
 

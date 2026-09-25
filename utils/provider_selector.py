@@ -271,8 +271,8 @@ class ProviderSelector:
                     {"provider": provider_name, "id": mid, "name": mid,
                      "description": "Live vom Server", "file": ""}
                 )
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.warning("Fehler beim Abrufen der vLLM-Modellliste: %s", exc)
 
         if not config_models:
             logger.warning("\n⚠️  Keine vLLM-Modelle in benchmark_config.yaml konfiguriert.")
@@ -337,8 +337,8 @@ class ProviderSelector:
                 config_models.append(
                     {"provider": provider_name, "id": mid, "name": mid, "description": "Live vom Server", "file": ""}
                 )
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.warning("Fehler beim Abrufen der llama.cpp-Modellliste: %s", exc)
 
         if not config_models:
             logger.warning("\n⚠️  Keine llama.cpp-Modelle in benchmark_config.yaml konfiguriert.")

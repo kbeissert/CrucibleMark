@@ -1,6 +1,6 @@
 # CrucibleMark: Card-Management
 
-**Stand: v5.1.0 · 2026-07-14**
+**Stand: v5.4.0 · 2026-09-25**
 
 **Zielgruppe:** Entwickler, die Model- oder Provider-Cards erstellen, prüfen oder mit dem Template synchronisieren wollen.
 

@@ -53,6 +53,11 @@ class MistralClient(BaseProviderClient):
             # Set explicit timeout (120s) to avoid indefinite hangs on API congestion
             self._client = Mistral(api_key=api_key, timeout_ms=120000)
         return self._client
+    def close(self) -> None:
+        """Schließt den gecachten Mistral-Client (TCP FIN an die API)."""
+        client = getattr(self, "_client", None)
+        if client is not None:
+            client.close()
     def is_accessible(self) -> bool:
         """Prüft Zugang zu Mistral API."""
         try:

@@ -657,8 +657,8 @@ def _is_unknown_reasoning_model(model: str, reasoning_tokens: int | None) -> boo
         from utils.model_utils import is_reasoning_model, is_thinking_optional_from_card
         _is_reasoning = is_reasoning_model(str(model))
         _is_thinking_optional = is_thinking_optional_from_card(str(model))
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.debug("_is_heuristic_non_reasoning: Modell-Erkennung fehlgeschlagen: %s", exc)
     return not _is_reasoning and not reasoning_tokens and not _is_thinking_optional
 
 

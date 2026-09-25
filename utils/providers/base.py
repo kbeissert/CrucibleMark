@@ -24,6 +24,20 @@ _BUDGET_ERROR_PHRASES = (
 )
 
 
+def _load_rate_limit_config() -> dict[str, Any]:
+    """Lädt config/rate_limits.yaml (lazy, gecached via Modul-Dict)."""
+    cfg: dict[str, Any] = getattr(_load_rate_limit_config, "_cache", None) or {}
+    if cfg:
+        return cfg
+    from pathlib import Path
+    import yaml
+    p = Path("config/rate_limits.yaml")
+    if p.exists():
+        cfg = yaml.safe_load(p.read_text()) or {}
+    _load_rate_limit_config._cache = cfg
+    return cfg
+
+
 class ThinkAccumulator:
     """Streaming-Helper für Think-Content-Akkumulation (SSoT).
 
@@ -257,24 +271,33 @@ class BaseProviderClient:
         2. ``usage.output_tokens_details.reasoning_tokens`` (Anthropic)
         3. ``usage.reasoning_tokens`` (Mistral-Fallback)
 
+        Handhabt sowohl SDK-Objekte (``getattr``) als auch plain dicts
+        (Streaming-Merges, z. B. Anthropic message_delta).
+
         Returns ``None`` wenn kein Feld vorhanden oder ``usage`` falsy.
         """
         if not usage:
             return None
+
+        def _get_field(obj: Any, field: str, default: Any = None) -> Any:
+            if isinstance(obj, dict):
+                return obj.get(field, default)
+            return getattr(obj, field, default)
+
         # Pfad 1: OpenAI-kompatibel (completion_tokens_details)
-        details = getattr(usage, "completion_tokens_details", None)
+        details = _get_field(usage, "completion_tokens_details")
         if details:
-            rt = getattr(details, "reasoning_tokens", None)
+            rt = _get_field(details, "reasoning_tokens")
             if rt is not None:
                 return rt
         # Pfad 2: Anthropic (output_tokens_details)
-        out_details = getattr(usage, "output_tokens_details", None)
+        out_details = _get_field(usage, "output_tokens_details")
         if out_details:
-            rt = getattr(out_details, "reasoning_tokens", None)
+            rt = _get_field(out_details, "reasoning_tokens")
             if rt is not None:
                 return rt
         # Pfad 3: Mistral-Fallback (direktes Feld auf usage)
-        return getattr(usage, "reasoning_tokens", None)
+        return _get_field(usage, "reasoning_tokens")
 
     @staticmethod
     def _estimate_reasoning_tokens(
@@ -364,7 +387,7 @@ class BaseProviderClient:
                     f"⚠️ Token limit rejected. Retrying with fallback limit: {current_tokens} tokens."
                 )
             func_kwargs[token_param_name] = current_tokens
-            max_rate_limit_retries = 3
+            max_rate_limit_retries = _load_rate_limit_config().get("max_rate_limit_retries", 3)
             rate_limit_attempts = 0
             while rate_limit_attempts < max_rate_limit_retries:
                 try:

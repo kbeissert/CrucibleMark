@@ -1,6 +1,6 @@
 # Benchmark Script Overview
 
-**Stand: v5.1.0 · 2026-07-14**
+**Stand: v5.4.0 · 2026-09-25**
 
 Diese Übersicht zeigt die Orchestrierung zwischen:
 - Standard Benchmark Runner

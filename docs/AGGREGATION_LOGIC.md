@@ -1,6 +1,6 @@
 # CrucibleMark: Aggregation & Test-Zählung
 
-**Stand: v5.1.0 · 2026-07-14**
+**Stand: v5.4.0 · 2026-09-25**
 
 **Zielgruppe:** Entwickler, die verstehen wollen, wie CrucibleMark Scores aggregiert und Tests zählt.
 **Inhalt:** Test-Zählung, Political-Compass-Entkopplung, Score-Berechnung

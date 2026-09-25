@@ -176,7 +176,7 @@ def _check_existing_card(target_path: Path, yes: bool) -> None:
     )
 
 
-def main() -> int:  # noqa: C901 — Komplexitaet akzeptabel nach Split in Hilfefunktionen
+def main() -> int:
     parser = argparse.ArgumentParser(
         description=(
             "Legt eine neue Model Card aus provider_config.yaml an. "

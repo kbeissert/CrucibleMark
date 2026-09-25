@@ -158,6 +158,12 @@ class CohereClient(BaseProviderClient):
             )
         return self._http
 
+    def close(self) -> None:
+        """Schließt den gecachten httpx-Client (TCP FIN an die Cohere-API)."""
+        client = getattr(self, "_http", None)
+        if client is not None:
+            client.close()
+
     def _get_api_key(self) -> str:
         if self._api_key is None:
             import os
@@ -383,7 +389,8 @@ class CohereClient(BaseProviderClient):
                 think_parts.append(block.get("thinking", ""))
         return "".join(text_parts), think_parts
 
-    def _extract_reasoning_tokens(self, usage: Any) -> int | None:
+    @staticmethod
+    def _extract_reasoning_tokens(usage: Any) -> int | None:
         """Genuine Cohere-spezifische Override (KEIN dead stub).
 
         Cohere nutzt ein abweichendes Usage-Format:

@@ -325,20 +325,14 @@ def _run_llamacpp_model_modules(
     provider_key: str,
 ) -> None:
     """Iteriert über Module für ein llama.cpp-Modell, bricht bei echtem Fehler ab."""
+    from scripts.core.skip_resolver import run_module_or_abort
+
     for module in modules:
-        assets_todo = get_startable_assets(module, model_id, existing_tests)
-        status = _run_module_for_model(
-            runner, model_id, module, existing_tests,
-            force=force, audit=audit_mode, mcp_mode=mcp_mode, provider=provider_key,
-        )
-        if status == "failed" and assets_todo:
-            # ECHTER Fehler bei offenen Assets (Leaderboard-Skip zählt nicht).
-            print(
-                f"   ⚠️  Modul '{module.get('key', 'unknown')}' für '{model_id}' fehlgeschlagen "
-                "(mit offenen Assets). Restliche Module für dieses Modell werden übersprungen."
-            )
+        if not run_module_or_abort(
+            _run_module_for_model, module, model_id, existing_tests,
+            runner, force=force, audit=audit_mode, mcp_mode=mcp_mode, provider=provider_key,
+        ):
             break
-        # "ran" oder "skipped" → weiter
 
 
 # -- vLLM-Batch (Phase 48): spiegelbildlich zu _run_single_llamacpp_provider_batch -
@@ -391,19 +385,16 @@ def _run_vllm_model_modules(
 
     ``_run_module_for_model`` returns ``"skipped"`` wenn keine offenen Assets
     vorhanden sind — ``"failed"`` impliziert also zwingend offene Assets.
-    Ein separater ``get_startable_assets``-Aufruf hier ist redundant (die
-    asset-Ermittlung läuft in ``_run_module_for_model`` selbst).
+    Der ``run_module_or_abort``-Helper prüft ``assets_todo`` als Guard:
+    Ein Leaderboard-Skip (status=skipped) zählt nicht als Abbruch.
     """
+    from scripts.core.skip_resolver import run_module_or_abort
+
     for module in modules:
-        status = _run_module_for_model(
-            runner, model_id, module, existing_tests,
-            force=force, audit=audit_mode, mcp_mode=mcp_mode, provider=provider_key,
-        )
-        if status == "failed":
-            print(
-                f"   ⚠️  Modul '{module.get('key', 'unknown')}' für '{model_id}' fehlgeschlagen "
-                "(mit offenen Assets). Restliche Module für dieses Modell werden übersprungen."
-            )
+        if not run_module_or_abort(
+            _run_module_for_model, module, model_id, existing_tests,
+            runner, force=force, audit=audit_mode, mcp_mode=mcp_mode, provider=provider_key,
+        ):
             break
 
 
@@ -707,21 +698,14 @@ def _run_ollama_model_modules(
     mcp_mode: str,
 ) -> None:
     """Iteriert über Module für ein Ollama-Modell, bricht bei echtem Fehler ab."""
+    from scripts.core.skip_resolver import run_module_or_abort
+
     for module in modules:
-        assets_todo = get_startable_assets(module, model, existing_tests)
-        status = _run_module_for_model(
-            runner, model, module, existing_tests,
-            force=force, audit=audit_mode, mcp_mode=mcp_mode,
-        )
-        if status == "failed" and assets_todo:
-            # ECHTER Fehler bei offenen Assets (Leaderboard-Skip zählt nicht).
-            # Spiegelbild zu _run_llamacpp_model_modules / _run_vllm_model_modules.
-            print(
-                f"   ⚠️  Modul '{module.get('key', 'unknown')}' für '{model}' fehlgeschlagen "
-                "(mit offenen Assets). Restliche Module für dieses Modell werden übersprungen."
-            )
+        if not run_module_or_abort(
+            _run_module_for_model, module, model, existing_tests,
+            runner, force=force, audit=audit_mode, mcp_mode=mcp_mode, provider="ollama",
+        ):
             break
-        # "ran" oder "skipped" → weiter
 
 
 

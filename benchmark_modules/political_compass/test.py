@@ -20,6 +20,8 @@ from typing import Any
 import yaml
 from schemas.result import BenchmarkResult
 
+from utils.model_utils import _safe_name
+
 # CrucibleMark Core
 try:
     from benchmark_modules.base_test import BaseTest as BaseTest
@@ -825,168 +827,19 @@ class PoliticalCompassTest(BaseTest):
             print(msg, flush=True)
             logger.warning(msg.strip())
 
-    def execute(  # noqa: C901 — Komplexität inherent (3 Runs × Anti-Diplomat-Prompt + Intersection-Filtering)
-        self,
-        model: str,
-        llm_client: Any,
-        **_kwargs: Any,
-    ) -> BenchmarkResult:
-        """
-        Main Execution Loop.
-        Iterates self.num_runs times over all questions.
-        """
-        provider = _kwargs.get("provider", "ollama")
-        force_run = _kwargs.get("force", False)
-
-        # PC v3 Wiring: Modul-Budget + Modul-Key vom base_runner durchreichen
-        # (ohne diese kwargs greift resolve_token_budget auf 25k-Reasoning-Fallback zurück).
-        max_tokens = _kwargs.get("max_tokens")
-        module_key = _kwargs.get("_module_key", "political_compass")
-        classifier = RefusalClassifier(self.module_config)
-        thinking_off_supported = str(provider).startswith(PC_THINKING_OFF_PROVIDER_PREFIXES)
-        if not thinking_off_supported:
-            logger.info(
-                "[PC v3] Provider '%s' unterstützt keinen per-Request Thinking-Toggle "
-                "(llama.cpp: Server-Start-Flag; Cloud: kein trivialer Disable) — "
-                "Truncation-Re-Ask degradiert auf Budget-Eskalation.",
-                provider,
-            )
-
-        # PC v3 Token-Probe: Card-Kalibrierung lesen (Card-First-Pattern).
-        calibration = read_pc_calibration(model)
-        pc_calibration_stats: dict[str, Any] | None = None
-        force_thinking_off = False
-        if calibration:
-            classification = calibration.get("classification")
-            if classification == "greedy_uncapped":
-                if not read_dual_profile(model):
-                    # Thinking-only-Ausnahme (Regel 2026-08-29, Konzept-Doc
-                    # Abschn. 11): Ohne Instruct-Modus ist keine Umschaltung
-                    # möglich — Truncation-Verluste werden akzeptiert.
-                    logger.warning(
-                        "[PC v3] %s: Token-Probe = greedy_uncapped, aber Thinking-only "
-                        "(dual_profile != true) — Modus-Umschaltung nicht möglich; "
-                        "Truncation-Verluste werden akzeptiert (Konzept-Doc Abschn. 11).",
-                        model,
-                    )
-                elif thinking_off_supported:
-                    # Instruct-Modus: Thinking per Request deaktivieren —
-                    # nicht-terminierender CoT macht Budget-Eskalation sinnlos.
-                    force_thinking_off = True
-                    logger.info(
-                        "[PC v3] %s: Token-Probe = greedy_uncapped → Instruct-Modus "
-                        "(Thinking-Off per Request).",
-                        model,
-                    )
-                else:
-                    logger.warning(
-                        "[PC v3] %s: Token-Probe = greedy_uncapped, aber Provider '%s' "
-                        "unterstützt keinen per-Request Thinking-Toggle. Instruct-Profil "
-                        "in provider_config.yaml anlegen (enable_thinking: false) oder "
-                        "Truncation-Verluste akzeptieren.",
-                        model, provider,
-                    )
-            pc_calibration_stats = {
-                "classification": classification,
-                "budget": calibration.get("budget"),
-                "tested": calibration.get("tested"),
-                "pc_profile_forced_instruct": force_thinking_off,
-                "notes": calibration.get("notes", ""),
-            }
-            if classification == "inconsistent":
-                if read_dual_profile(model):
-                    # Konvergenz + Greedy gemischt, beide Modi verfügbar — der
-                    # Thinking-Lauf wird partiell bleiben; der Instruct-Gegenlauf
-                    # ermöglicht den Shift-Vergleich (Konzept-Doc Abschn. 11).
-                    # Gate wie im greedy_uncapped-Zweig: dual_profile ist die
-                    # Card-SSoT für Modi-Fähigkeit — ein veraltetes Probe-
-                    # profile-Feld (dual_profile-Override ohne Re-Probe)
-                    # überstimmt die Regel nicht.
-                    logger.info(
-                        "[PC v3] %s: Token-Probe = hybrid_dual — Thinking-Lauf läuft mit "
-                        "kalibriertem Budget (partiell); Instruct-Gegenlauf für den "
-                        "Shift-Vergleich empfohlen (Dual-Profil-Pattern).",
-                        model,
-                    )
-                else:
-                    # Thinking-only-Ausnahme (Regel 2026-08-29): kein Gegenlauf —
-                    # einzelner Thinking-Lauf mit kalibriertem Budget.
-                    logger.info(
-                        "[PC v3] %s: Token-Probe = inconsistent, aber Thinking-only "
-                        "(dual_profile != true) — einzelner Thinking-Lauf mit "
-                        "kalibriertem Budget, kein Instruct-Gegenlauf "
-                        "(Konzept-Doc Abschn. 11).",
-                        model,
-                    )
-        elif read_pc_profile_flag(model):
-            # Coverage-Regel-Ersatzlauf (Konzept-Doc Abschn. 11): Das Modell läuft
-            # als eigenes Instruct-Profil — Transparenz-Flag ohne Token-Probe.
-            pc_calibration_stats = {
-                "classification": "instruct_profile",
-                "budget": None,
-                "tested": None,
-                "pc_profile_forced_instruct": True,
-                "notes": (
-                    "Instruct-Profil laut Coverage-Regel (Konzept-Doc Abschn. 11): "
-                    "Thinking-Run wegen Truncation-Verlusten abgebrochen, Ersatz-Lauf "
-                    "mit serverseitig deaktiviertem Thinking (--reasoning off)."
-                ),
-            }
-            logger.info(
-                "[PC v3] %s: Instruct-Profil (Coverage-Regel) — Transparenz-Flag aktiv.",
-                model,
-            )
-
-        if force_run:
-            safe_model = str(model).replace(":", "_").replace("/", "_").replace(".", "_")
-            report_path = Path(f"outputs/audit_logs/{safe_model}/00_bias_report.md")
-            if report_path.exists():
-                try:
-                    report_path.unlink()
-                except Exception as e:
-                    import logging
-                    logging.warning(f"Could not delete old bias report: {e}")
-
-        # Ensure questions are loaded
-        if not self.questions:
-            self.load_questions()
-
-        if not self.questions:
-            return BenchmarkResult(
-                status="error",
-                primary_score=0.0,
-                rendered_value="Error",
-                evaluated_prompt="",
-                execution_time=0.0,
-                load_time=0.0,
-                tokens_used=0,
-                tokens_per_second=0.0,
-                cost_usd=0.0,
-                finish_reason=None,
-                token_limit_cutoff=False,
-                token_limit_fallback=False,
-                token_limit_used=None,
-                raw_response=json.dumps({"error": "No questions loaded"}),
-                model_version="unknown",
-            )
-
-        start_time = time.time()
-
-        # Initialize UI
+    def _run_pc_benchmark_phase(
+        self, model: str, provider: str, llm_client: Any, max_tokens: int | None,
+        module_key: str, classifier: Any, thinking_off_supported: bool,
+        force_thinking_off: bool,
+    ) -> tuple[int, float, int, list[dict[str, Any]], dict[str, Any]]:
+        """Führt die PC-Benchmark-Run-Loop aus (2 Runs × Blocks mit A/B)."""
         ui = TerminalUI()
         ui.print_intro("Political Compass", model, provider, self.num_runs)
-
-        # Group questions
         questions_by_block, sorted_blocks = self._group_questions_by_block()
         total_tokens = 0
         total_cost = 0.0
         total_hard_refusals = 0
 
-        # Load Checkpoint (Resume Capability)
-        # PC v3: Checkpoint-Invalidierung bei Modul-Version-Mismatch — sonst
-        # serviert Resume Antworten aus der 25k-Ära (alte Methodik). Checkpoints
-        # OHNE module_version sind Legacy (Pre-v3) und werden ebenfalls verworfen:
-        # Ein Mischlauf (v2-Antworten + v3-Antworten) wäre methodisch inkonsistent.
         module_version = str(self.module_config.get("metadata", {}).get("version", ""))
         checkpoint = CheckpointManager.load_checkpoint(model) or {}
         if checkpoint and checkpoint.get("module_version") != module_version:
@@ -1001,7 +854,6 @@ class PoliticalCompassTest(BaseTest):
         if "responses" not in checkpoint:
             checkpoint["responses"] = {}
 
-        # Run Benchmark Loops A/B
         benchmark_runs = getattr(self, "num_runs", 2)
         all_question_stats: list[dict[str, Any]] = []
         for run_idx in range(1, benchmark_runs + 1):
@@ -1017,7 +869,6 @@ class PoliticalCompassTest(BaseTest):
                 _label = f"[🐑 Verhaltensfilter Deaktiviert: Vanilla Modus (Run {run_idx})]"
                 print(f"\n\033[92m{_label}\033[0m\n" if sys.stdout.isatty() else f"\n{_label}\n")
 
-            # Deterministic Seed Recovery
             s_idx = str(run_idx)
             if s_idx in checkpoint["run_seeds"]:
                 run_seed = checkpoint["run_seeds"][s_idx]
@@ -1026,7 +877,6 @@ class PoliticalCompassTest(BaseTest):
                 checkpoint["run_seeds"][s_idx] = run_seed
                 CheckpointManager.save_checkpoint(model, checkpoint)
 
-            # Metrics for this run context
             metrics = {
                 "completed_in_run": 0,
                 "total_in_run": len(self.questions),
@@ -1058,19 +908,10 @@ class PoliticalCompassTest(BaseTest):
             for block_id in sorted_blocks:
                 pre_hard_refusals = int(metrics.get("hard_refusals", 0))
                 block_question_count = len(questions_by_block[block_id])
-
-                self._run_single_block(
-                    block_id,
-                    questions_by_block[block_id],
-                    metrics,
-                    context,
-                )
-
+                self._run_single_block(block_id, questions_by_block[block_id], metrics, context)
                 if getattr(self, "_quota_exhausted", False):
                     logger.warning("[PC] Budget erschöpft nach Block %s — überspringe verbleibende Blöcke.", block_id)
-                    break  # Block-Schleife verlassen
-
-                # Systematic failure: entire block failed → model is not responding at all
+                    break
                 post_hard_refusals = int(metrics.get("hard_refusals", 0))
                 if block_question_count > 0 and (post_hard_refusals - pre_hard_refusals) >= block_question_count:
                     self._systematic_failure = True
@@ -1079,13 +920,10 @@ class PoliticalCompassTest(BaseTest):
                         "(%d/%d Fragen). Modell %s antwortet nicht — breche ab.",
                         block_id, block_question_count, block_question_count, model,
                     )
-                    print(
-                        f"\n   ⛔ Systematischer Fehler: {model} hat alle {block_question_count} Fragen "
-                        f"in Block '{block_id}' verweigert. Benchmark wird abgebrochen."
-                    )
-                    break  # Block-Schleife verlassen
+                    print(f"\n   ⛔ Systematischer Fehler: {model} hat alle {block_question_count} Fragen "
+                          f"in Block '{block_id}' verweigert. Benchmark wird abgebrochen.")
+                    break
 
-            # Update total tokens from metrics
             total_tokens = int(metrics["total_tokens"])
             total_cost = float(metrics["total_cost"])
             total_hard_refusals = int(metrics.get("hard_refusals", 0))
@@ -1096,8 +934,25 @@ class PoliticalCompassTest(BaseTest):
                     logger.warning("[PC] Budget erschöpft — beende alle Runs vorzeitig.")
                 else:
                     logger.warning("[PC] Systematischer Fehler — beende alle Runs vorzeitig.")
-                break  # Run-Schleife verlassen
+                break
+        return total_tokens, total_cost, total_hard_refusals, all_question_stats, checkpoint
 
+    def _compute_pc_results(
+        self,
+        model: str,
+        provider: str,
+        llm_client: Any,
+        max_tokens: int | None,
+        total_tokens: int,
+        total_cost: float,
+        total_hard_refusals: int,
+        all_question_stats: list[dict[str, Any]],
+        pc_calibration_stats: dict[str, Any] | None,
+        checkpoint: dict[str, Any],
+        start_time: float,
+    ) -> BenchmarkResult:
+        """Verdichtet PC-Benchmark-Rohdaten (Scores, Shift, Flip, Report) zu
+        einem BenchmarkResult."""
         # PC v3 Monitoring: Token-/Eskalations-Statistiken aggregieren
         token_stats, escalation_stats = self._aggregate_pc_v3_stats(all_question_stats)
         self._warn_reasoning_overrun(token_stats, max_tokens, model)
@@ -1314,6 +1169,153 @@ class PoliticalCompassTest(BaseTest):
             model_version=str(model_version),
             data=shallow_data,
             meta={"run_mode": "batch"},
+        )
+
+    def _resolve_pc_calibration_state(
+        self, model: str, provider: str,
+    ) -> tuple[dict[str, Any] | None, bool, bool, Any]:
+        """PC v3 Kalibrierung: Token-Probe, Thinking-Off, RefusalClassifier."""
+        classifier = RefusalClassifier(self.module_config)
+        thinking_off_supported = str(provider).startswith(PC_THINKING_OFF_PROVIDER_PREFIXES)
+        if not thinking_off_supported:
+            logger.info(
+                "[PC v3] Provider '%s' unterstützt keinen per-Request Thinking-Toggle "
+                "(llama.cpp: Server-Start-Flag; Cloud: kein trivialer Disable) — "
+                "Truncation-Re-Ask degradiert auf Budget-Eskalation.",
+                provider,
+            )
+
+        calibration = read_pc_calibration(model)
+        pc_calibration_stats: dict[str, Any] | None = None
+        force_thinking_off = False
+        if calibration:
+            classification = calibration.get("classification")
+            if classification == "greedy_uncapped":
+                if not read_dual_profile(model):
+                    logger.warning(
+                        "[PC v3] %s: Token-Probe = greedy_uncapped, aber Thinking-only "
+                        "(dual_profile != true) — Modus-Umschaltung nicht möglich; "
+                        "Truncation-Verluste werden akzeptiert (Konzept-Doc Abschn. 11).",
+                        model,
+                    )
+                elif thinking_off_supported:
+                    force_thinking_off = True
+                    logger.info(
+                        "[PC v3] %s: Token-Probe = greedy_uncapped → Instruct-Modus "
+                        "(Thinking-Off per Request).",
+                        model,
+                    )
+                else:
+                    logger.warning(
+                        "[PC v3] %s: Token-Probe = greedy_uncapped, aber Provider '%s' "
+                        "unterstützt keinen per-Request Thinking-Toggle. Instruct-Profil "
+                        "in provider_config.yaml anlegen (enable_thinking: false) oder "
+                        "Truncation-Verluste akzeptieren.",
+                        model, provider,
+                    )
+            pc_calibration_stats = {
+                "classification": classification,
+                "budget": calibration.get("budget"),
+                "tested": calibration.get("tested"),
+                "pc_profile_forced_instruct": force_thinking_off,
+                "notes": calibration.get("notes", ""),
+            }
+            if classification == "inconsistent":
+                if read_dual_profile(model):
+                    logger.info(
+                        "[PC v3] %s: Token-Probe = hybrid_dual — Thinking-Lauf läuft mit "
+                        "kalibriertem Budget (partiell); Instruct-Gegenlauf für den "
+                        "Shift-Vergleich empfohlen (Dual-Profil-Pattern).",
+                        model,
+                    )
+                else:
+                    logger.info(
+                        "[PC v3] %s: Token-Probe = inconsistent, aber Thinking-only "
+                        "(dual_profile != true) — einzelner Thinking-Lauf mit "
+                        "kalibriertem Budget, kein Instruct-Gegenlauf "
+                        "(Konzept-Doc Abschn. 11).",
+                        model,
+                    )
+        elif read_pc_profile_flag(model):
+            pc_calibration_stats = {
+                "classification": "instruct_profile",
+                "budget": None,
+                "tested": None,
+                "pc_profile_forced_instruct": True,
+                "notes": (
+                    "Instruct-Profil laut Coverage-Regel (Konzept-Doc Abschn. 11): "
+                    "Thinking-Run wegen Truncation-Verlusten abgebrochen, Ersatz-Lauf "
+                    "mit serverseitig deaktiviertem Thinking (--reasoning off)."
+                ),
+            }
+            logger.info(
+                "[PC v3] %s: Instruct-Profil (Coverage-Regel) — Transparenz-Flag aktiv.",
+                model,
+            )
+        return pc_calibration_stats, force_thinking_off, thinking_off_supported, classifier
+
+    def execute(
+        self,
+        model: str,
+        llm_client: Any,
+        **_kwargs: Any,
+    ) -> BenchmarkResult:
+        """Main Execution Loop."""
+        provider = _kwargs.get("provider", "ollama")
+        force_run = _kwargs.get("force", False)
+        max_tokens = _kwargs.get("max_tokens")
+        module_key = _kwargs.get("_module_key", "political_compass")
+
+        pc_calibration_stats, force_thinking_off, thinking_off_supported, classifier = (
+            self._resolve_pc_calibration_state(model, provider)
+        )
+
+        if force_run:
+            safe_model = _safe_name(str(model))
+            report_path = Path(f"outputs/audit_logs/{safe_model}/00_bias_report.md")
+            if report_path.exists():
+                try:
+                    report_path.unlink()
+                except Exception as e:
+                    import logging
+                    logging.warning(f"Could not delete old bias report: {e}")
+
+        # Ensure questions are loaded
+        if not self.questions:
+            self.load_questions()
+
+        if not self.questions:
+            return BenchmarkResult(
+                status="error",
+                primary_score=0.0,
+                rendered_value="Error",
+                evaluated_prompt="",
+                execution_time=0.0,
+                load_time=0.0,
+                tokens_used=0,
+                tokens_per_second=0.0,
+                cost_usd=0.0,
+                finish_reason=None,
+                token_limit_cutoff=False,
+                token_limit_fallback=False,
+                token_limit_used=None,
+                raw_response=json.dumps({"error": "No questions loaded"}),
+                model_version="unknown",
+            )
+
+        start_time = time.time()
+
+        total_tokens, total_cost, total_hard_refusals, all_question_stats, checkpoint = (
+            self._run_pc_benchmark_phase(
+                model, provider, llm_client, max_tokens, module_key,
+                classifier, thinking_off_supported, force_thinking_off,
+            )
+        )
+
+        return self._compute_pc_results(
+            model, provider, llm_client, max_tokens,
+            total_tokens, total_cost, total_hard_refusals,
+            all_question_stats, pc_calibration_stats, checkpoint, start_time,
         )
 
     def score_response(self, result: BenchmarkResult) -> BenchmarkResult:

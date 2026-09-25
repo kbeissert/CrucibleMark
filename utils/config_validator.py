@@ -36,7 +36,7 @@ class ConfigValidator:
     # Cache-Key: (config_path, provider_config_path) → (mtime-Tupel, config)
     _config_cache: dict[tuple[str, str], tuple[tuple[float, float], dict[str, Any]]] = {}
 
-    def __init__(self, config_path: str = "benchmark_config.yaml"):
+    def __init__(self, config_path: str = "benchmark_config.yaml") -> None:
         """Initialisiert Validator.
 
         Args:

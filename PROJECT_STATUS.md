@@ -2,8 +2,8 @@
 
 > **Interner Statusbericht.** Diese Datei dokumentiert den Projektfortschritt für Maintainer und Contributor. Sie ist nicht Teil der öffentlichen Dokumentation. Aktuelle, kuratierte Release-Informationen stehen in [README.md](README.md) (Recent Versions) und [CHANGELOG.md](CHANGELOG.md).
 
-**Last Updated:** 2026-09-16
-**Current Version:** 5.3.0 — PC v3.1 Nano-/Mini-/Desktop-Testing + SPRK-Small-Model-Feld
+**Last Updated:** 2026-09-25
+**Current Version:** 5.4.0 — Provider-Härtung, Eskalationsleiter, Refusal-Retry, OpenRouter-Pinning & Code-Review
 **Status:** Production-Ready
 
 ---
@@ -12,18 +12,18 @@
 
 CrucibleMark v5.3.0 ist ein production-ready LLM-Benchmark-Framework mit 135+ getesteten Modellen über 11 Provider. Das Framework misst praxisnahe Leistung (Code-Reviews, UX-Texte, Reasoning, Tool-Use) mit blindem LLM-Judge und generiert Leaderboards mit License-/Sovereign-Filtern.
 
-**Aktueller Stand (2026-09-16):**
+**Aktueller Stand (2026-09-25):**
 - **135+ Modelle** im Leaderboard (Größenklassen nach Size-Class-SSoT: Frontier 47 / Workstation 34 / Server 26 / Desktop 18 / Nano 10 / Edge 9), Web-Export nach Dupletten-Konsolidierung (Mac/Spark, muse-glimmer).
 - **11 Provider:** OpenAI, Anthropic, Google, Mistral, xAI, OpenRouter, Cohere, Ollama, Llama.cpp (Mac), Llama.cpp Spark (GX10 via Metrics-Proxy), vLLM (Spark).
 - **8 Scoring-Module + Political Compass (v3.1):** Code Quality, CLI Operations, Reasoning & Logik, UX Writing, Cultural Intelligence, Documentation Quality, Content Transformation, Tool Use. PC seit v3.0 mit Token-Budget-Regime, Token-Probe-Profilentscheidung und Card-First-Hook (v5.2.2); v3.1 härtet für Nano-/Mini-/Desktop-Modelle (Degenerate-Guard, config-getriebene Schattenmetriken-Badges, Truncation-Signal-Korrekturen, SPRK-Kalibrierungen).
 - **SPRK-Small-Model-Feld:** 14 Nano-/Mini-/Desktop-Modelle ≤ 16 GB (Unsloth-UD-Q5_K_M) + Signal 3.8 27B neu auf llama.cpp Spark integriert.
-- **1753 Tests** grün, Lint exit 0 (4 vorbestehende SPRK-Card-Inhalts-Fehler offen, siehe activeContext).
+- **1917 Tests** passed, 17 skipped, 0 failed · Lint 9.99/10 · Ruff 0 violations · Pylint E-Level clean.
 
-**Aktuelle Arbeit (Sessions 99–105):**
-- **PC v3.1 Small-Model-Fit (Sessions 99/101):** Schattenmetriken-Badges an Reviewer-σ-Konvention gekoppelt (c7d56979), Degenerate-Guard gegen (0,0)-Fehlpersistenzen (f6de494a), Truncation-Signal-Re-Probes für nemotron-nano/mimo-pro, PC-Kalibrierungen für das neue SPRK-Feld.
-- **SPRK-Small-Model-Feld (Session 104):** 15 Cards + 14 provider_config-Einträge ≤ 16 GB, Vendor-Cards AgentionAI/UkisAI/Microsoft, 15 Bias-Reviews.
-- **Size-Class-SSoT + Frontier 768B (Sessions 101/105):** `params_total_b` steuert die Tier-Einordnung (86f63791), Frontier-Grenze 75B→768B mit Migrationsskript und ~30 reklassifizierten Cards (a9d4fb12).
-- **Card-Hygiene (Session 102):** Writer-Newline-SSoT (c4c94a86), 58 Cards normalisiert, Health-Gate-Fix für Remote-APIs.
+**Aktuelle Arbeit (Sessions 106–122):**
+- **Code-Review & Bugfix-Serie (Sessions 121–122):** Vollständiges strukturiertes Code-Review (61 Befunde, 7 Sprints) — Provider-Bugs (Anthropic reasoning_tokens, Groq Streaming), magic-numbers→Config, SSoT-Cleanup, close()-Overrides, CC-Refactoring (PC execute 34→11), Skip-Logik in Resolver-Module extrahiert, Exception-Handling, Type-Hints. Audit: `docs/audits/2026-09-25_code-review.md`.
+- **Eskalationsleiter + Cap-Persistierung (Session 110):** Absolut-Deckel [24k/32k], Card-First-Kalibrierung `cot_budget_calibration`, Last-Resort-Modus (48k), Erschöpfungs-Semantik, Krümel-Schwelle 500 Zeichen, Reviewer-Diagnostik. Leiter live verifiziert (GLM-5.3-Flash → +15 %).
+- **Hermes Agentic-Track entfernt (Session 108):** Konzeptionelle Entscheidung — CrucibleMark misst rohe LLM-Endpoints, kein Agent-Loop. Vollständiger Rückbau (Connector, Tests, Wizard-Typ, Framework-Hooks).
+- **Refusal-Retry ausgeweitet (Sessions 116–117):** Serverseitige Refusals (Claude Opus 5) erhalten tag-freien Zweitversuch; Trigger-Isolation beweist Zaun+Wrapper=Jailbreak-Signatur; code_quality_002/5A/5D/5E mit Retry-Prompts versehen.
 
 **Aktuelle Modell-Integrationen (Sessions 82–84):**
 - **Qwen 3.8 27B NVFP4** (lokal, vLLM gx10) — Standard-Profil Rank 63, Score 72.25, Silver Badge. Thinking-Profil im Benchmark (Dual-Profile-Expansion).
@@ -31,10 +31,11 @@ CrucibleMark v5.3.0 ist ein production-ready LLM-Benchmark-Framework mit 135+ ge
 - **Echte-Token-Pipeline (v5.1.5):** TPS, Judge-Context und Audit-Log laufen jetzt auf echten Provider-Usage-Werten (`input_tokens`/`output_tokens`).
 
 **Known Limitations (akzeptiert, nicht blockierend):**
-- **TPS-Semantik-Wechsel v5.1.5:** Historische CSV-Zeilen behalten Schätzwerte (Upsert rechnet nicht neu durch) — Leaderboard mischt alte/neue TPS, bis Modelle neu gelaufen sind.
-- **PC-v3-Re-Run ausstehend:** Methodik-Bruch gegenüber v2 — alte lokale PC-Einträge entfernt (12 Modelle), Voll-Re-Run via `make benchmark-auto` läuft (seit Session 90); bis dahin mischt das Leaderboard v2-Cloud- und v3-Lokal-Daten.
-- **Datenlücke:** qwen3_8-27b-nvfp4 / code_quality_001-Row fehlt (durch Simulations-Write ersetzt, nicht restaurierbar) — Modul-Neulauf ausstehend.
-- Web-Frontend (separates Repo): `price-comparison-row.njk` Null-Guard, `model-header.njk` Doppel-Rendering, Frontend stu=false-Score-Anzeige.
+- **PC-Modul deaktiviert:** Nutzer-Entscheidung zur LLM-Nachtest-Serie — Reaktivierung ist Teil des nächsten Schritts (Opus-5.5-Nativ-Re-Run via `make political-compass`).
+- **vLLM-Spark offline:** GX10 nicht verfügbar — `vllm_spark`-Einträge enabled, Batch-Runner läuft ohne sie (bewusste Nutzer-Entscheidung).
+- **`make benchmark-auto` lokal nicht verfügbar:** GX10/Python-3.14-API-Break (Provider-Discovery-Teile) — Workaround: Modul-Läufe via `run_benchmark.py --module X --model Y`.
+- **Changeset uncommittet:** Code-Review-Serie + vorbefindliche Fremdänderungen (AGENTS.md/progress.md) und untracked Reviews sind nicht committed.
+- **Web-Frontend (separates Repo):** `price-comparison-row.njk` Null-Guard, `model-header.njk` Doppel-Rendering, Frontend stu=false-Score-Anzeige.
 
 ---
 

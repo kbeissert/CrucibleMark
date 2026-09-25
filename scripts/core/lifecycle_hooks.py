@@ -19,6 +19,7 @@ from typing import Any
 
 from utils.model_utils import (
     SUPPORT_TOOL_USE_UNTESTED,
+    _find_card,
     normalize_supports_tool_use,
 )
 
@@ -62,31 +63,22 @@ def collect_untested_tooluse_cards() -> list[tuple[str, str]]:
 
 
 def load_cards_for_models(model_ids: list[str]) -> dict[str, dict[str, Any]]:
-    """Load card dicts for given model_ids from CARD_DIR (SSoT)."""
-    card_dir = _card_dir()
+    """Load card dicts for given model_ids via _find_card (SSoT)."""
     cards: dict[str, dict[str, Any]] = {}
     for mid in model_ids:
-        candidates = [
-            card_dir / f"{mid}.json",
-            card_dir / f"{mid.replace(':', '_')}.json",
-            card_dir / f"{mid.replace('/', '_').replace(':', '_')}.json",
-            card_dir / f"{mid.replace('/', '_').replace(':', '_').replace('.', '_')}.json",
-        ]
+        card_path = _find_card(mid)
         loaded: dict[str, Any] = {}
-        for path in candidates:
-            if path.exists():
-                try:
-                    loaded = json.loads(path.read_text(encoding="utf-8"))
-                    break
-                except (json.JSONDecodeError, OSError) as exc:
-                    logger.warning(
-                        "Model Card für Pre-Flight konnte nicht gelesen werden "
-                        "(model=%s, candidate=%s): %s",
-                        mid,
-                        path,
-                        exc,
-                    )
-                    continue
+        if card_path and card_path.exists():
+            try:
+                loaded = json.loads(card_path.read_text(encoding="utf-8"))
+            except (json.JSONDecodeError, OSError) as exc:
+                logger.warning(
+                    "Model Card für Pre-Flight konnte nicht gelesen werden "
+                    "(model=%s, path=%s): %s",
+                    mid,
+                    card_path,
+                    exc,
+                )
         if loaded:
             cards[mid] = loaded
         else:

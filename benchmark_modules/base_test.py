@@ -13,6 +13,7 @@ import yaml
 
 from schemas.result import BenchmarkResult
 from utils.benchmark_utils import clean_reasoning_tags
+from utils.model_utils import _safe_name
 
 # Scoring constant
 TOTAL_SCORING_WEIGHT = 100
@@ -172,7 +173,7 @@ class BaseTest(ABC):
         output_dir.mkdir(parents=True, exist_ok=True)
 
         # Sanitize model name für Dateinamen
-        safe_model_name = result_data.model.replace(":", "_").replace("/", "_")
+        safe_model_name = _safe_name(result_data.model)
         asset_id = self.asset["metadata"]["id"]
 
         # Determine base filename

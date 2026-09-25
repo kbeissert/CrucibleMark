@@ -64,11 +64,17 @@ class OllamaClient(BaseProviderClient):
             )
         # SPECIAL HANDLING for Reasoning Models (e.g. DeepSeek-R1)
         if is_reasoning_model(model):
-            # Reduced to 8192 to prevent excessive unified memory swapping
+            boost = (
+                self.config.get("defaults", {})
+                .get("reasoning_model_boost", {})
+            )
+            boost_predict = boost.get("num_predict", 8192)
+            boost_ctx = boost.get("num_ctx", 8192)
+            # Reduced to prevent excessive unified memory swapping
             # (which causes system-wide freezes on Mac when 32768 context explodes VRAM)
-            options["num_predict"] = 8192
+            options["num_predict"] = boost_predict
             if "num_ctx" not in options:
-                options["num_ctx"] = 8192
+                options["num_ctx"] = boost_ctx
             logger.debug(
                 "Boosting token limit for reasoning model '%s' to 8192 to prevent memory freezes",
                 model,

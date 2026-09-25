@@ -3,6 +3,8 @@ Base Benchmark Runner
 Stellt gemeinsame Funktionalität für lokale und kommerzielle Runner bereit.
 """
 
+from __future__ import annotations
+
 import logging
 from pathlib import Path
 from typing import Any
@@ -24,7 +26,7 @@ logger = logging.getLogger(__name__)
 class BaseBenchmarkRunner:
     """Abstrakte Basisklasse für Benchmark Runner."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.validator = ConfigValidator()
         self.client = LLMClient(config=self.validator.config)
         self.result_manager = ResultManager(self.validator)
@@ -41,6 +43,19 @@ class BaseBenchmarkRunner:
         if percentage >= 1.0:
             return "📉"
         return "❌"
+
+    def _resolve_module_token_budget(
+        self, model: str, module_key: str, provider: str,
+    ) -> tuple[int | None, int | None]:
+        """Löst das Modul-Token-Budget auf (Shared Helper: Non-Batch + Batch-Pfad).
+
+        Returns: (token_budget, raw_budget) — raw_budget=None wenn kein Eintrag.
+        """
+        _raw_budget: int | None = self.validator.config.get("token_budgets", {}).get(module_key)
+        _token_budget, _ = resolve_token_budget(
+            model, _raw_budget, self.validator.config, module_key, provider=provider,
+        )
+        return _token_budget, _raw_budget
 
     def execute_test_module(
         self,
@@ -83,10 +98,7 @@ class BaseBenchmarkRunner:
         # `thinking_override` in der Provider-Card das Token-Budget beeinflusst
         # (z.B. value:false → kein 5x-Reasoning-Multiplikator fuer Cost-Benchmarks).
         _module_key = module_path.parent.name
-        _raw_budget: int | None = self.validator.config.get("token_budgets", {}).get(_module_key)
-        _token_budget, _ = resolve_token_budget(
-            model, _raw_budget, self.validator.config, _module_key, provider=provider
-        )
+        _token_budget, _raw_budget = self._resolve_module_token_budget(model, _module_key, provider)
 
         # Card-First-Sichtbarkeit: Startete Stufe 1 aus der Card-Kalibrierung
         # (cot_budget_calibration) statt beim Modul-Budget? resolve_token_budget
@@ -102,9 +114,13 @@ class BaseBenchmarkRunner:
         )
 
         # exec_result is now a BenchmarkResult object
-        # _module_key wird mitübergeben damit openai.py das Reasoning-Budget per Modul nachschlagen kann
+        # _module_key wird mitübergeben damit openai.py das Reasoning-Budget
+        # per Modul nachschlagen kann
         if _token_budget is not None:
-            exec_result = test_instance.execute(model, self.client, provider=provider, max_tokens=_token_budget, _module_key=_module_key)
+            exec_result = test_instance.execute(
+                model, self.client, provider=provider,
+                max_tokens=_token_budget, _module_key=_module_key,
+            )
         else:
             exec_result = test_instance.execute(model, self.client, provider=provider)
 
@@ -112,7 +128,8 @@ class BaseBenchmarkRunner:
         # Erstversuche erhalten EINEN tag-freien Zweitversuch, wenn das Asset
         # eine Retry-Fassung hat (SSoT: benchmark_config.yaml#refusal_retry).
         exec_result = self._maybe_refusal_retry(
-            test_instance, exec_result, model, provider, _token_budget, _module_key
+            test_instance, exec_result, model, provider,
+            token_budget=_token_budget, module_key=_module_key,
         )
 
         if _cot_calibrated_start:
@@ -154,7 +171,9 @@ class BaseBenchmarkRunner:
         fr = meta.get("finish_reason")
         if fr:
             exec_result.finish_reason = str(fr)
-            if str(fr).lower() in ["length", "max_tokens"] and not getattr(exec_result, "token_limit_fallback", False):
+            if str(fr).lower() in ("length", "max_tokens") and (
+                not getattr(exec_result, "token_limit_fallback", False)
+            ):
                 exec_result.token_limit_cutoff = True
 
         tlu = meta.get("token_limit_used")
@@ -199,6 +218,7 @@ class BaseBenchmarkRunner:
         exec_result: BenchmarkResult,
         model: str,
         provider: str,
+        *,
         token_budget: int | None,
         module_key: str,
     ) -> BenchmarkResult:
@@ -478,7 +498,7 @@ class BaseBenchmarkRunner:
             pass
         return "n/a"
 
-    def save_results(self, results: list, result_type: str | None = None) -> None:
+    def save_results(self, results: list[dict[str, Any]], result_type: str | None = None) -> None:
         """Wird von den Kind-Klassen verwendet, um per ResultManager zu speichern."""
         if not results:
             return
@@ -486,7 +506,7 @@ class BaseBenchmarkRunner:
         path = self.result_manager.save_results(results, result_type=result_type)
         if path:
             logger.info(f"\n💾 Ergebnisse gespeichert: {path}")
-    def print_summary(self, results: list, model: str) -> None:
+    def print_summary(self, results: list[dict[str, Any]], model: str) -> None:
         """Einheitliche Zusammenfassungs-Ausgabe."""
         if not results:
             return
@@ -496,10 +516,12 @@ class BaseBenchmarkRunner:
 
         # Separate Probe Result from Scoring
         probe_result = next(
-            (r for r in successful if r.get("asset_id") in ("system_warmup_probe", "warmup_probe")), None
+            (r for r in successful
+         if r.get("asset_id") in ("system_warmup_probe", "warmup_probe")), None
         )
         scoring_candidates = [
-            r for r in successful if r.get("asset_id") not in ("system_warmup_probe", "warmup_probe")
+            r for r in successful
+            if r.get("asset_id") not in ("system_warmup_probe", "warmup_probe")
         ]
 
         if not scoring_candidates and not probe_result:
@@ -514,7 +536,8 @@ class BaseBenchmarkRunner:
 
         if not scored_results:
             if scoring_candidates:
-                avg_time = sum(r.get("execution_time", 0) for r in scoring_candidates) / len(scoring_candidates)
+                exec_times = [r.get("execution_time", 0) for r in scoring_candidates]
+                avg_time = sum(exec_times) / len(exec_times)
                 logger.info("\n✅ Benchmark abgeschlossen für Modul: Political Compass")
                 logger.info(f"   Modell: {model}")
                 logger.info(f"   Dauer:  {avg_time:.1f}s")
@@ -522,15 +545,18 @@ class BaseBenchmarkRunner:
                 logger.warning("\n⚠️ Nur System Probe ausgeführt.")
             return
 
-        def safe_float(val):
+        def safe_float(val: Any) -> float:
             try:
                 return float(val) if val not in (None, "") else 0.0
             except ValueError:
                 return 0.0
 
-        avg_score = sum(safe_float(r.get("total_score", 0)) for r in scored_results) / len(scored_results)
-        avg_max = sum(safe_float(r.get("max_score", 0)) for r in scored_results) / len(scored_results)
-        avg_pct = sum(safe_float(r.get("percentage", 0)) for r in scored_results) / len(scored_results)
+        scores = [safe_float(r.get("total_score", 0)) for r in scored_results]
+        avg_score = sum(scores) / len(scored_results)
+        max_scores = [safe_float(r.get("max_score", 0)) for r in scored_results]
+        avg_max = sum(max_scores) / len(scored_results)
+        pcts = [safe_float(r.get("percentage", 0)) for r in scored_results]
+        avg_pct = sum(pcts) / len(scored_results)
 
         valid_times = [safe_float(r.get("execution_time")) for r in scoring_candidates]
         avg_time = sum(valid_times) / len(valid_times) if valid_times else 0
@@ -538,7 +564,11 @@ class BaseBenchmarkRunner:
         quality = self.get_quality_badge(avg_pct)
 
         logger.info(f"\n✅ Modul abgeschlossen: {model}")
-        logger.info(f"Tests: {len(scoring_candidates)} ({len(scoring_candidates)} ✅, {len(failed)} ❌)")
+        tests_done = len(scoring_candidates)
+        failed_count = len(failed)
+        logger.info(
+            f"Tests: {tests_done} ({tests_done} ✅, {failed_count} ❌)"
+        )
         logger.info("\n📊 Durchschnitt (erfolgreiche Tests des Moduls):")
         logger.info(f"   Dein Modell: {avg_score:.2f}/{avg_max:.0f} ({avg_pct:.2f}%) {quality}")
         logger.info(f"   Avg Speed:   {avg_time:.1f}s (Execution)")
@@ -556,9 +586,12 @@ class BaseBenchmarkRunner:
         if failed:
             logger.error("\n❌ Fehlgeschlagen:")
             for r in failed:
-                logger.info(f"   {r.get('asset_name', 'Unknown')[:40]}: {r.get('error_message', 'No details')}")
+                name = r.get('asset_name', 'Unknown')[:40]
+                err = r.get('error_message', 'No details')
+                logger.info(f"   {name}: {err}")
         logger.info(f"{'=' * 60}")
-    def _print_reference_comparison(self, results: list):
+    def _print_reference_comparison(self, results: list[dict[str, Any]]) -> None:
+        """Gibt den durchschnittlichen Referenzwert und die Score-Differenz aus."""
         if not results or results[0].get("reference_score", 0) <= 0:
             return
         avg_ref = sum(r.get("reference_score", 0) for r in results) / len(results)
@@ -571,7 +604,8 @@ class BaseBenchmarkRunner:
             logger.info(f"   📉 Differenz: {avg_diff:.2f} (Gap)")
         else:
             logger.info("   ⚖️  Differenz: ±0")
-    def _print_best_worst(self, results: list):
+    def _print_best_worst(self, results: list[dict[str, Any]]) -> None:
+        """Gibt die drei besten und drei schwächsten Einzeltests aus."""
         if not results:
             return
         sorted_res = sorted(results, key=lambda x: x.get("percentage", 0), reverse=True)
@@ -586,14 +620,27 @@ class BaseBenchmarkRunner:
             q = self.get_quality_badge(r.get("percentage", 0))
             d = r.get("score_difference", 0)
             diff_str = f" ({d:+.2f})" if d != 0 else ""
-            logger.info(f"   {r.get('asset_name', 'Unknown')[:35]:<35}: {r.get('percentage', 0):.2f}% {q}{diff_str}")
-    def _print_tiered_analysis(self, results: list):
-        reasoning_res = [r for r in results if str(r.get("details", {}).get("asset_id", "")).startswith("reasoning_")]
+            logger.info(
+                f"   {r.get('asset_name', 'Unknown')[:35]:<35}: "
+                f"{r.get('percentage', 0):.2f}% {q}{diff_str}"
+            )
+    def _print_tiered_analysis(self, results: list[dict[str, Any]]) -> None:
+        """Gibt die Reasoning-Tier-1/2-Ergebnisse und den Tier-Gap aus."""
+        reasoning_res = [
+            r for r in results
+            if str(r.get("details", {}).get("asset_id", "")).startswith("reasoning_")
+        ]
         if not reasoning_res:
             return
         logger.info(f"\n🧠 REASONING ANALYSIS (Tiered)\n{'-' * 60}")
-        t1_scores = [r.get("total_score", 0) for r in reasoning_res if "Tier 1" in str(r.get("details", {}).get("tier", "Tier 1"))]
-        t2_scores = [r.get("total_score", 0) for r in reasoning_res if "Tier 2" in str(r.get("details", {}).get("tier", ""))]
+        t1_scores = [
+            r.get("total_score", 0) for r in reasoning_res
+            if "Tier 1" in str(r.get("details", {}).get("tier", "Tier 1"))
+        ]
+        t2_scores = [
+            r.get("total_score", 0) for r in reasoning_res
+            if "Tier 2" in str(r.get("details", {}).get("tier", ""))
+        ]
 
         t1_avg = sum(t1_scores) / len(t1_scores) if t1_scores else 0
         t2_avg = sum(t2_scores) / len(t2_scores) if t2_scores else 0
@@ -613,12 +660,12 @@ class BaseBenchmarkRunner:
     def execute_batch_module(
         self,
         model: str,
-        benchmark_info: dict,
+        benchmark_info: dict[str, Any],
         provider: str,
         num_runs: int = 1,
         force: bool = False,
-        existing_benchmarks: dict | None = None
-    ) -> list:
+        existing_benchmarks: dict[str, Any] | None = None
+    ) -> list[dict[str, Any]]:
         """Führt Batch-Module (z.B. Political Compass) zentral aus."""
         from utils.scoring.political_compass_handler import PoliticalCompassHandler
 
@@ -664,95 +711,37 @@ class BaseBenchmarkRunner:
         überspringen sie. Bei Probe-Fehlern (Fast-Fail-Guard) läuft der
         Benchmark weiter ohne Card-Write (nächster Lauf wiederholt die Probe).
         """
-        from benchmark_modules.political_compass.core.pc_probe_hook import (
-            ensure_pc_token_probe,
-        )
+        from utils.pc_skip_resolver import ensure_pc_token_probe
 
-        try:
-            ensure_pc_token_probe(model, provider, self.client)
-        except Exception as exc:  # pylint: disable=broad-exception-caught
-            logger.warning(
-                "[Card-First] PC-Token-Probe für '%s' übersprungen: %s — "
-                "Benchmark läuft weiter.",
-                model, exc,
-            )
+        ensure_pc_token_probe(model, provider, self.client)
 
     def _check_batch_cache_skip(
         self,
         model: str,
         batch_asset_id: str,
-        benchmark_info: dict,
-        existing_benchmarks: dict | None,
+        benchmark_info: dict[str, Any],
+        existing_benchmarks: dict[str, Any] | None,
         force: bool,
-    ) -> list | None:
+    ) -> list[dict[str, Any]] | None:
         """Prüft den 3-CSV-Cache auf einen vorhandenen Batch-Eintrag.
 
         Returns:
             Liste mit Kopie des Cache-Eintrags bei Skip (nicht-PC-Module),
             sonst None — fällt zur PC-Leaderboard-Prüfung durch.
         """
-        from utils.scoring.political_compass_handler import PoliticalCompassHandler
+        from utils.pc_skip_resolver import check_batch_cache_skip
 
-        if not existing_benchmarks or force:
-            return None
-
-        cached_res = existing_benchmarks.get((model, batch_asset_id))
-        if cached_res is None:
-            return None
-
-        if not PoliticalCompassHandler.is_political_compass(benchmark_info):
-            # Standardpfad für nicht-PC-Batch-Module: 3-CSV-Cache reicht als Beweis.
-            logger.warning(
-                f"⏩ Überspringe {benchmark_info.get('name', '')} "
-                "(Batch-Modus; Bereits im Cache vorhanden)"
-            )
-            return [cached_res.copy()]
-
-        # PC: Cache vorhanden, aber Leaderboard-Check unten ist maßgeblich.
-        logger.debug(
-            "PC-Cache-Treffer in 3-CSVs für %s — prüfe pc_leaderboard.csv als SSoT.",
-            model,
+        return check_batch_cache_skip(
+            model, batch_asset_id, benchmark_info, existing_benchmarks, force,
         )
-        return None
 
     def _check_pc_leaderboard_skip(self, model: str, benchmark_info: dict, force: bool) -> bool:
         """Prüft das autarke PC-Leaderboard (SSoT für Political-Compass-Cache)."""
-        from pathlib import Path
-        from utils.scoring.political_compass_handler import PoliticalCompassHandler
+        from utils.pc_skip_resolver import check_pc_leaderboard_skip
 
-        if force or not PoliticalCompassHandler.is_political_compass(benchmark_info):
-            return False
+        return check_pc_leaderboard_skip(model, benchmark_info, force)
 
-        # Fallback-Check: political_compass_leaderboard.csv direkt prüfen.
-        # Die Standard-CSVs können nach einem Reset leer sein, während PC-Ergebnisse
-        # autark im Leaderboard fortbestehen. Verhindert teure Re-Runs via `make political-compass`.
-        import csv as _csv
-        import re as _re_pc
-
-        pc_leaderboard = Path("benchmark_scores/political_compass_leaderboard.csv")
-        if not pc_leaderboard.exists():
-            return False
-
-        try:
-            # save_leaderboard_csv() strips OpenRouter date suffixes:
-            # -YYYYMMDD (8-digit) and -MMDD with valid months 01-12 (e.g. -0127).
-            # Version suffixes like -2503 / -2411 are intentionally NOT stripped.
-            # Normalize identically so the lookup matches dated config aliases.
-            model_normalized = _re_pc.sub(r"-\d{8}$", "", model)
-            model_normalized = _re_pc.sub(r"-(0[1-9]|1[0-2])\d{2}$", "", model_normalized)
-            with pc_leaderboard.open("r", encoding="utf-8") as _f:
-                pc_models = {row.get("model") for row in _csv.DictReader(_f)}
-            if model in pc_models or model_normalized in pc_models:
-                logger.warning(
-                    f"⏩ Überspringe {benchmark_info.get('name', '')} "
-                    f"(PC-Leaderboard; {model} bereits bewertet)"
-                )
-                return True
-        except (OSError, _csv.Error):
-            pass  # Bei Lesefehler: sicher durchlaufen und normal ausführen
-        return False
-
-    def _load_batch_test(self, benchmark_info: dict, model: str, provider: str):
+    def _load_batch_test(self, benchmark_info: dict[str, Any], model: str, provider: str) -> Any:
         """Lädt die Batch-Test-Klasse und bereitet sie vor.
 
         Returns:
@@ -804,11 +793,11 @@ class BaseBenchmarkRunner:
         self,
         test: Any,
         model: str,
-        benchmark_info: dict,
+        benchmark_info: dict[str, Any],
         provider: str,
         num_runs: int,
         batch_asset_id: str,
-    ) -> list:
+    ) -> list[dict[str, Any]]:
         """Führt Batch-Test aus, prüft Fehler-Flags und baut das std_result."""
         import json
 
@@ -820,10 +809,7 @@ class BaseBenchmarkRunner:
         # 25k-Reasoning-Fallback (Review 2026-08-29: Budget 800, Card-Kalibrierung
         # und Truncation-Re-Ask-Eskalation greiften im Batch-Pfad nie).
         _module_key = Path(str(benchmark_info.get("module_path", ""))).name
-        _raw_budget: int | None = self.validator.config.get("token_budgets", {}).get(_module_key)
-        _token_budget, _ = resolve_token_budget(
-            model, _raw_budget, self.validator.config, _module_key, provider=provider
-        )
+        _token_budget, _ = self._resolve_module_token_budget(model, _module_key, provider)
 
         # Execution
         if _token_budget is not None:
@@ -836,13 +822,19 @@ class BaseBenchmarkRunner:
 
         # Propagate quota/budget exhaustion detected inside the module
         if getattr(test, "_quota_exhausted", False):
-            logger.error("   💸 Budget-/Quota-Fehler in Batch-Modul erkannt. Provider wird als erschöpft markiert.")
+            logger.error(
+                "   💸 Budget-/Quota-Fehler in Batch-Modul erkannt. "
+                "Provider wird als erschöpft markiert."
+            )
             self.provider_quota_exhausted = True
             return []
 
         # Systematic failure: model refused/failed all questions in a block → skip this model
         if getattr(test, "_systematic_failure", False):
-            logger.error(f"   ⚠️  Systematischer API-Fehler für {model} — Modell antwortet nicht. Überspringe.")
+            logger.error(
+                f"   ⚠️  Systematischer API-Fehler für {model} — "
+                "Modell antwortet nicht. Überspringe."
+            )
             return []
 
         try:
@@ -859,12 +851,12 @@ class BaseBenchmarkRunner:
         self,
         test: Any,
         result_wrapper: Any,
-        report: dict,
+        report: dict[str, Any],
         model: str,
-        benchmark_info: dict,
+        benchmark_info: dict[str, Any],
         provider: str,
         batch_asset_id: str,
-    ) -> list:
+    ) -> list[dict[str, Any]]:
         """Verarbeitet Report (PC-Handler oder Summary-Log) und baut std_result."""
         from datetime import datetime
         from utils.model_utils import get_model_version

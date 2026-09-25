@@ -1,6 +1,23 @@
 # Progress
 Letzte Releases + aktueller Stand.
 
+### v5.4.0 (2026-09-25) — Provider-Härtung, Eskalationsleiter, Refusal-Retry, OpenRouter-Pinning & Code-Review [DONE]
+
+- [x] Sessions 106–122 in v5.4.0 konsolidiert. CHANGELOG-Eintrag, Version-Synchro 7/7, Doku-Stempel 18/18 auf v5.4.0.
+
+### 2026-09-25 (Sessions 121–122) — Code-Review & Bugfix-Serie (61 Befunde, 7 Sprints) [DONE]
+
+- [x] Umfassendes strukturiertes Code-Review gegen AGENTS.md-Regeln (62k-Wort-Audit-Protokoll: `docs/audits/2026-09-25_code-review.md` — 2 Critical, 11 High, 27 Medium, 21 Low).
+- [x] Sprint 1: Provider-Bugs — Anthropic `_extract_reasoning_tokens` dict-aware, Groq Streaming `stream_options.include_usage` + `choices`-Guard, OpenAI Exception-Typen, Probe-Client `close()`.
+- [x] Sprint 2: Magic Numbers → Config — `reasoning_model_boost`, `rate_limits.yaml` (max_retries + backoff).
+- [x] Sprint 3: SSoT-Cleanup — 10× `_safe_name()`/`_find_card()`/`CARD_DIR` Inline-Duplikate durch SSoT-Import ersetzt (lifecycle_hooks, delegate_runner, base_test, audit_logger, recompute_pc_v31).
+- [x] Sprint 4: Provider `close()`-Overrides — alle 7 kommerziellen Connectoren (anthropic, openai, groq, mistral, google, xai, cohere) → `self._http.close()`.
+- [x] Sprint 5: CC-Refactoring + Architektur — `execute()` CC 34→11 (3 Extraktionen: `_resolve_pc_calibration_state`, `_run_pc_benchmark_phase`, `_compute_pc_results`), `# noqa: C901` eliminiert; `pc_skip_resolver.py` (3 PC-Skip-Funktionen), `skip_resolver.py` (`run_module_or_abort` — 45 Zeilen Duplikat aus 3 Batch-Loops dedupliziert).
+- [x] Sprint 6: Code-Qualität — ERR-01..04 Exception-Handling (Exception-Tuple, 10× except-pass→logger, DEBUG→WARNING), CQ-01..05 25× line-too-long, CQ-11 Budget-Injection-Duplizierung (`_resolve_module_token_budget`), CQ-17 3 Docstrings, CQ-09..10 15 Type-Hints, PTD (cohere `@staticmethod`, similarity simplify, audit_model_cards indentation).
+- [x] Sprint 7: Folge-Audit — 10 Connectors Cold-Import ✅, Cyclic-Imports analysiert, Judge/Scoring auditiert, Dependencies aktuell, `_maybe_refusal_retry` too-many-positional-args behoben (keyword-only).
+- [x] Suite: **1917 passed, 17 skipped, 0 failed** · Lint **9.99/10**.
+- [x] Versionssync + Doku-Prüfung: README/REF_TODO aktuell (v5.3.0), PROJECT_STATUS.md synchronisiert (Test-Zahlen 1753→1917, Last Updated 25.09., Sessions 105→122, Known Limitations aktualisiert).
+
 ### 2026-09-25 (Session 120) — Review-Pipeline + Flaky-Fix + Web-Export-Verify-Gate [DONE]
 
 - [x] Review-Pipeline: Orphan-Warnung respektiert Card-SSoT (10 False Positives für kept_overrides-Legacy-Modelle — nichts gelöscht), Fehlalarm bei Skip-Fällen beseitigt; `make reviews-all` verifiziert (456 Skips, 0 LLM-Calls, 0 Orphan-Warnungen).

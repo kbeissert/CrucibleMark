@@ -29,7 +29,6 @@ import argparse
 import copy
 import json
 import math
-import re
 import sys
 from datetime import datetime, UTC
 from pathlib import Path
@@ -51,14 +50,10 @@ from benchmark_modules.political_compass.test import (  # noqa: E402
 from utils.scoring.political_compass_handler import (  # noqa: E402
     PoliticalCompassHandler,
 )
+from utils.model_utils import _safe_name  # noqa: E402
 
 TEMP_DIR = ROOT_DIR / "outputs" / "temp"
 RUNS_DIR = ROOT_DIR / "outputs" / "runs"
-
-
-def _safe_name(model: str) -> str:
-    """Checkpoint-/Results-Dateinamen-Konvention (wie CheckpointManager)."""
-    return re.sub(r"[^a-zA-Z0-9]", "_", model)
 
 
 def _load_json(path: Path) -> dict[str, Any]:

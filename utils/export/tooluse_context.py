@@ -9,6 +9,9 @@ import sys
 from pathlib import Path
 from typing import Any
 import contextlib
+import logging
+
+logger = logging.getLogger(__name__)
 
 # SSOT: Spaltennamen aus benchmark_modules/tooluse/core/constants.py
 _FIELD_P1 = "p1_score"
@@ -70,8 +73,8 @@ def get_tooluse_leaderboard_row(model_id: str) -> dict[str, str]:
             for row in csv.DictReader(fh):
                 if resolve_canonical_model_id(row.get("model", "")) == canonical:
                     return dict(row)
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.debug("ToolUse-Kontext: CSV-Lesefehler für %s: %s", csv_path, exc)
     return {}
 
 
@@ -82,7 +85,8 @@ def get_all_tooluse_model_ids() -> list[str]:
     try:
         with csv_path.open(encoding="utf-8") as fh:
             return [row["model"] for row in csv.DictReader(fh) if row.get("model")]
-    except Exception:
+    except Exception as exc:
+        logger.debug("ToolUse-Kontext: CSV-Lesefehler (Modell-IDs): %s", exc)
         return []
 
 
@@ -123,8 +127,8 @@ def _load_asset_details(model_id: str) -> list[dict[str, Any]]:
                         "asset_id": aid,
                         "data": contribs,
                     })
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("ToolUse-Kontext: CSV-Detail-Lesefehler: %s", exc)
     return results
 
 
@@ -221,7 +225,8 @@ def _compute_fleet_avg(exclude_model_id: str | None = None) -> float | None:
                 v = _safe_float(row.get("combined_score", ""))
                 if v is not None and v > 0:
                     scores.append(v)
-    except Exception:
+    except Exception as exc:
+        logger.debug("ToolUse-Kontext: Score-Berechnung fehlgeschlagen: %s", exc)
         return None
     return sum(scores) / len(scores) if scores else None
 

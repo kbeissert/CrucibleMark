@@ -1,6 +1,6 @@
 # Benchmark-Module im Überblick
 
-**Stand: v5.1.0 · 2026-07-14**
+**Stand: v5.4.0 · 2026-09-25**
 
 CrucibleMark bewertet KI-Modelle nicht auf theoretisches Faktenwissen, sondern auf ihre praktische Einsetzbarkeit im Produktionsalltag. Jedes Benchmark-Modul simuliert ein spezifisches Real-World-Szenario, mit dem Produktteams, Entwickler und Redakteure täglich konfrontiert sind.
 

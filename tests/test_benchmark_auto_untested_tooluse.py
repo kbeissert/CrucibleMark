@@ -21,6 +21,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from scripts.core import benchmark_auto  # noqa: E402
+from utils import model_card_io  # noqa: E402
 
 
 def _write_card(card_dir: Path, model_id: str, supports_tool_use) -> Path:
@@ -282,7 +283,7 @@ class TestPhaseBRobustnessWarnings(unittest.TestCase):
         (cards_dir / "model_a.json").write_text("{ invalid", encoding="utf-8")
 
         with (
-            patch.object(benchmark_auto, "CARD_DIR", cards_dir),
+            patch.object(model_card_io, "CARD_DIR", cards_dir),
             self.assertLogs("auto_benchmark", level="WARNING") as logs,
         ):
             cards = benchmark_auto._load_cards_for_models(["model_a", "model_missing"])

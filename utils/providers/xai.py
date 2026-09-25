@@ -56,6 +56,11 @@ class XAIClient(BaseProviderClient):
                 timeout=timeout_config
             )
         return self._client
+    def close(self) -> None:
+        """Schließt den gecachten XAI-Client (OpenAI-SDK, TCP FIN an die API)."""
+        client = getattr(self, "_client", None)
+        if client is not None:
+            client.close()
     def is_accessible(self) -> bool:
         """Prüft Zugang zu XAI API."""
         try:

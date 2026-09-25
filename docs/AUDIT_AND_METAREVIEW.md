@@ -1,6 +1,6 @@
 # CrucibleMark: Audit-Logs & Meta-Review Workflow
 
-**Stand: v5.1.0 · 2026-07-14**
+**Stand: v5.4.0 · 2026-09-25**
 
 **Zielgruppe:** Alle, die den Audit-Workflow und das Meta-Review-System verstehen wollen.
 **Inhalt:** Audit-Log-Struktur, Meta-Review-Generierung, Web-Export-Sanitierung, Model/Vendor Cards, Sovereign Risk, Anti-Halluzinations-Schutz

@@ -18,6 +18,8 @@ import logging
 import sys
 from typing import Any
 
+from utils.model_card_io import CARD_DIR
+
 import pandas as pd
 
 # Import constants and config logic
@@ -56,7 +58,7 @@ def _build_card_lookups() -> tuple[dict[str, str], dict[str, str]]:
     import re as _re_card
     id_lookup: dict[str, str] = {}
     display_lookup: dict[str, str] = {}
-    card_dir = ROOT_DIR / "benchmark_scores" / "model_cards"
+    card_dir = CARD_DIR
     if not card_dir.exists():
         return id_lookup, display_lookup
 
@@ -477,7 +479,7 @@ def _apply_not_capable_card_check(
     if not (not_capable_card_key and _find_card is not None):
         return result
 
-    card_dir = ROOT_DIR / "benchmark_scores" / "model_cards"
+    card_dir = CARD_DIR
     fallback_mask = result[label] == fallback
     if not fallback_mask.any():
         return result

@@ -183,7 +183,7 @@ def test_repair_skips_runs_non_avg(tmp_path):
 
 
 def test_execute_batch_module_fix_in_source():
-    """Statischer Regression-Test: sichert den Fix in utils/base_runner.py ab.
+    """Statischer Regression-Test: sichert den Fix in utils/pc_skip_resolver.py ab.
 
     Hintergrund: Vor 2026-06-03 führte der voreilige Cache-Hit auf
     `(model, batch_asset_id)` zum early-return, bevor PoliticalCompassHandler
@@ -194,9 +194,13 @@ def test_execute_batch_module_fix_in_source():
     Bedingung vorhanden ist. Mock-basiertes Testen von execute_batch_module
     ist zu komplex (viele interne Mocks nötig); der statische Test ist die
     robustere Absicherung gegen versehentliche Regressions.
+
+    Seit Sprint 5/6 (2026-09-25): Die PC-Skip-Logik ist nach
+    ``utils/pc_skip_resolver.py`` ausgelagert (MED-06), die Source-Checks
+    prüfen jetzt das neue Modul.
     """
-    base_runner_path = Path(__file__).parent.parent / "utils" / "base_runner.py"
-    source = base_runner_path.read_text(encoding="utf-8")
+    pc_resolver_path = Path(__file__).parent.parent / "utils" / "pc_skip_resolver.py"
+    source = pc_resolver_path.read_text(encoding="utf-8")
 
     # Der Fix: PC-Cache-Hit darf NICHT zum early-return führen
     assert "PoliticalCompassHandler.is_political_compass(benchmark_info)" in source, (
@@ -207,5 +211,5 @@ def test_execute_batch_module_fix_in_source():
     assert (
         'if cached_res:\n                print(f"⏩ Überspringe' not in source
     ), (
-        "Alter voreiliger Cache-Hit-Code gefunden — bitte execute_batch_module prüfen!"
+        "Alter voreiliger Cache-Hit-Code gefunden — bitte pc_skip_resolver.py prüfen!"
     )

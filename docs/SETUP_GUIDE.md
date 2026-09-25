@@ -1,6 +1,6 @@
 # Konfiguration und Setup
 
-**Stand: v5.1.0 · 2026-07-14**
+**Stand: v5.4.0 · 2026-09-25**
 
 **Zielgruppe:** Alle, die CrucibleMark erstmalig einrichten oder die zentrale Konfiguration anpassen.
 **Inhalt:** Hardware-Profil, Provider und API-Keys, LLM-Judge-Konfiguration, Modul-Auswahl.

@@ -79,7 +79,7 @@ def _check_required_fields(data: dict, add) -> None:
         if value is None and spec.get("default") == "TODO":
             continue
         if expected_type and expected_type != "null" and not _check_type(value, expected_type):
-                add("CRITICAL", "WRONG_TYPE",
+            add("CRITICAL", "WRONG_TYPE",
                     f"Feld '{field_name}' hat falschen Typ: erwartet {expected_type}, "
                     f"erhalten {type(value).__name__}",
                     field_name)

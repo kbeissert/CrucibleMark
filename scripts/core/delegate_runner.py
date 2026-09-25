@@ -23,7 +23,7 @@ from pathlib import Path
 from typing import Any
 
 # utils ohne scripts-Abhängigkeit → top-level Import ok.
-from utils.model_utils import normalize_model_id  # noqa: E402
+from utils.model_utils import _safe_name, normalize_model_id  # noqa: E402
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +59,7 @@ def run_delegate_for_model(
     extra = list(module.get("delegate_extra_args", []) or [])
     cmd = [sys.executable, str(script)] + extra + ["--model", model]
 
-    safe_model = normalize_model_id(model).replace("/", "_").replace(":", "_")
+    safe_model = _safe_name(normalize_model_id(model))
     summary_dir = ROOT_DIR / "outputs" / "runs" / "dispatch_summaries"
     summary_dir.mkdir(parents=True, exist_ok=True)
     summary_path = summary_dir / f"{module.get('key', 'module')}_{safe_model}.json"
@@ -117,7 +117,7 @@ def run_score_delegate_for_model(
         module_key,
     ]
 
-    safe_model = normalize_model_id(model).replace("/", "_").replace(":", "_")
+    safe_model = _safe_name(normalize_model_id(model))
     summary_dir = ROOT_DIR / "outputs" / "runs" / "dispatch_summaries"
     summary_dir.mkdir(parents=True, exist_ok=True)
     summary_path = summary_dir / f"score_{module_key}_{safe_model}.json"

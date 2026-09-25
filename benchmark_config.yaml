@@ -129,6 +129,9 @@ defaults:
     - 4096
     - 2048
     - 1024
+  reasoning_model_boost:
+    num_predict: 8192
+    num_ctx: 8192
 
 # Ausgabepfade für CSV-Ergebnisse, Leaderboard und Web-Export
 output:

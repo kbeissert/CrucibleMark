@@ -1,6 +1,6 @@
 # Scoring-Methodik
 
-**Stand: v5.1.0 · 2026-07-14**
+**Stand: v5.4.0 · 2026-09-25**
 
 **Zielgruppe:** Entwickler und technisch versierte Nutzer, die verstehen wollen, wie CrucibleMark Scores berechnet und Modelle bewertet.
 **Inhalt:** Hybrid-Scoring-Architektur (Regex, Embeddings, LLM Judge), Modulgewichtung und Total Score, Leaderboard-Tiers, Token-Budget-System, Hard Constraints, LLM-Judge-Pipeline.

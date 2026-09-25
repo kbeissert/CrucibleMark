@@ -1,6 +1,6 @@
 # Scoring-Methodik (Web-Variante)
 
-**Stand: v5.1.0 · 2026-07-14**
+**Stand: v5.4.0 · 2026-09-25**
 
 > Diese Datei beschreibt die Scoring-Logik in konzentrierter Form für Endnutzer des Web-Frontends. Die technische Variante mit Implementierungsdetails steht in [SCORING_METHODOLOGY.md](SCORING_METHODOLOGY.md).
 

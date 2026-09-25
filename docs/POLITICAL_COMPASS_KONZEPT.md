@@ -1,6 +1,6 @@
 # Das Political-Compass-Modul: Konzept und Methodik
 
-**Stand: v5.1.5 · 2026-08-30**
+**Stand: v5.4.0 · 2026-09-25**
 
 ## 1. Die Intransparenz moderner Sprachmodelle
 

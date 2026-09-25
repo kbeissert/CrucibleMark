@@ -269,7 +269,7 @@ def read_pc_calibration(model_id: str) -> dict | None:
         if isinstance(cal, dict) and cal.get("classification"):
             return cal
     except (json.JSONDecodeError, OSError) as exc:
-        logger.debug("Card-Lesefehler (pc_token_calibration) für %s: %s", card_path, exc)
+        logger.warning("Card-Lesefehler (pc_token_calibration) für %s: %s", card_path, exc)
     return None
 
 
@@ -308,7 +308,7 @@ def read_pc_profile_flag(model_id: str) -> bool:
         data = json.loads(card_path.read_text(encoding="utf-8"))
         return bool(data.get("pc_profile_forced_instruct"))
     except (json.JSONDecodeError, OSError) as exc:
-        logger.debug("Card-Lesefehler (pc_profile_forced_instruct) für %s: %s", card_path, exc)
+        logger.warning("Card-Lesefehler (pc_profile_forced_instruct) für %s: %s", card_path, exc)
         return False
 
 
@@ -333,7 +333,7 @@ def read_cot_calibration(model_id: str) -> dict | None:
         if isinstance(cal, dict) and cal.get("calibrated_budget"):
             return cal
     except (json.JSONDecodeError, OSError) as exc:
-        logger.debug("Card-Lesefehler (cot_budget_calibration) für %s: %s", card_path, exc)
+        logger.warning("Card-Lesefehler (cot_budget_calibration) für %s: %s", card_path, exc)
     return None
 
 

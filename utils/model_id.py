@@ -67,7 +67,8 @@ def resolve_canonical_model_id(
     ``qwen3.5-35b-a3b-q8``        → ``qwen3_5-35b-a3b-q8`` (via Card-Lookup)
     ``qwen3_5-35b-a3b-q8``        → ``qwen3_5-35b-a3b-q8`` (Card direkt gefunden)
     ``gpt-5.4-nano``              → ``gpt-5.4-nano``          (via Card; card.model_id=dot-form)
-    ``gpt-5_4-nano``              → ``gpt-5.4-nano``          (via Card; _safe_name findet gpt-5_4-nano.json)
+    ``gpt-5_4-nano``              → ``gpt-5.4-nano``          (via Card; _safe_name findet
+                                                                     gpt-5_4-nano.json)
     ``hf.co/x/y:Q4_K_M``          → ``y_Q4_K_M``              (kein Card → _safe_name)
     ``claude-haiku-4-5``          → ``claude-haiku-4-5-20251001`` (glob fallback)
     ``unbekanntes-modell``        → ``unbekanntes-modell``    (kein Card → _safe_name, no special chars)
@@ -125,7 +126,9 @@ def resolve_canonical_model_id(
             # normalisiert; Profil-IDs (-thinking) weichen ab und bleiben
             # unberuehrt (Shared-Card-Semantik bleibt erhalten).
             card_model = data.get("model_id") if isinstance(data, dict) else None
-            if isinstance(card_model, str) and card_model and card_model.casefold() == str(base).casefold():
+            if isinstance(card_model, str) and card_model and (
+                card_model.casefold() == str(base).casefold()
+            ):
                 return card_model
             return _safe_name(base)
 
@@ -134,7 +137,8 @@ def resolve_canonical_model_id(
             canonical = data.get("model_id")
             if isinstance(canonical, str) and canonical:
                 return canonical
-    # Fallback: _safe_name anwenden (systemweite Konvention: Punkte/Doppelpunkte/Slashes → Underscores).
+    # Fallback: _safe_name anwenden (systemweite Konvention: Punkte/Doppelpunkte/
+    # Slashes → Underscores).
     # Modelle MIT Card nutzen card.model_id (Pfad 3), das auch Punkte enthalten kann
     # (z.B. gpt-5.4-nano, wenn die Card das explizit so definiert).
     # Der Fallback betrifft nur Modelle ohne Card — dort ist die Underscore-Form
@@ -265,7 +269,10 @@ def _category_from_heuristics(
 
 
 def get_model_category(
-    model_name: str, source_file: str = "local", size_gb: float | None = None, provider: str | None = None
+    model_name: str,
+    source_file: str = "local",
+    size_gb: float | None = None,
+    provider: str | None = None,
 ) -> str:
     """
     Central SSOT for model categorization.

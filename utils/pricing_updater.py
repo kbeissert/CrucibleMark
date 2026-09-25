@@ -234,7 +234,7 @@ class PricingUpdater:
         try:
             with urlopen(url, timeout=TIMEOUT_HTTP_FETCH) as resp:
                 raw: dict = json.loads(resp.read().decode("utf-8"))
-        except (URLError, OSError, Exception) as e:
+        except (URLError, OSError) as e:
             logger.warning("LiteLLM-Preisfetch fehlgeschlagen: %s", e)
             return False
 

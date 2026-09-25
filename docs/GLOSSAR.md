@@ -1,6 +1,6 @@
 # Glossar
 
-**Stand: v5.1.0 · 2026-07-14**
+**Stand: v5.4.0 · 2026-09-25**
 
 Dieses Glossar sammelt projektinterne Begriffe, die in der Dokumentation wiederkehren. Es dient als Anker für Leser, die neu in das Thema einsteigen, und als Referenz für alle, die gelegentlich die exakte Bedeutung nachschlagen wollen.
 

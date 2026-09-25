@@ -92,9 +92,11 @@ def test_sdk_message_delta_usage_input_tokens_is_none():
 # ---------------------------------------------------------------------------
 
 def test_stream_usage_merged_after_message_delta():
-    """start(950/3) + delta(435) → {input: 950, output: 435} statt start-Stand."""
+    """start(950/3) + delta(435) → {input: 950, output: 435, output_tokens_details: None}."""
     state = _run_events([_start_event(), _delta_event(output_tokens=435)])
-    assert state["stream_usage"] == {"input_tokens": 950, "output_tokens": 435}
+    assert state["stream_usage"] == {
+        "input_tokens": 950, "output_tokens": 435, "output_tokens_details": None,
+    }
     assert state["stop_reason"] == "end_turn"
 
 
@@ -109,7 +111,9 @@ def test_cache_read_merged_into_input():
         _start_event(input_tokens=200, cache_read=750),
         _delta_event(output_tokens=435),
     ])
-    assert state["stream_usage"] == {"input_tokens": 950, "output_tokens": 435}
+    assert state["stream_usage"] == {
+        "input_tokens": 950, "output_tokens": 435, "output_tokens_details": None,
+    }
 
 
 def test_delta_without_usage_keeps_start_usage():
@@ -127,6 +131,31 @@ def test_reasoning_extraction_none_for_merged_dict():
     """_extract_reasoning_tokens crasht nicht auf dem Merge-Dict (None)."""
     state = _run_events([_start_event(), _delta_event()])
     assert BaseProviderClient._extract_reasoning_tokens(state["stream_usage"]) is None
+
+
+def test_reasoning_extraction_from_dict_with_output_tokens_details():
+    """_extract_reasoning_tokens findet reasoning_tokens im Merge-Dict (CRIT-01 Fix)."""
+    details = SimpleNamespace(reasoning_tokens=2048)
+    stream_usage = {
+        "input_tokens": 950,
+        "output_tokens": 435,
+        "output_tokens_details": details,
+    }
+    assert BaseProviderClient._extract_reasoning_tokens(stream_usage) == 2048
+
+
+def test_reasoning_extraction_from_dict_without_details():
+    """Merge-Dict ohne output_tokens_details → None (kein Crash)."""
+    stream_usage = {"input_tokens": 950, "output_tokens": 435}
+    assert BaseProviderClient._extract_reasoning_tokens(stream_usage) is None
+
+
+def test_reasoning_extraction_from_dict_top_level():
+    """Merge-Dict mit reasoning_tokens auf Top-Level (Pfad 3)."""
+    stream_usage = {
+        "input_tokens": 950, "output_tokens": 435, "reasoning_tokens": 1024,
+    }
+    assert BaseProviderClient._extract_reasoning_tokens(stream_usage) == 1024
 
 
 def test_extract_usage_tokens_none_input_safe():

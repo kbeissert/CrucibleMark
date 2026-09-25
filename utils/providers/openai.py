@@ -247,21 +247,40 @@ class OpenAIClient(BaseProviderClient):
                 api_key=api_key, timeout=timeout_config, max_retries=0,
             )
         return self._client
+    def close(self) -> None:
+        """Schließt den gecachten OpenAI-Client (TCP FIN an die API)."""
+        client = getattr(self, "_client", None)
+        if client is not None:
+            client.close()
     def is_accessible(self) -> bool:
         """Prüft Zugang zu OpenAI API (inkl. Quota Check)."""
         try:
+            from openai import AuthenticationError, PermissionDeniedError, NotFoundError
             # list() reicht nicht für Quota Check (gibt oft success bei leerem Quota).
             # Daher führen wir eine minimale Generierung durch, um Billing-Status zu prüfen.
             # Eigener Client mit max_retries=0 um "Retrying..." Logs im Terminal zu vermeiden
             check_client = OpenAI(api_key=self.client.api_key, max_retries=0)
-            check_client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[{"role": "user", "content": "Hi"}],
-                max_tokens=1,
-            )
+            try:
+                check_client.chat.completions.create(
+                    model="gpt-3.5-turbo",
+                    messages=[{"role": "user", "content": "Hi"}],
+                    max_tokens=1,
+                )
+                return True
+            finally:
+                check_client.close()
+        except AuthenticationError as e:
+            logger.warning("OpenAI Access Check: Authentifizierung fehlgeschlagen: %s", e)
+            return False
+        except PermissionDeniedError as e:
+            logger.warning("OpenAI Access Check: Zugriff verweigert (Budget/Permissions): %s", e)
+            return False
+        except NotFoundError as e:
+            # Testmodell nicht gefunden, aber API selbst ist erreichbar
+            logger.warning("OpenAI Access Check: Testmodell nicht gefunden, API aber erreichbar: %s", e)
             return True
         except Exception as e:
-            # Fängt InsufficientQuotaError, AuthenticationError, etc.
+            # Fängt InsufficientQuotaError, RateLimitError, etc.
             logger.debug("OpenAI Access Check Failed: %s", e)
             return False
     def query(

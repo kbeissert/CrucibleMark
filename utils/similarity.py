@@ -13,10 +13,7 @@ import numpy as np  # pylint: disable=import-error
 try:
     import importlib.util
 
-    if importlib.util.find_spec("sentence_transformers") is not None:
-        HAS_TRANSFORMERS = True
-    else:
-        HAS_TRANSFORMERS = False
+    HAS_TRANSFORMERS = importlib.util.find_spec("sentence_transformers") is not None
 except ImportError:
     HAS_TRANSFORMERS = False
 

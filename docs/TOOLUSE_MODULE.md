@@ -1,6 +1,6 @@
 # ToolUse-Modul: Technische Referenz
 
-**Stand: v5.1.0 · 2026-07-14**
+**Stand: v5.4.0 · 2026-09-25**
 
 > **Modul-Typ:** Diagnosemodul — kein Einfluss auf den Total Score
 > **Voraussetzung:** CrucibleMark MCP Server läuft auf `localhost:8765`

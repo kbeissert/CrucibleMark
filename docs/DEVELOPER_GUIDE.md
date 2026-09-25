@@ -1,6 +1,6 @@
 # Entwicklerhandbuch: CrucibleMark erweitern
 
-**Stand: v5.1.0 · 2026-07-14**
+**Stand: v5.4.0 · 2026-09-25**
 
 **Zielgruppe:** Entwickler, die neue Test-Module erstellen oder das Scoring-System erweitern wollen.
 
@@ -1697,5 +1697,5 @@ python run_benchmark.py --debug-responses
 
 ---
 
-**Dokumenten-Version:** 5.3.0 (Ueberarbeitung 2026-09)\
+**Dokumenten-Version:** 5.4.0 (Ueberarbeitung 2026-09)\
 **Kompatibel mit:** CrucibleMark v3.8.2+

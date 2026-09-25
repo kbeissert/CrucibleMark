@@ -1,6 +1,6 @@
 # CrucibleMark: System-Architektur
 
-**Stand: v5.1.0 · 2026-07-14**
+**Stand: v5.4.0 · 2026-09-25**
 
 **Zielgruppe:** Engineers, die den Framework-Core verstehen oder erweitern wollen.
 
@@ -962,5 +962,5 @@ class LLMClientFactory:
 
 ---
 
-**Dokumenten-Version:** 5.3.0 (Ueberarbeitung 2026-09)\
+**Dokumenten-Version:** 5.4.0 (Ueberarbeitung 2026-09)\
 **Kompatibel mit:** CrucibleMark v3.8.0+
