@@ -1265,11 +1265,17 @@ def _warn_if_orphaned_dir(
     """Warnt, wenn das Audit-Dir zu keiner konfigurierten Modell-ID passt.
 
     Ueberspringt date-suffixed Stubs und Faelle mit Heritage-Fund.
+
+    Card-SSoT-Kriterium: Existiert eine Card unter dem Dir-Namen, ist das
+    Modell bewusst publiziert (aus provider_config zurückgezogen, aber via
+    kept_overrides im Web-Export gehalten) — kein Duplikat, kein Warning.
     """
     if not configured_safe_ids or subdir_name in configured_safe_ids:
         return
     if effective_model_id != subdir_name:
         return  # Heritage-Fund — alter Name intentional
+    if _find_card(subdir_name).exists():
+        return  # Card existiert — zurückgezogenes, aber publiziertes Modell
     if re.search(r"-\d{8}$|-\d{6}$", subdir_name):
         return  # date-suffix stub ist kein Duplikat
     print(
@@ -1419,19 +1425,29 @@ def _run_audit_reviews(
     blacklist = _load_webexport_blacklist() if args.auto else set()
     configured_safe_ids = _collect_configured_model_ids()
 
-    found_models = False
+    # matched_dirs zählt Verzeichnisse, die zum Scope passen (ohne --model:
+    # alle validen Audit-Dirs). Nur wenn NICHTS matcht, warnt der Abschluss —
+    # Skip-Fälle (Blacklist, Review aktuell) sind fundige Ergebnisse, kein Warngrund.
+    matched_dirs = 0
     for subdir in audit_base_dir.iterdir():
         if not _is_valid_audit_dir(subdir):
             continue
-        skipped = _process_audit_subdir(
+        if safe_target_model and _safe_name(subdir.name) != safe_target_model:
+            continue
+        matched_dirs += 1
+        _process_audit_subdir(
             subdir, args, client, provider, model_id, max_tokens, csv_data,
             effective_type, safe_target_model, blacklist, configured_safe_ids,
         )
-        if not skipped:
-            found_models = True
 
-    if not found_models:
-        print("⚠️ Keine Audit-Logs für das spezifizierte Modell gefunden.")
+    if matched_dirs == 0:
+        if safe_target_model:
+            print(
+                f"⚠️ Keine Audit-Logs für das spezifizierte Modell "
+                f"'{args.model}' gefunden."
+            )
+        else:
+            print("⚠️ Keine gültigen Audit-Log-Verzeichnisse in outputs/audit_logs/ gefunden.")
 
 
 def main() -> None:

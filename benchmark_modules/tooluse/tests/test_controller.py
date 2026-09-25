@@ -6,9 +6,27 @@ import sys
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 _PROJECT_ROOT = Path(__file__).resolve().parents[3]
 if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
+
+
+@pytest.fixture(autouse=True)
+def _fast_semantic_similarity(monkeypatch):
+    """MiniLM-Model-Load (~4-8 s) in Unit-Tests vermeiden — deterministische
+    Stub-Similarity statt echtem sentence-transformers-Modell.
+
+    Die Scoring-Assertions dieser Suite sind strukturell (Feld-Existenz,
+    Typen, Flags), nicht wertebasiert — der Stub ändert kein erwartetes
+    Ergebnis. Der Halluzinations-Test short-circuited vor dem Semantic-Scoring
+    (Forbidden-Pattern-Hard-Fail) und ist davon unberührt.
+    """
+    monkeypatch.setattr(
+        "utils.similarity.SemanticSimilarity.calculate_similarity",
+        lambda text1, text2: 0.85,
+    )
 
 
 from benchmark_modules.tooluse.core.constants import (  # noqa: E402

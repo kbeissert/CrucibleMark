@@ -315,12 +315,29 @@ def test_model_card_is_none_when_card_missing(sample_row) -> None:
 # Test 6: Card-Lookup hat sich nicht verschoben (Regression-Schutz)
 # ---------------------------------------------------------------------------
 
+def _resolve_source_card(slug: str) -> Path | None:
+    """Quell-Card zum Export-Slug — dieselbe SSoT-Auflösung wie der Exporter
+    (`_find_card`, entry_builders.py). Keine Parallel-Logik: exakt-zuerst-Glob
+    zog für Suffix-Modelle die falsche Card (Fall gemma-4-ara: plain-Card mit
+    belegten Probe-Feldern, während der Export die SPRK-Card nutzt)."""
+    from utils.model_utils import _find_card
+    path = _find_card(slug, card_dir=ROOT / "benchmark_scores" / "model_cards")
+    return path if path.exists() else None
+
+
 def test_real_export_data_json_contains_all_required_fields() -> None:
     """Integrations-Check: nach make web_export enthaelt jede data.json alle
-    8 neu hinzugefuegten Pflichtfelder im model_card sub-dict.
+    Pflichtfelder im model_card sub-dict, die in der Quell-Card belegt sind.
+
+    Card-bewusste Semantik (2026-09-25): `_strip_none()` entfernt null-Werte
+    beim Export (Templates pruefen truthy) — Pflicht sind daher nur Felder,
+    die in der Card NICHT null sind. Null-Felder (z.B. thinking_probe_* ohne
+    gelaufene Probe, supports_tool_use ungetestet) fehlen im Export per
+    Design. Der urspruengliche Audit-Fall (Exporter verwirft belegte Felder)
+    bleibt vollstaendig abgedeckt.
 
     Voraussetzung: outputs/web_export_check/raw/models/ ist aus einem frischen
-    Export (vom Test-Setup oder manuell via `make web-export`).
+    Export (via `make web-export-verify`).
     """
     base = ROOT / "outputs" / "web_export_check" / "raw" / "models"
     if not base.exists():
@@ -337,7 +354,12 @@ def test_real_export_data_json_contains_all_required_fields() -> None:
         sub = data.get("leaderboard", {}).get("model_card")
         if sub is None:
             continue  # Modelle ohne Card sind erlaubt (z.B. gpt-5_4)
-        missing = required - set(sub.keys())
+        card_path = _resolve_source_card(df.parent.name)
+        if card_path is None:
+            continue  # Keine 1:1-Card aufloesbar — Mapping decken Unit-Tests ab
+        card = json.loads(card_path.read_text(encoding="utf-8"))
+        expected = {f for f in required if card.get(f) is not None}
+        missing = expected - set(sub.keys())
         if missing:
             failed.append((df.parent.name, missing))
 

@@ -33,6 +33,20 @@ EXPECTED_SCORE_KEYS: set[str] = set(
 )
 
 
+def _resolve_haiku_export_dir() -> Path:
+    """Löst das Haiku-Modelldir im Web-Export dynamisch auf (Slug mit Datumssuffix).
+
+    Der Export-Slug ist die volle Modell-ID (claude-haiku-4-5-20251001) — ein
+    hartkodierter 'claude-haiku-4-5'-Pfad lief nach dem ID-Rename ins Leere und
+    ließ die Coverage-Tests dauerhaft skippen, obwohl der Export existierte.
+    """
+    m_dir = ROOT.parent / "CrucibleMark-Web" / "src" / "_data" / "raw" / "models"
+    candidates = sorted(m_dir.glob("claude-haiku-4-5*/data.json"))
+    if not candidates:
+        pytest.skip("Web-Export noch nicht erstellt")
+    return candidates[0].parent
+
+
 class TestLeaderboardScoreMapping:
     """Prueft, dass alle 9 CSV-Modul-Spalten in data.json.leaderboard.scores landen."""
 
@@ -63,10 +77,8 @@ class TestLeaderboardScoreMapping:
 
     def test_all_scores_keys_present_in_export(self):
         """data.json.leaderboard.scores muss alle 9 Keys enthalten."""
-        m_dir = ROOT.parent / "CrucibleMark-Web" / "src" / "_data" / "raw" / "models"
-        if not (m_dir / "claude-haiku-4-5" / "data.json").exists():
-            pytest.skip("Web-Export noch nicht erstellt")
-        data = json.loads((m_dir / "claude-haiku-4-5" / "data.json").read_text())
+        haiku_dir = _resolve_haiku_export_dir()
+        data = json.loads((haiku_dir / "data.json").read_text())
         scores = data["leaderboard"]["scores"]
         missing = EXPECTED_SCORE_KEYS - set(scores.keys())
         assert not missing, f"data.json.leaderboard.scores fehlt Keys: {missing}"
@@ -145,10 +157,8 @@ class TestDataJsonStructure:
 
     def test_data_json_has_all_top_level_sections(self):
         """data.json muss alle 4 Top-Level-Sections haben."""
-        m_dir = ROOT.parent / "CrucibleMark-Web" / "src" / "_data" / "raw" / "models"
-        if not (m_dir / "claude-haiku-4-5" / "data.json").exists():
-            pytest.skip("Web-Export noch nicht erstellt")
-        data = json.loads((m_dir / "claude-haiku-4-5" / "data.json").read_text())
+        haiku_dir = _resolve_haiku_export_dir()
+        data = json.loads((haiku_dir / "data.json").read_text())
         for section in ("leaderboard", "political_compass", "files", "tooluse"):
             assert section in data, f"data.json fehlt Top-Level-Section: {section}"
 
@@ -160,10 +170,8 @@ class TestDataJsonStructure:
         in data.json) — sie werden im Frontend nirgends gerendert.
         report_available wird aus der Quell-Verzeichnisexistenz abgeleitet.
         """
-        m_dir = ROOT.parent / "CrucibleMark-Web" / "src" / "_data" / "raw" / "models"
-        if not (m_dir / "claude-haiku-4-5" / "data.json").exists():
-            pytest.skip("Web-Export noch nicht erstellt")
-        data = json.loads((m_dir / "claude-haiku-4-5" / "data.json").read_text())
+        haiku_dir = _resolve_haiku_export_dir()
+        data = json.loads((haiku_dir / "data.json").read_text())
         files = data["files"]
         assert "comparisons" in files
         # Audit-Log-Reste duerfen nach dem Cleanup nicht mehr vorhanden sein
@@ -179,14 +187,12 @@ class TestDataJsonStructure:
         Daher testen wir nur, dass die Felder, die in Card NICHT null sind,
         auch im data.json landen.
         """
-        m_dir = ROOT.parent / "CrucibleMark-Web" / "src" / "_data" / "raw" / "models"
-        if not (m_dir / "claude-haiku-4-5" / "data.json").exists():
-            pytest.skip("Web-Export noch nicht erstellt")
+        haiku_dir = _resolve_haiku_export_dir()
         # Original-Card lesen (Quelle der Wahrheit)
         card = json.loads(
-            (ROOT / "benchmark_scores" / "model_cards" / "claude-haiku-4-5-20251001.json").read_text()
+            (ROOT / "benchmark_scores" / "model_cards" / f"{haiku_dir.name}.json").read_text()
         )
-        data = json.loads((m_dir / "claude-haiku-4-5" / "data.json").read_text())
+        data = json.loads((haiku_dir / "data.json").read_text())
         model_card = data["leaderboard"]["model_card"]
         # Felder, die in der Card NICHT null sind, muessen im data.json vorhanden sein
         for field in ("display_name", "summary", "context_window_k",

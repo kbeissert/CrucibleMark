@@ -580,6 +580,14 @@ web-export-dev:
 	$(PYTHON) -m scripts.web_export --output ../cruciblemark-web/src/_data/raw/
 	@echo "Dev-Export abgeschlossen."
 
+web-export-verify:
+	@echo "=== Web-Export-Verify: Check-Export + Coverage-Tests ==="
+	@echo "Check-Export nach outputs/web_export_check/ (verlaenglich, clean.py-raeumbar)..."
+	$(PYTHON) -m scripts.web_export --output outputs/web_export_check/
+	@echo "=== Coverage-Tests (Card-Field + Score-Field) ==="
+	$(PYTHON) -m pytest tests/test_web_export_card_field_coverage.py tests/test_web_export_field_coverage.py -q
+	@echo "Web-Export-Verify abgeschlossen."
+
 # === PHASE 9: CSV HYGIENE (Defense-in-Depth) ===
 
 validate-csv:

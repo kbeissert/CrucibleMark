@@ -112,6 +112,29 @@ Dasselbe Modell auf zwei Hardware-Plattformen erzeugt **zwei Leaderboard-Zeilen 
 
 **Konsolidierungsregel:** echtes Hardware-Duplikat → das **schlechtere** (Score) Hardware-Profil in `config/web_export_blacklist.yaml` sperren, das bessere behalten; Kommentar mit Begründung („Hardware-Duplikat, schwächer als …-Variante"). 2026-09-09: `gemma-4-e4b-spark` (70.86; Mac 71.89 bleibt), `hermes-4-14b-abliterated-spark` (67.75; Mac 68.19 bleibt); `gemma-3-12b-it-q8`/`-spark` war bereits doppelt geblacklistet (behalten: Q4-Spark). Blacklist-Invariante (jeder Eintrag braucht Leaderboard-Präsenz) bleibt erfüllt.
 
+## Unit-Tests dürfen die globale `llm_judge`-Config nicht ungepatcht lesen (2026-09-25)
+
+`benchmark_config.yaml` steht global `llm_judge.enabled: true` (Judge-LLM), und `utils/config_validator.py` ruft beim Import `load_dotenv()` auf — ein Test, der `ConfigValidator().config` im Produktionspfad liest, hat damit echte API-Keys und feuert **Live-LLM-Calls aus Unit-Tests** (AGENTS-Regel-Verstoß + Flaky-Quelle: Outcome hängt am LLM-Score, nicht am Code). Präzedenz tooluse: `_run_llm_judge` patchte nur `load_module_config`, die globale Config blieb aber wirksam → `test_score_response_failure_test_hallucination` schlug sporadisch fehl (Judge-Score über der Tiered-Cap-Stufengrenze).
+
+**Regel:** Wer den Judge in der Modul-Scoring-Logie respektieren will, löst die Config über eine **Modul-Config-Übersteuerung** auf (Konfig-Hierarchie: Modul-Config vor globaler Config) — Muster `_resolve_judge_cfg()`: globale `llm_judge`-Sektion lesen, dann `self.config.get('llm_judge')` als dict darüber mergen. Production bleibt unverändert (Module ohne `llm_judge`-Sektion = No-op), Tests deaktivieren den Judge über die Modul-Config. Alternative für reine Judge-Mechanik-Tests: Config injizieren statt `ConfigValidator` real lesen (Muster `test_pipeline_integration.py`).
+
+**Diagnose-Fingerabdruck:** 'netzfreie' Scoring-Tests mit Sekunden-Dauern (sentence-transformers-Load ist lokal ~8 s, Judge-Netzcalls sind es nicht) + sporadischer Fail genau an Judge-abhängigen Assertions → Live-Endpoint-Verdacht prüfen, bevor 'Flaky' etikettiert wird.
+
+---
+
+## Web-Export-Verify-Gate + card-bewusste Coverage-Semantik (2026-09-25)
+
+`make web-export-verify` erzeugt einen vergänglichen Check-Export nach `outputs/web_export_check/` (räumt `clean.py`) und läuft danach die beiden Coverage-Test-Dateien — die 5 Tests sind sonst an Export-Artefakte gekoppelt und skippen still. Zwei Semantiken dabei:
+
+1. **Export-Pfad-Prüfung dynamisch auflösen:** Export-Slugs sind volle Modell-IDs (inkl. Datumssuffix, z. B. `claude-haiku-4-5-20251001`) — hartkodierte Kurz-Slugs in Tests sterben still (4 Tests monatelang tot trotz existierendem Export).
+2. **Pflichtfeld-Erwartung folgt der Card, nicht dem Template:** `_strip_none()` entfernt null-Felder im Export (Templates prüfen truthy) — ein Test, der ALLE Template-Pflichtfelder in jeder exportierten `model_card` verlangt, ist zu strikt. Pflicht sind nur Felder, die in der Quell-Card belegt sind; die Quell-Card wird über die SSoT-Auflösung des Exporters ermittelt (`_find_card`, `entry_builders.py`) — kein Parallel-Glob (Fall gemma-4-ara: plain-Card vs. SPRK-Card, der Export nutzt SPRK).
+
+---
+
+## Audit-Logs zurückgezogener Modelle sind keine Orphans — Card-SSoT-Kriterium (2026-09-25)
+
+Audit-Log-Verzeichnisse in `outputs/audit_logs/<slug>/` für Modelle, die aus `provider_config.yaml` zurückgezogen sind, sind **keine zu löschenden Duplikate**, solange eine Model Card existiert (`_find_card`, inkl. Shortcode-Suffix-Formen wie `--SPRK`): Die Modelle sind via `kept_overrides` in `config/web_export_blacklist.yaml` bewusst im Web-Export gehalten, und die Audit-Logs sind die Regenerationsbasis ihrer Reviews in `docs/reviews/<slug>/`. Vor einer „Aufräum"-Löschung immer erst `kept_overrides` + Card-Existenz + Leaderboard-Zeile prüfen — die Warnung „entspricht keiner konfigurierten Modell-ID" in `generate_review.py` war vor dem 2026-09-25-Fix ein False Positive für genau diese Konstellation (seither: Card-Kriterium suppressiert das Warning; echte Orphans ohne Card warnen weiter). Die Hinweise „Keine zutreffenden Logs … im Modus bias" sind korrekt-informativ (Modell ohne PC-Modul-Lauf). Bekannter Altbestand, nicht Teil des Fixes: `docs/reviews/` enthält Legacy-Slug-Verzeichnisse ohne Audit-Dir-Pendant (z. B. `gemma3_12b`, `hermes3_8b`, `gpt-5_4`).
+
 ## Haupt-Leaderboard-Zeilen sind Regenerationsprodukte — Base/Thinking-Trennung hängt am `dual_profile`-Card-Flag (2026-09-16)
 
 `benchmark_leaderboard.csv`/`_detailed` gruppieren nach `model`/`model_version` **nach** Kanonisierung via `resolve_canonical_model_id` (`data_loader.py`) — fehlt oder stimmt das `dual_profile`-Card-Flag nicht, kollabieren Base+Thinking-Profil in **eine Blend-Zeile** mit gemischten Metriken (Fall occamy/swift 2026-09-16: Total Score 77.49 als Blend über 93 Rows). **Selbstheilend:** Die Rohdaten-Ebene (Detail-Module, `local_models_benchmark.csv`, Audit-Verzeichnisse) ist immer sauber getrennt — nach Card-Fix + Abschluss der ausstehenden Einzel-Läufe erzeugt `update_leaderboard()` korrekt zwei Zeilen pro Modell. **Regel:** Bei Blend-Verdacht erst die Rohdaten-Ebene prüfen (sind die Profile dort getrennt?), dann Regeneration — niemals manuell in Haupt-Leaderboard-CSVs flicken. Kosmetisch bleiben Base/Thinking Display-Namen geteilt (Unterscheidung über Thinking-Mode-Spalte, `module_integration.py`).
@@ -146,6 +169,17 @@ model_reasoning_config:
 - Mit Budget-Signal terminiert das Modell sein Reasoning selbstständig (~2k Tokens im verifizierten Re-Run); ohne Signal kann es endlos loopen. Ein reiner `model_max_tokens`-Override verschiebt den Cut nur.
 - `reasoning_effort` (low/medium/xhigh) unterstützen nur manche OpenRouter-Modelle (z.B. qwen3.8-27b, Default xhigh) — qwen3.8-flash kennt nur das Token-Cap. Vor Nutzung OpenRouter-Model-Metadaten prüfen.
 - **Invariante `thinking_budget < max_completion_tokens` (2026-08-28):** Der Alibaba-Upstream lehnt Requests mit `thinking_budget >= max_completion_tokens` strikt mit HTTP 400 `invalid_parameter_error` ab. Da das Cap fix in der Config steht, das Output-Budget aber aus der Modul-Kaskade kommt (`min(Modul-Budget, model_max_tokens)`), kann beides kollidieren (Befund: ux_writing 12000 == Cap 12000). `_clamp_reasoning_budget()` in `utils/providers/openrouter.py` reduziert das Cap auf `req_tokens // 2`, wenn die Invariante verletzt wäre — valide Konfigurationen bleiben unverändert; der Eingriff ist per Warn-Logzeile („reduziert auf") im Benchmark-Log erkennbar.
+
+---
+
+## Provider-Migration unter ID-Erhaltung (2026-09-24, Session 119: google → openrouter)
+
+Bei Provider-Wechsel bleiben die internen Modell-IDs UNVERÄNDERT — der API-Slug wird über `_OPENROUTER_ID_ALIASES` in `utils/providers/openrouter.py` gemappt. Ein Wechsel auf den Vendor-Präfix-Slug (`gemini-3.5-flash` → `google/gemini-3.5-flash` als interne ID) erzeugt sonst eine neue Ergebnis-Identität und fragmentiert die Historie über die Ergebnis-CSVs.
+
+- **Proprietäre Modelle im `open_weights_cloud`-Block** brauchen den Per-Modell-Override `model_type: proprietary_api` am Model-Entry — `_detect_result_type` (result_manager) honoriert ihn seit Session 119 (Lookup normalisiert Underscore/Dot via `internal_id_to_config_form`). Ohne Override landen die Rows in `cloud_models_benchmark.csv`, und die Leaderboard-Kategorie folgt der CSV-Zugehörigkeit (`data_loader._process_csv`) → falsches „Open Weights (Cloud)"-Badge.
+- **Pinning-Pflicht** (`provider_routing: order: [Google], allow_fallbacks: false`) gilt auch für Gemini — Google ist First-Party-Host auf OpenRouter; Live-Verifikation über die CSV-Spalte `upstream_provider`.
+- **Duplikat-Falle:** Die Modell-ID-Registrierung gewinnt den ersten Provider-Eintrag unabhängig von `enabled` — der alte Provider-Block muss seine Entries auskommentieren und `models: []` setzen (siehe AGENTS.md-Fallstricke).
+- **Comparability:** OR-gepinnte Läufe sind nicht 1:1 mit Direct-API-Läufen vergleichbar (2026-09-22-Regel).
 
 ---
 

@@ -519,9 +519,7 @@ class ToolUseTest(BaseTest):
         p2 = p2_cv  # fallback to CV-gated rule-based score
         hallucination_detected: bool = False
         try:
-            from utils.config_validator import ConfigValidator
-            _global_cfg = ConfigValidator().config
-            judge_cfg_dict = _global_cfg.get("llm_judge", {})
+            judge_cfg_dict = self._resolve_judge_cfg()
             if judge_cfg_dict and judge_cfg_dict.get("enabled", False):
                 judge_config = LLMJudgeConfig.from_dict(judge_cfg_dict)
                 runner = JudgeRunner(judge_config)
@@ -562,6 +560,22 @@ class ToolUseTest(BaseTest):
             logger.warning("LLM Judge failed for tooluse; using rule-based P2", exc_info=True)
             result.data["judge_fallback"] = True
         return judge_result, p2, hallucination_detected
+
+    def _resolve_judge_cfg(self) -> dict[str, Any]:
+        """LLM-Judge-Config: globale benchmark_config.yaml, durch die Modul-Config
+        übersteuerbar (Konfig-Hierarchie: Modul-Config vor globaler Config).
+
+        Flaky-Fix 2026-09-25: Unit-Tests patchen nur load_module_config —
+        zuvor blieb die globale Config (llm_judge.enabled: true) wirksam und
+        machten score_response-Tests von Live-Judge-LLM-Calls abhängig
+        (AGENTS-Regel: Tests dürfen keine Live-Endpoints aufrufen).
+        """
+        from utils.config_validator import ConfigValidator
+        judge_cfg: dict[str, Any] = ConfigValidator().config.get("llm_judge", {})
+        module_judge = self.config.get("llm_judge")
+        if isinstance(module_judge, dict):
+            judge_cfg = {**judge_cfg, **module_judge}
+        return judge_cfg
 
 
 def _derive_tool_content(tool_transcript: dict[str, Any]) -> str | None:

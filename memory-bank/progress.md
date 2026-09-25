@@ -1,7 +1,14 @@
 # Progress
 Letzte Releases + aktueller Stand.
 
-### 2026-09-24 (Session 119) — Pre-Commit-Review + Repo-Wartung + PC-v3.1-Recompute + Sigma-Verdrahtung [DONE]
+### 2026-09-25 (Session 120) — Review-Pipeline + Flaky-Fix + Web-Export-Verify-Gate [DONE]
+
+- [x] Review-Pipeline: Orphan-Warnung respektiert Card-SSoT (10 False Positives für kept_overrides-Legacy-Modelle — nichts gelöscht), Fehlalarm bei Skip-Fällen beseitigt; `make reviews-all` verifiziert (456 Skips, 0 LLM-Calls, 0 Orphan-Warnungen).
+- [x] Flaky-Fix: `_run_llm_judge` (tooluse) las die globale `llm_judge.enabled: true` via `ConfigValidator` (Import lädt `.env`) → Live-Judge-Calls aus Unit-Tests; Fix `_resolve_judge_cfg` (Modul-Config-Übersteuerung, Production-No-op).
+- [x] Neues Gate `make web-export-verify` (Check-Export + Coverage-Tests); erster Lauf deckte 2 tote Test-Bugs auf: staler Haiku-Slug (4 Tests monatelang tot) + zu strikte Pflichtfeld-Erwartung wider `_strip_none`-Design — beide gefixt (dynamische Slug-Auflösung, card-bewusste Semantik via SSoT `_find_card`).
+- [x] SemanticSimilarity-Stub in test_controller.py (MiniLM-Load entfällt, 5,7 s → 0,23 s). Suite 1913/17/0, Laufzeit ~45 s → ~22 s.
+
+### 2026-09-24 (Session 119) — Pre-Commit-Review + Repo-Wartung + PC-v3.1-Recompute + Sigma-Verdrahtung + Gemini-Migration [DONE]
 
 - [x] Umfassendes Pre-Commit-Review des PC-v3.1-Folgechangesets (Anthropic-Streaming-Usage, Recompute-Script, Doku): Fix-C-Consumer-Kette verifiziert, Recompute-Äquivalenz zur Runtime bewiesen (`strict_mismatch=0` über 129 Answer-Entries); Befunde F1–F4 behoben (Sigma-Semantik, Testzähler, non_answer-Label, Asset-Integritäts-Check im Recompute).
 - [x] Anthropic-Streaming-Usage-Fix (fb07c806): kumulative output_tokens liegen in `event.usage`, nicht `event.delta.usage` (SDK 0.77.0) — Output-Kosten/Token-Statistiken aller Anthropic-Streaming-Requests waren systematisch unter-reportet; Merge-Dict (input aus message_start inkl. Cache-Read) + None-Absicherung im Parser + 8 Tests (SDK-Struktur-Guard).
@@ -10,7 +17,7 @@ Letzte Releases + aktueller Stand.
 - [x] Sigma-Verdrahtung: `_calculate_sigma` (seit PC v3.0 tot, Reports trugen immer 0.0-Platzhalter) im Lauf-Pfad verdrahtet; Recompute nutzt dieselbe SSoT-Funktion; Comparability-Note im CHANGELOG; Test ergänzt (PC-Suite 100).
 - [x] Gemini-Migration google → OpenRouter: Guthaben depleted, nicht aufladbar — 3 Modelle via OR gepinnt auf Google First-Party-Host (Live-Smoke: `upstream_provider=Google`, Usage vollständig); interne IDs ohne Vendor-Präfix (Alias-Mapping im OpenRouter-Client) → Ergebnis-Identität erhalten; neuer Per-Modell-`model_type`-Override in `_detect_result_type` (Leaderboard-Kategorie „Proprietär" bleibt, Rows bleiben in der Commercial-CSV); google-Block deaktiviert. Der blockierte code_quality-Re-Run (gemini-3.1-pro-preview) ist wieder ausführbar.
 - [x] code_quality-Re-Run gemini-3.1-pro-preview via OR (5/5 ✅, Ø **68.60 %**, $0.1967): die drei historischen 0 %-Rows (001/002/003, `finish=STOP` — probabilistische Klasse) lösten sich auf → 66/80/66 %; Erstlauf der neuen Assets 004/005 (63/68 %). Pinning live verifiziert (5/5 Rows `upstream_provider=Google`). Crash-Fix dabei: `_lookup_model_in_section` crashte auf `models: None` (bare YAML-Key bei auskommentierten Modellen) — Guard `or []` wie `find_model_in_provider_cfg`; google-Block auf `models: []`.
-- [ ] Backlog: PC-Modul-Reaktivierung + Opus-5.5-Nativ-Re-Run (validiert Streaming-Fix live, ersetzt Recompute durch Native-Daten; Reproduktion von (−3.25, 1.73) bestätigt den Recompute als Verfahren); gemini/kimi-Recomputes nach Google-API-Aufladung (Checkpoints flüchtig — Re-Runs nötig); Flaky-Beobachtung (1 Failure in 8 Suite-Läufen, nicht reproduzierbar) nur bei Re-Auftreten diagnostizieren.
+- [ ] Backlog: PC-Modul-Reaktivierung + Opus-5.5-Nativ-Re-Run (validiert Streaming-Fix live, ersetzt Recompute durch Native-Daten; Reproduktion von (−3.25, 1.73) bestätigt den Recompute als Verfahren); gemini/kimi-Re-Runs für die übrigen Module via OpenRouter möglich (Google-Aufladung obsolet — Migration Session 119; Checkpoints flüchtig, Re-Runs nötig); Flaky-Beobachtung gelöst (2026-09-25: versteckte Live-Judge-Abhängigkeit in ToolUse-Unit-Tests, Fix `_resolve_judge_cfg`).
 
 ### 2026-09-24 (Session 118) — Code-Review PC v3.1-Changeset + Review-Fixes [DONE]
 
