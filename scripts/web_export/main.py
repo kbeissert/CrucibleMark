@@ -10,6 +10,7 @@ from typing import Any
 
 import yaml
 
+from scripts.leaderboard.module_integration import _load_attribution_pairs
 from utils.config_validator import ConfigValidator
 from utils.io_helpers import atomic_write_json as _atomic_write_json
 from utils.model_id_base import strip_date_suffix
@@ -85,6 +86,10 @@ def _init_export_context(
     audit_dirs = {slugify(d.name): d for d in audit_logs_path.iterdir() if d.is_dir()} if audit_logs_path.exists() else {}
     comp_dirs = {slugify(d.name): d for d in comparisons_path.iterdir() if d.is_dir()} if comparisons_path.exists() else {}
 
+    # Coverage-Regel (Konzept-Doc Abschn. 11): Alias → Original-Paare für den
+    # Bias-Review-Fallback attribuierter Ersatzlauf-Einträge (SSoT: Modul-Config).
+    _pc_attribution_pairs = _load_attribution_pairs("political_compass")
+
     _bl_exact, _bl_pattern, _bl_total, _bl_loaded = _load_export_blacklist(root_dir=root_dir)
     if _bl_loaded and _bl_total:
         logging.info(
@@ -123,6 +128,7 @@ def _init_export_context(
         "benchmark_run_map": _benchmark_run_map,
         "audit_dirs": audit_dirs,
         "comp_dirs": comp_dirs,
+        "pc_attribution_pairs": _pc_attribution_pairs,
         "bl_exact": _bl_exact,
         "bl_pattern": _bl_pattern,
         "bl_total": _bl_total,
@@ -303,6 +309,18 @@ def _resolve_thinking_mode(row: Any, card: dict | None, raw_model_id: str) -> st
     return "standard"
 
 
+def _resolve_bias_fallback_src(raw_model_id: str, ctx: dict[str, Any]) -> Path | None:
+    """Coverage-Regel (Konzept-Doc Abschn. 11): Attribuierter Ersatzlauf-Eintrag
+    erbt die Bias-Review der Original-ID, wenn er keine eigene besitzt — ein
+    Review pro Lauf, SSoT bleibt docs/reviews/<original>. Direkt-Ergebnisse
+    des Alias haben Vorrang (Fallback greift nur bei fehlender eigener Datei).
+    """
+    original = (ctx.get("pc_attribution_pairs") or {}).get(raw_model_id)
+    if not original:
+        return None
+    return _resolve_dir(ctx["comp_dirs"], slugify(original))
+
+
 def _build_row_entry(
     *,
     row: Any,
@@ -315,7 +333,11 @@ def _build_row_entry(
     model_out: Path,
     ctx: dict[str, Any],
 ) -> tuple[dict[str, Any], dict[str, str | None], bool, bool, str | None]:
-    comp_files_dict = _export_model_files(model_out, model_comp_src)
+    comp_files_dict = _export_model_files(
+        model_out,
+        model_comp_src,
+        bias_fallback_src=_resolve_bias_fallback_src(raw_model_id, ctx),
+    )
     has_report = _audit_has_benchmark(model_audit_src)
     has_review = comp_files_dict["review"] is not None or comp_files_dict["bias_review"] is not None
     review_published_at, review_updated_at = _review_date_range(model_comp_src) if model_comp_src else (None, None)

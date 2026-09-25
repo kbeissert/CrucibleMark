@@ -7,6 +7,7 @@ from typing import NamedTuple
 import pandas as pd
 import yaml
 
+from scripts.leaderboard.module_integration import _apply_result_attribution
 from utils.model_id_base import strip_date_suffix
 from utils.text_helpers import slugify
 
@@ -149,9 +150,18 @@ def _load_sources(scores_dir: Path) -> tuple[
     pd.DataFrame | None,
 ]:
     """Loads all source CSVs. Returns (ldb, pc, pc_lb)."""
+    pc = load_csv_with_fallback(scores_dir / "political_compass_results.csv")
+    if pc is not None:
+        # Coverage-Regel (Konzept-Doc Abschn. 11): Der PC-Handler persistiert
+        # Ersatzlauf-Ergebnisse unter der Original-ID; der Leaderboard-Join
+        # spiegelt sie auf die Profil-ID (module_integration). Der Export liest
+        # die rohe CSV — ohne denselben Mirror bliebe der Alias-Eintrag ohne
+        # political_compass-Block, obwohl die Daten existieren. SSoT: Die
+        # Attribution-Logik wird importiert, nicht dupiziert.
+        pc = _apply_result_attribution(pc, {"attribution_module": "political_compass"})
     return (
         load_csv_with_fallback(scores_dir / "benchmark_leaderboard_detailed.csv"),
-        load_csv_with_fallback(scores_dir / "political_compass_results.csv"),
+        pc,
         load_csv_with_fallback(scores_dir / "political_compass_leaderboard.csv"),
     )
 

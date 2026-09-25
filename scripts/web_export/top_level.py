@@ -161,6 +161,7 @@ def _setup_output_dirs(args: argparse.Namespace) -> tuple[Path, Path, Path]:
 def _export_model_files(
     model_out: Path,
     comp_src: Path | None,
+    bias_fallback_src: Path | None = None,
 ) -> dict[str, str | None]:
     """Kopiert die Comparison-Markdown-Dateien (Review + Bias-Review) eines Modells.
 
@@ -169,22 +170,29 @@ def _export_model_files(
     ``report_available`` wird stattdessen aus der Existenz des Audit-Quellverzeichnisses
     abgeleitet (siehe _audit_has_benchmark), ohne die Dateien zu kopieren.
 
+    ``bias_fallback_src``: Coverage-Regel (Konzept-Doc Abschn. 11) — attribuierte
+    Ersatzlauf-Einträge erben die Bias-Review der Original-ID, wenn sie keine
+    eigene besitzen (ein Review pro Lauf; eigene Dateien haben Vorrang).
+
     Returns:
         comp_files_dict mit Keys 'review' und 'bias_review' (jeweils Dateiname
         oder None).
     """
     comp_files_dict: dict[str, str | None] = {"review": None, "bias_review": None}
-    if comp_src and comp_src.exists():
+    has_comp_src = bool(comp_src and comp_src.exists())
+    latest_review = find_latest_markdown(comp_src, prefix="review_") if has_comp_src else None
+    latest_bias = find_latest_markdown(comp_src, prefix="bias_review_") if has_comp_src else None
+    if latest_bias is None and bias_fallback_src is not None and bias_fallback_src.exists():
+        latest_bias = find_latest_markdown(bias_fallback_src, prefix="bias_review_")
+    if latest_review or latest_bias:
         out_comp = model_out / "comparisons"
         out_comp.mkdir(exist_ok=True)
-        latest_review = find_latest_markdown(comp_src, prefix="review_")
-        latest_bias = find_latest_markdown(comp_src, prefix="bias_review_")
-        if latest_review:
-            _atomic_copy(latest_review, out_comp / latest_review.name)
-            comp_files_dict["review"] = latest_review.name
-        if latest_bias:
-            _atomic_copy(latest_bias, out_comp / latest_bias.name)
-            comp_files_dict["bias_review"] = latest_bias.name
+    if latest_review:
+        _atomic_copy(latest_review, out_comp / latest_review.name)
+        comp_files_dict["review"] = latest_review.name
+    if latest_bias:
+        _atomic_copy(latest_bias, out_comp / latest_bias.name)
+        comp_files_dict["bias_review"] = latest_bias.name
 
     return comp_files_dict
 
