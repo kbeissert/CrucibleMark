@@ -2,7 +2,7 @@
 
 [![Version](https://img.shields.io/badge/version-5.4.0-blue)](.)
 [![Python](https://img.shields.io/badge/python-3.12%2B-blue)](.)
-[![License](https://img.shields.io/badge/license-MIT-green)](.)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue)](./LICENSE)
 [![Status](https://img.shields.io/badge/status-production--ready-brightgreen)](.)
 
 **Stand: v5.4.0 · 2026-09-25**
@@ -129,6 +129,27 @@ Detaillierte Anleitung zu Setup, Hardware-Profilen und Provider-Konfiguration: [
 
 ---
 
+## Test-Korpus und Lizenz
+
+**Der Framework-Code** (Runner, Provider, Scoring, Web-Export) steht unter der [Apache License 2.0](LICENSE). Er ist quelloffen und frei nutzbar.
+
+**Die Benchmark-Modulinhalte** — Test-Assets mit Prompts, Golden Standards und Bewertungsrubriken — sind **nicht Bestandteil dieses Repositorys** und fallen nicht unter die Apache-Lizenz. Sie werden separat verwaltet, um Kontamination von Trainingsdaten zu verhindern: Öffentlich verfügbare Testdaten landen in Pre-Training-Korpora und würden jede künftige Messung entwerten — der Benchmark misst dann Erinnerung statt Fähigkeit.
+
+**Konsequenz für frische Clones:** Ohne die Assets läuft der Benchmark ins Leere — Module finden keine Test-Dateien. Das ist kein Bug, sondern der oben beschriebene Kontaminationsschutz.
+
+### Zugriff für Forschende und Entwickler
+
+Die Assets können auf Anfrage bereitgestellt werden für:
+- Reproduktion publizierter Benchmarks
+- Akademische Vergleichsstudien
+- Entwicklung eigener Test-Module
+
+**Anfragen** bitte über [GitHub Issues](https://github.com/kbeissert/cruciblemark/issues) mit dem Label `asset-access` und einer kurzen Beschreibung des Verwendungszwecks. Alternativ per E-Mail an den Maintainer.
+
+Nach positiver Prüfung werden die Assets über einen gesicherten Kanal bereitgestellt — in der Regel als passwortgeschütztes ZIP-Archiv mit der Auflage, sie nicht öffentlich zu redistribuieren.
+
+---
+
 ## Web-Export-Pipeline
 
 CrucibleMark enthält eine integrierte Export-Pipeline (`scripts/web_export.py`), die Benchmark-Ergebnisse als aufbereitetes Datenpaket für das externe Frontend-Projekt `cruciblemark-web` bereitstellt.
@@ -218,7 +239,9 @@ Anthropic-Streaming-Regression behoben (seit `60aad34c` fehlte im Streaming-Pfad
 
 ## Mitwirken
 
-Bug-Reports, Feature-Wünsche und Diskussionen laufen über [GitHub Issues](https://github.com/kbeissert/cruciblemark/issues). Vorschläge für neue Model Cards, Module oder Provider-Integrationen sind willkommen. Maintainer-Richtlinien stehen in [CONTRIBUTORS.md](CONTRIBUTORS.md).
+Bug-Reports, Feature-Wünsche und Diskussionen laufen über [GitHub Issues](https://github.com/kbeissert/cruciblemark/issues). Vorschläge für neue Model Cards, Module oder Provider-Integrationen sind willkommen. Maintainer-Richtlinien stehen in [CONTRIBUTORS.md](CONTRIBUTORS.md), Beitrags-Richtlinien in [CONTRIBUTING.md](CONTRIBUTING.md).
+
+> ⚠️ **In Issues und Pull Requests keine Benchmark-Asset-Inhalte posten** (Prompts, Golden Standards, Bewertungsrubriken) — sonst landen sie im öffentlichen Git-Verlauf und der Kontaminationsschutz ist aufgehoben.
 
 ---
 

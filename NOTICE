@@ -5,6 +5,19 @@ This product includes software developed by Kay Beißert.
 
 ================================================================================
 
+LICENSE SCOPE:
+
+The Apache License 2.0 applies to the framework code in this repository
+(runner, providers, scoring, web export, tooling).
+
+The benchmark test corpus — test assets containing prompts, golden standards
+and scoring rubrics under benchmark_modules/*/assets/ — is NOT part of this
+repository and is NOT covered by the Apache License. It is maintained
+separately to prevent training-data contamination and is available on request
+for reproduction and research (see README.md, section "Test-Korpus und Lizenz").
+
+================================================================================
+
 This project was developed with assistance from AI tools:
 
 - GitHub Copilot (VS Code) – Code completion & refactoring

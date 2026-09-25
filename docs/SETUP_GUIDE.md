@@ -14,6 +14,8 @@
 
 Diese Anleitung beschreibt, wie CrucibleMark nach der Installation auf die eigene Hardware und spezifische Anforderungen (Provider, Module, Modelle) zugeschnitten wird.
 
+> ⚠️ **Wichtig vor dem Start:** Die Benchmark-Test-Assets (Prompts, Golden Standards, Bewertungsrubriken) sind **nicht Teil des öffentlichen Repositorys** (Kontaminationsschutz — Details siehe [README.md](../README.md) → „Test-Korpus und Lizenz"). Ein frischer Clone kann Benchmarks daher erst ausführen, nachdem der Test-Korpus angefordert und eingespielt wurde. Framework, Konfiguration und Provider-Setup funktionieren ohne die Assets vollständig.
+
 Wenn `benchmark_config.yaml` noch nicht existiert, die Vorlage kopieren:
 
 ```bash
