@@ -330,7 +330,7 @@ def test_main_loop_skips_blacklisted_model(tmp_path: Path) -> None:
 
     written_data: list[str] = []
 
-    def _capture_write(model_out, comp_src):
+    def _capture_write(model_out, comp_src, bias_fallback_src=None):
         written_data.append(model_out.name)
         return {"review": None, "bias_review": None}
 
