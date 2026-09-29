@@ -11,6 +11,8 @@ Orchestration only: all context-building logic lives in scripts/analysis/review/
 from __future__ import annotations
 
 import argparse
+import csv
+import io
 import json
 import logging
 import os
@@ -209,12 +211,34 @@ def get_latest_audit_dir(base_dir: Path) -> Path | None:
 
 
 def collect_data() -> str:
-    """Read the main leaderboard CSV."""
+    """Read the main leaderboard CSV (Badge-Spalten ohne Icons für die Review-Prosa).
+
+    Die CSV auf Disk bleibt unangetastet (SSoT für Leaderboard/UI). Nur die
+    Prompt-Sicht bereinigt ``Badge``/``Speed Profile`` via SSoT ``strip_emojis``
+    — der Reviewer zitiert den Badge gemäß Prompt-Pflicht wörtlich, ein Icon im
+    Datenwert würde sonst die No-Emoji-Prosa-Regel brechen (Fall „❌ Unusable
+    Tool Expert", 2026-09-27).
+    """
+    from utils.text_helpers import strip_emojis
+
     csv_path = ROOT_DIR / "benchmark_scores" / "benchmark_leaderboard.csv"
     if not csv_path.exists():
         return "Keine Leaderboard-Daten gefunden."
+    icon_cols = {"Badge", "Speed Profile"}
     with open(csv_path, encoding="utf-8") as f:
-        return f.read()
+        reader = csv.DictReader(f)
+        if reader.fieldnames is None:
+            return "Keine Leaderboard-Daten gefunden."
+        rows = list(reader)
+    for row in rows:
+        for col in icon_cols & set(reader.fieldnames):
+            if row.get(col):
+                row[col] = re.sub(r" {2,}", " ", strip_emojis(row[col]))
+    buffer = io.StringIO()
+    writer = csv.DictWriter(buffer, fieldnames=reader.fieldnames)
+    writer.writeheader()
+    writer.writerows(rows)
+    return buffer.getvalue()
 
 
 def _load_card_module(script_name: str) -> object:

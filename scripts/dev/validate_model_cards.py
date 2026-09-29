@@ -19,11 +19,14 @@ Checks:
      - proprietary + origin_country=(USA|China) → Risk ≥ "medium"
      - open-weights + origin_country=(USA|China) + deployment_type=cloud-only → Risk ≥ "medium"
      (Hintergrund: CLOUD Act/Cyber Security Law ermöglichen Datenzugriff)
-   9. size_class-Konsistenz gegen params_total_b (SSoT:
-      config/classification_taxonomy.json#size_class.classification_rules)
-      - params_total_b gesetzt → size_class MUSS dem Taxonomie-Tier entsprechen
-        (Hard-Fail; MoE-Regel: Gesamtgröße, nicht aktive Parameter)
-      - size_class-Wert gegen Taxonomie-Vocabulary geprüft
+    9. size_class-Konsistenz gegen params_total_b (SSoT:
+       config/classification_taxonomy.json#size_class.classification_rules)
+       - params_total_b gesetzt → size_class MUSS dem Taxonomie-Tier entsprechen
+         (Hard-Fail; MoE-Regel: Gesamtgröße, nicht aktive Parameter)
+       - size_class-Wert gegen Taxonomie-Vocabulary geprüft
+  10. Sprach-Gate (WARN): Prose-Felder beginnen überwiegend englisch
+      (erste ~12 Wörter gegen EN/DE-Indikatorwort-Heuristik; Card-Text ist
+      DE-Quelle für den Web-Export)
 
 Tag-Whitelist kommt aus config/card_vocabulary.yaml via utils.card_utils.
 Damit können Auto-Generatoren dieselbe SSoT nutzen wie die Validierung.
@@ -35,6 +38,7 @@ Usage:
 
 import json
 import logging
+import re
 import sys
 from pathlib import Path
 
@@ -311,6 +315,76 @@ def _check_unknown_top_level_fields(data: dict, card_status: str, issues: list[s
             )
 
 
+# Sprach-Gate: Prose-Felder der Cards sind DE-Quelle für den Web-Export.
+# Heuristik: erste ~12 Wörter gegen EN/DE-Indikatorwort-Listen, WARN wenn EN
+# überwiegt. Bewusst konservativ — in DE-Card-Texten etablierte EN-Fachtermini
+# ("Open Weights", "low/medium/high"-Enums, Lizenz-Eigennamen wie "NVIDIA Open
+# Model License") und Wörter mit deutscher Homografie ("in", "so", "also",
+# "per", "via", "was", "us") sind bewusst KEINE EN-Indikatoren; Hyphen-
+# Compounds ("Open-Weights-Modell") zählen als ein Token.
+_PROSE_LANGUAGE_FIELDS = (
+    "summary",
+    "strengths",
+    "known_limitations",
+    "judge_context_hint",
+    "weights_provenance_risk_rationale",
+)
+_EN_LANGUAGE_INDICATORS = frozenset({
+    "the", "a", "an", "and", "or", "of", "to", "on", "for", "with", "by", "from",
+    "is", "are", "were", "be", "been", "being", "has", "have", "had",
+    "this", "that", "these", "those", "it", "its", "as", "at", "but", "not",
+    "no", "nor", "can", "may", "will", "would", "should", "must", "shall",
+    "when", "while", "which", "who", "whose", "than", "then", "such",
+    "there", "their", "they", "them", "we", "our", "under", "over", "about",
+    "into", "onto", "because", "since", "although", "though", "however",
+    "therefore", "thus", "only", "both", "each", "any", "most", "more",
+    "less", "very", "if", "do", "does", "did",
+    "runs", "run", "running", "remains", "remain", "restricted", "published",
+    "publishes", "released", "releases", "distributed", "company", "jurisdiction",
+})
+_DE_LANGUAGE_INDICATORS = frozenset({
+    "der", "die", "das", "den", "dem", "des", "ein", "eine", "einen", "einem",
+    "einer", "eines", "und", "oder", "ist", "sind", "war", "waren", "wird",
+    "werden", "wurde", "wurden", "bleibt", "bleiben", "kann", "können",
+    "muss", "müssen", "soll", "nicht", "kein", "keine", "aber", "doch",
+    "denn", "weil", "als", "wie", "bei", "mit", "von", "zu", "zum", "zur",
+    "für", "auf", "aus", "über", "unter", "durch", "gegen", "ohne", "seit",
+    "nach", "vor", "hier", "dort", "diese", "dieser", "dieses", "sie", "er",
+    "es", "wir", "ihr", "man", "sich", "daher", "deshalb", "dennoch", "zwar",
+    "jedoch", "sowie", "sondern", "bereits", "nur", "noch", "schon", "immer",
+    "sehr", "vollständig", "lokal", "gering", "mittel", "hoch", "moderat",
+    "gewichte", "modell", "modelle", "lizenz", "lizenziert", "risiko",
+    "anbieter", "herkunft", "inferenz", "betrieb", "läuft", "damit", "pro",
+    "bietet", "drei", "vier", "zwischen",
+})
+_CITATION_MARKER_RE = re.compile(r"\[(?:web|page|file):\d+\]")
+_PROSE_WORD_RE = re.compile(r"[A-Za-zÄÖÜäöüß]+(?:-[A-Za-zÄÖÜäöüß]+)*")
+_PROSE_LANGUAGE_WINDOW = 12
+_PROSE_LANGUAGE_MIN_EN_HITS = 2
+
+
+def _looks_english(text: str) -> bool:
+    stripped = _CITATION_MARKER_RE.sub("", text)
+    words = [w.lower() for w in _PROSE_WORD_RE.findall(stripped)[:_PROSE_LANGUAGE_WINDOW]]
+    en_hits = sum(1 for word in words if word in _EN_LANGUAGE_INDICATORS)
+    de_hits = sum(1 for word in words if word in _DE_LANGUAGE_INDICATORS)
+    return en_hits >= _PROSE_LANGUAGE_MIN_EN_HITS and en_hits > de_hits
+
+
+def _check_prose_language(data: dict, issues: list[str]) -> None:
+    for field in _PROSE_LANGUAGE_FIELDS:
+        value = data.get(field)
+        items = value if isinstance(value, list) else [value]
+        for item in items:
+            if not isinstance(item, str) or not item.strip():
+                continue
+            if _looks_english(item):
+                issues.append(
+                    f"[WARN] {field} beginnt überwiegend englisch (Sprach-Gate: "
+                    f"Card-Text ist DE-Quelle für den Web-Export) — auf Deutsch umschreiben."
+                )
+
+
 def check_card(path: Path, data: dict) -> list[str]:
     issues: list[str] = []
     name = data.get("display_name", data.get("model_id", path.stem))
@@ -328,6 +402,7 @@ def check_card(path: Path, data: dict) -> list[str]:
     card_status = _check_complete_card_warnings(data, issues)
     _check_tag_whitelist(tags, issues)
     _check_provenance_risk(data, tier, issues)
+    _check_prose_language(data, issues)
     _check_unknown_top_level_fields(data, card_status, issues)
 
     return [(f"  {name}: {issue}") for issue in issues]
