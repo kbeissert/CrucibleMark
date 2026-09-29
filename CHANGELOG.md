@@ -1717,6 +1717,23 @@ String-Trigger im Modellnamen).
 
 ## [Unreleased]
 
+**Card-Sprachkonsistenz: 17 Card-Texte auf Deutsch + Sprach-Gate im Card-Validator (WARN).**
+
+### Fixed
+- **16 EN-`weights_provenance_risk_rationale` auf Deutsch umgeschrieben** (15 Modelle, u. a. DeepSeek-R1-Distill-Linie, Gemma 3 270M/Gemma 4 e2b, Llama 3.2/3.3, Ministral 3, Occamy 1.0, Ornith 1.0, Phi-4-mini, Swift-Qwen3.8 ± Thinking) — Zitations-Marker (`[web:NNN]`/`[page:NNN]`/`[file:NNN]`) erhalten, Risiko-Einstufungen und Lizenzfakten unverändert. Minimal-invasive Edits; Git-Diff je Card zeigt nur die Rationale-Zeile.
+- **`claude-opus-5-5.json`: Literal-`"TODO"`-Rationale ersetzt** durch den Familien-Wortlaut („Anthropic ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act; die Modellgewichte sind nicht öffentlich zugänglich.", Vorlage claude-opus-4-6/4-8). `weights_provenance_risk` steht weiterhin auf `"TODO"` (nicht Teil dieses Fixes).
+
+### Added
+- **Sprach-Gate im Card-Validator** (`scripts/dev/validate_model_cards.py`, Check Nr. 10, WARN-Level): Die 5 Prose-Felder (`summary`, `strengths`, `known_limitations`, `judge_context_hint`, `weights_provenance_risk_rationale`) werden gegen eine EN/DE-Indikatorwort-Heuristik geprüft (erste ~12 Wörter; WARN wenn EN überwiegt). Heuristik bewusst konservativ: Hyphen-Compounds zählen als ein Token; in DE-Texten etablierte EN-Fachtermini („Open Weights", „low/medium/high"-Enums, Lizenz-Eigennamen) und Wörter mit deutscher Homografie („in", „so", „also", „per", „via", „was", „us") sind keine EN-Indikatoren.
+
+### Result
+- `make validate-cards`: 157 Cards, 0 Fehler, 0 Sprach-WARNs (alle 16 Fixes greifen, keine residualen EN-Texte).
+- `make lint` Exit 0; `make test` 1917 passed / 17 skipped, keine neuen Fehler.
+- Neutraler Verifikations-Export (`WEB_DATA_DIR=outputs/web_export_check make web-export`): 0 EN/TODO-Rationales im gesamten Export; occamy-Thinking-Variante erbt das gefixte Feld; `swift-qwen3_8-27b-nvfp4` (non-thinking) fehlt korrekt per Web-Export-Blacklist.
+- Befund: Die „2 stray EN-Items" aus dem Web-Handover sind False Positives der dortigen Heuristik (Vendor-Namen-Starts als EN gezählt) — betroffene nemotron-Items sind bereits deutsch.
+- Befund: `gemini-3_5-flash.json` Working-Tree-Diff (nicht diese Session) enthält einen Trailing-Newline-Verlust — Writer-Divergenz-Verdacht, Quelle prüfen.
+
+
 **Per-Modell-Override für `context_length` + `parallel` bei llama.cpp (Hermes-4.3-36B Retries-Fix).**
 
 ### Fixed

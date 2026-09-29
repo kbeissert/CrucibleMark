@@ -1,6 +1,31 @@
 # Progress
 Letzte Releases + aktueller Stand.
 
+### 2026-09-27 — Icon-leak in Review-Prosa gefixt + Legacy-Review-Regeneration [DONE]
+
+- [x] Befund: „❌ Unusable Tool Expert" in Review-Prosa — `formatter.py` schreibt UI-Icons in die CSV-Spalten `Speed Profile`/`Badge`; `collect_data()` reichte die CSV roh in den Review-Prompt, Prompt-Pflicht (Badge wörtlich zitieren) schlug die No-Emoji-Regel.
+- [x] Fix: `collect_data()` (generate_review.py) sanitisiert die Prompt-Sicht der zwei Badge-Spalten via SSoT `strip_emojis`; CSV auf Disk unangetastet. Verifikation: 159 Zeilen / 0 Icon-Reste, Suite 1917 passed / 17 skipped, Lint 9.99 unverändert.
+- [x] glm-5_3-flash-exl3-Review regeneriert (0 Icons, Badge sauber zitiert); Legacy-Reviews o1/o3-mini/o4-mini regeneriert (0 Icons, 0 n/a-Phrasung); 5 verwaiste Mai-Artefakte (gemma3_12b/gemma3_4b/gpt-5_4-mini/gpt-5-mini/gpt-5, keine Audit-Logs) bleiben Historie.
+- [x] Web-Export-Re-Run: 109 Entries, Naming-Gate unauffällig.
+
+### 2026-09-27 — Review-Formulierungsregel „Modus n/a" + Massen-Regeneration [DONE]
+
+- [x] Formulierungsregel in `config/meta_reviewer_prompt.yaml` (n/a-Bullet + Mention-Pflicht): `thinking_mode='n/a'` wird nie als „Modus n/a" benannt, sondern als Setup beschrieben („werksseitiges Standardverhalten des Endpunkts; ein umschaltbarer Thinking-Modus existiert hier nicht"); Datenwert bleibt `n/a` (Sentinel-Vertrag `_PENDING_SENTINELS`).
+- [x] 25 Latest-Benchmark-Reviews regeneriert (24 Export-Modelle + glm-5.3-Testlauf; gemma-4-e4b-spark blacklisted → ausgenommen, behält Alt-Phrasung im Archiv).
+- [x] Verifikation: 0 Phrasungs-Treffer in allen Latest-Reviews (globale Walze je Modellverzeichnis); Qualitäts-Stichprobe — Setup-Beschreibung statt Modusname.
+- [x] Web-Export-Re-Run: 159 Entries → 109 OK / 50 SKIP, Naming-Gate 157 Model-Cards + 37 Vendor-Cards OK.
+
+### 2026-09-27 — Card-Sprachkonsistenz + Sprach-Gate + Repo-Grenz-Regel [DONE]
+
+- [x] 16 EN-`weights_provenance_risk_rationale` (15 Modelle: DeepSeek-R1-Distill 1.5b/7b/14b, Gemma 3 270M, Gemma 4 e2b, Llama 3.2 1b/3b, Llama 3.3 8b, Ministral 3 3b/8b/14b, Occamy 1.0, Ornith 1.0, Phi-4-mini, Swift-Qwen3.8 ± Thinking) auf Deutsch umgeschrieben — Inhalt treu, Zitations-Marker erhalten, minimal-invasive Edits (Diff je Card = nur Rationale-Zeile).
+- [x] `claude-opus-5-5.json`: Literal-`"TODO"`-Rationale durch Familien-Wortlaut ersetzt (Vorlage claude-opus-4-6/4-8); `weights_provenance_risk` bleibt `"TODO"` (out of Scope).
+- [x] Sprach-Gate (WARN) in `scripts/dev/validate_model_cards.py` (Check Nr. 10): 5 Prose-Felder, erste ~12 Wörter gegen EN/DE-Indikatorlisten; konservativ (Hyphen-Compounds als ein Token, EN-Fachtermini/deutsche Homografien ausgeschlossen); verdrahtet in `check_card()` nach `_check_provenance_risk`.
+- [x] Repo-Grenz-Regel „nur CrucibleMark, nie das Web-Frontend (2026-09-27)" als ersten Bullet in AGENTS.md `## Arbeitsweise für Agenten`.
+- [x] Befund: „2 stray EN-Items" aus dem Web-Handover = False Positives der Web-Heuristik (Vendor-Namen-Starts als EN); nemotron-Items bereits deutsch — nichts zu fixen.
+- [x] Verifikation: `make validate-cards` 157 Cards / 0 Fehler / 0 Sprach-WARNs; `make lint` Exit 0; `make test` 1917 passed / 17 skipped; neutraler Check-Export (`WEB_DATA_DIR=outputs/web_export_check make web-export`) — 0 EN/TODO-Rationales im gesamten Export, occamy-Thinking erbt gefixtes Feld, swift-nonthinking korrekt geblacklistet.
+- [x] Web-Export-Verifikation (Produktions-Export): 159 Entries → 109 OK / 50 SKIP (Blacklist-Audit 50/50 in meta.json); Top-Level-Vertrag (leaderboard/political_compass/vendor_cards/community_cards/meta.json + `models/<slug>/data.json`), 9-Key-Scores-Contract in leaderboard.json + allen 109 Modell-Files, Slug-Vollständigkeit 1:1 — keine Ausfälle. Reference-Doku `web-export-cleanup.md` an Ist-Vertrag angepasst (Top-Level-`data.json`/`provider_cards.json`/`provider_stats.json` existieren nicht mehr).
+- [x] Offen: `gemini-3_5-flash.json` Working-Tree-Diff (fremde Session) mit Trailing-Newline-Verlust → Writer-Divergenz-Quelle prüfen; Changeset uncommittet.
+
 ### v5.4.0 (2026-09-25) — Provider-Härtung, Eskalationsleiter, Refusal-Retry, OpenRouter-Pinning & Code-Review [DONE]
 
 - [x] Sessions 106–122 in v5.4.0 konsolidiert. CHANGELOG-Eintrag, Version-Synchro 7/7, Doku-Stempel 18/18 auf v5.4.0.

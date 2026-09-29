@@ -29,16 +29,11 @@ Wenn die Taxonomie (`classification_taxonomy.json → manufacturers.values[*].ve
 
 ## WebExport Provider-Cards Schema (ab v4.10.11)
 
-Der Python-Export schreibt seit v4.10.11 zwei separate Files:
+**Stand 2026-09-27 (verifiziert gegen `scripts/web_export/top_level.py`):** Der Export schreibt KEINE `provider_cards.json`/`provider_stats.json` mehr — dieser Abschnitt beschreibt den historischen v4.10.11-Stand. Aktuell gehen alle Vendor-Cards (inkl. Stats/Profile-Metadaten) in `vendor_cards.json`, Community-Cards (`card_subtype: "community"`) in `community_cards.json`. Placeholder-Cards (`unknown=true` ODER `vendor_id in {"todo","unknown"}`) werden gefiltert — verifiziertes Beispiel: `todo.json` (37 Cards im Verzeichnis, 36 exportiert). Das Web-Frontend liest die Vendor-Daten direkt aus `vendor_cards.json`.
 
-- `vendor_cards.json` — vollständige Vendor-Cards mit allen Feldern, inkl. Stats/Profile-Metadaten.
-- `provider_cards.json` — gefiltertes Sub-Set für Web-Display.
-
-Provider-Schema (display-relevant): `vendor_id, display_name, company, headquarters, founding_year, description, deployment (Dict mit GDPR/Cloud-Act/Sovereign-Risk-Metadaten), pricing_model, api_base_url, api_documentation_url, notable_models, profile_verified, last_verified_at`.
+Historisches Provider-Schema (display-relevant): `vendor_id, display_name, company, headquarters, founding_year, description, deployment (Dict mit GDPR/Cloud-Act/Sovereign-Risk-Metadaten), pricing_model, api_base_url, api_documentation_url, notable_models, profile_verified, last_verified_at`.
 
 KEIN Export: `stats, profile_verified_by, profile_verified_at, generated_at, last_modified_at, verification_source, unknown` — interne Profile-Metadaten.
-
-Web-Loader: `CrucibleMark-Web/src/_data/providerCards.11tydata.js` liest `provider_cards.json`, filtert Placeholder (`todo`/`unknown`) und `unknown=true`, mergt `provider_stats.json`. `.eleventy.js` registriert `providerCards` UND `vendorCards` als Global-Data + passthrough zu `_site/data/`.
 
 ## WebExport Blacklist-ID-Normalisierung (ab v4.10.11)
 
@@ -89,7 +84,7 @@ Rückgabewert: `float | str | None`. Zahlen → `float`. Sentinels → `None`. A
 
 **Fix:** In `_write_top_level_outputs`: für jedes Modell in `models_list` — `scores.setdefault(key, None)` für alle `_SCORES_CONTRACT_KEYS` bei bestehender Dict; `dict.fromkeys(_SCORES_CONTRACT_KEYS, None)` bei fehlender Dict.
 
-**SSoT:** `_SCORES_CONTRACT_KEYS` (abgeleitet aus `_SCORE_COLUMN_TO_KEY`) ist die einzige Quelle für die 9 Modul-Keys. Beide Write-Pfade (`data.json` via `_process_leaderboard`, `leaderboard.json` via `_write_top_level_outputs`) referenzieren dieselbe Konstante. `political_bias` ist KEIN Score-Modul (v4.10.16 entfernt) — Political Compass-Daten in separater `data.json.political_compass` Section.
+**SSoT:** `_SCORES_CONTRACT_KEYS` (abgeleitet aus `_SCORE_COLUMN_TO_KEY`) ist die einzige Quelle für die 9 Modul-Keys. Beide Write-Pfade (Per-Modell-`data.json` via `main.py`, `leaderboard.json` via `_write_top_level_outputs`) referenzieren dieselbe Konstante. `political_bias` ist KEIN Score-Modul (v4.10.16 entfernt) — Political Compass-Daten in separater `political_compass.json`.
 
 ## WebExport `tokens_per_module`-Ableitung (Session 75, 2026-08-15)
 
@@ -103,6 +98,8 @@ Rückgabewert: `float | str | None`. Zahlen → `float`. Sentinels → `None`. A
 
 ## WebExport Top-Level-Vertrag & Writer-Atomarität (Session 75, 2026-08-15)
 
+**Aktueller Top-Level-Vertrag (verifiziert 2026-09-27 gegen `top_level.py:_write_top_level_outputs`):** `leaderboard.json`, `political_compass.json`, `vendor_cards.json`, `community_cards.json`, `meta.json` + `models/<slug>/data.json` pro Modell. Ein Top-Level-`data.json` existiert NICHT mehr (durch die Per-Modell-Files ersetzt); `provider_cards.json`/`provider_stats.json` werden nicht mehr geschrieben. Export-Verifikation gegen diesen Vertrag: Dateien vorhanden, Scores-Contract (9 Keys) in `leaderboard.json` UND allen Per-Modell-`data.json`, Slug-Mengen 1:1 zwischen `leaderboard.json` und `models/`.
+
 - `political_compass.json`, `vendor_cards.json`, `community_cards.json` werden IMMER geschrieben (auch mit leerer Liste) — fehlende Dateien brechen den Web-Build bei temporär leerer Quelle.
 - `cruciblemark_version` in `meta.json` kommt aus CHANGELOG.md (SSoT, erste `## [vX.Y.Z]`-Zeile), README-Badge nur als Fallback.
 - `benchmark_cost`-Sentinel-Threshold steht in `benchmark_config.yaml → web_export.benchmark_cost_max_usd` (keine Magic Number im Code; Fallback-Konstante in entry_builders).
@@ -111,7 +108,7 @@ Rückgabewert: `float | str | None`. Zahlen → `float`. Sentinels → `None`. A
 
 ## WebExport Score-Spalten-Vollständigkeit (ab v4.10.11)
 
-`LdbCols` in `scripts/web_export/constants.py` MUSS eine Konstante für JEDE CSV-Modul-Spalte in `benchmark_scores/benchmark_leaderboard_detailed.csv` haben, sonst wird die Spalte stillschweigend ignoriert und landet nicht in `data.json.leaderboard.scores`.
+`LdbCols` in `scripts/web_export/constants.py` MUSS eine Konstante für JEDE CSV-Modul-Spalte in `benchmark_scores/benchmark_leaderboard_detailed.csv` haben, sonst wird die Spalte stillschweigend ignoriert und landet nicht in `leaderboard.json.scores`.
 
 Stand v4.10.11: 9 Spalten (Code Quality, CLI Badge, UX Writing, Documentation Quality, Content Transformation, Cultural Intelligence, Logical Reasoning, Synthesis Quality, Tool Execution). Political Bias wurde in v4.10.16 entfernt (separate `data.json.political_compass` Section).
 

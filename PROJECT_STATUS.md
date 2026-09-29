@@ -2,7 +2,7 @@
 
 > **Interner Statusbericht.** Diese Datei dokumentiert den Projektfortschritt für Maintainer und Contributor. Sie ist nicht Teil der öffentlichen Dokumentation. Aktuelle, kuratierte Release-Informationen stehen in [README.md](README.md) (Recent Versions) und [CHANGELOG.md](CHANGELOG.md).
 
-**Last Updated:** 2026-09-25
+**Last Updated:** 2026-09-27
 **Current Version:** 5.4.0 — Provider-Härtung, Eskalationsleiter, Refusal-Retry, OpenRouter-Pinning & Code-Review
 **Status:** Production-Ready
 
@@ -12,18 +12,28 @@
 
 CrucibleMark v5.3.0 ist ein production-ready LLM-Benchmark-Framework mit 135+ getesteten Modellen über 11 Provider. Das Framework misst praxisnahe Leistung (Code-Reviews, UX-Texte, Reasoning, Tool-Use) mit blindem LLM-Judge und generiert Leaderboards mit License-/Sovereign-Filtern.
 
-**Aktueller Stand (2026-09-25):**
-- **135+ Modelle** im Leaderboard (Größenklassen nach Size-Class-SSoT: Frontier 47 / Workstation 34 / Server 26 / Desktop 18 / Nano 10 / Edge 9), Web-Export nach Dupletten-Konsolidierung (Mac/Spark, muse-glimmer).
+**Aktueller Stand (2026-09-26):**
+- **142+ Modelle** im Leaderboard (Größenklassen nach Size-Class-SSoT: Frontier 47 / Workstation 34 / Server 26 / Desktop 18 / Nano 10 / Edge 9), Web-Export nach Dupletten-Konsolidierung (Mac/Spark, muse-glimmer).
 - **11 Provider:** OpenAI, Anthropic, Google, Mistral, xAI, OpenRouter, Cohere, Ollama, Llama.cpp (Mac), Llama.cpp Spark (GX10 via Metrics-Proxy), vLLM (Spark).
 - **8 Scoring-Module + Political Compass (v3.1):** Code Quality, CLI Operations, Reasoning & Logik, UX Writing, Cultural Intelligence, Documentation Quality, Content Transformation, Tool Use. PC seit v3.0 mit Token-Budget-Regime, Token-Probe-Profilentscheidung und Card-First-Hook (v5.2.2); v3.1 härtet für Nano-/Mini-/Desktop-Modelle (Degenerate-Guard, config-getriebene Schattenmetriken-Badges, Truncation-Signal-Korrekturen, SPRK-Kalibrierungen).
 - **SPRK-Small-Model-Feld:** 14 Nano-/Mini-/Desktop-Modelle ≤ 16 GB (Unsloth-UD-Q5_K_M) + Signal 3.8 27B neu auf llama.cpp Spark integriert.
 - **1917 Tests** passed, 17 skipped, 0 failed · Lint 9.99/10 · Ruff 0 violations · Pylint E-Level clean.
 
-**Aktuelle Arbeit (Sessions 106–122):**
+**Aktuelle Arbeit (Sessions 106–122 + 27.09.):**
+- **Icon-leak in Review-Prosa gefixt (27.09.):** Speed Profile/Badge trugen UI-Icons in die Leaderboard-CSV — die Prompt-Pflicht (Badge wörtlich zitieren) ließ „❌ Unusable Tool Expert" in die Prosa lecken. `collect_data()` sanitisiert jetzt die Prompt-Sicht via `strip_emojis`-SSoT (CSV auf Disk unangetastet); Suite 1917 passed. Legacy-Reviews: o1/o3-mini/o4-mini regeneriert (clean), 5 verwaiste Mai-Artefakte (ohne Audit-Logs) bleiben Historie. Web-Export-Re-Run: 109 Entries.
+- **Review-Formulierungsregel + Massen-Regeneration (27.09.):** „Modus n/a"-Prosa abgeschafft — Formulierungsregel im Meta-Reviewer-Prompt (`n/a` = Setup beschreiben, keinen Modus benennen; Datenwert bleibt Sentinel), 25 Latest-Reviews regeneriert und verifiziert (0 Phrasungs-Treffer; gemma-4-e4b-spark blacklisted, ausgenommen). Web-Export-Re-Run: 159 Entries → 109 OK / 50 SKIP, Naming-Gate 157+37 Cards OK.
+- **Card-Sprachkonsistenz + Web-Export-Verifikation (27.09.):** 17 Card-Texte auf Deutsch umgestellt, Sprach-Gate (WARN) im Card-Validator (Check Nr. 10), Repo-Grenz-Regel in AGENTS.md. `make web-export` verifiziert: 159 Entries → 109 OK / 50 SKIP (Blacklist 50/50), Top-Level-Vertrag + 9-Key-Scores-Contract + Slug-Vollständigkeit 1:1 — keine Ausfälle. Reference-Doku `web-export-cleanup.md` an Ist-Vertrag angepasst.
 - **Code-Review & Bugfix-Serie (Sessions 121–122):** Vollständiges strukturiertes Code-Review (61 Befunde, 7 Sprints) — Provider-Bugs (Anthropic reasoning_tokens, Groq Streaming), magic-numbers→Config, SSoT-Cleanup, close()-Overrides, CC-Refactoring (PC execute 34→11), Skip-Logik in Resolver-Module extrahiert, Exception-Handling, Type-Hints. Audit: `docs/audits/2026-09-25_code-review.md`.
 - **Eskalationsleiter + Cap-Persistierung (Session 110):** Absolut-Deckel [24k/32k], Card-First-Kalibrierung `cot_budget_calibration`, Last-Resort-Modus (48k), Erschöpfungs-Semantik, Krümel-Schwelle 500 Zeichen, Reviewer-Diagnostik. Leiter live verifiziert (GLM-5.3-Flash → +15 %).
 - **Hermes Agentic-Track entfernt (Session 108):** Konzeptionelle Entscheidung — CrucibleMark misst rohe LLM-Endpoints, kein Agent-Loop. Vollständiger Rückbau (Connector, Tests, Wizard-Typ, Framework-Hooks).
 - **Refusal-Retry ausgeweitet (Sessions 116–117):** Serverseitige Refusals (Claude Opus 5) erhalten tag-freien Zweitversuch; Trigger-Isolation beweist Zaun+Wrapper=Jailbreak-Signatur; code_quality_002/5A/5D/5E mit Retry-Prompts versehen.
+
+**Modell-Integrationen (26.09.2026):**
+- **GPT-5.6-Luna** (OpenAI) — erste Stufe der GPT-5.6-Serie (Sol/Terra/Luna = dauerhafte Fähigkeits-Tiers; Sol = GPT-5.5-Nachfolger, $20/1M Output promo). Luna $0,20/$1,20 — günstigster GPT-Kandidat (~$0,57/Lauf).
+- **Grok 4.7** (xAI), **Mistral Medium 2604** (Mistral), **Qwen 3.8 Omni Flash** (OR-Pool), **GLM 5.3 FlashX** (OR, Z.AI-gepinnt) — alle unter 30-€-Testfilter (Schätzungen $0,70–0,97/Lauf).
+- **Gemini 3.8 Flash + 3.5 Flash Lite** (OpenRouter, Google-gepinnt) — 3.8 als neueste Flash-Generation; Card dokumentiert Intro-Pricing-Verdopplung (01.01.2027) und Thinking-Abrechnungsfaktor (~2,3×).
+- **Laguna S 2.1 NVFP4 reaktiviert** (vLLM Spark) — GX10 wieder online (vLLM 0.30.0); Config-Eintrag aus Modell-Cleanup d00ae5b7 restauriert, Card auf 0.30.0 aktualisiert. Nicht auf Blacklist.
+- **Frontier-Preisgrenze $50/1M Output** als Nutzer-Grundsatz etabliert (Hyper-Premium-Ausschluss, AGENTS.md + systemPatterns); GPT-6-Astra ($50) und alle Pro-Tiers ($180) ausgeschlossen.
 
 **Aktuelle Modell-Integrationen (Sessions 82–84):**
 - **Qwen 3.8 27B NVFP4** (lokal, vLLM gx10) — Standard-Profil Rank 63, Score 72.25, Silver Badge. Thinking-Profil im Benchmark (Dual-Profile-Expansion).
@@ -32,7 +42,6 @@ CrucibleMark v5.3.0 ist ein production-ready LLM-Benchmark-Framework mit 135+ ge
 
 **Known Limitations (akzeptiert, nicht blockierend):**
 - **PC-Modul deaktiviert:** Nutzer-Entscheidung zur LLM-Nachtest-Serie — Reaktivierung ist Teil des nächsten Schritts (Opus-5.5-Nativ-Re-Run via `make political-compass`).
-- **vLLM-Spark offline:** GX10 nicht verfügbar — `vllm_spark`-Einträge enabled, Batch-Runner läuft ohne sie (bewusste Nutzer-Entscheidung).
 - **`make benchmark-auto` lokal nicht verfügbar:** GX10/Python-3.14-API-Break (Provider-Discovery-Teile) — Workaround: Modul-Läufe via `run_benchmark.py --module X --model Y`.
 - **Changeset uncommittet:** Code-Review-Serie + vorbefindliche Fremdänderungen (AGENTS.md/progress.md) und untracked Reviews sind nicht committed.
 - **Web-Frontend (separates Repo):** `price-comparison-row.njk` Null-Guard, `model-header.njk` Doppel-Rendering, Frontend stu=false-Score-Anzeige.
