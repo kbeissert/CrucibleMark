@@ -1,0 +1,26 @@
+Bereich,Assets,Score_Gestern_Max,Score_Heute_Max,Score_Heute_High,Delta_HeuteMax_vs_Gestern_pp,Delta_High_vs_HeuteMax_pp,Delta_High_vs_Gestern_pp,Judge_Gestern_Max,Judge_Heute_Max,Judge_Heute_High,Tokens_Gestern_Max,Tokens_Heute_Max,Tokens_Heute_High,Tokens_pro_Sek_Gestern_Max,Tokens_pro_Sek_Heute_Max,Tokens_pro_Sek_Heute_High,Laufzeit_Durchschnitt_Sek_Gestern_Max,Laufzeit_Durchschnitt_Sek_Heute_Max,Laufzeit_Durchschnitt_Sek_Heute_High,Budget_Cutoffs_Gestern_Max,Budget_Cutoffs_Heute_Max,Budget_Cutoffs_Heute_High
+Code Quality Audit,5,80.84,84.04,80.72,3.20,-3.32,-0.12,4.00,4.20,4.00,54787,72832,18787,24.90,29.62,26.70,400.3,464.4,106.6,0,0,0
+CLI Benchmark,6,82.67,86.67,82.66,4.00,-4.00,-0.01,4.00,4.17,4.00,7860,15112,1515,29.09,35.11,20.75,40.1,71.9,6.3,0,0,0
+UX Writing,5,77.15,79.61,79.45,2.46,-0.16,2.30,3.80,4.00,4.00,45937,49065,8290,26.36,31.93,24.22,326.2,292.2,44.8,0,0,0
+Documentation Quality,5,79.09,78.59,77.35,-0.49,-1.24,-1.73,4.00,4.00,4.00,58221,57559,15466,25.88,31.32,25.95,424.4,351.2,95.6,0,0,0
+Content Transformation,6,80.07,84.22,79.65,4.15,-4.57,-0.42,4.00,4.25,4.00,44353,58110,10716,26.78,31.36,20.32,241.0,272.8,45.3,0,0,0
+Cultural Intelligence,5,77.84,81.32,75.04,3.48,-6.28,-2.80,3.80,4.00,3.60,4551,5117,1354,27.21,32.63,16.51,29.4,28.2,7.6,0,0,0
+Reasoning und Logik,11,75.64,79.62,80.00,3.98,0.38,4.36,3.91,4.18,4.18,26486,28656,11080,27.27,32.05,26.47,90.2,83.9,33.6,0,0,0
+ToolUse (Tool Execution + Synthesis),6,80.50,81.67,70.37,1.17,-11.30,-10.13,,,,17986,17989,11561,27.84,31.16,22.13,70.1,57.0,34.9,0,0,0
+GESAMT (49 Assets),49,78.90,81.82,78.35,2.92,-3.47,-0.55,3.93,4.13,4.00,260181,304440,78769,27.02,31.96,23.21,183.7,184.0,44.1,0,0,0
+
+"Anhang: cli006 Re-Test (Determinismus-Pruefung, 28.09.2026)"
+Pruefpunkt,Wert
+Erstversuch_Score,"37.99% (Judge 2.0/5, 177 Tokens, 18:18 Uhr)"
+ReTest_Score,"37.99% (Judge 2.0/5, 177 Tokens)"
+Antwort_wortgleich,"true - deterministisch, kein Sampling-Zufall"
+Fehleranalyse,"Ueberfluessiges 'mkdir -p /Volumes/External/ollama-models' aendert die mv-Semantik (Ziel existiert bereits -> Move-into statt Rename) -> verschachteltes Layout ollama-models/models = Treffer des banned_commands-Musters des Assets; Symlink darauf konsistent und real funktionierend (sandbox-verifiziert), verletzt aber die Golden-Konvention. Required-Substring 'ln -s /Volumes/External/ollama-models ~/.ollama' verfehlt. Judge-Begrundung ('incorrect target path') technisch unpraezise - der echte Fehler ist das mkdir, nicht der Link. Score korrekt nach Asset-Konvention."
+Einordnung,Stabiles Verhaltensmerkmal der Variante bei Praezisions-Cli-Tasks; Hauptgrund fuer ToolUse/CLI-Rueckgang im Reduced-Thinking-Profil
+
+Anhang C: Server-Instanzen und Preemption je Lauf (Erhebung 28.09.2026 19:42 via Metrics-Proxy /metrics + docker logs GX10)
+Lauf,Zeitraum_CEST,Server_Instanz,Instanz_Start_CEST,Image_Config,Preemptions,Evidenz,Fehlerbild
+Gestern (max) - Original-Voll-Lauf,20.09. 15:06-18:19,"historisch, unbekannt",-,-,nicht rekonstruierbar,mehrere Server-Restarts seitdem; Container/Logs rotiert,"49/49 finish=stop, 0 Budget-Cutoffs"
+Heute (max) - Morgen-Batch,28.09. 12:22-12:52,"Instanz 1 (Start vor 12:22, unbekannt)",-,-,nicht rekonstruierbar,"Container entfernt, docker logs weg, kein persistentes Engine-Log","48/49 finish=stop; Ausreisser code_quality_001: finish=length exakt am 24000er-Cap (23825 Reasoning-Tokens) = Budget-Erschoepfung, KEINE Preemption-Signatur"
+Heute (max) - Einzel-Re-Run code_quality_001,28.09. 15:58-16:09,Instanz 2,~15:55,vorherige Instanz,nicht rekonstruierbar,Container entfernt (docker ps -a leer),"finish=stop, 84.0%"
+Heute (high) - Voll-Lauf,28.09. 18:03-19:16,glm53-exl3-head,16:59:10,ghcr.io/miaai-lab/glm-5.3-flash-2x-dgx-sparks:exl3-instanttensor,0,vllm:num_preemptions_total=0.0 (Counter) + 0 Preemption-Log-Zeilen bei aktivem Stats-Logging,"49/49 finish=stop, 0 Budget-Cutoffs"
+Fazit,-,-,-,-,-,Messbare Laeufe: 0 Preemptions,"These 'Preemption als Mechanismus fuer Score-Unterschiede' fuer alle messbaren Laeufe widerlegt; High-vs-Max-Differenz geht auf die Konfigurationsgrenze 16:59 CEST (neuer Container/Build) zurueck; Morgen-Ausreisser traegt Budget-Erschoepfungs-Signatur; historische Laeufe (20.09.) unbelegt, Fehlerbilder sprechen ebenfalls gegen Preemption"
