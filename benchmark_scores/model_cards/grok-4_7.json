@@ -1,0 +1,110 @@
+{
+  "model_id": "grok-4.7",
+  "display_name": "Grok 4.7",
+  "developer": "xAI",
+  "origin_country": "US",
+  "developer_jurisdiction": "US",
+  "deployment_type": "cloud-only",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "Das Modell wird von einem US-amerikanischen Unternehmen entwickelt und gehostet. Aufgrund der US-Jurisdiktion unterliegt es potenziell dem CLOUD Act, was ein mittleres Risiko für den Datenzugriff durch US-Behörden darstellt. Da die Gewichte proprietär und nicht verteilt sind, besteht kein zusätzliches Risiko durch Weitergabe der Gewichte selbst.",
+  "model_family": "Grok",
+  "vendor": "xAI",
+  "primary_focus": "reasoning",
+  "use_case_primary": "agentic",
+  "parameter_architecture": null,
+  "params_total_b": null,
+  "params_active_b": null,
+  "context_window_k": 500,
+  "knowledge_cutoff": "2026-05",
+  "summary": "Grok 4.7 ist xAIs Frontier-Flaggschiff vom 21. September 2026, mit größerer Basis als Grok 4.6 und Trainings-Fokus auf mehrstündigen Aufgaben. 500.000 Tokens Kontext, Text- und Bild-Input, vier Reasoning-Stufen von low bis xhigh bei unveränderten 2 / 6 USD pro Million Tokens. Laut xAI fast verdoppelte Leistung bei langen Terminal-Aufgaben und ein neuer Safeguard-Stack gegen Jailbreaks.",
+  "strengths": [
+    "Laut xAI fast verdoppelte Leistung bei mehrstündigen Terminal-Aufgaben gegenüber Grok 4.6.",
+    "Neuer Safeguard-Stack: laut xAI stärkste Refusal- und Jailbreak-Resistenz der Modellhistorie.",
+    "Vier Reasoning-Stufen (low, medium, high, xhigh) inklusive lesbarer Reasoning-Zusammenfassung.",
+    "500.000 Tokens Kontext, Text- und Bild-Input, Function Calling, Web- und X-Search, Code-Execution.",
+    "Lange RL-Läufe auf mehrstündigen Aufgaben verbessern Selbstverifikation und Langkontext-Verhalten."
+  ],
+  "known_limitations": [
+    "Langkontext-Pricing ab 200.000 Tokens: alle Prompt-Tokens zum doppelten Tarif (4 / 12 USD).",
+    "Intelligence-Index 46 (Artificial Analysis) — nur zwei Punkte über Grok 4.6 trotz größerer Basis.",
+    "Launch-Vergleiche meist 4.7 bei xhigh gegen 4.6 bei high — kein sauberer Stufen-Vergleich.",
+    "Empirisch 2,5-facher Tokenverbrauch (240 vs. 94 Mio. Output-Tokens) — Auftragskosten steigen.",
+    "Grok 4.7 Fast nur in Cursor und Grok Build, doppelter Tokenpreis, nicht über die öffentliche API.",
+    "Parameterzahl von xAI nicht offiziell dokumentiert."
+  ],
+  "judge_context_hint": "Grok 4.7 ist xAIs Frontier-Flaggschiff für Langzeit-Agentic- und Coding-Workflows (US/CLOUD Act, Cloud-Only), 500.000 Tokens Kontext, Text- und Bild-Input. Vier Reasoning-Stufen (low/medium/high, Default high, zusätzlich xhigh); Reasoning erscheint als verschlüsselte Chain plus lesbarer Zusammenfassung im Metadatenfeld, nicht im Content. HINWEIS: Basiert auf öffentlichen xAI-Quellen und Drittanbieter-Benchmarks, nicht auf einem eigenen CrucibleMark-Probe-Lauf — vor Reviewer-Einsatz gegen echte Probe-/ToolUse-Daten validieren.",
+  "architecture_tags": [
+    "General",
+    "Thinking",
+    "Vision-Capable"
+  ],
+  "input_modalities": [
+    "text",
+    "image"
+  ],
+  "output_modalities": [
+    "text"
+  ],
+  "supports_tool_use": true,
+  "tooluse_tested_at": "2026-09-27T00:41:15Z",
+  "tooluse_score_p1": 90.0,
+  "tooluse_score_p2": 53.33,
+  "tooluse_runs": {
+    "grok-4.7": {
+      "tested_at": "2026-09-27T00:41:15Z",
+      "score_p1": 90.0,
+      "score_p2": 53.33
+    }
+  },
+  "tooluse_recommendation": null,
+  "dual_profile": null,
+  "temperature": null,
+  "system_prompt_override": null,
+  "cot_marker_family": null,
+  "cot_tags_detected": null,
+  "top_p": null,
+  "top_k": null,
+  "repetition_penalty": null,
+  "frequency_penalty": null,
+  "presence_penalty": null,
+  "seed": null,
+  "stop_sequences": null,
+  "license": "Proprietary",
+  "license_url": null,
+  "commercial_use_allowed": false,
+  "weights_license_tier": "proprietary",
+  "model_version": "4.7",
+  "input_price_per_1m": 2.0,
+  "output_price_per_1m": 6.0,
+  "hardware_profile": null,
+  "inference_engine": null,
+  "quantization_format": null,
+  "model_variant": null,
+  "unknown": false,
+  "card_status": "draft",
+  "size_class": "Frontier",
+  "generated_at": "2026-09-26T18:13:54.578045+00:00",
+  "thinking_probe_detected": true,
+  "thinking_probe_evidence": "Multi-Probe (3 prompts, 3 detected, best confidence=medium):\n  - math: [math] reasoning_tokens=137 in provider metadata. First 200 chars: The average speed of an object is given by the formula\n\n\\[\n\\text{average speed} = \\frac{\\text{total distance}}{\\text{total time}}.\n\\]\n\nSubstitute the given values (distance \\(= 120\\,\\mathrm{km}\\), tim\n  - code: [code] reasoning_tokens=700 in provider metadata. First 200 chars: **Sorted result:** `[1, 1, 2, 3, 3, 4, 5, 5, 5, 6, 9]`\n\n**Algorithm: insertion sort** (stable, in-place).  \nKeep a growing sorted prefix on the left. Take the next unsorted element and shift larger pr\n  - decision: [decision] reasoning_tokens=849 in provider metadata. First 200 chars: There is no single correct answer, but the strongest position is: design so the dilemma almost never arises, and do not program a rule that deliberately sacrifices the passenger to save a pedestrian.\n",
+  "thinking_probe_confidence": "medium",
+  "thinking_probe_at": "2026-09-26T20:25:30.138253+00:00",
+  "thinking_probe_manual_override": null,
+  "profile_verified": false,
+  "profile_verified_at": null,
+  "profile_verified_by": null,
+  "last_modified_at": "2026-09-26",
+  "heritage_ids": [
+    "grok-4_6"
+  ],
+  "community": null,
+  "pc_token_calibration": {
+    "budget": 390,
+    "classification": "self_limiting",
+    "profile": "thinking",
+    "tested": "2026-09-26T21:53:48.495879+00:00",
+    "converged_stage": 300,
+    "notes": "Stratifizierte Probe: 9 Blöcke sauber @ 300, 0/0 verdächtige Blöcke eskaliert (0 greedy, 0 inkonsistent). Profil: thinking."
+  },
+  "pc_profile": "thinking"
+}

@@ -19,6 +19,9 @@ model_pricing:
     output: 10.00
 
 # OpenAI — aus OpenAI API Pricing (2026)
+  "gpt-5.6-luna":
+    input: 0.20
+    output: 1.20
   "gpt-5-5":
     input: 5.00
     output: 30.00
@@ -84,6 +87,12 @@ model_pricing:
   "gemini-3.5-flash":
     input: 1.50
     output: 9.00
+  "google/gemini-3.8-flash":
+    input: 0.75
+    output: 3.75
+  "google/gemini-3.5-flash-lite":
+    input: 0.30
+    output: 2.50
   "google/gemini-3.7-flash":
     input: 0.75
     output: 3.75
@@ -113,6 +122,9 @@ model_pricing:
   "mistral-large-2411":
     input: 2.00
     output: 6.00
+  "mistral-medium-2604":
+    input: 1.50
+    output: 7.50
   "mistral-medium-3-5":
     input: 1.50
     output: 7.50
@@ -136,6 +148,9 @@ model_pricing:
     output: 0.10
 
 # xAI Grok — aus Grok API
+  "grok-4.7":
+    input: 1.60
+    output: 4.80
   "grok-3":
     input: 5.00
     output: 15.00
@@ -198,6 +213,9 @@ model_pricing:
   "qwen/qwen3.7-max":
     input: 1.475
     output: 4.425
+  "qwen/qwen3.8-omni-flash":
+    input: 0.15
+    output: 0.47
   "qwen/qwen3.8-flash":
     input: 0.16
     output: 0.47
@@ -224,6 +242,9 @@ model_pricing:
   # Standardpreis der vollpreisigen Provider (Parasail, Cloudflare, DeepInfra,
   # Io Net, BaseTen; discount: 0). Z.AI/Novita/GMICloud listen zeitweise 50%
   # Promo (bis 09.09.2026) — bewusst NICHT als Card-Preis verwendet.
+  "z-ai/glm-5.3-flashx":
+    input: 0.37
+    output: 1.25
   "z-ai/glm-5.3-flash":
     input: 0.15
     output: 0.50

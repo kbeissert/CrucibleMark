@@ -86,6 +86,10 @@ providers:
       env_var: OPENAI_API_KEY
       request_timeout: 600
       models:
+      # 2026-09-26 integriert: GPT-5.6-Luna-Tier (günstigste Stufe, $0.20/$1.20).
+      # max_completion_tokens-Pflicht (Connector-Default) — wie 5.5/5.4.
+      - id: gpt-5.6-luna
+        name: GPT 5.6 Luna
       - id: gpt-5.5-2026-04-23
         name: GPT-5.5
       - id: gpt-5.4-2026-03-05
@@ -145,6 +149,9 @@ providers:
       max_tokens: 32768
       env_var: XAI_API_KEY
       models:
+      # 2026-09-26 integriert: neueste Grok-Generation ($1.60/$4.80).
+      - id: grok-4.7
+        name: Grok 4.7
       - id: grok-4.6
         name: Grok 4.6
       - id: grok-4.5
@@ -310,6 +317,12 @@ providers:
         deepseek/deepseek-v4.1-flash:
           order: [DeepSeek]
           allow_fallbacks: false
+        google/gemini-3.8-flash:
+          order: [Google]
+          allow_fallbacks: false
+        google/gemini-3.5-flash-lite:
+          order: [Google]
+          allow_fallbacks: false
         google/gemini-3.7-flash:
           order: [Google]
           allow_fallbacks: false
@@ -410,6 +423,15 @@ providers:
       #   name: DeepSeek V3.2
 
       # Google — neueste zuerst (Providervergleich)
+      # 2026-09-26 integriert: 3.8-flash (neueste Generation) + 3.5-flash-lite.
+      # Intro-Pricing $0.75/$3.75 bis 31.12.2026, danach $1.50/$7.50 (Card-Doku!).
+      # Direkt-Google-Provider ohne Budget (Session 119) — via OpenRouter gepinnt.
+      - id: google/gemini-3.8-flash
+        name: Gemini 3.8 Flash
+
+      - id: google/gemini-3.5-flash-lite
+        name: Gemini 3.5 Flash Lite
+
       - id: google/gemini-3.7-flash
         name: Gemini 3.7 Flash
 
@@ -458,6 +480,11 @@ providers:
         name: Hermes 4 70B
 
       # Qwen — neueste zuerst
+      # 2026-09-26 integriert: Omni-Variante ($0.15/$0.47). Läuft im Pool
+      # (konsistent mit qwen3.8-flash — kein Pinning).
+      - id: qwen/qwen3.8-omni-flash
+        name: Qwen 3.8 Omni Flash
+
       - id: qwen/qwen3.8-flash
         name: Qwen 3.8 Flash
 
@@ -1457,9 +1484,46 @@ providers:
         name: GLM 5.3 Flash EXL3 (vLLM, MoE, Always-Thinking)
         config: GLM-5.3-Flash-EXL3
         max_tokens: 32768
-        temperature: 1.0
-        top_p: 0.95
-        # top_k:  # Card: null — vLLM-Server-Default greift
+
+      # ⚠️ TEMP-Variante (Einmal-Benchmark, 2026-09-28): isolierte ID, damit
+      # benchmark_scores-CSV-Upserts/Audit-Logs/Kalibrierung der publizierten
+      # glm-5_3-flash-exl3-Rows unberührt bleiben. Gleiches TOML → gleicher
+      # Server, KEIN Container-Swap. Eigene Card (glm-5_3-flash-exl3-high.json)
+      # mit kopierter Kalibrierung/Probe — Leiter-Rückschreibungen landen
+      # isoliert. Bewusst KEIN enable_thinking (Always-Thinking-Modell, sonst
+      # HTTP 400 + invalide Dual-Profile-Expansion). Sampling-Felder absichtlich
+      # NICHT gesetzt = identisches Request-Verhalten wie das Original.
+      # NACH DEM EXPERIMENT: Entry auskommentieren (benchmark-auto liest die
+      # Config, nicht die Blacklist!) + make clean-model MODEL=...high.
+      - id: glm-5_3-flash-exl3-high
+        name: GLM 5.3 Flash EXL3 High (Temp-Variante)
+        config: GLM-5.3-Flash-EXL3
+        max_tokens: 32768
+
+      # 2026-09-26 entfernt (User hat Laguna vom GX10 entfernt) — Entry
+      # auskommentiert, damit der Batch das Modell nicht erneut benchmarkt.
+      # Vorher: reaktiviert am 2026-09-26 (Cleanup d00ae5b7).
+      # Laguna S 2.1 — Poolside NVFP4 MoE (117.6B total / 8.5B active),
+      # custom LagunaForCausalLM (trust_remote_code=true), DFlash Speculative
+      # Thinking: KEIN Dual-Profile (enable_thinking weggelassen). Laguna ist
+      # ein selektives Reasoning-Modell ("thinks when needed", HF Discussion
+      # #13) — kein Always-Thinking wie Qwen3.6. Das TOML setzt
+      # --default-chat-template-kwargs {"enable_thinking":true} serverseitig,
+      # das Modell entscheidet pro Request selbst ob es denkt. Ein
+      # Non-Thinking-Profil würde eine Kernfähigkeit künstlich unterdrücken
+      # und verzerrt den Benchmark. Cold-Start ~15 Min.
+      # - id: Laguna-S-2_1-NVFP4
+      #   name: Laguna S 2.1 NVFP4 (vLLM, MoE, DFlash)
+      #   config: Laguna-S-2.1-NVFP4
+      #   max_tokens: 16384
+      #   temperature: 0.7
+      #   top_p: 0.95
+      #   top_k: 20
+      #   # repetition_penalty:  # TOML-Default (kein Override)
+      #   # KEIN enable_thinking — siehe Kommentar oben (selektives Reasoning).
+      #   temperature: 1.0
+      #   top_p: 0.95
+      #   # top_k:  # Card: null — vLLM-Server-Default greift
 
       # Weitere verfügbare TOMLs (per Auto-Discovery entdeckbar, nicht im Benchmark):
       # - Qwen3-Embedding-0.6B-NVFP4: Embedding-Modell (kein LLM-Target)

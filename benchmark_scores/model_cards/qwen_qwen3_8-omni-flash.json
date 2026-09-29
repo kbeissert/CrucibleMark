@@ -1,0 +1,111 @@
+{
+  "model_id": "qwen/qwen3.8-omni-flash",
+  "display_name": "Qwen 3.8 Omni Flash",
+  "developer": "Alibaba",
+  "origin_country": "China",
+  "developer_jurisdiction": "CN",
+  "deployment_type": "cloud-only",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "medium-high",
+  "weights_provenance_risk_rationale": "Das Modell wird von einem chinesischen Unternehmen entwickelt und ausschließlich über Cloud-APIs bereitgestellt (Weights werden nicht veröffentlicht). Als chinesisches Unternehmen unterliegt Alibaba den PRC-Datensicherheits- und Cybersicherheitsgesetzen, nicht dem US-CLOUD-Act. Da keine Gewichte verteilt werden, besteht kein Weitergabe-Risiko, jedoch potenzielles Datenzugriffsrisiko durch chinesische Behörden bei über Alibaba-Cloud-Regionen verarbeiteten Daten.",
+  "model_family": "Qwen 3.8",
+  "vendor": "Alibaba",
+  "primary_focus": "general",
+  "use_case_primary": "agentic",
+  "parameter_architecture": "dense",
+  "params_total_b": null,
+  "params_active_b": null,
+  "context_window_k": 1000,
+  "knowledge_cutoff": null,
+  "summary": "Eine Million Tokens Kontext für Text, Bild, Audio und Video in einem Modell: Qwen3.8-Omni-Flash (ab 18. September 2026) ist Alibabas erstes omni-modales Modell mit agentischem Fokus — es versteht mehrstündiges Audio- und Videomaterial, plant Aufgaben und führt sie per Tool-Calling aus. Bei 0,15 / 0,47 USD pro Million Tokens senkt es die Audio-Kosten laut Alibaba um über 98 Prozent gegenüber dem Vorgänger. Output ist reiner Text, die Gewichte bleiben geschlossen.",
+  "strengths": [
+    "Natives Omni-Modal: Text, Bild, Audio und Video in einem Modell ohne separate Konverter.",
+    "Laut Alibaba über 98 Prozent günstiger pro Stunde Audio-Input gegenüber dem Vorgänger.",
+    "Eine Million Tokens Kontext für mehrstündiges Audio- und Videomaterial in einer Anfrage.",
+    "Laut Alibaba deutliche Sprünge bei agentischen Multimedia-Evaluationen gegenüber dem Vorgänger.",
+    "Versteht Inhalt, plant die Aufgabe, führt sie per Tool-Calling aus und liefert das Ergebnis.",
+    "Text-Performance bleibt laut Alibaba auf Niveau eines reinen Textmodells gleicher Größe.",
+    "Audio-Eingabe in bis zu 113 Sprachen und Dialekten laut Alibaba."
+  ],
+  "known_limitations": [
+    "Omni-Verarbeitung erhöht den Tokenverbrauch — Reasoning-Budget bis 262.000 Tokens im Thinking-Modus.",
+    "Keine offenen Gewichte — erstmals bei einem Qwen-Omni-Modell.",
+    "Ausgabe reiner Text — kein Audio- oder Bild-Output trotz multimodaler Input-Fähigkeit.",
+    "Chinesische Jurisdiktion (PRC-Datensicherheitsgesetze) statt EU- oder US-Regulierung.",
+    "Sechs Regionen (u. a. Frankfurt, Virginia) — Datenverarbeitungsort je nach Routing variabel."
+  ],
+  "judge_context_hint": "Qwen3.8-Omni-Flash ist Alibabas natives Omni-Modell (CN-Jurisdiktion, Cloud-Only, keine offenen Gewichte) mit Fokus auf Audio-Video-Agentik statt reinem Text-Reasoning. 1M-Token-Kontext, Reasoning-Budget bis 262K im Thinking-Modus. Falls das Testsetup nur Text+Bild abfragt, wird die Kernfähigkeit (native Audio/Video-Verständnis) nicht erfasst — bei der Bewertung entsprechend einordnen. HINWEIS: Basiert auf öffentlichen Alibaba- und Drittanbieter-Quellen, nicht auf einem eigenen CrucibleMark-Probe-Lauf — vor Reviewer-Einsatz gegen echte Probe-/ToolUse-Daten validieren.",
+  "architecture_tags": [
+    "General",
+    "Thinking",
+    "Vision-Capable"
+  ],
+  "input_modalities": [
+    "text",
+    "image"
+  ],
+  "output_modalities": [
+    "text"
+  ],
+  "supports_tool_use": true,
+  "tooluse_tested_at": "2026-09-27T09:13:52Z",
+  "tooluse_score_p1": 90.0,
+  "tooluse_score_p2": 66.67,
+  "tooluse_runs": {
+    "qwen/qwen3.8-omni-flash": {
+      "tested_at": "2026-09-27T09:13:52Z",
+      "score_p1": 90.0,
+      "score_p2": 66.67
+    }
+  },
+  "tooluse_recommendation": null,
+  "dual_profile": false,
+  "temperature": null,
+  "system_prompt_override": null,
+  "cot_marker_family": null,
+  "cot_tags_detected": null,
+  "top_p": null,
+  "top_k": null,
+  "repetition_penalty": null,
+  "frequency_penalty": null,
+  "presence_penalty": null,
+  "seed": null,
+  "stop_sequences": null,
+  "license": "Proprietary",
+  "license_url": null,
+  "commercial_use_allowed": true,
+  "weights_license_tier": "proprietary",
+  "model_version": "3.8",
+  "input_price_per_1m": 0.15,
+  "output_price_per_1m": 0.47,
+  "hardware_profile": null,
+  "inference_engine": "openrouter-api",
+  "quantization_format": null,
+  "model_variant": null,
+  "unknown": false,
+  "card_status": "draft",
+  "size_class": "Frontier",
+  "generated_at": "2026-09-26T18:51:24.846800+00:00",
+  "thinking_probe_detected": true,
+  "thinking_probe_evidence": "Multi-Probe (3 prompts, 3 detected, best confidence=medium):\n  - math: [math] reasoning_tokens=71 in provider metadata. First 200 chars: To find average speed, use:\n\n\\[\n\\text{Average speed} = \\frac{\\text{distance}}{\\text{time}}\n\\]\n\nGiven:\n\n\\[\n\\text{distance} = 120 \\text{ km}\n\\]\n\n\\[\n\\text{time} = 1.5 \\text{ hours}\n\\]\n\nSo:\n\n\\[\n\\text{Aver\n  - code: [code] reasoning_tokens=840 in provider metadata. First 200 chars: Assuming you want the list sorted in **ascending order**, I’ll use **insertion sort** and show it step by step.\n\nOriginal list:\n\n```text\n[3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5]\n```\n\n## Algorithm: Insertion \n  - decision: [decision] reasoning_tokens=3249 in provider metadata. First 200 chars: There is no simple “always swerve” or “never swerve” answer. The ethically defensible position is conditional:\n\n**An autonomous car should swerve to avoid a pedestrian if doing so is a reasonable, pro",
+  "thinking_probe_confidence": "medium",
+  "thinking_probe_at": "2026-09-27T01:57:12.979335+00:00",
+  "thinking_probe_manual_override": null,
+  "profile_verified": false,
+  "profile_verified_at": null,
+  "profile_verified_by": null,
+  "last_modified_at": "2026-09-26",
+  "heritage_ids": [
+    "qwen3_5-omni-plus"
+  ],
+  "community": null,
+  "pc_token_calibration": {
+    "budget": 390,
+    "classification": "self_limiting",
+    "profile": "thinking",
+    "tested": "2026-09-27T04:48:28.990149+00:00",
+    "converged_stage": 300,
+    "notes": "Stratifizierte Probe: 9 Blöcke sauber @ 300, 0/0 verdächtige Blöcke eskaliert (0 greedy, 0 inkonsistent). Profil: thinking."
+  },
+  "pc_profile": "thinking"
+}

@@ -7,7 +7,7 @@
   "deployment_type": "cloud-only",
   "local_deployment_possible": false,
   "weights_provenance_risk": "TODO",
-  "weights_provenance_risk_rationale": "TODO",
+  "weights_provenance_risk_rationale": "Anthropic ist ein US-amerikanisches Unternehmen und unterliegt dem CLOUD Act; die Modellgewichte sind nicht öffentlich zugänglich.",
   "model_family": "Claude 5",
   "vendor": "Anthropic",
   "primary_focus": "coding",

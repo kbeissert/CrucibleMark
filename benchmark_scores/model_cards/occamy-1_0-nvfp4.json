@@ -7,7 +7,7 @@
   "deployment_type": "localweights",
   "local_deployment_possible": true,
   "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "Occamy 1.0 NVFP4 is a community derivative of Qwen/Qwen3.6-35B-A3B, with a published provenance trail including the quantization recipe, data-provenance file, and validation artifacts. The upstream base is Apache 2.0, the checkpoint runs locally, and the NVFP4 export is limited to routed experts, but Accio-Lab’s organizational jurisdiction is not publicly documented, so the provenance risk remains medium.[file:1]",
+  "weights_provenance_risk_rationale": "Occamy 1.0 NVFP4 ist ein Community-Derivat von Qwen/Qwen3.6-35B-A3B mit veröffentlichter Provenance-Kette, einschließlich Quantisierungs-Rezept, Data-Provenance-Datei und Validierungs-Artefakten. Die Upstream-Basis ist Apache 2.0, der Checkpoint läuft lokal, und der NVFP4-Export ist auf die gerouteten Experten beschränkt; die organisatorische Jurisdiktion von Accio-Lab ist jedoch nicht öffentlich dokumentiert, daher bleibt das Provenance-Risiko mittel.[file:1]",
   "model_family": "Occamy",
   "vendor": "Accio-Lab",
   "primary_focus": "agentic",

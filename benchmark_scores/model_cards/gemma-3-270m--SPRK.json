@@ -7,7 +7,7 @@
   "deployment_type": "localweights",
   "local_deployment_possible": true,
   "weights_provenance_risk": "low",
-  "weights_provenance_risk_rationale": "Google DeepMind publishes Gemma 3 270M as downloadable weights under the Gemma Terms of Use. Because the model is intended for fully local inference and the Unsloth GGUF build runs offline, the operational data-exfiltration risk is low even though the license is restricted rather than OSI-open.[web:1023][web:1017][web:1025]",
+  "weights_provenance_risk_rationale": "Google DeepMind veröffentlicht Gemma 3 270M als herunterladbare Gewichte unter den Gemma Terms of Use. Da das Modell für vollständig lokale Inferenz vorgesehen ist und der Unsloth-GGUF-Build offline läuft, ist das operative Data-Exfiltration-Risiko gering, obwohl die Lizenz eingeschränkt und nicht OSI-offen ist.[web:1023][web:1017][web:1025]",
   "model_family": "Gemma",
   "vendor": "Google DeepMind",
   "primary_focus": "generalist",

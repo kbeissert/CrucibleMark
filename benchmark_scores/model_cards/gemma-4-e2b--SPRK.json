@@ -7,7 +7,7 @@
   "deployment_type": "localweights",
   "local_deployment_possible": true,
   "weights_provenance_risk": "low",
-  "weights_provenance_risk_rationale": "Google DeepMind publishes Gemma 4 under Apache 2.0 with open weights, and the Unsloth GGUF build supports fully local inference. Because the model can be run offline, the operational data-exfiltration risk is low.[web:796][web:805][web:1037]",
+  "weights_provenance_risk_rationale": "Google DeepMind veröffentlicht Gemma 4 unter Apache 2.0 mit offenen Gewichten, und der Unsloth-GGUF-Build unterstützt vollständig lokale Inferenz. Da das Modell offline betrieben werden kann, ist das operative Data-Exfiltration-Risiko gering.[web:796][web:805][web:1037]",
   "model_family": "Gemma",
   "vendor": "Google DeepMind",
   "primary_focus": "generalist",

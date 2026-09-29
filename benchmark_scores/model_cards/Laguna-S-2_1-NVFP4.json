@@ -84,7 +84,7 @@
   "input_price_per_1m": 0.1,
   "output_price_per_1m": 0.2,
   "hardware_profile": "DGX Spark GB10",
-  "inference_engine": "vLLM 0.25.1",
+  "inference_engine": "vLLM 0.30.0",
   "quantization_format": "NVFP4 (compressed-tensors)",
   "model_variant": "NVFP4, DFlash",
   "unknown": false,
@@ -99,7 +99,19 @@
   "profile_verified": true,
   "profile_verified_at": "2026-08-02T10:41:00+02:00",
   "profile_verified_by": "cruciblemark",
-  "last_modified_at": "2026-08-02",
+  "last_modified_at": "2026-09-26T17:43:06Z",
   "heritage_ids": [],
-  "community": null
+  "community": null,
+  "inference_engine_history": [
+    "vLLM 0.25.1"
+  ],
+  "pc_token_calibration": {
+    "budget": null,
+    "classification": "greedy_uncapped",
+    "profile": "thinking",
+    "tested": "2026-09-26T19:22:49.212407+00:00",
+    "converged_stage": null,
+    "notes": "Stratifizierte Probe: 0 Blöcke sauber @ 300, 4/9 verdächtige Blöcke eskaliert (4 greedy, 0 inkonsistent). Profil: thinking. Thinking-only-Ausnahme (dual_profile: false): Instruct-Modus nicht verfügbar — einzelner Thinking-Lauf statt Modus-Wechsel (Konzept-Doc Abschn. 11)."
+  },
+  "pc_profile": "thinking"
 }

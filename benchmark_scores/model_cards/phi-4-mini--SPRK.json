@@ -7,7 +7,7 @@
   "deployment_type": "localweights",
   "local_deployment_possible": true,
   "weights_provenance_risk": "low",
-  "weights_provenance_risk_rationale": "Microsoft releases Phi-4-mini under the MIT license as open weights, and Unsloth provides local GGUF packaging for offline inference. The operational provenance risk is low because the model can be run fully locally without provider egress.[web:1175][web:1173][web:1164][web:1170]",
+  "weights_provenance_risk_rationale": "Microsoft veröffentlicht Phi-4-mini unter der MIT-Lizenz als Open-Weights-Modell, und Unsloth stellt die lokale GGUF-Paketierung für Offline-Inferenz bereit. Das operative Provenance-Risiko ist gering, da das Modell vollständig lokal ohne Provider-Egress betrieben werden kann.[web:1175][web:1173][web:1164][web:1170]",
   "model_family": "Phi",
   "vendor": "Microsoft",
   "primary_focus": "reasoning",

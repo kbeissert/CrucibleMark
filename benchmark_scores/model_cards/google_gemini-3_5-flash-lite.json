@@ -1,0 +1,111 @@
+{
+  "model_id": "google/gemini-3.5-flash-lite",
+  "display_name": "Gemini 3.5 Flash Lite",
+  "developer": "Google",
+  "origin_country": "USA",
+  "developer_jurisdiction": "US",
+  "deployment_type": "cloud-only",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "Das Modell wird von einem US-amerikanischen Unternehmen entwickelt und gehostet. Aufgrund der US-Jurisdiktion unterliegt es potenziell dem CLOUD Act, was ein mittleres Risiko für den Datenzugriff durch US-Behörden darstellt. Da die Gewichte proprietär und nicht verteilt sind, besteht kein zusätzliches Risiko durch Weitergabe der Gewichte selbst.",
+  "model_family": "Gemini",
+  "vendor": "Google",
+  "primary_focus": "general",
+  "use_case_primary": "agentic",
+  "parameter_architecture": "dense",
+  "params_total_b": null,
+  "params_active_b": null,
+  "context_window_k": 1049,
+  "knowledge_cutoff": null,
+  "summary": "Mit 350 Output-Tokens pro Sekunde ist Gemini 3.5 Flash-Lite das schnellste Modell von Googles 3.5-Serie, seit dem 21. Juli 2026 allgemein verfügbar. Es zielt auf hochvolumige, latenzsensitive Workloads: Übersetzung, Klassifikation und leichte agentische Aufgaben bei 0,30 / 2,50 USD pro Million Tokens. Eine Million Tokens Kontext, multimodaler Input aus Text, Bild, Video und Audio, native Tool-Unterstützung. Harte Reasoning-Aufgaben sind nicht seine Domäne.",
+  "strengths": [
+    "Schnellstes Modell der Gemini-3.5-Serie: 350 Output-Tokens pro Sekunde.",
+    "Eine Million Tokens Kontext, laut Google deutlich verbessert gegenüber dem Vorgänger (GDM-MRCR v2).",
+    "Deutlicher Agentik-Sprung gegenüber dem Vorgänger laut Google-Benchmarks.",
+    "Multimodaler Input aus Text, Bild, Video und Audio bei reiner Text-Ausgabe.",
+    "Native Tool-Unterstützung mit Function Calling und JSON-Schema-Structured-Output.",
+    "Starkes Fachwissens-Niveau für die Preisklasse laut Herstellerangaben."
+  ],
+  "known_limitations": [
+    "Niedriger Intelligence-Index (22,2) im Vergleich zu größeren Gemini-3.5- und 3.6-Modellen.",
+    "Schwach bei Humanity's Last Exam (18,8 Prozent) und CritPt (0,0 Prozent) — kein hartes Reasoning.",
+    "Niedrige Omniscience-Accuracy (29,5 Prozent) bei moderater Non-Hallucination-Rate (65,6 Prozent).",
+    "Trotz Lite-Positionierung über Marktmedian-Preisen laut Artificial Analysis.",
+    "Optionaler Reasoning-Modus erhöht Latenz und Tokenverbrauch."
+  ],
+  "judge_context_hint": "Gemini 3.5 Flash-Lite ist Googles Low-Cost/Low-Latency-Modell der 3.5-Serie (US/CLOUD Act, Cloud-Only), optimiert für Hochvolumen-Agentik statt tiefes Reasoning. Kontext 1M Tokens, Text+Image+Video+Audio-Input, Text-Output. Reasoning läuft optional im Hintergrund (explizite Reasoning-Mode-Option) — noch nicht durch eigenen ThinkingProbe verifiziert. HINWEIS: Dieses Hint-Feld basiert auf öffentlichen Spezifikationen, nicht auf einem CrucibleMark-eigenen Probe-Lauf — vor produktivem Einsatz im Reviewer-Prompt gegen echte Probe-Daten validieren.",
+  "architecture_tags": [
+    "Thinking",
+    "Vision-Capable"
+  ],
+  "input_modalities": [
+    "text",
+    "image",
+    "video",
+    "audio"
+  ],
+  "output_modalities": [
+    "text"
+  ],
+  "supports_tool_use": true,
+  "tooluse_tested_at": "2026-09-27T03:54:09Z",
+  "tooluse_score_p1": 88.33,
+  "tooluse_score_p2": 60.0,
+  "tooluse_runs": {
+    "google/gemini-3.5-flash-lite": {
+      "tested_at": "2026-09-27T03:54:09Z",
+      "score_p1": 88.33,
+      "score_p2": 60.0
+    }
+  },
+  "tooluse_recommendation": null,
+  "dual_profile": false,
+  "temperature": null,
+  "system_prompt_override": null,
+  "cot_marker_family": null,
+  "cot_tags_detected": null,
+  "top_p": null,
+  "top_k": null,
+  "repetition_penalty": null,
+  "frequency_penalty": null,
+  "presence_penalty": null,
+  "seed": null,
+  "stop_sequences": null,
+  "license": "Proprietary",
+  "license_url": null,
+  "commercial_use_allowed": true,
+  "weights_license_tier": "proprietary",
+  "model_version": "3.5",
+  "input_price_per_1m": 0.3,
+  "output_price_per_1m": 2.5,
+  "hardware_profile": null,
+  "inference_engine": "openrouter-api",
+  "quantization_format": null,
+  "model_variant": null,
+  "unknown": false,
+  "card_status": "draft",
+  "size_class": "Frontier",
+  "generated_at": "2026-09-26T18:51:24.829990+00:00",
+  "thinking_probe_detected": true,
+  "thinking_probe_evidence": "Multi-Probe (3 prompts, 3 detected, best confidence=medium):\n  - math: [math] Inline CoT im content-Feld: Antwort 885 chars (>200) mit 18 Berechnungs-Operatoren. First 200 chars: To find the average speed of the train, follow these step-by-step calculations:\n\n**Step 1: Understand the formula for average speed.**\nThe formula for average speed ($s$) is the total distance travele\n  - code: [code] Inline CoT im content-Feld: Antwort 3535 chars (>200) mit 20 Berechnungs-Operatoren. First 200 chars: To sort the list **[3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5]**, I will use the **Bubble Sort** algorithm. \n\n### How Bubble Sort Works:\nBubble sort is a simple sorting algorithm that repeatedly steps through t\n  - decision: [decision] Inline CoT im content-Feld: Antwort 4828 chars (>200) mit 28 Berechnungs-Operatoren. First 200 chars: The question of how an autonomous vehicle (AV) should react to an unavoidable collision—often framed as an evolution of the classic \"Trolley Problem\"—is one of the most complex challenges in applied e",
+  "thinking_probe_confidence": "medium",
+  "thinking_probe_at": "2026-09-27T01:13:01.763336+00:00",
+  "thinking_probe_manual_override": null,
+  "profile_verified": false,
+  "profile_verified_at": null,
+  "profile_verified_by": null,
+  "last_modified_at": "2026-09-26",
+  "heritage_ids": [
+    "gemini-3_1-flash-lite"
+  ],
+  "community": null,
+  "pc_token_calibration": {
+    "budget": 390,
+    "classification": "self_limiting",
+    "profile": "thinking",
+    "tested": "2026-09-27T01:31:58.435965+00:00",
+    "converged_stage": 300,
+    "notes": "Stratifizierte Probe: 9 Blöcke sauber @ 300, 0/0 verdächtige Blöcke eskaliert (0 greedy, 0 inkonsistent). Profil: thinking."
+  },
+  "pc_profile": "thinking"
+}

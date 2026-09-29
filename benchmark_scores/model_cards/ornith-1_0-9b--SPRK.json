@@ -7,7 +7,7 @@
   "deployment_type": "localweights",
   "local_deployment_possible": true,
   "weights_provenance_risk": "low",
-  "weights_provenance_risk_rationale": "DeepReinforce releases Ornith 1.0 under the permissive MIT license, and Unsloth provides local GGUF packaging for offline inference. The model is open weights, can be run fully locally, and therefore carries low operational provenance risk.[web:1145][web:1146][web:1151][web:1156]",
+  "weights_provenance_risk_rationale": "DeepReinforce veröffentlicht Ornith 1.0 unter der permissiven MIT-Lizenz, und Unsloth stellt die lokale GGUF-Paketierung für Offline-Inferenz bereit. Das Modell hat offene Gewichte, kann vollständig lokal betrieben werden und trägt daher ein geringes operatives Provenance-Risiko.[web:1145][web:1146][web:1151][web:1156]",
   "model_family": "Ornith",
   "vendor": "DeepReinforce",
   "primary_focus": "reasoning",

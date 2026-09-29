@@ -7,7 +7,7 @@
   "deployment_type": "localweights",
   "local_deployment_possible": true,
   "weights_provenance_risk": "low",
-  "weights_provenance_risk_rationale": "Mistral AI releases Ministral 3 under Apache 2.0, and Unsloth provides the local GGUF packaging for offline inference. Because the upstream weights are open and the benchmark runs fully local, the operational provenance risk is low.[web:1105][web:1106][web:1107][web:1108]",
+  "weights_provenance_risk_rationale": "Mistral AI veröffentlicht Ministral 3 unter Apache 2.0, und Unsloth stellt die lokale GGUF-Paketierung für Offline-Inferenz bereit. Da die Upstream-Gewichte offen sind und der Benchmark vollständig lokal läuft, ist das operative Provenance-Risiko gering.[web:1105][web:1106][web:1107][web:1108]",
   "model_family": "Ministral",
   "vendor": "Mistral AI",
   "primary_focus": "generalist",

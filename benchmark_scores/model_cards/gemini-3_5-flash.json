@@ -25,10 +25,10 @@
     "Kontextfenster von einer Million Tokens"
   ],
   "known_limitations": [
-    "Ausschliesslich über die Google-API nutzbar",
+    "Cloud-only ohne offene Gewichte; über Google-API und Aggregatoren wie OpenRouter nutzbar.",
     "Teurer als Vorgängerversionen, kein Low-Budget-Modell mehr",
-    "Token-Budget-Kollisionen bei komplexen Aufgaben möglich, da internes Reasoning die Ausführlichkeit erhöht",
-    "Audio-Ausgabe im Benchmark nicht erfasst"
+    "Token-Budget-Kollisionen möglich: internes Reasoning erhöht die Antwortausführlichkeit.",
+    "Keine Audio-Ausgabe (nur Text-Output); Audio- und Video-Inputs im Benchmark nicht erfasst."
   ],
   "judge_context_hint": "Schnelles Flash-Modell mit Dynamic Thinking für Coding und agentische Workloads. Bei der Bewertung Effizienz und Brauchbarkeit gewichten, nicht maximale Reasoning-Tiefe. Multimodalität für Text, Bild, Audio und Video nativ verfügbar.",
   "architecture_tags": [

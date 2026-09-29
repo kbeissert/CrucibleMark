@@ -1,0 +1,110 @@
+{
+  "model_id": "google/gemini-3.8-flash",
+  "display_name": "Gemini 3.8 Flash",
+  "developer": "Google",
+  "origin_country": "USA",
+  "developer_jurisdiction": "US",
+  "deployment_type": "cloud-only",
+  "local_deployment_possible": false,
+  "weights_provenance_risk": "medium",
+  "weights_provenance_risk_rationale": "Das Modell wird von einem US-amerikanischen Unternehmen entwickelt und gehostet. Aufgrund der US-Jurisdiktion unterliegt es potenziell dem CLOUD Act, was ein mittleres Risiko für den Datenzugriff durch US-Behörden darstellt. Da die Gewichte proprietär und nicht verteilt sind, besteht kein zusätzliches Risiko durch Weitergabe der Gewichte selbst.",
+  "model_family": "Gemini",
+  "vendor": "Google",
+  "primary_focus": "general",
+  "use_case_primary": "agentic",
+  "parameter_architecture": "dense",
+  "params_total_b": null,
+  "params_active_b": null,
+  "context_window_k": 1000,
+  "knowledge_cutoff": null,
+  "summary": "Gemini 3.8 Flash ist Googles intelligentestes Flash-Modell (GA seit 2. September 2026), gebaut auf 3.7 Flash für Long-Horizon-Software-Engineering, autonome Agenten und komplexe Unternehmens-Workflows. Drei Thinking-Levels (low, medium, high, Standard medium) steuern die Reasoning-Tiefe; eine Million Tokens Kontext und 65.536 Output-Tokens fassen ganze Repositorys in einer Anfrage. Intro-Preis 0,75 / 3,75 USD pro Million Tokens bis Jahresende, danach 1,50 / 7,50.",
+  "strengths": [
+    "Deutlich stärker bei Long-Horizon-Software-Engineering als der Vorgänger 3.7 Flash, laut Google.",
+    "Laut Google auf Niveau deutlich größerer Frontier-Modelle bei agentischem Terminal-Coding.",
+    "Führend bei domänenspezifischen Agenten-Tasks aus Finanzen und Legal laut Google-Vergleichsfeld.",
+    "Eine Million Tokens Kontext mit 65.536 Output-Tokens — ganze Repositorys in einer Anfrage.",
+    "Frontier-nahe Qualität bei Long-Horizon-Coding zum Flash-Preis.",
+    "Überdurchschnittliches Video-Verständnis laut Google, oberhalb großer Vergleichsmodelle."
+  ],
+  "known_limitations": [
+    "Intro-Preis läuft am 31. Dezember 2026 aus; dann Verdopplung auf 1,50 / 7,50 USD.",
+    "Thinking-Tokens werden zum Output-Tarif abgerechnet — empirischer Faktor 2,3 vs. sichtbarer Output.",
+    "HLE-Standard (45,4 Prozent) nur marginal über dem Vorgänger — kein Fortschritt bei Faktenwissen.",
+    "Cache-Write (0,042 USD/1M) und Web-Search-Calls (14 USD/1.000) werden separat abgerechnet.",
+    "Parameteranzahl offiziell nicht dokumentiert; Google veröffentlicht keine Modellgröße."
+  ],
+  "judge_context_hint": "Gemini 3.8 Flash ist Googles aktuelles Flash-Tier-Frontier-Modell (US/CLOUD Act, Cloud-Only), positioniert für Long-Horizon Software Engineering und autonome Agenten — nicht für reines Faktenwissen optimiert (HLE-Standard nur 45,4%). Drei einstellbare Thinking-Levels (low/medium/high, Default medium); Reasoning-Tokens werden separat als Metadatenfeld geführt und zum Output-Tarif abgerechnet, nicht sichtbar im Content. Kontext 1M Tokens, primär Text+Image-Input im aktuellen Testsetup. HINWEIS: Basiert auf öffentlichen Google/DeepMind-Modellkarten und Drittanbieter-Benchmarks, nicht auf einem eigenen CrucibleMark-Probe-Lauf — vor Reviewer-Einsatz gegen echte Probe-/ToolUse-Daten validieren.",
+  "architecture_tags": [
+    "Thinking",
+    "General",
+    "Vision-Capable"
+  ],
+  "input_modalities": [
+    "text",
+    "image"
+  ],
+  "output_modalities": [
+    "text"
+  ],
+  "supports_tool_use": true,
+  "tooluse_tested_at": "2026-09-27T03:12:30Z",
+  "tooluse_score_p1": 90.0,
+  "tooluse_score_p2": 76.67,
+  "tooluse_runs": {
+    "google/gemini-3.8-flash": {
+      "tested_at": "2026-09-27T03:12:30Z",
+      "score_p1": 90.0,
+      "score_p2": 76.67
+    }
+  },
+  "tooluse_recommendation": null,
+  "dual_profile": false,
+  "temperature": null,
+  "system_prompt_override": null,
+  "cot_marker_family": null,
+  "cot_tags_detected": null,
+  "top_p": null,
+  "top_k": null,
+  "repetition_penalty": null,
+  "frequency_penalty": null,
+  "presence_penalty": null,
+  "seed": null,
+  "stop_sequences": null,
+  "license": "Proprietary",
+  "license_url": null,
+  "commercial_use_allowed": true,
+  "weights_license_tier": "proprietary",
+  "model_version": "3.8",
+  "input_price_per_1m": 0.75,
+  "output_price_per_1m": 3.75,
+  "hardware_profile": null,
+  "inference_engine": "openrouter-api",
+  "quantization_format": null,
+  "model_variant": null,
+  "unknown": false,
+  "card_status": "draft",
+  "size_class": "Frontier",
+  "generated_at": "2026-09-26T18:51:24.830683+00:00",
+  "thinking_probe_detected": true,
+  "thinking_probe_evidence": "Multi-Probe (3 prompts, 3 detected, best confidence=medium):\n  - math: [math] reasoning_tokens=277 in provider metadata. First 200 chars: To find the average speed of the train, follow these steps:\n\n### **Step 1: Identify the given values**\n* **Total Distance ($d$)** = $120\\text{ km}$\n* **Total Time ($t$)** = $1.5\\text{ hours}$\n\n---\n\n##\n  - code: [code] reasoning_tokens=1438 in provider metadata. First 200 chars: We will sort this list using **Insertion Sort**.\n\n---\n\n### Algorithm Explanation: Insertion Sort\n\n**How it works:**\nInsertion Sort works the same way many people sort playing cards in their hands:\n1. \n  - decision: [decision] reasoning_tokens=325 in provider metadata. First 200 chars: When evaluating how an autonomous vehicle should act in a critical collision scenario, the fundamental objective must be to achieve the outcome that results in the least overall harm and preserves the",
+  "thinking_probe_confidence": "medium",
+  "thinking_probe_at": "2026-09-26T22:42:40.828054+00:00",
+  "thinking_probe_manual_override": null,
+  "profile_verified": false,
+  "profile_verified_at": null,
+  "profile_verified_by": null,
+  "last_modified_at": "2026-09-26",
+  "heritage_ids": [
+    "gemini-3_7-flash"
+  ],
+  "community": null,
+  "pc_token_calibration": {
+    "budget": 390,
+    "classification": "inconsistent",
+    "profile": "thinking",
+    "tested": "2026-09-26T23:14:21.910842+00:00",
+    "converged_stage": 300,
+    "notes": "Stratifizierte Probe: 2 Blöcke sauber @ 300, 2/7 verdächtige Blöcke eskaliert (1 greedy, 1 inkonsistent). Profil: thinking. Thinking-only-Ausnahme (dual_profile: false): Instruct-Modus nicht verfügbar — einzelner Thinking-Lauf statt Modus-Wechsel (Konzept-Doc Abschn. 11)."
+  },
+  "pc_profile": "thinking"
+}

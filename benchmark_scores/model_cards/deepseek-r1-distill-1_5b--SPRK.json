@@ -7,7 +7,7 @@
   "deployment_type": "localweights",
   "local_deployment_possible": true,
   "weights_provenance_risk": "medium",
-  "weights_provenance_risk_rationale": "DeepSeek is the originating provider of the R1-Distill line, and the base provider sits in Chinese jurisdiction. The model is a distilled reasoning variant built on a Qwen2.5 1.5B backbone and distributed locally via Unsloth GGUF, so the operational risk is low when fully offline, but the base-origin and distillation provenance remain a moderate supply-chain factor.[web:952][web:954][web:963][web:965]",
+  "weights_provenance_risk_rationale": "DeepSeek ist der ursprüngliche Anbieter der R1-Distill-Linie und unterliegt der chinesischen Jurisdiktion. Das Modell ist eine destillierte Reasoning-Variante auf einem Qwen2.5-1.5B-Backbone, die lokal über Unsloth GGUF verteilt wird; das operative Risiko ist bei vollständigem Offline-Betrieb gering, doch Herkunft und Destillationskette des Basismodells bleiben ein moderater Supply-Chain-Faktor.[web:952][web:954][web:963][web:965]",
   "model_family": "DeepSeek-R1-Distill-Qwen",
   "vendor": "DeepSeek",
   "primary_focus": "reasoning",
