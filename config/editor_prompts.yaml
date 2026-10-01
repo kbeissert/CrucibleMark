@@ -513,6 +513,14 @@ model_card_verification:
     **`strengths` / `known_limitations`:**
     Sachlich, präzise, nicht werblich. Nur belegte Aussagen.
 
+    **`weights_provenance_risk_rationale`:**
+    Sachlich, präzise, ein zusammenhängender Fließtext. Entwickler-Jurisdiktion
+    und relevante Rechtsrahmen (CLOUD Act, NSL, DSGVO, etc.) nennen. Bei
+    Open-Weight-Modellen zwischen Cloud- und lokalem Betrieb differenzieren.
+    KEINE bare Fussnoten-Referenzen ([448], [123] etc.) am Textende — diese
+    sind im Web-Frontend tote Referenzen. Zitations-Marker als [web:N],
+    [file:N] oder [page:N] sind erlaubt und bleiben erhalten.
+
     **`judge_context_hint`:**
     1–2 Sätze. Nur Dinge nennen, die für die konkrete Modellvariante
     wirklich belegt sind. Keine Spekulation über Thinking-Modus,

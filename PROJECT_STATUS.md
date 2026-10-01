@@ -2,7 +2,7 @@
 
 > **Interner Statusbericht.** Diese Datei dokumentiert den Projektfortschritt für Maintainer und Contributor. Sie ist nicht Teil der öffentlichen Dokumentation. Aktuelle, kuratierte Release-Informationen stehen in [README.md](README.md) (Recent Versions) und [CHANGELOG.md](CHANGELOG.md).
 
-**Last Updated:** 2026-09-27
+**Last Updated:** 2026-10-01
 **Current Version:** 5.4.0 — Provider-Härtung, Eskalationsleiter, Refusal-Retry, OpenRouter-Pinning & Code-Review
 **Status:** Production-Ready
 
@@ -19,7 +19,9 @@ CrucibleMark v5.3.0 ist ein production-ready LLM-Benchmark-Framework mit 135+ ge
 - **SPRK-Small-Model-Feld:** 14 Nano-/Mini-/Desktop-Modelle ≤ 16 GB (Unsloth-UD-Q5_K_M) + Signal 3.8 27B neu auf llama.cpp Spark integriert.
 - **1917 Tests** passed, 17 skipped, 0 failed · Lint 9.99/10 · Ruff 0 violations · Pylint E-Level clean.
 
-**Aktuelle Arbeit (Sessions 106–122 + 27.09.):**
+**Aktuelle Arbeit (Sessions 106–122 + 27.09.–01.10.):**
+- **Fußnoten-Referenzen im Web-Export bereinigt (01.10.):** `weights_provenance_risk_rationale` enthielt bare `[N]`-Fußnoten-Cluster (MiMo-V2.6-Pro `[448][444]`, MiMo-V2.6-Flash `[434][445]`, Qwen3.8-Flash-Next `[374][383][384]`), die im Web-Frontend als tote Referenzen dargestellt wurden. Root-Cause-Fix: Prompt-Regeln in `editor_prompts.yaml` und `scripts/card_research/common.py` ergänzt (keine baren `[N]`-Referenzen generieren; nur `[web:N]`/`[file:N]`/`[page:N]` erlaubt). Defense-in-Depth: Regex-Cleanup `_strip_orphaned_footnotes()` in `entry_builders.py` (Web-Export-Pipeline). Verifikation: `make web-export` → 110/160 OK, 0 bare Fußnoten, 26 Modelle mit intentionalen Zitations-Markern intakt.
+- **GLM-EXL3-Temp-Benchmark „high" + 3-Zustände-Audit (28.09.):** Isolierte Benchmark-Variante (`glm-5_3-flash-exl3-high`, eigener Provider-Entry + eigene Card) gegen den publizierten Stand — Gesamt 78,35 % vs. 78,90 % (Gestern) / 81,82 % (Heute-Max) bei 74 % weniger Tokens; ToolUse −11,3 als Ausnahme. Audit: `docs/audits/2026-09-28_benchmark-vergleich_glm-5_3-flash-exl3_gestern-heute.csv` (inkl. cli006-Determinismus-Analyse und Preemption-Befund: 0 im High-Lauf). Changeset committet (6 Commits bis `e45132ce`).
 - **Icon-leak in Review-Prosa gefixt (27.09.):** Speed Profile/Badge trugen UI-Icons in die Leaderboard-CSV — die Prompt-Pflicht (Badge wörtlich zitieren) ließ „❌ Unusable Tool Expert" in die Prosa lecken. `collect_data()` sanitisiert jetzt die Prompt-Sicht via `strip_emojis`-SSoT (CSV auf Disk unangetastet); Suite 1917 passed. Legacy-Reviews: o1/o3-mini/o4-mini regeneriert (clean), 5 verwaiste Mai-Artefakte (ohne Audit-Logs) bleiben Historie. Web-Export-Re-Run: 109 Entries.
 - **Review-Formulierungsregel + Massen-Regeneration (27.09.):** „Modus n/a"-Prosa abgeschafft — Formulierungsregel im Meta-Reviewer-Prompt (`n/a` = Setup beschreiben, keinen Modus benennen; Datenwert bleibt Sentinel), 25 Latest-Reviews regeneriert und verifiziert (0 Phrasungs-Treffer; gemma-4-e4b-spark blacklisted, ausgenommen). Web-Export-Re-Run: 159 Entries → 109 OK / 50 SKIP, Naming-Gate 157+37 Cards OK.
 - **Card-Sprachkonsistenz + Web-Export-Verifikation (27.09.):** 17 Card-Texte auf Deutsch umgestellt, Sprach-Gate (WARN) im Card-Validator (Check Nr. 10), Repo-Grenz-Regel in AGENTS.md. `make web-export` verifiziert: 159 Entries → 109 OK / 50 SKIP (Blacklist 50/50), Top-Level-Vertrag + 9-Key-Scores-Contract + Slug-Vollständigkeit 1:1 — keine Ausfälle. Reference-Doku `web-export-cleanup.md` an Ist-Vertrag angepasst.
@@ -43,7 +45,6 @@ CrucibleMark v5.3.0 ist ein production-ready LLM-Benchmark-Framework mit 135+ ge
 **Known Limitations (akzeptiert, nicht blockierend):**
 - **PC-Modul deaktiviert:** Nutzer-Entscheidung zur LLM-Nachtest-Serie — Reaktivierung ist Teil des nächsten Schritts (Opus-5.5-Nativ-Re-Run via `make political-compass`).
 - **`make benchmark-auto` lokal nicht verfügbar:** GX10/Python-3.14-API-Break (Provider-Discovery-Teile) — Workaround: Modul-Läufe via `run_benchmark.py --module X --model Y`.
-- **Changeset uncommittet:** Code-Review-Serie + vorbefindliche Fremdänderungen (AGENTS.md/progress.md) und untracked Reviews sind nicht committed.
 - **Web-Frontend (separates Repo):** `price-comparison-row.njk` Null-Guard, `model-header.njk` Doppel-Rendering, Frontend stu=false-Score-Anzeige.
 
 ---

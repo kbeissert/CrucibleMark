@@ -204,7 +204,14 @@ _RESEARCH_SYSTEM_INSTRUCTION = (
     "  Leere findings-Arrays sind erwuenscht wenn alles korrekt ist.\n\n"
     "WICHTIG: Fuer JEDES Finding MUSS ein \"suggested\"-Wert mit dem komplett\n"
     "neu geschriebenen Text angegeben werden. Findings ohne suggested-Wert\n"
-    "werfen verworfen.\n\n"
+    "werden verworfen.\n\n"
+    "FUSSNOTEN-REGEL FUER weights_provenance_risk_rationale:\n"
+    "- KEINE baren Fussnoten-Referenzen ([448], [123] etc.) im Text.\n"
+    "- DIESE FOREN SIND TOTE REFERENZEN IM WEB-FRONTEND.\n"
+    "- Zitations-Marker [web:N], [file:N] oder [page:N] sind erlaubt.\n"
+    "- Der Text soll ein zusammenhaengender Fliesstext sein — Fussnoten\n"
+    "  mit Referenz-IDs gehoeren in die Web-Recherche, nicht in das\n"
+    "  exportierte Textfeld.\n\n"
     "Antworte AUSSCHLIESSLICH mit JSON:\n"
     '{"findings": [{"field": ..., "severity": "error|warning|info", '
     '"message": ..., "current": ..., "suggested": ...}], '

@@ -1,6 +1,21 @@
 # Progress
 Letzte Releases + aktueller Stand.
 
+### 2026-10-01 — Web-Export-Fußnoten-Bereinigung [DONE]
+
+- [x] Root-Cause-Fix: Prompt-Regeln in `config/editor_prompts.yaml` und `scripts/card_research/common.py` — LLM darf keine baren `[N]`-Fußnoten in `weights_provenance_risk_rationale` generieren.
+- [x] Defense-in-Depth: `_strip_orphaned_footnotes()`-Regex-Cleanup in `scripts/web_export/entry_builders.py` — entfernt `(?:\[\d+\])+$` vor dem Schreiben.
+- [x] Drei betroffene Cards: MiMo-V2.6-Pro (`[448][444]`), MiMo-V2.6-Flash (`[434][445]`), Qwen3.8-Flash-Next (`[374][383][384]`) — im Export bereinigt.
+- [x] Web-Export verifiziert: 110/160 OK, 0 bare Fußnoten, 26 Modelle mit intentionalen `[web:N]`/`[file:N]`/`[page:N]`-Zitationen intakt.
+
+### 2026-09-28 — GLM-EXL3-Temp-Benchmark „high" + 3-Zustände-Audit + Preemption-Analyse [DONE — committet 28.09., d0100caf…e45132ce]
+
+- [x] Isolierte Temp-Variante `glm-5_3-flash-exl3-high` (eigener Provider-Entry + eigene Card mit kopierter Kalibrierung/Probe, kein `card_model_id`-Redirect — Rückschreib-Isolation) — Voll-Lauf 49 Assets. Pattern in systemPatterns.md dokumentiert.
+- [x] 3-Zustände-Audit (`docs/audits/2026-09-28_benchmark-vergleich_glm-5_3-flash-exl3_gestern-heute.csv`): Gestern-Max 78,90 / Heute-Max 81,82 / Heute-High 78,35; High −3,47 pp bei 74 % weniger Tokens (260k→79k), ToolUse −11,3 Ausnahme, Reasoning +0,4.
+- [x] cli006-Re-Test: deterministisch 37,99 % (wortgleich) — `mkdir -p` flippt `mv`-Semantik → nested `ollama-models/models` = banned-pattern; Symlink real funktionierend (sandbox-verifiziert), Judge-Begründung unpräzise, Score korrekt.
+- [x] Preemption-Analyse (Auditor-Anfrage): `vllm:num_preemptions_total` = 0 im High-Lauf (Metrics-Proxy `/metrics`); Morgen-Ausreißer (25 %) trägt Budget-Erschöpfungs-Signatur (`finish=length` am 24000er-Cap), keine Preemption-Signatur; Historie (20.09.) nach Server-Restarts/Container-Entfernung nicht rekonstruierbar → AGENTS-Constraint ergänzt.
+- [ ] Offen: Cleanup Temp-Variante (Provider-Entry auskommentieren + `make clean-model MODEL=glm-5_3-flash-exl3-high DRY=1`) — oder Rows als Vergleichsbasis behalten und nur den Entry deaktivieren.
+
 ### 2026-09-27 — Icon-leak in Review-Prosa gefixt + Legacy-Review-Regeneration [DONE]
 
 - [x] Befund: „❌ Unusable Tool Expert" in Review-Prosa — `formatter.py` schreibt UI-Icons in die CSV-Spalten `Speed Profile`/`Badge`; `collect_data()` reichte die CSV roh in den Review-Prompt, Prompt-Pflicht (Badge wörtlich zitieren) schlug die No-Emoji-Regel.
@@ -24,7 +39,7 @@ Letzte Releases + aktueller Stand.
 - [x] Befund: „2 stray EN-Items" aus dem Web-Handover = False Positives der Web-Heuristik (Vendor-Namen-Starts als EN); nemotron-Items bereits deutsch — nichts zu fixen.
 - [x] Verifikation: `make validate-cards` 157 Cards / 0 Fehler / 0 Sprach-WARNs; `make lint` Exit 0; `make test` 1917 passed / 17 skipped; neutraler Check-Export (`WEB_DATA_DIR=outputs/web_export_check make web-export`) — 0 EN/TODO-Rationales im gesamten Export, occamy-Thinking erbt gefixtes Feld, swift-nonthinking korrekt geblacklistet.
 - [x] Web-Export-Verifikation (Produktions-Export): 159 Entries → 109 OK / 50 SKIP (Blacklist-Audit 50/50 in meta.json); Top-Level-Vertrag (leaderboard/political_compass/vendor_cards/community_cards/meta.json + `models/<slug>/data.json`), 9-Key-Scores-Contract in leaderboard.json + allen 109 Modell-Files, Slug-Vollständigkeit 1:1 — keine Ausfälle. Reference-Doku `web-export-cleanup.md` an Ist-Vertrag angepasst (Top-Level-`data.json`/`provider_cards.json`/`provider_stats.json` existieren nicht mehr).
-- [x] Offen: `gemini-3_5-flash.json` Working-Tree-Diff (fremde Session) mit Trailing-Newline-Verlust → Writer-Divergenz-Quelle prüfen; Changeset uncommittet.
+- [x] Offen (27.09.): `gemini-3_5-flash.json` Working-Tree-Diff (fremde Session) mit Trailing-Newline-Verlust → Writer-Divergenz-Quelle weiterhin ungeklärt; Changeset 26.–28.09. inzwischen committet (6 Commits bis `e45132ce`, 29.09.).
 
 ### v5.4.0 (2026-09-25) — Provider-Härtung, Eskalationsleiter, Refusal-Retry, OpenRouter-Pinning & Code-Review [DONE]
 

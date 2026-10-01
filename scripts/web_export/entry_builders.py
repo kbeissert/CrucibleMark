@@ -26,6 +26,16 @@ from utils.text_helpers import (
 from .constants import LdbCols, _SCORE_COLUMN_TO_KEY
 
 
+_ORPHANED_FOOTNOTE_RE = re.compile(r"(?:\[\d+\])+$")
+
+
+def _strip_orphaned_footnotes(text: str | None) -> str | None:
+    """Entfernt verwaiste Fussnoten-Cluster ([123][456]...) am Textende."""
+    if text is None:
+        return None
+    return _ORPHANED_FOOTNOTE_RE.sub("", text).strip()
+
+
 def _normalize_export_tags(tags: list[str]) -> list[str]:
     """Filtert deprecated Tags aus architecture_tags für den Web-Export."""
     if not tags:
@@ -324,7 +334,7 @@ def _build_model_card_subdict(
         "deployment_type": card.get("deployment_type"),
         "local_deployment_possible": card.get("local_deployment_possible"),
         "weights_provenance_risk": card.get("weights_provenance_risk"),
-        "weights_provenance_risk_rationale": card.get("weights_provenance_risk_rationale"),
+        "weights_provenance_risk_rationale": _strip_orphaned_footnotes(card.get("weights_provenance_risk_rationale")),
         # Normalisierter Hersteller-Name (SSoT: kanonischer Name aus
         # classification_taxonomy.json, identisch mit Top-Level vendor-Feld).
         "vendor": vendor,

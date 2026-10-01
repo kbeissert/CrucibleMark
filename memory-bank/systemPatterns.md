@@ -491,6 +491,16 @@ architecture changes: automatically load reference/pitfall-diagnosis.md before p
 - Sigma-Verdrahtung (2026-09-24): `_calculate_sigma` war seit PC v3.0 tot — Reports trugen immer `sigma: 0.0` (Platzhalter, las sich wie Run-Stabilität). Jetzt im Lauf-Pfad verdrahtet; der Recompute ruft dieselbe Funktion. Regel: Formeln nie zwischen Runtime und Recompute duplizieren — der Recompute-Score-Pfad nutzt die Runtime-Funktionen (`_parse_choice`, `score_response`, `_calculate_sigma`), sonst driftet er still. Historische `metrics_json.sigma` = Platzhalter, kein Backfill.
 - Historische Kontamination: Betroffene Läufe sind aus Checkpoints recomputbar (`run_seeds` deterministisch, `detailed_responses` + `responses` vollständig erhalten) — kein Neu-Query nötig.
 
+## Isolierte Benchmark-Varianten: Temp-ID + eigene Card (2026-09-28, GLM-EXL3-high)
+
+Pattern für A/B-/Vergleichsläufe, die bestehende Leaderboard-Rows NICHT überschreiben dürfen (CSV-Upsert-Key ist `(model, asset_id)`):
+
+1. **Eigener Provider-Entry mit Suffix-ID** (z. B. `glm-5_3-flash-exl3-high`) und identischem `config`-Wert → gleiche TOML/gleicher Server, KEIN Container-Swap; die API adressiert den Server-Model-Namen aus `config`, nicht die Entry-ID. Sampling-Felder am Entry weglassen = identisches Request-Verhalten.
+2. **EIGENE Card (Kopie mit angepasster `model_id`/`display_name`), KEIN `card_model_id`-Redirect:** Der Redirect würde `cot_budget_calibration` teilen — die Eskalationsleiter schreibt Kalibrierung NUR aufwärts zurück und würde damit das Start-Budget des publizierten Modells verändern. Kopieren: strukturelle Felder, Research-Texte, `thinking_probe_*`, `cot_budget_calibration`/`pc_token_calibration` (gelten für dasselbe Modell, Rückschreibungen landen isoliert). Neutralisieren: Benchmark-Ergebnisfelder (`tooluse_*` = null, `tooluse_runs` = {}).
+3. **Nach dem Experiment:** Provider-Entry auskommentieren (`benchmark-auto` liest die Config, NICHT die Web-Export-Blacklist!) + `make clean-model MODEL=<id>` (vorab `DRY=1`). Card-ID muss exakt der Provider-Config-ID entsprechen (Fable-Fusion-Falle: stiller Skip).
+
+Case-Study + Zahlen: `docs/audits/2026-09-28_benchmark-vergleich_glm-5_3-flash-exl3_gestern-heute.csv` (High-Variante: −3,47 pp bei 74 % weniger Tokens; cli006 deterministisch fehlgeschlagen; Preemption 0). Server-Instanz-Metriken (Preemption etc.) sind instanzgebunden und nach Restarts/Container-Entfernung nicht rekonstruierbar — siehe AGENTS.md-Constraint (2026-09-28).
+
 ## Context Loading Rules
 Before starting any task, check the task type and load accordingly:
 - Refactoring / debugging / architecture review
